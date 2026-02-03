@@ -6,7 +6,7 @@ const flowSteps = [
   { icon: Users, label: "Leads", color: "from-blue-500 to-cyan-500" },
   { icon: Settings, label: "Ops", color: "from-cyan-500 to-teal-500" },
   { icon: DollarSign, label: "Revenue", color: "from-green-500 to-emerald-500" },
-  { icon: Repeat, label: "Learning Loop", color: "from-orange-500 to-red-500" },
+  { icon: Repeat, label: "Repeat", color: "from-orange-500 to-red-500" },
 ];
 
 export function EcosystemSection() {
