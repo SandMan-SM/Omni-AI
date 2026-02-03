@@ -38,6 +38,13 @@ export function Footer() {
               Ecosystem
             </a>
             <a
+              href="#testimonials"
+              className="text-gray-500 hover:text-white transition-colors"
+              data-testid="footer-link-results"
+            >
+              Results
+            </a>
+            <a
               href="#contact"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-contact"
