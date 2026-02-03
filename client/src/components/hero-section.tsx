@@ -1,10 +1,16 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Clock, Eye, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+const metrics = [
+  { icon: Clock, value: "24/7", label: "Execution" },
+  { icon: Eye, value: "10M+", label: "Impressions" },
+  { icon: TrendingUp, value: "60x", label: "ROI" },
+];
 
 export function HeroSection() {
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 overflow-hidden">
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-24 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-purple-500/10 blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-500/10 blur-[100px]" />
@@ -71,12 +77,40 @@ export function HeroSection() {
             Book a Demo
           </Button>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
+          className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mt-16"
+        >
+          {metrics.map((metric, index) => (
+            <motion.div
+              key={metric.label}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
+              className="flex flex-col items-center gap-2"
+              data-testid={`metric-${metric.label.toLowerCase()}`}
+            >
+              <div className="flex items-center gap-2">
+                <metric.icon className="w-5 h-5 text-purple-400" />
+                <span className="text-2xl md:text-3xl font-bold text-gradient">
+                  {metric.value}
+                </span>
+              </div>
+              <span className="text-sm text-gray-500 uppercase tracking-wider">
+                {metric.label}
+              </span>
+            </motion.div>
+          ))}
+        </motion.div>
       </motion.div>
 
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1, delay: 1 }}
+        transition={{ duration: 1, delay: 1.3 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
         data-testid="scroll-indicator"
       >
