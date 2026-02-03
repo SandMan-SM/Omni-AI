@@ -58,7 +58,7 @@ const tierData = {
   },
   ascended: {
     icon: Flame,
-    name: "Elite",
+    name: "Empire",
     tierLabel: "TIER 3",
     price: "$10k–$25k",
     priceSubtext: "per month",
@@ -68,7 +68,7 @@ const tierData = {
     borderGlow: "hover:shadow-orange-500/20",
     forWho: "Proven businesses only",
     features: ["Multiple autonomous agents", "KPI tracking", "Decision rules engine", "Self-optimizing systems", "Weekly performance reports"],
-    cta: "Request Elite Review",
+    cta: "Request Empire Review",
     ctaStyle: "bg-gradient-to-r from-orange-500 to-red-500",
     scarcity: "By referral only",
   },
