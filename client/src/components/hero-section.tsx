@@ -31,10 +31,10 @@ export function HeroSection({ onBookDemo }: HeroSectionProps) {
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="inline-flex items-center gap-2 px-4 py-2 mb-8 rounded-full glass-card neon-border"
+          className="inline-flex items-center gap-2 px-3 md:px-4 py-2 mb-6 md:mb-8 rounded-full glass-card neon-border"
         >
-          <Sparkles className="w-4 h-4 text-purple-400" />
-          <span className="text-sm text-gray-300">
+          <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
+          <span className="text-xs md:text-sm text-gray-300 whitespace-nowrap">
             Introducing the world's first AGI Legacy Model
           </span>
         </motion.div>
