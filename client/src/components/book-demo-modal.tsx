@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Lock, Calendar, Clock, Check, ChevronRight } from "lucide-react";
+import { X, Lock, Calendar, Clock, Check, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -511,6 +511,21 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {step !== "success" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5 }}
+                className="flex justify-center mt-6 md:mt-8"
+              >
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-purple-500/30 border-t-purple-500 flex items-center justify-center"
+                />
+              </motion.div>
+            )}
           </div>
         </motion.div>
       </motion.div>
