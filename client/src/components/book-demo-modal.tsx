@@ -511,6 +511,37 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {step !== "success" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="flex justify-center items-center mt-8 md:mt-12"
+              >
+                <motion.svg
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  viewBox="0 0 100 100"
+                  className="w-32 h-32 md:w-48 md:h-48"
+                >
+                  <circle cx="50" cy="50" r="28" fill="none" stroke="url(#orbital-gradient)" strokeWidth="3" opacity="0.6" />
+                  <circle cx="50" cy="22" r="10" fill="url(#orbital-gradient)" />
+                  <circle cx="25" cy="64" r="10" fill="url(#orbital-gradient)" />
+                  <circle cx="75" cy="64" r="10" fill="url(#orbital-gradient)" />
+                  <circle cx="50" cy="50" r="6" fill="url(#orbital-gradient)" />
+                  <line x1="50" y1="50" x2="50" y2="22" stroke="url(#orbital-gradient)" strokeWidth="2" opacity="0.5" />
+                  <line x1="50" y1="50" x2="25" y2="64" stroke="url(#orbital-gradient)" strokeWidth="2" opacity="0.5" />
+                  <line x1="50" y1="50" x2="75" y2="64" stroke="url(#orbital-gradient)" strokeWidth="2" opacity="0.5" />
+                  <defs>
+                    <linearGradient id="orbital-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stopColor="#9333ea" />
+                      <stop offset="100%" stopColor="#3b82f6" />
+                    </linearGradient>
+                  </defs>
+                </motion.svg>
+              </motion.div>
+            )}
           </div>
         </motion.div>
       </motion.div>
