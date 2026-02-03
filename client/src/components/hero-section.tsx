@@ -97,7 +97,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
-              className="flex flex-col items-center text-center gap-2 min-w-[100px]"
+              className="flex flex-col items-center text-center gap-2 w-[120px]"
               data-testid={`metric-${metric.label.toLowerCase()}`}
             >
               <metric.icon className="w-5 h-5 text-purple-400" />
