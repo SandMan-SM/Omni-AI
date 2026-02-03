@@ -87,7 +87,7 @@ export function HeroSection({ onBookDemo }: HeroSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.9 }}
-          className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mt-16"
+          className="flex flex-wrap items-center justify-center gap-8 md:gap-16 mt-16 mb-20"
         >
           {metrics.map((metric, index) => (
             <motion.div
@@ -116,7 +116,7 @@ export function HeroSection({ onBookDemo }: HeroSectionProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1, delay: 1.3 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        className="absolute bottom-4 left-0 right-0 flex justify-center"
         data-testid="scroll-indicator"
       >
         <div className="flex flex-col items-center gap-3 text-gray-500">
