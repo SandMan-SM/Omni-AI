@@ -1,11 +1,11 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Clock, Eye, TrendingUp } from "lucide-react";
+import { ArrowRight, Sparkles, Clock, Eye, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const metrics = [
   { icon: Clock, value: "24/7", label: "Execution" },
   { icon: Eye, value: "20M+", label: "Impressions" },
-  { icon: TrendingUp, value: "11x", label: "ROI" },
+  { icon: Users, value: "500k+", label: "Subscribers" },
 ];
 
 interface HeroSectionProps {
