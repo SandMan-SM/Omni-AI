@@ -97,16 +97,16 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
-              className="flex flex-col items-center gap-2"
+              className="flex flex-col items-center text-center gap-2"
               data-testid={`metric-${metric.label.toLowerCase()}`}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center justify-center gap-2">
                 <metric.icon className="w-5 h-5 text-purple-400" />
                 <span className="text-2xl md:text-3xl font-bold text-gradient">
                   {metric.value}
                 </span>
               </div>
-              <span className="text-sm text-gray-500 uppercase tracking-wider">
+              <span className="text-sm text-gray-500 uppercase tracking-wider text-center">
                 {metric.label}
               </span>
             </motion.div>
