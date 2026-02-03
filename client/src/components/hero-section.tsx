@@ -119,7 +119,7 @@ export function HeroSection({ onBookDemo }: HeroSectionProps) {
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
         data-testid="scroll-indicator"
       >
-        <div className="flex flex-col items-center gap-2 text-gray-500">
+        <div className="flex flex-col items-center gap-3 text-gray-500">
           <span className="text-sm" data-testid="text-scroll-hint">Scroll to explore</span>
           <motion.div
             animate={{ y: [0, 8, 0] }}
