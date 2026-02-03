@@ -158,7 +158,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-start md:items-center justify-center pt-16 md:pt-0 px-4 pb-4 overflow-y-auto"
+        className="fixed inset-0 z-50 flex items-start justify-center pt-4 md:pt-0 md:items-center px-3 md:px-4"
         onClick={onClose}
       >
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md" />
@@ -169,26 +169,26 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
           exit={{ opacity: 0, y: 30, scale: 0.95 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg rounded-2xl my-auto md:my-0"
+          className="relative w-full max-w-lg rounded-2xl"
         >
           <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/[0.08] to-transparent" />
           <div className="absolute inset-[1px] rounded-2xl bg-[#0a0a0a]" />
 
-          <div className="relative p-6 md:p-8">
+          <div className="relative p-4 md:p-8">
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2 text-gray-500 hover:text-white transition-colors"
+              className="absolute top-3 right-3 md:top-4 md:right-4 p-1.5 md:p-2 text-gray-500 hover:text-white transition-colors"
               data-testid="button-close-modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 md:w-5 md:h-5" />
             </button>
 
             {step !== "success" && (
-              <div className="flex justify-center gap-2 mb-8">
+              <div className="flex justify-center gap-1.5 md:gap-2 mb-4 md:mb-8">
                 {stepOrder.slice(0, -1).map((s, i) => (
                   <div
                     key={s}
-                    className={`w-2 h-2 rounded-full transition-colors ${
+                    className={`w-1.5 h-1.5 md:w-2 md:h-2 rounded-full transition-colors ${
                       i <= currentStepIndex ? "bg-purple-500" : "bg-gray-700"
                     }`}
                   />
@@ -203,9 +203,9 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  className="space-y-3 md:space-y-6"
                 >
-                  <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                  <h2 className="text-xl md:text-3xl font-bold text-white text-center">
                     What's your name?
                   </h2>
                   <Input
@@ -214,17 +214,17 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     onKeyDown={(e) => e.key === "Enter" && formData.name && goNext()}
                     placeholder="Enter your name"
-                    className="bg-white/5 border-white/10 text-white text-lg py-6 text-center placeholder:text-gray-600"
+                    className="bg-white/5 border-white/10 text-white text-base md:text-lg py-3 md:py-6 text-center placeholder:text-gray-600"
                     data-testid="input-demo-name"
                   />
                   <Button
                     onClick={goNext}
                     disabled={!formData.name}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 text-lg"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-3 md:py-6 text-base md:text-lg"
                     data-testid="button-next-name"
                   >
                     Continue
-                    <ChevronRight className="w-5 h-5 ml-2" />
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
                   </Button>
                 </motion.div>
               )}
@@ -235,9 +235,9 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  className="space-y-3 md:space-y-6"
                 >
-                  <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                  <h2 className="text-xl md:text-3xl font-bold text-white text-center">
                     Best number to reach you?
                   </h2>
                   <Input
@@ -247,17 +247,17 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                     onKeyDown={(e) => e.key === "Enter" && formData.phone && goNext()}
                     placeholder="(555) 123-4567"
-                    className="bg-white/5 border-white/10 text-white text-lg py-6 text-center placeholder:text-gray-600"
+                    className="bg-white/5 border-white/10 text-white text-base md:text-lg py-3 md:py-6 text-center placeholder:text-gray-600"
                     data-testid="input-demo-phone"
                   />
                   <Button
                     onClick={goNext}
                     disabled={!formData.phone}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 text-lg"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-3 md:py-6 text-base md:text-lg"
                     data-testid="button-next-phone"
                   >
                     Continue
-                    <ChevronRight className="w-5 h-5 ml-2" />
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
                   </Button>
                 </motion.div>
               )}
@@ -268,9 +268,9 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -20 }}
-                  className="space-y-6"
+                  className="space-y-3 md:space-y-6"
                 >
-                  <h2 className="text-2xl md:text-3xl font-bold text-white text-center">
+                  <h2 className="text-xl md:text-3xl font-bold text-white text-center">
                     Where should we send the confirmation?
                   </h2>
                   <Input
@@ -280,17 +280,17 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     onKeyDown={(e) => e.key === "Enter" && validateEmail(formData.email) && goNext()}
                     placeholder="you@company.com"
-                    className="bg-white/5 border-white/10 text-white text-lg py-6 text-center placeholder:text-gray-600"
+                    className="bg-white/5 border-white/10 text-white text-base md:text-lg py-3 md:py-6 text-center placeholder:text-gray-600"
                     data-testid="input-demo-email"
                   />
                   <Button
                     onClick={goNext}
                     disabled={!validateEmail(formData.email)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 text-lg"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-3 md:py-6 text-base md:text-lg"
                     data-testid="button-next-email"
                   >
                     Continue
-                    <ChevronRight className="w-5 h-5 ml-2" />
+                    <ChevronRight className="w-4 h-4 md:w-5 md:h-5 ml-2" />
                   </Button>
                 </motion.div>
               )}
