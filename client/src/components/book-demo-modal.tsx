@@ -158,20 +158,20 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center md:items-center"
+        className="fixed inset-0 z-50 flex items-start md:items-center justify-center pt-16 md:pt-0 px-4 pb-4 overflow-y-auto"
         onClick={onClose}
       >
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md" />
 
         <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.95 }}
+          initial={{ opacity: 0, y: 30, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: 50, scale: 0.95 }}
+          exit={{ opacity: 0, y: 30, scale: 0.95 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-lg mx-4 rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+          className="relative w-full max-w-lg rounded-2xl my-auto md:my-0"
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent" />
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/[0.08] to-transparent" />
           <div className="absolute inset-[1px] rounded-2xl bg-[#0a0a0a]" />
 
           <div className="relative p-6 md:p-8">
