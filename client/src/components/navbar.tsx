@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 
 interface NavbarProps {
   onBookDemo?: () => void;
+  onSignIn?: () => void;
 }
 
-export function Navbar({ onBookDemo }: NavbarProps) {
+export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -71,9 +72,10 @@ export function Navbar({ onBookDemo }: NavbarProps) {
             </Button>
             <Button
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
+              onClick={onSignIn}
               data-testid="button-nav-start"
             >
-              Start Free
+              Sign In
             </Button>
           </div>
 
@@ -125,9 +127,13 @@ export function Navbar({ onBookDemo }: NavbarProps) {
                 </Button>
                 <Button
                   className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    onSignIn?.();
+                  }}
                   data-testid="button-mobile-start"
                 >
-                  Start Free
+                  Sign In
                 </Button>
               </div>
             </div>

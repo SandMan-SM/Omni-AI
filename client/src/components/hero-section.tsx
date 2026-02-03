@@ -10,9 +10,10 @@ const metrics = [
 
 interface HeroSectionProps {
   onBookDemo?: () => void;
+  onSignIn?: () => void;
 }
 
-export function HeroSection({ onBookDemo }: HeroSectionProps) {
+export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-24 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
@@ -67,9 +68,10 @@ export function HeroSection({ onBookDemo }: HeroSectionProps) {
           <Button
             size="lg"
             className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-8 py-6 text-lg rounded-md neon-glow"
+            onClick={onSignIn}
             data-testid="button-start-free"
           >
-            Start Free Now
+            Sign In
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
           <Button

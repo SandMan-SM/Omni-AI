@@ -9,17 +9,25 @@ import { TestimonialsSection } from "@/components/testimonials-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { BookDemoModal } from "@/components/book-demo-modal";
+import { AuthModal } from "@/components/auth-modal";
 
 export default function Landing() {
   const [selectedTier, setSelectedTier] = useState<string>("peasant");
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white noise-overlay">
       <CursorSpotlight />
-      <Navbar onBookDemo={() => setIsDemoModalOpen(true)} />
+      <Navbar 
+        onBookDemo={() => setIsDemoModalOpen(true)} 
+        onSignIn={() => setIsAuthModalOpen(true)}
+      />
       <main>
-        <HeroSection onBookDemo={() => setIsDemoModalOpen(true)} />
+        <HeroSection 
+          onBookDemo={() => setIsDemoModalOpen(true)} 
+          onSignIn={() => setIsAuthModalOpen(true)}
+        />
         <ServicesSection onTierSelect={setSelectedTier} />
         <LegacySection />
         <EcosystemSection />
@@ -30,6 +38,10 @@ export default function Landing() {
       <BookDemoModal 
         isOpen={isDemoModalOpen} 
         onClose={() => setIsDemoModalOpen(false)} 
+      />
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
       />
     </div>
   );
