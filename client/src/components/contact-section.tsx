@@ -153,6 +153,7 @@ export function ContactSection({ preselectedTier }: ContactSectionProps) {
                           className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
                           data-testid="input-business-url"
                           {...field}
+                          value={field.value ?? ""}
                         />
                       </FormControl>
                       <FormMessage />

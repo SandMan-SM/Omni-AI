@@ -202,13 +202,15 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
                 </p>
               )}
 
-              <Button
-                className={`w-full ${data.ctaStyle} border-0 text-white py-6 rounded-md`}
-                onClick={onCTAClick}
-                data-testid={`button-tier-${tier}`}
-              >
-                {data.cta}
-              </Button>
+              {"cta" in data && "ctaStyle" in data && (
+                <Button
+                  className={`w-full ${data.ctaStyle} border-0 text-white py-6 rounded-md`}
+                  onClick={onCTAClick}
+                  data-testid={`button-tier-${tier}`}
+                >
+                  {data.cta}
+                </Button>
+              )}
             </>
           )}
         </div>
