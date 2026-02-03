@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 
 const metrics = [
   { icon: Clock, value: "24/7", label: "Execution" },
-  { icon: Eye, value: "20M+", label: "Impressions" },
   { icon: Users, value: "500k+", label: "Subscribers" },
+  { icon: Eye, value: "20M+", label: "Impressions" },
 ];
 
 interface HeroSectionProps {
