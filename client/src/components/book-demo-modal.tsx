@@ -622,7 +622,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                     Your demo is locked in.
                   </h2>
                   <p className="text-gray-400 leading-relaxed">
-                    If this is a fit, we'll show you how Omni AI runs lead flow without manual work.
+                    Please add this to your calendar. If anything comes up, let us know at least 24 hours in advance so we can fill the slot.
                   </p>
                   <div className="flex flex-col gap-3 pt-4">
                     <Button
