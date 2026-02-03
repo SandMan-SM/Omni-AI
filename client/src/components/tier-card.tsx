@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, Lock, Shield, Crown, Flame, Zap } from "lucide-react";
+import { Check, Lock, Shield, Crown, Flame, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TierCardProps {
@@ -11,86 +11,77 @@ interface TierCardProps {
 const tierData = {
   peasant: {
     icon: Zap,
-    name: "TIER 0 — PEASANT",
-    subtitle: "FREE",
+    name: "Peasant",
+    tierLabel: "TIER 0",
+    price: "FREE",
+    priceSubtext: "Forever",
     tagline: "This is where people wake up.",
-    color: "from-gray-500 to-gray-700",
-    borderColor: "border-gray-600/30",
-    iconColor: "text-gray-400",
-    message:
-      "AI is taking jobs. Either you use it — or it replaces you.",
-    includes: ["Content", "Stories", "Warnings", "Examples"],
+    gradient: "from-slate-500 to-slate-600",
+    accentColor: "text-slate-400",
+    borderGlow: "hover:shadow-slate-500/10",
+    features: ["Educational content", "Weekly insights", "Community access", "AI awareness training"],
     cta: "Start Free Now",
-    ctaStyle: "bg-gradient-to-r from-gray-600 to-gray-700",
+    ctaStyle: "bg-slate-600 hover:bg-slate-500",
   },
   knight: {
     icon: Shield,
-    name: "TIER 1 — KNIGHT",
-    subtitle: "$1,000 / month",
+    name: "Knight",
+    tierLabel: "TIER 1",
+    price: "$1,000",
+    priceSubtext: "per month",
     tagline: "The robot helps you do work faster.",
-    color: "from-blue-500 to-cyan-500",
-    borderColor: "border-blue-500/30",
-    iconColor: "text-blue-400",
-    forWho: ["Creators", "Freelancers", "Solo founders"],
-    features: [
-      "Lead scraper",
-      "Auto DMs",
-      "Comment → DM",
-      "Simple CRM",
-      "Message templates",
-    ],
+    gradient: "from-blue-500 to-cyan-400",
+    accentColor: "text-blue-400",
+    borderGlow: "hover:shadow-blue-500/20",
+    forWho: "Creators • Freelancers • Solo founders",
+    features: ["Lead scraper", "Automated DMs", "Comment → DM flows", "Simple CRM", "Message templates"],
     cta: "Activate Knight Tier",
-    ctaStyle: "bg-gradient-to-r from-blue-600 to-cyan-600",
-    scarcity: "Limited Knight slots per month",
+    ctaStyle: "bg-gradient-to-r from-blue-600 to-cyan-500",
+    scarcity: "Limited slots available",
   },
   royal: {
     icon: Crown,
-    name: "TIER 2 — ROYAL",
-    subtitle: "$3k–$5k / month",
+    name: "Royal",
+    tierLabel: "TIER 2",
+    price: "$3k–$5k",
+    priceSubtext: "per month",
     tagline: "The robot runs the system, not just tasks.",
-    color: "from-purple-500 to-pink-500",
-    borderColor: "border-purple-500/30",
-    iconColor: "text-purple-400",
-    forWho: ["Agencies", "Sales teams", "Service businesses"],
-    features: [
-      "Everything from Knight",
-      "Booking system",
-      "Follow-up logic",
-      "Multiple AI agents",
-      "SOPs & Analytics",
-    ],
+    gradient: "from-purple-500 to-pink-500",
+    accentColor: "text-purple-400",
+    borderGlow: "hover:shadow-purple-500/20",
+    forWho: "Agencies • Sales teams • Service businesses",
+    features: ["Everything in Knight", "Booking automation", "Follow-up logic", "Multiple AI agents", "SOPs & Analytics"],
     cta: "Apply for Royal Access",
-    ctaStyle: "bg-gradient-to-r from-purple-600 to-pink-600",
-    scarcity: "Royal onboarding capped",
+    ctaStyle: "bg-gradient-to-r from-purple-600 to-pink-500",
+    scarcity: "Onboarding capped monthly",
+    popular: true,
   },
   ascended: {
     icon: Flame,
-    name: "TIER 3 — ASCENDED",
-    subtitle: "$10k–$25k / month",
+    name: "Ascended",
+    tierLabel: "TIER 3",
+    price: "$10k–$25k",
+    priceSubtext: "per month",
     tagline: "The robot makes decisions for the business.",
-    color: "from-orange-500 to-red-500",
-    borderColor: "border-orange-500/30",
-    iconColor: "text-orange-400",
-    forWho: ["Proven businesses only"],
-    features: [
-      "Multiple autonomous agents",
-      "KPI tracking",
-      "Decision rules",
-      "Self-optimizing systems",
-      "Weekly reports",
-    ],
+    gradient: "from-orange-500 to-red-500",
+    accentColor: "text-orange-400",
+    borderGlow: "hover:shadow-orange-500/20",
+    forWho: "Proven businesses only",
+    features: ["Multiple autonomous agents", "KPI tracking", "Decision rules engine", "Self-optimizing systems", "Weekly performance reports"],
     cta: "Request Ascension Review",
-    ctaStyle: "bg-gradient-to-r from-orange-600 to-red-600",
-    scarcity: "Ascended by referral only",
+    ctaStyle: "bg-gradient-to-r from-orange-500 to-red-500",
+    scarcity: "By referral only",
   },
   grayl: {
     icon: Lock,
-    name: "TIER 4 — HOLY GRAYL",
-    subtitle: "HIDDEN",
+    name: "Holy GRAYL",
+    tierLabel: "TIER 4",
+    price: "HIDDEN",
+    priceSubtext: "",
     tagline: "You are not ready.",
-    color: "from-gray-800 to-gray-900",
-    borderColor: "border-gray-700/50",
-    iconColor: "text-gray-600",
+    gradient: "from-gray-700 to-gray-800",
+    accentColor: "text-gray-600",
+    borderGlow: "",
     locked: true,
     hints: ["Legacy Model", "AGI Continuity", "Your thinking — preserved"],
   },
@@ -100,42 +91,70 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
   const data = tierData[tier];
   const Icon = data.icon;
   const isLocked = "locked" in data && data.locked;
+  const isPopular = "popular" in data && data.popular;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 40 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
+      transition={{ duration: 0.5, delay: index * 0.1 }}
       viewport={{ once: true }}
-      className={`relative rounded-md overflow-visible ${isLocked ? "opacity-60" : ""}`}
+      className="relative"
     >
-      <div
-        className={`relative glass-card rounded-md p-8 ${data.borderColor} overflow-visible`}
-      >
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${data.color} opacity-5 rounded-md`}
-        />
+      {isPopular && (
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-20">
+          <div className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-medium shadow-lg shadow-purple-500/25">
+            <Star className="w-3.5 h-3.5 fill-current" />
+            Most Popular
+          </div>
+        </div>
+      )}
 
-        <div className="relative z-10">
-          <div className="flex items-center gap-4 mb-4">
-            <div
-              className={`w-12 h-12 rounded-md bg-gradient-to-br ${data.color} flex items-center justify-center`}
-            >
-              <Icon className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">{data.name}</h3>
-              <p className={`text-sm ${data.iconColor}`}>{data.subtitle}</p>
+      <div
+        className={`relative rounded-xl overflow-hidden transition-all duration-300 ${data.borderGlow} hover:shadow-2xl group ${
+          isPopular ? "ring-2 ring-purple-500/50" : ""
+        } ${isLocked ? "opacity-50" : ""}`}
+      >
+        <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent" />
+        <div className="absolute inset-[1px] rounded-xl bg-[#0a0a0a]" />
+
+        <div className="relative p-8">
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <div
+                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${data.gradient} p-[1px]`}
+              >
+                <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
+                  <Icon className={`w-6 h-6 ${data.accentColor}`} />
+                </div>
+              </div>
+              <div>
+                <span className={`text-xs font-semibold tracking-widest ${data.accentColor} block mb-1`}>
+                  {data.tierLabel}
+                </span>
+                <h3 className="text-2xl font-bold text-white">{data.name}</h3>
+              </div>
             </div>
           </div>
 
-          <p className="text-xl font-medium text-gray-200 mb-6">
-            "{data.tagline}"
+          <div className="mb-6">
+            <div className="flex items-baseline gap-2">
+              <span className={`text-4xl font-bold bg-gradient-to-r ${data.gradient} bg-clip-text text-transparent`}>
+                {data.price}
+              </span>
+              {data.priceSubtext && (
+                <span className="text-gray-500 text-sm">{data.priceSubtext}</span>
+              )}
+            </div>
+          </div>
+
+          <p className="text-gray-400 text-lg mb-6 leading-relaxed">
+            {data.tagline}
           </p>
 
           {isLocked ? (
             <div className="space-y-4">
-              <p className="text-gray-500 italic">
+              <p className="text-gray-600 text-sm">
                 Only visible to Tier 3 members.
               </p>
               <div className="flex flex-wrap gap-2">
@@ -143,7 +162,7 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
                   data.hints?.map((hint) => (
                     <span
                       key={hint}
-                      className="px-3 py-1 rounded-full bg-gray-800 text-gray-500 text-sm"
+                      className="px-3 py-1.5 rounded-lg bg-gray-800/50 text-gray-600 text-sm border border-gray-800"
                     >
                       {hint}
                     </span>
@@ -152,59 +171,35 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
             </div>
           ) : (
             <>
-              {"message" in data && (
-                <p className="text-gray-400 mb-6 leading-relaxed">
-                  {data.message}
+              {"forWho" in data && (
+                <p className="text-sm text-gray-500 mb-6 pb-6 border-b border-white/5">
+                  {data.forWho}
                 </p>
               )}
 
-              {"forWho" in data && (
-                <div className="mb-4">
-                  <p className="text-sm text-gray-500 mb-2">Who it's for:</p>
-                  <div className="flex flex-wrap gap-2">
-                    {data.forWho?.map((who) => (
-                      <span
-                        key={who}
-                        className="px-3 py-1 rounded-full bg-white/5 text-gray-300 text-sm"
-                      >
-                        {who}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {"features" in data && (
-                <ul className="space-y-3 mb-6">
+                <ul className="space-y-4 mb-8">
                   {data.features?.map((feature) => (
                     <li key={feature} className="flex items-center gap-3">
-                      <Check className={`w-5 h-5 ${data.iconColor}`} />
+                      <div className={`w-5 h-5 rounded-full bg-gradient-to-br ${data.gradient} flex items-center justify-center flex-shrink-0`}>
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
                       <span className="text-gray-300">{feature}</span>
                     </li>
                   ))}
                 </ul>
               )}
 
-              {"includes" in data && (
-                <ul className="space-y-3 mb-6">
-                  {data.includes?.map((item) => (
-                    <li key={item} className="flex items-center gap-3">
-                      <Check className="w-5 h-5 text-gray-500" />
-                      <span className="text-gray-400">{item}</span>
-                    </li>
-                  ))}
-                </ul>
-              )}
-
               {"scarcity" in data && (
-                <p className="text-sm text-gray-500 mb-4 italic">
+                <p className={`text-sm ${data.accentColor} mb-6 flex items-center gap-2`}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
                   {data.scarcity}
                 </p>
               )}
 
               {"cta" in data && "ctaStyle" in data && (
                 <Button
-                  className={`w-full ${data.ctaStyle} border-0 text-white py-6 rounded-md`}
+                  className={`w-full ${data.ctaStyle} border-0 text-white py-6 text-base font-medium rounded-xl transition-transform hover:scale-[1.02] active:scale-[0.98]`}
                   onClick={onCTAClick}
                   data-testid={`button-tier-${tier}`}
                 >
