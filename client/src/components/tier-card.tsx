@@ -50,7 +50,7 @@ const tierData = {
     accentColor: "text-purple-400",
     borderGlow: "hover:shadow-purple-500/20",
     forWho: "Agencies • Sales teams • Service businesses",
-    features: ["Everything in Knight", "Booking automation", "Follow-up logic", "Multiple AI agents", "SOPs & Analytics"],
+    features: ["Everything in Master", "Booking automation", "Follow-up logic", "Multiple AI agents", "SOPs & Analytics"],
     cta: "Apply for Royal Access",
     ctaStyle: "bg-gradient-to-r from-purple-600 to-pink-500",
     scarcity: "Onboarding capped monthly",
