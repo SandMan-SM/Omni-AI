@@ -9,16 +9,16 @@ const testimonials = [
     tier: "Royal",
   },
   {
-    quote: "The Knight tier paid for itself in the first week. I went from drowning in DMs to having conversations that actually convert.",
+    quote: "The Master tier paid for itself in the first week. I went from drowning in DMs to having conversations that actually convert.",
     name: "Sarah Mitchell",
     title: "Freelance Consultant",
-    tier: "Knight",
+    tier: "Master",
   },
   {
     quote: "We scaled from $50k to $200k monthly revenue in 6 months. The system doesn't just work — it learns and improves constantly.",
     name: "David Park",
     title: "Founder, Apex Agency",
-    tier: "Ascended",
+    tier: "Empire",
   },
 ];
 
