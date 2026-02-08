@@ -17,42 +17,42 @@ export function Footer() {
 
           <nav className="flex flex-wrap items-center gap-8" data-testid="footer-nav">
             <a
-              href="#services"
+              href="/#services"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-services"
             >
               Services
             </a>
             <a
-              href="#legacy"
+              href="/#legacy"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-legacy"
             >
               Legacy Model
             </a>
             <a
-              href="#campaigns"
+              href="/#campaigns"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-campaigns"
             >
               Campaigns
             </a>
             <a
-              href="#ecosystem"
+              href="/#ecosystem"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-ecosystem"
             >
               Ecosystem
             </a>
             <a
-              href="#testimonials"
+              href="/#testimonials"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-results"
             >
               Results
             </a>
             <a
-              href="#contact"
+              href="/#contact"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-contact"
             >

@@ -22,12 +22,12 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
   }, []);
 
   const navLinks = [
-    { href: "#services", label: "Services" },
-    { href: "#legacy", label: "Legacy Model" },
-    { href: "#campaigns", label: "Campaigns" },
-    { href: "#ecosystem", label: "Ecosystem" },
-    { href: "#testimonials", label: "Results" },
-    { href: "#contact", label: "Contact" },
+    { href: "/#services", label: "Services" },
+    { href: "/#legacy", label: "Legacy Model" },
+    { href: "/#campaigns", label: "Campaigns" },
+    { href: "/#ecosystem", label: "Ecosystem" },
+    { href: "/#testimonials", label: "Results" },
+    { href: "/#contact", label: "Contact" },
   ];
 
   return (
@@ -43,7 +43,7 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <a href="#" className="flex items-center gap-2" data-testid="link-home">
+          <a href="/" className="flex items-center gap-2" data-testid="link-home">
             <span className="text-xl md:text-2xl font-bold text-gradient">
               Omni AI
             </span>
