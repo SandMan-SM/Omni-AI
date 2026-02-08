@@ -1,4 +1,4 @@
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Check, Lock, Shield, Crown, Flame, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -21,7 +21,9 @@ const tierData = {
     borderGlow: "hover:shadow-slate-500/10",
     features: ["Educational content", "Weekly insights", "Community access", "AI awareness training"],
     cta: "Start Free Now",
-    ctaStyle: "bg-slate-600 hover:bg-slate-500",
+    ctaStyle: "bg-slate-600",
+    glowClass: "tier-glow-peasant",
+    overlayClasses: "tier-shimmer-line",
   },
   knight: {
     icon: Shield,
@@ -33,34 +35,38 @@ const tierData = {
     gradient: "from-blue-500 to-cyan-400",
     accentColor: "text-blue-400",
     borderGlow: "hover:shadow-blue-500/20",
-    forWho: "Creators • Freelancers • Solo founders",
-    features: ["Lead scraper", "Automated DMs", "Comment → DM flows", "Simple CRM", "Message templates"],
+    forWho: "Creators \u2022 Freelancers \u2022 Solo founders",
+    features: ["Lead scraper", "Automated DMs", "Comment \u2192 DM flows", "Simple CRM", "Message templates"],
     cta: "Activate Master Tier",
     ctaStyle: "bg-gradient-to-r from-blue-600 to-cyan-500",
     scarcity: "Limited slots available",
+    glowClass: "tier-glow-master",
+    overlayClasses: "tier-hud-accent tier-shimmer-line",
   },
   royal: {
     icon: Crown,
     name: "Royal",
     tierLabel: "TIER 2",
-    price: "$3k–$5k",
+    price: "$3k\u2013$5k",
     priceSubtext: "per month",
     tagline: "The robot runs the system, not just tasks.",
     gradient: "from-purple-500 to-pink-500",
     accentColor: "text-purple-400",
     borderGlow: "hover:shadow-purple-500/20",
-    forWho: "Agencies • Sales teams • Service businesses",
+    forWho: "Agencies \u2022 Sales teams \u2022 Service businesses",
     features: ["Everything in Master", "Booking automation", "Follow-up logic", "Multiple AI agents", "SOPs & Analytics"],
     cta: "Apply for Royal Access",
     ctaStyle: "bg-gradient-to-r from-purple-600 to-pink-500",
     scarcity: "Onboarding capped monthly",
     popular: true,
+    glowClass: "tier-glow-royal",
+    overlayClasses: "tier-shimmer-line",
   },
   ascended: {
     icon: Flame,
     name: "Empire",
     tierLabel: "TIER 3",
-    price: "$10k–$25k",
+    price: "$10k\u2013$25k",
     priceSubtext: "per month",
     tagline: "The robot makes decisions for the business.",
     gradient: "from-orange-500 to-red-500",
@@ -71,6 +77,8 @@ const tierData = {
     cta: "Request Empire Review",
     ctaStyle: "bg-gradient-to-r from-orange-500 to-red-500",
     scarcity: "By referral only",
+    glowClass: "tier-glow-empire",
+    overlayClasses: "tier-particle-field tier-data-stream",
   },
   grayl: {
     icon: Lock,
@@ -83,7 +91,9 @@ const tierData = {
     accentColor: "text-gray-600",
     borderGlow: "",
     locked: true,
-    hints: ["Legacy Model", "AGI Continuity", "Your thinking — preserved"],
+    hints: ["Legacy Model", "AGI Continuity", "Your thinking \u2014 preserved"],
+    glowClass: "tier-glow-grayl",
+    overlayClasses: "tier-scanline",
   },
 };
 
@@ -92,6 +102,7 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
   const Icon = data.icon;
   const isLocked = "locked" in data && data.locked;
   const isPopular = "popular" in data && data.popular;
+  const prefersReducedMotion = useReducedMotion();
 
   return (
     <motion.div
@@ -111,22 +122,45 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
       )}
 
       <div
-        className={`relative h-full rounded-xl overflow-hidden transition-all duration-300 ${data.borderGlow} hover:shadow-xl group ${
+        className={`tier-card-base relative h-full rounded-xl overflow-hidden ${data.borderGlow} hover:shadow-xl group ${
           isPopular ? "ring-2 ring-purple-500/50" : ""
         } ${isLocked ? "opacity-60" : ""}`}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-white/[0.06] to-transparent" />
         <div className="absolute inset-[1px] rounded-xl bg-[#0a0a0a]" />
 
-        <div className="relative h-full p-5 md:p-6 flex flex-col">
+        <div className={`absolute inset-[1px] rounded-xl ${data.glowClass} pointer-events-none`} />
+
+        <div className={`absolute inset-[1px] rounded-xl ${data.overlayClasses} pointer-events-none opacity-60`} />
+
+        {isLocked && (
+          <div className="absolute inset-[1px] rounded-xl tier-blur-veil pointer-events-none z-[1]" />
+        )}
+
+        {tier === "royal" && (
+          <div className="absolute inset-[1px] rounded-xl tier-energy-ring border-purple-500/10 pointer-events-none" />
+        )}
+
+        <div
+          className={`absolute inset-[1px] rounded-xl pointer-events-none transition-opacity duration-200 opacity-50 group-hover:opacity-100 ${
+            tier === "peasant" ? "bg-gradient-to-t from-slate-500/5 via-transparent to-transparent" :
+            tier === "knight" ? "bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/3" :
+            tier === "royal" ? "bg-gradient-to-t from-purple-500/5 via-transparent to-pink-500/3" :
+            tier === "ascended" ? "bg-gradient-to-t from-orange-500/5 via-transparent to-red-500/3" :
+            "bg-transparent"
+          }`}
+        />
+
+        <div className="relative h-full p-5 md:p-6 flex flex-col z-[2]">
           <div className="flex items-center gap-3 mb-4">
-            <div
+            <motion.div
               className={`w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br ${data.gradient} p-[1px] flex-shrink-0`}
+              whileHover={!isLocked && !prefersReducedMotion ? { y: -2, transition: { duration: 0.2 } } : undefined}
             >
               <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
                 <Icon className={`w-5 h-5 md:w-6 md:h-6 ${data.accentColor}`} />
               </div>
-            </div>
+            </motion.div>
             <div>
               <span className={`text-[10px] md:text-xs font-semibold tracking-widest ${data.accentColor} block`}>
                 {data.tierLabel}
@@ -190,7 +224,7 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
 
               {"scarcity" in data && (
                 <p className={`text-xs md:text-sm ${data.accentColor} mb-4 flex items-center gap-2`}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
                   {data.scarcity}
                 </p>
               )}

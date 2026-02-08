@@ -393,3 +393,163 @@
   mask-composite: exclude;
   pointer-events: none;
 }
+
+/* ─── Tier Card Enhancements ─── */
+
+
+.tier-card-base {
+  transition: transform 200ms ease, box-shadow 200ms ease;
+}
+
+.tier-card-base:hover {
+  transform: translateY(-4px);
+}
+
+.tier-glow-peasant {
+  background: radial-gradient(ellipse at 50% 80%, rgba(148, 163, 184, 0.08) 0%, transparent 70%);
+  opacity: 0.6;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-glow-peasant {
+  opacity: 1;
+}
+
+.tier-glow-master {
+  background: radial-gradient(ellipse at 30% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+              radial-gradient(ellipse at 70% 80%, rgba(34, 211, 238, 0.06) 0%, transparent 50%);
+  opacity: 0.6;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-glow-master {
+  opacity: 1;
+}
+
+.tier-glow-royal {
+  background: radial-gradient(ellipse at 50% 30%, rgba(168, 85, 247, 0.1) 0%, transparent 50%),
+              radial-gradient(ellipse at 50% 70%, rgba(236, 72, 153, 0.06) 0%, transparent 50%);
+  opacity: 0.6;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-glow-royal {
+  opacity: 1;
+}
+
+.tier-glow-empire {
+  background: radial-gradient(ellipse at 40% 20%, rgba(249, 115, 22, 0.08) 0%, transparent 45%),
+              radial-gradient(ellipse at 60% 80%, rgba(239, 68, 68, 0.06) 0%, transparent 45%);
+  opacity: 0.6;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-glow-empire {
+  opacity: 1;
+}
+
+.tier-glow-grayl {
+  background: radial-gradient(ellipse at 50% 50%, rgba(107, 114, 128, 0.04) 0%, transparent 60%);
+  opacity: 0.4;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-glow-grayl {
+  opacity: 0.8;
+}
+
+.tier-shimmer-line {
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.02) 50%, transparent 100%);
+  background-size: 200% 100%;
+  background-position: -200% 0;
+  transition: background-position 250ms ease;
+}
+.group:hover .tier-shimmer-line {
+  background-position: 200% 0;
+}
+
+.tier-hud-accent {
+  background-image:
+    linear-gradient(0deg, transparent 49.5%, rgba(59, 130, 246, 0.04) 49.5%, rgba(59, 130, 246, 0.04) 50.5%, transparent 50.5%),
+    linear-gradient(90deg, transparent 49.5%, rgba(34, 211, 238, 0.03) 49.5%, rgba(34, 211, 238, 0.03) 50.5%, transparent 50.5%);
+  background-size: 40px 40px;
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-hud-accent {
+  opacity: 1;
+}
+
+.tier-energy-ring {
+  border: 1px solid transparent;
+  transition: border-color 200ms ease;
+}
+.group:hover .tier-energy-ring {
+  border-color: rgba(168, 85, 247, 0.15);
+}
+
+.tier-data-stream {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 20px,
+    rgba(249, 115, 22, 0.02) 20px,
+    rgba(249, 115, 22, 0.02) 21px
+  );
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-data-stream {
+  opacity: 1;
+}
+
+.tier-particle-field {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(249, 115, 22, 0.3), transparent),
+    radial-gradient(1px 1px at 80% 70%, rgba(239, 68, 68, 0.2), transparent),
+    radial-gradient(1px 1px at 40% 60%, rgba(249, 115, 22, 0.15), transparent),
+    radial-gradient(1px 1px at 60% 20%, rgba(239, 68, 68, 0.25), transparent),
+    radial-gradient(1px 1px at 10% 80%, rgba(249, 115, 22, 0.2), transparent),
+    radial-gradient(1px 1px at 90% 40%, rgba(239, 68, 68, 0.15), transparent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.group:hover .tier-particle-field {
+  opacity: 1;
+}
+
+.tier-blur-veil {
+  backdrop-filter: blur(1px);
+  transition: backdrop-filter 300ms ease;
+}
+
+.group:hover .tier-blur-veil {
+  backdrop-filter: blur(0px);
+}
+
+.tier-scanline {
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(255, 255, 255, 0.01) 3px,
+    rgba(255, 255, 255, 0.01) 4px
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tier-card-base:hover {
+    transform: none;
+  }
+  .tier-glow-peasant,
+  .tier-glow-master,
+  .tier-glow-royal,
+  .tier-glow-empire,
+  .tier-glow-grayl,
+  .tier-shimmer-line,
+  .tier-hud-accent,
+  .tier-data-stream,
+  .tier-energy-ring,
+  .tier-particle-field,
+  .tier-blur-veil {
+    transition: none;
+  }
+  .group:hover .tier-shimmer-line {
+    background-position: -200% 0;
+  }
+}
