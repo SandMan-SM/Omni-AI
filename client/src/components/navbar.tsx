@@ -48,6 +48,7 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
     { section: "ecosystem", label: "Ecosystem" },
     { section: "testimonials", label: "Results" },
     { section: "contact", label: "Contact" },
+    { href: "/details", label: "Infographic" },
   ];
 
   return (
@@ -72,9 +73,9 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <a
-                key={link.section}
-                href={`/#${link.section}`}
-                onClick={(e) => handleNavClick(e, link.section)}
+                key={link.section || link.href}
+                href={link.href || `/#${link.section}`}
+                onClick={link.section ? (e) => handleNavClick(e, link.section!) : undefined}
                 className="text-gray-400 hover:text-white transition-colors text-sm"
                 data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
               >
@@ -126,11 +127,13 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
             <div className="flex flex-col gap-4 px-1">
               {navLinks.map((link) => (
                 <a
-                  key={link.section}
-                  href={`/#${link.section}`}
+                  key={link.section || link.href}
+                  href={link.href || `/#${link.section}`}
                   onClick={(e) => {
                     setIsMobileMenuOpen(false);
-                    handleNavClick(e, link.section);
+                    if (link.section) {
+                      handleNavClick(e, link.section);
+                    }
                   }}
                   className="text-gray-400 hover:text-white transition-colors py-2"
                   data-testid={`mobile-nav-${link.label.toLowerCase().replace(" ", "-")}`}

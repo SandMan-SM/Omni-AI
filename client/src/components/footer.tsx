@@ -9,6 +9,7 @@ const footerLinks = [
   { section: "ecosystem", label: "Ecosystem" },
   { section: "testimonials", label: "Results" },
   { section: "contact", label: "Contact" },
+  { href: "/details", label: "Infographic" },
 ];
 
 export function Footer() {
@@ -49,9 +50,9 @@ export function Footer() {
           <nav className="flex flex-wrap items-center gap-8" data-testid="footer-nav">
             {footerLinks.map((link) => (
               <a
-                key={link.section}
-                href={`/#${link.section}`}
-                onClick={(e) => handleNavClick(e, link.section)}
+                key={link.section || link.href}
+                href={link.href || `/#${link.section}`}
+                onClick={link.section ? (e) => handleNavClick(e, link.section!) : undefined}
                 className="text-gray-500 hover:text-white transition-colors"
                 data-testid={`footer-link-${link.label.toLowerCase().replace(" ", "-")}`}
               >
