@@ -1,6 +1,37 @@
 import { motion } from "framer-motion";
+import { useLocation } from "wouter";
+import { useCallback } from "react";
+
+const footerLinks = [
+  { section: "services", label: "Services" },
+  { section: "legacy", label: "Legacy Model" },
+  { section: "campaigns", label: "Campaigns" },
+  { section: "ecosystem", label: "Ecosystem" },
+  { section: "testimonials", label: "Results" },
+  { section: "contact", label: "Contact" },
+];
 
 export function Footer() {
+  const [location, setLocation] = useLocation();
+
+  const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault();
+    if (location === "/") {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      setLocation("/");
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 300);
+    }
+  }, [location, setLocation]);
+
   return (
     <motion.footer
       initial={{ opacity: 0 }}
@@ -16,48 +47,17 @@ export function Footer() {
           </div>
 
           <nav className="flex flex-wrap items-center gap-8" data-testid="footer-nav">
-            <a
-              href="/#services"
-              className="text-gray-500 hover:text-white transition-colors"
-              data-testid="footer-link-services"
-            >
-              Services
-            </a>
-            <a
-              href="/#legacy"
-              className="text-gray-500 hover:text-white transition-colors"
-              data-testid="footer-link-legacy"
-            >
-              Legacy Model
-            </a>
-            <a
-              href="/#campaigns"
-              className="text-gray-500 hover:text-white transition-colors"
-              data-testid="footer-link-campaigns"
-            >
-              Campaigns
-            </a>
-            <a
-              href="/#ecosystem"
-              className="text-gray-500 hover:text-white transition-colors"
-              data-testid="footer-link-ecosystem"
-            >
-              Ecosystem
-            </a>
-            <a
-              href="/#testimonials"
-              className="text-gray-500 hover:text-white transition-colors"
-              data-testid="footer-link-results"
-            >
-              Results
-            </a>
-            <a
-              href="/#contact"
-              className="text-gray-500 hover:text-white transition-colors"
-              data-testid="footer-link-contact"
-            >
-              Contact
-            </a>
+            {footerLinks.map((link) => (
+              <a
+                key={link.section}
+                href={`/#${link.section}`}
+                onClick={(e) => handleNavClick(e, link.section)}
+                className="text-gray-500 hover:text-white transition-colors"
+                data-testid={`footer-link-${link.label.toLowerCase().replace(" ", "-")}`}
+              >
+                {link.label}
+              </a>
+            ))}
           </nav>
 
           <p className="text-gray-600 text-sm" data-testid="text-copyright">

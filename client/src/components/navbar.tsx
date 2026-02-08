@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "wouter";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -11,6 +12,7 @@ interface NavbarProps {
 export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [location, setLocation] = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -21,13 +23,31 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    e.preventDefault();
+    if (location === "/") {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      setLocation("/");
+      setTimeout(() => {
+        const el = document.getElementById(sectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 300);
+    }
+  }, [location, setLocation]);
+
   const navLinks = [
-    { href: "/#services", label: "Services" },
-    { href: "/#legacy", label: "Legacy Model" },
-    { href: "/#campaigns", label: "Campaigns" },
-    { href: "/#ecosystem", label: "Ecosystem" },
-    { href: "/#testimonials", label: "Results" },
-    { href: "/#contact", label: "Contact" },
+    { section: "services", label: "Services" },
+    { section: "legacy", label: "Legacy Model" },
+    { section: "campaigns", label: "Campaigns" },
+    { section: "ecosystem", label: "Ecosystem" },
+    { section: "testimonials", label: "Results" },
+    { section: "contact", label: "Contact" },
   ];
 
   return (
@@ -52,8 +72,9 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
               <a
-                key={link.href}
-                href={link.href}
+                key={link.section}
+                href={`/#${link.section}`}
+                onClick={(e) => handleNavClick(e, link.section)}
                 className="text-gray-400 hover:text-white transition-colors text-sm"
                 data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
               >
@@ -105,10 +126,13 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
             <div className="flex flex-col gap-4 px-1">
               {navLinks.map((link) => (
                 <a
-                  key={link.href}
-                  href={link.href}
+                  key={link.section}
+                  href={`/#${link.section}`}
+                  onClick={(e) => {
+                    setIsMobileMenuOpen(false);
+                    handleNavClick(e, link.section);
+                  }}
                   className="text-gray-400 hover:text-white transition-colors py-2"
-                  onClick={() => setIsMobileMenuOpen(false)}
                   data-testid={`mobile-nav-${link.label.toLowerCase().replace(" ", "-")}`}
                 >
                   {link.label}
