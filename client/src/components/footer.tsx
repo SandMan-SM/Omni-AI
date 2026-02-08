@@ -31,6 +31,13 @@ export function Footer() {
               Legacy Model
             </a>
             <a
+              href="#campaigns"
+              className="text-gray-500 hover:text-white transition-colors"
+              data-testid="footer-link-campaigns"
+            >
+              Campaigns
+            </a>
+            <a
               href="#ecosystem"
               className="text-gray-500 hover:text-white transition-colors"
               data-testid="footer-link-ecosystem"
