@@ -1,8 +1,9 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
-import { Menu, X } from "lucide-react";
+import { Menu, X, LayoutDashboard } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 
 interface NavbarProps {
   onBookDemo?: () => void;
@@ -13,6 +14,7 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [location, setLocation] = useLocation();
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -93,13 +95,24 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
             >
               Book Demo
             </Button>
-            <Button
-              className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-              onClick={onSignIn}
-              data-testid="button-nav-start"
-            >
-              Sign In
-            </Button>
+            {user ? (
+              <Button
+                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
+                onClick={() => setLocation("/dashboard")}
+                data-testid="button-nav-dashboard"
+              >
+                <LayoutDashboard className="w-4 h-4 mr-2" />
+                Dashboard
+              </Button>
+            ) : (
+              <Button
+                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
+                onClick={onSignIn}
+                data-testid="button-nav-start"
+              >
+                Sign In
+              </Button>
+            )}
           </div>
 
           <button
@@ -153,16 +166,30 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
                 >
                   Book Demo
                 </Button>
-                <Button
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    onSignIn?.();
-                  }}
-                  data-testid="button-mobile-start"
-                >
-                  Sign In
-                </Button>
+                {user ? (
+                  <Button
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      setLocation("/dashboard");
+                    }}
+                    data-testid="button-mobile-dashboard"
+                  >
+                    <LayoutDashboard className="w-4 h-4 mr-2" />
+                    Dashboard
+                  </Button>
+                ) : (
+                  <Button
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      onSignIn?.();
+                    }}
+                    data-testid="button-mobile-start"
+                  >
+                    Sign In
+                  </Button>
+                )}
               </div>
             </div>
           </motion.div>

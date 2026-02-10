@@ -141,6 +141,8 @@ client/
       footer.tsx              # Site footer
     pages/
       landing.tsx             # Main landing page
+      dashboard.tsx           # Authenticated user dashboard
+      details.tsx             # Infographic page
     index.css                 # Global styles with custom utilities
 server/
   routes.ts                   # API routes
@@ -164,6 +166,14 @@ npm run dev
 ```
 
 ## Recent Changes
+- Added authenticated Dashboard at /dashboard (Feb 2026)
+  - Metrics cards, tier status with progress bar, quick actions grid
+  - Demo bookings section (fetches from /api/demo-booking)
+  - Recent activity feed, account settings, sign-out
+  - Navbar shows "Dashboard" button when user is signed in
+  - Auth-protected: redirects to landing if not authenticated
+  - Sign-in redirects to /dashboard on success
+- Tier card hover-only visual effects (Feb 2026)
 - Added multi-step Book Demo modal with 6-step flow (Feb 2026)
 - Backend support for demo bookings (schema, storage, API)
 - Connected modal to hero and navbar CTAs
