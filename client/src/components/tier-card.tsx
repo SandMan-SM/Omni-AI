@@ -3,15 +3,15 @@ import { Check, Lock, Shield, Crown, Flame, Zap, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TierCardProps {
-  tier: "peasant" | "knight" | "royal" | "ascended" | "grayl";
+  tier: "apprentice" | "knight" | "royal" | "ascended" | "grayl";
   index: number;
   onCTAClick?: () => void;
 }
 
 const tierData = {
-  peasant: {
+  apprentice: {
     icon: Zap,
-    name: "Peasant",
+    name: "Apprentice",
     tierLabel: "TIER 0",
     price: "FREE TRIAL",
     priceSubtext: "",
@@ -22,7 +22,7 @@ const tierData = {
     features: ["Educational content", "Weekly insights", "Community access", "AI awareness training"],
     cta: "Start Free Now",
     ctaStyle: "bg-slate-600",
-    glowClass: "tier-glow-peasant",
+    glowClass: "tier-glow-apprentice",
     overlayClasses: "tier-shimmer-line",
   },
   knight: {
@@ -143,7 +143,7 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
 
         <div
           className={`absolute inset-[1px] rounded-xl pointer-events-none transition-opacity duration-200 opacity-50 group-hover:opacity-100 ${
-            tier === "peasant" ? "bg-gradient-to-t from-slate-500/5 via-transparent to-transparent" :
+            tier === "apprentice" ? "bg-gradient-to-t from-slate-500/5 via-transparent to-transparent" :
             tier === "knight" ? "bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/3" :
             tier === "royal" ? "bg-gradient-to-t from-purple-500/5 via-transparent to-pink-500/3" :
             tier === "ascended" ? "bg-gradient-to-t from-orange-500/5 via-transparent to-red-500/3" :

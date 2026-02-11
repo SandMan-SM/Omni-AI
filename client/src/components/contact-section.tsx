@@ -37,7 +37,7 @@ export function ContactSection({ preselectedTier }: ContactSectionProps) {
       name: "",
       email: "",
       businessUrl: "",
-      tierInterest: (preselectedTier as InsertWaitlistEntry["tierInterest"]) || "peasant",
+      tierInterest: (preselectedTier as InsertWaitlistEntry["tierInterest"]) || "apprentice",
     },
   });
 
@@ -182,8 +182,8 @@ export function ContactSection({ preselectedTier }: ContactSectionProps) {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent className="bg-gray-900 border-white/10">
-                          <SelectItem value="peasant" data-testid="select-tier-peasant">
-                            Tier 0 — Peasant (Free)
+                          <SelectItem value="apprentice" data-testid="select-tier-apprentice">
+                            Tier 0 — Apprentice (Free)
                           </SelectItem>
                           <SelectItem value="knight" data-testid="select-tier-knight">
                             Tier 1 — Master ($1,000/mo)

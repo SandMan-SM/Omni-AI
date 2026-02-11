@@ -13,7 +13,7 @@ import { BookDemoModal } from "@/components/book-demo-modal";
 import { AuthModal } from "@/components/auth-modal";
 
 export default function Landing() {
-  const [selectedTier, setSelectedTier] = useState<string>("peasant");
+  const [selectedTier, setSelectedTier] = useState<string>("apprentice");
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 

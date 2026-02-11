@@ -55,7 +55,7 @@ const targetAudience = [
 const tiers = [
   {
     icon: Zap,
-    name: "Peasant",
+    name: "Apprentice",
     label: "TIER 0",
     price: "FREE TRIAL",
     priceSubtext: "",

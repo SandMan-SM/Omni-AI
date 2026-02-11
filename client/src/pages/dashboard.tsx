@@ -15,7 +15,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 
 const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: string; accent: string; level: number }> = {
-  peasant: { name: "Peasant", icon: Zap, gradient: "from-slate-500 to-slate-600", accent: "text-slate-400", level: 0 },
+  apprentice: { name: "Apprentice", icon: Zap, gradient: "from-slate-500 to-slate-600", accent: "text-slate-400", level: 0 },
   knight: { name: "Master", icon: Shield, gradient: "from-blue-500 to-cyan-400", accent: "text-blue-400", level: 1 },
   royal: { name: "Royal", icon: Crown, gradient: "from-purple-500 to-pink-500", accent: "text-purple-400", level: 2 },
   ascended: { name: "Empire", icon: Flame, gradient: "from-orange-500 to-red-500", accent: "text-orange-400", level: 3 },
@@ -133,7 +133,7 @@ export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
   const [, setLocation] = useLocation();
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
-  const currentTier = "peasant";
+  const currentTier = "apprentice";
   const currentTierData = tierInfo[currentTier];
   const TierIcon = currentTierData.icon;
 

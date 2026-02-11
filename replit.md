@@ -35,7 +35,7 @@ The website uses a unique vertical ascension layout (bottom → top):
 
 | Tier | Name | Price | Target |
 |------|------|-------|--------|
-| 0 | Peasant | FREE | Everyone |
+| 0 | Apprentice | FREE | Everyone |
 | 1 | Knight | $1,000/mo | Creators, Freelancers, Solo founders |
 | 2 | Royal | $3k-$5k/mo | Agencies, Sales teams |
 | 3 | Ascended | $10k-$25k/mo | Proven businesses only |
@@ -84,7 +84,7 @@ Submit a waitlist entry.
   "name": "string",
   "email": "string",
   "businessUrl": "string (optional)",
-  "tierInterest": "peasant" | "knight" | "royal" | "ascended"
+  "tierInterest": "apprentice" | "knight" | "royal" | "ascended"
 }
 ```
 

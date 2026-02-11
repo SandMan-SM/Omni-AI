@@ -405,12 +405,12 @@
   transform: translateY(-4px);
 }
 
-.tier-glow-peasant {
+.tier-glow-apprentice {
   background: radial-gradient(ellipse at 50% 80%, rgba(148, 163, 184, 0.08) 0%, transparent 70%);
   opacity: 0.6;
   transition: opacity 200ms ease;
 }
-.group:hover .tier-glow-peasant {
+.group:hover .tier-glow-apprentice {
   opacity: 1;
 }
 
@@ -536,7 +536,7 @@
   .tier-card-base:hover {
     transform: none;
   }
-  .tier-glow-peasant,
+  .tier-glow-apprentice,
   .tier-glow-master,
   .tier-glow-royal,
   .tier-glow-empire,

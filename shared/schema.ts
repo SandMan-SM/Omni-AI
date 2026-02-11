@@ -34,7 +34,7 @@ export const insertWaitlistSchema = createInsertSchema(waitlistEntries).pick({
 }).extend({
   email: z.string().email("Invalid email address"),
   name: z.string().min(2, "Name must be at least 2 characters"),
-  tierInterest: z.enum(["peasant", "knight", "royal", "ascended"]),
+  tierInterest: z.enum(["apprentice", "knight", "royal", "ascended"]),
 });
 
 export type InsertWaitlistEntry = z.infer<typeof insertWaitlistSchema>;
