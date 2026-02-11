@@ -1,14 +1,16 @@
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap, Shield, Crown, Flame, Star, Calendar, Mail,
-  ArrowRight, LogOut, User, Clock,
-  TrendingUp, Target, Bot, BarChart3, Settings
+  ArrowRight, LogOut, User, Clock, Video, Play, Pause,
+  TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
+  CircleDollarSign, Plus, FileEdit, MoreHorizontal
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/use-auth";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 
@@ -40,6 +42,83 @@ const metrics = [
   { label: "Revenue Impact", value: "$12.4k", change: "+31%", icon: BarChart3 },
 ];
 
+type CampaignStatus = "active" | "paused" | "draft" | "completed";
+
+const campaigns = [
+  {
+    id: "camp-1",
+    name: "Product Launch Reel",
+    type: "Video Ad",
+    status: "active" as CampaignStatus,
+    views: "12.4K",
+    clicks: "843",
+    conversions: "67",
+    spend: "$420",
+    budget: "$1,000",
+    platform: "Instagram",
+    thumbnail: "from-purple-600 to-blue-500",
+  },
+  {
+    id: "camp-2",
+    name: "Client Testimonial Series",
+    type: "Video Ad",
+    status: "active" as CampaignStatus,
+    views: "8.1K",
+    clicks: "612",
+    conversions: "41",
+    spend: "$310",
+    budget: "$750",
+    platform: "YouTube",
+    thumbnail: "from-red-600 to-orange-500",
+  },
+  {
+    id: "camp-3",
+    name: "AI Demo Walkthrough",
+    type: "Video Ad",
+    status: "paused" as CampaignStatus,
+    views: "3.2K",
+    clicks: "198",
+    conversions: "12",
+    spend: "$150",
+    budget: "$500",
+    platform: "TikTok",
+    thumbnail: "from-cyan-500 to-blue-600",
+  },
+  {
+    id: "camp-4",
+    name: "Brand Awareness Q1",
+    type: "Video Ad",
+    status: "draft" as CampaignStatus,
+    views: "0",
+    clicks: "0",
+    conversions: "0",
+    spend: "$0",
+    budget: "$2,000",
+    platform: "Facebook",
+    thumbnail: "from-blue-500 to-indigo-600",
+  },
+  {
+    id: "camp-5",
+    name: "Holiday Promo 2025",
+    type: "Video Ad",
+    status: "completed" as CampaignStatus,
+    views: "45.2K",
+    clicks: "3,104",
+    conversions: "289",
+    spend: "$2,000",
+    budget: "$2,000",
+    platform: "Multi-platform",
+    thumbnail: "from-green-500 to-emerald-600",
+  },
+];
+
+const statusConfig: Record<CampaignStatus, { label: string; color: string }> = {
+  active: { label: "Active", color: "bg-green-500/10 text-green-400 border-green-500/20" },
+  paused: { label: "Paused", color: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20" },
+  draft: { label: "Draft", color: "bg-gray-500/10 text-gray-400 border-gray-500/20" },
+  completed: { label: "Completed", color: "bg-blue-500/10 text-blue-400 border-blue-500/20" },
+};
+
 interface DemoBooking {
   id: string;
   name: string;
@@ -53,9 +132,14 @@ interface DemoBooking {
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
   const [, setLocation] = useLocation();
+  const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
   const currentTier = "peasant";
   const currentTierData = tierInfo[currentTier];
   const TierIcon = currentTierData.icon;
+
+  const filteredCampaigns = campaignFilter === "all"
+    ? campaigns
+    : campaigns.filter(c => c.status === campaignFilter);
 
   const { data: bookingsData } = useQuery<{ success: boolean; bookings: DemoBooking[] }>({
     queryKey: ["/api/demo-booking"],
@@ -239,6 +323,116 @@ export default function Dashboard() {
               );
             })}
           </div>
+        </motion.div>
+
+        <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.33 }}>
+          <Card className="bg-white/[0.03] border-white/[0.06]">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
+              <div className="flex items-center gap-3">
+                <CardTitle className="text-lg text-white">Campaigns</CardTitle>
+                <Badge className={`text-xs no-default-hover-elevate no-default-active-elevate ${statusConfig.active.color}`} data-testid="text-campaign-count">
+                  {campaigns.filter(c => c.status === "active").length} active
+                </Badge>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                {(["all", "active", "paused", "draft", "completed"] as const).map((filter) => (
+                  <Button
+                    key={filter}
+                    variant="ghost"
+                    className={`text-xs px-3 toggle-elevate ${campaignFilter === filter ? "toggle-elevated bg-white/10 text-white" : "text-gray-500"}`}
+                    onClick={() => setCampaignFilter(filter)}
+                    data-testid={`button-filter-${filter}`}
+                  >
+                    {filter === "all" ? "All" : statusConfig[filter].label}
+                  </Button>
+                ))}
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white text-xs"
+                  data-testid="button-new-campaign"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1.5" />
+                  New
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {filteredCampaigns.length > 0 ? (
+                <div className="space-y-3">
+                  {filteredCampaigns.map((campaign, i) => {
+                    const status = statusConfig[campaign.status];
+                    return (
+                      <div
+                        key={campaign.id}
+                        className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
+                        data-testid={`card-campaign-${campaign.id}`}
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
+                            <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
+                              <Video className="w-5 h-5 text-white/70" />
+                            </div>
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.name}</p>
+                              <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
+                                {status.label}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-gray-500 mt-0.5" data-testid={`text-campaign-platform-${campaign.id}`}>{campaign.platform} &middot; {campaign.type}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-6 sm:gap-4 flex-wrap sm:flex-nowrap">
+                          <div className="flex items-center gap-1.5 min-w-[70px]">
+                            <Eye className="w-3.5 h-3.5 text-gray-600" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 min-w-[60px]">
+                            <MousePointerClick className="w-3.5 h-3.5 text-gray-600" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-clicks-${campaign.id}`}>{campaign.clicks}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 min-w-[50px]">
+                            <TrendingUp className="w-3.5 h-3.5 text-gray-600" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-conversions-${campaign.id}`}>{campaign.conversions}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 min-w-[80px]">
+                            <CircleDollarSign className="w-3.5 h-3.5 text-gray-600" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend} / {campaign.budget}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {campaign.status === "active" && (
+                            <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-pause-${campaign.id}`}>
+                              <Pause className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {campaign.status === "paused" && (
+                            <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-play-${campaign.id}`}>
+                              <Play className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-edit-${campaign.id}`}>
+                            <FileEdit className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-more-${campaign.id}`}>
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8" data-testid="text-no-campaigns">
+                  <Video className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500 mb-1">No campaigns match this filter</p>
+                  <p className="text-xs text-gray-600">Try selecting a different status filter above.</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </motion.div>
 
         <div className="grid lg:grid-cols-2 gap-6">
