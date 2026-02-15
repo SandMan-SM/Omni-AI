@@ -150,7 +150,7 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (!loading && !user) {
-      setLocation("/");
+      setLocation("/?auth=dashboard");
     }
   }, [user, loading, setLocation]);
 

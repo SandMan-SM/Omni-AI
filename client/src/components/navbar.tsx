@@ -8,9 +8,10 @@ import { useAuth } from "@/hooks/use-auth";
 interface NavbarProps {
   onBookDemo?: () => void;
   onSignIn?: () => void;
+  onDashboard?: () => void;
 }
 
-export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
+export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [location, setLocation] = useLocation();
@@ -95,24 +96,20 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
             >
               Book Demo
             </Button>
-            {user ? (
-              <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                onClick={() => setLocation("/dashboard")}
-                data-testid="button-nav-dashboard"
-              >
-                <LayoutDashboard className="w-4 h-4 mr-2" />
-                Dashboard
-              </Button>
-            ) : (
-              <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                onClick={onSignIn}
-                data-testid="button-nav-start"
-              >
-                Sign In
-              </Button>
-            )}
+            <Button
+              className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
+              onClick={() => {
+                if (user) {
+                  setLocation("/dashboard");
+                } else {
+                  onDashboard?.();
+                }
+              }}
+              data-testid="button-nav-dashboard"
+            >
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
           </div>
 
           <button
@@ -166,30 +163,21 @@ export function Navbar({ onBookDemo, onSignIn }: NavbarProps) {
                 >
                   Book Demo
                 </Button>
-                {user ? (
-                  <Button
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    if (user) {
                       setLocation("/dashboard");
-                    }}
-                    data-testid="button-mobile-dashboard"
-                  >
-                    <LayoutDashboard className="w-4 h-4 mr-2" />
-                    Dashboard
-                  </Button>
-                ) : (
-                  <Button
-                    className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      onSignIn?.();
-                    }}
-                    data-testid="button-mobile-start"
-                  >
-                    Sign In
-                  </Button>
-                )}
+                    } else {
+                      onDashboard?.();
+                    }
+                  }}
+                  data-testid="button-mobile-dashboard"
+                >
+                  <LayoutDashboard className="w-4 h-4 mr-2" />
+                  Dashboard
+                </Button>
               </div>
             </div>
           </motion.div>

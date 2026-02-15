@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Navbar } from "@/components/navbar";
 import { HeroSection } from "@/components/hero-section";
@@ -16,13 +17,30 @@ export default function Landing() {
   const [selectedTier, setSelectedTier] = useState<string>("apprentice");
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authPrompt, setAuthPrompt] = useState<string | undefined>();
+
+  const [, setLocation] = useLocation();
+
+  const openAuthWithPrompt = (prompt?: string) => {
+    setAuthPrompt(prompt);
+    setIsAuthModalOpen(true);
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("auth") === "dashboard") {
+      openAuthWithPrompt("It doesn't look like you've signed in yet. Please sign in to continue.");
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white noise-overlay">
       <CursorSpotlight />
       <Navbar 
         onBookDemo={() => setIsDemoModalOpen(true)} 
-        onSignIn={() => setIsAuthModalOpen(true)}
+        onSignIn={() => openAuthWithPrompt()}
+        onDashboard={() => openAuthWithPrompt("It doesn't look like you've signed in yet. Please sign in to continue.")}
       />
       <main>
         <HeroSection 
@@ -43,7 +61,11 @@ export default function Landing() {
       />
       <AuthModal
         isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
+        onClose={() => {
+          setIsAuthModalOpen(false);
+          setAuthPrompt(undefined);
+        }}
+        prompt={authPrompt}
       />
     </div>
   );

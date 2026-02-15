@@ -10,9 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  prompt?: string;
 }
 
-export function AuthModal({ isOpen, onClose }: AuthModalProps) {
+export function AuthModal({ isOpen, onClose, prompt }: AuthModalProps) {
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -91,14 +92,18 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             </button>
 
             <div className="text-center mb-6">
-              <h2 className="text-2xl md:text-3xl font-bold text-gradient mb-2">
+              <h2 className="text-2xl md:text-3xl font-bold text-gradient mb-2" data-testid="text-auth-heading">
                 {mode === "signin" ? "Welcome Back" : "Create Account"}
               </h2>
-              <p className="text-gray-400 text-sm">
-                {mode === "signin" 
-                  ? "Sign in to access your account" 
-                  : "Join the Omni AI revolution"}
-              </p>
+              {prompt ? (
+                <p className="text-gray-400 text-sm" data-testid="text-auth-prompt">{prompt}</p>
+              ) : (
+                <p className="text-gray-400 text-sm">
+                  {mode === "signin" 
+                    ? "Sign in to access your account" 
+                    : "Join the Omni AI revolution"}
+                </p>
+              )}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
