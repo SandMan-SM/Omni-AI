@@ -78,8 +78,9 @@ export default function Join() {
   const [activateNow, setActivateNow] = useState<boolean | null>(null);
   const [activatedPlatforms, setActivatedPlatforms] = useState<string[]>([]);
   const [platformPage, setPlatformPage] = useState(0);
-  const [activationPhase, setActivationPhase] = useState<"idle" | "loading" | "showing" | "done">("idle");
-  const [visiblePlatformCount, setVisiblePlatformCount] = useState(0);
+  const [activationPhase, setActivationPhase] = useState<"idle" | "loading" | "cycling" | "done">("idle");
+  const [currentPlatformIndex, setCurrentPlatformIndex] = useState(0);
+  const [activatedCount, setActivatedCount] = useState(0);
 
   const [hasResumed, setHasResumed] = useState(false);
 
@@ -216,20 +217,20 @@ export default function Join() {
     setActivationPhase("loading");
     setActivatedPlatforms(platforms.map(p => p.name));
 
-    await new Promise(r => setTimeout(r, 2000));
+    await new Promise(r => setTimeout(r, 1500));
 
-    setActivationPhase("showing");
-    setVisiblePlatformCount(0);
+    setActivationPhase("cycling");
+    setCurrentPlatformIndex(0);
+    setActivatedCount(0);
 
-    const batchSize = 4;
-    const totalBatches = Math.ceil(platforms.length / batchSize);
-
-    for (let i = 1; i <= totalBatches; i++) {
-      await new Promise(r => setTimeout(r, 1200));
-      setVisiblePlatformCount(Math.min(i * batchSize, platforms.length));
+    for (let i = 0; i < platforms.length; i++) {
+      setCurrentPlatformIndex(i);
+      setActivatedCount(i);
+      await new Promise(r => setTimeout(r, 300));
     }
+    setActivatedCount(platforms.length);
 
-    await new Promise(r => setTimeout(r, 800));
+    await new Promise(r => setTimeout(r, 600));
     setActivationPhase("done");
 
     await upsertProfile({
@@ -620,46 +621,52 @@ export default function Join() {
                   </motion.div>
                 )}
 
-                {activationPhase === "showing" && (
+                {activationPhase === "cycling" && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    className="text-center"
                   >
-                    <h2 className="text-xl font-semibold mb-1">Platform Status</h2>
-                    <p className="text-gray-400 text-sm mb-4">
-                      {visiblePlatformCount} / {platforms.length} configured
+                    <h2 className="text-xl font-semibold mb-1">Activating Platforms</h2>
+                    <p className="text-gray-400 text-sm mb-6">
+                      {activatedCount} / {platforms.length} configured
                     </p>
 
-                    <div className="space-y-2 mb-4" data-testid="platform-list">
-                      {platforms.slice(0, visiblePlatformCount).map((platform, index) => {
-                        const IconComponent = platform.icon;
-                        return (
-                          <motion.div
-                            key={platform.name}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, delay: (index % 4) * 0.1 }}
-                            className="w-full flex items-center gap-3 p-3 rounded-lg border border-green-500/30 bg-green-500/10"
-                            data-testid={`platform-status-${platform.name.toLowerCase()}`}
-                          >
-                            <Check className="w-4 h-4 flex-shrink-0 text-green-400" />
-                            {IconComponent && <IconComponent className="w-5 h-5 text-gray-300" />}
-                            <span className="text-sm font-medium text-gray-200">{platform.name}</span>
-                            <span className="text-xs text-green-400 ml-auto">Activated</span>
-                          </motion.div>
-                        );
-                      })}
+                    <div
+                      className="flex items-center gap-3 p-4 rounded-lg border border-purple-500/30 bg-purple-500/10 mb-6"
+                      data-testid="platform-cycling-box"
+                    >
+                      <Loader2 className="w-5 h-5 text-purple-400 animate-spin flex-shrink-0" />
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={currentPlatformIndex}
+                          initial={{ opacity: 0, y: 8 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -8 }}
+                          transition={{ duration: 0.15 }}
+                          className="flex items-center gap-3"
+                        >
+                          {platforms[currentPlatformIndex]?.icon && (
+                            (() => {
+                              const Icon = platforms[currentPlatformIndex].icon!;
+                              return <Icon className="w-5 h-5 text-gray-300" />;
+                            })()
+                          )}
+                          <span className="text-sm font-medium text-gray-200">
+                            {platforms[currentPlatformIndex]?.name}
+                          </span>
+                        </motion.div>
+                      </AnimatePresence>
+                      <span className="text-xs text-purple-400 ml-auto">Configuring...</span>
                     </div>
 
-                    <div className="flex gap-1 justify-center">
-                      {Array.from({ length: Math.ceil(platforms.length / 4) }).map((_, i) => (
-                        <div
-                          key={i}
-                          className={`w-2 h-2 rounded-full transition-all ${
-                            i < Math.ceil(visiblePlatformCount / 4) ? "bg-green-500 w-4" : "bg-white/20"
-                          }`}
-                        />
-                      ))}
+                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                      <motion.div
+                        className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
+                        initial={{ width: "0%" }}
+                        animate={{ width: `${(activatedCount / platforms.length) * 100}%` }}
+                        transition={{ duration: 0.2 }}
+                      />
                     </div>
                   </motion.div>
                 )}
