@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   User, Phone, Building2, Briefcase, FileText, Mail, Lock, Eye, EyeOff,
   ArrowRight, ArrowLeft, Check, Loader2, SkipForward,
-  CircleDot
+  CircleDot, AlertCircle
 } from "lucide-react";
 import { SiTiktok, SiFacebook, SiYoutube, SiInstagram, SiLinkedin, SiX, SiSnapchat, SiSlack, SiTelegram, SiWhatsapp, SiGoogle, SiDiscord, SiSpotify, SiZoom, SiGithub, SiApple } from "react-icons/si";
 import { Button } from "@/components/ui/button";
@@ -54,7 +54,7 @@ function getResumeStep(profile: { name: string | null; phone: string | null; bus
 }
 
 export default function Join() {
-  const { user, loading: authLoading, signUp } = useAuth();
+  const { user, loading: authLoading, signUp, signIn, signOut } = useAuth();
   const { profile, profileLoading, upsertProfile } = useProfile();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -78,9 +78,12 @@ export default function Join() {
   const [activateNow, setActivateNow] = useState<boolean | null>(null);
   const [activatedPlatforms, setActivatedPlatforms] = useState<string[]>([]);
   const [platformPage, setPlatformPage] = useState(0);
-  const [activationPhase, setActivationPhase] = useState<"idle" | "loading" | "cycling" | "done">("idle");
+  const [activationPhase, setActivationPhase] = useState<"idle" | "loading" | "cycling" | "done" | "signin">("idle");
   const [currentPlatformIndex, setCurrentPlatformIndex] = useState(0);
   const [activatedCount, setActivatedCount] = useState(0);
+  const [signInEmail, setSignInEmail] = useState("");
+  const [signInPassword, setSignInPassword] = useState("");
+  const [signInLoading, setSignInLoading] = useState(false);
 
   const [hasResumed, setHasResumed] = useState(false);
 
@@ -237,9 +240,11 @@ export default function Join() {
       activated_platforms: platforms.map(p => p.name),
       onboarding_completed: true,
     });
+    await signOut();
 
     await new Promise(r => setTimeout(r, 1500));
-    setLocation("/dashboard");
+    setSignInEmail(email);
+    setActivationPhase("signin");
   };
 
   const handleComplete = async () => {
@@ -248,8 +253,39 @@ export default function Join() {
       activated_platforms: activatedPlatforms,
       onboarding_completed: true,
     });
+    await signOut();
     setIsLoading(false);
-    setLocation("/dashboard");
+    setSignInEmail(email);
+    setActivationPhase("signin");
+  };
+
+  const handleSignInAfterActivation = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSignInLoading(true);
+    try {
+      const { error } = await signIn(signInEmail, signInPassword);
+      if (error) {
+        toast({
+          title: "Unable to sign in",
+          description: error.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Welcome!",
+          description: "You're all set up.",
+        });
+        setLocation("/dashboard");
+      }
+    } catch {
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSignInLoading(false);
+    }
   };
 
   const stepIndex = step === "signup" ? 0 : step === "basic" ? 1 : step === "business" ? 2 : step === "activation" ? 3 : 4;
@@ -687,6 +723,72 @@ export default function Join() {
                       {platforms.length} / {platforms.length} configured
                     </p>
                     <Loader2 className="w-5 h-5 text-purple-400 animate-spin mx-auto mt-4" />
+                  </motion.div>
+                )}
+
+                {activationPhase === "signin" && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4 }}
+                  >
+                    <div className="flex items-center gap-3 p-3 rounded-lg border border-green-500/30 bg-green-500/10 mb-4" data-testid="banner-profile-complete">
+                      <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
+                      <p className="text-sm font-medium text-green-300">Profile Complete</p>
+                    </div>
+
+                    <div className="flex items-start gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 mb-6" data-testid="banner-verify-email">
+                      <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-left">
+                        <p className="text-sm font-medium text-amber-300">Please verify your email before signing in</p>
+                        <p className="text-xs text-amber-400/70 mt-0.5">Check your inbox (and spam folder) for a verification link</p>
+                      </div>
+                    </div>
+
+                    <h2 className="text-xl font-semibold mb-1 text-center">Sign In</h2>
+                    <p className="text-gray-400 text-sm mb-5 text-center">Sign in to access your dashboard</p>
+
+                    <form onSubmit={handleSignInAfterActivation} className="space-y-4">
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                        <Input
+                          type="email"
+                          placeholder="Email"
+                          value={signInEmail}
+                          onChange={(e) => setSignInEmail(e.target.value)}
+                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                          required
+                          data-testid="input-signin-email"
+                        />
+                      </div>
+
+                      <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          value={signInPassword}
+                          onChange={(e) => setSignInPassword(e.target.value)}
+                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                          required
+                          minLength={6}
+                          data-testid="input-signin-password"
+                        />
+                      </div>
+
+                      <Button
+                        type="submit"
+                        disabled={signInLoading}
+                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg neon-glow"
+                        data-testid="button-signin-submit"
+                      >
+                        {signInLoading ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          "Sign In"
+                        )}
+                      </Button>
+                    </form>
                   </motion.div>
                 )}
               </motion.div>
