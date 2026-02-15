@@ -54,7 +54,7 @@ function getResumeStep(profile: { name: string | null; phone: string | null; bus
 }
 
 export default function Join() {
-  const { user, loading: authLoading, signUp, signOut } = useAuth();
+  const { user, loading: authLoading, signUp } = useAuth();
   const { profile, profileLoading, upsertProfile } = useProfile();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -236,10 +236,9 @@ export default function Join() {
       activated_platforms: platforms.map(p => p.name),
       onboarding_completed: true,
     });
-    await signOut();
 
     await new Promise(r => setTimeout(r, 1500));
-    setLocation("/?signin=true&complete=true");
+    setLocation("/dashboard");
   };
 
   const handleComplete = async () => {
@@ -248,9 +247,8 @@ export default function Join() {
       activated_platforms: activatedPlatforms,
       onboarding_completed: true,
     });
-    await signOut();
     setIsLoading(false);
-    setLocation("/?signin=true&complete=true");
+    setLocation("/dashboard");
   };
 
   const stepIndex = step === "signup" ? 0 : step === "basic" ? 1 : step === "business" ? 2 : step === "activation" ? 3 : 4;
