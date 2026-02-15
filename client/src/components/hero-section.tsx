@@ -82,7 +82,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
             }}
             data-testid="button-start-free"
           >
-            Start Free Now
+            Sign In
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
           <Button
