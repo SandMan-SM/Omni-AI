@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Clock, Eye, Users, LayoutDashboard } from "lucide-react";
+import { ArrowRight, Sparkles, Clock, Eye, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
@@ -13,10 +13,9 @@ const metrics = [
 interface HeroSectionProps {
   onBookDemo?: () => void;
   onSignIn?: () => void;
-  onDashboard?: () => void;
 }
 
-export function HeroSection({ onBookDemo, onSignIn, onDashboard }: HeroSectionProps) {
+export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
   const { user } = useAuth();
   const [, setLocation] = useLocation();
 
@@ -78,13 +77,12 @@ export function HeroSection({ onBookDemo, onSignIn, onDashboard }: HeroSectionPr
               if (user) {
                 setLocation("/dashboard");
               } else {
-                onDashboard?.();
+                onSignIn?.();
               }
             }}
             data-testid="button-start-free"
           >
-            <LayoutDashboard className="mr-2 w-5 h-5" />
-            Dashboard
+            Sign In
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
           <Button

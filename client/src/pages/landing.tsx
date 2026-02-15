@@ -46,7 +46,6 @@ export default function Landing() {
         <HeroSection 
           onBookDemo={() => setIsDemoModalOpen(true)} 
           onSignIn={() => openAuthWithPrompt()}
-          onDashboard={() => openAuthWithPrompt("It doesn't look like you've signed in yet. Please sign in to continue.")}
         />
         <ServicesSection onTierSelect={setSelectedTier} />
         <LegacySection />
