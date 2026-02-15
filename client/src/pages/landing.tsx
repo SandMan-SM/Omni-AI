@@ -26,6 +26,14 @@ export default function Landing() {
     setIsAuthModalOpen(true);
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("signin") === "true") {
+      setIsAuthModalOpen(true);
+      window.history.replaceState({}, "", "/");
+    }
+  }, []);
+
   
 
   return (

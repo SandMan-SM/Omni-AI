@@ -54,7 +54,7 @@ function getResumeStep(profile: { name: string | null; phone: string | null; bus
 }
 
 export default function Join() {
-  const { user, loading: authLoading, signUp, signIn } = useAuth();
+  const { user, loading: authLoading, signUp } = useAuth();
   const { profile, profileLoading, upsertProfile } = useProfile();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -66,7 +66,6 @@ export default function Join() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isSignInMode, setIsSignInMode] = useState(false);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -121,34 +120,22 @@ export default function Join() {
       toast({ title: "Required", description: "Password must be at least 6 characters.", variant: "destructive" });
       return;
     }
-    if (!isSignInMode && password !== confirmPassword) {
+    if (password !== confirmPassword) {
       toast({ title: "Mismatch", description: "Passwords do not match.", variant: "destructive" });
       return;
     }
 
     setIsLoading(true);
     try {
-      if (isSignInMode) {
-        const { error } = await signIn(email.trim(), password);
-        if (error) {
-          toast({ title: "Sign In Failed", description: error.message, variant: "destructive" });
-          setIsLoading(false);
-          return;
-        }
-        toast({ title: "Welcome back!", description: "Signed in successfully." });
-        setHasResumed(true);
-        setLocation("/dashboard");
-      } else {
-        const { error } = await signUp(email.trim(), password);
-        if (error) {
-          toast({ title: "Sign Up Failed", description: error.message, variant: "destructive" });
-          setIsLoading(false);
-          return;
-        }
-        toast({ title: "Account created!", description: "Let's set up your profile." });
-        setStep("basic");
-        setHasResumed(true);
+      const { error } = await signUp(email.trim(), password);
+      if (error) {
+        toast({ title: "Sign Up Failed", description: error.message, variant: "destructive" });
+        setIsLoading(false);
+        return;
       }
+      toast({ title: "Account created!", description: "Let's set up your profile." });
+      setStep("basic");
+      setHasResumed(true);
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Something went wrong.", variant: "destructive" });
     } finally {
@@ -256,13 +243,11 @@ export default function Join() {
             <span className="text-2xl font-bold text-gradient">Omni AI</span>
           </a>
           <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2" data-testid="text-join-heading">
-            {step === "signup"
-              ? (isSignInMode ? "Welcome Back" : "Join Omni AI")
-              : "Complete Your Account"}
+            {step === "signup" ? "Join Omni AI" : "Complete Your Account"}
           </h1>
           <p className="text-gray-400">
             {step === "signup"
-              ? (isSignInMode ? "Sign in to continue to your account" : "Create your account to get started")
+              ? "Create your account to get started"
               : "Please fill out this information to continue"}
           </p>
         </div>
@@ -298,10 +283,10 @@ export default function Join() {
                 transition={{ duration: 0.3 }}
               >
                 <h2 className="text-xl font-semibold mb-1" data-testid="text-step-signup">
-                  {isSignInMode ? "Sign In" : "Create Account"}
+                  Create Account
                 </h2>
                 <p className="text-gray-400 text-sm mb-6">
-                  {isSignInMode ? "Enter your credentials" : "Enter your email and create a password"}
+                  Enter your email and create a password
                 </p>
 
                 <form onSubmit={(e) => { e.preventDefault(); handleSignUp(); }} className="space-y-4">
@@ -326,7 +311,7 @@ export default function Join() {
                       onChange={(e) => setPassword(e.target.value)}
                       className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
                       data-testid="input-signup-password"
-                      autoComplete={isSignInMode ? "current-password" : "new-password"}
+                      autoComplete="new-password"
                     />
                     <button
                       type="button"
@@ -337,25 +322,18 @@ export default function Join() {
                       {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                     </button>
                   </div>
-                  {!isSignInMode && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="relative"
-                    >
-                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Confirm Password"
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                        data-testid="input-signup-confirm-password"
-                        autoComplete="new-password"
-                      />
-                    </motion.div>
-                  )}
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Confirm Password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                      data-testid="input-signup-confirm-password"
+                      autoComplete="new-password"
+                    />
+                  </div>
 
                   <Button
                     type="submit"
@@ -366,24 +344,20 @@ export default function Join() {
                     {isLoading ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
                     ) : (
-                      <>{isSignInMode ? "Sign In" : "Create Account"} <ArrowRight className="w-4 h-4 ml-2" /></>
+                      <>Create Account <ArrowRight className="w-4 h-4 ml-2" /></>
                     )}
                   </Button>
                 </form>
 
                 <div className="text-center mt-6">
                   <p className="text-gray-500 text-sm">
-                    {isSignInMode ? "Don't have an account?" : "Already have an account?"}{" "}
+                    Already have an account?{" "}
                     <button
-                      onClick={() => {
-                        setIsSignInMode(!isSignInMode);
-                        setPassword("");
-                        setConfirmPassword("");
-                      }}
+                      onClick={() => setLocation("/?signin=true")}
                       className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
-                      data-testid="button-toggle-auth-mode"
+                      data-testid="button-goto-signin"
                     >
-                      {isSignInMode ? "Sign Up" : "Sign In"}
+                      Sign In
                     </button>
                   </p>
                 </div>
