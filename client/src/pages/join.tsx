@@ -35,7 +35,7 @@ const platforms = [
   { name: "Apple", icon: SiApple },
 ];
 
-type FunnelStep = "signup" | "basic" | "business" | "activation";
+type FunnelStep = "signup" | "basic" | "business" | "activation" | "complete";
 
 function getResumeStep(profile: { name: string | null; phone: string | null; business_owner: boolean | null; business_name: string | null; onboarding_completed: boolean }): FunnelStep {
   if (!profile.name || !profile.phone) {
@@ -54,7 +54,7 @@ function getResumeStep(profile: { name: string | null; phone: string | null; bus
 }
 
 export default function Join() {
-  const { user, loading: authLoading, signUp } = useAuth();
+  const { user, loading: authLoading, signUp, signOut } = useAuth();
   const { profile, profileLoading, upsertProfile } = useProfile();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -210,9 +210,9 @@ export default function Join() {
       activated_platforms: activatedPlatforms,
       onboarding_completed: true,
     });
+    await signOut();
     setIsLoading(false);
-    toast({ title: "Welcome to Omni AI!", description: "Your account setup is complete." });
-    setLocation("/dashboard");
+    setStep("complete");
   };
 
   const allPlatformsActivated = activatedPlatforms.length === platforms.length;
@@ -223,7 +223,7 @@ export default function Join() {
     (platformPage + 1) * platformsPerPage
   );
 
-  const stepIndex = step === "signup" ? 0 : step === "basic" ? 1 : step === "business" ? 2 : 3;
+  const stepIndex = step === "signup" ? 0 : step === "basic" ? 1 : step === "business" ? 2 : step === "activation" ? 3 : 4;
   const steps = ["Sign Up", "Basic Info", "Business", "Activate"];
 
   if (authLoading || (user && profileLoading)) {
@@ -242,35 +242,41 @@ export default function Join() {
           <a href="/" className="inline-block mb-6" data-testid="link-join-home">
             <span className="text-2xl font-bold text-gradient">Omni AI</span>
           </a>
-          <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2" data-testid="text-join-heading">
-            {step === "signup" ? "Join Omni AI" : "Complete Your Account"}
-          </h1>
-          <p className="text-gray-400">
-            {step === "signup"
-              ? "Create your account to get started"
-              : "Please fill out this information to continue"}
-          </p>
+          {step !== "complete" && (
+            <>
+              <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2" data-testid="text-join-heading">
+                {step === "signup" ? "Join Omni AI" : "Complete Your Account"}
+              </h1>
+              <p className="text-gray-400">
+                {step === "signup"
+                  ? "Create your account to get started"
+                  : "Please fill out this information to continue"}
+              </p>
+            </>
+          )}
         </div>
 
-        <div className="flex items-center justify-center gap-1 sm:gap-2 mb-8" data-testid="progress-steps">
-          {steps.map((s, i) => (
-            <div key={s} className="flex items-center gap-1 sm:gap-2">
-              <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                i < stepIndex
-                  ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                  : i === stepIndex
-                    ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                    : "bg-white/5 text-gray-500 border border-white/10"
-              }`}>
-                {i < stepIndex ? <Check className="w-3 h-3" /> : <span>{i + 1}</span>}
-                <span className="hidden sm:inline">{s}</span>
+        {step !== "complete" && (
+          <div className="flex items-center justify-center gap-1 sm:gap-2 mb-8" data-testid="progress-steps">
+            {steps.map((s, i) => (
+              <div key={s} className="flex items-center gap-1 sm:gap-2">
+                <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                  i < stepIndex
+                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
+                    : i === stepIndex
+                      ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
+                      : "bg-white/5 text-gray-500 border border-white/10"
+                }`}>
+                  {i < stepIndex ? <Check className="w-3 h-3" /> : <span>{i + 1}</span>}
+                  <span className="hidden sm:inline">{s}</span>
+                </div>
+                {i < steps.length - 1 && (
+                  <div className={`w-4 sm:w-6 h-px ${i < stepIndex ? "bg-green-500/50" : "bg-white/10"}`} />
+                )}
               </div>
-              {i < steps.length - 1 && (
-                <div className={`w-4 sm:w-6 h-px ${i < stepIndex ? "bg-green-500/50" : "bg-white/10"}`} />
-              )}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <div className="glass-card neon-border rounded-2xl p-6 md:p-8">
           <AnimatePresence mode="wait">
@@ -687,6 +693,33 @@ export default function Join() {
                     </>
                   )}
                 </div>
+              </motion.div>
+            )}
+
+            {step === "complete" && (
+              <motion.div
+                key="complete"
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.4 }}
+                className="text-center py-8"
+              >
+                <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-6">
+                  <Check className="w-8 h-8 text-green-400" />
+                </div>
+                <h2 className="text-2xl font-bold text-gradient mb-2" data-testid="text-profile-complete">
+                  Profile Complete
+                </h2>
+                <p className="text-gray-400 mb-8">
+                  Your account is all set up. Sign in to access your dashboard.
+                </p>
+                <Button
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-8 py-5"
+                  onClick={() => setLocation("/?signin=true")}
+                  data-testid="button-goto-signin-after-complete"
+                >
+                  Sign In <ArrowRight className="w-4 h-4 ml-2" />
+                </Button>
               </motion.div>
             )}
           </AnimatePresence>
