@@ -136,7 +136,8 @@ export default function Join() {
           return;
         }
         toast({ title: "Welcome back!", description: "Signed in successfully." });
-        setHasResumed(false);
+        setHasResumed(true);
+        setLocation("/dashboard");
       } else {
         const { error } = await signUp(email.trim(), password);
         if (error) {
