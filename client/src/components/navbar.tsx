@@ -45,12 +45,11 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
   }, [location, setLocation]);
 
   const navLinks = [
-    { section: "legacy", label: "Legacy Model" },
     { section: "campaigns", label: "Campaigns" },
+    { section: "legacy", label: "Legacy Model" },
     { section: "ecosystem", label: "Ecosystem" },
-    { section: "testimonials", label: "Results" },
+    { section: "testimonials", label: "Testimonials" },
     { section: "contact", label: "Contact" },
-    { href: "/details", label: "Infographic" },
   ];
 
   return (
