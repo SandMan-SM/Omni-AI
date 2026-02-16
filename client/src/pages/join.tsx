@@ -78,7 +78,7 @@ export default function Join() {
   const [activateNow, setActivateNow] = useState<boolean | null>(null);
   const [activatedPlatforms, setActivatedPlatforms] = useState<string[]>([]);
   const [platformPage, setPlatformPage] = useState(0);
-  const [activationPhase, setActivationPhase] = useState<"idle" | "loading" | "cycling" | "done" | "signin">("idle");
+  const [activationPhase, setActivationPhase] = useState<"idle" | "loading" | "cycling" | "signin">("idle");
   const [currentPlatformIndex, setCurrentPlatformIndex] = useState(0);
   const [activatedCount, setActivatedCount] = useState(0);
   const [signInEmail, setSignInEmail] = useState("");
@@ -234,7 +234,6 @@ export default function Join() {
     setActivatedCount(platforms.length);
 
     await new Promise(r => setTimeout(r, 600));
-    setActivationPhase("done");
 
     await upsertProfile({
       activated_platforms: platforms.map(p => p.name),
@@ -242,7 +241,6 @@ export default function Join() {
     });
     await signOut();
 
-    await new Promise(r => setTimeout(r, 1500));
     setSignInEmail(email);
     setActivationPhase("signin");
   };
@@ -704,25 +702,6 @@ export default function Join() {
                         transition={{ duration: 0.2 }}
                       />
                     </div>
-                  </motion.div>
-                )}
-
-                {activationPhase === "done" && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center py-8"
-                  >
-                    <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-4">
-                      <Check className="w-8 h-8 text-green-400" />
-                    </div>
-                    <h2 className="text-xl font-semibold mb-2" data-testid="text-activation-complete">
-                      All Platforms Activated
-                    </h2>
-                    <p className="text-gray-400 text-sm">
-                      {platforms.length} / {platforms.length} configured
-                    </p>
-                    <Loader2 className="w-5 h-5 text-purple-400 animate-spin mx-auto mt-4" />
                   </motion.div>
                 )}
 
