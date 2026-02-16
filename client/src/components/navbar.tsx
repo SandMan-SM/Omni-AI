@@ -1,7 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useLocation } from "wouter";
-import { Menu, X, LayoutDashboard } from "lucide-react";
+import { Menu, X, LayoutDashboard, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 
@@ -14,8 +14,10 @@ interface NavbarProps {
 export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [location, setLocation] = useLocation();
   const { user } = useAuth();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,6 +26,16 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
@@ -48,8 +60,10 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
     { section: "campaigns", label: "Campaigns" },
     { section: "legacy", label: "Legacy Model" },
     { section: "ecosystem", label: "Ecosystem" },
-    { section: "testimonials", label: "Testimonials" },
-    { section: "contact", label: "Contact" },
+    { section: "testimonials", label: "Results" },
+    { section: "contact", label: "Contact", dropdown: [
+      { href: "/details", label: "Infographic" },
+    ]},
   ];
 
   return (
@@ -73,15 +87,65 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
 
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
-                key={link.section || link.href}
-                href={link.href || `/#${link.section}`}
-                onClick={link.section ? (e) => handleNavClick(e, link.section!) : undefined}
-                className="text-gray-400 hover:text-white transition-colors text-sm"
-                data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
-              >
-                {link.label}
-              </a>
+              link.dropdown ? (
+                <div key={link.section} className="relative" ref={dropdownRef}>
+                  <button
+                    className="flex items-center gap-1 text-gray-400 hover:text-white transition-colors text-sm"
+                    onClick={(e) => {
+                      const anchor = e.currentTarget;
+                      const fakeEvent = { preventDefault: () => {} } as React.MouseEvent<HTMLAnchorElement>;
+                      if (link.section) handleNavClick(fakeEvent, link.section);
+                    }}
+                    onMouseEnter={() => setOpenDropdown(link.section!)}
+                    data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
+                  >
+                    {link.label}
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                  <div
+                    className={`absolute top-full left-0 mt-2 min-w-[160px] rounded-md bg-black/90 backdrop-blur-lg border border-white/10 py-1 transition-all duration-200 ${
+                      openDropdown === link.section
+                        ? "opacity-100 visible translate-y-0"
+                        : "opacity-0 invisible -translate-y-1"
+                    }`}
+                    onMouseEnter={() => setOpenDropdown(link.section!)}
+                    onMouseLeave={() => setOpenDropdown(null)}
+                  >
+                    <a
+                      href={`/#${link.section}`}
+                      onClick={(e) => {
+                        setOpenDropdown(null);
+                        if (link.section) handleNavClick(e, link.section);
+                      }}
+                      className="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                      data-testid={`nav-dropdown-${link.label.toLowerCase()}`}
+                    >
+                      {link.label}
+                    </a>
+                    {link.dropdown.map((sub) => (
+                      <a
+                        key={sub.href}
+                        href={sub.href}
+                        onClick={() => setOpenDropdown(null)}
+                        className="block px-4 py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                        data-testid={`nav-dropdown-${sub.label.toLowerCase()}`}
+                      >
+                        {sub.label}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <a
+                  key={link.section}
+                  href={`/#${link.section}`}
+                  onClick={link.section ? (e) => handleNavClick(e, link.section!) : undefined}
+                  className="text-gray-400 hover:text-white transition-colors text-sm"
+                  data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
+                >
+                  {link.label}
+                </a>
+              )
             ))}
           </div>
 
@@ -134,20 +198,32 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
             >
             <div className="flex flex-col gap-4 px-1">
               {navLinks.map((link) => (
-                <a
-                  key={link.section || link.href}
-                  href={link.href || `/#${link.section}`}
-                  onClick={(e) => {
-                    setIsMobileMenuOpen(false);
-                    if (link.section) {
-                      handleNavClick(e, link.section);
-                    }
-                  }}
-                  className="text-gray-400 hover:text-white transition-colors py-2"
-                  data-testid={`mobile-nav-${link.label.toLowerCase().replace(" ", "-")}`}
-                >
-                  {link.label}
-                </a>
+                <div key={link.section}>
+                  <a
+                    href={`/#${link.section}`}
+                    onClick={(e) => {
+                      setIsMobileMenuOpen(false);
+                      if (link.section) {
+                        handleNavClick(e, link.section);
+                      }
+                    }}
+                    className="text-gray-400 hover:text-white transition-colors py-2 block"
+                    data-testid={`mobile-nav-${link.label.toLowerCase().replace(" ", "-")}`}
+                  >
+                    {link.label}
+                  </a>
+                  {link.dropdown && link.dropdown.map((sub) => (
+                    <a
+                      key={sub.href}
+                      href={sub.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="text-gray-500 hover:text-white transition-colors py-2 pl-4 block text-sm"
+                      data-testid={`mobile-nav-${sub.label.toLowerCase()}`}
+                    >
+                      {sub.label}
+                    </a>
+                  ))}
+                </div>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-white/5">
                 <Button

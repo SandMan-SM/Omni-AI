@@ -6,8 +6,9 @@ const footerLinks = [
   { section: "campaigns", label: "Campaigns" },
   { section: "legacy", label: "Legacy Model" },
   { section: "ecosystem", label: "Ecosystem" },
-  { section: "testimonials", label: "Testimonials" },
+  { section: "testimonials", label: "Results" },
   { section: "contact", label: "Contact" },
+  { href: "/details", label: "Infographic" },
 ];
 
 export function Footer() {
