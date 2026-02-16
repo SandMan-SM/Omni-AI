@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { useCallback } from "react";
 
 const footerLinks = [
-  { section: "services", label: "Services" },
   { section: "legacy", label: "Legacy Model" },
   { section: "campaigns", label: "Campaigns" },
   { section: "ecosystem", label: "Ecosystem" },

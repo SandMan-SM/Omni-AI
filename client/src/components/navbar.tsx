@@ -45,7 +45,6 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
   }, [location, setLocation]);
 
   const navLinks = [
-    { section: "services", label: "Services" },
     { section: "legacy", label: "Legacy Model" },
     { section: "campaigns", label: "Campaigns" },
     { section: "ecosystem", label: "Ecosystem" },
