@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertWaitlistSchema, insertDemoBookingSchema } from "@shared/schema";
+import { insertWaitlistSchema, insertDemoBookingSchema, insertWebinarRegistrationSchema } from "@shared/schema";
 import { ZodError } from "zod";
 import { fromZodError } from "zod-validation-error";
 
@@ -52,6 +52,30 @@ export async function registerRoutes(
     try {
       const bookings = await storage.getDemoBookings();
       res.json({ success: true, bookings });
+    } catch (error) {
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
+  });
+
+  app.post("/api/webinar-registration", async (req, res) => {
+    try {
+      const validatedData = insertWebinarRegistrationSchema.parse(req.body);
+      const registration = await storage.createWebinarRegistration(validatedData);
+      res.status(201).json({ success: true, registration });
+    } catch (error) {
+      if (error instanceof ZodError) {
+        const validationError = fromZodError(error);
+        res.status(400).json({ success: false, error: validationError.message });
+      } else {
+        res.status(500).json({ success: false, error: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/webinar-registration", async (req, res) => {
+    try {
+      const registrations = await storage.getWebinarRegistrations();
+      res.json({ success: true, registrations });
     } catch (error) {
       res.status(500).json({ success: false, error: "Internal server error" });
     }

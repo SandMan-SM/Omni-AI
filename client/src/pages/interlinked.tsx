@@ -1,31 +1,81 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { useLocation } from "wouter";
-import { ArrowRight, CheckCircle, Clock, Mail, Shield, Brain, BarChart3, Users, Zap, AlertTriangle } from "lucide-react";
+import { ArrowRight, CheckCircle, Clock, Mail, Shield, Brain, Zap, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BookDemoModal } from "@/components/book-demo-modal";
+import { WebinarRegistrationModal } from "@/components/webinar-registration-modal";
+
+function getSecondSaturday(year: number, month: number): Date {
+  const first = new Date(year, month, 1);
+  const firstDayOfWeek = first.getDay();
+  const firstSaturday = firstDayOfWeek <= 6 ? (6 - firstDayOfWeek + 1) : 1;
+  const secondSaturday = firstSaturday + 7;
+  return new Date(year, month, secondSaturday);
+}
+
+function getNextSessionDate(): Date {
+  const now = new Date();
+  const candidates: Date[] = [];
+
+  for (let offset = 0; offset < 6; offset++) {
+    const monthOffset = now.getMonth() + offset;
+    const month = monthOffset % 12;
+    const y = now.getFullYear() + Math.floor(monthOffset / 12);
+
+    const secondSat = getSecondSaturday(y, month);
+    secondSat.setHours(18, 0, 0, 0);
+    if (secondSat > now) candidates.push(secondSat);
+
+    const eleventh = new Date(y, month, 11, 12, 0, 0, 0);
+    if (eleventh > now) candidates.push(eleventh);
+
+    const twentyEighth = new Date(y, month, 28, 19, 0, 0, 0);
+    if (twentyEighth > now) candidates.push(twentyEighth);
+
+    if (candidates.length > 0) break;
+  }
+
+  candidates.sort((a, b) => a.getTime() - b.getTime());
+  return candidates[0] || new Date();
+}
 
 function CountdownTimer() {
-  const [totalSeconds, setTotalSeconds] = useState(10 * 60 + 45);
+  const nextSession = useMemo(() => getNextSessionDate(), []);
+
+  const [remaining, setRemaining] = useState(() => {
+    const diff = Math.max(0, Math.floor((nextSession.getTime() - Date.now()) / 1000));
+    return diff;
+  });
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTotalSeconds((prev) => (prev <= 0 ? 0 : prev - 1));
+      const diff = Math.max(0, Math.floor((nextSession.getTime() - Date.now()) / 1000));
+      setRemaining(diff);
     }, 1000);
     return () => clearInterval(interval);
-  }, []);
+  }, [nextSession]);
 
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
+  const days = Math.floor(remaining / 86400);
+  const hours = Math.floor((remaining % 86400) / 3600);
+  const minutes = Math.floor((remaining % 3600) / 60);
+  const seconds = remaining % 60;
 
   return (
-    <div className="flex items-center justify-center gap-3" data-testid="countdown-timer">
+    <div className="flex items-center justify-center gap-4" data-testid="countdown-timer">
       <Clock className="w-5 h-5 text-purple-400" />
-      <span className="text-lg md:text-xl font-mono">
+      <div className="flex items-center gap-1 font-mono text-lg md:text-xl">
+        {days > 0 && (
+          <>
+            <span className="text-white font-bold">{days}</span>
+            <span className="text-gray-500 text-sm mr-2">d</span>
+          </>
+        )}
+        <span className="text-white font-bold">{String(hours).padStart(2, "0")}</span>
+        <span className="text-purple-400">:</span>
         <span className="text-white font-bold">{String(minutes).padStart(2, "0")}</span>
         <span className="text-purple-400">:</span>
         <span className="text-white font-bold">{String(seconds).padStart(2, "0")}</span>
-      </span>
+      </div>
     </div>
   );
 }
@@ -87,11 +137,7 @@ function CTAButton({ label, onClick }: { label: string; onClick: () => void }) {
 
 export default function Interlinked() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  const [, setLocation] = useLocation();
-
-  const handleRegister = useCallback(() => {
-    setLocation("/join");
-  }, [setLocation]);
+  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   return (
     <div className="min-h-screen bg-[#050505] text-white noise-overlay">
@@ -144,7 +190,7 @@ export default function Interlinked() {
           </p>
         </motion.div>
 
-        <CTAButton label="Grab Your Free Spot" onClick={handleRegister} />
+        <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />
 
         <div className="border-t border-white/5 my-12" />
 
@@ -366,7 +412,7 @@ export default function Interlinked() {
           </p>
         </motion.div>
 
-        <CTAButton label="Grab Your Free Spot" onClick={handleRegister} />
+        <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -492,7 +538,7 @@ export default function Interlinked() {
           <p className="text-purple-400 font-semibold text-lg">It's about building an AI CEO that works for you.</p>
         </motion.div>
 
-        <CTAButton label="Grab Your Free Spot" onClick={handleRegister} />
+        <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />
 
         <div className="text-center py-8 border-t border-white/5 mt-8">
           <p className="text-gray-600 text-sm">
@@ -504,6 +550,10 @@ export default function Interlinked() {
       <BookDemoModal
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}
+      />
+      <WebinarRegistrationModal
+        isOpen={isRegistrationOpen}
+        onClose={() => setIsRegistrationOpen(false)}
       />
     </div>
   );

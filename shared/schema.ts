@@ -77,3 +77,33 @@ export const insertDemoBookingSchema = createInsertSchema(demoBookings).pick({
 
 export type InsertDemoBooking = z.infer<typeof insertDemoBookingSchema>;
 export type DemoBooking = typeof demoBookings.$inferSelect;
+
+export const webinarRegistrations = pgTable("webinar_registrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  firstName: text("first_name").notNull(),
+  lastName: text("last_name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone").notNull(),
+  sessionDate: text("session_date").notNull(),
+  sessionTime: text("session_time").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertWebinarRegistrationSchema = createInsertSchema(webinarRegistrations).pick({
+  firstName: true,
+  lastName: true,
+  email: true,
+  phone: true,
+  sessionDate: true,
+  sessionTime: true,
+}).extend({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().min(1, "Phone number is required"),
+  sessionDate: z.string().min(1, "Session date is required"),
+  sessionTime: z.string().min(1, "Session time is required"),
+});
+
+export type InsertWebinarRegistration = z.infer<typeof insertWebinarRegistrationSchema>;
+export type WebinarRegistration = typeof webinarRegistrations.$inferSelect;

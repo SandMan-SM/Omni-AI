@@ -1,0 +1,125 @@
+✅ CTA #1 (Top of Page – Primary Registration)
+👉 Grab Your Free Spot
+
+(Button behavior:)
+
+When clicked, open a registration modal.
+
+Form Header (at top of modal):
+
+Your Own Private AI CEO Will Run Your Business While You Sleep!
+
+At the very top of the form (required selection):
+
+Select Your Training Session:
+
+Display the next three upcoming webinars chronologically, dynamically calculated based on:
+
+Second Saturday of each month (Evening Session)
+
+11th of each month (Lunch or Evening Session)
+
+28th of each month (Lunch or Evening Session)
+
+If a date has already passed, automatically roll to the next month.
+
+Only show the next 3 upcoming sessions.
+
+Example display format:
+
+• Saturday, March 8 – 6:00 PM
+• Tuesday, March 11 – 12:00 PM
+• Friday, March 28 – 7:00 PM
+
+(Session selection required before submission.)
+
+Required Fields:
+
+First Name
+Last Name
+Email
+Phone Number
+
+Submit Button Text:
+
+Reserve My Seat
+
+When clicked:
+
+Disable button
+
+Change text to: Checking availability…
+
+Show loading spinner
+
+2–3 second delay
+
+Then confirm registration or redirect to confirmation page
+
+✅ CTA #3 (Bottom of Page – Final Push)
+👉 Grab Your Free Spot
+
+(Button behavior identical to top CTA.)
+
+Opens same modal form with:
+
+Dynamic next 3 webinar sessions
+
+Required session selection
+
+Required fields:
+
+First Name
+
+Last Name
+
+Email
+
+Phone Number
+
+Submit button changes to:
+Checking availability…
+
+Shows spinner and slight delay before confirmation
+
+🔧 REPLIT BUILD NOTES (Not visible on page)
+
+Both “Grab Your Free Spot” buttons trigger the same modal.
+
+Automatically calculate:
+
+Second Saturday of each month
+
+11th of each month
+
+28th of each month
+
+If today’s date is past one of them, move to next month.
+
+Sort all upcoming dates chronologically.
+
+Display only the next 3 sessions.
+
+Make session selection required (radio buttons).
+
+All form fields required.
+
+On submit:
+
+Disable button
+
+Change text to “Checking availability…”
+
+Show spinner animation
+
+Simulate 2–3 second processing delay
+
+Then:
+
+Save selected session to database
+
+Trigger confirmation email with session date/time
+
+Redirect to thank-you page
+
+Add .ics calendar file attachment in confirmation email.

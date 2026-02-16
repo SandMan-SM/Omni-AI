@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type WaitlistEntry, type InsertWaitlistEntry, type DemoBooking, type InsertDemoBooking } from "@shared/schema";
+import { type User, type InsertUser, type WaitlistEntry, type InsertWaitlistEntry, type DemoBooking, type InsertDemoBooking, type WebinarRegistration, type InsertWebinarRegistration } from "@shared/schema";
 import pg from "pg";
 
 if (!process.env.DATABASE_URL) {
@@ -38,7 +38,20 @@ async function ensureTablesExist() {
       )
     `);
 
-    console.log("Supabase tables verified/created: waitlist_entries, demo_bookings");
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS webinar_registrations (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        email TEXT NOT NULL,
+        phone TEXT NOT NULL,
+        session_date TEXT NOT NULL,
+        session_time TEXT NOT NULL,
+        created_at TIMESTAMPTZ DEFAULT NOW()
+      )
+    `);
+
+    console.log("Supabase tables verified/created: waitlist_entries, demo_bookings, webinar_registrations");
   } catch (err: any) {
     console.error("Failed to create tables:", err.message);
   } finally {
@@ -54,6 +67,8 @@ export interface IStorage {
   getWaitlistEntries(): Promise<WaitlistEntry[]>;
   createDemoBooking(booking: InsertDemoBooking): Promise<DemoBooking>;
   getDemoBookings(): Promise<DemoBooking[]>;
+  createWebinarRegistration(registration: InsertWebinarRegistration): Promise<WebinarRegistration>;
+  getWebinarRegistrations(): Promise<WebinarRegistration[]>;
 }
 
 export class SupabaseStorage implements IStorage {
@@ -164,6 +179,47 @@ export class SupabaseStorage implements IStorage {
       purpose: row.purpose,
       date: row.date,
       time: row.time,
+      createdAt: new Date(row.created_at),
+    }));
+  }
+  async createWebinarRegistration(registration: InsertWebinarRegistration): Promise<WebinarRegistration> {
+    await this.waitForInit();
+
+    const result = await pool.query(
+      `INSERT INTO webinar_registrations (first_name, last_name, email, phone, session_date, session_time)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [registration.firstName, registration.lastName, registration.email, registration.phone, registration.sessionDate, registration.sessionTime]
+    );
+
+    const row = result.rows[0];
+    return {
+      id: row.id,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      email: row.email,
+      phone: row.phone,
+      sessionDate: row.session_date,
+      sessionTime: row.session_time,
+      createdAt: new Date(row.created_at),
+    };
+  }
+
+  async getWebinarRegistrations(): Promise<WebinarRegistration[]> {
+    await this.waitForInit();
+
+    const result = await pool.query(
+      `SELECT * FROM webinar_registrations ORDER BY created_at DESC`
+    );
+
+    return result.rows.map((row: any) => ({
+      id: row.id,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      email: row.email,
+      phone: row.phone,
+      sessionDate: row.session_date,
+      sessionTime: row.session_time,
       createdAt: new Date(row.created_at),
     }));
   }
