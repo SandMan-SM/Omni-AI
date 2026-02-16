@@ -183,16 +183,16 @@ export function ContactSection({ preselectedTier }: ContactSectionProps) {
                         </FormControl>
                         <SelectContent className="bg-gray-900 border-white/10">
                           <SelectItem value="apprentice" data-testid="select-tier-apprentice">
-                            Tier 0 — Apprentice (Free)
+                            Apprentice
                           </SelectItem>
                           <SelectItem value="knight" data-testid="select-tier-knight">
-                            Tier 1 — Master ($1,000/mo)
+                            Master
                           </SelectItem>
                           <SelectItem value="royal" data-testid="select-tier-royal">
-                            Tier 2 — Royal ($3k–$5k/mo)
+                            Royal
                           </SelectItem>
                           <SelectItem value="ascended" data-testid="select-tier-ascended">
-                            Tier 3 — Empire ($10k–$25k/mo)
+                            Empire
                           </SelectItem>
                         </SelectContent>
                       </Select>
