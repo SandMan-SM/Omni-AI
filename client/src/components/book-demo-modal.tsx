@@ -494,11 +494,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                     className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
                     onClick={() => {
                       onClose();
-                      if (user) {
-                        setLocation("/dashboard");
-                      } else {
-                        setLocation("/?signin=true");
-                      }
+                      setLocation("/join");
                     }}
                     data-testid="button-goto-dashboard"
                   >
