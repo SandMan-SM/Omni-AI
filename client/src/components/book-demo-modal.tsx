@@ -502,7 +502,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                     }}
                     data-testid="button-goto-dashboard"
                   >
-                    {user ? "Dashboard" : "Sign In"}
+                    Dashboard
                   </Button>
                 </div>
               </motion.div>
