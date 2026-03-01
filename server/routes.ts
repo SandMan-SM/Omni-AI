@@ -82,9 +82,12 @@ export async function registerRoutes(
   });
 
   app.get("/api/supabase-config", (req, res) => {
+    const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+    const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY;
+    
     res.json({
-      url: process.env.SUPABASE_URL || '',
-      anonKey: process.env.SUPABASE_ANON_KEY || '',
+      url: supabaseUrl || '',
+      anonKey: supabaseAnonKey || '',
     });
   });
 
