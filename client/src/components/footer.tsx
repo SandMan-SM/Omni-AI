@@ -1,37 +1,12 @@
 import { motion } from "framer-motion";
-import { useLocation } from "wouter";
-import { useCallback } from "react";
 
 const footerLinks = [
-  { section: "campaigns", label: "Campaigns" },
-  { section: "legacy", label: "Legacy Model" },
-  { section: "ecosystem", label: "Ecosystem" },
-  { section: "testimonials", label: "Results" },
-  { section: "contact", label: "Contact" },
+  { href: "/interlinked", label: "Interlinked" },
+  { href: "/campaigns", label: "Campaigns" },
   { href: "/details", label: "Infographic" },
 ];
 
 export function Footer() {
-  const [location, setLocation] = useLocation();
-
-  const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, sectionId: string) => {
-    e.preventDefault();
-    if (location === "/") {
-      const el = document.getElementById(sectionId);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth" });
-      }
-    } else {
-      setLocation("/");
-      setTimeout(() => {
-        const el = document.getElementById(sectionId);
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 300);
-    }
-  }, [location, setLocation]);
-
   return (
     <motion.footer
       initial={{ opacity: 0 }}
@@ -49,9 +24,8 @@ export function Footer() {
           <nav className="flex flex-wrap items-center gap-4 md:gap-8" data-testid="footer-nav">
             {footerLinks.map((link) => (
               <a
-                key={link.section || link.href}
-                href={link.href || `/#${link.section}`}
-                onClick={link.section ? (e) => handleNavClick(e, link.section!) : undefined}
+                key={link.href}
+                href={link.href}
                 className="text-gray-500 hover:text-white transition-colors text-sm"
                 data-testid={`footer-link-${link.label.toLowerCase().replace(" ", "-")}`}
               >

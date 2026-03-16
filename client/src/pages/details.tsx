@@ -57,8 +57,7 @@ const tiers = [
     icon: Zap,
     name: "Apprentice",
     label: "TIER 0",
-    price: "FREE TRIAL",
-    priceSubtext: "",
+    category: "Traditional Marketing",
     tagline: "This is where people wake up.",
     gradient: "from-slate-500 to-slate-600",
     accentColor: "text-slate-400",
@@ -69,8 +68,7 @@ const tiers = [
     icon: Shield,
     name: "Master",
     label: "TIER 1",
-    price: "$1,000",
-    priceSubtext: "/mo",
+    category: "Agentic Marketing",
     tagline: "The robot helps you do work faster.",
     gradient: "from-blue-500 to-cyan-400",
     accentColor: "text-blue-400",
@@ -81,8 +79,7 @@ const tiers = [
     icon: Crown,
     name: "Royal",
     label: "TIER 2",
-    price: "$3k-$5k",
-    priceSubtext: "/mo",
+    category: "AGI Infrastructure",
     tagline: "The robot runs the system, not just tasks.",
     gradient: "from-purple-500 to-pink-500",
     accentColor: "text-purple-400",
@@ -94,26 +91,13 @@ const tiers = [
     icon: Flame,
     name: "Empire",
     label: "TIER 3",
-    price: "$10k-$25k",
-    priceSubtext: "/mo",
+    category: "Legacy Model",
     tagline: "The robot makes decisions for the business.",
     gradient: "from-orange-500 to-red-500",
     accentColor: "text-orange-400",
     borderColor: "border-orange-500/20",
-    features: ["Multiple autonomous agents", "KPI tracking", "Decision rules engine", "Self-optimizing systems", "Weekly performance reports"],
-  },
-  {
-    icon: Lock,
-    name: "Holy Grail",
-    label: "TIER 4",
-    price: "HIDDEN",
-    priceSubtext: "",
-    tagline: "You are not ready.",
-    gradient: "from-gray-700 to-gray-800",
-    accentColor: "text-gray-500",
-    borderColor: "border-gray-700/30",
     locked: true,
-    features: ["Legacy Model", "AGI Continuity", "Your thinking — preserved"],
+    features: ["Multiple autonomous agents", "KPI tracking", "Decision rules engine", "Self-optimizing systems", "Weekly performance reports"],
   },
 ];
 
@@ -399,11 +383,9 @@ export default function Details() {
 
                           <div className="md:w-1/4">
                             <span className={`text-xl md:text-2xl font-bold ${tier.accentColor}`}>
-                              {tier.price}
+                              {tier.name}
                             </span>
-                            {tier.priceSubtext && (
-                              <span className="text-gray-500 text-sm ml-1">{tier.priceSubtext}</span>
-                            )}
+                            <span className="text-gray-500 text-sm ml-2">— {tier.category}</span>
                             <p className="text-gray-500 text-xs mt-0.5 italic">{tier.tagline}</p>
                           </div>
 
@@ -423,7 +405,7 @@ export default function Details() {
                             ) : (
                               <div className="flex items-center gap-2 text-gray-500 text-sm">
                                 <Lock className="w-4 h-4" />
-                                Tier 3 members only
+                                Locked
                               </div>
                             )}
                           </div>

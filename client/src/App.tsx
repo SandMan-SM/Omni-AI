@@ -15,6 +15,7 @@ import Interlinked from "@/pages/interlinked";
 import Sponsor from "@/pages/sponsor";
 import SponsorInfo from "@/pages/sponsor-info";
 import SponsorApplication from "@/pages/sponsor-application";
+import Campaigns from "@/pages/campaigns";
 
 function Router() {
   return (
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/join" component={Join} />
       <Route path="/admin" component={Admin} />
       <Route path="/interlinked" component={Interlinked} />
+      <Route path="/campaigns" component={Campaigns} />
       <Route path="/sponsor" component={Sponsor} />
       <Route path="/sponsor/info" component={SponsorInfo} />
       <Route path="/sponsor/application" component={SponsorApplication} />
