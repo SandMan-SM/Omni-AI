@@ -4,6 +4,9 @@ import { ArrowRight, CheckCircle, Clock, Mail, Shield, Brain, Zap, AlertTriangle
 import { Button } from "@/components/ui/button";
 import { BookDemoModal } from "@/components/book-demo-modal";
 import { WebinarRegistrationModal } from "@/components/webinar-registration-modal";
+import { Footer } from "@/components/footer";
+import { Navbar } from "@/components/navbar";
+import { CursorSpotlight } from "@/components/cursor-spotlight";
 
 function getSecondSaturday(year: number, month: number): Date {
   const first = new Date(year, month, 1);
@@ -141,7 +144,12 @@ export default function Interlinked() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white noise-overlay">
-      <div className="max-w-3xl mx-auto px-4 py-12 md:py-20">
+      <CursorSpotlight />
+      <Navbar 
+        onBookDemo={() => setIsDemoModalOpen(true)} 
+        onSignIn={() => {}}
+      />
+      <div className="max-w-3xl mx-auto px-4 py-12 md:py-20 pt-16 md:pt-20">
 
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -187,7 +195,7 @@ export default function Interlinked() {
           </p>
           <p className="text-purple-400 font-semibold text-lg">One central brain.</p>
           <p className="text-gray-400 leading-relaxed">
-            And in this free training, I'm going to show you how to build the exact same system for your business using OMNI Leads.
+            And in this free training, I'm going to show you how to build the exact same system for your business using Omni AI.
           </p>
         </motion.div>
 
@@ -242,7 +250,7 @@ export default function Interlinked() {
               "More stress",
             ]}
           />
-          <p className="text-purple-400 font-semibold">OMNI Leads was built to eliminate that chaos.</p>
+          <p className="text-purple-400 font-semibold">Omni AI was built to eliminate that chaos.</p>
           <p className="text-white font-bold text-lg">This is your escape route.</p>
         </motion.div>
 
@@ -273,7 +281,7 @@ export default function Interlinked() {
             "Alerts you to problems before you see them",
             "Surfaces opportunities automatically",
           ]} />
-          <p className="text-purple-400 font-semibold mt-4">That's what we built inside OMNI Leads.</p>
+          <p className="text-purple-400 font-semibold mt-4">That's what we built inside Omni AI.</p>
         </motion.div>
 
         <motion.div
@@ -315,7 +323,7 @@ export default function Interlinked() {
           className="glass-card rounded-md p-8 mb-12 neon-border text-center"
         >
           <p className="text-gray-300 mb-4">
-            If you're already operating at scale and want to see how OMNI Leads would integrate directly into your business:
+            If you're already operating at scale and want to see how Omni AI would integrate directly into your business:
           </p>
           <Button
             onClick={() => setIsDemoModalOpen(true)}
@@ -384,7 +392,7 @@ export default function Interlinked() {
           className="space-y-6 mb-12"
         >
           <p className="text-gray-400">
-            Business owners using structured AI frameworks like the one inside OMNI Leads have:
+            Business owners using structured AI frameworks like the one inside Omni AI have:
           </p>
           <BulletList items={[
             "Dramatically increased operational clarity",
@@ -436,7 +444,7 @@ export default function Interlinked() {
           viewport={{ once: true }}
           className="space-y-4 mb-12"
         >
-          <p className="text-gray-300">I'm the founder of OMNI Leads.</p>
+          <p className="text-gray-300">I'm the founder of Omni AI.</p>
           <p className="text-gray-400 leading-relaxed">
             I've built and scaled multiple businesses, generated significant revenue across industries, and spent millions in paid advertising testing what actually works.
           </p>
@@ -469,7 +477,7 @@ export default function Interlinked() {
           </h3>
           <div className="text-gray-500 text-sm space-y-3 leading-relaxed">
             <p>
-              Earnings and income representations made by OMNI Leads and its representatives are aspirational statements only of your earnings potential.
+              Earnings and income representations made by Omni AI and its representatives are aspirational statements only of your earnings potential.
             </p>
             <p>
               The success examples shared in this training are exceptional, non-typical results and are not guarantees that you will achieve the same results.
@@ -486,11 +494,11 @@ export default function Interlinked() {
               <li>Risk tolerance</li>
             </ul>
             <p>
-              OMNI Leads and its representatives are not responsible for your actions. You are solely responsible for your business decisions and implementation.
+              Omni AI and its representatives are not responsible for your actions. You are solely responsible for your business decisions and implementation.
             </p>
             <p>All strategies and systems shared should be evaluated through your own due diligence.</p>
             <p>
-              OMNI Leads may receive compensation for recommending certain products or services. If you prefer not to purchase through affiliate relationships, you may independently search for the same resources.
+              Omni AI may receive compensation for recommending certain products or services. If you prefer not to purchase through affiliate relationships, you may independently search for the same resources.
             </p>
           </div>
         </motion.div>
@@ -509,14 +517,14 @@ export default function Interlinked() {
             Questions?
           </h3>
           <p className="text-gray-400 mb-4">
-            If you have questions about OMNI Leads or whether this training is right for you, contact support and we'll help clarify your next steps.
+            If you have questions about Omni AI or whether this training is right for you, contact support and we'll help clarify your next steps.
           </p>
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-gray-500">
-              Support: <a href="mailto:support@omnileads.com" className="text-purple-400 hover:text-purple-300 transition-colors">support@omnileads.com</a>
+              Support: <a href="mailto:support@omni.ai" className="text-purple-400 hover:text-purple-300 transition-colors">support@omni.ai</a>
             </span>
             <span className="text-gray-500">
-              Legal: <a href="mailto:legal@omnileads.com" className="text-purple-400 hover:text-purple-300 transition-colors">legal@omnileads.com</a>
+              Legal: <a href="mailto:legal@omni.ai" className="text-purple-400 hover:text-purple-300 transition-colors">legal@omni.ai</a>
             </span>
           </div>
         </motion.div>
@@ -535,7 +543,7 @@ export default function Interlinked() {
           <p className="text-gray-300 mb-1">If you want to scale intelligently instead of chaotically...</p>
           <p className="text-gray-300 mb-4">If you want leverage instead of burnout...</p>
           <p className="text-white font-bold text-lg mb-2">Reserve your seat now.</p>
-          <p className="text-gray-400 mb-1">OMNI Leads isn't about working harder.</p>
+          <p className="text-gray-400 mb-1">Omni AI isn't about working harder.</p>
           <p className="text-purple-400 font-semibold text-lg">It's about building an AI CEO that works for you.</p>
         </motion.div>
 
@@ -543,11 +551,12 @@ export default function Interlinked() {
 
         <div className="text-center py-8 border-t border-white/5 mt-8">
           <p className="text-gray-600 text-sm">
-            &copy; {new Date().getFullYear()} Omni Leads LLC
+            &copy; {new Date().getFullYear()} Omni AI LLC
           </p>
         </div>
       </div>
 
+      <Footer />
       <BookDemoModal
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}

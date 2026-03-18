@@ -16,12 +16,12 @@ export function Footer() {
       className="relative py-12 px-4 border-t border-white/5"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-row items-center justify-between gap-4 flex-wrap">
+        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
           <div className="flex items-center gap-2">
             <span className="text-xl md:text-2xl font-bold text-gradient">Omni AI</span>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-4 md:gap-8" data-testid="footer-nav">
+          <nav className="flex items-center justify-center gap-4 md:gap-8" data-testid="footer-nav">
             {footerLinks.map((link) => (
               <a
                 key={link.href}

@@ -2,6 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Chrome shine animation */
+@keyframes chrome-shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.chrome-gold {
+  background: linear-gradient(
+    90deg,
+    #fbbf24 0%,
+    #fde68a 25%,
+    #fbbf24 50%,
+    #f59e0b 75%,
+    #fbbf24 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: chrome-shine 3s linear infinite;
+}
+
+.chrome-silver {
+  background: linear-gradient(
+    90deg,
+    #d1d5db 0%,
+    #f9fafb 25%,
+    #d1d5db 50%,
+    #9ca3af 75%,
+    #d1d5db 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: chrome-shine 3s linear infinite;
+}
+
+.chrome-diamond {
+  background: linear-gradient(
+    90deg,
+    #67e8f9 0%,
+    #e0f2fe 25%,
+    #67e8f9 50%,
+    #22d3ee 75%,
+    #67e8f9 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: chrome-shine 2s linear infinite;
+}
+
 /* DARK MODE ONLY - Omni AI Dark Luxury Theme */
 :root {
   --button-outline: rgba(255,255,255, .10);

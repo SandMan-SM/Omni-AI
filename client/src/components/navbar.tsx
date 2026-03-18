@@ -27,9 +27,9 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
   }, []);
 
   const navLinks = [
-    { href: "/interlinked", label: "Interlinked" },
     { href: "/campaigns", label: "Campaigns" },
     { href: "/details", label: "Infographic" },
+    { href: "/arena", label: "Arena" },
   ];
 
   return (
@@ -51,11 +51,11 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
             </span>
           </a>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
             {navLinks.map((link) => (
               <a
                 href={link.href}
-                className={`text-gray-400 hover:text-white transition-colors text-sm ${location === link.href ? 'text-white' : ''}`}
+                className={`text-gray-400 hover:text-white transition-colors text-sm px-4 ${location === link.href ? 'text-white' : ''}`}
                 data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
               >
                 {link.label}
@@ -64,14 +64,6 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Button
-              variant="outline"
-              className="border-white/20 bg-transparent text-white"
-              onClick={onBookDemo}
-              data-testid="button-nav-demo"
-            >
-              Book Demo
-            </Button>
             <Button
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
               onClick={() => {
@@ -123,17 +115,6 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-white/5">
-                <Button
-                  variant="outline"
-                  className="border-white/20 bg-transparent text-white w-full"
-                  onClick={() => {
-                    setIsMobileMenuOpen(false);
-                    onBookDemo?.();
-                  }}
-                  data-testid="button-mobile-demo"
-                >
-                  Book Demo
-                </Button>
                 <Button
                   className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
                   onClick={() => {

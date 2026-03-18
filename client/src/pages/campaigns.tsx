@@ -59,8 +59,8 @@ export default function Campaigns() {
         onSignIn={() => setIsAuthModalOpen(true)}
       />
 
-      <main className="pt-24 pb-20">
-        <section className="relative px-4 py-16 md:py-24">
+      <main className="pt-16 md:pt-20 pb-16 md:pb-20">
+        <section className="relative px-4 py-12 md:py-20">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />

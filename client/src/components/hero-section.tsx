@@ -20,7 +20,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
   const [, setLocation] = useLocation();
 
   return (
-    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-20 pb-24 overflow-hidden">
+    <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-16 md:pt-20 pb-16 md:pb-24 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-purple-500/10 blur-[120px]" />
         <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-500/10 blur-[100px]" />
