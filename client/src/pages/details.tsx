@@ -469,9 +469,14 @@ export default function Details() {
                                   </div>
                                 </div>
                               ) : isSilver ? (
-                                <div className="flex items-center gap-2 text-gray-400 text-sm">
-                                  <Lock className="w-4 h-4" />
-                                  {tier.tagline} | Locked
+                                <div className="flex flex-col items-center text-center">
+                                  <span className="text-lg font-bold bg-gradient-to-r from-gray-200 via-white to-gray-200 bg-clip-text text-transparent">
+                                    {tier.tagline}
+                                  </span>
+                                  <div className="flex items-center gap-2 text-gray-500 text-sm mt-2">
+                                    <Lock className="w-4 h-4" />
+                                    Locked
+                                  </div>
                                 </div>
                               ) : (
                                 <div className="flex items-center gap-2 text-gray-500 text-sm">
