@@ -1,29 +1,94 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
 
-const protectedRoutes = ['/dashboard', '/admin', '/arena'];
-const publicRoutes = ['/', '/details', '/interlinked', '/campaigns', '/sponsor', '/join'];
+const protectedRoutes = ['/dashboard', '/admin'];
+const adminOnlyRoutes = ['/admin'];
+const publicRoutes = ['/', '/details', '/interlinked', '/campaigns', '/sponsor', '/join', '/arena'];
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if the route is protected
+  // Allow static files and API routes
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api') ||
+    pathname.includes('.') ||
+    pathname.startsWith('/auth')
+  ) {
+    return NextResponse.next();
+  }
+
+  // Allow public routes
+  if (publicRoutes.some(route => pathname.startsWith(route))) {
+    return NextResponse.next();
+  }
+
+  // Check for protected routes
   const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route));
+  const isAdminOnlyRoute = adminOnlyRoutes.some(route => pathname.startsWith(route));
 
-  // Allow public routes and static files
-  if (isPublicRoute || pathname.startsWith('/_next') || pathname.startsWith('/api') || pathname.includes('.')) {
+  if (!isProtectedRoute) {
     return NextResponse.next();
   }
 
-  // For protected routes, we need auth check
-  // The actual auth check is done client-side with Supabase
-  // This middleware just passes through - client handles the auth state
-  if (isProtectedRoute) {
-    return NextResponse.next();
+  // Create Supabase client for middleware
+  const response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet: { name: string; value: string; options?: Record<string, unknown> }[]) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
+  // Get user session
+  const { data: { user }, error } = await supabase.auth.getUser();
+
+  // No session - redirect to home
+  if (!user || error) {
+    const redirectUrl = new URL('/', request.url);
+    redirectUrl.searchParams.set('signin', 'true');
+    return NextResponse.redirect(redirectUrl);
   }
 
-  return NextResponse.next();
+  // For admin routes, check if user is admin
+  if (isAdminOnlyRoute) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_admin, role')
+      .eq('id', user.id)
+      .single();
+
+    const isAdmin = profile?.is_admin === true || profile?.role === 'admin';
+
+    if (!isAdmin) {
+      // Not admin - redirect to dashboard
+      const redirectUrl = new URL('/dashboard', request.url);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // Add user info to headers for server components
+  response.headers.set('x-user-id', user.id);
+  response.headers.set('x-user-email', user.email || '');
+
+  return response;
 }
 
 export const config = {

@@ -159,9 +159,23 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const updateUserRole = async (userId: string, role: string) => {
     try {
       const supabase = await getSupabase();
+      const updates: Record<string, unknown> = { role };
+      
+      // Also update is_admin and is_sponsor based on role
+      if (role === 'admin') {
+        updates.is_admin = true;
+        updates.is_sponsor = true;
+      } else if (role === 'sponsor') {
+        updates.is_admin = false;
+        updates.is_sponsor = true;
+      } else {
+        updates.is_admin = false;
+        updates.is_sponsor = false;
+      }
+
       const { error } = await supabase
         .from('profiles')
-        .update({ role })
+        .update(updates)
         .eq('id', userId);
 
       return { error: error as Error | null };
