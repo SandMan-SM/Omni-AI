@@ -1,0 +1,297 @@
+"use client";
+export const dynamic = 'force-dynamic';
+
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { 
+  Zap, Shield, Crown, Users, TrendingUp, DollarSign, 
+  Brain, MessageSquare, Calendar, Send, Search, FileText,
+  Bot, BarChart3, ChevronRight, CheckCircle, Sparkles,
+  ArrowRight, Gift, Wallet, Building2, Target, Eye,
+  MousePointer, LineChart, LayoutDashboard
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
+import { CursorSpotlight } from "@/components/cursor-spotlight";
+
+const investmentAreas = [
+  { icon: Bot, title: "AI-powered lead generation", desc: "Systems that identify and capture qualified leads automatically" },
+  { icon: Calendar, title: "24/7 automated engagement", desc: "Continuous interaction with prospects and clients" },
+  { icon: Users, title: "Client acquisition workflows", desc: "Streamlined processes to convert inquiries into clients" },
+  { icon: Zap, title: "Operational automation", desc: "Reduce manual tasks and increase efficiency" },
+  { icon: FileText, title: "Marketing content production", desc: "Automated creation of promotional materials" },
+  { icon: BarChart3, title: "Data tracking and analytics", desc: "Real-time insights into performance and growth" },
+];
+
+const aiCapabilities = [
+  { icon: MessageSquare, title: "24/7 Intelligent Response", desc: "Provides immediate answers to administrators, prospective patients, and families — eliminating missed opportunities." },
+  { icon: Calendar, title: "Consultation Scheduling Automation", desc: "Books confidential assessments and sends automated reminders to increase attendance rates." },
+  { icon: Send, title: "Automated Follow-Up Sequences", desc: "Maintains consistent communication with inquiries to improve conversion rates." },
+  { icon: Search, title: "Qualified Lead Identification", desc: "Engages individuals actively searching for addiction treatment services." },
+  { icon: FileText, title: "AI-Driven Marketing Content", desc: "Produces and distributes educational and promotional content to build authority and trust." },
+  { icon: Brain, title: "Market & Competitor Research", desc: "Analyzes treatment trends and regional demand to inform strategic decisions." },
+  { icon: Zap, title: "Operational Workflow Automation", desc: "Organizes intake forms, updates records, and routes communication efficiently." },
+  { icon: LineChart, title: "Performance Intelligence & Reporting", desc: "Transforms marketing and inquiry data into actionable growth insights." },
+];
+
+const caseStudies = [
+  { name: "Brent", company: "Young's Cabinet Refinishing", metric: "+247% leads" },
+  { name: "Adam", company: "Leifson Built", metric: "$1.2M generated" },
+  { name: "Steve", company: "Utah Addiction Center", metric: "89% conversion" },
+];
+
+export default function SponsorInfo() {
+  const { user, loading: authLoading } = useAuth();
+  const { profile, upsertProfile, profileLoading } = useProfile();
+  const pathname = usePathname();
+  const router = useRouter();
+  const [activating, setActivating] = useState(false);
+  const [activated, setActivated] = useState(false);
+
+  const isSponsor = profile?.role === "sponsor";
+  const canActivate = user && !isSponsor;
+
+  const handleActivate = async () => {
+    if (!user) {
+      router.push("/?signin=true");
+      return;
+    }
+
+    setActivating(true);
+    try {
+      const { error } = await upsertProfile({ role: "sponsor" });
+      if (!error) {
+        setActivated(true);
+      }
+    } catch (err) {
+      console.error("Failed to activate sponsor:", err);
+    }
+    setActivating(false);
+  };
+
+  const fadeUp = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+      <CursorSpotlight />
+      
+      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/5">
+        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+          <Link href="/" className="text-xl font-bold text-gradient">
+            Omni AI
+          </Link>
+          <div className="flex items-center gap-3">
+            <Button 
+              className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
+              onClick={() => user ? router.push("/dashboard") : router.push("/?signin=true")}
+            >
+              <LayoutDashboard className="w-4 h-4 mr-2" />
+              Dashboard
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      <main className="relative z-10">
+        <motion.div 
+          initial="initial"
+          animate="animate"
+          variants={fadeUp}
+          className="text-center py-20 px-4"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card neon-border mb-6">
+            <Gift className="w-4 h-4 text-purple-400" />
+            <span className="text-sm text-gray-300">Omni AI Sponsor Program</span>
+          </div>
+          
+          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+            <span className="text-gradient">Sponsorship Overview</span>
+          </h1>
+          
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
+            Your sponsorship funds AI systems that generate qualified leads, automate operations, and deliver measurable growth.
+            <br /><br />
+            Every dollar supports infrastructure designed to increase efficiency, capture demand, and provide real-time performance visibility through your Sponsor Dashboard.
+          </p>
+
+          <Button 
+            onClick={() => router.push("/sponsor/application")}
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg px-8 py-6"
+          >
+            Access Sponsor Portal
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+        </motion.div>
+
+        <section className="py-16 px-4 bg-black/30">
+          <div className="max-w-6xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Where Your Investment Goes
+              </h2>
+              <p className="text-gray-400">Your sponsorship directly funds:</p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {investmentAreas.map((item, idx) => (
+                <motion.div key={idx} variants={fadeUp}>
+                  <Card className="bg-white/5 border-white/10 hover:border-purple-500/30 transition-colors h-full">
+                    <CardContent className="p-6 flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-6 h-6 text-purple-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-1">{item.title}</h4>
+                        <p className="text-sm text-gray-400">{item.desc}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-20 px-4">
+          <div className="max-w-6xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                AI Infrastructure in Action
+              </h2>
+              <p className="text-gray-400">8 powerful systems working continuously for your growth</p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              {aiCapabilities.map((cap, idx) => (
+                <motion.div key={idx} variants={fadeUp}>
+                  <Card className="bg-gradient-to-r from-purple-900/20 to-pink-900/10 border-purple-500/20">
+                    <CardContent className="p-6 flex items-start gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                        <cap.icon className="w-6 h-6 text-purple-400" />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold mb-2 text-purple-200">{cap.title}</h4>
+                        <p className="text-sm text-gray-400">{cap.desc}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-16 px-4 bg-black/30">
+          <div className="max-w-4xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                How You'll See Results
+              </h2>
+              <p className="text-gray-400">Your Sponsor Dashboard provides real-time reporting on lead volume, engagement activity, response performance, and growth trends.</p>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="mb-8">
+              <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20 rounded-2xl p-8 text-center">
+                <BarChart3 className="w-16 h-16 text-purple-400 mx-auto mb-4" />
+                <p className="text-gray-400 mb-4">(Screenshot of dashboard)</p>
+              </div>
+            </motion.div>
+
+            <motion.div variants={fadeUp} className="text-center">
+              <p className="text-lg text-gray-300 mb-6">
+                Monitor system activity, track measurable outcomes, and see exactly how your sponsorship translates into operational and revenue impact — all in one centralized view.
+              </p>
+              <Button 
+                onClick={() => isSponsor ? router.push("/sponsor") : router.push("/sponsor/application")}
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-lg px-8 py-6"
+              >
+                View Sponsor Dashboard
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </Button>
+            </motion.div>
+          </div>
+        </section>
+
+        <section className="py-16 px-4">
+          <div className="max-w-6xl mx-auto">
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                Proven Results
+              </h2>
+              <p className="text-gray-400 text-lg">Real businesses. Measurable growth. Documented performance.</p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {caseStudies.map((study, idx) => (
+                <motion.div key={idx} variants={fadeUp}>
+                  <Card className="bg-gradient-to-br from-white/10 to-white/5 border-white/10 h-full">
+                    <CardContent className="p-8 text-center">
+                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mx-auto mb-4">
+                        <Building2 className="w-8 h-8 text-purple-300" />
+                      </div>
+                      <h4 className="font-bold text-xl mb-1">{study.name}</h4>
+                      <p className="text-gray-400 mb-4">{study.company}</p>
+                      <p className="text-2xl font-bold text-green-400">{study.metric}</p>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="py-20 px-4 bg-gradient-to-b from-purple-900/20 to-transparent">
+          <motion.div variants={fadeUp} className="text-center max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+              Ready to See the Impact Firsthand?
+            </h2>
+            <p className="text-gray-400 mb-8">
+              Access your dashboard to monitor performance — or apply to become an approved Omni AI sponsor.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              {isSponsor ? (
+                <Button 
+                  onClick={() => router.push("/sponsor")}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg px-8 py-6"
+                >
+                  Access Sponsor Portal
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+              ) : (
+                <>
+                  <Button 
+                    onClick={() => user ? handleActivate() : router.push("/sponsor/application")}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg px-8 py-6"
+                  >
+                    {user ? "Apply Today" : "Apply Today"}
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => router.push("/sponsor/application")}
+                    className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10 text-lg px-8 py-6"
+                  >
+                    Apply to Become a Sponsor
+                  </Button>
+                </>
+              )}
+            </div>
+          </motion.div>
+        </section>
+      </main>
+
+      <footer className="border-t border-white/5 py-8 px-4">
+        <div className="max-w-7xl mx-auto text-center text-gray-500 text-sm">
+          © 2025 Omni Leads LLC. All rights reserved.
+        </div>
+      </footer>
+    </div>
+  );
+}
