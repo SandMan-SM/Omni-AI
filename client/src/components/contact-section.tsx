@@ -1,220 +1,112 @@
 import { motion } from "framer-motion";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation } from "@tanstack/react-query";
-import { Send, Loader2 } from "lucide-react";
+import { Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { insertWaitlistSchema, type InsertWaitlistEntry } from "@shared/schema";
+import { getSupabase } from "@/lib/supabase";
 
 export function ContactSection() {
   const { toast } = useToast();
+  const [email, setEmail] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<InsertWaitlistEntry>({
-    resolver: zodResolver(insertWaitlistSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      purpose: "exploring AI",
-    },
-  });
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
 
-  const mutation = useMutation({
-    mutationFn: async (data: InsertWaitlistEntry) => {
-      const response = await apiRequest("POST", "/api/waitlist", data);
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({
-        title: "You're on the list",
-        description: "We'll be in touch soon. Prepare for ascension.",
-      });
-      form.reset();
-    },
-    onError: () => {
+    setIsSubmitting(true);
+    
+    try {
+      const supabase = await getSupabase();
+      
+      const { error } = await supabase
+        .from('newsletter_subscriptions')
+        .insert([{ email }]);
+      
+      if (error) {
+        if (error.code === '23505') {
+          toast({
+            title: "Already subscribed!",
+            description: "You're already on our newsletter list.",
+          });
+        } else {
+          throw error;
+        }
+      } else {
+        toast({
+          title: "You're subscribed!",
+          description: "Get ready for exclusive updates and insights.",
+        });
+        setEmail("");
+      }
+    } catch {
       toast({
         title: "Something went wrong",
         description: "Please try again later.",
         variant: "destructive",
       });
-    },
-  });
-
-  const onSubmit = (data: InsertWaitlistEntry) => {
-    mutation.mutate(data);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <section className="relative py-32 px-4" id="contact">
+    <section className="relative py-24 px-4 md:px-8" id="contact">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] rounded-full bg-purple-500/10 blur-[150px]" />
       </div>
 
-      <div className="max-w-xl mx-auto relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          viewport={{ once: true }}
-          className="text-center mb-12"
-        >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            <span className="text-gradient">Join the Waitlist</span>
-          </h2>
-          <p className="text-gray-400 text-lg">
-            Ready to transcend the ordinary? Enter your details below.
-          </p>
-        </motion.div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
-          <div className="glass-card rounded-md p-8 neon-border">
-            <Form {...form}>
-              <form
-                onSubmit={form.handleSubmit(onSubmit)}
-                className="space-y-6"
-              >
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Your name"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
-                          data-testid="input-name"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Email</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="your@email.com"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
-                          data-testid="input-email"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">Phone</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="tel"
-                          placeholder="(555) 123-4567"
-                          className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-purple-500"
-                          data-testid="input-phone"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="purpose"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-gray-300">
-                        Purpose
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className="bg-white/5 border-white/10 text-white"
-                            data-testid="select-purpose"
-                          >
-                            <SelectValue placeholder="Select your purpose" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="bg-gray-900 border-white/10">
-                          <SelectItem value="7-8 figure business" data-testid="select-purpose-enterprise">
-                            I run a 7–8 figure business and want AI to optimize operations immediately.
-                          </SelectItem>
-                          <SelectItem value="growing business" data-testid="select-purpose-growth">
-                            I have a growing business and want to scale without adding more employees.
-                          </SelectItem>
-                          <SelectItem value="exploring AI" data-testid="select-purpose-explore">
-                            I'm exploring AI for future implementation and want early access.
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <Button
-                  type="submit"
-                  disabled={mutation.isPending}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 rounded-md neon-glow"
-                  data-testid="button-submit-waitlist"
-                >
-                  {mutation.isPending ? (
-                    <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Send className="mr-2 h-5 w-5" />
-                      Join the Waitlist
-                    </>
-                  )}
-                </Button>
-              </form>
-            </Form>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        viewport={{ once: true }}
+        className="max-w-4xl mx-auto relative z-10"
+      >
+        <div className="glass-card rounded-2xl p-10 md:p-12 neon-border">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+              <span className="text-gradient">Stay in the Loop</span>
+            </h2>
+            <p className="text-gray-400 text-lg">
+              Subscribe for exclusive updates and insights.
+            </p>
           </div>
-        </motion.div>
-      </div>
+
+          <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
+            <div className="flex items-center h-14 rounded-xl border border-white/10 bg-white/5 overflow-hidden">
+              <div className="flex items-center pl-5 flex-1">
+                <Mail className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" />
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="bg-transparent border-0 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-10 pr-2"
+                  data-testid="input-email"
+                  required
+                />
+              </div>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-8 h-full rounded-l-none font-semibold text-base whitespace-nowrap"
+                data-testid="button-submit-newsletter"
+              >
+                {isSubmitting ? (
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                ) : (
+                  "Subscribe"
+                )}
+              </Button>
+            </div>
+          </form>
+          <p className="text-center text-gray-500 text-sm mt-6">
+            No spam. Unsubscribe anytime.
+          </p>
+        </div>
+      </motion.div>
     </section>
   );
 }

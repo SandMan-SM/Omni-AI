@@ -16,7 +16,7 @@ export function Footer() {
       className="relative py-12 px-4 border-t border-white/5"
     >
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+        <div className="flex flex-col items-center justify-center gap-6">
           <div className="flex items-center gap-2">
             <span className="text-xl md:text-2xl font-bold text-gradient">Omni AI</span>
           </div>
@@ -34,14 +34,14 @@ export function Footer() {
             ))}
           </nav>
 
-          <p className="text-gray-600 text-sm" data-testid="text-copyright">
-            © {new Date().getFullYear()} Omni Leads LLC
+          <p className="text-gray-600 text-sm italic" data-testid="text-tagline">
+            "This is not a tool. This is a transformation."
           </p>
         </div>
 
         <div className="mt-8 pt-8 border-t border-white/5 text-center">
-          <p className="text-gray-600 text-sm italic" data-testid="text-tagline">
-            "This is not a tool. This is a transformation."
+          <p className="text-gray-600 text-sm" data-testid="text-copyright">
+            © {new Date().getFullYear()} Omni AI LLC
           </p>
         </div>
       </div>

@@ -311,7 +311,7 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {metrics.map((metric, i) => {
             const MetricIcon = metric.icon;
             return (
@@ -390,7 +390,7 @@ export default function Dashboard() {
 
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.3 }}>
           <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {quickActions.map((action) => {
               const ActionIcon = action.icon;
               return (
@@ -474,22 +474,22 @@ export default function Dashboard() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-6 sm:gap-4 flex-wrap sm:flex-nowrap">
-                          <div className="flex items-center gap-1.5 min-w-[70px]">
-                            <Eye className="w-3.5 h-3.5 text-gray-600" />
-                            <span className="text-xs text-gray-400" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
+                        <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 sm:gap-4 w-full">
+                          <div className="flex items-center gap-1.5">
+                            <Eye className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                            <span className="text-xs text-gray-400 truncate" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 min-w-[60px]">
-                            <MousePointerClick className="w-3.5 h-3.5 text-gray-600" />
-                            <span className="text-xs text-gray-400" data-testid={`text-campaign-clicks-${campaign.id}`}>{campaign.clicks}</span>
+                          <div className="flex items-center gap-1.5">
+                            <MousePointerClick className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                            <span className="text-xs text-gray-400 truncate" data-testid={`text-campaign-clicks-${campaign.id}`}>{campaign.clicks}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 min-w-[50px]">
-                            <TrendingUp className="w-3.5 h-3.5 text-gray-600" />
-                            <span className="text-xs text-gray-400" data-testid={`text-campaign-conversions-${campaign.id}`}>{campaign.conversions}</span>
+                          <div className="flex items-center gap-1.5">
+                            <TrendingUp className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                            <span className="text-xs text-gray-400 truncate" data-testid={`text-campaign-conversions-${campaign.id}`}>{campaign.conversions}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 min-w-[80px]">
-                            <CircleDollarSign className="w-3.5 h-3.5 text-gray-600" />
-                            <span className="text-xs text-gray-400" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend} / {campaign.budget}</span>
+                          <div className="flex items-center gap-1.5">
+                            <CircleDollarSign className="w-3.5 h-3.5 text-gray-600 flex-shrink-0" />
+                            <span className="text-xs text-gray-400 truncate hidden sm:inline" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend}</span>
                           </div>
                         </div>
 
@@ -545,7 +545,7 @@ export default function Dashboard() {
                           <p className="text-sm text-white" data-testid={`text-booking-name-${i}`}>{booking.name}</p>
                           <p className="text-xs text-gray-500" data-testid={`text-booking-date-${i}`}>{booking.date} at {booking.time}</p>
                         </div>
-                        <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0" data-testid={`text-booking-email-${i}`}>{booking.email}</span>
+                        <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0 max-w-[100px] truncate" data-testid={`text-booking-email-${i}`}>{booking.email}</span>
                       </div>
                     ))}
                   </div>
@@ -593,7 +593,7 @@ export default function Dashboard() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between py-2 border-b border-white/5">
                 <span className="text-sm text-gray-400">Email</span>
-                <span className="text-sm text-white max-w-[200px] truncate" data-testid="text-account-email">{user.email}</span>
+                <span className="text-sm text-white max-w-[150px] sm:max-w-[200px] truncate" data-testid="text-account-email">{user.email}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
                 <span className="text-sm text-gray-400">Member Since</span>

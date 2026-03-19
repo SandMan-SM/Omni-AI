@@ -23,9 +23,9 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex flex-col items-center justify-center px-4 pt-16 md:pt-20 pb-16 md:pb-24 overflow-hidden">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] rounded-full bg-purple-500/10 blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] rounded-full bg-blue-500/10 blur-[100px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-cyan-500/5 blur-[150px]" />
+        <div className="absolute top-1/4 left-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-purple-500/10 blur-[120px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] md:w-[300px] md:h-[300px] lg:w-[400px] lg:h-[400px] rounded-full bg-blue-500/10 blur-[100px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[600px] lg:h-[600px] rounded-full bg-cyan-500/5 blur-[150px]" />
       </div>
 
       <motion.div
@@ -50,7 +50,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6"
+          className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-6"
         >
           <span className="text-gradient">Welcome to AGI</span>
         </motion.h1>
@@ -59,7 +59,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
-          className="text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-12 leading-relaxed"
+          className="text-base sm:text-lg md:text-xl text-gray-400 max-w-2xl mx-auto mb-8 md:mb-12 leading-relaxed px-4"
         >
           Autonomous AGI systems that generate leads, run operations, and scale
           businesses without human micromanagement.
@@ -73,7 +73,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
         >
           <Button
             size="lg"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-8 py-4 text-base rounded-md neon-glow"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-6 md:px-8 py-3 md:py-4 text-base rounded-md neon-glow w-full sm:w-auto"
             onClick={() => router.push("/interlinked")}
             data-testid="button-interlinked"
           >
@@ -82,7 +82,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           <Button
             size="lg"
             variant="outline"
-            className="border-white/20 bg-white/5 backdrop-blur-sm text-white px-8 py-4 text-base rounded-md"
+            className="border-white/20 bg-white/5 backdrop-blur-sm text-white px-6 md:px-8 py-3 md:py-4 text-base rounded-md w-full sm:w-auto"
             onClick={() => {
               if (user) {
                 router.push("/dashboard");
@@ -108,7 +108,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.4, delay: 1 + index * 0.1 }}
-              className="flex flex-col items-center text-center gap-2 w-[120px]"
+              className="flex flex-col items-center text-center gap-2 w-24 sm:w-28 md:w-32"
               data-testid={`metric-${metric.label.toLowerCase()}`}
             >
               <metric.icon className="w-5 h-5 text-purple-400" />

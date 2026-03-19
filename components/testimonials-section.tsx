@@ -24,10 +24,10 @@ const testimonials = [
 
 export function TestimonialsSection() {
   return (
-    <section className="relative py-32 px-4" id="testimonials">
+    <section className="relative py-20 md:py-32 px-4" id="testimonials">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 right-0 w-[500px] h-[500px] rounded-full bg-purple-500/5 blur-[150px]" />
-        <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] rounded-full bg-blue-500/5 blur-[120px]" />
+        <div className="absolute top-1/2 right-0 w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-purple-500/5 blur-[150px]" />
+        <div className="absolute bottom-0 left-1/4 w-[250px] h-[250px] md:w-[300px] md:h-[300px] lg:w-[400px] lg:h-[400px] rounded-full bg-blue-500/5 blur-[120px]" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -38,7 +38,7 @@ export function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
             <span className="text-gradient">See What Others Have to Say</span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">

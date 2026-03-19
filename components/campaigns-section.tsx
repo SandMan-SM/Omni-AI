@@ -34,8 +34,8 @@ export function CampaignsSection() {
   return (
     <section className="relative py-20 md:py-32 px-4" id="campaigns">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/3 right-0 w-[600px] h-[600px] rounded-full bg-purple-500/5 blur-[150px]" />
-        <div className="absolute bottom-1/3 left-0 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
+        <div className="absolute top-1/3 right-0 w-[300px] h-[300px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] rounded-full bg-purple-500/5 blur-[150px]" />
+        <div className="absolute bottom-1/3 left-0 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
       </div>
 
       <div className="max-w-6xl mx-auto relative z-10">

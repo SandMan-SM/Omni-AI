@@ -84,8 +84,7 @@ export default function Campaigns() {
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                <span className="text-gradient">Campaigns</span>
-                <span className="text-white"> — AI Video Marketing</span>
+                <span className="text-gradient">AI Video Marketing</span>
               </h1>
               <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
                 AI creates your video marketing, tests every piece of content,

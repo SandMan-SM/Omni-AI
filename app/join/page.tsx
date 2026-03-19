@@ -509,8 +509,8 @@ export default function Join() {
                   <Button
                     variant={businessOwner === true ? "default" : "outline"}
                     className={businessOwner === true
-                      ? "flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                      : "flex-1 border-white/20 bg-transparent text-gray-400"}
+                       ? "flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
+                       : "flex-1 border-white/20 bg-transparent text-gray-400 w-full"}
                     onClick={() => setBusinessOwner(true)}
                     data-testid="button-business-yes"
                   >
@@ -519,8 +519,8 @@ export default function Join() {
                   <Button
                     variant={businessOwner === false ? "default" : "outline"}
                     className={businessOwner === false
-                      ? "flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                      : "flex-1 border-white/20 bg-transparent text-gray-400"}
+                       ? "flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
+                       : "flex-1 border-white/20 bg-transparent text-gray-400 w-full"}
                     onClick={() => setBusinessOwner(false)}
                     data-testid="button-business-no"
                   >
@@ -615,7 +615,7 @@ export default function Join() {
                     <h2 className="text-xl font-semibold mb-1" data-testid="text-step-activation">Activate Platforms</h2>
                     <p className="text-gray-400 text-sm mb-6">Would you like to activate your platforms now?</p>
 
-                    <div className="flex gap-3 mb-6">
+                <div className="flex flex-col sm:flex-row gap-3 mb-6">
                       <Button
                         className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
                         onClick={startActivationSequence}

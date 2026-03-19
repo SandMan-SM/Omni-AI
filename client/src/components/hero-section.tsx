@@ -49,9 +49,9 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight mb-6"
+          className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6"
         >
-          <span className="text-gradient">Omni AI</span>
+          <span className="text-gradient">Welcome to AGI</span>
         </motion.h1>
 
         <motion.p
@@ -72,7 +72,16 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
         >
           <Button
             size="lg"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-8 py-6 text-lg rounded-md neon-glow"
+            className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-8 py-4 text-base rounded-md neon-glow"
+            onClick={() => setLocation("/interlinked")}
+            data-testid="button-interlinked"
+          >
+            Interlinked
+          </Button>
+          <Button
+            size="lg"
+            variant="outline"
+            className="border-white/20 bg-white/5 backdrop-blur-sm text-white px-8 py-4 text-base rounded-md"
             onClick={() => {
               if (user) {
                 setLocation("/dashboard");
@@ -80,19 +89,9 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
                 onSignIn?.();
               }
             }}
-            data-testid="button-start-free"
+            data-testid="button-sign-in"
           >
             Sign In
-            <ArrowRight className="ml-2 w-5 h-5" />
-          </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-white/20 bg-white/5 backdrop-blur-sm text-white px-8 py-6 text-lg rounded-md"
-            onClick={onBookDemo}
-            data-testid="button-book-demo"
-          >
-            Book a Demo
           </Button>
         </motion.div>
 

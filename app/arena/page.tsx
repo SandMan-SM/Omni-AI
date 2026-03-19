@@ -133,8 +133,8 @@ export default function Arena() {
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
         <section className="relative px-4 py-12 md:py-20">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-cyan-500/10 blur-[150px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-amber-500/8 blur-[130px]" />
+            <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] rounded-full bg-cyan-500/10 blur-[150px]" />
+            <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-amber-500/8 blur-[130px]" />
           </div>
 
           <div className="max-w-6xl mx-auto relative z-10">

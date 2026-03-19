@@ -64,7 +64,7 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
     <div>
       <div className="text-center mb-10">
         <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${isDarkMode ? "" : "text-gray-900"}`}>
-          Military Badges & Achievements
+          Badges & Achievements
         </h2>
         <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
           Earn patches and commendations as you prove your worth in the Arena
@@ -113,7 +113,7 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
                       <div className="relative">
                         <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${category.gradient} p-[2px] mx-auto mb-3`}>
                           <div className={`w-full h-full rounded-full ${isDarkMode ? "bg-gray-900" : "bg-white"} flex items-center justify-center`}>
-                            <BadgeIcon className="w-6 h-6 text-black" />
+                            <BadgeIcon className="w-6 h-6 text-white" />
                           </div>
                         </div>
                         <h4 className={`font-bold text-sm mb-1 ${isDarkMode ? "text-white" : "text-gray-900"}`}>

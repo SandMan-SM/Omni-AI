@@ -38,33 +38,36 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
       initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
         isScrolled
           ? "bg-black/80 backdrop-blur-lg border-b border-white/5"
           : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4">
+      <div className="max-w-7xl mx-auto px-4 overflow-x-hidden">
         <div className="flex items-center justify-between h-16 md:h-20">
-          <a href="/" className="flex items-center gap-2" data-testid="link-home">
-            <span className="text-xl md:text-2xl font-bold text-gradient">
+          <a href="/" className="flex items-center gap-2 flex-shrink-0" data-testid="link-home">
+            <span className="text-lg sm:text-xl md:text-2xl font-bold text-gradient">
               Omni AI
             </span>
           </a>
 
-          <div className="hidden md:flex items-center justify-center absolute left-1/2 transform -translate-x-1/2">
-            {navLinks.map((link) => (
-              <a
-                href={link.href}
-                className={`text-gray-400 hover:text-white transition-colors text-sm px-4 ${pathname === link.href ? 'text-white' : ''}`}
-                data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
-              >
-                {link.label}
-              </a>
-            ))}
+          <div className="hidden md:flex items-center justify-center gap-8 flex-1 absolute md:relative left-0 right-0 md:left-auto md:right-auto pointer-events-none md:pointer-events-auto">
+            <div className="flex items-center gap-1 pointer-events-auto">
+              {navLinks.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className={`text-gray-400 hover:text-white transition-colors text-sm px-3 lg:px-4 ${pathname === link.href ? 'text-white' : ''}`}
+                  data-testid={`nav-${link.label.toLowerCase().replace(" ", "-")}`}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-4 flex-shrink-0">
             <Button
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
               onClick={() => {
@@ -82,7 +85,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
           </div>
 
           <button
-            className="md:hidden p-2 text-white"
+            className="md:hidden p-2 text-white flex-shrink-0"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             data-testid="button-mobile-menu"
           >
@@ -101,9 +104,9 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="md:hidden py-4 border-t border-white/5 bg-[#050505]"
+              className="md:hidden py-4 border-t border-white/5 bg-[#050505] overflow-y-auto max-h-[80vh]"
             >
-            <div className="flex flex-col gap-4 px-1">
+            <div className="flex flex-col gap-4 px-4">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
@@ -117,7 +120,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-white/5">
                 <Button
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full text-sm min-h-[44px]"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
                     if (user) {

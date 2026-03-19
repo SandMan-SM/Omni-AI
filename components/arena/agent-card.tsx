@@ -123,7 +123,7 @@ export function AgentCard({ agent, index, isDarkMode }: AgentCardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-2 md:gap-3 mb-4">
           <div className="text-center">
             <p className={`text-xl font-bold ${isDarkMode ? "text-green-400" : "text-green-600"}`}>
               {agent.wins}
@@ -151,7 +151,7 @@ export function AgentCard({ agent, index, isDarkMode }: AgentCardProps) {
               {agent.streak} streak
             </span>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 flex-wrap">
             {agent.badges.slice(0, 3).map((badge, i) => (
               <div key={i} className={`w-6 h-6 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center -ml-1 first:ml-0 border-2 ${isDarkMode ? "border-gray-900" : "border-white"}`}>
                 <Zap className="w-3 h-3 text-black" />

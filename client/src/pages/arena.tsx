@@ -1,8 +1,8 @@
 import { motion } from "framer-motion";
 import { 
   Swords, Trophy, Target, Zap, Shield, Crown, Flame, Medal, 
-  Users, ChevronRight, Eye, EyeOff, Lock, Star, Zap as ZapIcon,
-  TrendingUp, Calendar, Award, Bell, Settings, ChevronDown
+  Users, ChevronRight, Eye, EyeOff, Lock, Zap as ZapIcon,
+  TrendingUp, Calendar, Award, ChevronDown
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -11,10 +11,9 @@ import { BookDemoModal } from "@/components/book-demo-modal";
 import { AuthModal } from "@/components/auth-modal";
 import { AgentCard } from "@/components/arena/agent-card";
 import { RankingTiers } from "@/components/arena/ranking-tiers";
-import { TournamentBracket } from "@/components/arena/tournament-bracket";
+import { Leaderboard } from "@/components/arena/leaderboard";
 import { BadgeShowcase } from "@/components/arena/badge-showcase";
-import { ArenaNotifications } from "@/components/arena/notifications";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 const featuredAgents = [
   {
@@ -102,21 +101,7 @@ const upcomingTournament = {
 export default function Arena() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, type: "tournament", message: "Empire Invitational registration now open!", time: "2 hours ago", read: false },
-    { id: 2, type: "rank", message: "Shadow Protocol ranked up to Silver!", time: "5 hours ago", read: false },
-    { id: 3, type: "badge", message: "You unlocked 'First Contact' badge", time: "1 day ago", read: true },
-  ]);
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
-  const markAsRead = (id: number) => {
-    setNotifications(notifications.map(n => 
-      n.id === id ? { ...n, read: true } : n
-    ));
-  };
+  const [isDarkMode] = useState(true);
 
   return (
     <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? "bg-[#050505] text-white" : "bg-gray-50 text-gray-900"}`}>
@@ -125,45 +110,6 @@ export default function Arena() {
         onBookDemo={() => setIsDemoModalOpen(true)} 
         onSignIn={() => setIsAuthModalOpen(true)}
       />
-
-      <div className="fixed top-20 right-4 z-50 md:right-8">
-        <div className="relative">
-          <button
-            onClick={() => setShowNotifications(!showNotifications)}
-            className={`p-3 rounded-full shadow-lg transition-all ${
-              isDarkMode 
-                ? "bg-gray-800/80 hover:bg-gray-700/80 text-white" 
-                : "bg-white hover:bg-gray-100 text-gray-900"
-            } ${unreadCount > 0 ? "animate-pulse" : ""}`}
-          >
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                {unreadCount}
-              </span>
-            )}
-          </button>
-          
-          <ArenaNotifications
-            isOpen={showNotifications}
-            onClose={() => setShowNotifications(false)}
-            notifications={notifications}
-            onMarkAsRead={markAsRead}
-            isDarkMode={isDarkMode}
-          />
-        </div>
-        
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className={`mt-2 p-3 rounded-full shadow-lg transition-all ${
-            isDarkMode 
-              ? "bg-gray-800/80 hover:bg-gray-700/80 text-yellow-400" 
-              : "bg-white hover:bg-gray-100 text-gray-900"
-          }`}
-        >
-          {isDarkMode ? <Star className="w-5 h-5" /> : <Star className="w-5 h-5 fill-current" />}
-        </button>
-      </div>
 
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
         <section className="relative px-4 py-12 md:py-20">
@@ -236,18 +182,20 @@ export default function Arena() {
                         <Trophy className="w-5 h-5 text-black" />
                       </div>
                       <div>
-                        <h3 className="font-bold text-lg">{upcomingTournament.name}</h3>
+                        <h3 className="font-bold text-lg">Leaderboard</h3>
                         <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-500"}`}>
-                          {upcomingTournament.date} • {upcomingTournament.brackets} Brackets • {upcomingTournament.participants} Participants
+                          Top AI Agents in the Arena
                         </p>
                       </div>
                     </div>
                     <span className="px-4 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
-                      Registration Open
+                      Live
                     </span>
                   </div>
                 </div>
-                <TournamentBracket isDarkMode={isDarkMode} />
+                <div className="p-6">
+                  <Leaderboard isDarkMode={isDarkMode} />
+                </div>
               </div>
             </motion.div>
 
@@ -284,9 +232,6 @@ export default function Arena() {
                           : "bg-white border border-gray-200"
                       }`}
                     >
-                      <span className={`absolute -top-3 -left-3 w-8 h-8 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 flex items-center justify-center text-sm font-bold text-black`}>
-                        {step.step}
-                      </span>
                       <div className={`w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500/20 to-amber-500/20 flex items-center justify-center mb-4`}>
                         <Icon className={`w-6 h-6 ${isDarkMode ? "text-cyan-400" : "text-cyan-600"}`} />
                       </div>
@@ -330,7 +275,9 @@ export default function Arena() {
 
               <div className="grid md:grid-cols-3 gap-6">
                 {featuredAgents.map((agent, index) => (
-                  <AgentCard key={agent.id} agent={agent} index={index} isDarkMode={isDarkMode} />
+                  <div key={agent.id} className="flex flex-col">
+                    <AgentCard agent={agent} index={index} isDarkMode={isDarkMode} />
+                  </div>
                 ))}
               </div>
             </motion.div>

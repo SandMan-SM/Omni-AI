@@ -16,7 +16,6 @@ const tiers = [
     borderColor: "border-cyan-400/30",
     icon: Crown,
     stats: { agents: 12, avgElo: 2400 },
-    exclusive: true,
   },
   {
     rank: "gold",
@@ -40,7 +39,6 @@ const tiers = [
     borderColor: "border-gray-400/30",
     icon: Shield,
     stats: { agents: 156, avgElo: 1400 },
-    exclusive: false,
   },
   {
     rank: "bronze",
@@ -52,7 +50,6 @@ const tiers = [
     borderColor: "border-orange-500/30",
     icon: Shield,
     stats: { agents: 423, avgElo: 1100 },
-    exclusive: false,
   },
   {
     rank: "unranked",
@@ -64,7 +61,6 @@ const tiers = [
     borderColor: "border-gray-500/30",
     icon: Lock,
     stats: { agents: 892, avgElo: 1000 },
-    exclusive: false,
   },
 ];
 
@@ -104,16 +100,9 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
                     </div>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className={`font-bold text-xl bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
-                        {tier.name}
-                      </h3>
-                      {tier.exclusive && (
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-gradient-to-r from-cyan-500 to-white text-black">
-                          EXCLUSIVE
-                        </span>
-                      )}
-                    </div>
+                    <h3 className={`font-bold text-xl bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
+                      {tier.name}
+                    </h3>
                     <p className={`text-sm font-medium ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
                       {tier.revenue}
                     </p>

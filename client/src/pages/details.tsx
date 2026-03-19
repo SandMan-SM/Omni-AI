@@ -166,8 +166,7 @@ export default function Details() {
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                <span className="text-gradient">Omni AI</span>
-                <span className="text-white"> — AGI Marketing Platform</span>
+                <span className="text-gradient">AGI Marketing Platform</span>
               </h1>
               <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
                 Automated Lead Generation & Business Growth
@@ -389,16 +388,14 @@ export default function Details() {
                       viewport={{ once: true }}
                       className={`relative ${isPopular ? 'md:-mt-4' : ''}`}
                     >
-                      {isPopular && (
-                        <div className="absolute -top-3 right-6 z-10">
-                          <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-yellow-500 to-amber-500 text-black shadow-lg shadow-yellow-500/25">
-                            <Star className="w-3 h-3" />
-                            MOST POPULAR
-                          </span>
-                        </div>
-                      )}
-
                       <div className={`glass-card rounded-md p-5 md:p-6 border ${isPopular ? 'border-yellow-500/40' : 'border-white/5'} ${isLocked ? 'opacity-70' : ''} ${isGold ? 'relative overflow-hidden' : ''}`}>
+                        {isPopular && (
+                          <div className="absolute top-0 right-0">
+                            <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-black text-[10px] font-bold px-4 py-1.5 rounded-tr-md">
+                              MOST POPULAR
+                            </div>
+                          </div>
+                        )}
                         {isGold && (
                           <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/5 via-amber-500/5 to-yellow-400/5 animate-pulse" />
                         )}

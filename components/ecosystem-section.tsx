@@ -13,8 +13,8 @@ export function EcosystemSection() {
   return (
     <section className="relative py-32 px-4 overflow-hidden" id="ecosystem">
       <div className="absolute inset-0">
-        <div className="absolute top-0 right-0 w-[600px] h-[600px] rounded-full bg-blue-500/5 blur-[150px]" />
-        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] rounded-full bg-purple-500/5 blur-[120px]" />
+        <div className="absolute top-0 right-0 w-[300px] h-[300px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] rounded-full bg-blue-500/5 blur-[150px]" />
+        <div className="absolute bottom-0 left-0 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-purple-500/5 blur-[120px]" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
@@ -25,7 +25,7 @@ export function EcosystemSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
             <span className="text-gradient">The Omni Ecosystem</span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">
@@ -52,9 +52,9 @@ export function EcosystemSection() {
                     className="relative group"
                   >
                     <div
-                      className={`w-20 h-20 md:w-24 md:h-24 rounded-md bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
+                      className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-md bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
                     >
-                      <Icon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+                      <Icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 text-white" />
                     </div>
                     <motion.div
                       animate={{ opacity: [0.2, 0.45, 0.2] }}

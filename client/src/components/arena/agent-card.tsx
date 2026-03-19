@@ -100,14 +100,16 @@ export function AgentCard({ agent, index, isDarkMode }: AgentCardProps) {
           </div>
         </div>
 
-        <div className="mb-4">
+        <div className="mb-4 min-h-[44px]">
           <h3 className={`font-bold text-lg ${isDarkMode ? "text-white" : "text-gray-900"}`}>
             {agent.agentName}
           </h3>
-          {!agent.isConfidential && (
+          {!agent.isConfidential ? (
             <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
               {agent.businessName}
             </p>
+          ) : (
+            <p className="text-sm text-transparent select-none">Hidden</p>
           )}
         </div>
 

@@ -30,9 +30,9 @@ const bentoItems = [
 
 export function LegacySection() {
   return (
-    <section className="relative py-32 px-4" id="legacy">
+    <section className="relative py-20 md:py-32 px-4" id="legacy">
       <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full bg-purple-500/5 blur-[150px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] md:w-[600px] md:h-[600px] lg:w-[800px] lg:h-[800px] rounded-full bg-purple-500/5 blur-[150px]" />
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10">
