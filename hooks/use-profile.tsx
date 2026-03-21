@@ -17,6 +17,8 @@ export interface Profile {
   business_details: string | null;
   activated_platforms: string[];
   onboarding_completed: boolean;
+  sponsor_activated: boolean;
+  sponsor_insights_paid: boolean;
   created_at: string;
 }
 
@@ -78,6 +80,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           business_details: null,
           activated_platforms: [],
           onboarding_completed: false,
+          sponsor_activated: false,
+          sponsor_insights_paid: false,
         };
 
         const { data: created, error: createError } = await supabase

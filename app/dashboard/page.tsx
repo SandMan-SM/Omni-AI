@@ -7,10 +7,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Zap, Shield, Crown, Flame, Star, Calendar, Mail,
+  Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
   ArrowRight, LogOut, User, Clock, Video, Play, Pause,
   TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
-  CircleDollarSign, Plus, FileEdit, MoreHorizontal, ChevronRight, Landmark
+  CircleDollarSign, Plus, FileEdit, MoreHorizontal, ChevronRight, Landmark, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -333,7 +333,69 @@ export default function Dashboard() {
 
         {isSponsor && (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-            <SponsorTab />
+            {profile?.sponsor_activated ? (
+              <SponsorTab />
+            ) : (
+              <Card className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-purple-500/30">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                      <Zap className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white mb-1">Activate Your Command Center</h3>
+                      <p className="text-sm text-gray-400 mb-4">
+                        You must finish the onboarding process to access your sponsor insights and analytics.
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <Button
+                          className="bg-gradient-to-r from-purple-600 to-blue-600 border-0"
+                          onClick={() => window.open('https://calendly.com/omni-ai', '_blank')}
+                        >
+                          <Calendar className="w-4 h-4 mr-2" />
+                          Schedule a Meeting
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-purple-500/50 bg-purple-500/10"
+                          onClick={() => window.open('tel:+18014581756', '_self')}
+                        >
+                          <Phone className="w-4 h-4 mr-2" />
+                          Call +1 (801) 458-1756
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </motion.div>
+        )}
+
+        {isSponsor && profile?.sponsor_activated && !profile?.sponsor_insights_paid && (
+          <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
+            <Card className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/30">
+              <CardContent className="p-6">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="w-6 h-6 text-amber-400" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-white mb-1">Activate Sponsor Insights</h3>
+                    <p className="text-sm text-gray-400 mb-4">
+                      Unlock full access to your sponsor analytics and insights dashboard.
+                    </p>
+                    <Button
+                      className="bg-gradient-to-r from-amber-600 to-orange-600 border-0"
+                      onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
+                    >
+                      <DollarSign className="w-4 h-4 mr-2" />
+                      Pay to Activate Insights
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </motion.div>
         )}
 
