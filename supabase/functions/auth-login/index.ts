@@ -33,7 +33,7 @@ serve(async (req) => {
       .eq('username', username)
       .single()
 
-    if (error || !user) {
+    if (userError || !user) {
       return new Response(JSON.stringify({ error: 'Invalid username or password' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
