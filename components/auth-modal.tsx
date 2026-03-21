@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Mail, Lock, Loader2, CheckCircle } from "lucide-react";
+import { X, User, Lock, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
@@ -15,7 +15,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthModalProps) {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
@@ -28,12 +28,12 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(username, password);
 
       if (error) {
         toast({
           title: "Error",
-          description: error.message,
+          description: error,
           variant: "destructive",
         });
       } else {
@@ -43,7 +43,7 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
         });
         onClose();
         router.push("/dashboard");
-        setEmail("");
+        setUsername("");
         setPassword("");
       }
     } catch (err) {
@@ -106,22 +106,22 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
                 <p className="text-gray-400 text-sm" data-testid="text-auth-prompt">{prompt}</p>
               ) : !showCompleteBanner ? (
                 <p className="text-gray-400 text-sm">
-                  Sign in to access your account
+                  Sign in with your username
                 </p>
               ) : null}
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
                 <Input
-                  type="email"
-                  placeholder="Email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  type="text"
+                  placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
                   required
-                  data-testid="input-email"
+                  data-testid="input-username"
                 />
               </div>
 
@@ -134,7 +134,6 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
                   required
-                  minLength={6}
                   data-testid="input-password"
                 />
               </div>
