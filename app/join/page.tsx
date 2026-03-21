@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { User, Phone, Mail, ArrowRight, Loader2, Check } from "lucide-react";
@@ -12,9 +12,15 @@ import { useToast } from "@/hooks/use-toast";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 
 export default function Join() {
-  const { signUp } = useAuth();
+  const { user, signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (user) {
+      router.push("/dashboard");
+    }
+  }, [user, router]);
 
   const [step, setStep] = useState<"form" | "success">("form");
   const [isLoading, setIsLoading] = useState(false);

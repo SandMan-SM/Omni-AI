@@ -263,7 +263,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        {!onboardingComplete && profile && (
+        {!onboardingComplete && profile && !user?.username && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
               className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
