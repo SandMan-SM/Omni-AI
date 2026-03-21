@@ -364,7 +364,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               )}
-              <SponsorTab />
+              <SponsorTab isLocked={!profile?.sponsor_activated} />
             </div>
           </motion.div>
         )}

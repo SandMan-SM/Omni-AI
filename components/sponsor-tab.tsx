@@ -1,8 +1,9 @@
+"use client";
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
   Bot, Mail, Target, CheckCircle, DollarSign, Building2,
-  Users, TrendingUp, Calendar, ChevronDown, ChevronRight
+  Users, TrendingUp, Calendar, ChevronDown, ChevronRight, Lock
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,14 @@ interface BusinessData {
     viewsGenerated: number;
     conversionRate: number;
   };
+}
+
+interface GoalData {
+  label: string;
+  current: number;
+  goal: number;
+  icon: React.ReactNode;
+  color: string;
 }
 
 const mockSponsorData: BusinessData[] = [
@@ -108,7 +117,68 @@ const mockSponsorData: BusinessData[] = [
   },
 ];
 
-export function SponsorTab() {
+function CircularProgress({ percentage, size = 80, strokeWidth = 6, color = "var(--primary)" }: { percentage: number; size?: number; strokeWidth?: number; color?: string }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const offset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg className="transform -rotate-90" width={size} height={size}>
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="rgba(255,255,255,0.1)"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        <motion.circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeLinecap="round"
+          strokeDasharray={circumference}
+          initial={{ strokeDashoffset: circumference }}
+          animate={{ strokeDashoffset: offset }}
+          transition={{ duration: 1, ease: "easeOut" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="text-lg font-bold">{Math.round(percentage)}%</span>
+      </div>
+    </div>
+  );
+}
+
+function GoalCard({ goal, locked }: { goal: GoalData; locked: boolean }) {
+  const percentage = Math.min((goal.current / goal.goal) * 100, 100);
+  
+  return (
+    <Card className={`bg-white/[0.03] border-white/[0.06] relative ${locked ? 'blur-sm select-none' : ''}`}>
+      <CardContent className="p-4 flex flex-col items-center text-center">
+        <CircularProgress 
+          percentage={percentage} 
+          color={goal.color}
+          size={90}
+          strokeWidth={6}
+        />
+        <div className="mt-3">
+          <div className="flex items-center gap-1.5 justify-center mb-1">
+            <span className="text-purple-400">{goal.icon}</span>
+            <span className="text-xs text-gray-400">{goal.label}</span>
+          </div>
+          <p className="text-sm font-medium">{goal.current.toLocaleString()} / {goal.goal.toLocaleString()}</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
   const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<{ business: string; agent: string } | null>(null);
 
@@ -121,32 +191,37 @@ export function SponsorTab() {
     setExpandedAgent(current ? null : { business: businessId, agent });
   };
 
+  const totalTasks = mockSponsorData.reduce((a, b) => a + b.totalTasksCompleted, 0);
+  const totalRevenue = mockSponsorData.reduce((a, b) => a + b.totalRevenue, 0);
+  const totalSubscribers = mockSponsorData.reduce((a, b) => a + b.newsletterAgent.lifetimeSubscribers, 0);
+  const totalViews = mockSponsorData.reduce((a, b) => a + b.marketingAgent.viewsGenerated, 0);
+
+  const goals: GoalData[] = [
+    { label: "Tasks Goal", current: totalTasks, goal: 5000, icon: <Target className="w-3 h-3" />, color: "#a855f7" },
+    { label: "Revenue Goal", current: totalRevenue, goal: 100000, icon: <DollarSign className="w-3 h-3" />, color: "#22c55e" },
+    { label: "Subscribers Goal", current: totalSubscribers, goal: 50000, icon: <Users className="w-3 h-3" />, color: "#3b82f6" },
+    { label: "Views Goal", current: totalViews, goal: 1000000, icon: <TrendingUp className="w-3 h-3" />, color: "#f59e0b" },
+  ];
+
   return (
-    <div className="space-y-4">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold">Sponsor Insights</h2>
-        <p className="text-sm text-gray-400">Your sponsored business analytics</p>
+    <div className={`space-y-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
+      <div className="mb-4 flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold flex items-center gap-2">
+            Sponsor Insights
+            {isLocked && <Lock className="w-4 h-4 text-purple-400" />}
+          </h2>
+          <p className="text-sm text-gray-400">Your sponsored business analytics</p>
+        </div>
+        <Badge variant="outline" className="border-purple-500/50 text-purple-400">
+          {mockSponsorData.length} Assets
+        </Badge>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
-        <Card className="bg-purple-900/20 border-purple-500/20">
-          <CardContent className="p-4">
-            <p className="text-purple-400 text-sm">Total Tasks</p>
-            <p className="text-2xl font-bold">{mockSponsorData.reduce((a, b) => a + b.totalTasksCompleted, 0).toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-purple-900/20 border-purple-500/20">
-          <CardContent className="p-4">
-            <p className="text-purple-400 text-sm">Total Revenue</p>
-            <p className="text-2xl font-bold">${mockSponsorData.reduce((a, b) => a + b.totalRevenue, 0).toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card className="bg-purple-900/20 border-purple-500/20">
-          <CardContent className="p-4">
-            <p className="text-purple-400 text-sm">Assets</p>
-            <p className="text-2xl font-bold">{mockSponsorData.length}</p>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {goals.map((goal) => (
+          <GoalCard key={goal.label} goal={goal} locked={isLocked} />
+        ))}
       </div>
 
       <Card className="bg-white/5 border-white/10">
