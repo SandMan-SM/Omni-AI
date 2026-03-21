@@ -40,13 +40,8 @@ serve(async (req) => {
       })
     }
 
-    // Verify password
-    const passwordValid = crypto.subtle.timingSafeEqual(
-      new TextEncoder().encode(password),
-      new TextEncoder().encode(user.password_hash)
-    )
-
-    if (!passwordValid) {
+    // Verify password (simple comparison for now)
+    if (password !== user.password_hash) {
       return new Response(JSON.stringify({ error: 'Invalid username or password' }), {
         status: 401,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

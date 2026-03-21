@@ -295,7 +295,7 @@ export default function Dashboard() {
         <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-2">
             <div>
-              <p className="text-gray-500 text-sm mb-1" data-testid="text-welcome">Welcome back</p>
+              <p className="text-gray-500 text-sm mb-1" data-testid="text-welcome">Welcome back{user?.username ? `, ${user.username}` : ''}</p>
               <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-dashboard-heading">
                 Your Command Center
               </h1>
