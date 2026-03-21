@@ -1,151 +1,55 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-  User, Phone, Building2, Briefcase, FileText, Mail, Lock, Eye, EyeOff,
-  ArrowRight, ArrowLeft, Check, Loader2, SkipForward,
-  CircleDot, AlertCircle
-} from "lucide-react";
-import { SiTiktok, SiFacebook, SiYoutube, SiInstagram, SiLinkedin, SiX, SiSnapchat, SiSlack, SiTelegram, SiWhatsapp, SiGoogle, SiDiscord, SiSpotify, SiZoom, SiGithub, SiApple } from "react-icons/si";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { User, Phone, Mail, ArrowRight, Loader2, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
-import { useProfile } from "@/hooks/use-profile";
 import { useToast } from "@/hooks/use-toast";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 
-const platforms = [
-  { name: "TikTok", icon: SiTiktok },
-  { name: "Facebook", icon: SiFacebook },
-  { name: "YouTube", icon: SiYoutube },
-  { name: "Instagram", icon: SiInstagram },
-  { name: "LinkedIn", icon: SiLinkedin },
-  { name: "X", icon: SiX },
-  { name: "Snapchat", icon: SiSnapchat },
-  { name: "Slack", icon: SiSlack },
-  { name: "Telegram", icon: SiTelegram },
-  { name: "WhatsApp", icon: SiWhatsapp },
-  { name: "Newsletter", icon: null },
-  { name: "Google", icon: SiGoogle },
-  { name: "Discord", icon: SiDiscord },
-  { name: "ChatGPT", icon: null },
-  { name: "Spotify", icon: SiSpotify },
-  { name: "Zoom", icon: SiZoom },
-  { name: "GitHub", icon: SiGithub },
-  { name: "Apple", icon: SiApple },
-];
-
-type FunnelStep = "signup" | "basic" | "business" | "activation" | "complete";
-
-function getResumeStep(profile: { name: string | null; phone: string | null; business_owner: boolean | null; business_name: string | null; onboarding_completed: boolean }): FunnelStep {
-  if (!profile.name || !profile.phone) {
-    return "basic";
-  }
-  if (profile.business_owner === null || profile.business_owner === undefined) {
-    return "business";
-  }
-  if (profile.business_owner === true && !profile.business_name) {
-    return "business";
-  }
-  if (!profile.onboarding_completed) {
-    return "activation";
-  }
-  return "basic";
-}
-
 export default function Join() {
-  const { user, loading: authLoading, signUp, signIn, signOut } = useAuth();
-  const { profile, profileLoading, upsertProfile } = useProfile();
-  const pathname = usePathname();
+  const { signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
 
-  const [step, setStep] = useState<FunnelStep>("signup");
+  const [step, setStep] = useState<"form" | "success">("form");
   const [isLoading, setIsLoading] = useState(false);
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-
   const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
 
-  const [businessOwner, setBusinessOwner] = useState<boolean | null>(null);
-  const [businessName, setBusinessName] = useState("");
-  const [businessNiche, setBusinessNiche] = useState("");
-  const [businessDetails, setBusinessDetails] = useState("");
-
-  const [activateNow, setActivateNow] = useState<boolean | null>(null);
-  const [activatedPlatforms, setActivatedPlatforms] = useState<string[]>([]);
-  const [platformPage, setPlatformPage] = useState(0);
-  const [activationPhase, setActivationPhase] = useState<"idle" | "loading" | "cycling" | "signin">("idle");
-  const [currentPlatformIndex, setCurrentPlatformIndex] = useState(0);
-  const [activatedCount, setActivatedCount] = useState(0);
-  const [signInEmail, setSignInEmail] = useState("");
-  const [signInPassword, setSignInPassword] = useState("");
-  const [signInLoading, setSignInLoading] = useState(false);
-
-  const [hasResumed, setHasResumed] = useState(false);
-
-  useEffect(() => {
-    if (authLoading || profileLoading) return;
-
-    if (user && !hasResumed) {
-      if (profile) {
-        if (profile.onboarding_completed) {
-          router.push("/dashboard");
-          return;
-        }
-        const resumeStep = getResumeStep(profile);
-        setStep(resumeStep);
-      } else {
-        setStep("basic");
-      }
-      setHasResumed(true);
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!name.trim()) {
+      toast({ title: "Required", description: "Please enter your name.", variant: "destructive" });
+      return;
     }
-  }, [user, authLoading, profileLoading, profile, hasResumed, router]);
-
-  useEffect(() => {
-    if (profile) {
-      if (profile.name) setName(profile.name);
-      if (profile.phone) setPhone(profile.phone);
-      setBusinessOwner(profile.business_owner ?? null);
-      if (profile.business_name) setBusinessName(profile.business_name);
-      if (profile.business_niche) setBusinessNiche(profile.business_niche);
-      if (profile.business_details) setBusinessDetails(profile.business_details);
-      if (profile.activated_platforms?.length) setActivatedPlatforms(profile.activated_platforms);
-    }
-  }, [profile]);
-
-  const handleSignUp = async () => {
     if (!email.trim()) {
-      toast({ title: "Required", description: "Please enter your email address.", variant: "destructive" });
+      toast({ title: "Required", description: "Please enter your email.", variant: "destructive" });
       return;
     }
-    if (!password.trim() || password.length < 6) {
-      toast({ title: "Required", description: "Password must be at least 6 characters.", variant: "destructive" });
-      return;
-    }
-    if (password !== confirmPassword) {
-      toast({ title: "Mismatch", description: "Passwords do not match.", variant: "destructive" });
+    if (!phone.trim()) {
+      toast({ title: "Required", description: "Please enter your phone number.", variant: "destructive" });
       return;
     }
 
     setIsLoading(true);
     try {
-      const { error } = await signUp(email.trim(), password);
+      const { error } = await signUp(name.trim(), email.trim(), phone.trim());
+      
       if (error) {
-        toast({ title: "Sign Up Failed", description: error.message, variant: "destructive" });
+        toast({ title: "Error", description: error, variant: "destructive" });
         setIsLoading(false);
         return;
       }
-      toast({ title: "Account created!", description: "Let's set up your profile." });
-      setStep("basic");
-      setHasResumed(true);
+      
+      setStep("success");
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Something went wrong.", variant: "destructive" });
     } finally {
@@ -153,150 +57,34 @@ export default function Join() {
     }
   };
 
-  const saveProgress = async () => {
-    const data: any = {};
-    if (name) data.name = name;
-    if (phone) data.phone = phone;
-    if (businessOwner !== null) data.business_owner = businessOwner;
-    if (businessName) data.business_name = businessName;
-    if (businessNiche) data.business_niche = businessNiche;
-    if (businessDetails) data.business_details = businessDetails;
-    if (activatedPlatforms.length) data.activated_platforms = activatedPlatforms;
-
-    if (Object.keys(data).length > 0) {
-      await upsertProfile(data);
-    }
-  };
-
-  const handleSkipBasic = () => {
-    setStep("business");
-  };
-
-  const handleSkipBusiness = () => {
-    setStep("activation");
-  };
-
-  const handleSkipActivation = async () => {
-    await handleComplete();
-  };
-
-  const handleBasicNext = async () => {
-    if (!name.trim() || !phone.trim()) {
-      toast({ title: "Required", description: "Please fill in your name and phone number.", variant: "destructive" });
-      return;
-    }
-    setIsLoading(true);
-    await upsertProfile({ name: name.trim(), phone: phone.trim() });
-    setIsLoading(false);
-    setStep("business");
-  };
-
-  const handleBusinessNext = async () => {
-    if (businessOwner === null) {
-      toast({ title: "Required", description: "Please select whether you are a business owner.", variant: "destructive" });
-      return;
-    }
-    if (businessOwner && !businessName.trim()) {
-      toast({ title: "Required", description: "Please enter your business name.", variant: "destructive" });
-      return;
-    }
-    setIsLoading(true);
-    await upsertProfile({
-      business_owner: businessOwner,
-      business_name: businessOwner ? businessName.trim() : null,
-      business_niche: businessOwner ? businessNiche.trim() : null,
-      business_details: businessOwner ? businessDetails.trim() : null,
-    });
-    setIsLoading(false);
-    setStep("activation");
-  };
-
-  const handleTogglePlatform = (platformName: string) => {
-    setActivatedPlatforms(prev =>
-      prev.includes(platformName)
-        ? prev.filter(p => p !== platformName)
-        : [...prev, platformName]
-    );
-  };
-
-  const startActivationSequence = async () => {
-    setActivateNow(true);
-    setActivationPhase("loading");
-    setActivatedPlatforms(platforms.map(p => p.name));
-
-    await new Promise(r => setTimeout(r, 1500));
-
-    setActivationPhase("cycling");
-    setCurrentPlatformIndex(0);
-    setActivatedCount(0);
-
-    for (let i = 0; i < platforms.length; i++) {
-      setCurrentPlatformIndex(i);
-      setActivatedCount(i);
-      await new Promise(r => setTimeout(r, 300));
-    }
-    setActivatedCount(platforms.length);
-
-    await new Promise(r => setTimeout(r, 600));
-
-    await upsertProfile({
-      activated_platforms: platforms.map(p => p.name),
-      onboarding_completed: true,
-    });
-    await signOut();
-
-    setSignInEmail(email);
-    setActivationPhase("signin");
-  };
-
-  const handleComplete = async () => {
-    setIsLoading(true);
-    await upsertProfile({
-      activated_platforms: activatedPlatforms,
-      onboarding_completed: true,
-    });
-    await signOut();
-    setIsLoading(false);
-    setSignInEmail(email);
-    setActivationPhase("signin");
-  };
-
-  const handleSignInAfterActivation = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSignInLoading(true);
-    try {
-      const { error } = await signIn(signInEmail, signInPassword);
-      if (error) {
-        toast({
-          title: "Unable to sign in",
-          description: error.message,
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Welcome!",
-          description: "You're all set up.",
-        });
-        router.push("/dashboard");
-      }
-    } catch {
-      toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setSignInLoading(false);
-    }
-  };
-
-  const stepIndex = step === "signup" ? 0 : step === "basic" ? 1 : step === "business" ? 2 : step === "activation" ? 3 : 4;
-  const steps = ["Sign Up", "Basic Info", "Business", "Activate"];
-
-  if (authLoading || (user && profileLoading)) {
+  if (step === "success") {
     return (
-      <div className="min-h-screen bg-[#050505] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+        <CursorSpotlight />
+        <div className="max-w-md mx-auto px-4 py-12 flex items-center justify-center min-h-screen">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="text-center glass-card neon-border rounded-2xl p-8 w-full"
+          >
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6">
+              <Check className="w-8 h-8 text-green-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-gradient mb-2">Request Submitted!</h2>
+            <p className="text-gray-400 mb-6">
+              Your account request has been received. An admin will review your information and create your account shortly.
+            </p>
+            <p className="text-gray-500 text-sm mb-6">
+              You&apos;ll receive login credentials once approved.
+            </p>
+            <Button
+              onClick={() => router.push("/?signin=true")}
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5"
+            >
+              Go to Sign In
+            </Button>
+          </motion.div>
+        </div>
       </div>
     );
   }
@@ -304,480 +92,90 @@ export default function Join() {
   return (
     <div className="min-h-screen bg-[#050505] text-white noise-overlay">
       <CursorSpotlight />
-      <div className="max-w-xl mx-auto px-4 py-12">
+      <div className="max-w-md mx-auto px-4 py-12">
         <div className="text-center mb-8">
-          <a href="/" className="inline-block mb-6" data-testid="link-join-home">
+          <a href="/" className="inline-block mb-6">
             <span className="text-2xl font-bold text-gradient">Omni AI</span>
           </a>
-          {step !== "complete" && (
-            <>
-              <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2" data-testid="text-join-heading">
-                {step === "signup" ? "Join Omni AI" : "Complete Your Account"}
-              </h1>
-              <p className="text-gray-400">
-                {step === "signup"
-                  ? "Create your account to get started"
-                  : "Please fill out this information to continue"}
-              </p>
-            </>
-          )}
+          <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2">
+            Request Access
+          </h1>
+          <p className="text-gray-400">
+            Enter your details and we&apos;ll create your account
+          </p>
         </div>
 
-        {step !== "complete" && (
-          <div className="flex items-center justify-center gap-1 sm:gap-2 mb-8" data-testid="progress-steps">
-            {steps.map((s, i) => (
-              <div key={s} className="flex items-center gap-1 sm:gap-2">
-                <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                  i < stepIndex
-                    ? "bg-green-500/20 text-green-400 border border-green-500/30"
-                    : i === stepIndex
-                      ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                      : "bg-white/5 text-gray-500 border border-white/10"
-                }`}>
-                  {i < stepIndex ? <Check className="w-3 h-3" /> : <span>{i + 1}</span>}
-                  <span className="hidden sm:inline">{s}</span>
-                </div>
-                {i < steps.length - 1 && (
-                  <div className={`w-4 sm:w-6 h-px ${i < stepIndex ? "bg-green-500/50" : "bg-white/10"}`} />
-                )}
-              </div>
-            ))}
-          </div>
-        )}
-
         <div className="glass-card neon-border rounded-2xl p-6 md:p-8">
-          <AnimatePresence mode="wait">
-            {step === "signup" && (
-              <motion.div
-                key="signup"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
+          <h2 className="text-xl font-semibold mb-1">Contact Information</h2>
+          <p className="text-gray-400 text-sm mb-6">
+            Provide your details below
+          </p>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <Input
+                type="text"
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                data-testid="input-name"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <Input
+                type="email"
+                placeholder="Email Address"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                data-testid="input-email"
+                required
+              />
+            </div>
+
+            <div className="relative">
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
+              <Input
+                type="tel"
+                placeholder="Phone Number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                data-testid="input-phone"
+                required
+              />
+            </div>
+
+            <Button
+              type="submit"
+              className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5"
+              disabled={isLoading}
+              data-testid="button-submit"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>Submit Request <ArrowRight className="w-4 h-4 ml-2" /></>
+              )}
+            </Button>
+          </form>
+
+          <div className="text-center mt-6">
+            <p className="text-gray-500 text-sm">
+              Already have an account?{" "}
+              <button
+                onClick={() => router.push("/?signin=true")}
+                className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
               >
-                <h2 className="text-xl font-semibold mb-1" data-testid="text-step-signup">
-                  Create Account
-                </h2>
-                <p className="text-gray-400 text-sm mb-6">
-                  Enter your email and create a password
-                </p>
-
-                <form onSubmit={(e) => { e.preventDefault(); handleSignUp(); }} className="space-y-4">
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <Input
-                      type="email"
-                      placeholder="Email Address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                      data-testid="input-signup-email"
-                      autoComplete="email"
-                    />
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                      data-testid="input-signup-password"
-                      autoComplete="new-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500"
-                      data-testid="button-toggle-password"
-                    >
-                      {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <Input
-                      type={showPassword ? "text" : "password"}
-                      placeholder="Confirm Password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                      data-testid="input-signup-confirm-password"
-                      autoComplete="new-password"
-                    />
-                  </div>
-
-                  <Button
-                    type="submit"
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5"
-                    disabled={isLoading}
-                    data-testid="button-signup-submit"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>Create Account <ArrowRight className="w-4 h-4 ml-2" /></>
-                    )}
-                  </Button>
-                </form>
-
-                <div className="text-center mt-6">
-                  <p className="text-gray-500 text-sm">
-                    Already have an account?{" "}
-                    <button
-                      onClick={() => router.push("/?signin=true")}
-                      className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
-                      data-testid="button-goto-signin"
-                    >
-                      Sign In
-                    </button>
-                  </p>
-                </div>
-              </motion.div>
-            )}
-
-            {step === "basic" && (
-              <motion.div
-                key="basic"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h2 className="text-xl font-semibold mb-1" data-testid="text-step-basic">Basic Info</h2>
-                <p className="text-gray-400 text-sm mb-6">Tell us a bit about yourself</p>
-
-                <div className="space-y-4">
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <Input
-                      placeholder="Full Name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                      data-testid="input-name"
-                    />
-                  </div>
-                  <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                    <Input
-                      placeholder="Phone Number"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                      data-testid="input-phone"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <Button
-                    variant="outline"
-                    className="border-white/20 bg-transparent text-gray-400"
-                    onClick={handleSkipBasic}
-                    disabled={isLoading}
-                    data-testid="button-skip"
-                  >
-                    <SkipForward className="w-4 h-4 mr-2" />
-                    Skip
-                  </Button>
-                  <Button
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                    onClick={handleBasicNext}
-                    disabled={isLoading}
-                    data-testid="button-basic-next"
-                  >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Next <ArrowRight className="w-4 h-4 ml-2" /></>}
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === "business" && (
-              <motion.div
-                key="business"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <h2 className="text-xl font-semibold mb-1" data-testid="text-step-business">Business Info</h2>
-                <p className="text-gray-400 text-sm mb-6">Are you a business owner?</p>
-
-                <div className="flex gap-3 mb-6">
-                  <Button
-                    variant={businessOwner === true ? "default" : "outline"}
-                    className={businessOwner === true
-                       ? "flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
-                       : "flex-1 border-white/20 bg-transparent text-gray-400 w-full"}
-                    onClick={() => setBusinessOwner(true)}
-                    data-testid="button-business-yes"
-                  >
-                    Yes
-                  </Button>
-                  <Button
-                    variant={businessOwner === false ? "default" : "outline"}
-                    className={businessOwner === false
-                       ? "flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full"
-                       : "flex-1 border-white/20 bg-transparent text-gray-400 w-full"}
-                    onClick={() => setBusinessOwner(false)}
-                    data-testid="button-business-no"
-                  >
-                    No
-                  </Button>
-                </div>
-
-                <AnimatePresence>
-                  {businessOwner && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="space-y-4 mb-6"
-                    >
-                      <div className="relative">
-                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                        <Input
-                          placeholder="Business Name"
-                          value={businessName}
-                          onChange={(e) => setBusinessName(e.target.value)}
-                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                          data-testid="input-business-name"
-                        />
-                      </div>
-                      <div className="relative">
-                        <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                        <Input
-                          placeholder="Business Niche"
-                          value={businessNiche}
-                          onChange={(e) => setBusinessNiche(e.target.value)}
-                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                          data-testid="input-business-niche"
-                        />
-                      </div>
-                      <div className="relative">
-                        <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                        <textarea
-                          placeholder="Business Details (optional)"
-                          value={businessDetails}
-                          onChange={(e) => setBusinessDetails(e.target.value)}
-                          className="w-full min-h-[100px] pl-10 pt-3 bg-white/5 border border-white/10 rounded-md text-white placeholder:text-gray-500 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50"
-                          data-testid="input-business-details"
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="flex gap-3 mt-6">
-                  <Button
-                    variant="outline"
-                    className="border-white/20 bg-transparent text-gray-400"
-                    onClick={() => setStep("basic")}
-                    data-testid="button-business-back"
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="border-white/20 bg-transparent text-gray-400"
-                    onClick={handleSkipBusiness}
-                    disabled={isLoading}
-                    data-testid="button-skip-business"
-                  >
-                    <SkipForward className="w-4 h-4 mr-2" />
-                    Skip
-                  </Button>
-                  <Button
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                    onClick={handleBusinessNext}
-                    disabled={isLoading}
-                    data-testid="button-business-next"
-                  >
-                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Next <ArrowRight className="w-4 h-4 ml-2" /></>}
-                  </Button>
-                </div>
-              </motion.div>
-            )}
-
-            {step === "activation" && (
-              <motion.div
-                key="activation"
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {activationPhase === "idle" && (
-                  <>
-                    <h2 className="text-xl font-semibold mb-1" data-testid="text-step-activation">Activate Platforms</h2>
-                    <p className="text-gray-400 text-sm mb-6">Would you like to activate your platforms now?</p>
-
-                <div className="flex flex-col sm:flex-row gap-3 mb-6">
-                      <Button
-                        className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                        onClick={startActivationSequence}
-                        data-testid="button-activate-yes"
-                      >
-                        Yes
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="flex-1 border-white/20 bg-transparent text-gray-400"
-                        onClick={handleSkipActivation}
-                        data-testid="button-activate-no"
-                      >
-                        Not Now
-                      </Button>
-                    </div>
-
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        className="border-white/20 bg-transparent text-gray-400"
-                        onClick={() => setStep("business")}
-                        data-testid="button-activation-back"
-                      >
-                        <ArrowLeft className="w-4 h-4 mr-2" />
-                        Back
-                      </Button>
-                    </div>
-                  </>
-                )}
-
-                {activationPhase === "loading" && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center py-12"
-                  >
-                    <Loader2 className="w-10 h-10 text-purple-400 animate-spin mx-auto mb-4" />
-                    <h2 className="text-xl font-semibold mb-2" data-testid="text-activating">Activating...</h2>
-                    <p className="text-gray-400 text-sm">Setting up your platforms</p>
-                  </motion.div>
-                )}
-
-                {activationPhase === "cycling" && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="text-center"
-                  >
-                    <h2 className="text-xl font-semibold mb-1">Activating Platforms</h2>
-                    <p className="text-gray-400 text-sm mb-6">
-                      {activatedCount} / {platforms.length} configured
-                    </p>
-
-                    <div
-                      className="flex items-center gap-3 p-4 rounded-lg border border-purple-500/30 bg-purple-500/10 mb-6"
-                      data-testid="platform-cycling-box"
-                    >
-                      <Loader2 className="w-5 h-5 text-purple-400 animate-spin flex-shrink-0" />
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={currentPlatformIndex}
-                          initial={{ opacity: 0, y: 8 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -8 }}
-                          transition={{ duration: 0.15 }}
-                          className="flex items-center gap-3"
-                        >
-                          {platforms[currentPlatformIndex]?.icon && (
-                            (() => {
-                              const Icon = platforms[currentPlatformIndex].icon!;
-                              return <Icon className="w-5 h-5 text-gray-300" />;
-                            })()
-                          )}
-                          <span className="text-sm font-medium text-gray-200">
-                            {platforms[currentPlatformIndex]?.name}
-                          </span>
-                        </motion.div>
-                      </AnimatePresence>
-                      <span className="text-xs text-purple-400 ml-auto">Configuring...</span>
-                    </div>
-
-                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
-                      <motion.div
-                        className="h-full bg-gradient-to-r from-purple-500 to-blue-500 rounded-full"
-                        initial={{ width: "0%" }}
-                        animate={{ width: `${(activatedCount / platforms.length) * 100}%` }}
-                        transition={{ duration: 0.2 }}
-                      />
-                    </div>
-                  </motion.div>
-                )}
-
-                {activationPhase === "signin" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-green-500/30 bg-green-500/10 mb-4" data-testid="banner-profile-complete">
-                      <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
-                      <p className="text-sm font-medium text-green-300">Profile Complete</p>
-                    </div>
-
-                    <div className="flex items-start gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 mb-6" data-testid="banner-verify-email">
-                      <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                      <div className="text-left">
-                        <p className="text-sm font-medium text-amber-300">Please verify your email before signing in</p>
-                        <p className="text-xs text-amber-400/70 mt-0.5">Check your inbox (and spam folder) for a verification link</p>
-                      </div>
-                    </div>
-
-                    <h2 className="text-xl font-semibold mb-1 text-center">Sign In</h2>
-                    <p className="text-gray-400 text-sm mb-5 text-center">Sign in to access your dashboard</p>
-
-                    <form onSubmit={handleSignInAfterActivation} className="space-y-4">
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                        <Input
-                          type="email"
-                          placeholder="Email"
-                          value={signInEmail}
-                          onChange={(e) => setSignInEmail(e.target.value)}
-                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                          required
-                          data-testid="input-signin-email"
-                        />
-                      </div>
-
-                      <div className="relative">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
-                        <Input
-                          type="password"
-                          placeholder="Password"
-                          value={signInPassword}
-                          onChange={(e) => setSignInPassword(e.target.value)}
-                          className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
-                          required
-                          minLength={6}
-                          data-testid="input-signin-password"
-                        />
-                      </div>
-
-                      <Button
-                        type="submit"
-                        disabled={signInLoading}
-                        className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg neon-glow"
-                        data-testid="button-signin-submit"
-                      >
-                        {signInLoading ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          "Sign In"
-                        )}
-                      </Button>
-                    </form>
-                  </motion.div>
-                )}
-              </motion.div>
-            )}
-
-          </AnimatePresence>
+                Sign In
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>
