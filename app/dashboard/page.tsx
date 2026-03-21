@@ -333,9 +333,7 @@ export default function Dashboard() {
 
         {isSponsor && (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-            {profile?.sponsor_activated ? (
-              <SponsorTab />
-            ) : (
+            {!profile?.sponsor_activated ? (
               <Card className="bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-purple-500/30">
                 <CardContent className="p-6">
                   <div className="flex items-start gap-4">
@@ -343,9 +341,9 @@ export default function Dashboard() {
                       <Zap className="w-6 h-6 text-purple-400" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-1">Activate Your Command Center</h3>
+                      <h3 className="text-lg font-semibold text-white mb-1">Command Center</h3>
                       <p className="text-sm text-gray-400 mb-4">
-                        You must finish the onboarding process to access your sponsor insights and analytics.
+                        We're in the middle of the onboarding process. Activate Sponsor Insights first to unlock your full Command Center.
                       </p>
                       <div className="flex flex-wrap gap-3">
                         <Button
@@ -368,11 +366,13 @@ export default function Dashboard() {
                   </div>
                 </CardContent>
               </Card>
+            ) : (
+              <SponsorTab />
             )}
           </motion.div>
         )}
 
-        {isSponsor && profile?.sponsor_activated && !profile?.sponsor_insights_paid && (
+        {isSponsor && !profile?.sponsor_insights_paid && (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
             <Card className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/30">
               <CardContent className="p-6">
@@ -381,17 +381,27 @@ export default function Dashboard() {
                     <DollarSign className="w-6 h-6 text-amber-400" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white mb-1">Activate Sponsor Insights</h3>
+                    <h3 className="text-lg font-semibold text-white mb-1">Activate VIP Exclusive Sponsorship</h3>
                     <p className="text-sm text-gray-400 mb-4">
                       Unlock full access to your sponsor analytics and insights dashboard.
                     </p>
-                    <Button
-                      className="bg-gradient-to-r from-amber-600 to-orange-600 border-0"
-                      onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
-                    >
-                      <DollarSign className="w-4 h-4 mr-2" />
-                      Pay to Activate Insights
-                    </Button>
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        className="bg-gradient-to-r from-amber-600 to-orange-600 border-0"
+                        onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                      >
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        VIP - $3,000/month
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="border-amber-500/50 bg-amber-500/10"
+                        onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
+                      >
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Activate Exclusive Sponsorship
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
@@ -429,7 +439,9 @@ export default function Dashboard() {
                     <h3 className="text-xl font-bold text-white" data-testid="text-current-tier-name">{currentTierData.name}</h3>
                     <span className={`text-xs font-semibold tracking-wider ${currentTierData.accent}`} data-testid="text-current-tier-level">TIER {currentTierData.level}</span>
                   </div>
-                  <p className="text-sm text-gray-500" data-testid="text-tier-status">Free trial active</p>
+                  <p className="text-sm text-gray-500" data-testid="text-tier-status">
+                    {isSponsor && !profile?.sponsor_activated ? "Onboarding" : "Active"}
+                  </p>
                 </div>
               </div>
 
