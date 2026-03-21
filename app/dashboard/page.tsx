@@ -596,9 +596,9 @@ export default function Dashboard() {
                 <span className="text-sm text-white max-w-[150px] sm:max-w-[200px] truncate" data-testid="text-account-email">{user.email}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
-                <span className="text-sm text-gray-400">Member Since</span>
+                <span className="text-sm text-gray-400">Username</span>
                 <span className="text-sm text-white" data-testid="text-member-since">
-                  {user.created_at ? new Date(user.created_at).toLocaleDateString("en-US", { month: "short", year: "numeric" }) : "\u2014"}
+                  {user.username || "—"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
