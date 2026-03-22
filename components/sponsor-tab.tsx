@@ -188,7 +188,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </Badge>
       </div>
 
-      <Card className="bg-white/5 border-purple-500/30">
+      <Card className="bg-white/5 border-purple-500/30 max-w-3xl mx-auto">
         <CardHeader className="pb-2">
           <div className="flex items-center gap-2">
             <Building2 className="w-5 h-5 text-purple-400" />
@@ -238,7 +238,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </CardContent>
       </Card>
 
-      <div className="space-y-2">
+      <div className="space-y-2 max-w-3xl mx-auto">
         {mockSponsorData.map((business) => (
           <Card key={business.id} className="bg-white/5 border-purple-500/20">
             <CardHeader 

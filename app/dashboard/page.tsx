@@ -382,23 +382,17 @@ export default function Dashboard() {
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
             {isSponsor && !profile?.sponsor_insights_paid && (
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white mb-4">Activate Your VIP Sponsorship</h3>
                 <Card className="bg-gradient-to-br from-amber-950 to-yellow-950 border-amber-500/30 overflow-hidden relative">
                   <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent" />
-                  <div className="absolute top-3 right-3 px-2 py-1 bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full">
-                    <span className="text-xs font-bold text-black">VIP</span>
-                  </div>
                   <CardContent className="p-6 relative">
-                    <div className="flex items-center gap-2 mb-2">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-yellow-400 flex items-center justify-center">
-                        <Crown className="w-5 h-5 text-black" />
-                      </div>
-                      <span className="text-sm font-medium text-amber-300">VIP Sponsor</span>
+                    <div className="mb-4">
+                      <h3 className="text-3xl font-bold text-center">
+                        <span className="bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent animate-shine">
+                          Activate Your VIP Sponsorship
+                        </span>
+                      </h3>
                     </div>
-                    <div className="mb-3">
-                      <span className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent">VIP Sponsor</span>
-                    </div>
-                    <p className="text-sm text-gray-300 mb-4">
+                    <p className="text-sm text-gray-300 mb-4 text-center">
                       Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
                     </p>
                     <ul className="text-sm text-gray-400 space-y-1.5 mb-6">
