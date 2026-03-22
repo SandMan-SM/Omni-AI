@@ -373,43 +373,6 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {isSponsor && !profile?.sponsor_insights_paid && (
-          <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-            <Card className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/30">
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                    <DollarSign className="w-6 h-6 text-amber-400" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-white mb-1">Activate VIP Exclusive Sponsorship</h3>
-                    <p className="text-sm text-gray-400 mb-4">
-                      Unlock full access to your sponsor analytics and insights dashboard.
-                    </p>
-                    <div className="flex flex-wrap gap-3">
-                      <Button
-                        className="bg-gradient-to-r from-amber-600 to-orange-600 border-0"
-                        onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
-                      >
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        VIP - $3,000/month
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="border-amber-500/50 bg-amber-500/10"
-                        onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
-                      >
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        Activate Exclusive Sponsorship
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
             <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">

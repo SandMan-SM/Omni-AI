@@ -108,10 +108,11 @@ const mockSponsorData: BusinessData[] = [
   },
 ];
 
-function CircularProgress({ percentage, size = 100, strokeWidth = 8, color = "#a855f7" }: { percentage: number; size?: number; strokeWidth?: number; color?: string }) {
+function CircularProgress({ value, size = 100, strokeWidth = 8, color = "#a855f7", label = "" }: { value: number; size?: number; strokeWidth?: number; color?: string; label?: string }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (Math.min(percentage, 100) / 100) * circumference;
+  const percentage = Math.min(value, 100);
+  const offset = circumference - (percentage / 100) * circumference;
 
   return (
     <div className="relative flex flex-col items-center" style={{ width: size + 20 }}>
@@ -140,7 +141,10 @@ function CircularProgress({ percentage, size = 100, strokeWidth = 8, color = "#a
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-2xl font-bold">{Math.round(Math.min(percentage, 100))}%</span>
+          <div className="text-center">
+            <span className="text-xl font-bold">{value.toLocaleString()}</span>
+            {label && <p className="text-[10px] text-gray-400">{label}</p>}
+          </div>
         </div>
       </div>
     </div>
@@ -188,28 +192,25 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {goals.map((goal) => {
-          const percentage = (goal.current / goal.goal) * 100;
-          return (
-            <Card key={goal.label} className={`${goal.bgColor} border-white/10`}>
-              <CardContent className="p-4 flex flex-col items-center">
-                <CircularProgress 
-                  percentage={percentage} 
-                  color={goal.color}
-                  size={100}
-                  strokeWidth={8}
-                />
-                <div className="mt-3 text-center">
-                  <p className={`text-sm font-medium ${goal.textColor}`}>{goal.label}</p>
-                  <p className="text-lg font-bold text-white">
-                    {goal.prefix || ''}{goal.current.toLocaleString()}
-                  </p>
-                  <p className="text-xs text-gray-500">of {goal.goal.toLocaleString()}</p>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {goals.map((goal) => (
+          <Card key={goal.label} className={`${goal.bgColor} border-white/10`}>
+            <CardContent className="p-4 flex flex-col items-center">
+              <CircularProgress 
+                value={goal.current} 
+                color={goal.color}
+                size={100}
+                strokeWidth={8}
+                label={goal.label}
+              />
+              <div className="mt-3 text-center">
+                <p className={`text-lg font-bold text-white`}>
+                  {goal.prefix || ''}{goal.current.toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-500">of {goal.goal.toLocaleString()} goal</p>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card className="bg-white/5 border-white/10">
