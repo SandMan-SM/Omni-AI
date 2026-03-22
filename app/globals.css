@@ -73,6 +73,21 @@
   animation: chrome-shine 2s linear infinite;
 }
 
+.chrome-purple {
+  background: linear-gradient(
+    90deg,
+    #a855f7 0%,
+    #c084fc 25%,
+    #a855f7 50%,
+    #7c3aed 75%,
+    #a855f7 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: chrome-shine 3s linear infinite;
+}
+
 /* DARK MODE ONLY - Omni AI Dark Luxury Theme */
 :root {
   --button-outline: rgba(255,255,255, .10);

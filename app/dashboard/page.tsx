@@ -348,11 +348,11 @@ export default function Dashboard() {
               </h1>
             </div>
             <Button
-              className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white self-start sm:self-auto"
-              onClick={() => router.push("/")}
+              className="bg-gradient-to-r from-amber-400 to-yellow-400 border-0 text-black self-start sm:self-auto font-semibold"
+              onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
               data-testid="button-explore-tiers"
             >
-              Explore Tiers
+              Activate
               <ArrowRight className="w-4 h-4 ml-2" />
             </Button>
           </div>
@@ -395,26 +395,42 @@ export default function Dashboard() {
                     <p className="text-sm text-gray-300 mb-4 text-center">
                       Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
                     </p>
-                    <ul className="text-sm text-gray-400 space-y-1.5 mb-6">
-                      <li className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> Gold Chrome Experience</li>
-                      <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-amber-500" /> Command Center Access</li>
-                      <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-amber-500" /> AI Agent Insights</li>
-                      <li className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-amber-500" /> Advanced Analytics</li>
-                    </ul>
+                    <div className="flex justify-between mb-6">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
+                          <Bot className="w-4 h-4 text-purple-400" />
+                          <span className="text-sm text-purple-300">Sponsor Insights</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
+                          <BarChart3 className="w-4 h-4 text-purple-400" />
+                          <span className="text-sm text-purple-300">Command Center Access</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
+                          <Crown className="w-4 h-4 text-purple-400" />
+                          <span className="text-sm text-purple-300">AI Agent Insights</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
+                          <TrendingUp className="w-4 h-4 text-purple-400" />
+                          <span className="text-sm text-purple-300">Advanced Analytics</span>
+                        </div>
+                      </div>
+                    </div>
                     <div className="flex justify-between gap-4">
                       <Button
-                        className="flex-1 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black border-0"
+                        className="flex-1 bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-400 hover:from-amber-200 hover:to-amber-300 text-black border-0 shadow-lg shadow-amber-500/20"
                         onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
                       >
                         <Bot className="w-4 h-4 mr-2" />
-                        Activate Bot Development
+                        <span className="font-bold">Activate Bot Development</span>
                       </Button>
                       <Button
-                        className="flex-1 bg-gradient-to-r from-purple-400 to-violet-500 hover:from-purple-300 hover:to-violet-400 text-white border-0"
+                        className="flex-1 bg-gradient-to-r from-purple-400 via-violet-400 to-purple-500 hover:from-purple-300 hover:to-violet-400 text-white border-0 shadow-lg shadow-purple-500/20"
                         onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
                       >
                         <Crown className="w-4 h-4 mr-2" />
-                        Activate Sponsor Subscription
+                        <span className="font-bold">Activate Sponsor Subscription</span>
                       </Button>
                     </div>
                   </CardContent>
