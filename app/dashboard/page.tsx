@@ -382,72 +382,38 @@ export default function Dashboard() {
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
             {isSponsor && !profile?.sponsor_insights_paid && (
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-white mb-4">Choose Your Sponsorship Tier</h3>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <Card className="bg-gradient-to-br from-purple-950 to-violet-950 border-purple-500/30 overflow-hidden relative flex flex-col">
-                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent" />
-                    <CardContent className="p-6 relative flex-1 flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-violet-500 flex items-center justify-center">
-                          <Star className="w-4 h-4 text-white" />
-                        </div>
-                        <span className="text-sm font-medium text-purple-300">Standard</span>
+                <Card className="bg-gradient-to-br from-amber-950 to-yellow-950 border-amber-500/30 overflow-hidden relative max-w-md mx-auto">
+                  <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent" />
+                  <div className="absolute top-2 right-2 px-2 py-1 bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full">
+                    <span className="text-xs font-bold text-black">VIP</span>
+                  </div>
+                  <CardContent className="p-6 relative">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-yellow-400 flex items-center justify-center">
+                        <Crown className="w-5 h-5 text-black" />
                       </div>
-                      <div className="mb-4">
-                        <span className="text-3xl font-bold bg-gradient-to-r from-purple-300 via-violet-200 to-purple-300 bg-clip-text text-transparent">Standard</span>
-                        <span className="text-lg text-purple-400 ml-2">Sponsorship</span>
-                      </div>
-                      <ul className="text-sm text-gray-400 space-y-2 mb-4 flex-1">
-                        <li className="flex items-center gap-2"><Target className="w-4 h-4 text-purple-500" /> Access to Command Center</li>
-                        <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-purple-500" /> Business Analytics</li>
-                        <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-purple-500" /> AI Agent Insights</li>
-                      </ul>
-                      <Button
-                        className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-400 hover:to-violet-400 text-white border-0"
-                        onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
-                      >
-                        <DollarSign className="w-4 h-4 mr-2" />
-                        Activate Standard
-                      </Button>
-                    </CardContent>
-                  </Card>
-                  
-                  <Card className="bg-gradient-to-br from-amber-950 to-yellow-950 border-amber-500/30 overflow-hidden relative flex flex-col">
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent" />
-                    <div className="absolute top-2 right-2 px-2 py-1 bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full">
-                      <span className="text-xs font-bold text-black">VIP</span>
+                      <span className="text-sm font-medium text-amber-300">Premium</span>
                     </div>
-                    <CardContent className="p-6 relative flex-1 flex flex-col">
-                      <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 to-yellow-400 flex items-center justify-center">
-                          <Crown className="w-4 h-4 text-black" />
-                        </div>
-                        <span className="text-sm font-medium text-amber-300">Premium</span>
-                      </div>
-                      <div className="mb-4">
-                        <span className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent">Gold</span>
-                        <span className="text-lg text-amber-400 ml-2">Chrome</span>
-                      </div>
-                      <ul className="text-sm text-gray-400 space-y-2 mb-4 flex-1">
-                        <li className="flex items-center gap-2"><Target className="w-4 h-4 text-amber-500" /> Everything in Standard</li>
-                        <li className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> VIP Priority Support</li>
-                        <li className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-amber-500" /> Advanced Analytics</li>
-                        <li className="flex items-center gap-2"><Flame className="w-4 h-4 text-amber-500" /> Exclusive Features</li>
-                      </ul>
-                      <Button
-                        className="w-full bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black border-0"
-                        onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
-                      >
-                        <Crown className="w-4 h-4 mr-2" />
-                        VIP - $3,000/month
-                      </Button>
-                    </CardContent>
-                  </Card>
-                </div>
+                    <div className="mb-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent">VIP Sponsor</span>
+                    </div>
+                    <ul className="text-sm text-gray-400 space-y-2 mb-4">
+                      <li className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> Gold Chrome Experience</li>
+                      <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-amber-500" /> Command Center Access</li>
+                      <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-amber-500" /> AI Agent Insights</li>
+                      <li className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-amber-500" /> Advanced Analytics</li>
+                    </ul>
+                    <Button
+                      className="w-full bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black border-0"
+                      onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                    >
+                      <Crown className="w-4 h-4 mr-2" />
+                      VIP Sponsor - $3,000/month
+                    </Button>
+                  </CardContent>
+                </Card>
               </div>
             )}
-
-
 
             <div className={!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none' : ''}>
               <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
