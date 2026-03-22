@@ -372,10 +372,6 @@ export default function Dashboard() {
             </div>
           </motion.div>
         )}
-              <SponsorTab isLocked={!profile?.sponsor_activated} />
-            </div>
-          </motion.div>
-        )}
 
         {isSponsor && !profile?.sponsor_insights_paid && (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
