@@ -1,7 +1,15 @@
 "use client";
-import { Bot, Building2, Lock } from "lucide-react";
+import { useState } from "react";
+import { Bot, Building2, Lock, ChevronDown } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface BusinessData {
   id: string;
@@ -95,7 +103,37 @@ const mockSponsorData: BusinessData[] = [
   },
 ];
 
+function calculateTotals(businesses: BusinessData[]) {
+  return businesses.reduce(
+    (acc, business) => ({
+      totalTasksCompleted: acc.totalTasksCompleted + business.totalTasksCompleted,
+      totalRevenue: acc.totalRevenue + business.totalRevenue,
+      lifetimeSubscribers: acc.lifetimeSubscribers + business.newsletterAgent.lifetimeSubscribers,
+      viewsGenerated: acc.viewsGenerated + business.marketingAgent.viewsGenerated,
+      tasksCompleted: acc.tasksCompleted + business.personalAssistant.tasksCompleted,
+      meetingsBooked: acc.meetingsBooked + business.personalAssistant.meetingsBooked,
+      messagesSent: acc.messagesSent + business.personalAssistant.messagesSent,
+    }),
+    {
+      totalTasksCompleted: 0,
+      totalRevenue: 0,
+      lifetimeSubscribers: 0,
+      viewsGenerated: 0,
+      tasksCompleted: 0,
+      meetingsBooked: 0,
+      messagesSent: 0,
+    }
+  );
+}
+
 export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
+  const [selectedBusiness, setSelectedBusiness] = useState<string>("all");
+  const totals = calculateTotals(mockSponsorData);
+
+  const selectedBusinessData = selectedBusiness === "all" 
+    ? null 
+    : mockSponsorData.find((b) => b.id === selectedBusiness);
+
   return (
     <div className={`space-y-4 ${isLocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
       <div className="mb-4 flex items-center justify-between">
@@ -111,30 +149,118 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </Badge>
       </div>
 
-      {mockSponsorData.map((business) => (
-        <Card key={business.id} className="bg-white/5 border-white/10">
+      <Card className="bg-gradient-to-br from-amber-950/50 to-yellow-950/50 border-amber-500/30">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-amber-400" />
+              <CardTitle className="text-lg text-amber-400">Total Across All Businesses</CardTitle>
+            </div>
+            <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
+              <SelectTrigger className="w-[220px] bg-amber-950/30 border-amber-500/30 text-amber-300">
+                <SelectValue placeholder="Select business" />
+                <ChevronDown className="w-4 h-4 ml-2" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Businesses (Combined)</SelectItem>
+                {mockSponsorData.map((business) => (
+                  <SelectItem key={business.id} value={business.id}>
+                    {business.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-4 gap-4 mb-4">
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">
+                {selectedBusiness === "all" 
+                  ? totals.totalTasksCompleted 
+                  : selectedBusinessData?.totalTasksCompleted || 0}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Tasks</p>
+            </div>
+            <div className="bg-green-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-green-400">
+                ${((selectedBusiness === "all" 
+                  ? totals.totalRevenue 
+                  : selectedBusinessData?.totalRevenue || 0) / 1000).toFixed(1)}k
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Revenue</p>
+            </div>
+            <div className="bg-blue-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-blue-400">
+                {(selectedBusiness === "all" 
+                  ? totals.lifetimeSubscribers 
+                  : selectedBusinessData?.newsletterAgent.lifetimeSubscribers || 0).toLocaleString()}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Subscribers</p>
+            </div>
+            <div className="bg-amber-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-amber-400">
+                {((selectedBusiness === "all" 
+                  ? totals.viewsGenerated 
+                  : selectedBusinessData?.marketingAgent.viewsGenerated || 0) / 1000).toFixed(0)}k
+              </p>
+              <p className="text-xs text-gray-400 mt-1">Views</p>
+            </div>
+          </div>
+
+          <div className="border-t border-amber-500/20 pt-4">
+            <div className="flex items-center gap-2 mb-3">
+              <Bot className="w-4 h-4 text-amber-400" />
+              <span className="text-sm font-medium text-amber-300">AI Agent Stats</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white/5 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold">{selectedBusiness === "all" 
+                  ? totals.tasksCompleted 
+                  : selectedBusinessData?.personalAssistant.tasksCompleted || 0}</p>
+                <p className="text-xs text-gray-400">Tasks</p>
+              </div>
+              <div className="bg-white/5 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold">{selectedBusiness === "all" 
+                  ? totals.meetingsBooked 
+                  : selectedBusinessData?.personalAssistant.meetingsBooked || 0}</p>
+                <p className="text-xs text-gray-400">Meetings</p>
+              </div>
+              <div className="bg-white/5 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold">{selectedBusiness === "all" 
+                  ? totals.messagesSent 
+                  : selectedBusinessData?.personalAssistant.messagesSent || 0}</p>
+                <p className="text-xs text-gray-400">Messages</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {selectedBusiness !== "all" && selectedBusinessData && (
+        <Card className="bg-white/5 border-white/10">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-purple-400" />
-              <CardTitle className="text-lg">{business.name}</CardTitle>
+              <CardTitle className="text-lg">{selectedBusinessData.name}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-4 gap-4 mb-4">
               <div className="bg-purple-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
+                <p className="text-2xl font-bold text-purple-400">{selectedBusinessData.totalTasksCompleted}</p>
                 <p className="text-xs text-gray-400">Tasks</p>
               </div>
               <div className="bg-green-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-green-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+                <p className="text-2xl font-bold text-green-400">${(selectedBusinessData.totalRevenue / 1000).toFixed(1)}k</p>
                 <p className="text-xs text-gray-400">Revenue</p>
               </div>
               <div className="bg-blue-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-blue-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-blue-400">{selectedBusinessData.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
                 <p className="text-xs text-gray-400">Subscribers</p>
               </div>
               <div className="bg-amber-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-amber-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+                <p className="text-2xl font-bold text-amber-400">{(selectedBusinessData.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
                 <p className="text-xs text-gray-400">Views</p>
               </div>
             </div>
@@ -147,21 +273,58 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-white/5 rounded p-2 text-center">
                   <p className="text-xs text-gray-400">Tasks</p>
-                  <p className="font-bold">{business.personalAssistant.tasksCompleted}</p>
+                  <p className="font-bold">{selectedBusinessData.personalAssistant.tasksCompleted}</p>
                 </div>
                 <div className="bg-white/5 rounded p-2 text-center">
                   <p className="text-xs text-gray-400">Meetings</p>
-                  <p className="font-bold">{business.personalAssistant.meetingsBooked}</p>
+                  <p className="font-bold">{selectedBusinessData.personalAssistant.meetingsBooked}</p>
                 </div>
                 <div className="bg-white/5 rounded p-2 text-center">
                   <p className="text-xs text-gray-400">Messages</p>
-                  <p className="font-bold">{business.personalAssistant.messagesSent}</p>
+                  <p className="font-bold">{selectedBusinessData.personalAssistant.messagesSent}</p>
                 </div>
               </div>
             </div>
           </CardContent>
         </Card>
-      ))}
+      )}
+
+      {selectedBusiness === "all" && (
+        <div className="grid md:grid-cols-3 gap-4">
+          {mockSponsorData.map((business) => (
+            <Card key={business.id} className="bg-white/5 border-white/10">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-purple-400" />
+                    <CardTitle className="text-sm">{business.name}</CardTitle>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="bg-purple-500/10 rounded p-2">
+                    <p className="text-xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
+                    <p className="text-xs text-gray-400">Tasks</p>
+                  </div>
+                  <div className="bg-green-500/10 rounded p-2">
+                    <p className="text-xl font-bold text-green-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+                    <p className="text-xs text-gray-400">Revenue</p>
+                  </div>
+                  <div className="bg-blue-500/10 rounded p-2">
+                    <p className="text-xl font-bold text-blue-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
+                    <p className="text-xs text-gray-400">Subscribers</p>
+                  </div>
+                  <div className="bg-amber-500/10 rounded p-2">
+                    <p className="text-xl font-bold text-amber-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+                    <p className="text-xs text-gray-400">Views</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
