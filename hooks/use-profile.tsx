@@ -8,6 +8,7 @@ export interface Profile {
   role: string;
   is_admin: boolean;
   is_sponsor: boolean;
+  sponsor_tier: 'standard' | 'vip' | null;
   tier: number;
   name: string | null;
   phone: string | null;
@@ -27,12 +28,13 @@ interface ProfileContextType {
   profileLoading: boolean;
   isAdmin: boolean;
   isSponsor: boolean;
+  isVIPSponsor: boolean;
   tier: number;
   onboardingComplete: boolean;
   fetchProfile: () => Promise<void>;
   upsertProfile: (data: Partial<Profile>) => Promise<{ error: Error | null }>;
   fetchAllUsers: () => Promise<{ users: Profile[]; error: Error | null }>;
-  updateUserRole: (userId: string, role: string) => Promise<{ error: Error | null }>;
+  updateUserRole: (userId: string, role: string, sponsorTier?: 'standard' | 'vip') => Promise<{ error: Error | null }>;
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
@@ -71,6 +73,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           role: user.email === 'sitanim6@gmail.com' ? 'sponsor' : 'user',
           is_admin: user.email === 'sitanim6@gmail.com' ? true : false,
           is_sponsor: user.email === 'sitanim6@gmail.com' ? true : false,
+          sponsor_tier: user.email === 'sitanim6@gmail.com' ? 'vip' : null,
           tier: user.email === 'sitanim6@gmail.com' ? 3 : 0,
           name: null,
           phone: null,
@@ -160,7 +163,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const updateUserRole = async (userId: string, role: string) => {
+  const updateUserRole = async (userId: string, role: string, sponsorTier?: 'standard' | 'vip') => {
     try {
       const supabase = await getSupabase();
       const updates: Record<string, unknown> = { role };
@@ -169,12 +172,15 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       if (role === 'admin') {
         updates.is_admin = true;
         updates.is_sponsor = true;
+        updates.sponsor_tier = null;
       } else if (role === 'sponsor') {
         updates.is_admin = false;
         updates.is_sponsor = true;
+        updates.sponsor_tier = sponsorTier || 'standard';
       } else {
         updates.is_admin = false;
         updates.is_sponsor = false;
+        updates.sponsor_tier = null;
       }
 
       const { error } = await supabase
@@ -190,6 +196,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
   const isSponsor = profile?.role === 'sponsor' || profile?.is_sponsor === true;
+  const isVIPSponsor = profile?.sponsor_tier === 'vip';
   const tier = profile?.tier ?? 0;
   const onboardingComplete = profile?.onboarding_completed ?? false;
 
@@ -199,6 +206,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       profileLoading,
       isAdmin,
       isSponsor,
+      isVIPSponsor,
       tier,
       onboardingComplete,
       fetchProfile,

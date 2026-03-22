@@ -188,6 +188,7 @@ export default function Dashboard() {
   const currentTier = tierMap[tier] || "apprentice";
   const currentTierData = tierInfo[currentTier];
   const TierIcon = currentTierData.icon;
+  const isVIPSponsor = profile?.sponsor_tier === 'vip';
 
   const filteredCampaigns = campaignFilter === "all"
     ? campaigns
@@ -274,8 +275,8 @@ export default function Dashboard() {
                         onClick={() => { router.push("/sponsor"); setHeaderClusterOpen(false); }}
                         className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-white/10 flex items-center gap-2"
                       >
-                        <Landmark className="w-3 h-3 text-green-400" />
-                        Sponsor
+                        <Landmark className={`w-3 h-3 ${isVIPSponsor ? 'text-amber-400' : 'text-green-400'}`} />
+                        {isVIPSponsor ? 'VIP Sponsor' : 'Sponsor'}
                       </button>
                     )}
                   </div>
