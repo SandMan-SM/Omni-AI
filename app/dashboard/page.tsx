@@ -395,42 +395,40 @@ export default function Dashboard() {
                     <p className="text-sm text-gray-300 mb-4 text-center">
                       Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
                     </p>
-                    <div className="flex justify-between mb-6">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
-                          <Bot className="w-4 h-4 text-purple-400" />
+                    <div className="flex justify-center mb-6">
+                      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
+                          <Bot className="w-4 h-4 text-purple-400 flex-shrink-0" />
                           <span className="text-sm text-purple-300">Sponsor Insights</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
-                          <BarChart3 className="w-4 h-4 text-purple-400" />
-                          <span className="text-sm text-purple-300">Command Center Access</span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
-                          <Crown className="w-4 h-4 text-purple-400" />
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
+                          <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
                           <span className="text-sm text-purple-300">AI Agent Insights</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full">
-                          <TrendingUp className="w-4 h-4 text-purple-400" />
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
+                          <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                          <span className="text-sm text-purple-300">Command Center Access</span>
+                        </div>
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
+                          <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
                           <span className="text-sm text-purple-300">Advanced Analytics</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-between gap-4">
                       <Button
-                        className="flex-1 bg-gradient-to-r from-amber-300 via-amber-400 to-yellow-400 hover:from-amber-200 hover:to-amber-300 text-black border-0 shadow-lg shadow-amber-500/20"
+                        className="flex-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-amber-500 hover:from-yellow-200 hover:to-amber-300 text-black border-0 shadow-lg shadow-amber-500/30 font-bold"
                         onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
                       >
                         <Bot className="w-4 h-4 mr-2" />
-                        <span className="font-bold">Activate Bot Development</span>
+                        Activate Bot Development
                       </Button>
                       <Button
-                        className="flex-1 bg-gradient-to-r from-purple-400 via-violet-400 to-purple-500 hover:from-purple-300 hover:to-violet-400 text-white border-0 shadow-lg shadow-purple-500/20"
+                        className="flex-1 bg-gradient-to-r from-purple-400 via-violet-400 to-purple-600 hover:from-purple-300 hover:to-violet-500 text-white border-0 shadow-lg shadow-purple-500/30 font-bold"
                         onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
                       >
                         <Crown className="w-4 h-4 mr-2" />
-                        <span className="font-bold">Activate Sponsor Subscription</span>
+                        Activate Sponsor Subscription
                       </Button>
                     </div>
                   </CardContent>
