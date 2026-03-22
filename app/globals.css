@@ -100,7 +100,7 @@
     #f59e0b 100%
   );
   background-size: 200% auto;
-  animation: chrome-shine 2s linear infinite;
+  animation: chrome-shine 5s linear infinite;
 }
 
 .btn-chrome-gold:hover {
@@ -115,7 +115,7 @@
     #d97706 100%
   );
   background-size: 200% auto;
-  animation: chrome-shine 2s linear infinite;
+  animation: chrome-shine 5s linear infinite;
 }
 
 /* DARK MODE ONLY - Omni AI Dark Luxury Theme */
