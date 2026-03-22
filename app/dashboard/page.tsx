@@ -378,26 +378,26 @@ export default function Dashboard() {
               <div className="mb-4">
                 <h3 className="text-lg font-semibold text-white mb-4">Choose Your Sponsorship Tier</h3>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-gray-600/30 overflow-hidden relative">
-                    <div className="absolute inset-0 bg-gradient-to-br from-gray-400/5 via-transparent to-transparent" />
+                  <Card className="bg-gradient-to-br from-purple-950 to-violet-950 border-purple-500/30 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-transparent" />
                     <CardContent className="p-6 relative">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center">
-                          <Star className="w-4 h-4 text-gray-900" />
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-400 to-violet-500 flex items-center justify-center">
+                          <Star className="w-4 h-4 text-white" />
                         </div>
-                        <span className="text-sm font-medium text-gray-300">Standard</span>
+                        <span className="text-sm font-medium text-purple-300">Standard</span>
                       </div>
                       <div className="mb-4">
-                        <span className="text-3xl font-bold bg-gradient-to-r from-gray-200 via-gray-100 to-gray-300 bg-clip-text text-transparent">Silver</span>
-                        <span className="text-lg text-gray-400 ml-2">Chrome</span>
+                        <span className="text-3xl font-bold bg-gradient-to-r from-purple-300 via-violet-200 to-purple-300 bg-clip-text text-transparent">Standard</span>
+                        <span className="text-lg text-purple-400 ml-2">Sponsorship</span>
                       </div>
                       <ul className="text-sm text-gray-400 space-y-2 mb-4">
-                        <li className="flex items-center gap-2"><Target className="w-4 h-4 text-gray-500" /> Access to Command Center</li>
-                        <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-gray-500" /> Business Analytics</li>
-                        <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-gray-500" /> AI Agent Insights</li>
+                        <li className="flex items-center gap-2"><Target className="w-4 h-4 text-purple-500" /> Access to Command Center</li>
+                        <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-purple-500" /> Business Analytics</li>
+                        <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-purple-500" /> AI Agent Insights</li>
                       </ul>
                       <Button
-                        className="w-full bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-300 hover:to-gray-400 text-gray-900 border-0"
+                        className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-400 hover:to-violet-400 text-white border-0"
                         onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
                       >
                         <DollarSign className="w-4 h-4 mr-2" />
@@ -406,20 +406,20 @@ export default function Dashboard() {
                     </CardContent>
                   </Card>
                   
-                  <Card className="bg-gradient-to-br from-amber-950 to-orange-950 border-amber-500/30 overflow-hidden relative">
+                  <Card className="bg-gradient-to-br from-amber-950 to-yellow-950 border-amber-500/30 overflow-hidden relative">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent" />
-                    <div className="absolute top-2 right-2 px-2 py-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-gradient-to-r from-amber-400 to-yellow-400 rounded-full">
                       <span className="text-xs font-bold text-black">VIP</span>
                     </div>
                     <CardContent className="p-6 relative">
                       <div className="flex items-center gap-2 mb-2">
-                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-300 to-yellow-400 flex items-center justify-center">
                           <Crown className="w-4 h-4 text-black" />
                         </div>
                         <span className="text-sm font-medium text-amber-300">Premium</span>
                       </div>
                       <div className="mb-4">
-                        <span className="text-3xl font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 bg-clip-text text-transparent">Gold</span>
+                        <span className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent">Gold</span>
                         <span className="text-lg text-amber-400 ml-2">Chrome</span>
                       </div>
                       <ul className="text-sm text-gray-400 space-y-2 mb-4">
@@ -429,7 +429,7 @@ export default function Dashboard() {
                         <li className="flex items-center gap-2"><Flame className="w-4 h-4 text-amber-500" /> Exclusive Features</li>
                       </ul>
                       <Button
-                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black border-0"
+                        className="w-full bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black border-0"
                         onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
                       >
                         <Crown className="w-4 h-4 mr-2" />
