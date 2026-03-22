@@ -1,9 +1,6 @@
 "use client";
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { 
-  Bot, Building2, ChevronDown, ChevronRight, Lock
-} from "lucide-react";
+import { Bot, Building2, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
@@ -152,30 +149,6 @@ function CircularProgress({ value, size = 100, strokeWidth = 8, color = "#a855f7
 }
 
 export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
-  const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null);
-  const [expandedAgent, setExpandedAgent] = useState<{ business: string; agent: string } | null>(null);
-
-  const toggleBusiness = (id: string) => {
-    setExpandedBusiness(expandedBusiness === id ? null : id);
-  };
-
-  const toggleAgent = (businessId: string, agent: string) => {
-    const current = expandedAgent?.business === businessId && expandedAgent?.agent === agent;
-    setExpandedAgent(current ? null : { business: businessId, agent });
-  };
-
-  const totalTasks = mockSponsorData.reduce((a, b) => a + b.totalTasksCompleted, 0);
-  const totalRevenue = mockSponsorData.reduce((a, b) => a + b.totalRevenue, 0);
-  const totalSubscribers = mockSponsorData.reduce((a, b) => a + b.newsletterAgent.lifetimeSubscribers, 0);
-  const totalViews = mockSponsorData.reduce((a, b) => a + b.marketingAgent.viewsGenerated, 0);
-
-  const goals = [
-    { label: "Tasks", current: totalTasks, goal: 5000, color: "#a855f7", bgColor: "bg-purple-500/20", textColor: "text-purple-400" },
-    { label: "Revenue", current: totalRevenue, goal: 100000, color: "#22c55e", bgColor: "bg-green-500/20", textColor: "text-green-400", prefix: "$" },
-    { label: "Subscribers", current: totalSubscribers, goal: 50000, color: "#3b82f6", bgColor: "bg-blue-500/20", textColor: "text-blue-400" },
-    { label: "Views", current: totalViews, goal: 1000000, color: "#f59e0b", bgColor: "bg-amber-500/20", textColor: "text-amber-400" },
-  ];
-
   return (
     <div className={`space-y-4 ${isLocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
       <div className="mb-4 flex items-center justify-between">
@@ -191,116 +164,79 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {goals.map((goal) => (
-          <Card key={goal.label} className={`${goal.bgColor} border-white/10`}>
-            <CardContent className="p-4 flex flex-col items-center">
-              <CircularProgress 
-                value={goal.current} 
-                color={goal.color}
-                size={100}
-                strokeWidth={8}
-                label={goal.label}
-              />
-              <div className="mt-3 text-center">
-                <p className={`text-lg font-bold text-white`}>
-                  {goal.prefix || ''}{goal.current.toLocaleString()}
-                </p>
-                <p className="text-xs text-gray-500">of {goal.goal.toLocaleString()} goal</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <Card className="bg-white/5 border-white/10">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Assets (Businesses)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {mockSponsorData.map((business) => (
-            <div key={business.id} className="border border-white/10 rounded-lg overflow-hidden">
-              <button
-                onClick={() => toggleBusiness(business.id)}
-                className="w-full p-3 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
-              >
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-purple-400" />
-                  <span className="font-medium">{business.name}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-gray-400">{business.totalTasksCompleted} tasks</span>
-                  {expandedBusiness === business.id ? (
-                    <ChevronDown className="w-4 h-4" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4" />
-                  )}
-                </div>
-              </button>
-              
-              {expandedBusiness === business.id && (
-                <div className="p-3 bg-black/20 border-t border-white/5 space-y-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-white/5 rounded p-2">
-                      <p className="text-xs text-gray-400">Tasks</p>
-                      <p className="font-bold">{business.totalTasksCompleted}</p>
-                    </div>
-                    <div className="bg-white/5 rounded p-2">
-                      <p className="text-xs text-gray-400">Revenue</p>
-                      <p className="font-bold">${business.totalRevenue.toLocaleString()}</p>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    <p className="text-xs text-gray-400 flex items-center gap-1"><Bot className="w-3 h-3" /> AI Agents</p>
-                    
-                    {["personal", "newsletter", "marketing"].map((agent) => (
-                      <div key={agent} className="border border-white/5 rounded">
-                        <button
-                          onClick={() => toggleAgent(business.id, agent)}
-                          className="w-full p-2 flex items-center justify-between bg-white/5 hover:bg-white/10 text-xs"
-                        >
-                          <span className="capitalize">{agent} Assistant</span>
-                          {expandedAgent?.business === business.id && expandedAgent?.agent === agent ? (
-                            <ChevronDown className="w-3 h-3" />
-                          ) : (
-                            <ChevronRight className="w-3 h-3" />
-                          )}
-                        </button>
-                        {expandedAgent?.business === business.id && expandedAgent?.agent === agent && (
-                          <div className="p-2 bg-black/20 border-t border-white/5 grid grid-cols-3 gap-1">
-                            {agent === "personal" && (
-                              <>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Tasks</p><p className="font-bold text-xs">{business.personalAssistant.tasksCompleted}</p></div>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Meetings</p><p className="font-bold text-xs">{business.personalAssistant.meetingsBooked}</p></div>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Messages</p><p className="font-bold text-xs">{business.personalAssistant.messagesSent}</p></div>
-                              </>
-                            )}
-                            {agent === "newsletter" && (
-                              <>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Posts</p><p className="font-bold text-xs">{business.newsletterAgent.contentGenerated}</p></div>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Subs</p><p className="font-bold text-xs">{business.newsletterAgent.lifetimeSubscribers}</p></div>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">New</p><p className="font-bold text-xs">+{business.newsletterAgent.subscribersGenerated}</p></div>
-                              </>
-                            )}
-                            {agent === "marketing" && (
-                              <>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Min</p><p className="font-bold text-xs">{business.marketingAgent.contentGeneratedMinutes}</p></div>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Views</p><p className="font-bold text-xs">{(business.marketingAgent.viewsGenerated / 1000).toFixed(1)}k</p></div>
-                                <div className="bg-white/5 rounded p-1"><p className="text-[10px] text-gray-400">Conv%</p><p className="font-bold text-xs">{business.marketingAgent.conversionRate}</p></div>
-                              </>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
+      {mockSponsorData.map((business) => (
+        <Card key={business.id} className="bg-white/5 border-white/10">
+          <CardHeader className="pb-2">
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-purple-400" />
+              <CardTitle className="text-lg">{business.name}</CardTitle>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="flex flex-col items-center">
+                <CircularProgress 
+                  value={business.totalTasksCompleted} 
+                  color="#a855f7"
+                  size={80}
+                  strokeWidth={6}
+                  label="Tasks"
+                />
+              </div>
+              <div className="flex flex-col items-center">
+                <CircularProgress 
+                  value={business.totalRevenue} 
+                  color="#22c55e"
+                  size={80}
+                  strokeWidth={6}
+                  label="Revenue"
+                />
+                <p className="text-sm font-bold text-green-400 mt-1">${business.totalRevenue.toLocaleString()}</p>
+              </div>
+              <div className="flex flex-col items-center">
+                <CircularProgress 
+                  value={business.newsletterAgent.lifetimeSubscribers} 
+                  color="#3b82f6"
+                  size={80}
+                  strokeWidth={6}
+                  label="Subs"
+                />
+              </div>
+              <div className="flex flex-col items-center">
+                <CircularProgress 
+                  value={business.marketingAgent.viewsGenerated} 
+                  color="#f59e0b"
+                  size={80}
+                  strokeWidth={6}
+                  label="Views"
+                />
+                <p className="text-sm font-bold text-amber-400 mt-1">{(business.marketingAgent.viewsGenerated / 1000).toFixed(1)}k</p>
+              </div>
+            </div>
+
+            <div className="mt-4 border-t border-white/10 pt-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Bot className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-medium">AI Agents</span>
+              </div>
+              <div className="grid grid-cols-3 gap-2">
+                <div className="bg-white/5 rounded p-2 text-center">
+                  <p className="text-xs text-gray-400">Tasks</p>
+                  <p className="font-bold">{business.personalAssistant.tasksCompleted}</p>
+                </div>
+                <div className="bg-white/5 rounded p-2 text-center">
+                  <p className="text-xs text-gray-400">Meetings</p>
+                  <p className="font-bold">{business.personalAssistant.meetingsBooked}</p>
+                </div>
+                <div className="bg-white/5 rounded p-2 text-center">
+                  <p className="text-xs text-gray-400">Messages</p>
+                  <p className="font-bold">{business.personalAssistant.messagesSent}</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
