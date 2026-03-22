@@ -389,43 +389,39 @@ export default function Dashboard() {
                     <span className="text-xs font-bold text-black">VIP</span>
                   </div>
                   <CardContent className="p-6 relative">
-                    <div className="flex items-start justify-between gap-6">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-yellow-400 flex items-center justify-center">
-                            <Crown className="w-5 h-5 text-black" />
-                          </div>
-                          <span className="text-sm font-medium text-amber-300">Premium</span>
-                        </div>
-                        <div className="mb-3">
-                          <span className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent">VIP Sponsor</span>
-                        </div>
-                        <p className="text-sm text-gray-300 mb-3">
-                          Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
-                        </p>
-                        <ul className="text-sm text-gray-400 space-y-1.5">
-                          <li className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> Gold Chrome Experience</li>
-                          <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-amber-500" /> Command Center Access</li>
-                          <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-amber-500" /> AI Agent Insights</li>
-                          <li className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-amber-500" /> Advanced Analytics</li>
-                        </ul>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-300 to-yellow-400 flex items-center justify-center">
+                        <Crown className="w-5 h-5 text-black" />
                       </div>
-                      <div className="flex flex-col gap-3 min-w-[240px]">
-                        <Button
-                          className="bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black border-0"
-                          onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
-                        >
-                          <Bot className="w-4 h-4 mr-2" />
-                          Activate Bot Development
-                        </Button>
-                        <Button
-                          className="bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-400 hover:to-violet-400 text-white border-0"
-                          onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
-                        >
-                          <Crown className="w-4 h-4 mr-2" />
-                          Activate Sponsor Subscription
-                        </Button>
-                      </div>
+                      <span className="text-sm font-medium text-amber-300">VIP Sponsor</span>
+                    </div>
+                    <div className="mb-3">
+                      <span className="text-3xl font-bold bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent">VIP Sponsor</span>
+                    </div>
+                    <p className="text-sm text-gray-300 mb-4">
+                      Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
+                    </p>
+                    <ul className="text-sm text-gray-400 space-y-1.5 mb-6">
+                      <li className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> Gold Chrome Experience</li>
+                      <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-amber-500" /> Command Center Access</li>
+                      <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-amber-500" /> AI Agent Insights</li>
+                      <li className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-amber-500" /> Advanced Analytics</li>
+                    </ul>
+                    <div className="flex justify-between gap-4">
+                      <Button
+                        className="flex-1 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black border-0"
+                        onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                      >
+                        <Bot className="w-4 h-4 mr-2" />
+                        Activate Bot Development
+                      </Button>
+                      <Button
+                        className="flex-1 bg-gradient-to-r from-purple-400 to-violet-500 hover:from-purple-300 hover:to-violet-400 text-white border-0"
+                        onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                      >
+                        <Crown className="w-4 h-4 mr-2" />
+                        Activate Sponsor Subscription
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
