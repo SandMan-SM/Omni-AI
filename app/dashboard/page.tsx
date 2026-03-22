@@ -283,14 +283,19 @@ export default function Dashboard() {
                 )}
               </div>
             )}
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10" data-testid="badge-tier-status">
-              <TierIcon className={`w-4 h-4 ${currentTierData.accent}`} />
-              <span className="text-sm text-gray-300" data-testid="text-tier-badge">{currentTierData.name} Tier</span>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10" data-testid="badge-user-info">
-              <User className="w-4 h-4 text-gray-400" />
-              <span className="text-sm text-gray-300 hidden sm:inline max-w-[160px] truncate" data-testid="text-header-email">{user.email}</span>
-            </div>
+            {isSponsor ? (
+              <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg ${isVIPSponsor ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-green-500/10 border border-green-500/30'}`} data-testid="badge-tier-status">
+                <Crown className={`w-4 h-4 ${isVIPSponsor ? 'text-amber-400' : 'text-green-400'}`} />
+                <span className={`text-sm ${isVIPSponsor ? 'text-amber-300' : 'text-green-300'}`} data-testid="text-tier-badge">
+                  {isVIPSponsor ? 'VIP Sponsor' : 'Sponsor'}
+                </span>
+              </div>
+            ) : (
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10" data-testid="badge-tier-status">
+                <TierIcon className={`w-4 h-4 ${currentTierData.accent}`} />
+                <span className="text-sm text-gray-300" data-testid="text-tier-badge">{currentTierData.name} Tier</span>
+              </div>
+            )}
             <Button
               variant="ghost"
               size="icon"
