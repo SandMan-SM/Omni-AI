@@ -403,7 +403,7 @@ export default function Dashboard() {
                         </div>
                         <div className="flex items-center gap-3 bg-purple-500/20 px-6 py-3 rounded-full">
                           <Crown className="w-4 h-4 text-purple-400" />
-                          <span className="text-sm text-purple-300">AI Agent Insights</span>
+                          <span className="text-sm text-purple-300">Agentic AI Agents</span>
                         </div>
                         <div className="flex items-center gap-3 bg-purple-500/20 px-6 py-3 rounded-full">
                           <BarChart3 className="w-4 h-4 text-purple-400" />
