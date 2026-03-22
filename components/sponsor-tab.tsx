@@ -29,77 +29,68 @@ interface BusinessData {
 const mockSponsorData: BusinessData[] = [
   {
     id: "1",
-    name: "Valley Recovery Center",
-    totalTasksCompleted: 847,
-    totalRevenue: 24500,
+    name: "Leifson Built",
+    totalTasksCompleted: 0,
+    totalRevenue: 0,
     personalAssistant: {
-      tasksCompleted: 312,
-      meetingsBooked: 28,
-      messagesSent: 184,
+      tasksCompleted: 0,
+      meetingsBooked: 0,
+      messagesSent: 0,
     },
     newsletterAgent: {
-      contentGenerated: 45,
-      lifetimeSubscribers: 4521,
-      subscribersGenerated: 892,
-      mostPopularContent: [
-        { title: "The Path to Recovery", views: 1243 },
-        { title: "Understanding Addiction", views: 987 },
-      ],
+      contentGenerated: 0,
+      lifetimeSubscribers: 0,
+      subscribersGenerated: 0,
+      mostPopularContent: [],
     },
     marketingAgent: {
-      contentGeneratedMinutes: 234,
-      viewsGenerated: 45600,
-      conversionRate: 4.8,
+      contentGeneratedMinutes: 0,
+      viewsGenerated: 0,
+      conversionRate: 0,
     },
   },
   {
     id: "2",
-    name: "Horizon Wellness",
-    totalTasksCompleted: 623,
-    totalRevenue: 18200,
+    name: "Youngs Cabinet Refinishing",
+    totalTasksCompleted: 0,
+    totalRevenue: 0,
     personalAssistant: {
-      tasksCompleted: 245,
-      meetingsBooked: 19,
-      messagesSent: 156,
+      tasksCompleted: 0,
+      meetingsBooked: 0,
+      messagesSent: 0,
     },
     newsletterAgent: {
-      contentGenerated: 38,
-      lifetimeSubscribers: 3214,
-      subscribersGenerated: 567,
-      mostPopularContent: [
-        { title: "Wellness Tips", views: 892 },
-        { title: "Mindfulness Practices", views: 654 },
-      ],
+      contentGenerated: 0,
+      lifetimeSubscribers: 0,
+      subscribersGenerated: 0,
+      mostPopularContent: [],
     },
     marketingAgent: {
-      contentGeneratedMinutes: 187,
-      viewsGenerated: 32100,
-      conversionRate: 3.9,
+      contentGeneratedMinutes: 0,
+      viewsGenerated: 0,
+      conversionRate: 0,
     },
   },
   {
     id: "3",
-    name: "New Dawn Treatment",
-    totalTasksCompleted: 412,
-    totalRevenue: 12800,
+    name: "Omni Leads",
+    totalTasksCompleted: 0,
+    totalRevenue: 0,
     personalAssistant: {
-      tasksCompleted: 178,
-      meetingsBooked: 14,
-      messagesSent: 98,
+      tasksCompleted: 0,
+      meetingsBooked: 0,
+      messagesSent: 0,
     },
     newsletterAgent: {
-      contentGenerated: 28,
-      lifetimeSubscribers: 2156,
-      subscribersGenerated: 324,
-      mostPopularContent: [
-        { title: "Treatment Options", views: 678 },
-        { title: "Recovery Stories", views: 543 },
-      ],
+      contentGenerated: 0,
+      lifetimeSubscribers: 0,
+      subscribersGenerated: 0,
+      mostPopularContent: [],
     },
     marketingAgent: {
-      contentGeneratedMinutes: 123,
-      viewsGenerated: 21400,
-      conversionRate: 3.2,
+      contentGeneratedMinutes: 0,
+      viewsGenerated: 0,
+      conversionRate: 0,
     },
   },
 ];
@@ -110,7 +101,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
-            Business Assets
+            Sponsor Insights
             {isLocked && <Lock className="w-4 h-4 text-purple-400" />}
           </h2>
           <p className="text-sm text-gray-400">Your sponsored business analytics</p>

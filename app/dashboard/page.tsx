@@ -441,38 +441,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-                <BarChart3 className="w-5 h-5 text-purple-400" />
-                Command Center
-              </h3>
-              <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 ${!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none' : ''}`}>
-                <Card className="bg-purple-500/10 border-purple-500/20">
-                  <CardContent className="p-4 flex flex-col items-center">
-                    <CircularProgress value={1882} color="#a855f7" size={100} strokeWidth={8} label="Tasks" />
-                    <p className="text-xs text-gray-400 mt-2">Completed</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-green-500/10 border-green-500/20">
-                  <CardContent className="p-4 flex flex-col items-center">
-                    <CircularProgress value={55500} color="#22c55e" size={100} strokeWidth={8} label="Revenue" />
-                    <p className="text-xs text-gray-400 mt-2">Total Earned</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-blue-500/10 border-blue-500/20">
-                  <CardContent className="p-4 flex flex-col items-center">
-                    <CircularProgress value={9891} color="#3b82f6" size={100} strokeWidth={8} label="Subscribers" />
-                    <p className="text-xs text-gray-400 mt-2">Newsletter</p>
-                  </CardContent>
-                </Card>
-                <Card className="bg-amber-500/10 border-amber-500/20">
-                  <CardContent className="p-4 flex flex-col items-center">
-                    <CircularProgress value={99100} color="#f59e0b" size={100} strokeWidth={8} label="Views" />
-                    <p className="text-xs text-gray-400 mt-2">Generated</p>
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
+
 
             <div className={!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none' : ''}>
               <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
