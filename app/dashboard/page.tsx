@@ -396,28 +396,28 @@ export default function Dashboard() {
                       Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
                     </p>
                     <div className="flex justify-center mb-6">
-                      <div className="grid grid-cols-2 gap-x-8 gap-y-2">
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
-                          <Bot className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                          <Bot className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">Sponsor Insights</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
-                          <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                          <Crown className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">AI Agent Insights</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
-                          <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                          <BarChart3 className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">Command Center Access</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-2 rounded-full min-w-[200px]">
-                          <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                          <TrendingUp className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">Advanced Analytics</span>
                         </div>
                       </div>
                     </div>
                     <div className="flex justify-between gap-4">
                       <Button
-                        className="flex-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-amber-500 hover:from-yellow-200 hover:to-amber-300 text-black border-0 shadow-lg shadow-amber-500/30 font-bold"
+                        className="flex-1 btn-chrome-gold text-black border-0 shadow-lg shadow-amber-400/30 font-bold"
                         onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
                       >
                         <Bot className="w-4 h-4 mr-2" />
