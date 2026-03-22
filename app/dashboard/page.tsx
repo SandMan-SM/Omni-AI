@@ -348,7 +348,7 @@ export default function Dashboard() {
               </h1>
             </div>
             <Button
-              className="bg-gradient-to-r from-amber-400 to-yellow-400 border-0 text-black self-start sm:self-auto font-semibold"
+              className="btn-chrome-gold text-black border-0 self-start sm:self-auto font-semibold"
               onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
               data-testid="button-explore-tiers"
             >
