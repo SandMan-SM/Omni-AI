@@ -1,15 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Bot, Building2, Lock } from "lucide-react";
+import { Bot, Building2, Lock, ChevronDown, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface BusinessData {
   id: string;
@@ -37,7 +30,7 @@ interface BusinessData {
 const mockSponsorData: BusinessData[] = [
   {
     id: "1",
-    name: "Leifson Built",
+    name: "Youngs Cabinet Refinishing",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
@@ -59,7 +52,7 @@ const mockSponsorData: BusinessData[] = [
   },
   {
     id: "2",
-    name: "Youngs Cabinet Refinishing",
+    name: "Leifson Built",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
@@ -126,13 +119,59 @@ function calculateTotals(businesses: BusinessData[]) {
   );
 }
 
+function BusinessAnalyticsCard({ business }: { business: BusinessData }) {
+  return (
+    <div className="mt-4">
+      <div className="grid grid-cols-4 gap-4 mb-4">
+        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
+          <p className="text-xs text-gray-400 mt-1">Tasks</p>
+        </div>
+        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+          <p className="text-xs text-gray-400 mt-1">Revenue</p>
+        </div>
+        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-purple-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
+          <p className="text-xs text-gray-400 mt-1">Subscribers</p>
+        </div>
+        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+          <p className="text-2xl font-bold text-purple-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+          <p className="text-xs text-gray-400 mt-1">Views</p>
+        </div>
+      </div>
+
+      <div className="border-t border-purple-500/20 pt-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Bot className="w-4 h-4 text-purple-400" />
+          <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
+        </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="bg-white/5 rounded-lg p-3 text-center">
+            <p className="text-xl font-bold text-purple-300">{business.personalAssistant.tasksCompleted}</p>
+            <p className="text-xs text-gray-400">Tasks</p>
+          </div>
+          <div className="bg-white/5 rounded-lg p-3 text-center">
+            <p className="text-xl font-bold text-purple-300">{business.personalAssistant.meetingsBooked}</p>
+            <p className="text-xs text-gray-400">Meetings</p>
+          </div>
+          <div className="bg-white/5 rounded-lg p-3 text-center">
+            <p className="text-xl font-bold text-purple-300">{business.personalAssistant.messagesSent}</p>
+            <p className="text-xs text-gray-400">Messages</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
-  const [selectedBusiness, setSelectedBusiness] = useState<string>("all");
+  const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null);
   const totals = calculateTotals(mockSponsorData);
 
-  const selectedBusinessData = selectedBusiness === "all" 
-    ? null 
-    : mockSponsorData.find((b) => b.id === selectedBusiness);
+  const toggleBusiness = (id: string) => {
+    setExpandedBusiness(expandedBusiness === id ? null : id);
+  };
 
   return (
     <div className={`space-y-4 ${isLocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
@@ -151,58 +190,27 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
 
       <Card className="bg-white/5 border-purple-500/30">
         <CardHeader className="pb-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-purple-400" />
-              <CardTitle className="text-lg text-purple-300">Asset Analytics</CardTitle>
-            </div>
-            <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-              <SelectTrigger className="w-[220px] bg-purple-950/30 border-purple-500/30 text-purple-300">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Assets</SelectItem>
-                {mockSponsorData.map((business) => (
-                  <SelectItem key={business.id} value={business.id}>
-                    {business.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-purple-400" />
+            <CardTitle className="text-lg text-purple-300">Asset Analytics</CardTitle>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-4 gap-4 mb-4">
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">
-                {selectedBusiness === "all" 
-                  ? totals.totalTasksCompleted 
-                  : selectedBusinessData?.totalTasksCompleted || 0}
-              </p>
+              <p className="text-3xl font-bold text-purple-400">{totals.totalTasksCompleted}</p>
               <p className="text-xs text-gray-400 mt-1">Tasks</p>
             </div>
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">
-                ${((selectedBusiness === "all" 
-                  ? totals.totalRevenue 
-                  : selectedBusinessData?.totalRevenue || 0) / 1000).toFixed(1)}k
-              </p>
+              <p className="text-3xl font-bold text-purple-400">${(totals.totalRevenue / 1000).toFixed(1)}k</p>
               <p className="text-xs text-gray-400 mt-1">Revenue</p>
             </div>
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">
-                {(selectedBusiness === "all" 
-                  ? totals.lifetimeSubscribers 
-                  : selectedBusinessData?.newsletterAgent.lifetimeSubscribers || 0).toLocaleString()}
-              </p>
+              <p className="text-3xl font-bold text-purple-400">{totals.lifetimeSubscribers.toLocaleString()}</p>
               <p className="text-xs text-gray-400 mt-1">Subscribers</p>
             </div>
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">
-                {((selectedBusiness === "all" 
-                  ? totals.viewsGenerated 
-                  : selectedBusinessData?.marketingAgent.viewsGenerated || 0) / 1000).toFixed(0)}k
-              </p>
+              <p className="text-3xl font-bold text-purple-400">{(totals.viewsGenerated / 1000).toFixed(0)}k</p>
               <p className="text-xs text-gray-400 mt-1">Views</p>
             </div>
           </div>
@@ -214,21 +222,15 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-purple-300">{selectedBusiness === "all" 
-                  ? totals.tasksCompleted 
-                  : selectedBusinessData?.personalAssistant.tasksCompleted || 0}</p>
+                <p className="text-2xl font-bold text-purple-300">{totals.tasksCompleted}</p>
                 <p className="text-xs text-gray-400">Tasks</p>
               </div>
               <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-purple-300">{selectedBusiness === "all" 
-                  ? totals.meetingsBooked 
-                  : selectedBusinessData?.personalAssistant.meetingsBooked || 0}</p>
+                <p className="text-2xl font-bold text-purple-300">{totals.meetingsBooked}</p>
                 <p className="text-xs text-gray-400">Meetings</p>
               </div>
               <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-purple-300">{selectedBusiness === "all" 
-                  ? totals.messagesSent 
-                  : selectedBusinessData?.personalAssistant.messagesSent || 0}</p>
+                <p className="text-2xl font-bold text-purple-300">{totals.messagesSent}</p>
                 <p className="text-xs text-gray-400">Messages</p>
               </div>
             </div>
@@ -236,94 +238,33 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </CardContent>
       </Card>
 
-      {selectedBusiness !== "all" && selectedBusinessData && (
-        <Card className="bg-white/5 border-purple-500/20">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-purple-400" />
-              <CardTitle className="text-lg text-purple-300">{selectedBusinessData.name}</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-4 gap-4 mb-4">
-              <div className="bg-purple-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-purple-400">{selectedBusinessData.totalTasksCompleted}</p>
-                <p className="text-xs text-gray-400">Tasks</p>
-              </div>
-              <div className="bg-purple-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-purple-400">${(selectedBusinessData.totalRevenue / 1000).toFixed(1)}k</p>
-                <p className="text-xs text-gray-400">Revenue</p>
-              </div>
-              <div className="bg-purple-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-purple-400">{selectedBusinessData.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
-                <p className="text-xs text-gray-400">Subscribers</p>
-              </div>
-              <div className="bg-purple-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-purple-400">{(selectedBusinessData.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
-                <p className="text-xs text-gray-400">Views</p>
-              </div>
-            </div>
-
-            <div className="border-t border-white/10 pt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Bot className="w-4 h-4 text-purple-400" />
-                <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <div className="bg-white/5 rounded p-2 text-center">
-                  <p className="text-xs text-gray-400">Tasks</p>
-                  <p className="font-bold text-purple-300">{selectedBusinessData.personalAssistant.tasksCompleted}</p>
+      <div className="space-y-2">
+        {mockSponsorData.map((business) => (
+          <Card key={business.id} className="bg-white/5 border-purple-500/20">
+            <CardHeader 
+              className="pb-2 cursor-pointer hover:bg-white/5 transition-colors rounded-t-lg"
+              onClick={() => toggleBusiness(business.id)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-4 h-4 text-purple-400" />
+                  <CardTitle className="text-base text-gray-200">{business.name}</CardTitle>
                 </div>
-                <div className="bg-white/5 rounded p-2 text-center">
-                  <p className="text-xs text-gray-400">Meetings</p>
-                  <p className="font-bold text-purple-300">{selectedBusinessData.personalAssistant.meetingsBooked}</p>
-                </div>
-                <div className="bg-white/5 rounded p-2 text-center">
-                  <p className="text-xs text-gray-400">Messages</p>
-                  <p className="font-bold text-purple-300">{selectedBusinessData.personalAssistant.messagesSent}</p>
-                </div>
+                {expandedBusiness === business.id ? (
+                  <ChevronDown className="w-5 h-5 text-purple-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-purple-400" />
+                )}
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {selectedBusiness === "all" && (
-        <div className="grid md:grid-cols-3 gap-4">
-          {mockSponsorData.map((business) => (
-            <Card key={business.id} className="bg-white/5 border-white/10">
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-purple-400" />
-                    <CardTitle className="text-sm text-gray-200">{business.name}</CardTitle>
-                  </div>
-                </div>
-              </CardHeader>
+            </CardHeader>
+            {expandedBusiness === business.id && (
               <CardContent>
-                <div className="grid grid-cols-2 gap-2 text-center">
-                  <div className="bg-purple-500/10 rounded p-2">
-                    <p className="text-xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
-                    <p className="text-xs text-gray-400">Tasks</p>
-                  </div>
-                  <div className="bg-purple-500/10 rounded p-2">
-                    <p className="text-xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
-                    <p className="text-xs text-gray-400">Revenue</p>
-                  </div>
-                  <div className="bg-purple-500/10 rounded p-2">
-                    <p className="text-xl font-bold text-purple-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
-                    <p className="text-xs text-gray-400">Subscribers</p>
-                  </div>
-                  <div className="bg-purple-500/10 rounded p-2">
-                    <p className="text-xl font-bold text-purple-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
-                    <p className="text-xs text-gray-400">Views</p>
-                  </div>
-                </div>
+                <BusinessAnalyticsCard business={business} />
               </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+            )}
+          </Card>
+        ))}
+      </div>
     </div>
   );
 }
