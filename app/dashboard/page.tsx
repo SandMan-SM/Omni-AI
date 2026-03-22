@@ -404,7 +404,7 @@ export default function Dashboard() {
                     <div className="flex justify-between gap-4">
                       <Button
                         className="flex-1 bg-gradient-to-r from-amber-400 to-yellow-400 hover:from-amber-300 hover:to-yellow-300 text-black border-0"
-                        onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                        onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
                       >
                         <Bot className="w-4 h-4 mr-2" />
                         Activate Bot Development
