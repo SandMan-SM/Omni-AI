@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Bot, Building2, Lock, ChevronDown } from "lucide-react";
+import { Bot, Building2, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -149,20 +149,19 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </Badge>
       </div>
 
-      <Card className="bg-gradient-to-br from-amber-950/50 to-yellow-950/50 border-amber-500/30">
+      <Card className="bg-white/5 border-purple-500/30">
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-amber-400" />
-              <CardTitle className="text-lg text-amber-400">Total Across All Businesses</CardTitle>
+              <Building2 className="w-5 h-5 text-purple-400" />
+              <CardTitle className="text-lg text-purple-300">Asset Analytics</CardTitle>
             </div>
             <Select value={selectedBusiness} onValueChange={setSelectedBusiness}>
-              <SelectTrigger className="w-[220px] bg-amber-950/30 border-amber-500/30 text-amber-300">
-                <SelectValue placeholder="Select business" />
-                <ChevronDown className="w-4 h-4 ml-2" />
+              <SelectTrigger className="w-[220px] bg-purple-950/30 border-purple-500/30 text-purple-300">
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Businesses (Combined)</SelectItem>
+                <SelectItem value="all">All Assets</SelectItem>
                 {mockSponsorData.map((business) => (
                   <SelectItem key={business.id} value={business.id}>
                     {business.name}
@@ -182,24 +181,24 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               </p>
               <p className="text-xs text-gray-400 mt-1">Tasks</p>
             </div>
-            <div className="bg-green-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-green-400">
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">
                 ${((selectedBusiness === "all" 
                   ? totals.totalRevenue 
                   : selectedBusinessData?.totalRevenue || 0) / 1000).toFixed(1)}k
               </p>
               <p className="text-xs text-gray-400 mt-1">Revenue</p>
             </div>
-            <div className="bg-blue-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-blue-400">
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">
                 {(selectedBusiness === "all" 
                   ? totals.lifetimeSubscribers 
                   : selectedBusinessData?.newsletterAgent.lifetimeSubscribers || 0).toLocaleString()}
               </p>
               <p className="text-xs text-gray-400 mt-1">Subscribers</p>
             </div>
-            <div className="bg-amber-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-amber-400">
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">
                 {((selectedBusiness === "all" 
                   ? totals.viewsGenerated 
                   : selectedBusinessData?.marketingAgent.viewsGenerated || 0) / 1000).toFixed(0)}k
@@ -208,26 +207,26 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
             </div>
           </div>
 
-          <div className="border-t border-amber-500/20 pt-4">
+          <div className="border-t border-white/10 pt-4">
             <div className="flex items-center gap-2 mb-3">
-              <Bot className="w-4 h-4 text-amber-400" />
-              <span className="text-sm font-medium text-amber-300">AI Agent Stats</span>
+              <Bot className="w-4 h-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
             </div>
             <div className="grid grid-cols-3 gap-3">
               <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">{selectedBusiness === "all" 
+                <p className="text-2xl font-bold text-purple-300">{selectedBusiness === "all" 
                   ? totals.tasksCompleted 
                   : selectedBusinessData?.personalAssistant.tasksCompleted || 0}</p>
                 <p className="text-xs text-gray-400">Tasks</p>
               </div>
               <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">{selectedBusiness === "all" 
+                <p className="text-2xl font-bold text-purple-300">{selectedBusiness === "all" 
                   ? totals.meetingsBooked 
                   : selectedBusinessData?.personalAssistant.meetingsBooked || 0}</p>
                 <p className="text-xs text-gray-400">Meetings</p>
               </div>
               <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold">{selectedBusiness === "all" 
+                <p className="text-2xl font-bold text-purple-300">{selectedBusiness === "all" 
                   ? totals.messagesSent 
                   : selectedBusinessData?.personalAssistant.messagesSent || 0}</p>
                 <p className="text-xs text-gray-400">Messages</p>
@@ -238,11 +237,11 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
       </Card>
 
       {selectedBusiness !== "all" && selectedBusinessData && (
-        <Card className="bg-white/5 border-white/10">
+        <Card className="bg-white/5 border-purple-500/20">
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Building2 className="w-4 h-4 text-purple-400" />
-              <CardTitle className="text-lg">{selectedBusinessData.name}</CardTitle>
+              <CardTitle className="text-lg text-purple-300">{selectedBusinessData.name}</CardTitle>
             </div>
           </CardHeader>
           <CardContent>
@@ -251,16 +250,16 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
                 <p className="text-2xl font-bold text-purple-400">{selectedBusinessData.totalTasksCompleted}</p>
                 <p className="text-xs text-gray-400">Tasks</p>
               </div>
-              <div className="bg-green-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-green-400">${(selectedBusinessData.totalRevenue / 1000).toFixed(1)}k</p>
+              <div className="bg-purple-500/10 rounded p-3 text-center">
+                <p className="text-2xl font-bold text-purple-400">${(selectedBusinessData.totalRevenue / 1000).toFixed(1)}k</p>
                 <p className="text-xs text-gray-400">Revenue</p>
               </div>
-              <div className="bg-blue-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-blue-400">{selectedBusinessData.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
+              <div className="bg-purple-500/10 rounded p-3 text-center">
+                <p className="text-2xl font-bold text-purple-400">{selectedBusinessData.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
                 <p className="text-xs text-gray-400">Subscribers</p>
               </div>
-              <div className="bg-amber-500/10 rounded p-3 text-center">
-                <p className="text-2xl font-bold text-amber-400">{(selectedBusinessData.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+              <div className="bg-purple-500/10 rounded p-3 text-center">
+                <p className="text-2xl font-bold text-purple-400">{(selectedBusinessData.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
                 <p className="text-xs text-gray-400">Views</p>
               </div>
             </div>
@@ -268,20 +267,20 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
             <div className="border-t border-white/10 pt-4">
               <div className="flex items-center gap-2 mb-2">
                 <Bot className="w-4 h-4 text-purple-400" />
-                <span className="text-sm font-medium">AI Agent Stats</span>
+                <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-white/5 rounded p-2 text-center">
                   <p className="text-xs text-gray-400">Tasks</p>
-                  <p className="font-bold">{selectedBusinessData.personalAssistant.tasksCompleted}</p>
+                  <p className="font-bold text-purple-300">{selectedBusinessData.personalAssistant.tasksCompleted}</p>
                 </div>
                 <div className="bg-white/5 rounded p-2 text-center">
                   <p className="text-xs text-gray-400">Meetings</p>
-                  <p className="font-bold">{selectedBusinessData.personalAssistant.meetingsBooked}</p>
+                  <p className="font-bold text-purple-300">{selectedBusinessData.personalAssistant.meetingsBooked}</p>
                 </div>
                 <div className="bg-white/5 rounded p-2 text-center">
                   <p className="text-xs text-gray-400">Messages</p>
-                  <p className="font-bold">{selectedBusinessData.personalAssistant.messagesSent}</p>
+                  <p className="font-bold text-purple-300">{selectedBusinessData.personalAssistant.messagesSent}</p>
                 </div>
               </div>
             </div>
@@ -297,7 +296,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Building2 className="w-4 h-4 text-purple-400" />
-                    <CardTitle className="text-sm">{business.name}</CardTitle>
+                    <CardTitle className="text-sm text-gray-200">{business.name}</CardTitle>
                   </div>
                 </div>
               </CardHeader>
@@ -307,16 +306,16 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
                     <p className="text-xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
                     <p className="text-xs text-gray-400">Tasks</p>
                   </div>
-                  <div className="bg-green-500/10 rounded p-2">
-                    <p className="text-xl font-bold text-green-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+                  <div className="bg-purple-500/10 rounded p-2">
+                    <p className="text-xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
                     <p className="text-xs text-gray-400">Revenue</p>
                   </div>
-                  <div className="bg-blue-500/10 rounded p-2">
-                    <p className="text-xl font-bold text-blue-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
+                  <div className="bg-purple-500/10 rounded p-2">
+                    <p className="text-xl font-bold text-purple-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
                     <p className="text-xs text-gray-400">Subscribers</p>
                   </div>
-                  <div className="bg-amber-500/10 rounded p-2">
-                    <p className="text-xl font-bold text-amber-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+                  <div className="bg-purple-500/10 rounded p-2">
+                    <p className="text-xl font-bold text-purple-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
                     <p className="text-xs text-gray-400">Views</p>
                   </div>
                 </div>
