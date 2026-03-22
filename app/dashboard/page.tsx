@@ -445,52 +445,87 @@ export default function Dashboard() {
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
             <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-              <CardTitle className="text-lg text-white">Current Tier</CardTitle>
-              <Button
-                variant="outline"
-                className="border-white/20 bg-transparent text-white text-sm"
-                onClick={() => {
-                  router.push("/");
-                  setTimeout(() => {
-                    document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
-                  }, 300);
-                }}
-                data-testid="button-upgrade-tier"
-              >
-                Upgrade
-              </Button>
+              <CardTitle className="text-lg text-white">
+                {isVIPSponsor ? "Current Sponsor" : "Current Tier"}
+              </CardTitle>
+              {isVIPSponsor ? (
+                <Button
+                  variant="outline"
+                  className="border-amber-500/50 bg-amber-500/10 text-amber-400 text-sm hover:bg-amber-500/20"
+                  onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
+                  data-testid="button-activate-vip"
+                >
+                  Activate
+                  <ArrowRight className="w-3 h-3 ml-1.5" />
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  className="border-white/20 bg-transparent text-white text-sm"
+                  onClick={() => {
+                    router.push("/");
+                    setTimeout(() => {
+                      document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
+                    }, 300);
+                  }}
+                  data-testid="button-upgrade-tier"
+                >
+                  Upgrade
+                </Button>
+              )}
             </CardHeader>
             <CardContent>
-              <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${currentTierData.gradient} p-[1px] flex-shrink-0`}>
-                  <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
-                    <TierIcon className={`w-7 h-7 ${currentTierData.accent}`} />
+              {isVIPSponsor ? (
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-[1px] flex-shrink-0">
+                    <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
+                      <Crown className="w-7 h-7 text-amber-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-xl font-bold text-white" data-testid="text-current-tier-name">VIP Sponsor</h3>
+                      <span className="text-xs font-semibold tracking-wider text-amber-400" data-testid="text-current-tier-level">ACTIVE</span>
+                    </div>
+                    <p className="text-sm text-gray-500" data-testid="text-tier-status">
+                      {profile?.sponsor_activated ? "Active" : "Onboarding"}
+                    </p>
                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-xl font-bold text-white" data-testid="text-current-tier-name">{currentTierData.name}</h3>
-                    <span className={`text-xs font-semibold tracking-wider ${currentTierData.accent}`} data-testid="text-current-tier-level">TIER {currentTierData.level}</span>
+              ) : (
+                <>
+                  <div className="flex items-center gap-4">
+                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${currentTierData.gradient} p-[1px] flex-shrink-0`}>
+                      <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
+                        <TierIcon className={`w-7 h-7 ${currentTierData.accent}`} />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-xl font-bold text-white" data-testid="text-current-tier-name">{currentTierData.name}</h3>
+                        <span className={`text-xs font-semibold tracking-wider ${currentTierData.accent}`} data-testid="text-current-tier-level">TIER {currentTierData.level}</span>
+                      </div>
+                      <p className="text-sm text-gray-500" data-testid="text-tier-status">
+                        {isSponsor && !profile?.sponsor_activated ? "Onboarding" : "Active"}
+                      </p>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500" data-testid="text-tier-status">
-                    {isSponsor && !profile?.sponsor_activated ? "Onboarding" : "Active"}
-                  </p>
-                </div>
-              </div>
 
-              <div className="mt-5">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-gray-500">Tier Progress</span>
-                  <span className="text-xs text-gray-400" data-testid="text-tier-progress">Tier {currentTierData.level} / 4</span>
-                </div>
-                <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-                  <div
-                    className={`h-full rounded-full bg-gradient-to-r ${currentTierData.gradient}`}
-                    style={{ width: `${((currentTierData.level + 1) / 5) * 100}%` }}
-                    data-testid="progress-tier"
-                  />
-                </div>
-              </div>
+                  <div className="mt-5">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs text-gray-500">Tier Progress</span>
+                      <span className="text-xs text-gray-400" data-testid="text-tier-progress">Tier {currentTierData.level} / 4</span>
+                    </div>
+                    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full bg-gradient-to-r ${currentTierData.gradient}`}
+                        style={{ width: `${((currentTierData.level + 1) / 5) * 100}%` }}
+                        data-testid="progress-tier"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
         </motion.div>

@@ -238,23 +238,22 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </CardContent>
       </Card>
 
-      <div className="space-y-2 max-w-3xl mx-auto">
+      <div className="space-y-3 max-w-3xl mx-auto">
         {mockSponsorData.map((business) => (
           <Card key={business.id} className="bg-white/5 border-purple-500/20">
             <CardHeader 
-              className="pb-2 cursor-pointer hover:bg-white/5 transition-colors rounded-t-lg"
+              className="py-4 cursor-pointer hover:bg-white/5 transition-colors rounded-t-lg"
               onClick={() => toggleBusiness(business.id)}
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-4 h-4 text-purple-400" />
-                  <CardTitle className="text-base text-gray-200">{business.name}</CardTitle>
+              <div className="flex items-center justify-between w-full pr-4">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-5 h-5 text-purple-400" />
+                  <span className="text-base text-gray-200 font-medium">{business.name}</span>
                 </div>
-                {expandedBusiness === business.id ? (
-                  <ChevronDown className="w-5 h-5 text-purple-400" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-purple-400" />
-                )}
+                <div className="flex items-center gap-2 text-purple-400">
+                  <span className="text-sm">In Development</span>
+                  <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+                </div>
               </div>
             </CardHeader>
             {expandedBusiness === business.id && (
