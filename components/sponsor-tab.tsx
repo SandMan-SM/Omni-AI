@@ -2,8 +2,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { 
-  Bot, Mail, Target, CheckCircle, DollarSign, Building2,
-  Users, TrendingUp, Calendar, ChevronDown, ChevronRight, Lock
+  Bot, Building2, ChevronDown, ChevronRight, Lock
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -29,14 +28,6 @@ interface BusinessData {
     viewsGenerated: number;
     conversionRate: number;
   };
-}
-
-interface GoalData {
-  label: string;
-  current: number;
-  goal: number;
-  icon: React.ReactNode;
-  color: string;
 }
 
 const mockSponsorData: BusinessData[] = [
@@ -117,64 +108,42 @@ const mockSponsorData: BusinessData[] = [
   },
 ];
 
-function CircularProgress({ percentage, size = 80, strokeWidth = 6, color = "var(--primary)" }: { percentage: number; size?: number; strokeWidth?: number; color?: string }) {
+function CircularProgress({ percentage, size = 100, strokeWidth = 8, color = "#a855f7" }: { percentage: number; size?: number; strokeWidth?: number; color?: string }) {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const offset = circumference - (percentage / 100) * circumference;
+  const offset = circumference - (Math.min(percentage, 100) / 100) * circumference;
 
   return (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg className="transform -rotate-90" width={size} height={size}>
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="rgba(255,255,255,0.1)"
-          strokeWidth={strokeWidth}
-          fill="none"
-        />
-        <motion.circle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke={color}
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          initial={{ strokeDashoffset: circumference }}
-          animate={{ strokeDashoffset: offset }}
-          transition={{ duration: 1, ease: "easeOut" }}
-        />
-      </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-lg font-bold">{Math.round(percentage)}%</span>
+    <div className="relative flex flex-col items-center" style={{ width: size + 20 }}>
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg className="transform -rotate-90" width={size} height={size}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="rgba(255,255,255,0.1)"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          <motion.circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1, ease: "easeOut" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-2xl font-bold">{Math.round(Math.min(percentage, 100))}%</span>
+        </div>
       </div>
     </div>
-  );
-}
-
-function GoalCard({ goal, locked }: { goal: GoalData; locked: boolean }) {
-  const percentage = Math.min((goal.current / goal.goal) * 100, 100);
-  
-  return (
-    <Card className={`bg-white/[0.03] border-white/[0.06] relative ${locked ? 'blur-sm select-none' : ''}`}>
-      <CardContent className="p-4 flex flex-col items-center text-center">
-        <CircularProgress 
-          percentage={percentage} 
-          color={goal.color}
-          size={90}
-          strokeWidth={6}
-        />
-        <div className="mt-3">
-          <div className="flex items-center gap-1.5 justify-center mb-1">
-            <span className="text-purple-400">{goal.icon}</span>
-            <span className="text-xs text-gray-400">{goal.label}</span>
-          </div>
-          <p className="text-sm font-medium">{goal.current.toLocaleString()} / {goal.goal.toLocaleString()}</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 }
 
@@ -196,19 +165,19 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
   const totalSubscribers = mockSponsorData.reduce((a, b) => a + b.newsletterAgent.lifetimeSubscribers, 0);
   const totalViews = mockSponsorData.reduce((a, b) => a + b.marketingAgent.viewsGenerated, 0);
 
-  const goals: GoalData[] = [
-    { label: "Tasks Goal", current: totalTasks, goal: 5000, icon: <Target className="w-3 h-3" />, color: "#a855f7" },
-    { label: "Revenue Goal", current: totalRevenue, goal: 100000, icon: <DollarSign className="w-3 h-3" />, color: "#22c55e" },
-    { label: "Subscribers Goal", current: totalSubscribers, goal: 50000, icon: <Users className="w-3 h-3" />, color: "#3b82f6" },
-    { label: "Views Goal", current: totalViews, goal: 1000000, icon: <TrendingUp className="w-3 h-3" />, color: "#f59e0b" },
+  const goals = [
+    { label: "Tasks", current: totalTasks, goal: 5000, color: "#a855f7", bgColor: "bg-purple-500/20", textColor: "text-purple-400" },
+    { label: "Revenue", current: totalRevenue, goal: 100000, color: "#22c55e", bgColor: "bg-green-500/20", textColor: "text-green-400", prefix: "$" },
+    { label: "Subscribers", current: totalSubscribers, goal: 50000, color: "#3b82f6", bgColor: "bg-blue-500/20", textColor: "text-blue-400" },
+    { label: "Views", current: totalViews, goal: 1000000, color: "#f59e0b", bgColor: "bg-amber-500/20", textColor: "text-amber-400" },
   ];
 
   return (
-    <div className={`space-y-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
+    <div className={`space-y-4 ${isLocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
-            Sponsor Insights
+            Command Center
             {isLocked && <Lock className="w-4 h-4 text-purple-400" />}
           </h2>
           <p className="text-sm text-gray-400">Your sponsored business analytics</p>
@@ -218,10 +187,29 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {goals.map((goal) => (
-          <GoalCard key={goal.label} goal={goal} locked={isLocked} />
-        ))}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {goals.map((goal) => {
+          const percentage = (goal.current / goal.goal) * 100;
+          return (
+            <Card key={goal.label} className={`${goal.bgColor} border-white/10`}>
+              <CardContent className="p-4 flex flex-col items-center">
+                <CircularProgress 
+                  percentage={percentage} 
+                  color={goal.color}
+                  size={100}
+                  strokeWidth={8}
+                />
+                <div className="mt-3 text-center">
+                  <p className={`text-sm font-medium ${goal.textColor}`}>{goal.label}</p>
+                  <p className="text-lg font-bold text-white">
+                    {goal.prefix || ''}{goal.current.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500">of {goal.goal.toLocaleString()}</p>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <Card className="bg-white/5 border-white/10">

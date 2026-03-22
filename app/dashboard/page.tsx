@@ -333,37 +333,45 @@ export default function Dashboard() {
 
         {isSponsor && (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-            <div className="relative">
-              {!profile?.sponsor_activated && (
-                <div className="absolute inset-0 z-10 bg-black/60 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                  <div className="text-center p-6">
-                    <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mx-auto mb-4">
-                      <Zap className="w-6 h-6 text-purple-400" />
+            {isSponsor && !profile?.sponsor_insights_paid && (
+              <Card className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/30 mb-4">
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                      <DollarSign className="w-6 h-6 text-amber-400" />
                     </div>
-                    <h3 className="text-lg font-semibold text-white mb-2">Command Center - Sample Data</h3>
-                    <p className="text-sm text-gray-400 mb-4 max-w-md">
-                      We're in the middle of the onboarding process. Activate Sponsor Insights first to unlock your full Command Center.
-                    </p>
-                    <div className="flex flex-wrap gap-3 justify-center">
-                      <Button
-                        className="bg-gradient-to-r from-purple-600 to-blue-600 border-0"
-                        onClick={() => window.open('https://calendly.com/omni-ai', '_blank')}
-                      >
-                        <Calendar className="w-4 h-4 mr-2" />
-                        Schedule a Meeting
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="border-purple-500/50 bg-purple-500/10"
-                        onClick={() => window.open('tel:+18014581756', '_self')}
-                      >
-                        <Phone className="w-4 h-4 mr-2" />
-                        Call +1 (801) 458-1756
-                      </Button>
+                    <div className="flex-1">
+                      <h3 className="text-lg font-semibold text-white mb-1">Activate Sponsorship</h3>
+                      <p className="text-sm text-gray-400 mb-4">
+                        Unlock full access to your sponsor analytics and insights dashboard.
+                      </p>
+                      <div className="flex flex-wrap gap-3">
+                        <Button
+                          className="bg-gradient-to-r from-amber-600 to-orange-600 border-0"
+                          onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                        >
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          VIP - $3,000/month
+                        </Button>
+                        <Button
+                          variant="outline"
+                          className="border-amber-500/50 bg-amber-500/10"
+                          onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
+                        >
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          Activate Sponsorship
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                </CardContent>
+              </Card>
+            )}
+            <div className={!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none' : ''}>
+              <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
+            </div>
+          </motion.div>
+        )}
               <SponsorTab isLocked={!profile?.sponsor_activated} />
             </div>
           </motion.div>
