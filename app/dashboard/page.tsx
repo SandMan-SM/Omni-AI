@@ -396,20 +396,20 @@ export default function Dashboard() {
                       Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
                     </p>
                     <div className="flex justify-center mb-6">
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                      <div className="grid grid-cols-2 gap-x-10 gap-y-4">
+                        <div className="flex items-center gap-3 bg-purple-500/20 px-6 py-3 rounded-full">
                           <Bot className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">Sponsor Insights</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                        <div className="flex items-center gap-3 bg-purple-500/20 px-6 py-3 rounded-full">
                           <Crown className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">AI Agent Insights</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                        <div className="flex items-center gap-3 bg-purple-500/20 px-6 py-3 rounded-full">
                           <BarChart3 className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">Command Center Access</span>
                         </div>
-                        <div className="flex items-center gap-2 bg-purple-500/20 px-5 py-2.5 rounded-full">
+                        <div className="flex items-center gap-3 bg-purple-500/20 px-6 py-3 rounded-full">
                           <TrendingUp className="w-4 h-4 text-purple-400" />
                           <span className="text-sm text-purple-300">Advanced Analytics</span>
                         </div>
