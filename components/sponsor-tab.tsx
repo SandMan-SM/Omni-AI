@@ -1,5 +1,4 @@
 "use client";
-import { motion } from "framer-motion";
 import { Bot, Building2, Lock } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -105,56 +104,13 @@ const mockSponsorData: BusinessData[] = [
   },
 ];
 
-function CircularProgress({ value, size = 100, strokeWidth = 8, color = "#a855f7", label = "" }: { value: number; size?: number; strokeWidth?: number; color?: string; label?: string }) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const percentage = Math.min(value, 100);
-  const offset = circumference - (percentage / 100) * circumference;
-
-  return (
-    <div className="relative flex flex-col items-center" style={{ width: size + 20 }}>
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg className="transform -rotate-90" width={size} height={size}>
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth={strokeWidth}
-            fill="none"
-          />
-          <motion.circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke={color}
-            strokeWidth={strokeWidth}
-            fill="none"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <span className="text-xl font-bold">{value.toLocaleString()}</span>
-            {label && <p className="text-[10px] text-gray-400">{label}</p>}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
   return (
     <div className={`space-y-4 ${isLocked ? 'blur-sm select-none pointer-events-none' : ''}`}>
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-xl font-bold flex items-center gap-2">
-            Command Center
+            Business Assets
             {isLocked && <Lock className="w-4 h-4 text-purple-400" />}
           </h2>
           <p className="text-sm text-gray-400">Your sponsored business analytics</p>
@@ -173,51 +129,29 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="flex flex-col items-center">
-                <CircularProgress 
-                  value={business.totalTasksCompleted} 
-                  color="#a855f7"
-                  size={80}
-                  strokeWidth={6}
-                  label="Tasks"
-                />
+            <div className="grid grid-cols-4 gap-4 mb-4">
+              <div className="bg-purple-500/10 rounded p-3 text-center">
+                <p className="text-2xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
+                <p className="text-xs text-gray-400">Tasks</p>
               </div>
-              <div className="flex flex-col items-center">
-                <CircularProgress 
-                  value={business.totalRevenue} 
-                  color="#22c55e"
-                  size={80}
-                  strokeWidth={6}
-                  label="Revenue"
-                />
-                <p className="text-sm font-bold text-green-400 mt-1">${business.totalRevenue.toLocaleString()}</p>
+              <div className="bg-green-500/10 rounded p-3 text-center">
+                <p className="text-2xl font-bold text-green-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+                <p className="text-xs text-gray-400">Revenue</p>
               </div>
-              <div className="flex flex-col items-center">
-                <CircularProgress 
-                  value={business.newsletterAgent.lifetimeSubscribers} 
-                  color="#3b82f6"
-                  size={80}
-                  strokeWidth={6}
-                  label="Subs"
-                />
+              <div className="bg-blue-500/10 rounded p-3 text-center">
+                <p className="text-2xl font-bold text-blue-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
+                <p className="text-xs text-gray-400">Subscribers</p>
               </div>
-              <div className="flex flex-col items-center">
-                <CircularProgress 
-                  value={business.marketingAgent.viewsGenerated} 
-                  color="#f59e0b"
-                  size={80}
-                  strokeWidth={6}
-                  label="Views"
-                />
-                <p className="text-sm font-bold text-amber-400 mt-1">{(business.marketingAgent.viewsGenerated / 1000).toFixed(1)}k</p>
+              <div className="bg-amber-500/10 rounded p-3 text-center">
+                <p className="text-2xl font-bold text-amber-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+                <p className="text-xs text-gray-400">Views</p>
               </div>
             </div>
 
-            <div className="mt-4 border-t border-white/10 pt-4">
+            <div className="border-t border-white/10 pt-4">
               <div className="flex items-center gap-2 mb-2">
                 <Bot className="w-4 h-4 text-purple-400" />
-                <span className="text-sm font-medium">AI Agents</span>
+                <span className="text-sm font-medium">AI Agent Stats</span>
               </div>
               <div className="grid grid-cols-3 gap-2">
                 <div className="bg-white/5 rounded p-2 text-center">

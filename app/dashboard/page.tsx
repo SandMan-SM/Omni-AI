@@ -21,6 +21,47 @@ import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { SponsorTab } from "@/components/sponsor-tab";
 
+function CircularProgress({ value, size = 120, strokeWidth = 10, color = "#a855f7", label = "" }: { value: number; size?: number; strokeWidth?: number; color?: string; label?: string }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const percentage = Math.min(value, 100);
+  const offset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <div className="relative flex flex-col items-center" style={{ width: size + 20 }}>
+      <div className="relative" style={{ width: size, height: size }}>
+        <svg className="transform -rotate-90" width={size} height={size}>
+          <circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="rgba(255,255,255,0.1)"
+            strokeWidth={strokeWidth}
+            fill="none"
+          />
+          <motion.circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            initial={{ strokeDashoffset: circumference }}
+            animate={{ strokeDashoffset: offset }}
+            transition={{ duration: 1, ease: "easeOut" }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-2xl font-bold">{value.toLocaleString()}</span>
+          <span className="text-xs text-gray-400">{label}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: string; accent: string; level: number }> = {
   apprentice: { name: "Apprentice", icon: Zap, gradient: "from-slate-500 to-slate-600", accent: "text-slate-400", level: 0 },
   knight: { name: "Master", icon: Shield, gradient: "from-blue-500 to-cyan-400", accent: "text-blue-400", level: 1 },
@@ -334,39 +375,105 @@ export default function Dashboard() {
         {isSponsor && (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
             {isSponsor && !profile?.sponsor_insights_paid && (
-              <Card className="bg-gradient-to-r from-amber-900/30 to-orange-900/30 border-amber-500/30 mb-4">
-                <CardContent className="p-6">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                      <DollarSign className="w-6 h-6 text-amber-400" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-white mb-1">Activate Sponsorship</h3>
-                      <p className="text-sm text-gray-400 mb-4">
-                        Unlock full access to your sponsor analytics and insights dashboard.
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        <Button
-                          className="bg-gradient-to-r from-amber-600 to-orange-600 border-0"
-                          onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
-                        >
-                          <DollarSign className="w-4 h-4 mr-2" />
-                          VIP - $3,000/month
-                        </Button>
-                        <Button
-                          variant="outline"
-                          className="border-amber-500/50 bg-amber-500/10"
-                          onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
-                        >
-                          <DollarSign className="w-4 h-4 mr-2" />
-                          Activate Sponsorship
-                        </Button>
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-white mb-4">Choose Your Sponsorship Tier</h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <Card className="bg-gradient-to-br from-gray-900 to-gray-800 border-gray-600/30 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-gray-400/5 via-transparent to-transparent" />
+                    <CardContent className="p-6 relative">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-300 to-gray-500 flex items-center justify-center">
+                          <Star className="w-4 h-4 text-gray-900" />
+                        </div>
+                        <span className="text-sm font-medium text-gray-300">Standard</span>
                       </div>
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold bg-gradient-to-r from-gray-200 via-gray-100 to-gray-300 bg-clip-text text-transparent">Silver</span>
+                        <span className="text-lg text-gray-400 ml-2">Chrome</span>
+                      </div>
+                      <ul className="text-sm text-gray-400 space-y-2 mb-4">
+                        <li className="flex items-center gap-2"><Target className="w-4 h-4 text-gray-500" /> Access to Command Center</li>
+                        <li className="flex items-center gap-2"><BarChart3 className="w-4 h-4 text-gray-500" /> Business Analytics</li>
+                        <li className="flex items-center gap-2"><Bot className="w-4 h-4 text-gray-500" /> AI Agent Insights</li>
+                      </ul>
+                      <Button
+                        className="w-full bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-300 hover:to-gray-400 text-gray-900 border-0"
+                        onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
+                      >
+                        <DollarSign className="w-4 h-4 mr-2" />
+                        Activate Standard
+                      </Button>
+                    </CardContent>
+                  </Card>
+                  
+                  <Card className="bg-gradient-to-br from-amber-950 to-orange-950 border-amber-500/30 overflow-hidden relative">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-transparent" />
+                    <div className="absolute top-2 right-2 px-2 py-1 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
+                      <span className="text-xs font-bold text-black">VIP</span>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
+                    <CardContent className="p-6 relative">
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
+                          <Crown className="w-4 h-4 text-black" />
+                        </div>
+                        <span className="text-sm font-medium text-amber-300">Premium</span>
+                      </div>
+                      <div className="mb-4">
+                        <span className="text-3xl font-bold bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 bg-clip-text text-transparent">Gold</span>
+                        <span className="text-lg text-amber-400 ml-2">Chrome</span>
+                      </div>
+                      <ul className="text-sm text-gray-400 space-y-2 mb-4">
+                        <li className="flex items-center gap-2"><Target className="w-4 h-4 text-amber-500" /> Everything in Standard</li>
+                        <li className="flex items-center gap-2"><Crown className="w-4 h-4 text-amber-500" /> VIP Priority Support</li>
+                        <li className="flex items-center gap-2"><TrendingUp className="w-4 h-4 text-amber-500" /> Advanced Analytics</li>
+                        <li className="flex items-center gap-2"><Flame className="w-4 h-4 text-amber-500" /> Exclusive Features</li>
+                      </ul>
+                      <Button
+                        className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-black border-0"
+                        onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                      >
+                        <Crown className="w-4 h-4 mr-2" />
+                        VIP - $3,000/month
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </div>
+              </div>
             )}
+
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <BarChart3 className="w-5 h-5 text-purple-400" />
+                Command Center
+              </h3>
+              <div className={`grid grid-cols-2 lg:grid-cols-4 gap-4 ${!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none' : ''}`}>
+                <Card className="bg-purple-500/10 border-purple-500/20">
+                  <CardContent className="p-4 flex flex-col items-center">
+                    <CircularProgress value={1882} color="#a855f7" size={100} strokeWidth={8} label="Tasks" />
+                    <p className="text-xs text-gray-400 mt-2">Completed</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-green-500/10 border-green-500/20">
+                  <CardContent className="p-4 flex flex-col items-center">
+                    <CircularProgress value={55500} color="#22c55e" size={100} strokeWidth={8} label="Revenue" />
+                    <p className="text-xs text-gray-400 mt-2">Total Earned</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-blue-500/10 border-blue-500/20">
+                  <CardContent className="p-4 flex flex-col items-center">
+                    <CircularProgress value={9891} color="#3b82f6" size={100} strokeWidth={8} label="Subscribers" />
+                    <p className="text-xs text-gray-400 mt-2">Newsletter</p>
+                  </CardContent>
+                </Card>
+                <Card className="bg-amber-500/10 border-amber-500/20">
+                  <CardContent className="p-4 flex flex-col items-center">
+                    <CircularProgress value={99100} color="#f59e0b" size={100} strokeWidth={8} label="Views" />
+                    <p className="text-xs text-gray-400 mt-2">Generated</p>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
             <div className={!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none' : ''}>
               <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
             </div>
