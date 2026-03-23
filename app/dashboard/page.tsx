@@ -634,7 +634,7 @@ export default function Dashboard() {
           <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }}>
             <Card className="bg-white/[0.03] border-white/[0.06]">
               <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-                <CardTitle className="text-lg text-white">Demo Bookings</CardTitle>
+                <CardTitle className="text-lg text-white">Meetings & Events</CardTitle>
                 <Calendar className="w-4 h-4 text-gray-500" />
               </CardHeader>
               <CardContent>
