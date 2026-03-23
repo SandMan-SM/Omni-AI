@@ -567,7 +567,7 @@ export default function Dashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
                               <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                                <Image className="w-5 h-5 text-white/70" />
+                                <Video className="w-5 h-5 text-white/70" />
                               </div>
                             </div>
                             <div className="min-w-0">
