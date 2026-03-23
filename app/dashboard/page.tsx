@@ -369,22 +369,22 @@ export default function Dashboard() {
                     <p className="text-xs sm:text-sm text-gray-300 mb-4 text-center px-2">
                       Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 min-h-[48px]">
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-3 py-2.5 rounded-full border border-purple-500/30">
                         <Bot className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300">Sponsor Insights</span>
+                        <span className="text-xs md:text-sm text-purple-300">Sponsor Insights</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 min-h-[48px]">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-3 py-2.5 rounded-full border border-purple-500/30">
                         <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300">Agentic AI Agents</span>
+                        <span className="text-xs md:text-sm text-purple-300">Agentic AI Agents</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 min-h-[48px]">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-3 py-2.5 rounded-full border border-purple-500/30">
                         <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300">Command Center Access</span>
+                        <span className="text-xs md:text-sm text-purple-300">Command Center Access</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 min-h-[48px]">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-3 py-2.5 rounded-full border border-purple-500/30">
                         <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300">Advanced Analytics</span>
+                        <span className="text-xs md:text-sm text-purple-300">Advanced Analytics</span>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
