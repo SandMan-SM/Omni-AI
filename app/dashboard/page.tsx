@@ -10,7 +10,7 @@ import {
   Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
   ArrowRight, LogOut, User, Clock, Video, Play, Pause, Camera,
   TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
-  CircleDollarSign, Plus, FileEdit, MoreHorizontal, ChevronRight, Landmark, DollarSign
+  CircleDollarSign, Plus, FileEdit, MoreHorizontal, ChevronRight, Landmark, DollarSign, Image
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -97,7 +97,8 @@ const campaigns = [
     id: "camp-1",
     name: "Youngs",
     type: "Youngs",
-    status: "paused" as CampaignStatus,
+    business: "Youngs",
+    status: "draft" as CampaignStatus,
     views: "0",
     clicks: "0",
     conversions: "0",
@@ -110,7 +111,8 @@ const campaigns = [
     id: "camp-2",
     name: "Leifson",
     type: "Leifson",
-    status: "paused" as CampaignStatus,
+    business: "Leifson",
+    status: "draft" as CampaignStatus,
     views: "0",
     clicks: "0",
     conversions: "0",
@@ -123,7 +125,8 @@ const campaigns = [
     id: "camp-3",
     name: "Omni",
     type: "Omni",
-    status: "paused" as CampaignStatus,
+    business: "Omni",
+    status: "draft" as CampaignStatus,
     views: "0",
     clicks: "0",
     conversions: "0",
@@ -564,10 +567,11 @@ export default function Dashboard() {
                           <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
                               <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                                <Camera className="w-5 h-5 text-white/70" />
+                                <Image className="w-5 h-5 text-white/70" />
                               </div>
                             </div>
                             <div className="min-w-0">
+                              <p className="text-xs text-gray-500 mb-0.5">{campaign.business}</p>
                               <div className="flex items-center gap-2 flex-wrap">
                                 <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.name}</p>
                                 <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
@@ -602,7 +606,7 @@ export default function Dashboard() {
                               <Pause className="w-4 h-4" />
                             </Button>
                           )}
-                          {campaign.status === "paused" && (
+                          {(campaign.status === "paused" || campaign.status === "draft") && (
                             <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-play-${campaign.id}`}>
                               <Play className="w-4 h-4" />
                             </Button>
