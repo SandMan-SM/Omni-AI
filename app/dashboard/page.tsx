@@ -76,10 +76,7 @@ const quickActions = [
   { icon: BarChart3, label: "Analytics", description: "Track performance", gradient: "from-orange-500 to-amber-500" },
 ];
 
-const recentActivity = [
-  { action: "Sponsor account created", detail: "Welcome to Omni AI", time: "Just now" },
-  { action: "Meeting booked", detail: "Activation link sent", time: "1 min ago" },
-];
+const recentActivity: { action: string; detail: string; time: string }[] = [];
 
 const metrics = [
   { label: "Leads This Week", value: "147", change: "+23%", icon: Target },
@@ -669,18 +666,25 @@ export default function Dashboard() {
                 <Clock className="w-4 h-4 text-gray-500" />
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentActivity.map((item, i) => (
-                    <div key={i} className="flex items-start gap-3" data-testid={`activity-item-${i}`}>
-                      <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white" data-testid={`text-activity-action-${i}`}>{item.action}</p>
-                        <p className="text-xs text-gray-500 truncate" data-testid={`text-activity-detail-${i}`}>{item.detail}</p>
+                {recentActivity.length > 0 ? (
+                  <div className="space-y-4">
+                    {recentActivity.map((item, i) => (
+                      <div key={i} className="flex items-start gap-3" data-testid={`activity-item-${i}`}>
+                        <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white" data-testid={`text-activity-action-${i}`}>{item.action}</p>
+                          <p className="text-xs text-gray-500 truncate" data-testid={`text-activity-detail-${i}`}>{item.detail}</p>
+                        </div>
+                        <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0" data-testid={`text-activity-time-${i}`}>{item.time}</span>
                       </div>
-                      <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0" data-testid={`text-activity-time-${i}`}>{item.time}</span>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-6" data-testid="text-no-activity">
+                    <Clock className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500">No recent activity</p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </motion.div>
