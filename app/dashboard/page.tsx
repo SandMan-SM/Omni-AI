@@ -564,19 +564,19 @@ export default function Dashboard() {
                         className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
                         data-testid={`card-campaign-${campaign.id}`}
                       >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
-                              <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                                <Video className="w-5 h-5 text-white/70" />
-                              </div>
-                            </div>
-                            <div className="flex flex-col justify-between h-12 min-w-0">
-                              <p className="text-base font-bold text-white leading-tight truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
-                              <Badge className={`text-[10px] w-fit no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
-                                {status.label}
-                              </Badge>
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
+                            <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
+                              <Video className="w-5 h-5 text-white/70" />
                             </div>
                           </div>
+                          <div className="flex flex-col justify-between h-12 min-w-0">
+                            <p className="text-base font-bold text-white leading-tight truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
+                            <Badge className={`text-[10px] w-fit no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
+                              {status.label}
+                            </Badge>
+                          </div>
+                        </div>
 
                         <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 sm:gap-4 w-full">
                           <div className="flex items-center gap-1.5">
