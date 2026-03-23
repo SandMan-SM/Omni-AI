@@ -196,21 +196,17 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">{totals.totalTasksCompleted}</p>
+              <p className="text-3xl font-bold text-purple-400">0</p>
               <p className="text-xs text-gray-400 mt-1">Tasks</p>
             </div>
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">${(totals.totalRevenue / 1000).toFixed(1)}k</p>
+              <p className="text-3xl font-bold text-purple-400">0k</p>
               <p className="text-xs text-gray-400 mt-1">Revenue</p>
             </div>
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">{totals.lifetimeSubscribers.toLocaleString()}</p>
-              <p className="text-xs text-gray-400 mt-1">Subscribers</p>
-            </div>
-            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">{(totals.viewsGenerated / 1000).toFixed(0)}k</p>
+              <p className="text-3xl font-bold text-purple-400">0k</p>
               <p className="text-xs text-gray-400 mt-1">Views</p>
             </div>
           </div>
