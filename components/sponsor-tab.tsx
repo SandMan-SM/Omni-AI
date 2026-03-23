@@ -30,7 +30,7 @@ interface BusinessData {
 const mockSponsorData: BusinessData[] = [
   {
     id: "1",
-    name: "Youngs Cabinet Refinishing",
+    name: "Youngs",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
@@ -52,7 +52,7 @@ const mockSponsorData: BusinessData[] = [
   },
   {
     id: "2",
-    name: "Leifson Built",
+    name: "Leifson",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
@@ -74,7 +74,7 @@ const mockSponsorData: BusinessData[] = [
   },
   {
     id: "3",
-    name: "Omni Leads",
+    name: "Omni",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
