@@ -570,14 +570,11 @@ export default function Dashboard() {
                                 <Video className="w-5 h-5 text-white/70" />
                               </div>
                             </div>
-                            <div className="min-w-0">
-                              <p className="text-xs text-gray-500 mb-0.5">{campaign.business}</p>
-                              <div className="flex items-center gap-2 flex-wrap">
-                                <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.name}</p>
-                                <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
-                                  {status.label}
-                                </Badge>
-                              </div>
+                            <div className="flex flex-col justify-between h-12 min-w-0">
+                              <p className="text-base font-bold text-white leading-tight truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
+                              <Badge className={`text-[10px] w-fit no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
+                                {status.label}
+                              </Badge>
                             </div>
                           </div>
 
