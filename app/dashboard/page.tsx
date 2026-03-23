@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
-  ArrowRight, LogOut, User, Clock, Video, Play, Pause,
+  ArrowRight, LogOut, User, Clock, Video, Play, Pause, Camera,
   TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
   CircleDollarSign, Plus, FileEdit, MoreHorizontal, ChevronRight, Landmark, DollarSign
 } from "lucide-react";
@@ -95,8 +95,8 @@ type CampaignStatus = "active" | "paused" | "draft" | "completed";
 const campaigns = [
   {
     id: "camp-1",
-    name: "Omni AI",
-    type: "Video Ad",
+    name: "Youngs",
+    type: "Youngs",
     status: "paused" as CampaignStatus,
     views: "0",
     clicks: "0",
@@ -108,8 +108,8 @@ const campaigns = [
   },
   {
     id: "camp-2",
-    name: "Leifson Built",
-    type: "Video Ad",
+    name: "Leifson",
+    type: "Leifson",
     status: "paused" as CampaignStatus,
     views: "0",
     clicks: "0",
@@ -121,8 +121,8 @@ const campaigns = [
   },
   {
     id: "camp-3",
-    name: "Youngs Cabinets",
-    type: "Video Ad",
+    name: "Omni",
+    type: "Omni",
     status: "paused" as CampaignStatus,
     views: "0",
     clicks: "0",
@@ -537,25 +537,18 @@ export default function Dashboard() {
                 </Badge>
               </div>
               <div className="flex items-center gap-2 flex-wrap">
-                {(["all", "active", "paused", "draft", "completed"] as const).map((filter) => (
-                  <Button
-                    key={filter}
-                    variant="ghost"
-                    className={`text-xs px-3 toggle-elevate ${campaignFilter === filter ? "toggle-elevated bg-white/10 text-white" : "text-gray-500"}`}
-                    onClick={() => setCampaignFilter(filter)}
-                    data-testid={`button-filter-${filter}`}
-                  >
-                    {filter === "all" ? "All" : statusConfig[filter].label}
-                  </Button>
-                ))}
-                <Button
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white text-xs"
-                  data-testid="button-new-campaign"
-                >
-                  <Plus className="w-3.5 h-3.5 mr-1.5" />
-                  New
-                </Button>
-              </div>
+                  {(["all", "active", "paused", "draft", "completed"] as const).map((filter) => (
+                    <Button
+                      key={filter}
+                      variant="ghost"
+                      className={`text-xs px-3 toggle-elevate ${campaignFilter === filter ? "toggle-elevated bg-white/10 text-white" : "text-gray-500"}`}
+                      onClick={() => setCampaignFilter(filter)}
+                      data-testid={`button-filter-${filter}`}
+                    >
+                      {filter === "all" ? "All" : statusConfig[filter].label}
+                    </Button>
+                  ))}
+                </div>
             </CardHeader>
             <CardContent>
               {filteredCampaigns.length > 0 ? (
@@ -568,22 +561,21 @@ export default function Dashboard() {
                         className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
                         data-testid={`card-campaign-${campaign.id}`}
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
-                            <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                              <Video className="w-5 h-5 text-white/70" />
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
+                              <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
+                                <Camera className="w-5 h-5 text-white/70" />
+                              </div>
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.name}</p>
+                                <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
+                                  {status.label}
+                                </Badge>
+                              </div>
                             </div>
                           </div>
-                          <div className="min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.name}</p>
-                              <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
-                                {status.label}
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-gray-500 mt-0.5" data-testid={`text-campaign-platform-${campaign.id}`}>{campaign.platform ? `${campaign.platform} · ` : ''}{campaign.type}</p>
-                          </div>
-                        </div>
 
                         <div className="grid grid-cols-4 sm:grid-cols-4 gap-2 sm:gap-4 w-full">
                           <div className="flex items-center gap-1.5">
