@@ -77,10 +77,8 @@ const quickActions = [
 ];
 
 const recentActivity = [
-  { action: "Lead captured", detail: "john@example.com via LinkedIn scraper", time: "2 min ago" },
-  { action: "DM sent", detail: "Automated follow-up to 12 prospects", time: "15 min ago" },
-  { action: "Campaign live", detail: "Video ad #4 testing audience B", time: "1 hour ago" },
-  { action: "Booking confirmed", detail: "Demo with Sarah K. on Feb 14", time: "3 hours ago" },
+  { action: "Sponsor account created", detail: "Welcome to Omni AI", time: "Just now" },
+  { action: "Meeting booked", detail: "Activation link sent", time: "1 min ago" },
 ];
 
 const metrics = [
@@ -656,7 +654,7 @@ export default function Dashboard() {
                 ) : (
                   <div className="text-center py-6" data-testid="text-no-bookings">
                     <Calendar className="w-8 h-8 text-gray-700 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500 mb-1">No demos booked yet</p>
+                    <p className="text-sm text-gray-500 mb-1">No meetings or events booked yet</p>
                     <p className="text-xs text-gray-600">Schedule a demo from the home page to see it here.</p>
                   </div>
                 )}
