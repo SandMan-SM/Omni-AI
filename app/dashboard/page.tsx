@@ -362,13 +362,13 @@ export default function Dashboard() {
                     <div className="mb-4">
                       <h3 className="text-2xl sm:text-3xl font-bold text-center">
                         <span className="bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent animate-shine">
-                          Activate Your VIP Sponsorship
+                          Activate VIP Sponsorship
                         </span>
                       </h3>
                     </div>
-                    <p className="text-xs sm:text-sm text-gray-300 mb-4 text-center px-2">
-                      Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
-                    </p>
+                      <p className="text-xs sm:text-sm text-gray-300 mb-4 text-center px-2">
+                        Get started by activating bot development for all assets and begin with live analytics.
+                      </p>
                     <div className="flex flex-wrap justify-center gap-3 mb-6">
                       <div className="flex items-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30">
                         <Bot className="w-4 h-4 text-purple-400 flex-shrink-0" />
