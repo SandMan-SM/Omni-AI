@@ -369,7 +369,7 @@ export default function Dashboard() {
                     <p className="text-xs sm:text-sm text-gray-300 mb-4 text-center px-2">
                       Get started by activating your Bot Development to unlock your sponsored business analytics and insights.
                     </p>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
                       <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 min-h-[48px]">
                         <Bot className="w-4 h-4 text-purple-400 flex-shrink-0" />
                         <span className="text-sm text-purple-300">Sponsor Insights</span>
