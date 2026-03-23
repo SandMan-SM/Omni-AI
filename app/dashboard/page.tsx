@@ -444,7 +444,7 @@ export default function Dashboard() {
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
             <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
               <CardTitle className="text-lg text-white">
-                {isVIPSponsor ? "Current Sponsor" : "Current Tier"}
+                {isVIPSponsor ? "Sponsor Tier" : "Current Tier"}
               </CardTitle>
               {isVIPSponsor ? (
                 <Button
@@ -481,12 +481,9 @@ export default function Dashboard() {
                     </div>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="text-xl font-bold text-white" data-testid="text-current-tier-name">VIP Sponsor</h3>
-                      <span className="text-xs font-semibold tracking-wider text-amber-400" data-testid="text-current-tier-level">ACTIVE</span>
-                    </div>
+                    <h3 className="text-xl font-bold text-white mb-1" data-testid="text-current-tier-name">VIP Sponsor</h3>
                     <p className="text-sm text-gray-500" data-testid="text-tier-status">
-                      {profile?.sponsor_activated ? "Active" : "Onboarding"}
+                      {profile?.sponsor_activated ? "Active" : "Deactivated"}
                     </p>
                   </div>
                 </div>
