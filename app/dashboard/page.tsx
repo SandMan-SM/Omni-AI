@@ -559,44 +559,63 @@ export default function Dashboard() {
                   {filteredCampaigns.map((campaign, i) => {
                     const status = statusConfig[campaign.status];
                     return (
-                        <div
-                          key={campaign.id}
-                          className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
-                          data-testid={`card-campaign-${campaign.id}`}
-                        >
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
-                              <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                                <Video className="w-5 h-5 text-white/70" />
-                              </div>
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
-                              <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
-                                {status.label}
-                              </Badge>
+                      <div
+                        key={campaign.id}
+                        className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
+                        data-testid={`card-campaign-${campaign.id}`}
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
+                            <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
+                              <Video className="w-5 h-5 text-white/70" />
                             </div>
                           </div>
-
-                          <div className="flex items-center gap-1 flex-shrink-0">
-                            {campaign.status === "active" && (
-                              <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-pause-${campaign.id}`}>
-                                <Pause className="w-4 h-4" />
-                              </Button>
-                            )}
-                            {(campaign.status === "paused" || campaign.status === "draft") && (
-                              <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-play-${campaign.id}`}>
-                                <Play className="w-4 h-4" />
-                              </Button>
-                            )}
-                            <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-edit-${campaign.id}`}>
-                              <FileEdit className="w-4 h-4" />
-                            </Button>
-                            <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-more-${campaign.id}`}>
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
+                          <div>
+                            <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
+                            <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
+                              {status.label}
+                            </Badge>
                           </div>
                         </div>
+
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <Eye className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <MousePointerClick className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-clicks-${campaign.id}`}>{campaign.clicks}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <TrendingUp className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-conversions-${campaign.id}`}>{campaign.conversions}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <CircleDollarSign className="w-3.5 h-3.5 text-gray-500 flex-shrink-0" />
+                            <span className="text-xs text-gray-400" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {campaign.status === "active" && (
+                            <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-pause-${campaign.id}`}>
+                              <Pause className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {(campaign.status === "paused" || campaign.status === "draft") && (
+                            <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-play-${campaign.id}`}>
+                              <Play className="w-4 h-4" />
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-edit-${campaign.id}`}>
+                            <FileEdit className="w-4 h-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-more-${campaign.id}`}>
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
