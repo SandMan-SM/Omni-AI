@@ -127,46 +127,60 @@ function calculateTotals(businesses: BusinessData[]) {
 
 function BusinessAnalyticsCard({ business }: { business: BusinessData }) {
   return (
-    <div className="mt-4">
-      <div className="grid grid-cols-4 gap-4 mb-4">
-        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
-          <p className="text-xs text-gray-400 mt-1">Tasks</p>
-        </div>
-        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
-          <p className="text-xs text-gray-400 mt-1">Revenue</p>
-        </div>
-        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-purple-400">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
-          <p className="text-xs text-gray-400 mt-1">Subscribers</p>
-        </div>
-        <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-          <p className="text-2xl font-bold text-purple-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
-          <p className="text-xs text-gray-400 mt-1">Views</p>
-        </div>
-      </div>
+    <div className="space-y-3">
+      <Card className="bg-white/5 border-purple-500/20">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-purple-400" />
+            <CardTitle className="text-lg text-purple-300">{business.name} Analytics</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg p-4">
+            <div className="grid grid-cols-3 gap-4 mb-4">
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
+                <p className="text-xs text-gray-400 mt-1">Tasks</p>
+              </div>
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+                <p className="text-xs text-gray-400 mt-1">Revenue</p>
+              </div>
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+                <p className="text-xs text-gray-400 mt-1">Views</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="border-t border-purple-500/20 pt-4">
-        <div className="flex items-center gap-2 mb-3">
-          <Bot className="w-4 h-4 text-purple-400" />
-          <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
-        </div>
-        <div className="grid grid-cols-3 gap-3">
-          <div className="bg-white/5 rounded-lg p-3 text-center">
-            <p className="text-xl font-bold text-purple-300">{business.personalAssistant.tasksCompleted}</p>
-            <p className="text-xs text-gray-400">Tasks</p>
+      <Card className="bg-white/5 border-purple-500/20">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <Bot className="w-5 h-5 text-purple-400" />
+            <CardTitle className="text-lg text-purple-300">AI Agent Stats</CardTitle>
           </div>
-          <div className="bg-white/5 rounded-lg p-3 text-center">
-            <p className="text-xl font-bold text-purple-300">{business.personalAssistant.meetingsBooked}</p>
-            <p className="text-xs text-gray-400">Meetings</p>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-lg p-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{business.personalAssistant.meetingsBooked}</p>
+                <p className="text-xs text-gray-400 mt-1">Meetings</p>
+              </div>
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{business.personalAssistant.messagesSent}</p>
+                <p className="text-xs text-gray-400 mt-1">Messages</p>
+              </div>
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{business.marketingAgent.postsGenerated}</p>
+                <p className="text-xs text-gray-400 mt-1">Posts</p>
+              </div>
+            </div>
           </div>
-          <div className="bg-white/5 rounded-lg p-3 text-center">
-            <p className="text-xl font-bold text-purple-300">{business.personalAssistant.messagesSent}</p>
-            <p className="text-xs text-gray-400">Messages</p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -267,7 +281,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               </div>
             </CardHeader>
             {expandedBusiness === business.id && (
-              <CardContent>
+              <CardContent className="space-y-3">
                 <BusinessAnalyticsCard business={business} />
               </CardContent>
             )}
