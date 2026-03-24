@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
@@ -226,48 +226,6 @@ export default function Dashboard() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <nav className="flex md:hidden relative">
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
-                aria-label="Toggle menu"
-              >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-              {mobileMenuOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
-                    onClick={() => setMobileMenuOpen(false)}
-                  />
-                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-[#0a0a0a] border border-white/10 shadow-xl z-50 overflow-hidden">
-                    <div className="py-2">
-                      <Link
-                        href="/campaigns"
-                        className="block px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Campaigns
-                      </Link>
-                      <Link
-                        href="/details"
-                        className="block px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Infographic
-                      </Link>
-                      <Link
-                        href="/arena"
-                        className="block px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
-                      >
-                        Arena
-                      </Link>
-                    </div>
-                  </div>
-                </>
-              )}
-            </nav>
             {isSponsor ? (
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${isVIPSponsor ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-green-500/10 border border-green-500/30'}`} data-testid="badge-tier-status">
                 <Crown className={`w-4 h-4 ${isVIPSponsor ? 'text-amber-400' : 'text-green-400'}`} />
@@ -281,7 +239,49 @@ export default function Dashboard() {
                 <span className="text-sm text-gray-300" data-testid="text-tier-badge">{currentTierData.name} Tier</span>
               </div>
             )}
+            <button
+              className="md:hidden p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-testid="button-mobile-menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
+          <AnimatePresence>
+            {mobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="md:hidden absolute left-0 right-0 top-full bg-[#050505] border-b border-white/5"
+              >
+                <div className="flex flex-col gap-1 px-4 py-4">
+                  <Link
+                    href="/campaigns"
+                    className="text-gray-400 hover:text-white transition-colors py-2 block"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Campaigns
+                  </Link>
+                  <Link
+                    href="/details"
+                    className="text-gray-400 hover:text-white transition-colors py-2 block"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Infographic
+                  </Link>
+                  <Link
+                    href="/arena"
+                    className="text-gray-400 hover:text-white transition-colors py-2 block"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Arena
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </header>
 
