@@ -142,7 +142,7 @@ function BusinessAnalyticsCard({ business }: { business: BusinessData }) {
               <p className="text-xs text-gray-400 mt-1">Tasks</p>
             </div>
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-              <p className="text-3xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+              <p className="text-3xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(0)}k</p>
               <p className="text-xs text-gray-400 mt-1">Revenue</p>
             </div>
             <div className="bg-purple-500/10 rounded-lg p-4 text-center">
