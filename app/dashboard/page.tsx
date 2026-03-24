@@ -384,23 +384,6 @@ export default function Dashboard() {
                         <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
                         <span className="text-xs text-purple-300 text-center leading-tight">Advanced Analytics</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
-                        <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-xs text-purple-300 text-center leading-tight">Advanced Analytics</span>
-                      </div>
-                    </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
-                        <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-xs text-purple-300 text-center leading-tight">Agentic AI Agents</span>
-                      </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
-                        <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-xs text-purple-300 text-center leading-tight">Command Center Access</span>
-                      </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
-                        <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-xs text-purple-300 text-center leading-tight">Advanced Analytics</span>
-                      </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <Button
