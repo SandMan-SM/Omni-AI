@@ -528,14 +528,14 @@ export default function Dashboard() {
                             </div>
                           </div>
 
-                          <div className="hidden sm:flex items-center gap-3 flex-1 min-w-0">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
                               <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
                                 {status.label}
                               </Badge>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="hidden sm:flex items-center gap-3">
                               <div className="flex items-center gap-1.5">
                                 <Eye className="w-3.5 h-3.5 text-gray-500" />
                                 <span className="text-xs text-gray-400" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
@@ -553,16 +553,7 @@ export default function Dashboard() {
                                 <span className="text-xs text-gray-400" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend}</span>
                               </div>
                             </div>
-                          </div>
-
-                          <div className="flex sm:hidden items-center gap-2 flex-1 min-w-0">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
-                              <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
-                                {status.label}
-                              </Badge>
-                            </div>
-                            <div className="flex items-center gap-2 flex-shrink-0">
+                            <div className="flex sm:hidden items-center gap-2">
                               <div className="flex items-center gap-1">
                                 <Eye className="w-3 h-3 text-gray-500" />
                                 <span className="text-xs text-gray-400">{campaign.views}</span>
