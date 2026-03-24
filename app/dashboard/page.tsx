@@ -284,19 +284,20 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <motion.div {...fadeUp} transition={{ duration: 0.4 }} className="relative">
+        <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {metrics.map((metric, i) => {
               const MetricIcon = metric.icon;
+              const isLocked = !isSponsor || (isSponsor && !profile?.sponsor_insights_paid);
               return (
                 <motion.div key={metric.label} transition={{ duration: 0.4, delay: i * 0.06 }}>
                   <Card className="bg-white/[0.03] border-white/[0.06]">
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between mb-3">
                         <MetricIcon className="w-5 h-5 text-gray-500" />
-                        <span className="text-xs text-green-400 font-medium" data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
+                        <span className={`text-xs font-medium ${isLocked ? 'blur-sm' : 'text-green-400'}`} data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
                       </div>
-                      <p className="text-2xl font-bold text-white" data-testid={`text-metric-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.value}</p>
+                      <p className={`text-2xl font-bold text-white ${isLocked ? 'blur-sm' : ''}`} data-testid={`text-metric-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.value}</p>
                       <p className="text-xs text-gray-500 mt-1" data-testid={`text-label-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.label}</p>
                     </CardContent>
                   </Card>
@@ -304,14 +305,6 @@ export default function Dashboard() {
               );
             })}
           </div>
-          {!isSponsor || (isSponsor && !profile?.sponsor_insights_paid) ? (
-            <div className="absolute inset-0 backdrop-blur-xl bg-black/60 rounded-xl flex flex-col items-center justify-center gap-3">
-              <Lock className="w-8 h-8 text-gray-400" />
-              <p className="text-sm text-gray-300 text-center px-4 font-medium">
-                Activate Bot Development First to Initialize Your Command Center
-              </p>
-            </div>
-          ) : null}
         </motion.div>
 
         {isSponsor && (
@@ -370,7 +363,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className={`${!profile?.sponsor_insights_paid ? 'blur-xl select-none pointer-events-none opacity-30' : ''}`}>
+            <div>
               <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
             </div>
           </motion.div>
