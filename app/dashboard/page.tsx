@@ -70,13 +70,6 @@ const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: strin
   ascended: { name: "Empire", icon: Flame, gradient: "from-orange-500 to-red-500", accent: "text-orange-400", level: 3 },
 };
 
-const quickActions = [
-  { icon: Target, label: "Lead Scraper", description: "Find new prospects", gradient: "from-purple-600 to-violet-600" },
-  { icon: Mail, label: "Automated DMs", description: "Outreach on autopilot", gradient: "from-blue-600 to-cyan-500" },
-  { icon: Bot, label: "AI Agents", description: "Deploy your workforce", gradient: "from-green-600 to-emerald-500" },
-  { icon: BarChart3, label: "Analytics", description: "Track performance", gradient: "from-orange-500 to-amber-500" },
-];
-
 const recentActivity: { action: string; detail: string; time: string }[] = [];
 
 const metrics = [
@@ -492,34 +485,6 @@ export default function Dashboard() {
               )}
             </CardContent>
           </Card>
-        </motion.div>
-
-        <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.3 }}>
-          <h2 className="text-lg font-semibold text-white mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {quickActions.map((action) => {
-              const ActionIcon = action.icon;
-              return (
-                <Card
-                  key={action.label}
-                  className="bg-white/[0.03] border-white/[0.06] hover-elevate cursor-pointer overflow-visible"
-                  data-testid={`card-action-${action.label.toLowerCase().replace(/\s/g, "-")}`}
-                >
-                  <CardContent className="p-4 flex flex-col items-start gap-3">
-                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.gradient} p-[1px]`}>
-                      <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                        <ActionIcon className="w-5 h-5 text-white/80" />
-                      </div>
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-white" data-testid={`text-action-label-${action.label.toLowerCase().replace(/\s/g, "-")}`}>{action.label}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{action.description}</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
         </motion.div>
 
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.33 }}>
