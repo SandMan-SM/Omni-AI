@@ -221,26 +221,32 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </CardContent>
       </Card>
 
-      <div className={`rounded-lg p-4 bg-white/5 border border-purple-500/30 ${isLocked ? 'blur-sm select-none' : ''}`}>
-        <div className="flex items-center gap-2 mb-3">
-          <Bot className="w-4 h-4 text-purple-400" />
-          <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
-        </div>
-        <div className="grid grid-cols-4 gap-3">
-          <div className="bg-white/5 rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold text-purple-300">{totals.meetingsBooked}</p>
-            <p className="text-xs text-gray-400">Meetings</p>
+      <Card className="bg-white/5 border-purple-500/30">
+        <CardHeader className="pb-2">
+          <div className="flex items-center gap-2">
+            <Bot className="w-5 h-5 text-purple-400" />
+            <CardTitle className="text-lg text-purple-300">AI Agent Stats</CardTitle>
           </div>
-          <div className="bg-white/5 rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold text-purple-300">{totals.messagesSent}</p>
-            <p className="text-xs text-gray-400">Messages</p>
+        </CardHeader>
+        <CardContent>
+          <div className={`rounded-lg p-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{totals.meetingsBooked}</p>
+                <p className="text-xs text-gray-400 mt-1">Meetings</p>
+              </div>
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{totals.messagesSent}</p>
+                <p className="text-xs text-gray-400 mt-1">Messages</p>
+              </div>
+              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+                <p className="text-3xl font-bold text-purple-400">{totals.postsGenerated}</p>
+                <p className="text-xs text-gray-400 mt-1">Posts</p>
+              </div>
+            </div>
           </div>
-          <div className="bg-white/5 rounded-lg p-3 text-center">
-            <p className="text-2xl font-bold text-purple-300">{totals.postsGenerated}</p>
-            <p className="text-xs text-gray-400">Posts</p>
-          </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <div className="space-y-3">
         {mockSponsorData.map((business) => (
