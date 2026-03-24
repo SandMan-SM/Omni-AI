@@ -10,7 +10,8 @@ import {
   Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
   ArrowRight, User, Clock, Video, Play, Pause,
   TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
-  CircleDollarSign, FileEdit, MoreHorizontal, DollarSign, Lock, LogOut
+  CircleDollarSign, FileEdit, MoreHorizontal, DollarSign, Lock, LogOut,
+  Menu, X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -155,6 +156,7 @@ export default function Dashboard() {
   const pathname = usePathname();
   const router = useRouter();
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const tierMap: Record<number, string> = { 0: "apprentice", 1: "knight", 2: "royal", 3: "ascended" };
   const currentTier = tierMap[tier] || "apprentice";
   const currentTierData = tierInfo[currentTier];
@@ -224,10 +226,47 @@ export default function Dashboard() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <nav className="flex md:hidden items-center gap-3 text-sm text-gray-400">
-              <Link href="/campaigns" className="hover:text-white transition-colors">Campaigns</Link>
-              <Link href="/details" className="hover:text-white transition-colors">Infographic</Link>
-              <Link href="/arena" className="hover:text-white transition-colors">Arena</Link>
+            <nav className="flex md:hidden relative">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="p-2 rounded-lg hover:bg-white/10 transition-colors text-gray-400 hover:text-white"
+                aria-label="Toggle menu"
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </button>
+              {mobileMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm"
+                    onClick={() => setMobileMenuOpen(false)}
+                  />
+                  <div className="absolute right-0 top-full mt-2 w-48 rounded-xl bg-[#0a0a0a] border border-white/10 shadow-xl z-50 overflow-hidden">
+                    <div className="py-2">
+                      <Link
+                        href="/campaigns"
+                        className="block px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Campaigns
+                      </Link>
+                      <Link
+                        href="/details"
+                        className="block px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Infographic
+                      </Link>
+                      <Link
+                        href="/arena"
+                        className="block px-4 py-3 text-sm text-gray-300 hover:bg-white/5 hover:text-white transition-colors"
+                        onClick={() => setMobileMenuOpen(false)}
+                      >
+                        Arena
+                      </Link>
+                    </div>
+                  </div>
+                </>
+              )}
             </nav>
             {isSponsor ? (
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${isVIPSponsor ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-green-500/10 border border-green-500/30'}`} data-testid="badge-tier-status">
