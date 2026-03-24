@@ -135,21 +135,19 @@ function BusinessAnalyticsCard({ business }: { business: BusinessData }) {
             <CardTitle className="text-lg text-purple-300">{business.name} Analytics</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-lg p-4">
-            <div className="grid grid-cols-3 gap-4 mb-4">
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
-                <p className="text-xs text-gray-400 mt-1">Tasks</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
-                <p className="text-xs text-gray-400 mt-1">Revenue</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
-                <p className="text-xs text-gray-400 mt-1">Views</p>
-              </div>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{business.totalTasksCompleted}</p>
+              <p className="text-xs text-gray-400 mt-1">Tasks</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">${(business.totalRevenue / 1000).toFixed(1)}k</p>
+              <p className="text-xs text-gray-400 mt-1">Revenue</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{(business.marketingAgent.viewsGenerated / 1000).toFixed(0)}k</p>
+              <p className="text-xs text-gray-400 mt-1">Views</p>
             </div>
           </div>
         </CardContent>
@@ -162,21 +160,19 @@ function BusinessAnalyticsCard({ business }: { business: BusinessData }) {
             <CardTitle className="text-lg text-purple-300">AI Agent Stats</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="rounded-lg p-4">
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{business.personalAssistant.meetingsBooked}</p>
-                <p className="text-xs text-gray-400 mt-1">Meetings</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{business.personalAssistant.messagesSent}</p>
-                <p className="text-xs text-gray-400 mt-1">Messages</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{business.marketingAgent.postsGenerated}</p>
-                <p className="text-xs text-gray-400 mt-1">Posts</p>
-              </div>
+        <CardContent className="pt-0">
+          <div className="grid grid-cols-3 gap-4">
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{business.personalAssistant.meetingsBooked}</p>
+              <p className="text-xs text-gray-400 mt-1">Meetings</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{business.personalAssistant.messagesSent}</p>
+              <p className="text-xs text-gray-400 mt-1">Messages</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{business.marketingAgent.postsGenerated}</p>
+              <p className="text-xs text-gray-400 mt-1">Posts</p>
             </div>
           </div>
         </CardContent>
@@ -215,21 +211,19 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
             <CardTitle className="text-lg text-purple-300">Asset Analytics</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className={`rounded-lg p-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">0</p>
-                <p className="text-xs text-gray-400 mt-1">Tasks</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">0k</p>
-                <p className="text-xs text-gray-400 mt-1">Revenue</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">0k</p>
-                <p className="text-xs text-gray-400 mt-1">Views</p>
-              </div>
+        <CardContent className="pt-0">
+          <div className={`grid grid-cols-3 gap-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">0</p>
+              <p className="text-xs text-gray-400 mt-1">Tasks</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">0k</p>
+              <p className="text-xs text-gray-400 mt-1">Revenue</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">0k</p>
+              <p className="text-xs text-gray-400 mt-1">Views</p>
             </div>
           </div>
         </CardContent>
@@ -242,21 +236,19 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
             <CardTitle className="text-lg text-purple-300">AI Agent Stats</CardTitle>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className={`rounded-lg p-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{totals.meetingsBooked}</p>
-                <p className="text-xs text-gray-400 mt-1">Meetings</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{totals.messagesSent}</p>
-                <p className="text-xs text-gray-400 mt-1">Messages</p>
-              </div>
-              <div className="bg-purple-500/10 rounded-lg p-4 text-center">
-                <p className="text-3xl font-bold text-purple-400">{totals.postsGenerated}</p>
-                <p className="text-xs text-gray-400 mt-1">Posts</p>
-              </div>
+        <CardContent className="pt-0">
+          <div className={`grid grid-cols-3 gap-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{totals.meetingsBooked}</p>
+              <p className="text-xs text-gray-400 mt-1">Meetings</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{totals.messagesSent}</p>
+              <p className="text-xs text-gray-400 mt-1">Messages</p>
+            </div>
+            <div className="bg-purple-500/10 rounded-lg p-4 text-center">
+              <p className="text-3xl font-bold text-purple-400">{totals.postsGenerated}</p>
+              <p className="text-xs text-gray-400 mt-1">Posts</p>
             </div>
           </div>
         </CardContent>
