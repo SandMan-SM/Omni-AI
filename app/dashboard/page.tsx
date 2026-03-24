@@ -368,10 +368,27 @@ export default function Dashboard() {
                         Get started by activating bot development for all assets and begin with live analytics.
                       </p>
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
-                        <Bot className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-xs text-purple-300 text-center leading-tight">Sponsor Insights</span>
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12 blur-sm select-none">
+                        <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <span className="text-xs text-purple-300/50 text-center leading-tight">Activate Bot Dev First</span>
                       </div>
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
+                        <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <span className="text-xs text-purple-300 text-center leading-tight">Agentic AI Agents</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12 blur-sm select-none">
+                        <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <span className="text-xs text-purple-300/50 text-center leading-tight">Command Center Access</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
+                        <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <span className="text-xs text-purple-300 text-center leading-tight">Advanced Analytics</span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
+                        <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <span className="text-xs text-purple-300 text-center leading-tight">Advanced Analytics</span>
+                      </div>
+                    </div>
                       <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
                         <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
                         <span className="text-xs text-purple-300 text-center leading-tight">Agentic AI Agents</span>
@@ -406,8 +423,8 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className={!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none' : ''}>
-              <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
+            <div className="blur-sm select-none pointer-events-none opacity-50">
+              <SponsorTab isLocked={true} />
             </div>
           </motion.div>
         )}
