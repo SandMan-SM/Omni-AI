@@ -31,7 +31,7 @@ interface BusinessData {
 const mockSponsorData: BusinessData[] = [
   {
     id: "1",
-    name: "Youngs",
+    name: "Young's Cabinet Refinishing",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
@@ -54,7 +54,7 @@ const mockSponsorData: BusinessData[] = [
   },
   {
     id: "2",
-    name: "Leifson",
+    name: "Leifson Built",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
@@ -77,7 +77,7 @@ const mockSponsorData: BusinessData[] = [
   },
   {
     id: "3",
-    name: "Omni",
+    name: "Omnileads LLC",
     totalTasksCompleted: 0,
     totalRevenue: 0,
     personalAssistant: {
@@ -262,15 +262,13 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               onClick={() => toggleBusiness(business.id)}
             >
               <div className="flex items-center justify-between w-full pr-4">
-                <div className="flex items-center gap-3">
-                  <Building2 className="w-5 h-5 text-purple-400" />
-                  <span className="text-base text-gray-200 font-medium">{business.name}</span>
+                <div className="flex items-center justify-between w-full gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <Building2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                    <span className="text-base text-gray-200 font-medium truncate">{business.name}</span>
+                  </div>
+                  <span className="text-sm text-purple-400 whitespace-nowrap">In Development</span>
                 </div>
-                <div className="flex items-center gap-2 text-purple-400">
-                  <span className="text-sm">In Development</span>
-                  <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-                </div>
-              </div>
             </CardHeader>
             {expandedBusiness === business.id && (
               <CardContent className="space-y-3">
