@@ -317,7 +317,7 @@ export default function Dashboard() {
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                       <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12 blur-sm select-none">
                         <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-xs text-purple-300/50 text-center leading-tight">Activate Bot Dev First</span>
+                        <span className="text-xs text-purple-300/50 text-center leading-tight">Sponsor Insights</span>
                       </div>
                       <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
                         <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
