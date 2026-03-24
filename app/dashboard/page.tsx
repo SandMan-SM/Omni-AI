@@ -656,7 +656,7 @@ export default function Dashboard() {
                 <span className={`text-sm font-medium ${isVIPSponsor ? 'text-amber-400' : currentTierData.accent}`} data-testid="text-account-tier">{isVIPSponsor ? 'VIP Sponsor' : currentTierData.name}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
-                <span className="text-sm text-gray-400">Username</span>
+                <span className="text-sm text-gray-400">User</span>
                 <span className="text-sm text-white" data-testid="text-member-since">
                   {user.username || "—"}
                 </span>
