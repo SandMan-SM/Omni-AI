@@ -79,10 +79,10 @@ const quickActions = [
 const recentActivity: { action: string; detail: string; time: string }[] = [];
 
 const metrics = [
-  { label: "Leads This Week", value: "147", change: "+23%", icon: Target },
-  { label: "Messages Sent", value: "1,204", change: "+18%", icon: Mail },
-  { label: "Conversion Rate", value: "4.8%", change: "+0.6%", icon: TrendingUp },
-  { label: "Revenue Impact", value: "$12.4k", change: "+31%", icon: BarChart3 },
+  { label: "Leads This Week", value: "0", change: "+0%", icon: Target },
+  { label: "Messages Sent", value: "0", change: "+0%", icon: Mail },
+  { label: "Conversion Rate", value: "0%", change: "+0%", icon: TrendingUp },
+  { label: "Revenue Impact", value: "$0", change: "+0%", icon: BarChart3 },
 ];
 
 type CampaignStatus = "active" | "paused" | "draft" | "completed";
