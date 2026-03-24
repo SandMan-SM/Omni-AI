@@ -522,9 +522,9 @@ export default function Dashboard() {
                           className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
                           data-testid={`card-campaign-${campaign.id}`}
                         >
-                          <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
+                          <div className={`w-12 h-12 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
                             <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                              <Video className="w-4 h-4 sm:w-5 sm:h-5 text-white/70" />
+                              <Video className="w-5 h-5 text-white/70" />
                             </div>
                           </div>
 
@@ -557,14 +557,32 @@ export default function Dashboard() {
 
                           <div className="flex sm:hidden items-center gap-2 flex-1 min-w-0">
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
-                              <Badge className={`text-[8px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
+                              <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
+                              <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
                                 {status.label}
                               </Badge>
                             </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <div className="flex items-center gap-1">
+                                <Eye className="w-3 h-3 text-gray-500" />
+                                <span className="text-xs text-gray-400">{campaign.views}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <MousePointerClick className="w-3 h-3 text-gray-500" />
+                                <span className="text-xs text-gray-400">{campaign.clicks}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <TrendingUp className="w-3 h-3 text-gray-500" />
+                                <span className="text-xs text-gray-400">{campaign.conversions}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <CircleDollarSign className="w-3 h-3 text-gray-500" />
+                                <span className="text-xs text-gray-400">{campaign.spend}</span>
+                              </div>
+                            </div>
                           </div>
 
-                          <div className="flex items-center gap-1 flex-shrink-0">
+                          <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
                           {campaign.status === "active" && (
                             <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-pause-${campaign.id}`}>
                               <Pause className="w-4 h-4" />
