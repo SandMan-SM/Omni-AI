@@ -24,6 +24,7 @@ interface BusinessData {
     contentGeneratedMinutes: number;
     viewsGenerated: number;
     conversionRate: number;
+    postsGenerated: number;
   };
 }
 
@@ -48,6 +49,7 @@ const mockSponsorData: BusinessData[] = [
       contentGeneratedMinutes: 0,
       viewsGenerated: 0,
       conversionRate: 0,
+      postsGenerated: 0,
     },
   },
   {
@@ -70,6 +72,7 @@ const mockSponsorData: BusinessData[] = [
       contentGeneratedMinutes: 0,
       viewsGenerated: 0,
       conversionRate: 0,
+      postsGenerated: 0,
     },
   },
   {
@@ -92,6 +95,7 @@ const mockSponsorData: BusinessData[] = [
       contentGeneratedMinutes: 0,
       viewsGenerated: 0,
       conversionRate: 0,
+      postsGenerated: 0,
     },
   },
 ];
@@ -106,6 +110,7 @@ function calculateTotals(businesses: BusinessData[]) {
       tasksCompleted: acc.tasksCompleted + business.personalAssistant.tasksCompleted,
       meetingsBooked: acc.meetingsBooked + business.personalAssistant.meetingsBooked,
       messagesSent: acc.messagesSent + business.personalAssistant.messagesSent,
+      postsGenerated: acc.postsGenerated + business.marketingAgent.postsGenerated,
     }),
     {
       totalTasksCompleted: 0,
@@ -115,6 +120,7 @@ function calculateTotals(businesses: BusinessData[]) {
       tasksCompleted: 0,
       meetingsBooked: 0,
       messagesSent: 0,
+      postsGenerated: 0,
     }
   );
 }
@@ -218,7 +224,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               <Bot className="w-4 h-4 text-purple-400" />
               <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-4 gap-3">
               <div className="bg-white/5 rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-purple-300">{totals.meetingsBooked}</p>
                 <p className="text-xs text-gray-400">Meetings</p>
@@ -226,6 +232,10 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               <div className="bg-white/5 rounded-lg p-3 text-center">
                 <p className="text-2xl font-bold text-purple-300">{totals.messagesSent}</p>
                 <p className="text-xs text-gray-400">Messages</p>
+              </div>
+              <div className="bg-white/5 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-purple-300">{totals.postsGenerated}</p>
+                <p className="text-xs text-gray-400">Posts</p>
               </div>
             </div>
           </div>
