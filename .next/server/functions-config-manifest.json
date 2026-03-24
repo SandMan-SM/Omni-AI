@@ -1,1 +1,1 @@
-{"version":1,"functions":{"/admin":{},"/arena":{},"/dashboard":{},"/join":{},"/":{},"/campaigns":{},"/sponsor/application":{},"/sponsor/info":{},"/details":{},"/interlinked":{},"/sponsor":{}}}
+{"version":1,"functions":{"/campaigns":{},"/arena":{},"/admin":{},"/":{},"/details":{},"/interlinked":{},"/join":{},"/sponsor/info":{},"/sponsor":{},"/sponsor/application":{},"/dashboard":{}}}
