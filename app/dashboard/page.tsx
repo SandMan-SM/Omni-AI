@@ -663,7 +663,7 @@ export default function Dashboard() {
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
                 <span className="text-sm text-gray-400">Tier</span>
-                <span className={`text-sm font-medium ${currentTierData.accent}`} data-testid="text-account-tier">{currentTierData.name}</span>
+                <span className={`text-sm font-medium ${isVIPSponsor ? 'text-amber-400' : currentTierData.accent}`} data-testid="text-account-tier">{isVIPSponsor ? 'VIP Sponsor' : currentTierData.name}</span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <Button
