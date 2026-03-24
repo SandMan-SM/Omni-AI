@@ -681,34 +681,7 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
-        <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.5 }}>
-          <Card className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-purple-500/20">
-            <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0">
-                  <Star className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-base font-semibold text-white" data-testid="text-upgrade-heading">Ready to level up?</h3>
-                  <p className="text-sm text-gray-400" data-testid="text-upgrade-description">Unlock AI agents, automations, and more with a higher tier.</p>
-                </div>
-              </div>
-              <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white whitespace-nowrap"
-                onClick={() => {
-                  router.push("/");
-                  setTimeout(() => {
-                    document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
-                  }, 300);
-                }}
-                data-testid="button-cta-upgrade"
-              >
-                View Tiers
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Button>
-            </CardContent>
-          </Card>
-        </motion.div>
+
       </main>
 
       <footer className="border-t border-white/5 mt-12">
