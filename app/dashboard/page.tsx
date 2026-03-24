@@ -7,10 +7,10 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
-  ArrowRight, LogOut, User, Clock, Video, Play, Pause, Camera,
+  Zap, Crown, Flame, Star, Calendar, Mail, Phone,
+  ArrowRight, LogOut, User, Clock, Video, Play, Pause,
   TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
-  CircleDollarSign, Plus, FileEdit, MoreHorizontal, ChevronRight, Landmark, DollarSign, Image
+  CircleDollarSign, FileEdit, MoreHorizontal, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -155,7 +155,6 @@ export default function Dashboard() {
   const pathname = usePathname();
   const router = useRouter();
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
-  const [headerClusterOpen, setHeaderClusterOpen] = useState(false);
   const tierMap: Record<number, string> = { 0: "apprentice", 1: "knight", 2: "royal", 3: "ascended" };
   const currentTier = tierMap[tier] || "apprentice";
   const currentTierData = tierInfo[currentTier];
@@ -219,42 +218,6 @@ export default function Dashboard() {
           </Link>
 
           <div className="flex items-center gap-3">
-            {(isAdmin || isSponsor) && (
-              <div className="relative">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-purple-500/20 bg-purple-500/5 text-purple-400"
-                  onClick={() => setHeaderClusterOpen(!headerClusterOpen)}
-                >
-                  {isAdmin && <Shield className="w-3 h-3 mr-1" />}
-                  {isSponsor && <Landmark className="w-3 h-3" />}
-                  <ChevronRight className={`w-3 h-3 ml-1 transition-transform ${headerClusterOpen ? 'rotate-90' : ''}`} />
-                </Button>
-                {headerClusterOpen && (
-                  <div className="absolute right-0 top-full mt-1 py-1 bg-black border border-white/10 rounded-lg shadow-xl z-50 min-w-[140px]">
-                    {isAdmin && (
-                      <button
-                        onClick={() => { router.push("/admin"); setHeaderClusterOpen(false); }}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-white/10 flex items-center gap-2"
-                      >
-                        <Shield className="w-3 h-3 text-orange-400" />
-                        Admin
-                      </button>
-                    )}
-                    {isSponsor && (
-                      <button
-                        onClick={() => { router.push("/sponsor"); setHeaderClusterOpen(false); }}
-                        className="w-full px-3 py-2 text-left text-sm text-gray-300 hover:bg-white/10 flex items-center gap-2"
-                      >
-                        <Landmark className={`w-3 h-3 ${isVIPSponsor ? 'text-amber-400' : 'text-green-400'}`} />
-                        {isVIPSponsor ? 'VIP Sponsor' : 'Sponsor'}
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
             {isSponsor ? (
               <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg ${isVIPSponsor ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-green-500/10 border border-green-500/30'}`} data-testid="badge-tier-status">
                 <Crown className={`w-4 h-4 ${isVIPSponsor ? 'text-amber-400' : 'text-green-400'}`} />
@@ -268,15 +231,6 @@ export default function Dashboard() {
                 <span className="text-sm text-gray-300" data-testid="text-tier-badge">{currentTierData.name} Tier</span>
               </div>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleSignOut}
-              className="text-gray-400"
-              data-testid="button-sign-out"
-            >
-              <LogOut className="w-4 h-4" />
-            </Button>
           </div>
         </div>
       </header>
