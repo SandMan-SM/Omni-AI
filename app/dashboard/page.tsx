@@ -497,12 +497,12 @@ export default function Dashboard() {
                   {campaigns.filter(c => c.status === "active").length} active
                 </Badge>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
+              <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 -mb-1">
                   {(["all", "active", "paused", "draft", "completed"] as const).map((filter) => (
                     <Button
                       key={filter}
                       variant="ghost"
-                      className={`text-xs px-3 toggle-elevate ${campaignFilter === filter ? "toggle-elevated bg-white/10 text-white" : "text-gray-500"}`}
+                      className={`text-[10px] sm:text-xs px-2 sm:px-3 py-1 toggle-elevate whitespace-nowrap ${campaignFilter === filter ? "toggle-elevated bg-white/10 text-white" : "text-gray-500"}`}
                       onClick={() => setCampaignFilter(filter)}
                       data-testid={`button-filter-${filter}`}
                     >
@@ -541,14 +541,36 @@ export default function Dashboard() {
                                 <span className="text-xs text-gray-400" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
+                                <MousePointerClick className="w-3.5 h-3.5 text-gray-500" />
+                                <span className="text-xs text-gray-400" data-testid={`text-campaign-clicks-${campaign.id}`}>{campaign.clicks}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <TrendingUp className="w-3.5 h-3.5 text-gray-500" />
+                                <span className="text-xs text-gray-400" data-testid={`text-campaign-conversions-${campaign.id}`}>{campaign.conversions}</span>
+                              </div>
+                              <div className="flex items-center gap-1.5">
                                 <CircleDollarSign className="w-3.5 h-3.5 text-gray-500" />
                                 <span className="text-xs text-gray-400" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend}</span>
                               </div>
                             </div>
                             <div className="sm:hidden">
                               <div className="flex items-center gap-3">
-                                <span className="text-xs text-gray-400">{campaign.views}V</span>
-                                <span className="text-xs text-gray-400">{campaign.spend}</span>
+                                <div className="flex items-center gap-1">
+                                  <Eye className="w-3 h-3 text-gray-500" />
+                                  <span className="text-xs text-gray-400">{campaign.views}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <MousePointerClick className="w-3 h-3 text-gray-500" />
+                                  <span className="text-xs text-gray-400">{campaign.clicks}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <TrendingUp className="w-3 h-3 text-gray-500" />
+                                  <span className="text-xs text-gray-400">{campaign.conversions}</span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <CircleDollarSign className="w-3 h-3 text-gray-500" />
+                                  <span className="text-xs text-gray-400">{campaign.spend}</span>
+                                </div>
                               </div>
                             </div>
                           </div>
