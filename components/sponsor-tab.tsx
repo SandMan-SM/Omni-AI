@@ -261,14 +261,13 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               className="py-4 cursor-pointer hover:bg-white/5 transition-colors rounded-t-lg"
               onClick={() => toggleBusiness(business.id)}
             >
-              <div className="flex items-center justify-between w-full pr-4">
-                <div className="flex items-center justify-between w-full gap-4">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <Building2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                    <span className="text-base text-gray-200 font-medium truncate">{business.name}</span>
-                  </div>
-                  <span className="text-sm text-purple-400 whitespace-nowrap">In Development</span>
+              <div className="flex items-center justify-between w-full pr-4 gap-4">
+                <div className="flex items-center gap-3 min-w-0">
+                  <Building2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                  <span className="text-base text-gray-200 font-medium truncate">{business.name}</span>
                 </div>
+                <span className="text-sm text-purple-400 whitespace-nowrap">In Development</span>
+              </div>
             </CardHeader>
             {expandedBusiness === business.id && (
               <CardContent className="space-y-3">
