@@ -652,8 +652,8 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between py-2 border-b border-white/5">
-                <span className="text-sm text-gray-400">Email</span>
-                <span className="text-sm text-white max-w-[150px] sm:max-w-[200px] truncate" data-testid="text-account-email">{user.email}</span>
+                <span className="text-sm text-gray-400">Tier</span>
+                <span className={`text-sm font-medium ${isVIPSponsor ? 'text-amber-400' : currentTierData.accent}`} data-testid="text-account-tier">{isVIPSponsor ? 'VIP Sponsor' : currentTierData.name}</span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
                 <span className="text-sm text-gray-400">Username</span>
@@ -662,8 +662,8 @@ export default function Dashboard() {
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
-                <span className="text-sm text-gray-400">Tier</span>
-                <span className={`text-sm font-medium ${isVIPSponsor ? 'text-amber-400' : currentTierData.accent}`} data-testid="text-account-tier">{isVIPSponsor ? 'VIP Sponsor' : currentTierData.name}</span>
+                <span className="text-sm text-gray-400">Email</span>
+                <span className="text-sm text-white max-w-[150px] sm:max-w-[200px] truncate" data-testid="text-account-email">{user.email}</span>
               </div>
               <div className="flex flex-col sm:flex-row gap-2 pt-2">
                 <Button
