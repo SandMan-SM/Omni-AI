@@ -213,20 +213,27 @@ export default function Dashboard() {
 
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="text-xl font-bold text-gradient" data-testid="link-dashboard-home">
-            Omni AI
-          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/" className="text-xl font-bold text-gradient" data-testid="link-dashboard-home">
+              Omni AI
+            </Link>
+            <nav className="hidden md:flex items-center gap-4 text-sm text-gray-400">
+              <Link href="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
+              <Link href="/arena" className="hover:text-white transition-colors">Arena</Link>
+              <Link href="/sponsor" className="hover:text-white transition-colors">Sponsor</Link>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-3">
             {isSponsor ? (
-              <div className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg ${isVIPSponsor ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-green-500/10 border border-green-500/30'}`} data-testid="badge-tier-status">
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${isVIPSponsor ? 'bg-amber-500/10 border border-amber-500/30' : 'bg-green-500/10 border border-green-500/30'}`} data-testid="badge-tier-status">
                 <Crown className={`w-4 h-4 ${isVIPSponsor ? 'text-amber-400' : 'text-green-400'}`} />
                 <span className={`text-sm ${isVIPSponsor ? 'text-amber-300' : 'text-green-300'}`} data-testid="text-tier-badge">
                   {isVIPSponsor ? 'VIP Sponsor' : 'Sponsor'}
                 </span>
               </div>
             ) : (
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10" data-testid="badge-tier-status">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10" data-testid="badge-tier-status">
                 <TierIcon className={`w-4 h-4 ${currentTierData.accent}`} />
                 <span className="text-sm text-gray-300" data-testid="text-tier-badge">{currentTierData.name} Tier</span>
               </div>
