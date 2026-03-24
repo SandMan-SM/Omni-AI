@@ -7,8 +7,8 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Zap, Crown, Flame, Star, Calendar, Mail, Phone,
-  ArrowRight, LogOut, User, Clock, Video, Play, Pause,
+  Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
+  ArrowRight, User, Clock, Video, Play, Pause,
   TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
   CircleDollarSign, FileEdit, MoreHorizontal, DollarSign
 } from "lucide-react";
