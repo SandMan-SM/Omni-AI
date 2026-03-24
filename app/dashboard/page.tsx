@@ -367,22 +367,22 @@ export default function Dashboard() {
                       <p className="text-xs sm:text-sm text-gray-300 mb-4 text-center px-2">
                         Get started by activating bot development for all assets and begin with live analytics.
                       </p>
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-6">
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-6 py-4 rounded-full border border-purple-500/30">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
                         <Bot className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300 whitespace-nowrap">Sponsor Insights</span>
+                        <span className="text-xs text-purple-300 text-center leading-tight">Sponsor Insights</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-6 py-4 rounded-full border border-purple-500/30">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
                         <Crown className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300 whitespace-nowrap">Agentic AI Agents</span>
+                        <span className="text-xs text-purple-300 text-center leading-tight">Agentic AI Agents</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-6 py-4 rounded-full border border-purple-500/30">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
                         <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300 whitespace-nowrap">Command Center Access</span>
+                        <span className="text-xs text-purple-300 text-center leading-tight">Command Center Access</span>
                       </div>
-                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-6 py-4 rounded-full border border-purple-500/30">
+                      <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12">
                         <TrendingUp className="w-4 h-4 text-purple-400 flex-shrink-0" />
-                        <span className="text-sm text-purple-300 whitespace-nowrap">Advanced Analytics</span>
+                        <span className="text-xs text-purple-300 text-center leading-tight">Advanced Analytics</span>
                       </div>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3">
