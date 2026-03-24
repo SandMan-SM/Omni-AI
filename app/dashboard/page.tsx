@@ -405,9 +405,9 @@ export default function Dashboard() {
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-lg text-white">
-                {isVIPSponsor ? "VIP Sponsor" : "Current Tier"}
-              </CardTitle>
+              {!isVIPSponsor && (
+                <CardTitle className="text-lg text-white">Current Tier</CardTitle>
+              )}
               {!isVIPSponsor && (
                 <Button
                   variant="outline"
