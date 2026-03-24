@@ -203,7 +203,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
         </CardHeader>
         <CardContent>
           <div className={`rounded-lg p-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
-            <div className="grid grid-cols-3 gap-4 mb-4">
+            <div className="grid grid-cols-3 gap-4">
               <div className="bg-purple-500/10 rounded-lg p-4 text-center">
                 <p className="text-3xl font-bold text-purple-400">0</p>
                 <p className="text-xs text-gray-400 mt-1">Tasks</p>
@@ -218,29 +218,29 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               </div>
             </div>
           </div>
-
-          <div className={`border-t border-white/10 pt-4 rounded-lg p-4 ${isLocked ? 'blur-sm select-none' : ''}`}>
-            <div className="flex items-center gap-2 mb-3">
-              <Bot className="w-4 h-4 text-purple-400" />
-              <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
-            </div>
-            <div className="grid grid-cols-4 gap-3">
-              <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-purple-300">{totals.meetingsBooked}</p>
-                <p className="text-xs text-gray-400">Meetings</p>
-              </div>
-              <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-purple-300">{totals.messagesSent}</p>
-                <p className="text-xs text-gray-400">Messages</p>
-              </div>
-              <div className="bg-white/5 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-purple-300">{totals.postsGenerated}</p>
-                <p className="text-xs text-gray-400">Posts</p>
-              </div>
-            </div>
-          </div>
         </CardContent>
       </Card>
+
+      <div className={`rounded-lg p-4 bg-white/5 border border-purple-500/30 ${isLocked ? 'blur-sm select-none' : ''}`}>
+        <div className="flex items-center gap-2 mb-3">
+          <Bot className="w-4 h-4 text-purple-400" />
+          <span className="text-sm font-medium text-purple-300">AI Agent Stats</span>
+        </div>
+        <div className="grid grid-cols-4 gap-3">
+          <div className="bg-white/5 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-purple-300">{totals.meetingsBooked}</p>
+            <p className="text-xs text-gray-400">Meetings</p>
+          </div>
+          <div className="bg-white/5 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-purple-300">{totals.messagesSent}</p>
+            <p className="text-xs text-gray-400">Messages</p>
+          </div>
+          <div className="bg-white/5 rounded-lg p-3 text-center">
+            <p className="text-2xl font-bold text-purple-300">{totals.postsGenerated}</p>
+            <p className="text-xs text-gray-400">Posts</p>
+          </div>
+        </div>
+      </div>
 
       <div className="space-y-3">
         {mockSponsorData.map((business) => (
