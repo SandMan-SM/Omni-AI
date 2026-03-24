@@ -528,7 +528,7 @@ export default function Dashboard() {
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
                               <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
@@ -553,21 +553,11 @@ export default function Dashboard() {
                                 <span className="text-xs text-gray-400" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend}</span>
                               </div>
                             </div>
-                            <div className="flex sm:hidden items-center gap-2">
-                              <div className="flex items-center gap-1">
-                                <Eye className="w-3 h-3 text-gray-500" />
-                                <span className="text-xs text-gray-400">{campaign.views}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MousePointerClick className="w-3 h-3 text-gray-500" />
-                                <span className="text-xs text-gray-400">{campaign.clicks}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <TrendingUp className="w-3 h-3 text-gray-500" />
-                                <span className="text-xs text-gray-400">{campaign.conversions}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <CircleDollarSign className="w-3 h-3 text-gray-500" />
+                            <div className="sm:hidden">
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400">{campaign.views}V</span>
+                                <span className="text-xs text-gray-400">{campaign.clicks}C</span>
+                                <span className="text-xs text-gray-400">{campaign.conversions}Co</span>
                                 <span className="text-xs text-gray-400">{campaign.spend}</span>
                               </div>
                             </div>
