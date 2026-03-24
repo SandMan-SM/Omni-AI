@@ -535,18 +535,10 @@ export default function Dashboard() {
                                 {status.label}
                               </Badge>
                             </div>
-                            <div className="hidden sm:flex items-center gap-3">
+                            <div className="hidden sm:flex items-center gap-4">
                               <div className="flex items-center gap-1.5">
                                 <Eye className="w-3.5 h-3.5 text-gray-500" />
                                 <span className="text-xs text-gray-400" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <MousePointerClick className="w-3.5 h-3.5 text-gray-500" />
-                                <span className="text-xs text-gray-400" data-testid={`text-campaign-clicks-${campaign.id}`}>{campaign.clicks}</span>
-                              </div>
-                              <div className="flex items-center gap-1.5">
-                                <TrendingUp className="w-3.5 h-3.5 text-gray-500" />
-                                <span className="text-xs text-gray-400" data-testid={`text-campaign-conversions-${campaign.id}`}>{campaign.conversions}</span>
                               </div>
                               <div className="flex items-center gap-1.5">
                                 <CircleDollarSign className="w-3.5 h-3.5 text-gray-500" />
@@ -554,10 +546,8 @@ export default function Dashboard() {
                               </div>
                             </div>
                             <div className="sm:hidden">
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-3">
                                 <span className="text-xs text-gray-400">{campaign.views}V</span>
-                                <span className="text-xs text-gray-400">{campaign.clicks}C</span>
-                                <span className="text-xs text-gray-400">{campaign.conversions}Co</span>
                                 <span className="text-xs text-gray-400">{campaign.spend}</span>
                               </div>
                             </div>
