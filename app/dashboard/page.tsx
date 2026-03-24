@@ -305,7 +305,7 @@ export default function Dashboard() {
             })}
           </div>
           {!isSponsor || (isSponsor && !profile?.sponsor_insights_paid) ? (
-            <div className="absolute inset-0 backdrop-blur-md bg-black/40 rounded-xl flex flex-col items-center justify-center gap-3">
+            <div className="absolute inset-0 backdrop-blur-xl bg-black/60 rounded-xl flex flex-col items-center justify-center gap-3">
               <Lock className="w-8 h-8 text-gray-400" />
               <p className="text-sm text-gray-300 text-center px-4 font-medium">
                 Activate Bot Development First to Initialize Your Command Center
@@ -370,7 +370,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div className={`${!profile?.sponsor_insights_paid ? 'blur-sm select-none pointer-events-none opacity-50' : ''}`}>
+            <div className={`${!profile?.sponsor_insights_paid ? 'blur-xl select-none pointer-events-none opacity-30' : ''}`}>
               <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
             </div>
           </motion.div>
