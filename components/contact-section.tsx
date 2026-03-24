@@ -75,15 +75,15 @@ export function ContactSection() {
           </div>
 
           <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-            <div className="flex flex-col sm:flex-row items-center gap-3 rounded-xl border border-white/10 bg-white/5 overflow-hidden">
-              <div className="flex items-center pl-4 sm:pl-5 flex-1 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch gap-3 rounded-xl border border-white/10 bg-white/5 overflow-hidden p-2">
+              <div className="flex items-center pl-3 flex-1">
                 <Mail className="w-5 h-5 text-gray-500 mr-3 flex-shrink-0" />
                 <Input
                   type="email"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-transparent border-0 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-12 sm:h-10 pr-2 w-full"
+                  className="bg-transparent border-0 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 text-base h-12"
                   data-testid="input-email"
                   required
                 />
@@ -91,7 +91,7 @@ export function ContactSection() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-6 sm:px-8 h-12 sm:h-full rounded-none sm:rounded-l-none font-semibold text-base whitespace-nowrap w-full sm:w-auto"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-6 h-12 rounded-lg font-semibold text-sm whitespace-nowrap"
                 data-testid="button-submit-newsletter"
               >
                 {isSubmitting ? (
