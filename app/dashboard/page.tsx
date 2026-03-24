@@ -404,18 +404,11 @@ export default function Dashboard() {
 
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
-            <CardHeader className="flex flex-row items-center justify-end gap-4 pb-4">
-              {isVIPSponsor ? (
-                <Button
-                  variant="outline"
-                  className="border-amber-500/50 bg-amber-500/10 text-amber-400 text-sm hover:bg-amber-500/20"
-                  onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
-                  data-testid="button-activate-vip"
-                >
-                  Activate
-                  <ArrowRight className="w-3 h-3 ml-1.5" />
-                </Button>
-              ) : (
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-lg text-white">
+                {isVIPSponsor ? "VIP Sponsor" : "Current Tier"}
+              </CardTitle>
+              {!isVIPSponsor && (
                 <Button
                   variant="outline"
                   className="border-white/20 bg-transparent text-white text-sm"
@@ -433,18 +426,28 @@ export default function Dashboard() {
             </CardHeader>
             <CardContent>
               {isVIPSponsor ? (
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-[1px] flex-shrink-0">
-                    <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
-                      <Crown className="w-7 h-7 text-amber-400" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-[1px] flex-shrink-0">
+                      <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
+                        <Crown className="w-7 h-7 text-amber-400" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-500" data-testid="text-tier-status">
+                        {profile?.sponsor_activated ? "Active" : "Deactivated"}
+                      </p>
                     </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-white mb-1" data-testid="text-current-tier-name">VIP Sponsor</h3>
-                    <p className="text-sm text-gray-500" data-testid="text-tier-status">
-                      {profile?.sponsor_activated ? "Active" : "Deactivated"}
-                    </p>
-                  </div>
+                  <Button
+                    variant="outline"
+                    className="border-amber-500/50 bg-amber-500/10 text-amber-400 text-sm hover:bg-amber-500/20"
+                    onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
+                    data-testid="button-activate-vip"
+                  >
+                    Activate
+                    <ArrowRight className="w-3 h-3 ml-1.5" />
+                  </Button>
                 </div>
               ) : (
                 <>
