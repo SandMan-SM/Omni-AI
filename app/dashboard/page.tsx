@@ -404,10 +404,7 @@ export default function Dashboard() {
 
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
-            <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-              <CardTitle className="text-lg text-white">
-                {isVIPSponsor ? "Sponsor Tier" : "Current Tier"}
-              </CardTitle>
+            <CardHeader className="flex flex-row items-center justify-end gap-4 pb-4">
               {isVIPSponsor ? (
                 <Button
                   variant="outline"
