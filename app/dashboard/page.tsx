@@ -396,7 +396,7 @@ export default function Dashboard() {
               </div>
             )}
 
-            <div>
+            <div className="mt-6">
               <SponsorTab isLocked={!profile?.sponsor_insights_paid} />
             </div>
           </motion.div>
