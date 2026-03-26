@@ -1,4 +1,4 @@
-// File: /Users/janahasson/Desktop/Omni AI/Omni AI Website/app/api/webinar-registration/route.ts
+// File: /Users/janahasson/Desktop/Assets/Interlinked/Clients/Omni AI/Omni AI Website/app/api/webinar-registration/route.ts
 import * as entry from '../../../../../app/api/webinar-registration/route.js'
 import type { NextRequest } from 'next/server.js'
 

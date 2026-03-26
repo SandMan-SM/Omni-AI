@@ -631,21 +631,18 @@ export default function Dashboard() {
                   <Star className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-base font-semibold text-white" data-testid="text-upgrade-heading">Ready to level up?</h3>
-                  <p className="text-sm text-gray-400" data-testid="text-upgrade-description">Unlock AI agents, automations, and more with a higher tier.</p>
+                  <h3 className="text-base font-semibold text-white" data-testid="text-upgrade-heading">Agentic Agents in Development</h3>
+                  <p className="text-sm text-gray-400" data-testid="text-upgrade-description">Activate Sponsor Subscription When Complete</p>
                 </div>
               </div>
               <Button
                 className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white whitespace-nowrap"
                 onClick={() => {
-                  setLocation("/");
-                  setTimeout(() => {
-                    document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
-                  }, 300);
+                  setLocation("/sponsor/application");
                 }}
                 data-testid="button-cta-upgrade"
               >
-                View Tiers
+                Activate Sponsor Subscription
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </CardContent>

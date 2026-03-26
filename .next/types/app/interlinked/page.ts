@@ -1,4 +1,4 @@
-// File: /Users/janahasson/Desktop/Omni AI/Omni AI Website/app/interlinked/page.tsx
+// File: /Users/janahasson/Desktop/Assets/Interlinked/Clients/Omni AI/Omni AI Website/app/interlinked/page.tsx
 import * as entry from '../../../../app/interlinked/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

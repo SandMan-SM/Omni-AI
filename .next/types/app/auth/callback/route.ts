@@ -1,4 +1,4 @@
-// File: /Users/janahasson/Desktop/Omni AI/Omni AI Website/app/auth/callback/route.ts
+// File: /Users/janahasson/Desktop/Assets/Interlinked/Clients/Omni AI/Omni AI Website/app/auth/callback/route.ts
 import * as entry from '../../../../../app/auth/callback/route.js'
 import type { NextRequest } from 'next/server.js'
 

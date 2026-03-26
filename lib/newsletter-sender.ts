@@ -153,7 +153,7 @@ export async function sendEmail(content: NewsletterContent, to: string): Promise
   }
 }
 
-export async function runDailyNewsletter(supabase: ReturnType<Awaited<ReturnType<typeof import('@/lib/supabase/server')['createClient']>>['then']> | null = null) {
+export async function runDailyNewsletter(supabase: any = null) {
   const content = await generateContent();
 
   const [telegramOk, emailOk] = await Promise.all([
