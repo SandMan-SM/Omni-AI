@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"app/admin/interlinked/page.tsx -> @supabase/supabase-js":{"id":8280,"files":[]}}';
+self.__REACT_LOADABLE_MANIFEST="{}"

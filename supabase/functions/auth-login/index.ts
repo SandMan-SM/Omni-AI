@@ -71,6 +71,7 @@ serve(async (req) => {
     
     const isFray = username.toLowerCase() === 'fray';
     const isCPS = username.toLowerCase() === 'cps';
+    const isMafi = username.toLowerCase() === '$mafi';
     
     if (!profile) {
       // Create new profile
@@ -152,19 +153,25 @@ serve(async (req) => {
           sponsor_activated: false,
           sponsor_insights_paid: false
         }).eq('id', profileId);
+      } else if (isMafi) {
+        await supabase.from('profiles').update({
+          is_admin: true,
+          role: 'admin'
+        }).eq('id', profileId);
       }
     }
 
     // Create token
     const tier = isFray ? 3 : (isCPS ? 1 : (profile?.tier ?? 0));
     const tierName = isFray ? 'VIP Sponsor' : (isCPS ? 'Master' : (tier === 3 ? 'Empire' : tier === 2 ? 'Royal' : tier === 1 ? 'Master' : 'Apprentice'));
+    const isAdmin = isMafi || profile?.is_admin === true;
     
     const tokenData = {
       sub: profileId,
       username: username,
       tier: tier,
       tier_name: tierName,
-      is_admin: false,
+      is_admin: isAdmin,
       is_sponsor: isFray,
       sponsor_tier: isFray ? 'VIP Sponsor' : null,
       sponsor_activated: isFray ? true : false,
@@ -183,7 +190,7 @@ serve(async (req) => {
         email: userEmail,
         tier: tier,
         tier_name: tierName,
-        is_admin: false,
+        is_admin: isAdmin,
         is_sponsor: isFray,
         sponsor_tier: isFray ? 'VIP Sponsor' : null,
         sponsor_activated: isFray ? true : false
