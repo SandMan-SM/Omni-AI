@@ -551,12 +551,6 @@ export default function Interlinked() {
         </motion.div>
 
         <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />
-
-        <div className="text-center py-8 border-t border-white/5 mt-8">
-          <p className="text-gray-600 text-sm">
-            &copy; {new Date().getFullYear()} Omni AI LLC
-          </p>
-        </div>
       </div>
 
       <Footer />

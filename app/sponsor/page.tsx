@@ -129,7 +129,7 @@ export default function Sponsor() {
   const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null);
   const [expandedAgent, setExpandedAgent] = useState<{ business: string; agent: string } | null>(null);
 
-  const isSponsor = profile?.role === "sponsor";
+  const isSponsor = profile?.role === "sponsor" || profile?.is_sponsor === true;
 
   if (!isSponsor) {
     return (

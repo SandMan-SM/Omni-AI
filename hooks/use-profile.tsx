@@ -67,14 +67,15 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       }
 
       if (error && error.code === 'PGRST116') {
+        const isFray = user.email === 'fray1959@gmail.com' || user.username?.toLowerCase() === 'fray';
         const newProfile = {
           id: user.id,
           email: user.email || '',
-          role: user.email === 'sitanim6@gmail.com' ? 'sponsor' : 'user',
+          role: (user.email === 'sitanim6@gmail.com' || isFray) ? 'sponsor' : 'user',
           is_admin: user.email === 'sitanim6@gmail.com' ? true : false,
-          is_sponsor: user.email === 'sitanim6@gmail.com' ? true : false,
-          sponsor_tier: user.email === 'sitanim6@gmail.com' ? 'vip' : null,
-          tier: user.email === 'sitanim6@gmail.com' ? 3 : 0,
+          is_sponsor: (user.email === 'sitanim6@gmail.com' || isFray) ? true : false,
+          sponsor_tier: (user.email === 'sitanim6@gmail.com' || isFray) ? 'vip' : null,
+          tier: (user.email === 'sitanim6@gmail.com' || isFray) ? 3 : 0,
           name: null,
           phone: null,
           business_owner: false,
@@ -83,8 +84,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
           business_details: null,
           activated_platforms: [],
           onboarding_completed: false,
-          sponsor_activated: false,
-          sponsor_insights_paid: false,
+          sponsor_activated: (user.email === 'sitanim6@gmail.com' || isFray) ? true : false,
+          sponsor_insights_paid: (user.email === 'sitanim6@gmail.com' || isFray) ? true : false,
         };
 
         const { data: created, error: createError } = await supabase
@@ -101,11 +102,34 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
       } else if (error) {
         console.error('Failed to fetch profile:', error);
       } else {
-        setProfile({
-          ...data,
-          is_sponsor: data.is_sponsor ?? false,
-          tier: data.tier ?? 0,
-        });
+        // For Fray, ensure sponsor fields and email are correct
+        const isFray = user.email === 'fray1959@gmail.com' || user.username?.toLowerCase() === 'fray';
+        if (isFray && (data.email !== 'fray1959@gmail.com' || data.sponsor_tier !== 'vip')) {
+          const supabase = await getSupabase();
+          await supabase
+            .from('profiles')
+            .update({
+              email: 'fray1959@gmail.com',
+              is_sponsor: true,
+              role: 'sponsor',
+              sponsor_tier: 'vip',
+              tier: 3,
+              sponsor_activated: true,
+              sponsor_insights_paid: true
+            })
+            .eq('id', user.id);
+          // Refetch profile after update
+          const { data: updated } = await supabase.from('profiles').select().eq('id', user.id).single();
+          if (updated) {
+            setProfile(updated);
+          }
+        } else {
+          setProfile({
+            ...data,
+            is_sponsor: data.is_sponsor ?? false,
+            tier: data.tier ?? 0,
+          });
+        }
       }
     } catch (err) {
       console.error('Profile fetch error:', err);
@@ -194,10 +218,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true;
-  const isSponsor = profile?.role === 'sponsor' || profile?.is_sponsor === true;
-  const isVIPSponsor = profile?.sponsor_tier === 'vip';
-  const tier = profile?.tier ?? 0;
+  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true || user?.is_admin === true;
+  const isSponsor = profile?.role === 'sponsor' || profile?.is_sponsor === true || user?.is_sponsor === true;
+  const isVIPSponsor = profile?.sponsor_tier === 'vip' || String(profile?.sponsor_tier) === 'VIP Sponsor' || user?.sponsor_tier === 'VIP Sponsor';
+  const tier = Number(profile?.tier ?? user?.tier ?? 0);
   const onboardingComplete = profile?.onboarding_completed ?? false;
 
   return (

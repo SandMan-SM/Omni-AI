@@ -1,11 +1,11 @@
 import pg from "pg";
 
 const pool = new pg.Pool({
-  host: "db.lqufkkalazkseqqnsnqm.supabase.co",
+  host: "db.odvxtychuxxsudfpcqqs.supabase.co",
   port: 5432,
   database: "postgres",
   user: "postgres",
-  password: "gmBIkkIkYYredg9V",
+  password: "N3ukKz4A2k%2CC%23TV",
 });
 
 async function main() {

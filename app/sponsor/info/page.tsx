@@ -104,52 +104,60 @@ export default function SponsorInfo() {
           initial="initial"
           animate="animate"
           variants={fadeUp}
-          className="text-center py-20 px-4"
+          className="text-center py-12 md:py-20 px-4"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card neon-border mb-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card neon-border mb-4 md:mb-6">
             <Gift className="w-4 h-4 text-purple-400" />
-            <span className="text-sm text-gray-300">Omni AI Sponsor Program</span>
+            <span className="text-xs md:text-sm text-gray-300">Omni AI Sponsor Program</span>
           </div>
           
-          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6">
             <span className="text-gradient">Sponsorship Overview</span>
           </h1>
           
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8 leading-relaxed">
+          <p className="text-lg md:text-xl text-gray-300 max-w-xl mx-auto mb-6 md:mb-8 leading-relaxed">
             Your sponsorship funds AI systems that generate qualified leads, automate operations, and deliver measurable growth.
-            <br /><br />
-            Every dollar supports infrastructure designed to increase efficiency, capture demand, and provide real-time performance visibility through your Sponsor Dashboard.
           </p>
 
           <Button 
             onClick={() => router.push("/sponsor/application")}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg px-8 py-6"
+            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg md:text-xl px-8 md:px-10 py-5 md:py-6"
           >
             Access Sponsor Portal
             <ArrowRight className="w-5 h-5 ml-2" />
           </Button>
+
+          <div className="max-w-xl mx-auto mt-6 md:mt-8">
+            <Card className="bg-gradient-to-r from-purple-900/30 to-pink-900/20 border border-purple-500/20">
+              <CardContent className="p-4 md:p-6">
+                <p className="text-sm md:text-base text-gray-300 leading-relaxed">
+                  Every dollar supports infrastructure designed to increase efficiency, capture demand, and provide real-time performance visibility through your Sponsor Dashboard.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
         </motion.div>
 
-        <section className="py-16 px-4 bg-black/30">
+        <section className="py-12 md:py-16 px-4 bg-black/30">
           <div className="max-w-6xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
                 Where Your Investment Goes
               </h2>
-              <p className="text-gray-400">Your sponsorship directly funds:</p>
+              <p className="text-gray-400 text-sm md:text-base">Your sponsorship directly funds:</p>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {investmentAreas.map((item, idx) => (
                 <motion.div key={idx} variants={fadeUp}>
                   <Card className="bg-white/5 border-white/10 hover:border-purple-500/30 transition-colors h-full">
-                    <CardContent className="p-6 flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
-                        <item.icon className="w-6 h-6 text-purple-400" />
+                    <CardContent className="p-4 md:p-6 flex items-start gap-3 md:gap-4">
+                      <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
+                        <item.icon className="w-5 md:w-6 h-5 md:h-6 text-purple-400" />
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-1">{item.title}</h4>
-                        <p className="text-sm text-gray-400">{item.desc}</p>
+                        <h4 className="font-semibold mb-1 text-sm md:text-base">{item.title}</h4>
+                        <p className="text-xs md:text-sm text-gray-400">{item.desc}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -159,26 +167,26 @@ export default function SponsorInfo() {
           </div>
         </section>
 
-        <section className="py-20 px-4">
+        <section className="py-12 md:py-20 px-4">
           <div className="max-w-6xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
                 AI Infrastructure in Action
               </h2>
-              <p className="text-gray-400">8 powerful systems working continuously for your growth</p>
+              <p className="text-gray-400 text-sm md:text-base">8 powerful systems working continuously for your growth</p>
             </motion.div>
 
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
               {aiCapabilities.map((cap, idx) => (
                 <motion.div key={idx} variants={fadeUp}>
                   <Card className="bg-gradient-to-r from-purple-900/20 to-pink-900/10 border-purple-500/20">
-                    <CardContent className="p-6 flex items-start gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
-                        <cap.icon className="w-6 h-6 text-purple-400" />
+                    <CardContent className="p-4 md:p-6 flex items-start gap-3 md:gap-4">
+                      <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
+                        <cap.icon className="w-5 md:w-6 h-5 md:h-6 text-purple-400" />
                       </div>
                       <div>
-                        <h4 className="font-semibold mb-2 text-purple-200">{cap.title}</h4>
-                        <p className="text-sm text-gray-400">{cap.desc}</p>
+                        <h4 className="font-semibold mb-1 md:mb-2 text-purple-200 text-sm md:text-base">{cap.title}</h4>
+                        <p className="text-xs md:text-sm text-gray-400">{cap.desc}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -188,57 +196,57 @@ export default function SponsorInfo() {
           </div>
         </section>
 
-        <section className="py-16 px-4 bg-black/30">
+        <section className="py-12 md:py-16 px-4 bg-black/30">
           <div className="max-w-4xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
                 How You'll See Results
               </h2>
-              <p className="text-gray-400">Your Sponsor Dashboard provides real-time reporting on lead volume, engagement activity, response performance, and growth trends.</p>
+              <p className="text-gray-400 text-sm md:text-base">Your Sponsor Dashboard provides real-time reporting on lead volume, engagement activity, response performance, and growth trends.</p>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="mb-8">
-              <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20 rounded-2xl p-8 text-center">
-                <BarChart3 className="w-16 h-16 text-purple-400 mx-auto mb-4" />
-                <p className="text-gray-400 mb-4">(Screenshot of dashboard)</p>
+            <motion.div variants={fadeUp} className="mb-6 md:mb-8">
+              <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20 rounded-xl md:rounded-2xl p-6 md:p-8 text-center">
+                <BarChart3 className="w-12 md:w-16 h-12 md:h-16 text-purple-400 mx-auto mb-3 md:mb-4" />
+                <p className="text-gray-400 text-sm md:text-base">(Screenshot of dashboard)</p>
               </div>
             </motion.div>
 
             <motion.div variants={fadeUp} className="text-center">
-              <p className="text-lg text-gray-300 mb-6">
+              <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6">
                 Monitor system activity, track measurable outcomes, and see exactly how your sponsorship translates into operational and revenue impact — all in one centralized view.
               </p>
               <Button 
                 onClick={() => isSponsor ? router.push("/sponsor") : router.push("/sponsor/application")}
-                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-lg px-8 py-6"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
               >
                 View Sponsor Dashboard
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
               </Button>
             </motion.div>
           </div>
         </section>
 
-        <section className="py-16 px-4">
+        <section className="py-12 md:py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
                 Proven Results
               </h2>
-              <p className="text-gray-400 text-lg">Real businesses. Measurable growth. Documented performance.</p>
+              <p className="text-gray-400 text-sm md:text-lg">Real businesses. Measurable growth. Documented performance.</p>
             </motion.div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
               {caseStudies.map((study, idx) => (
                 <motion.div key={idx} variants={fadeUp}>
                   <Card className="bg-gradient-to-br from-white/10 to-white/5 border-white/10 h-full">
-                    <CardContent className="p-8 text-center">
-                      <div className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mx-auto mb-4">
-                        <Building2 className="w-8 h-8 text-purple-300" />
+                    <CardContent className="p-6 md:p-8 text-center">
+                      <div className="w-12 md:w-16 h-12 md:h-16 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mx-auto mb-3 md:mb-4">
+                        <Building2 className="w-6 md:w-8 h-6 md:h-8 text-purple-300" />
                       </div>
-                      <h4 className="font-bold text-xl mb-1">{study.name}</h4>
-                      <p className="text-gray-400 mb-4">{study.company}</p>
-                      <p className="text-2xl font-bold text-green-400">{study.metric}</p>
+                      <h4 className="font-bold text-lg md:text-xl mb-1">{study.name}</h4>
+                      <p className="text-gray-400 mb-3 md:mb-4 text-sm">{study.company}</p>
+                      <p className="text-xl md:text-2xl font-bold text-green-400">{study.metric}</p>
                     </CardContent>
                   </Card>
                 </motion.div>
@@ -247,36 +255,36 @@ export default function SponsorInfo() {
           </div>
         </section>
 
-        <section className="py-20 px-4 bg-gradient-to-b from-purple-900/20 to-transparent">
+        <section className="py-12 md:py-20 px-4 bg-gradient-to-b from-purple-900/20 to-transparent">
           <motion.div variants={fadeUp} className="text-center max-w-2xl mx-auto">
-            <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">
               Ready to See the Impact Firsthand?
             </h2>
-            <p className="text-gray-400 mb-8">
+            <p className="text-gray-400 mb-6 md:mb-8 text-sm md:text-base">
               Access your dashboard to monitor performance — or apply to become an approved Omni AI sponsor.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
               {isSponsor ? (
                 <Button 
                   onClick={() => router.push("/sponsor")}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg px-8 py-6"
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
                 >
                   Access Sponsor Portal
-                  <ArrowRight className="w-5 h-5 ml-2" />
+                  <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
                 </Button>
               ) : (
                 <>
                   <Button 
                     onClick={() => user ? handleActivate() : router.push("/sponsor/application")}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg px-8 py-6"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
                   >
                     {user ? "Apply Today" : "Apply Today"}
-                    <ArrowRight className="w-5 h-5 ml-2" />
+                    <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
                   </Button>
                   <Button 
                     variant="outline"
                     onClick={() => router.push("/sponsor/application")}
-                    className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10 text-lg px-8 py-6"
+                    className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
                   >
                     Apply to Become a Sponsor
                   </Button>

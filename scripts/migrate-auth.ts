@@ -3,7 +3,7 @@ import pg from 'pg';
 const { Pool } = pg;
 
 const pool = new Pool({
-  connectionString: 'postgresql://postgres:gmBIkkIkYYredg9V@db.lqufkkalazkseqqnsnqm.supabase.co:5432/postgres',
+  connectionString: 'postgresql://postgres:N3ukKz4A2k%2CC%23TV@db.odvxtychuxxsudfpcqqs.supabase.co:5432/postgres',
 });
 
 async function migrate() {

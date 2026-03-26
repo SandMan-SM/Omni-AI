@@ -4,7 +4,7 @@ const { Pool } = pg;
 
 async function setupAuth() {
   const pool = new Pool({
-    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:gmBIkkIkYYredg9V@db.lqufkkalazkseqqnsnqm.supabase.co:5432/postgres',
+    connectionString: process.env.DATABASE_URL || 'postgresql://postgres:N3ukKz4A2k%2CC%23TV@db.odvxtychuxxsudfpcqqs.supabase.co:5432/postgres',
   });
 
   try {

@@ -1,9 +1,10 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Menu, X, LayoutDashboard } from "lucide-react";
+import { Menu, X, LayoutDashboard, Command } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
 
 interface NavbarProps {
   onBookDemo?: () => void;
@@ -17,6 +18,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
+  const { profile, profileLoading } = useProfile();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -68,6 +70,16 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
           </div>
 
           <div className="hidden md:flex items-center gap-4 flex-shrink-0">
+            {!profileLoading && profile?.role === 'super_admin' && (
+              <Button
+                variant="outline"
+                className="border-purple-500/50 text-purple-400 hover:text-purple-300 text-sm"
+                onClick={() => router.push("/admin/interlinked")}
+              >
+                <Command className="w-4 h-4 mr-2" />
+                Command Center
+              </Button>
+            )}
             <Button
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
               onClick={() => {
@@ -119,6 +131,19 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
                 </a>
               ))}
               <div className="flex flex-col gap-2 pt-4 border-t border-white/5">
+                {!profileLoading && profile?.role === 'super_admin' && (
+                  <Button
+                    variant="outline"
+                    className="border-purple-500/50 text-purple-400 hover:text-purple-300 w-full text-sm min-h-[44px]"
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      router.push("/admin/interlinked");
+                    }}
+                  >
+                    <Command className="w-4 h-4 mr-2" />
+                    Command Center
+                  </Button>
+                )}
                 <Button
                   className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full text-sm min-h-[44px]"
                   onClick={() => {
