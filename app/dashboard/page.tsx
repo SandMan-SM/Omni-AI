@@ -11,16 +11,20 @@ import {
   ArrowRight, User, Clock, Video, Play, Pause,
   TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
   CircleDollarSign, FileEdit, MoreHorizontal, DollarSign, Lock, LogOut,
-  Menu, X
+  Menu, X, ChevronRight, Loader2, Building2, Briefcase
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { SponsorTab } from "@/components/sponsor-tab";
+import { ExecutiveInsights } from "@/components/executive-insights";
 
 function CircularProgress({ value, size = 120, strokeWidth = 10, color = "#a855f7", label = "" }: { value: number; size?: number; strokeWidth?: number; color?: string; label?: string }) {
   const radius = (size - strokeWidth) / 2;
@@ -68,6 +72,7 @@ const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: strin
   knight: { name: "Master", icon: Shield, gradient: "from-blue-500 to-cyan-400", accent: "text-blue-400", level: 1 },
   royal: { name: "Royal", icon: Crown, gradient: "from-purple-500 to-pink-500", accent: "text-purple-400", level: 2 },
   ascended: { name: "Empire", icon: Flame, gradient: "from-orange-500 to-red-500", accent: "text-orange-400", level: 3 },
+  admin: { name: "Admin", icon: Shield, gradient: "from-purple-600 to-blue-600", accent: "text-purple-400", level: 99 },
 };
 
 const recentActivity: { action: string; detail: string; time: string }[] = [];
@@ -81,97 +86,7 @@ const metrics = [
 
 type CampaignStatus = "active" | "paused" | "draft" | "completed";
 
-const defaultCampaigns = [
-  {
-    id: "camp-1",
-    name: "Youngs",
-    type: "Youngs",
-    business: "Youngs",
-    status: "draft" as CampaignStatus,
-    views: "0",
-    clicks: "0",
-    conversions: "0",
-    spend: "$0",
-    budget: "$0",
-    platform: "",
-    thumbnail: "from-purple-600 to-blue-500",
-  },
-  {
-    id: "camp-2",
-    name: "Leifson",
-    type: "Leifson",
-    business: "Leifson",
-    status: "draft" as CampaignStatus,
-    views: "0",
-    clicks: "0",
-    conversions: "0",
-    spend: "$0",
-    budget: "$0",
-    platform: "",
-    thumbnail: "from-red-600 to-orange-500",
-  },
-  {
-    id: "camp-3",
-    name: "Omni",
-    type: "Omni",
-    business: "Omni",
-    status: "draft" as CampaignStatus,
-    views: "0",
-    clicks: "0",
-    conversions: "0",
-    spend: "$0",
-    budget: "$0",
-    platform: "",
-    thumbnail: "from-cyan-500 to-blue-600",
-  },
-];
-
-const cpsCampaigns = [
-  {
-    id: "camp-cps-1",
-    name: "The Path to Possible",
-    type: "The Path to Possible",
-    business: "The Path to Possible",
-    status: "draft" as CampaignStatus,
-    views: "0",
-    clicks: "0",
-    conversions: "0",
-    spend: "$0",
-    budget: "$0",
-    platform: "",
-    thumbnail: "from-blue-600 to-cyan-500",
-  },
-  {
-    id: "camp-cps-2",
-    name: "Support That Works",
-    type: "Support That Works",
-    business: "Support That Works",
-    status: "draft" as CampaignStatus,
-    views: "0",
-    clicks: "0",
-    conversions: "0",
-    spend: "$0",
-    budget: "$0",
-    platform: "",
-    thumbnail: "from-cyan-600 to-teal-500",
-  },
-  {
-    id: "camp-cps-3",
-    name: "Beyond the Brave Face",
-    type: "Beyond the Brave Face",
-    business: "Beyond the Brave Face",
-    status: "draft" as CampaignStatus,
-    views: "0",
-    clicks: "0",
-    conversions: "0",
-    spend: "$0",
-    budget: "$0",
-    platform: "",
-    thumbnail: "from-teal-600 to-blue-600",
-  },
-];
-
-const campaigns = defaultCampaigns;
+// Campaigns are now fetched from the database
 
 const statusConfig: Record<CampaignStatus, { label: string; color: string }> = {
   active: { label: "Active", color: "bg-green-500/10 text-green-400 border-green-500/20" },
@@ -192,14 +107,16 @@ interface DemoBooking {
 
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
-  const { profile, profileLoading, isAdmin, isSponsor, tier, onboardingComplete } = useProfile();
+  const { profile, profileLoading, isAdmin, isSponsor, tier, onboardingComplete, displayName, fetchProfile } = useProfile();
   const pathname = usePathname();
   const router = useRouter();
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const tierMap: Record<number, string> = { 0: "apprentice", 1: "knight", 2: "royal", 3: "ascended" };
-  const currentTier = tierMap[tier] || "apprentice";
-  const currentTierData = tierInfo[currentTier];
+  const currentTier = isAdmin ? "admin" : (tierMap[tier] || "apprentice");
+  const currentTierData = tierInfo[currentTier] || tierInfo["apprentice"];
   const TierIcon = currentTierData.icon;
   const isVIPSponsor = profile?.sponsor_tier === 'vip';
   const isFray = user?.username?.toLowerCase() === 'fray' || user?.email === 'fray1959@gmail.com';
@@ -207,9 +124,37 @@ export default function Dashboard() {
   const frayTierName = 'VIP Sponsor';
   const cpsTierName = 'Master';
 
+  // Fetch campaigns from DB
+  const { data: campaignsData, isLoading: campaignsLoading } = useQuery({
+    queryKey: ["campaigns", profile?.id, isAdmin],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (profile?.id) params.set("profile_id", profile.id);
+      if (isAdmin) params.set("is_admin", "true");
+      const res = await fetch(`/api/campaigns?${params}`);
+      return res.json();
+    },
+    enabled: !!profile,
+  });
+
+  const allUserCampaigns = (campaignsData?.campaigns || []).map((c: any) => ({
+    id: c.id,
+    name: c.name,
+    type: c.type || "",
+    business: c.name,
+    status: c.status as CampaignStatus,
+    views: "0",
+    clicks: "0",
+    conversions: "0",
+    spend: "$0",
+    budget: c.budget || "$0",
+    platform: c.platform || "",
+    thumbnail: c.thumbnail || "from-purple-600 to-blue-500",
+  }));
+
   const filteredCampaigns = campaignFilter === "all"
-    ? (isCPS ? cpsCampaigns : campaigns)
-    : (isCPS ? cpsCampaigns : campaigns).filter(c => c.status === campaignFilter);
+    ? allUserCampaigns
+    : allUserCampaigns.filter((c: any) => c.status === campaignFilter);
 
   const { data: bookingsData } = useQuery<{ success: boolean; bookings: DemoBooking[] }>({
     queryKey: ["/api/demo-booking"],
@@ -270,7 +215,12 @@ export default function Dashboard() {
           </nav>
 
           <div className="flex items-center gap-3">
-            {isCPS ? (
+            {isAdmin ? (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/40" data-testid="badge-tier-status">
+                <Shield className="w-4 h-4 text-purple-400" />
+                <span className="text-sm font-semibold text-purple-300" data-testid="text-tier-badge">Admin</span>
+              </div>
+            ) : isCPS ? (
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg bg-blue-500/10 border border-blue-500/30`} data-testid="badge-tier-status">
                 <Shield className="w-4 h-4 text-blue-400" />
                 <span className={`text-sm text-blue-300`} data-testid="text-tier-badge">
@@ -337,7 +287,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        {!onboardingComplete && profile && !user?.username && (
+        {!onboardingComplete && profile && !isAdmin && !isCPS && !isFray && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
               className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
@@ -346,17 +296,17 @@ export default function Dashboard() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-white">You haven't finished setting up your account</p>
                 <p className="text-xs text-gray-400 mt-0.5">
-                  {!profile.name || !profile.phone
+                  {!(profile.name || profile.first_name) || !profile.phone
                     ? "Please fill out your basic info to continue."
-                    : profile.business_owner === null || (profile.business_owner && !profile.business_name)
+                    : !profile.business_name
                       ? "Please fill out your business information to continue."
-                      : "Finish activating your platforms to unlock the full experience."}
+                      : "Complete your account setup to unlock the full experience."}
                 </p>
               </div>
               <Button
                 size="sm"
                 className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                onClick={() => router.push("/join")}
+                onClick={() => setShowOnboarding(true)}
                 data-testid="button-complete-setup"
               >
                 Continue
@@ -367,11 +317,24 @@ export default function Dashboard() {
         )}
 
         <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-          <div>
-            <p className="text-gray-500 text-sm mb-1" data-testid="text-welcome">Welcome back{user?.username ? `, ${user.username}` : ''}</p>
-            <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-dashboard-heading">
-              Your Command Center
-            </h1>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-gray-500 text-sm mb-1" data-testid="text-welcome">Welcome back{displayName ? `, ${displayName}` : ''}</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-dashboard-heading">
+                Your Command Center
+              </h1>
+            </div>
+            {isAdmin && (
+              <Button
+                size="sm"
+                onClick={() => router.push("/admin")}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white text-xs flex-shrink-0"
+                data-testid="button-admin-panel"
+              >
+                <Shield className="w-3.5 h-3.5 mr-1.5" />
+                Admin Panel
+              </Button>
+            )}
           </div>
         </motion.div>
 
@@ -398,7 +361,13 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        {isSponsor && (
+        {isAdmin && (
+          <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
+            <ExecutiveInsights />
+          </motion.div>
+        )}
+
+        {!isAdmin && isSponsor && (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
             {/* Show "Activate VIP Sponsorship" card for non-Fray, non-CPS sponsors who haven't paid */}
             {!isFray && !isCPS && !profile?.sponsor_insights_paid && (
@@ -531,10 +500,10 @@ export default function Dashboard() {
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              {!isCPS && !isVIPSponsor && (
+              {!isCPS && !isVIPSponsor && !isAdmin && (
                 <CardTitle className="text-lg text-white">Current Tier</CardTitle>
               )}
-              {!isCPS && !isVIPSponsor && (
+              {!isCPS && !isVIPSponsor && !isAdmin && (
                 <Button
                   variant="outline"
                   className="border-white/20 bg-transparent text-white text-sm"
@@ -551,7 +520,28 @@ export default function Dashboard() {
               )}
             </CardHeader>
             <CardContent>
-              {isVIPSponsor ? (
+              {isAdmin ? (
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 p-[1px] flex-shrink-0">
+                    <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
+                      <Shield className="w-7 h-7 text-purple-400" />
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-xl font-bold text-purple-400 mb-1" data-testid="text-current-tier-name">Admin</h3>
+                    <p className="text-sm text-gray-500" data-testid="text-tier-status">Active</p>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="w-8 h-8 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-purple-500/50 hover:bg-purple-500/10 transition-all flex-shrink-0"
+                    onClick={() => router.push("/admin/info")}
+                    data-testid="button-admin-info"
+                  >
+                    <span className="text-sm font-semibold leading-none">i</span>
+                  </Button>
+                </div>
+              ) : isVIPSponsor ? (
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 p-[1px] flex-shrink-0">
@@ -632,7 +622,7 @@ export default function Dashboard() {
               <div className="flex items-center gap-3">
                 <CardTitle className="text-lg text-white">Campaigns</CardTitle>
                 <Badge className={`text-xs no-default-hover-elevate no-default-active-elevate ${statusConfig.active.color}`} data-testid="text-campaign-count">
-                  {campaigns.filter(c => c.status === "active").length} active
+                  {allUserCampaigns.filter((c: any) => c.status === "active").length} active
                 </Badge>
               </div>
               <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 -mb-1">
@@ -652,92 +642,73 @@ export default function Dashboard() {
             <CardContent>
               {filteredCampaigns.length > 0 ? (
                 <div className="space-y-3">
-                  {filteredCampaigns.map((campaign, i) => {
-                    const status = statusConfig[campaign.status];
+                  {filteredCampaigns.map((campaign: any, i: number) => {
+                    const status = statusConfig[campaign.status as CampaignStatus];
                     return (
-                        <div
+                        <motion.div
                           key={campaign.id}
-                          className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
+                          layout
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: i * 0.07 }}
+                          className={`flex flex-col gap-0 rounded-xl border transition-all duration-200 cursor-pointer overflow-hidden ${selectedCampaignId === campaign.id ? 'border-purple-500/40 bg-purple-500/5' : 'bg-white/[0.02] border-white/[0.04] hover:border-white/10 hover:bg-white/[0.04]'}`}
+                          onClick={() => setSelectedCampaignId(selectedCampaignId === campaign.id ? null : campaign.id)}
                           data-testid={`card-campaign-${campaign.id}`}
                         >
-                          <div className={`w-12 h-12 sm:w-12 sm:h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} flex-shrink-0 ${isCPS ? 'ring-2 ring-cyan-400 ring-offset-2 ring-offset-[#0a0a0a]' : 'p-[1px]'}`}>
+                        <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+                          <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} flex-shrink-0 p-[1px]`}>
                             <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
-                              <Video className={`w-5 h-5 ${isCPS ? 'text-cyan-400' : 'text-white/70'}`} />
+                              <Video className="w-5 h-5 text-white/70" />
                             </div>
                           </div>
 
-                              <div className="flex items-center gap-3 flex-1 min-w-0">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
-                              <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
-                                {status.label}
-                              </Badge>
-                            </div>
-                            {!isCPS && (
-                              <>
-                                <div className="hidden sm:flex items-center gap-4">
-                                  <div className="flex items-center gap-1.5">
-                                    <Eye className="w-3.5 h-3.5 text-gray-500" />
-                                    <span className="text-xs text-gray-400" data-testid={`text-campaign-views-${campaign.id}`}>{campaign.views}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <MousePointerClick className="w-3.5 h-3.5 text-gray-500" />
-                                    <span className="text-xs text-gray-400" data-testid={`text-campaign-clicks-${campaign.id}`}>{campaign.clicks}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <TrendingUp className="w-3.5 h-3.5 text-gray-500" />
-                                    <span className="text-xs text-gray-400" data-testid={`text-campaign-conversions-${campaign.id}`}>{campaign.conversions}</span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5">
-                                    <CircleDollarSign className="w-3.5 h-3.5 text-gray-500" />
-                                    <span className="text-xs text-gray-400" data-testid={`text-campaign-spend-${campaign.id}`}>{campaign.spend}</span>
-                                  </div>
-                                </div>
-                                <div className="sm:hidden">
-                                  <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-1">
-                                      <Eye className="w-3 h-3 text-gray-500" />
-                                      <span className="text-xs text-gray-400">{campaign.views}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <MousePointerClick className="w-3 h-3 text-gray-500" />
-                                      <span className="text-xs text-gray-400">{campaign.clicks}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <TrendingUp className="w-3 h-3 text-gray-500" />
-                                      <span className="text-xs text-gray-400">{campaign.conversions}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <CircleDollarSign className="w-3 h-3 text-gray-500" />
-                                      <span className="text-xs text-gray-400">{campaign.spend}</span>
-                                    </div>
-                                  </div>
-                                </div>
-                              </>
-                            )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-white truncate" data-testid={`text-campaign-name-${campaign.id}`}>{campaign.business}</p>
+                            <Badge className={`text-[10px] no-default-hover-elevate no-default-active-elevate ${status.color}`} data-testid={`badge-campaign-status-${campaign.id}`}>
+                              {status.label}
+                            </Badge>
                           </div>
 
-                          {!isCPS && (
-                            <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
-                              {campaign.status === "active" && (
-                                <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-pause-${campaign.id}`}>
-                                  <Pause className="w-4 h-4" />
-                                </Button>
-                              )}
-                              {(campaign.status === "paused" || campaign.status === "draft") && (
-                                <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-play-${campaign.id}`}>
-                                  <Play className="w-4 h-4" />
-                                </Button>
-                              )}
-                              <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-edit-${campaign.id}`}>
-                                <FileEdit className="w-4 h-4" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="text-gray-500" data-testid={`button-more-${campaign.id}`}>
-                                <MoreHorizontal className="w-4 h-4" />
-                              </Button>
-                            </div>
+                          <ChevronRight className={`w-4 h-4 flex-shrink-0 transition-all duration-200 ${selectedCampaignId === campaign.id ? 'text-purple-400 rotate-90' : 'text-gray-600'}`} />
+                        </div>
+                        <AnimatePresence>
+                          {selectedCampaignId === campaign.id && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: "auto", opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.25 }}
+                              className="overflow-hidden"
+                            >
+                              <div className="px-4 pb-4 pt-0 border-t border-white/5">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
+                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                    <Target className="w-4 h-4 text-purple-400" />
+                                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">Status</span>
+                                    <span className="text-xs font-medium text-white">{status.label}</span>
+                                  </div>
+                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                    <TrendingUp className="w-4 h-4 text-cyan-400" />
+                                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">Type</span>
+                                    <span className="text-xs font-medium text-white truncate max-w-full">{campaign.type}</span>
+                                  </div>
+                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                    <CircleDollarSign className="w-4 h-4 text-green-400" />
+                                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">Budget</span>
+                                    <span className="text-xs font-medium text-white">{campaign.budget}</span>
+                                  </div>
+                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                    <BarChart3 className="w-4 h-4 text-blue-400" />
+                                    <span className="text-[10px] text-gray-500 uppercase tracking-wide">Platform</span>
+                                    <span className="text-xs font-medium text-white">{campaign.platform || 'TBD'}</span>
+                                  </div>
+                                </div>
+                                <p className="text-xs text-gray-500 mt-3 text-center">Campaign details and analytics coming soon</p>
+                              </div>
+                            </motion.div>
                           )}
-                      </div>
+                        </AnimatePresence>
+                        </motion.div>
                     );
                   })}
                 </div>
@@ -846,12 +817,14 @@ export default function Dashboard() {
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between py-2 border-b border-white/5">
                 <span className="text-sm text-gray-400">Tier</span>
-                <span className={`text-sm font-medium ${isVIPSponsor ? 'text-amber-400' : currentTierData.accent}`} data-testid="text-account-tier">{isVIPSponsor ? 'VIP Sponsor' : currentTierData.name}</span>
+                <span className={`text-sm font-medium ${isAdmin ? 'text-purple-400' : isVIPSponsor ? 'text-amber-400' : isCPS ? 'text-blue-400' : currentTierData.accent}`} data-testid="text-account-tier">
+                  {isAdmin ? 'Admin' : isVIPSponsor ? 'VIP Sponsor' : isCPS ? 'Master' : currentTierData.name}
+                </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
                 <span className="text-sm text-gray-400">User</span>
                 <span className="text-sm text-white" data-testid="text-member-since">
-                  {user.username || "—"}
+                  {displayName || user.username || "—"}
                 </span>
               </div>
               <div className="flex items-center justify-between py-2 border-b border-white/5">
@@ -893,6 +866,230 @@ export default function Dashboard() {
           </div>
         </div>
       </footer>
+
+      {/* ── Onboarding Dialog ──────────────────────────────────────── */}
+      <OnboardingDialog
+        open={showOnboarding}
+        onClose={() => setShowOnboarding(false)}
+        profile={profile}
+        onSaved={fetchProfile}
+      />
     </div>
+  );
+}
+
+/* ── Onboarding Dialog Component ─────────────────────────────────────── */
+
+function OnboardingDialog({ open, onClose, profile, onSaved }: {
+  open: boolean;
+  onClose: () => void;
+  profile: any;
+  onSaved: () => Promise<void>;
+}) {
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    business_name: "",
+    business_niche: "",
+  });
+
+  // Pre-fill from profile when dialog opens
+  useEffect(() => {
+    if (open && profile) {
+      setForm({
+        name: profile.name || profile.first_name || "",
+        email: profile.email?.includes("@omni.local") ? "" : (profile.email || ""),
+        phone: profile.phone || "",
+        business_name: profile.business_name || "",
+        business_niche: profile.business_niche || "",
+      });
+      setErrors({});
+    }
+  }, [open, profile]);
+
+  const set = (k: string) => (v: string) => {
+    setForm(f => ({ ...f, [k]: v }));
+    setErrors(e => ({ ...e, [k]: false }));
+  };
+
+  const validate = () => {
+    const errs: Record<string, boolean> = {};
+    if (!form.name.trim()) errs.name = true;
+    if (!form.email.trim() || !form.email.includes("@")) errs.email = true;
+    if (!form.phone.trim()) errs.phone = true;
+    if (!form.business_name.trim()) errs.business_name = true;
+    if (!form.business_niche.trim()) errs.business_niche = true;
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
+  const handleSave = async () => {
+    if (!validate()) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`/api/admin/users/${profile.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          phone: form.phone,
+          business_name: form.business_name,
+          business_niche: form.business_niche,
+          onboarding_completed: true,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to save");
+      await onSaved();
+      onClose();
+    } catch {
+      // silent — toast can be added later
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const COUNTRY_CODES = [
+    { code: "+1", flag: "\u{1F1FA}\u{1F1F8}", label: "US" },
+    { code: "+1", flag: "\u{1F1E8}\u{1F1E6}", label: "CA" },
+    { code: "+44", flag: "\u{1F1EC}\u{1F1E7}", label: "UK" },
+    { code: "+61", flag: "\u{1F1E6}\u{1F1FA}", label: "AU" },
+    { code: "+52", flag: "\u{1F1F2}\u{1F1FD}", label: "MX" },
+    { code: "+91", flag: "\u{1F1EE}\u{1F1F3}", label: "IN" },
+    { code: "+49", flag: "\u{1F1E9}\u{1F1EA}", label: "DE" },
+    { code: "+33", flag: "\u{1F1EB}\u{1F1F7}", label: "FR" },
+    { code: "+81", flag: "\u{1F1EF}\u{1F1F5}", label: "JP" },
+    { code: "+86", flag: "\u{1F1E8}\u{1F1F3}", label: "CN" },
+  ];
+  const [countryCode, setCountryCode] = useState("+1");
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+
+  // Strip country code from phone for display
+  const phoneDigits = form.phone.replace(/^\+\d{1,3}\s?/, "");
+
+  const textFields = [
+    { key: "name", label: "Full Name", placeholder: "Your name", type: "text" },
+    { key: "email", label: "Email", placeholder: "you@example.com", type: "email" },
+    { key: "business_name", label: "Business Name", placeholder: "Your company name", type: "text" },
+    { key: "business_niche", label: "Industry / Niche", placeholder: "e.g. Construction, Real Estate, SaaS", type: "text" },
+  ];
+
+  return (
+    <Dialog open={open} onOpenChange={v => !v && onClose()}>
+      <DialogContent className="bg-[#0a0a0a] border-white/10 text-white w-full max-w-md mx-2 sm:mx-auto rounded-xl p-0 gap-0">
+        <DialogHeader className="px-5 pt-8 pb-3 border-b border-white/5">
+          <DialogTitle className="text-white text-base flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-600/30 to-blue-600/30 flex items-center justify-center border border-purple-500/20">
+              <User className="w-4 h-4 text-purple-400" />
+            </div>
+            Complete Your Profile
+          </DialogTitle>
+          <p className="text-[11px] text-gray-500 mt-1">All fields are required to unlock the full experience.</p>
+        </DialogHeader>
+
+        <div className="px-5 py-4 space-y-3">
+          {/* Name & Email */}
+          {textFields.slice(0, 2).map(f => (
+            <div key={f.key} className="space-y-1">
+              <Label className="text-[11px] text-gray-500 uppercase tracking-wide">{f.label} *</Label>
+              <Input
+                type={f.type}
+                value={(form as any)[f.key]}
+                onChange={e => set(f.key)(e.target.value)}
+                placeholder={f.placeholder}
+                className={`h-10 bg-white/5 border text-white placeholder:text-gray-700 focus:border-purple-500/50 text-sm ${
+                  errors[f.key] ? "border-red-500/60" : "border-white/10"
+                }`}
+              />
+              {errors[f.key] && <p className="text-[10px] text-red-400">{f.label} is required</p>}
+            </div>
+          ))}
+
+          {/* Phone with country code */}
+          <div className="space-y-1">
+            <Label className="text-[11px] text-gray-500 uppercase tracking-wide">Phone Number *</Label>
+            <div className="flex gap-0">
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setShowCountryPicker(p => !p)}
+                  className={`h-10 px-2.5 rounded-l-md border border-r-0 bg-white/5 text-sm text-white flex items-center gap-1 hover:bg-white/10 transition-colors flex-shrink-0 ${
+                    errors.phone ? "border-red-500/60" : "border-white/10"
+                  }`}
+                >
+                  <span className="text-xs">{COUNTRY_CODES.find(c => c.code === countryCode)?.flag || "\u{1F30D}"}</span>
+                  <span className="text-xs text-gray-300">{countryCode}</span>
+                  <ChevronRight className={`w-3 h-3 text-gray-500 transition-transform ${showCountryPicker ? "rotate-90" : ""}`} />
+                </button>
+                <AnimatePresence>
+                  {showCountryPicker && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -4 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
+                      className="absolute top-full mt-1 left-0 z-[100] bg-[#0a0a0a] border border-white/10 rounded-lg overflow-hidden shadow-2xl min-w-[160px] backdrop-blur-xl"
+                    >
+                      {COUNTRY_CODES.map((c, i) => (
+                        <button
+                          key={`${c.code}-${c.label}`}
+                          className="w-full text-left px-3 py-2.5 flex items-center gap-2.5 hover:bg-white/[0.08] transition-colors text-xs bg-[#0a0a0a]"
+                          onClick={() => { setCountryCode(c.code); setShowCountryPicker(false); }}
+                        >
+                          <span>{c.flag}</span>
+                          <span className="text-white">{c.label}</span>
+                          <span className="text-gray-500 ml-auto">{c.code}</span>
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+              <Input
+                type="tel"
+                value={phoneDigits}
+                onChange={e => {
+                  const digits = e.target.value.replace(/[^\d\s()-]/g, "");
+                  set("phone")(`${countryCode} ${digits}`);
+                }}
+                placeholder="555 000 0000"
+                className={`flex-1 h-10 rounded-l-none bg-white/5 border text-white placeholder:text-gray-700 focus:border-purple-500/50 text-sm ${
+                  errors.phone ? "border-red-500/60" : "border-white/10"
+                }`}
+              />
+            </div>
+            {errors.phone && <p className="text-[10px] text-red-400">Phone number is required</p>}
+          </div>
+
+          {/* Business Name & Niche */}
+          {textFields.slice(2).map(f => (
+            <div key={f.key} className="space-y-1">
+              <Label className="text-[11px] text-gray-500 uppercase tracking-wide">{f.label} *</Label>
+              <Input
+                type={f.type}
+                value={(form as any)[f.key]}
+                onChange={e => set(f.key)(e.target.value)}
+                placeholder={f.placeholder}
+                className={`h-10 bg-white/5 border text-white placeholder:text-gray-700 focus:border-purple-500/50 text-sm ${
+                  errors[f.key] ? "border-red-500/60" : "border-white/10"
+                }`}
+              />
+              {errors[f.key] && <p className="text-[10px] text-red-400">{f.label} is required</p>}
+            </div>
+          ))}
+        </div>
+
+        <div className="px-5 py-4 border-t border-white/5 flex gap-2">
+          <Button variant="outline" className="flex-1 border-white/10 text-gray-400 h-10" onClick={onClose} disabled={saving}>
+            Later
+          </Button>
+          <Button className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white h-10" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save & Continue"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }

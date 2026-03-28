@@ -177,6 +177,19 @@ export async function runDailyNewsletter(supabase: any = null) {
         );
         premiumSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
       }
+
+      // Log the send to newsletter_sends table
+      await (supabase as any).from('newsletter_sends').insert({
+        subject: content.subject,
+        intro: content.intro,
+        insights: content.insights,
+        power_move: content.power_move,
+        closing: content.closing,
+        recipients_total: 1 + premiumSent, // 1 = primary recipient
+        telegram_ok: telegramOk,
+        email_ok: emailOk,
+        sent_at: new Date().toISOString(),
+      });
     } catch (e) {
       console.error('Premium subscriber send error:', e);
     }

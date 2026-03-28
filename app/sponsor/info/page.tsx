@@ -206,9 +206,12 @@ export default function SponsorInfo() {
             </motion.div>
 
             <motion.div variants={fadeUp} className="mb-6 md:mb-8">
-              <div className="bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/20 rounded-xl md:rounded-2xl p-6 md:p-8 text-center">
-                <BarChart3 className="w-12 md:w-16 h-12 md:h-16 text-purple-400 mx-auto mb-3 md:mb-4" />
-                <p className="text-gray-400 text-sm md:text-base">(Screenshot of dashboard)</p>
+              <div className="rounded-xl md:rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl shadow-purple-900/30">
+                <img
+                  src="/dashboard-screenshot.png"
+                  alt="Omni AI Sponsor Dashboard"
+                  className="w-full h-auto block"
+                />
               </div>
             </motion.div>
 

@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from 'rea
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-auth';
 
+// ── Real DB columns (as of migration 014) ──────────────────────────────────
 export interface Profile {
   id: string;
   email: string;
@@ -9,18 +10,45 @@ export interface Profile {
   is_admin: boolean;
   is_sponsor: boolean;
   sponsor_tier: 'standard' | 'vip' | null;
+  sponsor_activated: boolean;
+  sponsor_insights_paid: boolean;
   tier: number;
-  name: string | null;
+  tier_label: string | null;
+  // Identity
+  username: string | null;
+  first_name: string | null;
+  last_name: string | null;
+  name: string | null;           // display name (synced from first_name or set directly)
   phone: string | null;
-  business_owner: boolean;
+  timezone: string | null;
+  email_verified: boolean;
+  // Business
   business_name: string | null;
   business_niche: string | null;
   business_details: string | null;
-  activated_platforms: string[];
+  // Status
   onboarding_completed: boolean;
-  sponsor_activated: boolean;
-  sponsor_insights_paid: boolean;
+  is_premium: boolean;
+  is_subscribed: boolean;
+  subscription_status: string | null;
+  // Stripe / billing
+  stripe_customer_id: string | null;
+  premium_since: string | null;
+  total_spent: number;
+  gross_revenue: number;
+  purchase_count: number;
+  last_purchase_at: string | null;
+  // CRM
+  crm_status: 'lead' | 'prospect' | 'onboarding' | 'client' | 'churned' | null;
+  lead_score: 'hot' | 'warm' | 'cold' | null;
+  satisfaction_score: number | null;
+  last_contacted: string | null;
+  crm_notes: string | null;
+  newsletter_subscribed: boolean | null;
+  // Meta
+  metadata: Record<string, unknown>;
   created_at: string;
+  updated_at: string;
 }
 
 interface ProfileContextType {
@@ -31,6 +59,7 @@ interface ProfileContextType {
   isVIPSponsor: boolean;
   tier: number;
   onboardingComplete: boolean;
+  displayName: string;
   fetchProfile: () => Promise<void>;
   upsertProfile: (data: Partial<Profile>) => Promise<{ error: Error | null }>;
   fetchAllUsers: () => Promise<{ users: Profile[]; error: Error | null }>;
@@ -38,6 +67,18 @@ interface ProfileContextType {
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
+
+function normaliseProfile(data: any): Profile {
+  return {
+    ...data,
+    name: data.name || (data.first_name ? `${data.first_name} ${data.last_name || ''}`.trim() : null),
+    is_sponsor: data.is_sponsor ?? false,
+    tier: data.tier ?? 0,
+    onboarding_completed: data.onboarding_completed ?? false,
+    crm_status: data.crm_status ?? 'lead',
+    lead_score: data.lead_score ?? 'cold',
+  };
+}
 
 export function ProfileProvider({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
@@ -53,83 +94,38 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const supabase = await getSupabase();
-
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .single();
 
-      if (error && (error.code === '42P01' || error.code === 'PGRST205' || (error.message?.includes('relation') && error.message?.includes('does not exist')) || error.message?.includes('Could not find the table'))) {
-        console.warn('Profiles table does not exist yet. It will be auto-created on first profile access.');
-        setProfileLoading(false);
-        return;
-      }
 
       if (error && error.code === 'PGRST116') {
+        // Profile not found — create minimal one
         const isFray = user.email === 'fray1959@gmail.com' || user.username?.toLowerCase() === 'fray';
-        const newProfile = {
+        const isMafi = user.email === 'sitanim6@gmail.com' || user.email === 'sitanim8@gmail.com' || user.username === '$Mafi';
+
+        const newProfile: Partial<Profile> = {
           id: user.id,
           email: user.email || '',
-          role: (user.email === 'sitanim6@gmail.com' || isFray) ? 'sponsor' : 'user',
-          is_admin: user.email === 'sitanim6@gmail.com' ? true : false,
-          is_sponsor: (user.email === 'sitanim6@gmail.com' || isFray) ? true : false,
-          sponsor_tier: (user.email === 'sitanim6@gmail.com' || isFray) ? 'vip' : null,
-          tier: (user.email === 'sitanim6@gmail.com' || isFray) ? 3 : 0,
-          name: null,
-          phone: null,
-          business_owner: false,
-          business_name: null,
-          business_niche: null,
-          business_details: null,
-          activated_platforms: [],
-          onboarding_completed: false,
-          sponsor_activated: (user.email === 'sitanim6@gmail.com' || isFray) ? true : false,
-          sponsor_insights_paid: (user.email === 'sitanim6@gmail.com' || isFray) ? true : false,
+          role: isMafi ? 'admin' : isFray ? 'sponsor' : 'user',
+          is_admin: isMafi,
+          is_sponsor: isFray || isMafi,
+          sponsor_tier: isFray ? 'vip' : null,
+          tier: isMafi ? 99 : isFray ? 3 : 0,
+          crm_status: (isFray || isMafi) ? 'client' : 'lead',
+          lead_score: (isFray || isMafi) ? 'hot' : 'cold',
+          sponsor_activated: isFray,
+          sponsor_insights_paid: isFray,
         };
 
-        const { data: created, error: createError } = await supabase
-          .from('profiles')
-          .insert(newProfile)
-          .select()
-          .single();
-
-        if (createError) {
-          console.error('Failed to create profile:', createError);
-        } else {
-          setProfile(created);
-        }
+        const { data: created } = await supabase.from('profiles').insert(newProfile).select().single();
+        if (created) setProfile(normaliseProfile(created));
       } else if (error) {
-        console.error('Failed to fetch profile:', error);
+        console.error('Profile fetch error:', error);
       } else {
-        // For Fray, ensure sponsor fields and email are correct
-        const isFray = user.email === 'fray1959@gmail.com' || user.username?.toLowerCase() === 'fray';
-        if (isFray && (data.email !== 'fray1959@gmail.com' || data.sponsor_tier !== 'vip')) {
-          const supabase = await getSupabase();
-          await supabase
-            .from('profiles')
-            .update({
-              email: 'fray1959@gmail.com',
-              is_sponsor: true,
-              role: 'sponsor',
-              sponsor_tier: 'vip',
-              tier: 3,
-              sponsor_activated: true,
-              sponsor_insights_paid: true
-            })
-            .eq('id', user.id);
-          // Refetch profile after update
-          const { data: updated } = await supabase.from('profiles').select().eq('id', user.id).single();
-          if (updated) {
-            setProfile(updated);
-          }
-        } else {
-          setProfile({
-            ...data,
-            is_sponsor: data.is_sponsor ?? false,
-            tier: data.tier ?? 0,
-          });
-        }
+        setProfile(normaliseProfile(data));
       }
     } catch (err) {
       console.error('Profile fetch error:', err);
@@ -139,34 +135,50 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   useEffect(() => {
-    if (!authLoading) {
-      fetchProfile();
-    }
+    if (!authLoading) fetchProfile();
   }, [user, authLoading, fetchProfile]);
+
+  // ── Live sync: re-fetch when this user's profile row changes in DB ─────────
+  // Covers admin edits from the admin panel flowing through to the dashboard.
+  useEffect(() => {
+    if (!user) return;
+
+    const supabase = getSupabase();
+
+    // Supabase real-time: listen for UPDATE on this user's profile row
+    const channel = supabase
+      .channel(`profile-sync-${user.id}`)
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+        (payload) => {
+          if (payload.new) setProfile(normaliseProfile(payload.new as any));
+        }
+      )
+      .subscribe();
+
+    // Tab-focus re-fetch: catches edits made while the user was on another tab
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') fetchProfile();
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+      supabase.removeChannel(channel);
+    };
+  }, [user, fetchProfile]);
 
   const upsertProfile = async (data: Partial<Profile>) => {
     if (!user) return { error: new Error('Not authenticated') };
-
     try {
       const supabase = await getSupabase();
-      const upsertData = {
-        id: user.id,
-        email: user.email || '',
-        ...data,
-      };
-
       const { data: result, error } = await supabase
         .from('profiles')
-        .upsert(upsertData, { onConflict: 'id' })
+        .upsert({ id: user.id, email: user.email || '', ...data }, { onConflict: 'id' })
         .select()
         .single();
-
-      if (!error && result) {
-        setProfile(result);
-      } else if (!error) {
-        setProfile(prev => prev ? { ...prev, ...data } : null);
-      }
-
+      if (!error && result) setProfile(normaliseProfile(result));
       return { error: error as Error | null };
     } catch (err) {
       return { error: err as Error };
@@ -180,8 +192,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
-
-      return { users: (data || []) as Profile[], error: error as Error | null };
+      return { users: (data || []).map(normaliseProfile) as Profile[], error: error as Error | null };
     } catch (err) {
       return { users: [], error: err as Error };
     }
@@ -191,27 +202,10 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     try {
       const supabase = await getSupabase();
       const updates: Record<string, unknown> = { role };
-      
-      // Also update is_admin and is_sponsor based on role
-      if (role === 'admin') {
-        updates.is_admin = true;
-        updates.is_sponsor = true;
-        updates.sponsor_tier = null;
-      } else if (role === 'sponsor') {
-        updates.is_admin = false;
-        updates.is_sponsor = true;
-        updates.sponsor_tier = sponsorTier || 'standard';
-      } else {
-        updates.is_admin = false;
-        updates.is_sponsor = false;
-        updates.sponsor_tier = null;
-      }
-
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', userId);
-
+      if (role === 'admin') { updates.is_admin = true; updates.is_sponsor = true; updates.tier = 99; }
+      else if (role === 'sponsor') { updates.is_admin = false; updates.is_sponsor = true; updates.sponsor_tier = sponsorTier || 'standard'; }
+      else { updates.is_admin = false; updates.is_sponsor = false; updates.sponsor_tier = null; }
+      const { error } = await supabase.from('profiles').update(updates).eq('id', userId);
       return { error: error as Error | null };
     } catch (err) {
       return { error: err as Error };
@@ -220,23 +214,16 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
   const isAdmin = profile?.role === 'admin' || profile?.is_admin === true || user?.is_admin === true;
   const isSponsor = profile?.role === 'sponsor' || profile?.is_sponsor === true || user?.is_sponsor === true;
-  const isVIPSponsor = profile?.sponsor_tier === 'vip' || String(profile?.sponsor_tier) === 'VIP Sponsor' || user?.sponsor_tier === 'VIP Sponsor';
+  const isVIPSponsor = profile?.sponsor_tier === 'vip' || user?.sponsor_tier === 'VIP Sponsor';
   const tier = Number(profile?.tier ?? user?.tier ?? 0);
   const onboardingComplete = profile?.onboarding_completed ?? false;
+  const displayName = profile?.name || profile?.username || profile?.first_name || user?.username || '';
 
   return (
     <ProfileContext.Provider value={{
-      profile,
-      profileLoading,
-      isAdmin,
-      isSponsor,
-      isVIPSponsor,
-      tier,
-      onboardingComplete,
-      fetchProfile,
-      upsertProfile,
-      fetchAllUsers,
-      updateUserRole,
+      profile, profileLoading, isAdmin, isSponsor, isVIPSponsor,
+      tier, onboardingComplete, displayName,
+      fetchProfile, upsertProfile, fetchAllUsers, updateUserRole,
     }}>
       {children}
     </ProfileContext.Provider>
@@ -245,8 +232,6 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
 export function useProfile() {
   const context = useContext(ProfileContext);
-  if (context === undefined) {
-    throw new Error('useProfile must be used within a ProfileProvider');
-  }
+  if (context === undefined) throw new Error('useProfile must be used within a ProfileProvider');
   return context;
 }
