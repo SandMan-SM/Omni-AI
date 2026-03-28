@@ -101,8 +101,9 @@ function Toggle({ label, checked, onToggle }: { label: string; checked: boolean;
           className="rounded-full bg-white shadow"
           style={{
             position: 'absolute',
-            top: 3,
-            left: on ? 20 : 3,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            left: on ? 21 : 3,
             width: 16,
             height: 16,
             transition: 'left 0.25s ease',
