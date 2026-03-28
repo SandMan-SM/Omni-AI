@@ -345,7 +345,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
       <DialogContent
-        className="bg-[#0a0a0a] border-white/10 text-white w-full max-w-xl max-h-[96vh] sm:max-h-[92vh] flex flex-col p-0 gap-0 mx-2 sm:mx-auto rounded-xl [&>button:last-child]:hidden"
+        className="!fixed !left-[50%] !top-[50%] !translate-x-[-50%] !translate-y-[-50%] !flex !flex-col !grid-cols-none bg-[#0a0a0a] border-white/10 text-white w-[calc(100%-1rem)] !max-w-xl !max-h-[85vh] !p-0 !gap-0 rounded-xl overflow-hidden [&>button:last-child]:hidden"
         onOpenAutoFocus={e => e.preventDefault()}
         onPointerDownOutside={e => e.preventDefault()}
         onInteractOutside={e => e.preventDefault()}
@@ -545,7 +545,12 @@ function AddUserDialog({ open, onClose, onSaved }: { open: boolean; onClose: () 
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="bg-[#0a0a0a] border-white/10 text-white max-w-md">
+      <DialogContent
+        className="!fixed !left-[50%] !top-[50%] !translate-x-[-50%] !translate-y-[-50%] bg-[#0a0a0a] border-white/10 text-white w-[calc(100%-1rem)] !max-w-md !max-h-[85vh] overflow-y-auto rounded-xl [&>button:last-child]:hidden"
+        onOpenAutoFocus={e => e.preventDefault()}
+        onPointerDownOutside={e => e.preventDefault()}
+        onInteractOutside={e => e.preventDefault()}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-white text-base">
             <Plus className="w-4 h-4 text-purple-400" /> Add New User
