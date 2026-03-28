@@ -235,33 +235,44 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [tab, setTab] = useState<"profile" | "account" | "crm" | "activity">("profile");
 
-  const [form, setForm] = useState({
+  const buildForm = (p: Profile) => ({
     // Identity
-    name: u.name || u.first_name || "",
-    first_name: u.first_name || "",
-    last_name: u.last_name || "",
-    email: u.email || "",
-    phone: u.phone || "",
-    timezone: u.timezone || "UTC",
+    name: p.name || p.first_name || "",
+    first_name: p.first_name || "",
+    last_name: p.last_name || "",
+    email: p.email || "",
+    phone: p.phone || "",
+    timezone: p.timezone || "UTC",
     // Business
-    business_name: u.business_name || "",
-    business_niche: u.business_niche || "",
-    business_details: u.business_details || "",
+    business_name: p.business_name || "",
+    business_niche: p.business_niche || "",
+    business_details: p.business_details || "",
     // Account
-    role: u.role || "user",
-    tier: String(u.tier ?? 0),
-    is_premium: u.is_premium ?? false,
-    is_subscribed: u.is_subscribed ?? false,
-    subscription_status: u.subscription_status || "none",
-    newsletter_subscribed: u.newsletter_subscribed ?? false,
-    sponsor_activated: u.sponsor_activated ?? false,
-    sponsor_insights_paid: u.sponsor_insights_paid ?? false,
+    role: p.role || "user",
+    tier: String(p.tier ?? 0),
+    is_premium: p.is_premium ?? false,
+    is_subscribed: p.is_subscribed ?? false,
+    subscription_status: p.subscription_status || "none",
+    newsletter_subscribed: p.newsletter_subscribed ?? false,
+    sponsor_activated: p.sponsor_activated ?? false,
+    sponsor_insights_paid: p.sponsor_insights_paid ?? false,
     // CRM
-    crm_status: u.crm_status || "lead",
-    lead_score: u.lead_score || "cold",
-    satisfaction_score: String(u.satisfaction_score ?? ""),
-    crm_notes: u.crm_notes || "",
+    crm_status: p.crm_status || "lead",
+    lead_score: p.lead_score || "cold",
+    satisfaction_score: String(p.satisfaction_score ?? ""),
+    crm_notes: p.crm_notes || "",
   });
+
+  const [form, setForm] = useState(buildForm(u));
+
+  // Re-initialize form when a different user is selected or dialog opens
+  useEffect(() => {
+    if (open) {
+      setForm(buildForm(u));
+      setTab("profile");
+      setConfirmDelete(false);
+    }
+  }, [open, u.id]);
 
   const set = (k: string) => (v: string | boolean) => setForm(prev => ({ ...prev, [k]: v }));
   const toggle = (k: string) => () => setForm(prev => ({ ...prev, [k]: !(prev as any)[k] }));
@@ -333,7 +344,12 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
-      <DialogContent className="bg-[#0a0a0a] border-white/10 text-white w-full max-w-xl max-h-[96vh] sm:max-h-[92vh] flex flex-col p-0 gap-0 mx-2 sm:mx-auto rounded-xl">
+      <DialogContent
+        className="bg-[#0a0a0a] border-white/10 text-white w-full max-w-xl max-h-[96vh] sm:max-h-[92vh] flex flex-col p-0 gap-0 mx-2 sm:mx-auto rounded-xl [&>button:last-child]:hidden"
+        onOpenAutoFocus={e => e.preventDefault()}
+        onPointerDownOutside={e => e.preventDefault()}
+        onInteractOutside={e => e.preventDefault()}
+      >
         {/* Header */}
         <DialogHeader className="px-5 pt-5 pb-3 border-b border-white/5 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-white text-base">
