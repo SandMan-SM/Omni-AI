@@ -397,10 +397,10 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
     : needsFollowUp;
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {stats.map(s => {
           const Icon = s.icon;
           return (
@@ -487,7 +487,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
       )}
 
       {/* List */}
-      <div className="space-y-2">
+      <div className="space-y-3">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeList}
@@ -495,7 +495,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -8 }}
             transition={{ duration: 0.2 }}
-            className="space-y-2"
+            className="space-y-3"
           >
             {currentList.length === 0 ? (
               <EmptyState label={

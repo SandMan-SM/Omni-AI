@@ -252,7 +252,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   return (
     <div className="space-y-6 pt-1">
       {/* Stats row */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {[
           { label: "Total Sends", value: sends.length, icon: Send, color: "text-purple-400", bg: "bg-purple-500/10" },
           { label: "Subscribers", value: activeSubs, icon: Users, color: "text-green-400", bg: "bg-green-500/10" },
@@ -378,7 +378,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             No newsletters sent yet. Sends will appear here automatically.
           </div>
         ) : (
-          <div className="space-y-2">
+          <div className="space-y-3">
             {sends.map(s => <SendCard key={s.id} send={s} />)}
           </div>
         )}

@@ -131,7 +131,7 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3">
+      <div className="grid grid-cols-3 gap-3 sm:gap-4">
         {[
           { label: "Total", value: totalCampaigns, color: "text-purple-400", bg: "bg-purple-500/10" },
           { label: "Active", value: activeCampaigns, color: "text-green-400", bg: "bg-green-500/10" },

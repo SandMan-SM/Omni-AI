@@ -721,7 +721,7 @@ export default function Admin() {
           {/* ── Users ────────────────────────────────────────────────── */}
           <TabsContent value="users" className="space-y-6 mt-0">
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {[
                 { label: "Total Users", value: users.length, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },
                 { label: "Active Clients", value: clientCount, icon: Crown, color: "text-green-400", bg: "bg-green-500/10" },
@@ -767,7 +767,7 @@ export default function Admin() {
                 ) : filteredUsers.length === 0 ? (
                   <p className="text-gray-500 text-sm text-center py-10">{search ? "No results." : "No users yet."}</p>
                 ) : (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {filteredUsers.map(u => <UserRow key={u.id} u={u} onEdit={setEditingUser} />)}
                   </div>
                 )}

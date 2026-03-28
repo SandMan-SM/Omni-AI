@@ -104,7 +104,7 @@ export function SystemMonitor() {
     : "—";
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {/* Overall status banner */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -142,7 +142,7 @@ export function SystemMonitor() {
       </AnimatePresence>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: "Uptime",   value: uptimeStr,                  icon: Clock,     color: "text-blue-400",   bg: "bg-blue-500/10"   },
           { label: "Checks",   value: `${Object.keys(health?.checks || {}).length}`,  icon: Activity,  color: "text-purple-400", bg: "bg-purple-500/10" },
