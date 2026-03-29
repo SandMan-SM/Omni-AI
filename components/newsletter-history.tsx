@@ -295,7 +295,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               }}
               onFocus={() => setShowSuggestions(true)}
               placeholder="Filter by business…"
-              className="pl-6 pr-6 h-7 text-[11px] bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30 rounded-md"
+              className="pl-8 pr-6 h-7 text-[11px] bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30 rounded-md"
             />
             {(selectedProfile || bizSearch) && (
               <button
