@@ -140,15 +140,15 @@ function SendCard({ send }: { send: NewsletterSend }) {
 }
 
 function SubscriberRow({ sub }: { sub: Subscriber }) {
-  const displayLabel = sub.business_name || sub.first_name || sub.email;
-  const sublabel = sub.business_name ? (sub.first_name ? `${sub.first_name} · ${sub.email}` : sub.email) : sub.email;
+  const displayName = sub.first_name || sub.email;
+  const sublabel = [sub.email, sub.business_name].filter(Boolean).join(" · ");
   return (
     <div className="flex items-center gap-3 py-2.5 border-b border-white/[0.05] last:border-0">
       <div className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-xs text-gray-400 font-medium flex-shrink-0">
-        {displayLabel[0].toUpperCase()}
+        {displayName[0].toUpperCase()}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm text-white truncate">{displayLabel}</p>
+        <p className="text-sm text-white truncate">{displayName}</p>
         <p className="text-[11px] text-gray-500 truncate">{sublabel}</p>
       </div>
       <div className="flex items-center gap-1.5 flex-shrink-0">
