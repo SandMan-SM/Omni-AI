@@ -622,8 +622,8 @@ function UserRow({ u, onEdit }: { u: Profile; onEdit: (u: Profile) => void }) {
         <div className="flex items-center gap-1.5 flex-wrap">
           <span className="text-sm font-medium text-white">{displayName}</span>
           {u.username && <span className="text-xs text-gray-600">@{u.username}</span>}
-          <Badge className={`text-[10px] border ${roleColors[u.role] || roleColors.user}`}>{u.role}</Badge>
-          <Badge className="text-[10px] bg-white/5 text-gray-500 border-white/10">{tierLabel}</Badge>
+          <Badge className={`text-[10px] border capitalize ${roleColors[u.role] || roleColors.user}`}>{u.role}</Badge>
+          {u.tier !== 99 && <Badge className="text-[10px] bg-white/5 text-gray-500 border-white/10">{tierLabel}</Badge>}
           {u.crm_status === "client" && <Badge className="text-[10px] bg-green-500/10 text-green-400 border-green-500/20">Client</Badge>}
           {u.lead_score && u.crm_status !== "client" && (
             <Badge className={`text-[10px] border ${leadColors[u.lead_score] || ""} hidden sm:inline-flex`}>{u.lead_score}</Badge>
