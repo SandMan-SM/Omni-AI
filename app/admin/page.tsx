@@ -352,27 +352,28 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
         onInteractOutside={e => e.preventDefault()}
       >
         {/* Header */}
-        <DialogHeader className="px-6 pt-14 pb-4 border-b border-white/5 flex-shrink-0">
-          <DialogTitle className="flex items-center gap-2 text-white text-base">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600/50 to-blue-600/50 flex items-center justify-center text-sm font-bold">
-              {(u.name || u.email || "?")[0].toUpperCase()}
-            </div>
-            <div>
-              <p className="leading-tight">{u.name || u.email || "User"}</p>
-              <p className="text-[11px] text-gray-500 font-normal">{u.username ? `@${u.username}` : u.email}</p>
-            </div>
-          </DialogTitle>
+        <div className="flex-shrink-0 border-b border-white/5">
+          <div style={{ height: 24 }} />
+          <DialogHeader className="px-6 pb-4">
+            <DialogTitle className="flex items-center gap-3 text-white text-base">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600/50 to-blue-600/50 flex items-center justify-center text-sm font-bold flex-shrink-0">
+                {(u.name || u.email || "?")[0].toUpperCase()}
+              </div>
+              <span className="leading-tight">{u.name || u.email || "User"}</span>
+              <span className="text-[12px] text-gray-500 font-normal">{u.username ? `@${u.username}` : u.email}</span>
+            </DialogTitle>
 
-          {/* Inner tab nav */}
-          <div className="flex gap-0.5 mt-3 overflow-x-auto">
-            {TABS.map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs capitalize transition-all whitespace-nowrap flex-shrink-0 ${tab === t ? 'bg-white/10 text-white font-medium' : 'text-gray-500 hover:text-gray-300'}`}>
-                {t}
-              </button>
-            ))}
-          </div>
-        </DialogHeader>
+            {/* Inner tab nav */}
+            <div className="flex gap-0.5 mt-3 overflow-x-auto">
+              {TABS.map(t => (
+                <button key={t} onClick={() => setTab(t)}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-md text-xs capitalize transition-all whitespace-nowrap flex-shrink-0 ${tab === t ? 'bg-white/10 text-white font-medium' : 'text-gray-500 hover:text-gray-300'}`}>
+                  {t}
+                </button>
+              ))}
+            </div>
+          </DialogHeader>
+        </div>
 
         {/* Scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
