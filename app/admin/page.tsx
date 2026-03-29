@@ -352,7 +352,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
         onInteractOutside={e => e.preventDefault()}
       >
         {/* Header */}
-        <DialogHeader className="px-5 pt-7 pb-3 border-b border-white/5 flex-shrink-0">
+        <DialogHeader className="px-6 pt-10 pb-4 border-b border-white/5 flex-shrink-0">
           <DialogTitle className="flex items-center gap-2 text-white text-base">
             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-600/50 to-blue-600/50 flex items-center justify-center text-sm font-bold">
               {(u.name || u.email || "?")[0].toUpperCase()}
