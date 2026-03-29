@@ -143,7 +143,7 @@ function SubscriberRow({ sub }: { sub: Subscriber }) {
   const displayName = sub.first_name || sub.email;
   const sublabel = [sub.email, sub.business_name].filter(Boolean).join(" · ");
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b border-white/[0.05] last:border-0">
+    <div className="flex items-center gap-3 py-4 border-b border-white/[0.05] last:border-0">
       <div className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-xs text-gray-400 font-medium flex-shrink-0">
         {displayName[0].toUpperCase()}
       </div>
@@ -410,7 +410,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         )}
 
         <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-3">
+          <CardContent className="px-4 py-2">
             {loading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
