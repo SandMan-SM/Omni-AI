@@ -724,19 +724,19 @@ export default function Admin() {
 
         <Tabs defaultValue="users" className="space-y-6">
           <TabsList className="bg-white/5 border border-white/10 p-1 h-auto w-full flex flex-row overflow-x-auto">
-            <TabsTrigger value="users" className="flex-1 min-w-0 data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
+            <TabsTrigger value="users" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
               <UserCog className="w-3.5 h-3.5 flex-shrink-0" /> Users
             </TabsTrigger>
-            <TabsTrigger value="crm" className="flex-1 min-w-0 data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
+            <TabsTrigger value="crm" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
               <Target className="w-3.5 h-3.5 flex-shrink-0" /> CRM
             </TabsTrigger>
-            <TabsTrigger value="campaigns" className="flex-1 min-w-0 data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
+            <TabsTrigger value="campaigns" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
               <Briefcase className="w-3.5 h-3.5 flex-shrink-0" /> Campaigns
             </TabsTrigger>
-            <TabsTrigger value="newsletter" className="flex-1 min-w-0 data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
+            <TabsTrigger value="newsletter" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
               <Mail className="w-3.5 h-3.5 flex-shrink-0" /> Newsletter
             </TabsTrigger>
-            <TabsTrigger value="system" className="flex-1 min-w-0 data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
+            <TabsTrigger value="system" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
               <Activity className="w-3.5 h-3.5 flex-shrink-0" /> System
             </TabsTrigger>
           </TabsList>
