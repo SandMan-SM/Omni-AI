@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
   Zap, Shield, Crown, Flame, Calendar, Mail,
-  ArrowRight, User, Clock, Video,
+  ArrowRight, User, Clock, Video, GraduationCap,
   TrendingUp, Target, Bot, BarChart3, Settings,
   CircleDollarSign, LogOut,
   Menu, X, ChevronRight, Loader2,
@@ -58,6 +58,7 @@ interface DemoBooking {
   email: string;
   date: string;
   time: string;
+  type: 'demo' | 'training';
   createdAt: string;
 }
 
@@ -120,7 +121,7 @@ export default function Dashboard() {
     ? allUserCampaigns
     : allUserCampaigns.filter((c: any) => c.status === campaignFilter);
 
-  const { data: bookingsData } = useQuery<{ success: boolean; bookings: DemoBooking[] }>({
+  const { data: bookingsData } = useQuery<{ bookings: DemoBooking[] }>({
     queryKey: ["/api/demo-booking"],
     enabled: !!user,
   });
@@ -722,18 +723,30 @@ export default function Dashboard() {
               <CardContent>
                 {bookings.length > 0 ? (
                   <div className="space-y-4">
-                    {bookings.slice(0, 4).map((booking, i) => (
-                      <div key={booking.id} className="flex items-start gap-3" data-testid={`booking-item-${i}`}>
-                        <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                          <Calendar className="w-4 h-4 text-purple-400" />
+                    {bookings.slice(0, 4).map((booking, i) => {
+                      const isTraining = booking.type === 'training';
+                      return (
+                        <div key={booking.id} className="flex items-start gap-3" data-testid={`booking-item-${i}`}>
+                          <div className={`w-10 h-10 rounded-lg ${isTraining ? "bg-blue-500/10" : "bg-purple-500/10"} flex items-center justify-center flex-shrink-0`}>
+                            {isTraining ? (
+                              <GraduationCap className="w-4 h-4 text-blue-400" />
+                            ) : (
+                              <Calendar className="w-4 h-4 text-purple-400" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-white" data-testid={`text-booking-name-${i}`}>{booking.name}</p>
+                            <p className="text-xs text-gray-500" data-testid={`text-booking-date-${i}`}>
+                              {booking.date} at {booking.time}
+                              <span className={`ml-2 text-[10px] ${isTraining ? "text-blue-400" : "text-purple-400"}`}>
+                                {isTraining ? "Training" : "Demo"}
+                              </span>
+                            </p>
+                          </div>
+                          <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0 max-w-[100px] truncate" data-testid={`text-booking-email-${i}`}>{booking.email}</span>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white" data-testid={`text-booking-name-${i}`}>{booking.name}</p>
-                          <p className="text-xs text-gray-500" data-testid={`text-booking-date-${i}`}>{booking.date} at {booking.time}</p>
-                        </div>
-                        <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0 max-w-[100px] truncate" data-testid={`text-booking-email-${i}`}>{booking.email}</span>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ) : (
                   <div className="text-center py-6" data-testid="text-no-bookings">

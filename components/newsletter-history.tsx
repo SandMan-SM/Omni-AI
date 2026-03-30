@@ -121,18 +121,6 @@ function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject }: { news
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
-              {href && (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                  className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
-                  title="View newsletter page"
-                >
-                  <Eye className="w-4 h-4 text-gray-400 hover:text-white transition-colors" />
-                </a>
-              )}
               <Badge className={`text-[10px] px-2.5 py-0.5 border rounded-md ${
                 isPremium
                   ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
@@ -143,6 +131,20 @@ function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject }: { news
               <Badge className="text-[10px] px-2.5 py-0.5 border bg-green-500/15 text-green-400 border-green-500/20 rounded-md">
                 Sent
               </Badge>
+              {href ? (
+                <a
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={e => e.stopPropagation()}
+                  className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
+                  title="View newsletter page"
+                >
+                  <Eye className="w-4 h-4 text-gray-400 hover:text-white transition-colors" />
+                </a>
+              ) : (
+                <span className="p-1.5 w-7" />
+              )}
             </div>
           </div>
         </CardContent>
@@ -175,6 +177,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   // Import
   const [importing, setImporting] = useState(false);
   const [importResult, setImportResult] = useState<{ added: number; skipped: number } | null>(null);
+  const [showImportMenu, setShowImportMenu] = useState(false);
 
   // Import users from Users tab
   const [showImportUsers, setShowImportUsers] = useState(false);
@@ -711,41 +714,56 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             </Button>
             <Button
               size="sm"
-              onClick={() => { setShowImportUsers(true); setSelectedUserIds(new Set()); setImportUsersSearch(""); }}
-              className="h-7 px-2.5 text-[11px] bg-blue-600 hover:bg-blue-700 text-white gap-1"
-            >
-              <UserPlus className="w-3 h-3" /> Import Users
-            </Button>
-            <Button
-              size="sm"
               variant="outline"
               onClick={handleExport}
               className="h-7 px-2 text-[11px] border-white/10 text-gray-400 hover:text-white gap-1"
             >
               <Download className="w-3 h-3" /> Export
             </Button>
-            <label className="cursor-pointer">
+            <div className="relative">
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 px-2 text-[11px] border-white/10 text-gray-400 hover:text-white gap-1 pointer-events-none"
-                asChild
+                onClick={() => setShowImportMenu(!showImportMenu)}
+                className="h-7 px-2 text-[11px] border-white/10 text-gray-400 hover:text-white gap-1"
               >
-                <span>
-                  {importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />} Import
-                </span>
+                {importing ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />} Import
               </Button>
-              <input
-                type="file"
-                accept=".csv"
-                className="hidden"
-                onChange={e => {
-                  const file = e.target.files?.[0];
-                  if (file) handleImport(file);
-                  e.target.value = "";
-                }}
-              />
-            </label>
+              {showImportMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowImportMenu(false)} />
+                  <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden">
+                    <label className="flex items-center gap-2 px-3 py-2.5 text-[12px] text-gray-300 hover:bg-white/[0.06] cursor-pointer transition-colors">
+                      <Upload className="w-3.5 h-3.5 text-gray-400" />
+                      Import from Computer
+                      <input
+                        type="file"
+                        accept=".csv"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImport(file);
+                          e.target.value = "";
+                          setShowImportMenu(false);
+                        }}
+                      />
+                    </label>
+                    <button
+                      onClick={() => {
+                        setShowImportMenu(false);
+                        setShowImportUsers(true);
+                        setSelectedUserIds(new Set());
+                        setImportUsersSearch("");
+                      }}
+                      className="flex items-center gap-2 px-3 py-2.5 text-[12px] text-gray-300 hover:bg-white/[0.06] w-full text-left transition-colors"
+                    >
+                      <UserPlus className="w-3.5 h-3.5 text-gray-400" />
+                      Import from Users
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
           </div>
         </div>
 
