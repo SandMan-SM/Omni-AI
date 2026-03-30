@@ -34,59 +34,39 @@ export function EcosystemSection() {
           </p>
         </motion.div>
 
-        <div className="relative">
-          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8">
-            {flowSteps.map((step, index) => {
-              const Icon = step.icon;
-              return (
+        <div className="grid grid-cols-5 gap-6 sm:gap-8 md:gap-10 lg:gap-12 max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
+          {flowSteps.map((step, index) => {
+            const Icon = step.icon;
+            return (
+              <motion.div
+                key={step.label}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5, delay: index * 0.1 }}
+                viewport={{ once: true }}
+                className="flex flex-col items-center"
+              >
                 <motion.div
-                  key={step.label}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="flex items-center gap-4 md:gap-8"
+                  whileHover={{ scale: 1.05 }}
+                  className="relative w-full aspect-square"
                 >
-                  <motion.div
-                    whileHover={{ scale: 1.05 }}
-                    className="relative group"
+                  <div
+                    className={`w-full h-full rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
                   >
-                    <div
-                      className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-md bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
-                    >
-                      <Icon className="w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 text-white" />
-                    </div>
-                    <motion.div
-                      animate={{ opacity: [0.2, 0.45, 0.2] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className={`absolute inset-0 rounded-md bg-gradient-to-br ${step.color} blur-xl`}
-                    />
-                    <p className="text-center text-gray-300 mt-3 font-medium">
-                      {step.label}
-                    </p>
-                  </motion.div>
-
-                  {index < flowSteps.length - 1 && (
-                    <motion.div
-                      initial={{ scaleX: 0 }}
-                      whileInView={{ scaleX: 1 }}
-                      transition={{ duration: 0.4, delay: index * 0.1 + 0.2 }}
-                      viewport={{ once: true }}
-                      className="hidden md:block w-12 h-0.5 bg-gradient-to-r from-white/20 to-white/5"
-                    />
-                  )}
+                    <Icon className="w-1/2 h-1/2 text-white" />
+                  </div>
+                  <motion.div
+                    animate={{ opacity: [0.2, 0.45, 0.2] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                    className={`absolute inset-0 rounded-xl bg-gradient-to-br ${step.color} blur-xl`}
+                  />
                 </motion.div>
-              );
-            })}
-          </div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
-            viewport={{ once: true }}
-            className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[200px] border border-dashed border-white/10 rounded-full -z-10"
-          />
+                <p className="text-center text-gray-300 mt-3 font-medium text-sm sm:text-base">
+                  {step.label}
+                </p>
+              </motion.div>
+            );
+          })}
         </div>
 
         <motion.div
