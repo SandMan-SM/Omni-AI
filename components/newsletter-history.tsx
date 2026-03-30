@@ -88,62 +88,85 @@ function timeAgo(dateStr: string) {
   return "Just now";
 }
 
-function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject }: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string }) {
+function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status = 'sent' }: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string; status?: 'draft' | 'sent' }) {
   const subject = postSubject || newsletter?.subject || send?.subject || "";
   const sentAt = newsletter?.sent_at || send?.sent_at || "";
   const href = slug ? `/newsletter/${slug}` : null;
   const isPremium = tier === "premium";
+  const isDraft = status === 'draft';
 
   return (
-    <Card className="bg-white/[0.03] border-white/[0.06] overflow-hidden">
+    <Card className={`bg-white/[0.03] border-white/[0.06] overflow-hidden ${isDraft ? 'border-l-2 border-l-amber-500/40' : ''}`}>
       <a
         href={href || "#"}
         onClick={e => { if (!href) e.preventDefault(); }}
         className="block"
       >
         <CardContent className="p-3 sm:p-4">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
+          <div className="flex items-start sm:items-center gap-2.5">
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0`}>
               <Mail className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-white truncate">{subject}</p>
-              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <span className="text-[10px] sm:text-[11px] text-gray-500 flex items-center gap-1">
-                  <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{formatDate(sentAt)}
-                </span>
-                <span className="text-[10px] sm:text-[11px] text-gray-400">· {timeAgo(sentAt)}</span>
+              {/* Top row: subject + eye icon (mobile: stacked, desktop: inline) */}
+              <div className="flex items-center gap-2">
+                <p className="text-xs sm:text-sm font-medium text-white truncate flex-1 min-w-0">{subject}</p>
+                {/* Eye icon — always visible on the right */}
+                {href ? (
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="p-1 sm:p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors flex-shrink-0"
+                    title={isDraft ? "Preview draft" : "View newsletter page"}
+                  >
+                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 hover:text-white transition-colors" />
+                  </a>
+                ) : (
+                  <span className="p-1 sm:p-1.5 w-6 sm:w-7 flex-shrink-0" />
+                )}
+              </div>
+              {/* Date + badges row */}
+              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                {sentAt ? (
+                  <>
+                    <span className="text-[10px] sm:text-[11px] text-gray-500 flex items-center gap-1">
+                      <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{formatDate(sentAt)}
+                    </span>
+                    <span className="text-[10px] sm:text-[11px] text-gray-400">· {timeAgo(sentAt)}</span>
+                  </>
+                ) : (
+                  <span className="text-[10px] sm:text-[11px] text-amber-500/70">Scheduled for next send</span>
+                )}
                 {newsletter && (
-                  <span className="text-[10px] sm:text-[11px] text-gray-600">
+                  <span className="hidden sm:inline text-[10px] sm:text-[11px] text-gray-600">
                     · {newsletter.total} sent · {newsletter.opened} opened · {newsletter.clicked} clicked
                   </span>
                 )}
+                <span className="flex-1" />
+                <Badge className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2.5 py-0 sm:py-0.5 border rounded-md ${
+                  isPremium
+                    ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                    : "bg-purple-500/15 text-purple-400 border-purple-500/20"
+                }`}>
+                  {isPremium ? "Premium" : "Free"}
+                </Badge>
+                <Badge className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2.5 py-0 sm:py-0.5 border rounded-md ${
+                  isDraft
+                    ? "bg-amber-500/15 text-amber-400 border-amber-500/20"
+                    : "bg-green-500/15 text-green-400 border-green-500/20"
+                }`}>
+                  {isDraft ? "Draft" : "Sent"}
+                </Badge>
               </div>
-            </div>
-            <div className="flex items-center gap-2 flex-shrink-0">
-              <Badge className={`text-[10px] px-2.5 py-0.5 border rounded-md ${
-                isPremium
-                  ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
-                  : "bg-purple-500/15 text-purple-400 border-purple-500/20"
-              }`}>
-                {isPremium ? "Premium" : "Free"}
-              </Badge>
-              <Badge className="text-[10px] px-2.5 py-0.5 border bg-green-500/15 text-green-400 border-green-500/20 rounded-md">
-                Sent
-              </Badge>
-              {href ? (
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={e => e.stopPropagation()}
-                  className="p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors"
-                  title="View newsletter page"
-                >
-                  <Eye className="w-4 h-4 text-gray-400 hover:text-white transition-colors" />
-                </a>
-              ) : (
-                <span className="p-1.5 w-7" />
+              {/* Mobile-only analytics row */}
+              {newsletter && (
+                <div className="sm:hidden flex items-center gap-1.5 mt-0.5">
+                  <span className="text-[9px] text-gray-600">
+                    {newsletter.total} sent · {newsletter.opened} opened · {newsletter.clicked} clicked
+                  </span>
+                </div>
               )}
             </div>
           </div>
@@ -157,7 +180,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const [sends, setSends] = useState<NewsletterSend[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [websiteSubs, setWebsiteSubs] = useState<WebsiteSubscriber[]>([]);
-  const [posts, setPosts] = useState<{ id: string; slug: string; subject: string; tier?: string; published_at?: string }[]>([]);
+  const [posts, setPosts] = useState<{ id: string; slug: string; subject: string; tier?: string; published_at?: string; created_at?: string }[]>([]);
   const [analytics, setAnalytics] = useState<{ summary: AnalyticsSummary; newsletters: NewsletterAnalytic[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -482,10 +505,11 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const displayName = (p: Profile) => p.business_name || p.name || p.first_name || p.email || "Unknown";
 
   // Merge analytics with sends, matching posts by closest timestamp (1:1)
+  // Also includes draft posts (published_at is null) with status='draft'
   const mergedNewsletters = useMemo(() => {
     const seen = new Set<string>();
     const usedPostIds = new Set<string>();
-    const result: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string }[] = [];
+    const result: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string; status: 'draft' | 'sent' }[] = [];
 
     // Find the closest unused post within 2h of a given timestamp
     const findPost = (sentAt: string) => {
@@ -493,8 +517,8 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       let best: (typeof posts)[0] | null = null;
       let bestDiff = Infinity;
       for (const p of posts) {
-        if (usedPostIds.has(p.id)) continue;
-        const diff = Math.abs(new Date(p.published_at || "").getTime() - sentTime);
+        if (usedPostIds.has(p.id) || !p.published_at) continue;
+        const diff = Math.abs(new Date(p.published_at).getTime() - sentTime);
         if (diff < bestDiff && diff < 7200000) { // within 2h
           bestDiff = diff;
           best = p;
@@ -504,19 +528,27 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       return best;
     };
 
+    // 1. Add draft posts first (published_at is null) — they show at the top
+    const draftPosts = posts.filter(p => !p.published_at);
+    for (const draft of draftPosts) {
+      usedPostIds.add(draft.id);
+      result.push({ slug: draft.slug, tier: draft.tier, postSubject: draft.subject, status: 'draft' });
+    }
+
+    // 2. Merge analytics with sends
     if (analytics?.newsletters) {
       for (const n of analytics.newsletters) {
         seen.add(n.subject);
         const matchingSend = sends.find(s => s.subject === n.subject);
         const post = findPost(n.sent_at);
-        result.push({ newsletter: n, send: matchingSend, slug: post?.slug, tier: post?.tier, postSubject: post?.subject });
+        result.push({ newsletter: n, send: matchingSend, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
       }
     }
 
     for (const s of sends) {
       if (!seen.has(s.subject)) {
         const post = findPost(s.sent_at);
-        result.push({ send: s, slug: post?.slug, tier: post?.tier, postSubject: post?.subject });
+        result.push({ send: s, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
       }
     }
 
@@ -692,18 +724,19 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           </div>
         ) : recentNewsletters.length === 0 ? (
           <div className="text-center py-10 text-gray-500 text-sm">
-            No newsletters sent yet. Sends will appear here automatically.
+            No newsletters yet. Drafts and sends will appear here automatically.
           </div>
         ) : (
           <div className="space-y-3">
             {recentNewsletters.map((item, i) => (
               <AnalyticsSendCard
-                key={item.newsletter?.subject || item.send?.id || i}
+                key={item.newsletter?.subject || item.send?.id || item.slug || i}
                 newsletter={item.newsletter}
                 send={item.send}
                 slug={item.slug}
                 tier={item.tier}
                 postSubject={item.postSubject}
+                status={item.status}
               />
             ))}
             {mergedNewsletters.length > 5 && (

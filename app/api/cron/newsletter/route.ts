@@ -6,8 +6,8 @@ import { logEvent } from '@/lib/events';
 /**
  * Newsletter Cron — Called by Vercel Cron
  *
- * ?action=generate-drafts (6:00 AM ET): Generate draft newsletters without sending
- * Default (8:00 AM ET): Send FREE + PREMIUM newsletters, then send ONE clean Telegram debrief
+ * ?action=generate-drafts (8:00 AM ET): Generate draft newsletters without sending
+ * Default (9:00 AM ET): Send FREE + PREMIUM newsletters, then send ONE clean Telegram debrief
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');

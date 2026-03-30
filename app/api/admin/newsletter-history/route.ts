@@ -19,8 +19,8 @@ export async function GET() {
       .order("business_name", { ascending: true }),
     sb
       .from("newsletter_posts")
-      .select("id, slug, subject, tier, published_at")
-      .order("published_at", { ascending: false }),
+      .select("id, slug, subject, tier, published_at, created_at")
+      .order("published_at", { ascending: false, nullsFirst: true }),
     sb
       .from("newsletter_subscriptions")
       .select("id, email, first_name, subscription_tier, subscribed, created_at")

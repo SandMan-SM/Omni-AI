@@ -6,7 +6,7 @@
   "crons": [
     {
       "path": "/api/cron/newsletter?action=generate-drafts",
-      "schedule": "0 11 * * *"
+      "schedule": "0 12 * * *"
     },
     {
       "path": "/api/cron/newsletter",
