@@ -490,7 +490,7 @@ export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
   // Fixes / features completed
   if (data.recentFixes.length > 0) {
     const topFix = data.recentFixes[0];
-    lines.push(`I've also shipped *${topFix}* while you were sleeping. Here's the full list:`);
+    lines.push(`I've also built out the *${topFix}* system while you were sleeping. Here is the full debrief on tasks completed:`);
     lines.push('');
     for (const fix of data.recentFixes) {
       lines.push(`✅ ${fix}`);
