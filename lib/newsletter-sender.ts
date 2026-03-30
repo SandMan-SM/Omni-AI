@@ -475,14 +475,106 @@ export async function sendEmail(content: NewsletterContent, to: string): Promise
   }
 }
 
+// ── Draft Generation ────────────────────────────────────────────────────────
+
+/**
+ * Generate drafts for both free and premium newsletters.
+ * Called by cron at 6:00 AM ET — saves as drafts (published_at = null).
+ */
+export async function generateDrafts(supabase: any) {
+  const freeContent = await generateFreeContent();
+  const premiumContent = await generatePremiumContent();
+
+  // Save free draft
+  await supabase.from('newsletter_posts').insert({
+    slug: freeContent.slug,
+    subject: freeContent.subject,
+    intro: freeContent.intro,
+    insights: freeContent.insights,
+    power_move: freeContent.power_move,
+    closing: freeContent.closing,
+    quote: freeContent.quote || null,
+    offer: freeContent.offer || null,
+    keywords: freeContent.keywords || [],
+    tier: 'free',
+    published_at: null, // DRAFT — not published yet
+  });
+
+  // Save premium draft (only on Mon/Wed/Fri)
+  const dayType = getDayType();
+  let premiumSaved = false;
+  if (dayType) {
+    await supabase.from('newsletter_posts').insert({
+      slug: premiumContent.slug,
+      subject: premiumContent.subject,
+      intro: premiumContent.intro,
+      insights: premiumContent.insights,
+      power_move: premiumContent.power_move,
+      closing: premiumContent.closing,
+      quote: premiumContent.quote || null,
+      offer: premiumContent.offer || null,
+      exclusive_insight: (premiumContent as any).exclusive_insight || null,
+      ai_recommendation: (premiumContent as any).ai_recommendation || null,
+      keywords: premiumContent.keywords || [],
+      tier: 'premium',
+      published_at: null, // DRAFT
+    });
+    premiumSaved = true;
+  }
+
+  return {
+    free: { subject: freeContent.subject, slug: freeContent.slug },
+    premium: premiumSaved ? { subject: premiumContent.subject, slug: premiumContent.slug } : null,
+  };
+}
+
 // ── Orchestrators ────────────────────────────────────────────────────────────
 
 /**
  * FREE daily newsletter — runs every day at 8:00 AM ET
- * Sends to all free subscribers + publishes as page
+ * Sends to all free subscribers + publishes as page.
+ * If an unpublished draft exists, uses that instead of generating new content.
  */
 export async function runDailyNewsletter(supabase: any = null) {
-  const content = await generateFreeContent();
+  let content: NewsletterContent;
+  let draftId: string | null = null;
+
+  // Check for unpublished free draft first
+  if (supabase) {
+    try {
+      const { data: draft } = await supabase
+        .from('newsletter_posts')
+        .select('*')
+        .eq('tier', 'free')
+        .is('published_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (draft) {
+        draftId = draft.id;
+        content = {
+          subject: draft.subject,
+          intro: draft.intro,
+          insights: draft.insights,
+          power_move: draft.power_move,
+          closing: draft.closing,
+          quote: draft.quote || undefined,
+          offer: draft.offer || undefined,
+          keywords: draft.keywords || [],
+          tier: 'free',
+          slug: draft.slug,
+        };
+      } else {
+        content = await generateFreeContent();
+      }
+    } catch {
+      // No draft found or error — generate fresh
+      content = await generateFreeContent();
+    }
+  } else {
+    content = await generateFreeContent();
+  }
 
   const [telegramOk, emailOk] = await Promise.all([
     sendToTelegram(content),
@@ -506,20 +598,28 @@ export async function runDailyNewsletter(supabase: any = null) {
         freeSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
       }
 
-      // Save newsletter as a publishable post
-      await supabase.from('newsletter_posts').insert({
-        slug: content.slug,
-        subject: content.subject,
-        intro: content.intro,
-        insights: content.insights,
-        power_move: content.power_move,
-        closing: content.closing,
-        quote: content.quote || null,
-        offer: content.offer || null,
-        keywords: content.keywords || [],
-        tier: 'free',
-        published_at: new Date().toISOString(),
-      }).then(() => {}).catch((e: any) => console.error('Post save error:', e));
+      if (draftId) {
+        // Publish the existing draft
+        await supabase
+          .from('newsletter_posts')
+          .update({ published_at: new Date().toISOString() })
+          .eq('id', draftId);
+      } else {
+        // Save newsletter as a new publishable post
+        await supabase.from('newsletter_posts').insert({
+          slug: content.slug,
+          subject: content.subject,
+          intro: content.intro,
+          insights: content.insights,
+          power_move: content.power_move,
+          closing: content.closing,
+          quote: content.quote || null,
+          offer: content.offer || null,
+          keywords: content.keywords || [],
+          tier: 'free',
+          published_at: new Date().toISOString(),
+        }).then(() => {}).catch((e: any) => console.error('Post save error:', e));
+      }
 
       // Log the send
       await supabase.from('newsletter_sends').insert({
@@ -543,7 +643,8 @@ export async function runDailyNewsletter(supabase: any = null) {
 
 /**
  * PREMIUM newsletter — runs Mon/Wed/Fri
- * Mon: Value (teach), Wed: Insight (connect), Fri: Offer (monetize)
+ * Mon: Value (teach), Wed: Insight (connect), Fri: Offer (monetize).
+ * If an unpublished draft exists, uses that instead of generating new content.
  */
 export async function runPremiumNewsletter(supabase: any = null) {
   const dayType = getDayType();
@@ -551,7 +652,47 @@ export async function runPremiumNewsletter(supabase: any = null) {
     return { content: null, sent: 0, skipped: true, reason: 'Not a premium send day (Mon/Wed/Fri only)' };
   }
 
-  const content = await generatePremiumContent();
+  let content: PremiumContent;
+  let draftId: string | null = null;
+
+  // Check for unpublished premium draft first
+  if (supabase) {
+    try {
+      const { data: draft } = await supabase
+        .from('newsletter_posts')
+        .select('*')
+        .eq('tier', 'premium')
+        .is('published_at', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (draft) {
+        draftId = draft.id;
+        content = {
+          subject: draft.subject,
+          intro: draft.intro,
+          insights: draft.insights,
+          power_move: draft.power_move,
+          closing: draft.closing,
+          quote: draft.quote || undefined,
+          offer: draft.offer || undefined,
+          keywords: draft.keywords || [],
+          tier: 'premium',
+          day_type: dayType,
+          slug: draft.slug,
+          exclusive_insight: draft.exclusive_insight || undefined,
+          ai_recommendation: draft.ai_recommendation || undefined,
+        };
+      } else {
+        content = await generatePremiumContent();
+      }
+    } catch {
+      content = await generatePremiumContent();
+    }
+  } else {
+    content = await generatePremiumContent();
+  }
 
   let premiumSent = 0;
   let telegramOk = false;
@@ -575,22 +716,30 @@ export async function runPremiumNewsletter(supabase: any = null) {
       // Also send premium Telegram update
       telegramOk = await sendToTelegram(content);
 
-      // Save premium newsletter as a publishable post
-      await supabase.from('newsletter_posts').insert({
-        slug: content.slug,
-        subject: content.subject,
-        intro: content.intro,
-        insights: content.insights,
-        power_move: content.power_move,
-        closing: content.closing,
-        quote: content.quote || null,
-        offer: content.offer || null,
-        exclusive_insight: content.exclusive_insight || null,
-        ai_recommendation: content.ai_recommendation || null,
-        keywords: content.keywords || [],
-        tier: 'premium',
-        published_at: new Date().toISOString(),
-      }).then(() => {}).catch((e: any) => console.error('Premium post save error:', e));
+      if (draftId) {
+        // Publish the existing draft
+        await supabase
+          .from('newsletter_posts')
+          .update({ published_at: new Date().toISOString() })
+          .eq('id', draftId);
+      } else {
+        // Save premium newsletter as a new publishable post
+        await supabase.from('newsletter_posts').insert({
+          slug: content.slug,
+          subject: content.subject,
+          intro: content.intro,
+          insights: content.insights,
+          power_move: content.power_move,
+          closing: content.closing,
+          quote: content.quote || null,
+          offer: content.offer || null,
+          exclusive_insight: content.exclusive_insight || null,
+          ai_recommendation: content.ai_recommendation || null,
+          keywords: content.keywords || [],
+          tier: 'premium',
+          published_at: new Date().toISOString(),
+        }).then(() => {}).catch((e: any) => console.error('Premium post save error:', e));
+      }
 
       // Log
       await supabase.from('newsletter_sends').insert({

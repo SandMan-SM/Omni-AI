@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { runDailyNewsletter, runPremiumNewsletter } from '@/lib/newsletter-sender';
+import { runDailyNewsletter, runPremiumNewsletter, generateDrafts } from '@/lib/newsletter-sender';
 
 /**
- * Newsletter Cron — Called by Vercel Cron at 8:00 AM ET daily
+ * Newsletter Cron — Called by Vercel Cron
  *
- * Every day: Sends FREE tier newsletter (trending keywords + intelligence brief)
- * Mon/Wed/Fri: Also sends PREMIUM tier newsletter (Value/Insight/Offer)
+ * ?action=generate-drafts (6:00 AM ET): Generate draft newsletters without sending
+ * Default (8:00 AM ET): Send FREE + PREMIUM newsletters (uses drafts if available)
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
@@ -18,6 +18,27 @@ export async function GET(request: Request) {
 
   try {
     const supabase = await createClient();
+    const { searchParams } = new URL(request.url);
+    const action = searchParams.get('action');
+
+    // Draft generation mode
+    if (action === 'generate-drafts') {
+      const drafts = await generateDrafts(supabase as any);
+
+      console.log(
+        `[Newsletter Cron] Drafts generated: FREE="${drafts.free.subject}" | ` +
+        `PREMIUM=${drafts.premium ? `"${drafts.premium.subject}"` : 'skipped (not Mon/Wed/Fri)'}`
+      );
+
+      return NextResponse.json({
+        success: true,
+        action: 'generate-drafts',
+        drafts,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Default: send newsletters (uses drafts if available)
 
     // 1. Always send the FREE daily newsletter
     const freeResult = await runDailyNewsletter(supabase as any);

@@ -5,8 +5,12 @@
   "outputDirectory": ".next",
   "crons": [
     {
+      "path": "/api/cron/newsletter?action=generate-drafts",
+      "schedule": "0 11 * * *"
+    },
+    {
       "path": "/api/cron/newsletter",
-      "schedule": "0 12 * * *"
+      "schedule": "0 13 * * *"
     },
     {
       "path": "/api/cron/health-check",
