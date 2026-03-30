@@ -17,6 +17,11 @@ const NEWSLETTER_FROM = process.env.NEWSLETTER_FROM_EMAIL || 'Omni AI <newslette
 const NEWSLETTER_TO = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://omnileadsagi.com';
 
+// ── Dev Mode: Only send to these emails while building out features ──────────
+// Set NEWSLETTER_DEV_MODE=false in env to open up to all subscribers
+const DEV_MODE = process.env.NEWSLETTER_DEV_MODE !== 'false';
+const DEV_ALLOWLIST = [NEWSLETTER_TO]; // Only $Mafi gets emails during dev
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export interface NewsletterContent {
@@ -528,6 +533,12 @@ export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
 export async function sendEmail(content: NewsletterContent, to: string): Promise<boolean> {
   if (!RESEND_API_KEY) return false;
 
+  // Dev mode: only send to allowlisted emails ($Mafi)
+  if (DEV_MODE && !DEV_ALLOWLIST.includes(to.toLowerCase())) {
+    console.log(`[Newsletter] DEV_MODE: skipping send to ${to} (not in allowlist)`);
+    return false;
+  }
+
   const html = content.tier === 'premium'
     ? buildPremiumEmailHtml(content as PremiumContent)
     : buildFreeEmailHtml(content);
@@ -646,26 +657,53 @@ export async function runDailyNewsletter(supabase: any = null) {
     content = await generateFreeContent();
   }
 
-  const [telegramOk, emailOk] = await Promise.all([
-    sendToTelegram(content),
-    sendEmail(content, NEWSLETTER_TO),
-  ]);
+  const telegramOk = await sendToTelegram(content);
 
+  // Send to subscribed profiles (newsletter_subscribed=true) — respects dev allowlist
   let freeSent = 0;
+  let emailOk = false;
   if (supabase) {
     try {
-      // Send to all free/subscribed users
-      const { data: freeSubs } = await supabase
-        .from('newsletter_subscriptions')
+      // Get all active newsletter subscribers from profiles
+      const { data: activeProfiles } = await supabase
+        .from('profiles')
         .select('email')
-        .neq('subscription_tier', 'premium')
-        .eq('subscribed', true);
+        .eq('newsletter_subscribed', true);
 
-      if (freeSubs?.length) {
+      // Also check newsletter_subscriptions table if it exists
+      let extraEmails: string[] = [];
+      try {
+        const { data: freeSubs } = await supabase
+          .from('newsletter_subscriptions')
+          .select('email')
+          .eq('subscribed', true);
+        if (freeSubs?.length) {
+          extraEmails = freeSubs.map((s: { email: string }) => s.email);
+        }
+      } catch {
+        // Table may not exist yet — that's fine
+      }
+
+      // Dedupe all recipient emails
+      const allEmails = new Set<string>();
+      if (activeProfiles?.length) {
+        for (const p of activeProfiles) {
+          if (p.email) allEmails.add(p.email.toLowerCase());
+        }
+      }
+      for (const e of extraEmails) {
+        allEmails.add(e.toLowerCase());
+      }
+
+      // Always include the primary recipient
+      allEmails.add(NEWSLETTER_TO.toLowerCase());
+
+      if (allEmails.size > 0) {
         const results = await Promise.allSettled(
-          freeSubs.map((sub: { email: string }) => sendEmail(content, sub.email))
+          Array.from(allEmails).map((email) => sendEmail(content, email))
         );
         freeSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
+        emailOk = freeSent > 0;
       }
 
       if (draftId) {
@@ -769,16 +807,24 @@ export async function runPremiumNewsletter(supabase: any = null) {
 
   if (supabase) {
     try {
-      // Get premium subscribers from profiles (is_premium=true AND newsletter_subscribed=true)
+      // Get premium subscribers (is_premium=true AND newsletter_subscribed=true)
+      // Deactivated users (newsletter_subscribed=false) are excluded
       const { data: premiumProfiles } = await supabase
         .from('profiles')
         .select('email')
         .eq('is_premium', true)
         .eq('newsletter_subscribed', true);
 
+      const premiumEmails = new Set<string>();
       if (premiumProfiles?.length) {
+        for (const p of premiumProfiles) {
+          if (p.email) premiumEmails.add(p.email.toLowerCase());
+        }
+      }
+
+      if (premiumEmails.size > 0) {
         const results = await Promise.allSettled(
-          premiumProfiles.filter((p: { email: string | null }) => p.email).map((p: { email: string }) => sendEmail(content, p.email))
+          Array.from(premiumEmails).map((email) => sendEmail(content, email))
         );
         premiumSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
       }

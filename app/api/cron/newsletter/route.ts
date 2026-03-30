@@ -40,6 +40,28 @@ export async function GET(request: Request) {
 
     // Default: send newsletters then send ONE clean debrief
 
+    // Guard: check if we already sent today to prevent double-firing
+    const todayDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    try {
+      const { count } = await (supabase as any)
+        .from('newsletter_sends')
+        .select('id', { count: 'exact', head: true })
+        .gte('sent_at', `${todayDate}T00:00:00.000Z`)
+        .lte('sent_at', `${todayDate}T23:59:59.999Z`);
+
+      if (count && count >= 2) {
+        console.log(`[Newsletter Cron] Already sent ${count} newsletters today — skipping to prevent duplicates`);
+        return NextResponse.json({
+          success: true,
+          skipped: true,
+          reason: `Already sent ${count} newsletters today`,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    } catch {
+      // Table might not exist or query fails — proceed anyway
+    }
+
     // 1. Send the FREE daily newsletter
     const freeResult = await runDailyNewsletter(supabase as any);
 
