@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { logEvent } from "@/lib/events";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -82,6 +83,19 @@ async function handleToggle(req: Request) {
         }
       }
     }
+
+    // Log event (fire-and-forget)
+    logEvent(sb, {
+      actor_type: 'user',
+      actor_id: 'admin',
+      event_type: isActive ? 'newsletter_subscribed' : 'newsletter_unsubscribed',
+      event_category: 'newsletter',
+      action: 'update',
+      target_type: 'profile',
+      target_id: profileId,
+      value_text: tier || (isActive ? 'subscribed' : 'unsubscribed'),
+      properties: { email: profileEmail, is_premium: isPremiumTier },
+    });
 
     return NextResponse.json({ profile: { id: data.id, newsletter_subscribed: data.newsletter_subscribed, is_premium: data.is_premium } });
   } catch (err: any) {

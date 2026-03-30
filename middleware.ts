@@ -88,6 +88,26 @@ export async function middleware(request: NextRequest) {
   response.headers.set('x-user-id', user.id);
   response.headers.set('x-user-email', user.email || '');
 
+  // Fire-and-forget page_view event for authenticated users on key pages
+  // Uses fetch to /api endpoint to avoid importing heavy deps in middleware
+  const trackablePages = ['/dashboard', '/admin', '/newsletter', '/sponsor', '/interlinked'];
+  if (trackablePages.some(p => pathname.startsWith(p))) {
+    const baseUrl = request.nextUrl.origin;
+    fetch(`${baseUrl}/api/events/track`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        actor_type: 'user',
+        actor_id: user.id,
+        event_type: 'page_view',
+        event_category: 'navigation',
+        action: 'view',
+        page_url: pathname,
+        user_agent: request.headers.get('user-agent') || '',
+      }),
+    }).catch(() => {}); // fire-and-forget
+  }
+
   return response;
 }
 

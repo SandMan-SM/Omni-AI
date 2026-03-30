@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { logEvent } from "@/lib/events";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -48,6 +49,20 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Log event (fire-and-forget)
+    logEvent(sb, {
+      actor_type: 'user',
+      actor_id: profile_id || 'admin',
+      event_type: 'campaign_created',
+      event_category: 'campaign',
+      action: 'create',
+      target_type: 'campaign',
+      target_id: data?.id,
+      value_text: name,
+      properties: { status: status || 'draft', type, platform },
+    });
+
     return NextResponse.json({ campaign: data }, { status: 201 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

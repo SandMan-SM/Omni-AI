@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { logEvent } from "@/lib/events";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -52,6 +53,19 @@ export async function POST(req: NextRequest) {
 
     // Also update last_contacted on the profile
     await sb.from("profiles").update({ last_contacted: new Date().toISOString() }).eq("id", profile_id);
+
+    // Log event (fire-and-forget)
+    logEvent(sb, {
+      actor_type: 'user',
+      actor_id: 'admin',
+      event_type: 'activity_logged',
+      event_category: 'crm',
+      action: 'create',
+      target_type: 'profile',
+      target_id: profile_id,
+      value_text: `${type}: ${subject || ''}`,
+      properties: { channel, direction },
+    });
 
     return NextResponse.json({ success: true, activity: data });
   } catch (err: any) {

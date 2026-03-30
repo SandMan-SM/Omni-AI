@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { runDailyNewsletter, runPremiumNewsletter, generateDrafts, sendMorningDebrief } from '@/lib/newsletter-sender';
+import { logEvent } from '@/lib/events';
 
 /**
  * Newsletter Cron — Called by Vercel Cron
@@ -143,6 +144,48 @@ export async function GET(request: Request) {
     });
 
     console.log(`[Newsletter Cron] Debrief sent: ${debriefOk}`);
+
+    // Log events for the newsletter run
+    logEvent(supabase as any, {
+      actor_type: 'cron',
+      actor_id: 'newsletter_cron',
+      event_type: 'newsletter_sent',
+      event_category: 'newsletter',
+      action: 'send',
+      target_type: 'newsletter_post',
+      target_id: freeResult.content.slug,
+      value_numeric: freeResult.freeSent,
+      value_text: freeResult.content.subject,
+      properties: {
+        tier: 'free',
+        email_ok: freeResult.emailOk,
+        debrief_ok: debriefOk,
+      },
+    });
+
+    if (!premiumResult.skipped && premiumResult.content) {
+      logEvent(supabase as any, {
+        actor_type: 'cron',
+        actor_id: 'newsletter_cron',
+        event_type: 'newsletter_sent',
+        event_category: 'newsletter',
+        action: 'send',
+        target_type: 'newsletter_post',
+        target_id: premiumResult.content.slug,
+        value_numeric: premiumResult.premiumSent,
+        value_text: premiumResult.content.subject,
+        properties: { tier: 'premium', day_type: premiumResult.content.day_type },
+      });
+    }
+
+    logEvent(supabase as any, {
+      actor_type: 'cron',
+      actor_id: 'newsletter_cron',
+      event_type: 'cron_executed',
+      event_category: 'system',
+      action: 'execute',
+      value_text: 'newsletter_send',
+    });
 
     return NextResponse.json({
       success: true,

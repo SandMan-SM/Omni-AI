@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { logEvent } from '@/lib/events';
 
 export async function GET() {
   try {
@@ -32,6 +33,18 @@ export async function POST(request: Request) {
       console.error('Supabase error:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    // Log event (fire-and-forget)
+    logEvent(supabase as any, {
+      actor_type: 'user',
+      actor_id: body.email,
+      event_type: 'newsletter_subscribed',
+      event_category: 'newsletter',
+      action: 'create',
+      target_type: 'newsletter_subscription',
+      target_id: data?.id,
+      value_text: body.email,
+    });
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
