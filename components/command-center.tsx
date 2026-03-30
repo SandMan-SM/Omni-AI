@@ -332,8 +332,8 @@ export function CommandCenter() {
                         {new Date(post.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </p>
                     </div>
-                    <span className={`text-[9px] font-medium px-1.5 py-0.5 rounded flex-shrink-0 ${post.tier === "premium" ? "bg-yellow-500/10 text-yellow-400" : "bg-purple-500/10 text-purple-400"}`}>
-                      {post.tier === "premium" ? "PRO" : "Free"}
+                    <span className={`text-[8px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded flex-shrink-0 ${post.tier === "premium" ? "bg-yellow-500/10 text-yellow-400" : "bg-purple-500/10 text-purple-400"}`}>
+                      {post.tier === "premium" ? "PRO" : "FREE"}
                     </span>
                   </Link>
                 ))}
