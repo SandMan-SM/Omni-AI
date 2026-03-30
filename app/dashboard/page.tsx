@@ -121,6 +121,15 @@ export default function Dashboard() {
   const isVIPSponsor = profile?.sponsor_tier === 'vip';
   const isFray = user?.username?.toLowerCase() === 'fray' || user?.email === 'fray1959@gmail.com';
   const isCPS = user?.username?.toLowerCase() === 'cps';
+  const isChaco = user?.username?.toLowerCase() === 'chaco';
+  const profileComplete = !!(
+    profile &&
+    (profile.name || profile.first_name) &&
+    profile.email && !profile.email.includes('@omni.local') &&
+    profile.phone &&
+    profile.business_name &&
+    profile.business_niche
+  );
   const frayTierName = 'VIP Sponsor';
   const cpsTierName = 'Master';
 
@@ -287,7 +296,7 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
-        {!onboardingComplete && profile && !isAdmin && !isCPS && !isFray && (
+        {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
               className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
@@ -499,28 +508,44 @@ export default function Dashboard() {
 
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.25 }}>
           <Card className="bg-white/[0.03] border-white/[0.06] overflow-visible">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              {!isCPS && !isVIPSponsor && !isAdmin && (
-                <CardTitle className="text-lg text-white">Current Tier</CardTitle>
-              )}
-              {!isCPS && !isVIPSponsor && !isAdmin && (
-                <Button
-                  variant="outline"
-                  className="border-white/20 bg-transparent text-white text-sm"
-                  onClick={() => {
-                    router.push("/");
-                    setTimeout(() => {
-                      document.getElementById("services")?.scrollIntoView({ behavior: "smooth" });
-                    }, 300);
-                  }}
-                  data-testid="button-upgrade-tier"
-                >
-                  Upgrade
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent>
-              {isAdmin ? (
+            <CardContent className="pt-6">
+              {isChaco ? (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 p-[1px] flex-shrink-0">
+                      <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
+                        <Shield className="w-7 h-7 text-blue-400" />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-xl font-bold text-blue-400 mb-1" data-testid="text-current-tier-name">Master</h3>
+                      <p className="text-sm text-gray-500" data-testid="text-tier-status">
+                        {profileComplete || onboardingComplete ? "Activated" : "Deactivated"}
+                      </p>
+                    </div>
+                  </div>
+                  {profileComplete || onboardingComplete ? (
+                    <Button
+                      variant="outline"
+                      className="border-blue-500/50 bg-blue-500/10 text-blue-400 text-sm hover:bg-blue-500/20"
+                      onClick={() => router.push('/details')}
+                      data-testid="button-chaco-info"
+                    >
+                      Info
+                      <ArrowRight className="w-3 h-3 ml-1.5" />
+                    </Button>
+                  ) : (
+                    <Button
+                      className="btn-chrome-blue text-white border-0 shadow-lg shadow-blue-400/25 font-semibold"
+                      onClick={() => setShowOnboarding(true)}
+                      data-testid="button-activate-onboarding"
+                    >
+                      Activate
+                      <ArrowRight className="w-3 h-3 ml-1.5" />
+                    </Button>
+                  )}
+                </div>
+              ) : isAdmin ? (
                 <div className="flex items-center gap-4">
                   <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 p-[1px] flex-shrink-0">
                     <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
@@ -603,7 +628,6 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-xl font-bold text-white" data-testid="text-current-tier-name">{currentTierData.name}</h3>
-                        <span className={`text-xs font-semibold tracking-wider ${currentTierData.accent}`} data-testid="text-current-tier-level">TIER {currentTierData.level}</span>
                       </div>
                       <p className="text-sm text-gray-500" data-testid="text-tier-status">
                         {isSponsor && !profile?.sponsor_activated ? "Onboarding" : "Active"}

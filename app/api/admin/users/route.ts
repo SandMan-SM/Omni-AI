@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
     // Create profile
     const profileData = {
       id: crypto.randomUUID(),
+      username: username,
       email: email || `${username}@omni.local`,
       name: name || null,
       phone: phone || null,

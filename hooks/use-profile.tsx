@@ -102,26 +102,50 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
 
       if (error && error.code === 'PGRST116') {
-        // Profile not found — create minimal one
-        const isFray = user.email === 'fray1959@gmail.com' || user.username?.toLowerCase() === 'fray';
-        const isMafi = user.email === 'sitanim6@gmail.com' || user.email === 'sitanim8@gmail.com' || user.username === '$Mafi';
+        // Profile not found by ID — check if one exists by username or email before creating
+        let existingProfile = null;
+        if (user.username) {
+          const { data: byUsername } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('username', user.username)
+            .single();
+          existingProfile = byUsername;
+        }
+        if (!existingProfile && user.email) {
+          const { data: byEmail } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('email', user.email)
+            .single();
+          existingProfile = byEmail;
+        }
 
-        const newProfile: Partial<Profile> = {
-          id: user.id,
-          email: user.email || '',
-          role: isMafi ? 'admin' : isFray ? 'sponsor' : 'user',
-          is_admin: isMafi,
-          is_sponsor: isFray || isMafi,
-          sponsor_tier: isFray ? 'vip' : null,
-          tier: isMafi ? 99 : isFray ? 3 : 0,
-          crm_status: (isFray || isMafi) ? 'client' : 'lead',
-          lead_score: (isFray || isMafi) ? 'hot' : 'cold',
-          sponsor_activated: isFray,
-          sponsor_insights_paid: isFray,
-        };
+        if (existingProfile) {
+          setProfile(normaliseProfile(existingProfile));
+        } else {
+          // Create minimal profile only if none exists
+          const isFray = user.email === 'fray1959@gmail.com' || user.username?.toLowerCase() === 'fray';
+          const isMafi = user.email === 'sitanim6@gmail.com' || user.email === 'sitanim8@gmail.com' || user.username === '$Mafi';
 
-        const { data: created } = await supabase.from('profiles').insert(newProfile).select().single();
-        if (created) setProfile(normaliseProfile(created));
+          const newProfile: Partial<Profile> = {
+            id: user.id,
+            email: user.email || '',
+            username: user.username || null,
+            role: isMafi ? 'admin' : isFray ? 'sponsor' : 'user',
+            is_admin: isMafi,
+            is_sponsor: isFray || isMafi,
+            sponsor_tier: isFray ? 'vip' : null,
+            tier: isMafi ? 99 : isFray ? 3 : 0,
+            crm_status: (isFray || isMafi) ? 'client' : 'lead',
+            lead_score: (isFray || isMafi) ? 'hot' : 'cold',
+            sponsor_activated: isFray,
+            sponsor_insights_paid: isFray,
+          };
+
+          const { data: created } = await supabase.from('profiles').insert(newProfile).select().single();
+          if (created) setProfile(normaliseProfile(created));
+        }
       } else if (error) {
         console.error('Profile fetch error:', error);
       } else {

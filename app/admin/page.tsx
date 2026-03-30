@@ -9,7 +9,7 @@ import {
   UserCog, Mail, Phone, Building2, Command, ArrowRight,
   Plus, Edit2, Target, Flame, Thermometer, Snowflake,
   MessageSquare, Clock, X, Send, ChevronDown, Trash2, AlertTriangle,
-  Activity, Briefcase
+  Activity, Briefcase, RefreshCw
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -177,7 +177,7 @@ function ActivityFeed({ profileId }: { profileId: string }) {
               <div className="grid grid-cols-2 gap-2">
                 <SelectInput label="Type" value={form.type}
                   onChange={v => setForm(f => ({ ...f, type: v }))}
-                  options={["email", "call", "note", "meeting", "sms"]} />
+                  options={CHANNEL_OPTIONS} />
                 <SelectInput label="Channel" value={form.channel}
                   onChange={v => setForm(f => ({ ...f, channel: v }))}
                   options={CHANNEL_OPTIONS} />
@@ -235,6 +235,23 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [tab, setTab] = useState<"profile" | "account" | "crm" | "activity">("profile");
+  const [currentPassword, setCurrentPassword] = useState<string | null>(null);
+  const [showCurrentPw, setShowCurrentPw] = useState(false);
+  const [phoneCountry, setPhoneCountry] = useState("+1");
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+
+  const COUNTRY_CODES = [
+    { code: "+1", flag: "\u{1F1FA}\u{1F1F8}", label: "US" },
+    { code: "+1", flag: "\u{1F1E8}\u{1F1E6}", label: "CA" },
+    { code: "+44", flag: "\u{1F1EC}\u{1F1E7}", label: "UK" },
+    { code: "+61", flag: "\u{1F1E6}\u{1F1FA}", label: "AU" },
+    { code: "+52", flag: "\u{1F1F2}\u{1F1FD}", label: "MX" },
+    { code: "+91", flag: "\u{1F1EE}\u{1F1F3}", label: "IN" },
+    { code: "+49", flag: "\u{1F1E9}\u{1F1EA}", label: "DE" },
+    { code: "+33", flag: "\u{1F1EB}\u{1F1F7}", label: "FR" },
+    { code: "+81", flag: "\u{1F1EF}\u{1F1F5}", label: "JP" },
+    { code: "+86", flag: "\u{1F1E8}\u{1F1F3}", label: "CN" },
+  ];
 
   const buildForm = (p: Profile) => ({
     // Identity
@@ -257,6 +274,8 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
     newsletter_subscribed: p.newsletter_subscribed ?? false,
     sponsor_activated: p.sponsor_activated ?? false,
     sponsor_insights_paid: p.sponsor_insights_paid ?? false,
+    // Password (empty = don't change)
+    password: "",
     // CRM
     crm_status: p.crm_status || "lead",
     lead_score: p.lead_score || "cold",
@@ -272,6 +291,17 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
       setForm(buildForm(u));
       setTab("profile");
       setConfirmDelete(false);
+      setCurrentPassword(null);
+      setShowCurrentPw(false);
+      setShowCountryPicker(false);
+      // Extract country code from existing phone
+      const existingPhone = u.phone || "";
+      const ccMatch = existingPhone.match(/^(\+\d{1,3})\s?/);
+      setPhoneCountry(ccMatch ? ccMatch[1] : "+1");
+      // Fetch current password
+      fetch(`/api/admin/users/${u.id}`).then(r => r.json()).then(d => {
+        if (d.password) setCurrentPassword(d.password);
+      }).catch(() => {});
     }
   }, [open, u.id]);
 
@@ -304,6 +334,11 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
         satisfaction_score: form.satisfaction_score ? parseInt(form.satisfaction_score) : null,
         crm_notes: form.crm_notes || null,
       };
+
+      // Only include password if it was changed
+      if (form.password && form.password.trim()) {
+        payload.password = form.password.trim();
+      }
 
       const res = await fetch(`/api/admin/users/${u.id}`, {
         method: "PATCH",
@@ -386,7 +421,41 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
                 <TextInput label="Email" value={form.email} onChange={set("email")} placeholder="email@example.com" type="email" />
                 <TextInput label="First Name" value={form.first_name} onChange={set("first_name")} placeholder="First" />
                 <TextInput label="Last Name" value={form.last_name} onChange={set("last_name")} placeholder="Last" />
-                <TextInput label="Phone" value={form.phone} onChange={set("phone")} placeholder="+1 555 000 0000" />
+                <Field label="Phone">
+                  <div className="flex gap-1.5">
+                    <div className="relative">
+                      <button type="button" onClick={() => setShowCountryPicker(!showCountryPicker)}
+                        className="h-9 px-2 bg-white/5 border border-white/10 rounded-md text-sm text-white flex items-center gap-1 hover:border-white/20 min-w-[70px]">
+                        <span>{COUNTRY_CODES.find(c => c.code === phoneCountry)?.flag || "\u{1F30D}"}</span>
+                        <span className="text-xs text-gray-400">{phoneCountry}</span>
+                        <ChevronDown className="w-3 h-3 text-gray-500" />
+                      </button>
+                      {showCountryPicker && (
+                        <div className="absolute top-10 left-0 z-50 bg-[#111] border border-white/10 rounded-md shadow-xl max-h-40 overflow-y-auto w-36">
+                          {COUNTRY_CODES.map(c => (
+                            <button key={c.label} type="button"
+                              className="w-full px-3 py-1.5 text-left text-sm text-gray-300 hover:bg-white/10 flex items-center gap-2"
+                              onClick={() => {
+                                setPhoneCountry(c.code);
+                                setShowCountryPicker(false);
+                                // Update phone with new country code
+                                const digits = form.phone.replace(/^\+\d{1,3}\s?/, "");
+                                set("phone")(digits ? `${c.code} ${digits}` : "");
+                              }}>
+                              <span>{c.flag}</span> <span>{c.label}</span> <span className="text-gray-500 text-xs ml-auto">{c.code}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    <Input
+                      value={form.phone.replace(/^\+\d{1,3}\s?/, "")}
+                      onChange={e => set("phone")(e.target.value ? `${phoneCountry} ${e.target.value}` : "")}
+                      placeholder="555 000 0000"
+                      className="flex-1 h-9 bg-white/5 border border-white/10 text-white placeholder:text-gray-700 text-sm focus:border-purple-500/50"
+                    />
+                  </div>
+                </Field>
                 <SelectInput label="Timezone" value={form.timezone} onChange={set("timezone")}
                   options={["UTC", "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles", "Europe/London", "Europe/Paris"].map(v => ({ value: v, label: v }))} />
               </div>
@@ -418,6 +487,25 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
           {/* Account Tab */}
           {tab === "account" && (
             <div className="space-y-4">
+              <div className="space-y-3 pb-3 border-b border-white/5">
+                <Field label="Current Password">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white font-mono">
+                      {currentPassword ? (showCurrentPw ? currentPassword : "\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022") : "Loading..."}
+                    </div>
+                    {currentPassword && (
+                      <button
+                        type="button"
+                        onClick={() => setShowCurrentPw(!showCurrentPw)}
+                        className="text-xs text-gray-500 hover:text-white transition-colors px-2 py-2 rounded border border-white/10 hover:border-white/20"
+                      >
+                        {showCurrentPw ? "Hide" : "Show"}
+                      </button>
+                    )}
+                  </div>
+                </Field>
+                <TextInput label="New Password" value={form.password} onChange={set("password")} placeholder="Leave blank to keep current" type="password" />
+              </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <SelectInput label="Role" value={form.role} onChange={set("role")} options={ROLE_OPTIONS} />
                 <SelectInput label="Tier" value={form.tier} onChange={set("tier")} options={TIER_OPTIONS} />
@@ -601,6 +689,13 @@ function UserRow({ u, onEdit }: { u: Profile; onEdit: (u: Profile) => void }) {
     warm: "bg-orange-500/10 text-orange-400 border-orange-500/20",
     cold: "bg-blue-500/10 text-blue-400 border-blue-500/20",
   };
+  const crmColors: Record<string, string> = {
+    lead: "bg-blue-500/10 text-blue-400 border-blue-500/20",
+    prospect: "bg-cyan-500/10 text-cyan-400 border-cyan-500/20",
+    onboarding: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
+    client: "bg-green-500/10 text-green-400 border-green-500/20",
+    churned: "bg-red-500/10 text-red-400 border-red-500/20",
+  };
   const roleColors: Record<string, string> = {
     admin: "bg-purple-500/10 text-purple-400 border-purple-500/20",
     sponsor: "bg-amber-500/10 text-amber-400 border-amber-500/20",
@@ -624,7 +719,7 @@ function UserRow({ u, onEdit }: { u: Profile; onEdit: (u: Profile) => void }) {
           {u.username && <span className="text-xs text-gray-600">@{u.username}</span>}
           <Badge className={`text-[10px] border capitalize ${roleColors[u.role] || roleColors.user}`}>{u.role}</Badge>
           {u.tier !== 99 && <Badge className="text-[10px] bg-white/5 text-gray-500 border-white/10">{tierLabel}</Badge>}
-          {u.crm_status === "client" && <Badge className="text-[10px] bg-green-500/10 text-green-400 border-green-500/20">Client</Badge>}
+          {u.crm_status && <Badge className={`text-[10px] border capitalize ${crmColors[u.crm_status] || "bg-gray-500/10 text-gray-400 border-gray-500/20"}`}>{u.crm_status}</Badge>}
           {u.lead_score && u.crm_status !== "client" && (
             <Badge className={`text-[10px] border ${leadColors[u.lead_score] || ""} hidden sm:inline-flex`}>{u.lead_score}</Badge>
           )}
@@ -723,21 +818,21 @@ export default function Admin() {
         </div>
 
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="bg-white/5 border border-white/10 p-1 h-auto w-full flex flex-row overflow-x-auto">
-            <TabsTrigger value="users" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
-              <UserCog className="w-3.5 h-3.5 flex-shrink-0" /> Users
+          <TabsList className="bg-white/5 border border-white/10 p-1.5 h-auto w-full overflow-x-auto flex-nowrap gap-1" style={{ display: 'flex' }}>
+            <TabsTrigger value="users" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
+              <UserCog className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Users
             </TabsTrigger>
-            <TabsTrigger value="crm" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
-              <Target className="w-3.5 h-3.5 flex-shrink-0" /> CRM
+            <TabsTrigger value="crm" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
+              <Target className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> CRM
             </TabsTrigger>
-            <TabsTrigger value="campaigns" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
-              <Briefcase className="w-3.5 h-3.5 flex-shrink-0" /> Campaigns
+            <TabsTrigger value="campaigns" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
+              <Briefcase className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Campaigns
             </TabsTrigger>
-            <TabsTrigger value="newsletter" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
-              <Mail className="w-3.5 h-3.5 flex-shrink-0" /> Newsletter
+            <TabsTrigger value="newsletter" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
+              <Mail className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Newsletter
             </TabsTrigger>
-            <TabsTrigger value="system" className="flex-1 min-w-0 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-[11px] sm:text-sm px-2 sm:px-3">
-              <Activity className="w-3.5 h-3.5 flex-shrink-0" /> System
+            <TabsTrigger value="system" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
+              <Activity className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> System
             </TabsTrigger>
           </TabsList>
 
@@ -772,13 +867,15 @@ export default function Admin() {
                   <CardTitle className="text-base text-white flex items-center gap-2">
                     <UserCog className="w-4 h-4 text-gray-400" /> All Users
                   </CardTitle>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 ml-auto">
                     <Input placeholder="Search..." value={search} onChange={e => setSearch(e.target.value)}
                       className="flex-1 sm:w-44 h-8 bg-white/5 border-white/10 text-white placeholder:text-gray-600 text-sm" />
-                    <Button size="sm" variant="outline" className="border-white/10 text-gray-400 h-8 text-xs flex-shrink-0 hidden sm:flex" onClick={loadUsers}>Refresh</Button>
+                    <Button size="icon" variant="outline" className="border-white/10 text-gray-400 h-8 w-8 flex-shrink-0" onClick={loadUsers}>
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    </Button>
                     <Button size="sm" className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white h-8 gap-1.5 text-xs flex-shrink-0"
                       onClick={() => setShowAddUser(true)}>
-                      <Plus className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Add User</span><span className="sm:hidden">Add</span>
+                      <Plus className="w-3.5 h-3.5" /> Add User
                     </Button>
                   </div>
                 </div>

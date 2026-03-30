@@ -74,8 +74,10 @@ serve(async (req) => {
     const isMafi = username.toLowerCase() === '$mafi';
     
     if (!profile) {
-      // Create new profile
+      // Create new profile and update credential link
       profileId = crypto.randomUUID();
+      // Update the credential to point to the new profile
+      await supabase.from('user_credentials').update({ profile_id: profileId }).eq('username', username);
       
       if (isCPS) {
         const { data: newProfile } = await supabase

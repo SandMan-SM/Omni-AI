@@ -38,7 +38,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen bg-[#050505] text-white noise-overlay overflow-x-hidden">
       <CursorSpotlight />
       <Navbar 
         onBookDemo={() => setIsDemoModalOpen(true)} 

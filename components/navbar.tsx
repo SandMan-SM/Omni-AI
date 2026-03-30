@@ -41,15 +41,15 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? "bg-black/80 backdrop-blur-lg border-b border-white/5"
+        isScrolled || isMobileMenuOpen
+          ? "bg-black/90 backdrop-blur-lg border-b border-white/5"
           : "bg-transparent"
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 overflow-x-hidden">
-        <div className="flex items-center justify-between h-16 md:h-20">
+      <div className="max-w-7xl mx-auto px-5 overflow-x-hidden">
+        <div className="flex items-center justify-between h-14 md:h-20">
           <a href="/" className="flex items-center gap-2 flex-shrink-0" data-testid="link-home">
-            <span className="text-lg sm:text-xl md:text-2xl font-bold text-gradient">
+            <span className="text-xl md:text-2xl font-bold text-gradient">
               Omni AI
             </span>
           </a>
@@ -116,21 +116,21 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
-              className="md:hidden py-4 border-t border-white/5 bg-[#050505] overflow-y-auto max-h-[80vh]"
+              className="md:hidden py-3 border-t border-white/5 bg-[#050505]/95 backdrop-blur-xl overflow-y-auto max-h-[80vh]"
             >
-            <div className="flex flex-col gap-4 px-4">
+            <div className="flex flex-col gap-1 px-1">
               {navLinks.map((link) => (
                 <a
                   key={link.href}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`text-gray-400 hover:text-white transition-colors py-2 block ${pathname === link.href ? 'text-white' : ''}`}
+                  className={`text-gray-400 hover:text-white transition-colors py-3 px-4 block rounded-lg hover:bg-white/5 ${pathname === link.href ? 'text-white bg-white/5' : ''}`}
                   data-testid={`mobile-nav-${link.label.toLowerCase().replace(" ", "-")}`}
                 >
                   {link.label}
                 </a>
               ))}
-              <div className="flex flex-col gap-2 pt-4 border-t border-white/5">
+              <div className="flex flex-col gap-2 pt-3 mt-1 mx-4 border-t border-white/5">
                 {!profileLoading && profile?.role === 'super_admin' && (
                   <Button
                     variant="outline"

@@ -6,6 +6,21 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
+// GET /api/admin/users/[id] — fetch profile + credentials
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params;
+    const { data: creds } = await sb
+      .from("user_credentials")
+      .select("username, password_hash")
+      .eq("profile_id", id)
+      .single();
+    return NextResponse.json({ username: creds?.username || null, password: creds?.password_hash || null });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
 // PATCH /api/admin/users/[id] — update any profile field
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -53,6 +68,18 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       .single();
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+    // Update password if provided
+    if (body.password && typeof body.password === "string" && body.password.trim()) {
+      const { error: pwError } = await sb
+        .from("user_credentials")
+        .update({ password_hash: body.password.trim() })
+        .eq("profile_id", id);
+      if (pwError) {
+        return NextResponse.json({ error: `Profile saved but password update failed: ${pwError.message}` }, { status: 500 });
+      }
+    }
+
     return NextResponse.json({ success: true, profile: data });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
