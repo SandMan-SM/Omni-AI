@@ -408,20 +408,31 @@ function buildPremiumEmailHtml(content: PremiumContent): string {
 // ── Telegram ─────────────────────────────────────────────────────────────────
 
 /**
- * Low-level Telegram sender — sends raw text to the admin chat.
+ * Low-level Telegram sender — sends text with optional inline keyboard buttons.
  */
-async function sendTelegramMessage(text: string): Promise<boolean> {
+async function sendTelegramMessage(
+  text: string,
+  buttons?: { text: string; url: string }[]
+): Promise<boolean> {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return false;
   try {
+    const payload: Record<string, unknown> = {
+      chat_id: TELEGRAM_CHAT_ID,
+      text,
+      parse_mode: 'Markdown',
+      disable_web_page_preview: true,
+    };
+
+    if (buttons?.length) {
+      payload.reply_markup = {
+        inline_keyboard: buttons.map(b => [{ text: b.text, url: b.url }]),
+      };
+    }
+
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        chat_id: TELEGRAM_CHAT_ID,
-        text,
-        parse_mode: 'Markdown',
-        disable_web_page_preview: false,
-      }),
+      body: JSON.stringify(payload),
     });
     return res.ok;
   } catch (e) {
@@ -468,17 +479,6 @@ export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
   lines.push(`_${today}_`);
   lines.push('');
 
-  // Newsletter links — clean, just title + link
-  if (data.premiumContent?.slug) {
-    lines.push(`👑 Interlinked Premium: ${SITE_URL}/newsletter/${data.premiumContent.slug}`);
-    lines.push('');
-  }
-
-  if (data.freeContent?.slug) {
-    lines.push(`📰 Interlinked: ${SITE_URL}/newsletter/${data.freeContent.slug}`);
-    lines.push('');
-  }
-
   // Calendar
   if (data.meetingsToday === 0) {
     lines.push(`You currently have 0 meetings booked for today.`);
@@ -503,7 +503,24 @@ export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
     lines.push(`💡 *Insight:* _${data.insight}_`);
   }
 
-  return sendTelegramMessage(lines.join('\n'));
+  // Build inline keyboard buttons for newsletter links
+  const buttons: { text: string; url: string }[] = [];
+
+  if (data.premiumContent?.slug) {
+    buttons.push({
+      text: '👑 Interlinked Premium',
+      url: `${SITE_URL}/newsletter/${data.premiumContent.slug}`,
+    });
+  }
+
+  if (data.freeContent?.slug) {
+    buttons.push({
+      text: '📰 Interlinked',
+      url: `${SITE_URL}/newsletter/${data.freeContent.slug}`,
+    });
+  }
+
+  return sendTelegramMessage(lines.join('\n'), buttons);
 }
 
 // ── Email Sending ────────────────────────────────────────────────────────────
