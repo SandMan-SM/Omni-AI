@@ -27,11 +27,13 @@ export async function GET() {
       .order("created_at", { ascending: false }),
   ]);
 
-  return NextResponse.json({
+  const res = NextResponse.json({
     sends: sendsRes.data || [],
     subscribers: [],
     profiles: profilesRes.data || [],
     websiteSubscribers: websiteSubsRes.data || [],
     posts: postsRes.data || [],
   });
+  res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  return res;
 }

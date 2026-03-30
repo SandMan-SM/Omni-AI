@@ -195,9 +195,10 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const load = async () => {
     setLoading(true);
     try {
+      const bust = `_t=${Date.now()}`;
       const [historyRes, analyticsRes] = await Promise.all([
-        fetch("/api/admin/newsletter-history"),
-        fetch("/api/newsletter/analytics"),
+        fetch(`/api/admin/newsletter-history?${bust}`, { cache: 'no-store' }),
+        fetch(`/api/newsletter/analytics?${bust}`, { cache: 'no-store' }),
       ]);
       if (historyRes.ok) {
         const data = await historyRes.json();
@@ -349,6 +350,8 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         });
       }
       setEditingSub(null);
+      // Small delay to let DB writes propagate before re-fetching
+      await new Promise(r => setTimeout(r, 300));
       await load();
     } catch (err) {
       console.error("Save error:", err);
