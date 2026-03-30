@@ -328,18 +328,27 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       const isPremium = editTier === 'premium';
       const isDeactivated = editTier === 'deactivated';
       const subscriptionStatus = isDeactivated ? 'inactive' : isPremium ? 'active' : 'free';
+      const subTier = isDeactivated ? 'unsubscribed' : isPremium ? 'premium' : 'subscribed';
 
       if (editingSub.type === "profile") {
+        // Update the profile
         await fetch(`/api/admin/users/${editingSub.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ name: editName, email: editEmail, is_premium: isPremium, subscription_status: subscriptionStatus, newsletter_subscribed: !isDeactivated }),
         });
+        // Also sync newsletter_subscriptions via the toggle endpoint
+        await fetch("/api/admin/newsletter-toggle", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ profileId: editingSub.id, subscribed: !isDeactivated }),
+        });
       } else {
-        await fetch(`/api/admin/users/${editingSub.id}`, {
+        // Update newsletter_subscriptions table directly
+        await fetch(`/api/newsletter/subscribers/${editingSub.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ first_name: editName, email: editEmail, is_premium: isPremium, subscription_status: subscriptionStatus, subscribed: !isDeactivated }),
+          body: JSON.stringify({ first_name: editName, email: editEmail, subscription_tier: subTier, subscribed: !isDeactivated }),
         });
       }
       setEditingSub(null);
@@ -937,41 +946,38 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 </div>
                 <div>
                   <label className="text-[11px] text-gray-500 mb-1.5 block">Tier</label>
-                  <div className="flex gap-1.5">
+                  <div className="grid grid-cols-3 gap-1.5">
                     <button
                       type="button"
                       onClick={() => setEditTier('deactivated')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
                         editTier === 'deactivated'
                           ? "bg-red-500/10 border-red-500/20 text-red-400"
                           : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
                       }`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${editTier === 'deactivated' ? "bg-red-400" : "bg-gray-600"}`} />
                       Deactivated
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditTier('subscriber')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
                         editTier === 'subscriber'
                           ? "bg-purple-500/10 border-purple-500/20 text-purple-400"
                           : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
                       }`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${editTier === 'subscriber' ? "bg-purple-400" : "bg-gray-600"}`} />
                       Subscriber
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditTier('premium')}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                      className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
                         editTier === 'premium'
                           ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
                           : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
                       }`}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full ${editTier === 'premium' ? "bg-yellow-400" : "bg-gray-600"}`} />
                       Premium
                     </button>
                   </div>

@@ -6,9 +6,17 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-// PATCH /api/admin/newsletter-toggle
+// POST + PATCH /api/admin/newsletter-toggle
 // Toggle newsletter_subscribed on a profile and sync to newsletter_subscriptions
+export async function POST(req: Request) {
+  return handleToggle(req);
+}
+
 export async function PATCH(req: Request) {
+  return handleToggle(req);
+}
+
+async function handleToggle(req: Request) {
   try {
     const { profileId, subscribed } = await req.json();
     if (!profileId) {
