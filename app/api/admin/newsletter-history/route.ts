@@ -8,7 +8,7 @@ const sb = createClient(
 
 // GET /api/admin/newsletter-history
 export async function GET() {
-  const [sendsRes, profilesRes, postsRes] = await Promise.all([
+  const [sendsRes, profilesRes, postsRes, websiteSubsRes] = await Promise.all([
     sb
       .from("newsletter_sends")
       .select("*")
@@ -21,13 +21,17 @@ export async function GET() {
       .from("newsletter_posts")
       .select("id, slug, subject, tier, published_at")
       .order("published_at", { ascending: false }),
+    sb
+      .from("newsletter_subscriptions")
+      .select("id, email, first_name, subscription_tier, subscribed, created_at")
+      .order("created_at", { ascending: false }),
   ]);
 
   return NextResponse.json({
     sends: sendsRes.data || [],
     subscribers: [],
     profiles: profilesRes.data || [],
-    websiteSubscribers: [],
+    websiteSubscribers: websiteSubsRes.data || [],
     posts: postsRes.data || [],
   });
 }

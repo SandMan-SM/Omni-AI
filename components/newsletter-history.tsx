@@ -186,7 +186,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const [importUsersSearch, setImportUsersSearch] = useState("");
 
   // Edit subscriber
-  const [editingSub, setEditingSub] = useState<{ id: string; type: "profile" | "website"; name: string; email: string; premium: boolean; profileId?: string } | null>(null);
+  const [editingSub, setEditingSub] = useState<{ id: string; type: "profile" | "website"; name: string; email: string; premium: boolean; active: boolean; profileId?: string } | null>(null);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
   const [editTier, setEditTier] = useState<'deactivated' | 'subscriber' | 'premium'>('subscriber');
@@ -314,10 +314,10 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
   // Open edit
   const openEdit = (s: typeof allSubscribers[0]) => {
-    setEditingSub({ id: s.id, type: s.type, name: s.name, email: s.email, premium: s.premium, profileId: s.profileId });
+    setEditingSub({ id: s.id, type: s.type, name: s.name, email: s.email, premium: s.premium, active: s.active, profileId: s.profileId });
     setEditName(s.name);
     setEditEmail(s.email);
-    setEditTier(s.premium ? 'premium' : 'subscriber');
+    setEditTier(!s.active ? 'deactivated' : s.premium ? 'premium' : 'subscriber');
   };
 
   // Save edit
@@ -421,27 +421,31 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     profiles.filter(p => p.newsletter_subscribed === true && p.business_name),
   [profiles]);
 
-  // Build merged subscriber list
+  // Build merged subscriber list — includes deactivated users
   const allSubscribers = useMemo(() => {
     const seen = new Set<string>();
-    const result: { type: "profile" | "website"; email: string; name: string; premium: boolean; profileId?: string; id: string }[] = [];
+    const result: { type: "profile" | "website"; email: string; name: string; premium: boolean; active: boolean; profileId?: string; id: string }[] = [];
 
-    // Profiles toggled as subscriber in CRM
+    // ALL profiles that were ever subscribed (including deactivated)
     for (const p of profiles) {
-      if (p.newsletter_subscribed === true && p.email) {
+      if (p.email && (p.newsletter_subscribed === true || p.newsletter_subscribed === false)) {
+        // Only include if they were explicitly set (not null = never touched)
+        if (p.newsletter_subscribed === null) continue;
         seen.add(p.email.toLowerCase());
+        const isPremium = p.is_premium === true || p.subscription_status === "active" || (p.tier !== null && p.tier >= 2);
         result.push({
           type: "profile",
           email: p.email,
           name: p.name || p.first_name || p.email,
-          premium: p.is_premium === true || p.subscription_status === "active" || (p.tier !== null && p.tier >= 2),
+          premium: isPremium,
+          active: p.newsletter_subscribed === true,
           profileId: p.id,
           id: p.id,
         });
       }
     }
 
-    // Website "Stay in the loop" signups not already in CRM
+    // Website signups not already in CRM
     for (const ws of websiteSubs) {
       if (!seen.has(ws.email.toLowerCase())) {
         seen.add(ws.email.toLowerCase());
@@ -450,6 +454,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           email: ws.email,
           name: ws.first_name || ws.email,
           premium: (ws.subscription_tier || "").toLowerCase() === "premium",
+          active: ws.subscribed !== false,
           id: ws.id,
         });
       }
@@ -745,10 +750,10 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               {showImportMenu && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowImportMenu(false)} />
-                  <div className="absolute right-0 top-full mt-1 z-50 w-48 bg-[#111] border border-white/10 rounded-lg shadow-xl overflow-hidden">
-                    <label className="flex items-center gap-2 px-3 py-2.5 text-[12px] text-gray-300 hover:bg-white/[0.06] cursor-pointer transition-colors">
-                      <Upload className="w-3.5 h-3.5 text-gray-400" />
-                      Import from Computer
+                  <div className="absolute right-0 top-full mt-1 z-50 w-32 bg-[#0a0a0a] border border-white/10 rounded-lg shadow-2xl shadow-black/50 overflow-hidden">
+                    <label className="flex items-center gap-2 px-3 py-2 text-[11px] text-gray-300 hover:bg-white/[0.08] cursor-pointer transition-colors">
+                      <Upload className="w-3 h-3 text-gray-500" />
+                      Computer
                       <input
                         type="file"
                         accept=".csv"
@@ -761,6 +766,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                         }}
                       />
                     </label>
+                    <div className="border-t border-white/[0.06]" />
                     <button
                       onClick={() => {
                         setShowImportMenu(false);
@@ -768,10 +774,10 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                         setSelectedUserIds(new Set());
                         setImportUsersSearch("");
                       }}
-                      className="flex items-center gap-2 px-3 py-2.5 text-[12px] text-gray-300 hover:bg-white/[0.06] w-full text-left transition-colors"
+                      className="flex items-center gap-2 px-3 py-2 text-[11px] text-gray-300 hover:bg-white/[0.08] w-full text-left transition-colors"
                     >
-                      <UserPlus className="w-3.5 h-3.5 text-gray-400" />
-                      Import from Users
+                      <UserPlus className="w-3 h-3 text-gray-500" />
+                      Users
                     </button>
                   </div>
                 </>
@@ -885,11 +891,13 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                     <p className="text-[11px] text-gray-500 truncate">{s.email}</p>
                   </div>
                   <Badge className={`text-[10px] px-2 py-0.5 border flex-shrink-0 ${
-                    s.premium
-                      ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
-                      : "bg-green-500/10 text-green-400 border-green-500/20"
+                    !s.active
+                      ? "bg-red-500/10 text-red-400 border-red-500/20"
+                      : s.premium
+                        ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/20"
+                        : "bg-green-500/10 text-green-400 border-green-500/20"
                   }`}>
-                    {s.premium ? "Premium" : "Subscriber"}
+                    {!s.active ? "Deactivated" : s.premium ? "Premium" : "Subscriber"}
                   </Badge>
                 </button>
               ))
