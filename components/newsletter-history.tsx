@@ -189,7 +189,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const [editingSub, setEditingSub] = useState<{ id: string; type: "profile" | "website"; name: string; email: string; premium: boolean; profileId?: string } | null>(null);
   const [editName, setEditName] = useState("");
   const [editEmail, setEditEmail] = useState("");
-  const [editPremium, setEditPremium] = useState(false);
+  const [editTier, setEditTier] = useState<'deactivated' | 'subscriber' | 'premium'>('subscriber');
   const [editSaving, setEditSaving] = useState(false);
 
   const load = async () => {
@@ -317,7 +317,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     setEditingSub({ id: s.id, type: s.type, name: s.name, email: s.email, premium: s.premium, profileId: s.profileId });
     setEditName(s.name);
     setEditEmail(s.email);
-    setEditPremium(s.premium);
+    setEditTier(s.premium ? 'premium' : 'subscriber');
   };
 
   // Save edit
@@ -325,17 +325,21 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     if (!editingSub) return;
     setEditSaving(true);
     try {
+      const isPremium = editTier === 'premium';
+      const isDeactivated = editTier === 'deactivated';
+      const subscriptionStatus = isDeactivated ? 'inactive' : isPremium ? 'active' : 'free';
+
       if (editingSub.type === "profile") {
         await fetch(`/api/admin/users/${editingSub.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: editName, email: editEmail, is_premium: editPremium, subscription_status: editPremium ? "active" : "free" }),
+          body: JSON.stringify({ name: editName, email: editEmail, is_premium: isPremium, subscription_status: subscriptionStatus, newsletter_subscribed: !isDeactivated }),
         });
       } else {
         await fetch(`/api/admin/users/${editingSub.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ first_name: editName, email: editEmail, is_premium: editPremium, subscription_status: editPremium ? "active" : "free" }),
+          body: JSON.stringify({ first_name: editName, email: editEmail, is_premium: isPremium, subscription_status: subscriptionStatus, subscribed: !isDeactivated }),
         });
       }
       setEditingSub(null);
@@ -933,20 +937,44 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 </div>
                 <div>
                   <label className="text-[11px] text-gray-500 mb-1.5 block">Tier</label>
-                  <button
-                    type="button"
-                    onClick={() => setEditPremium(v => !v)}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${
-                      editPremium
-                        ? "bg-yellow-500/10 border-yellow-500/20"
-                        : "bg-white/[0.03] border-white/[0.08]"
-                    }`}
-                  >
-                    <span className={`w-2 h-2 rounded-full ${editPremium ? "bg-yellow-400" : "bg-gray-600"}`} />
-                    <span className={`text-xs font-medium ${editPremium ? "text-yellow-400" : "text-gray-400"}`}>
-                      {editPremium ? "Premium" : "Subscriber"}
-                    </span>
-                  </button>
+                  <div className="flex gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setEditTier('deactivated')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        editTier === 'deactivated'
+                          ? "bg-red-500/10 border-red-500/20 text-red-400"
+                          : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${editTier === 'deactivated' ? "bg-red-400" : "bg-gray-600"}`} />
+                      Deactivated
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditTier('subscriber')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        editTier === 'subscriber'
+                          ? "bg-purple-500/10 border-purple-500/20 text-purple-400"
+                          : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${editTier === 'subscriber' ? "bg-purple-400" : "bg-gray-600"}`} />
+                      Subscriber
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setEditTier('premium')}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-colors ${
+                        editTier === 'premium'
+                          ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
+                          : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
+                      }`}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${editTier === 'premium' ? "bg-yellow-400" : "bg-gray-600"}`} />
+                      Premium
+                    </button>
+                  </div>
                 </div>
               </div>
 
