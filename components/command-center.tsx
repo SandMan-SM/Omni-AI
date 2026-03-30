@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Users, Target, TrendingUp, Mail, Bot,
   BarChart3, CheckCircle, Activity, Video, Share2, Mic,
-  AlertTriangle, Zap, Crown, FileText,
+  AlertTriangle, Zap, FileText, Send, UserCircle, DollarSign,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -443,9 +443,32 @@ export function CommandCenter() {
         <div className="flex items-center gap-2 mb-3">
           <Bot className="w-4 h-4 text-purple-400" />
           <h3 className="text-sm font-semibold text-white">AI Agent Fleet</h3>
-          <Badge className="text-[9px] bg-yellow-500/10 text-yellow-400 border-0 px-1.5 py-0">In Development</Badge>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <AgentCard
+            name="Newsletter Agent"
+            icon={Send}
+            gradient="from-green-600 to-emerald-500"
+            color={COLORS.green}
+            status="active"
+            metrics={[
+              { label: "Posts Sent", value: operations.totalNewslettersSent },
+              { label: "Premium Posts", value: operations.premiumPosts },
+              { label: "Subscribers", value: operations.freeSubscribers },
+            ]}
+          />
+          <AgentCard
+            name="Personal Assistant"
+            icon={UserCircle}
+            gradient="from-pink-600 to-rose-500"
+            color={COLORS.pink}
+            status="development"
+            metrics={[
+              { label: "Tasks Completed", value: 0 },
+              { label: "Reminders Set", value: 0 },
+              { label: "Responses", value: 0 },
+            ]}
+          />
           <AgentCard
             name="Voice Agent"
             icon={Mic}
@@ -480,6 +503,18 @@ export function CommandCenter() {
               { label: "Videos Generated", value: agents.videoMarketing.videosGenerated },
               { label: "Views", value: agents.videoMarketing.views },
               { label: "Conversions", value: agents.videoMarketing.conversions },
+            ]}
+          />
+          <AgentCard
+            name="Financial Advisor"
+            icon={DollarSign}
+            gradient="from-emerald-600 to-teal-500"
+            color={COLORS.cyan}
+            status="development"
+            metrics={[
+              { label: "Reports Generated", value: 0 },
+              { label: "Forecasts", value: 0 },
+              { label: "Savings Found", value: 0 },
             ]}
           />
         </div>
