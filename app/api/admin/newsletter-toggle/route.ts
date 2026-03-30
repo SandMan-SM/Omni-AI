@@ -8,6 +8,7 @@ const sb = createClient(
 
 // POST + PATCH /api/admin/newsletter-toggle
 // Toggle newsletter_subscribed on a profile and sync to newsletter_subscriptions
+// Accepts: { profileId, subscribed, tier?: 'premium' | 'subscriber' | 'deactivated' }
 export async function POST(req: Request) {
   return handleToggle(req);
 }
@@ -18,15 +19,26 @@ export async function PATCH(req: Request) {
 
 async function handleToggle(req: Request) {
   try {
-    const { profileId, subscribed } = await req.json();
+    const body = await req.json();
+    const { profileId, subscribed, tier } = body;
     if (!profileId) {
       return NextResponse.json({ error: "profileId required" }, { status: 400 });
     }
 
+    // Determine state from tier if provided, otherwise use subscribed boolean
+    const isActive = tier ? tier !== 'deactivated' : subscribed;
+    const isPremiumTier = tier === 'premium';
+
     // 1. Update profiles table
+    const profileUpdates: Record<string, any> = { newsletter_subscribed: isActive };
+    if (tier) {
+      profileUpdates.is_premium = isPremiumTier;
+      profileUpdates.subscription_status = tier === 'deactivated' ? 'inactive' : isPremiumTier ? 'active' : 'free';
+    }
+
     const { data, error } = await sb
       .from("profiles")
-      .update({ newsletter_subscribed: subscribed })
+      .update(profileUpdates)
       .eq("id", profileId)
       .select("id, newsletter_subscribed, email, name, first_name, is_premium")
       .single();
@@ -40,9 +52,9 @@ async function handleToggle(req: Request) {
     if (profileEmail) {
       const firstName = data.first_name || data.name?.split(' ')[0] || '';
 
-      if (subscribed) {
-        // Upsert into newsletter_subscriptions when subscribing
-        const tier = data.is_premium ? 'premium' : 'subscribed';
+      if (isActive) {
+        // Determine the subscription tier
+        const subTier = isPremiumTier ? 'premium' : (data.is_premium ? 'premium' : 'subscribed');
         const { error: upsertError } = await sb
           .from("newsletter_subscriptions")
           .upsert(
@@ -50,7 +62,7 @@ async function handleToggle(req: Request) {
               email: profileEmail,
               first_name: firstName,
               subscribed: true,
-              subscription_tier: tier,
+              subscription_tier: subTier,
             },
             { onConflict: 'email' }
           );
@@ -59,10 +71,10 @@ async function handleToggle(req: Request) {
           console.error('newsletter_subscriptions upsert error:', upsertError.message);
         }
       } else {
-        // Set subscribed=false in newsletter_subscriptions when unsubscribing
+        // Deactivated — set subscribed=false but keep the row
         const { error: updateError } = await sb
           .from("newsletter_subscriptions")
-          .update({ subscribed: false })
+          .update({ subscribed: false, subscription_tier: 'unsubscribed' })
           .eq("email", profileEmail);
 
         if (updateError) {
@@ -71,7 +83,7 @@ async function handleToggle(req: Request) {
       }
     }
 
-    return NextResponse.json({ profile: { id: data.id, newsletter_subscribed: data.newsletter_subscribed } });
+    return NextResponse.json({ profile: { id: data.id, newsletter_subscribed: data.newsletter_subscribed, is_premium: data.is_premium } });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || "Failed" }, { status: 500 });
   }

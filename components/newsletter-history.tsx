@@ -325,34 +325,31 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     if (!editingSub) return;
     setEditSaving(true);
     try {
-      const isPremium = editTier === 'premium';
-      const isDeactivated = editTier === 'deactivated';
-      const subscriptionStatus = isDeactivated ? 'inactive' : isPremium ? 'active' : 'free';
-      const subTier = isDeactivated ? 'unsubscribed' : isPremium ? 'premium' : 'subscribed';
+      const subTier = editTier === 'deactivated' ? 'unsubscribed' : editTier === 'premium' ? 'premium' : 'subscribed';
 
       if (editingSub.type === "profile") {
-        // Update the profile
+        // Update name/email on profile first
         await fetch(`/api/admin/users/${editingSub.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: editName, email: editEmail, is_premium: isPremium, subscription_status: subscriptionStatus, newsletter_subscribed: !isDeactivated }),
+          body: JSON.stringify({ name: editName, email: editEmail }),
         });
-        // Also sync newsletter_subscriptions via the toggle endpoint
+        // Then sync tier + subscription state to both tables in one call
         await fetch("/api/admin/newsletter-toggle", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ profileId: editingSub.id, subscribed: !isDeactivated }),
+          body: JSON.stringify({ profileId: editingSub.id, subscribed: editTier !== 'deactivated', tier: editTier }),
         });
       } else {
-        // Update newsletter_subscriptions table directly
+        // Website subscriber — update newsletter_subscriptions directly
         await fetch(`/api/newsletter/subscribers/${editingSub.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ first_name: editName, email: editEmail, subscription_tier: subTier, subscribed: !isDeactivated }),
+          body: JSON.stringify({ first_name: editName, email: editEmail, subscription_tier: subTier, subscribed: editTier !== 'deactivated' }),
         });
       }
       setEditingSub(null);
-      load();
+      await load();
     } catch (err) {
       console.error("Save error:", err);
     } finally {
