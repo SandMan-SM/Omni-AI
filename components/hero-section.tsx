@@ -152,7 +152,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
                 key={partner.name}
                 src={partner.logo}
                 alt={partner.name}
-                className="h-10 sm:h-12 md:h-14 opacity-70 hover:opacity-100 transition-opacity"
+                className="h-14 sm:h-16 md:h-20 opacity-70 hover:opacity-100 transition-opacity"
               />
             ))}
           </div>
