@@ -2,18 +2,25 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   Users, Target, TrendingUp, Mail, Bot,
   BarChart3, CheckCircle, Activity, Video, Share2, Mic,
-  AlertTriangle, Zap,
+  AlertTriangle, Zap, Crown, FileText,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  RadialBarChart, RadialBar,
 } from "recharts";
+
+interface RecentPost {
+  slug: string;
+  subject: string;
+  tier: string;
+  published_at: string;
+}
 
 interface Metrics {
   revenue: {
@@ -37,6 +44,7 @@ interface Metrics {
   charts: {
     userGrowth: { date: string; signups: number }[];
     sendHistory: { date: string; subject: string }[];
+    recentPosts: RecentPost[];
   };
   agents: {
     voiceAgent: { status: string; callsHandled: number; avgDuration: string; satisfaction: number };
@@ -85,7 +93,7 @@ export function CommandCenter() {
     return (
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <div key={i} className="h-44 rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse" />
+          <div key={i} className="h-32 rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse" />
         ))}
       </div>
     );
@@ -103,22 +111,11 @@ export function CommandCenter() {
     { name: "Clients", value: revenue.totalClients, color: COLORS.green },
   ].filter(d => d.value > 0);
 
-  const newsletterData = [
-    { name: "Premium", posts: operations.premiumPosts, color: COLORS.yellow },
-    { name: "Free", posts: operations.freePosts, color: COLORS.purple },
-  ];
-
-  const hasNewsletterPosts = operations.premiumPosts > 0 || operations.freePosts > 0;
-
   const healthData = [
     { name: "Healthy", value: Math.max(clientHealth.totalClients - clientHealth.criticalClients, 0), color: COLORS.green },
     { name: "Critical", value: clientHealth.criticalClients, color: COLORS.red },
     { name: "Follow-Up", value: clientHealth.needFollowUp, color: COLORS.yellow },
   ].filter(d => d.value > 0);
-
-  const conversionGauge = [
-    { name: "Conversion", value: revenue.conversionRate, fill: COLORS.cyan },
-  ];
 
   const hasAlerts = alerts.leadsNotContactedIn24h > 0 || alerts.criticalClients > 0;
 
@@ -135,18 +132,18 @@ export function CommandCenter() {
           <Card className="bg-red-500/[0.06] border-red-500/20">
             <CardContent className="p-3 flex items-center gap-3">
               <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs">
+              <div className="flex flex-wrap items-center text-xs">
                 {alerts.leadsNotContactedIn24h > 0 && (
-                  <span className="text-gray-300"><span className="text-red-400 font-semibold">{alerts.leadsNotContactedIn24h} leads</span> not contacted in 24h+</span>
+                  <span className="text-gray-300 mr-1"><span className="text-red-400 font-semibold">{alerts.leadsNotContactedIn24h} leads</span> not contacted in 24h+</span>
                 )}
                 {alerts.leadsNotContactedIn24h > 0 && alerts.criticalClients > 0 && (
-                  <span className="text-gray-600 mx-1">·</span>
+                  <span className="text-gray-600 mx-2">·</span>
                 )}
                 {alerts.criticalClients > 0 && (
-                  <span className="text-gray-300"><span className="text-red-400 font-semibold">{alerts.criticalClients} clients</span> at critical health</span>
+                  <span className="text-gray-300 mr-1"><span className="text-red-400 font-semibold">{alerts.criticalClients} clients</span> at critical health</span>
                 )}
                 {(alerts.leadsNotContactedIn24h > 0 || alerts.criticalClients > 0) && alerts.needFollowUp > 0 && (
-                  <span className="text-gray-600 mx-1">·</span>
+                  <span className="text-gray-600 mx-2">·</span>
                 )}
                 {alerts.needFollowUp > 0 && (
                   <span className="text-gray-300"><span className="text-yellow-400 font-semibold">{alerts.needFollowUp}</span> need follow-up</span>
@@ -189,8 +186,8 @@ export function CommandCenter() {
         />
       </div>
 
-      {/* ── Row 2: Pipeline Donut + User Growth Area Chart ──── */}
-      <div className="grid lg:grid-cols-2 gap-4">
+      {/* ── Row 2: Pipeline Donut + User Growth ──────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Pipeline Breakdown */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
@@ -202,13 +199,13 @@ export function CommandCenter() {
             </div>
             {pipelineData.length > 0 ? (
               <div className="flex items-center gap-6">
-                <div className="w-[160px] h-[160px] flex-shrink-0">
+                <div className="w-[150px] h-[150px] flex-shrink-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={pipelineData}
                         cx="50%" cy="50%"
-                        innerRadius={40} outerRadius={65}
+                        innerRadius={38} outerRadius={62}
                         paddingAngle={3}
                         dataKey="value"
                         stroke="none"
@@ -232,7 +229,7 @@ export function CommandCenter() {
                 </div>
               </div>
             ) : (
-              <div className="h-[140px] flex items-center justify-center">
+              <div className="h-[150px] flex items-center justify-center">
                 <p className="text-xs text-gray-600">No contacts yet</p>
               </div>
             )}
@@ -248,7 +245,7 @@ export function CommandCenter() {
               </h3>
               <span className="text-[10px] text-gray-500">Last 7 days</span>
             </div>
-            <div className="h-[160px]">
+            <div className="h-[150px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={charts.userGrowth}>
                   <defs>
@@ -283,37 +280,26 @@ export function CommandCenter() {
         </Card>
       </div>
 
-      {/* ── Row 3: Conversion Gauge + Newsletter Breakdown + Client Health ── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Conversion Gauge */}
+      {/* ── Row 3: Conversion + Recent Posts + Client Health ──── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Conversion Rate — simple stat, no chart overlap */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
             <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
               <Zap className="w-4 h-4 text-cyan-400" /> Conversion Rate
             </h3>
-            <div className="flex flex-col items-center">
-              <div className="w-[130px] h-[80px] relative">
-                <ResponsiveContainer width="100%" height="100%">
-                  <RadialBarChart
-                    cx="50%" cy="100%"
-                    innerRadius="80%" outerRadius="110%"
-                    startAngle={180} endAngle={0}
-                    data={conversionGauge}
-                    barSize={10}
-                  >
-                    <RadialBar
-                      dataKey="value"
-                      cornerRadius={10}
-                      background={{ fill: "rgba(255,255,255,0.05)" }}
-                    />
-                  </RadialBarChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-end pb-0">
-                  <span className="text-2xl font-bold text-white">{revenue.conversionRate}%</span>
-                </div>
+            <div className="flex flex-col items-center py-2">
+              <p className="text-4xl font-bold text-white">{revenue.conversionRate}%</p>
+              <p className="text-xs text-gray-500 mt-2">of leads converted</p>
+              <div className="w-full max-w-[180px] h-2 bg-white/[0.06] rounded-full mt-4 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${Math.min(revenue.conversionRate, 100)}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500"
+                />
               </div>
-              <p className="text-[10px] text-gray-500 mt-2">of leads converted</p>
-              <div className="flex items-center gap-3 mt-2 text-[10px]">
+              <div className="flex items-center gap-3 mt-3 text-[11px]">
                 <span className="text-gray-500">{revenue.totalLeads} leads</span>
                 <span className="text-gray-600">→</span>
                 <span className="text-green-400 font-medium">{revenue.totalClients} clients</span>
@@ -322,36 +308,42 @@ export function CommandCenter() {
           </CardContent>
         </Card>
 
-        {/* Newsletter Breakdown */}
+        {/* Newsletter Content — 3 most recent posts */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Mail className="w-4 h-4 text-blue-400" /> Newsletter Content
-            </h3>
-            {hasNewsletterPosts ? (
-              <>
-                <div className="h-[110px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={newsletterData} barSize={36}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                      <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
-                      <YAxis hide allowDecimals={false} />
-                      <Tooltip content={<ChartTooltip />} />
-                      <Bar dataKey="posts" name="Posts" radius={[6, 6, 0, 0]}>
-                        {newsletterData.map((d, i) => (
-                          <Cell key={i} fill={d.color} />
-                        ))}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="flex items-center justify-between mt-3 text-[10px] text-gray-500">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Mail className="w-4 h-4 text-blue-400" /> Newsletter Content
+              </h3>
+              <span className="text-[10px] text-gray-500">{operations.premiumPosts + operations.freePosts} posts</span>
+            </div>
+            {charts.recentPosts && charts.recentPosts.length > 0 ? (
+              <div className="space-y-2.5">
+                {charts.recentPosts.map((post: RecentPost) => (
+                  <Link
+                    key={post.slug}
+                    href={`/newsletter/${post.slug}`}
+                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04] hover:border-white/10 hover:bg-white/[0.04] transition-colors group"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0 group-hover:text-white transition-colors" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-white truncate group-hover:text-white">{post.subject}</p>
+                      <p className="text-[10px] text-gray-600 mt-0.5">
+                        {new Date(post.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                      </p>
+                    </div>
+                    <Badge className={`text-[9px] px-1.5 py-0 border-0 flex-shrink-0 ${post.tier === "premium" ? "bg-yellow-500/10 text-yellow-400" : "bg-purple-500/10 text-purple-400"}`}>
+                      {post.tier === "premium" ? "Premium" : "Free"}
+                    </Badge>
+                  </Link>
+                ))}
+                <div className="flex items-center justify-between pt-1 text-[10px] text-gray-500">
                   <span>{operations.premiumSubscribers} premium subs</span>
                   <span>{operations.freeSubscribers} total subs</span>
                 </div>
-              </>
+              </div>
             ) : (
-              <div className="flex flex-col items-center justify-center h-[130px]">
+              <div className="flex flex-col items-center justify-center py-6">
                 <Mail className="w-6 h-6 text-gray-700 mb-2" />
                 <p className="text-xs text-gray-600">No posts published yet</p>
                 <div className="flex items-center gap-4 mt-3 text-[10px] text-gray-500">
@@ -371,13 +363,13 @@ export function CommandCenter() {
             </h3>
             {healthData.length > 0 ? (
               <div className="flex items-center gap-4">
-                <div className="w-[120px] h-[120px] flex-shrink-0">
+                <div className="w-[110px] h-[110px] flex-shrink-0">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={healthData}
                         cx="50%" cy="50%"
-                        innerRadius={32} outerRadius={50}
+                        innerRadius={30} outerRadius={48}
                         paddingAngle={4}
                         dataKey="value"
                         stroke="none"
@@ -453,7 +445,7 @@ export function CommandCenter() {
           <h3 className="text-sm font-semibold text-white">AI Agent Fleet</h3>
           <Badge className="text-[9px] bg-yellow-500/10 text-yellow-400 border-0 px-1.5 py-0">In Development</Badge>
         </div>
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <AgentCard
             name="Voice Agent"
             icon={Mic}
@@ -506,7 +498,7 @@ function BigMetric({ label, value, sub, icon: Icon, color }: {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
       <Card className="bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] transition-colors">
         <CardContent className="p-4">
-          <div className="flex items-center justify-between mb-3">
+          <div className="mb-3">
             <Icon className={`w-5 h-5 ${color} opacity-70`} />
           </div>
           <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{typeof value === "number" ? value.toLocaleString() : value}</p>

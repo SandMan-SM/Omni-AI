@@ -99,6 +99,14 @@ export async function GET() {
     subject: s.subject,
   })).reverse();
 
+  // --- Recent newsletter posts (3 most recent) ---
+  const recentPosts = allPosts.slice(0, 3).map(p => ({
+    slug: p.slug,
+    subject: p.subject,
+    tier: p.tier,
+    published_at: p.published_at,
+  }));
+
   return NextResponse.json({
     revenue: {
       totalLeads,
@@ -135,6 +143,7 @@ export async function GET() {
     charts: {
       userGrowth,
       sendHistory,
+      recentPosts,
     },
     agents: {
       voiceAgent: { status: "development", callsHandled: 0, avgDuration: "0:00", satisfaction: 0 },
