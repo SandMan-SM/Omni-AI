@@ -130,11 +130,8 @@ export default async function NewsletterPostPage({ params }: Props) {
             {post.insights?.map((insight: string, i: number) => (
               <div
                 key={i}
-                className={`flex gap-4 p-4 rounded-xl ${isPremium ? "bg-yellow-500/[0.02] border border-yellow-500/[0.06]" : "bg-white/[0.02] border border-white/[0.04]"}`}
+                className={`p-4 rounded-xl ${isPremium ? "bg-yellow-500/[0.02] border border-yellow-500/[0.06]" : "bg-white/[0.02] border border-white/[0.04]"}`}
               >
-                <span className={`font-bold text-lg mt-0.5 flex-shrink-0 ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
-                  {i + 1}
-                </span>
                 <p className="text-gray-300 leading-relaxed">{insight}</p>
               </div>
             ))}
