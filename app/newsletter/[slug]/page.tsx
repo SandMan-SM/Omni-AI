@@ -109,7 +109,7 @@ export default async function NewsletterPostPage({ params }: Props) {
 
         {/* Quote */}
         {post.quote && (
-          <blockquote className={`border-l-2 ${isPremium ? "border-yellow-500" : "border-purple-500"} pl-6 my-8`}>
+          <blockquote className={`border-l-2 ${isPremium ? "border-yellow-500" : "border-purple-500"} pl-4 my-8`}>
             <p className="text-lg text-gray-300 italic leading-relaxed">
               {post.quote}
             </p>
@@ -117,7 +117,7 @@ export default async function NewsletterPostPage({ params }: Props) {
         )}
 
         {/* Intro */}
-        <div className={`rounded-2xl p-6 md:p-8 mb-10 ${isPremium ? "bg-yellow-500/[0.03] border border-yellow-500/[0.08]" : "bg-white/[0.03] border border-white/[0.06]"}`}>
+        <div className="mb-10">
           <p className="text-lg text-gray-200 leading-relaxed">{post.intro}</p>
         </div>
 
@@ -128,10 +128,7 @@ export default async function NewsletterPostPage({ params }: Props) {
           </h2>
           <div className="space-y-4">
             {post.insights?.map((insight: string, i: number) => (
-              <div
-                key={i}
-                className={`p-4 rounded-xl ${isPremium ? "bg-yellow-500/[0.02] border border-yellow-500/[0.06]" : "bg-white/[0.02] border border-white/[0.04]"}`}
-              >
+              <div key={i} className="py-4">
                 <p className="text-gray-300 leading-relaxed">{insight}</p>
               </div>
             ))}
@@ -140,7 +137,7 @@ export default async function NewsletterPostPage({ params }: Props) {
 
         {/* Premium exclusive sections */}
         {isPremium && post.exclusive_insight && (
-          <div className="bg-yellow-500/[0.06] border border-yellow-500/[0.15] rounded-2xl p-6 md:p-8 mb-10">
+          <div className="mb-10">
             <p className="text-xs font-bold uppercase tracking-widest text-yellow-400 mb-3">
               Exclusive Insight
             </p>
@@ -149,7 +146,7 @@ export default async function NewsletterPostPage({ params }: Props) {
         )}
 
         {isPremium && post.ai_recommendation && (
-          <div className="bg-yellow-500/[0.04] border border-yellow-500/[0.10] rounded-2xl p-6 md:p-8 mb-10">
+          <div className="mb-10">
             <p className="text-xs font-bold uppercase tracking-widest text-yellow-400 mb-3">
               AI Tool of the Week
             </p>
@@ -158,7 +155,7 @@ export default async function NewsletterPostPage({ params }: Props) {
         )}
 
         {/* Power Move */}
-        <div className={`rounded-2xl p-6 md:p-8 mb-10 ${isPremium ? "bg-yellow-500/[0.08] border border-yellow-500/20" : "bg-purple-500/[0.08] border border-purple-500/20"}`}>
+        <div className="mb-10">
           <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
             Power Move
           </p>
@@ -169,7 +166,7 @@ export default async function NewsletterPostPage({ params }: Props) {
 
         {/* Offer CTA — FREE posts only */}
         {!isPremium && post.offer && (
-          <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-6 md:p-8 mb-10 text-center">
+          <div className="mb-10 text-center">
             <p className="text-gray-200 leading-relaxed mb-4">{post.offer}</p>
             <Link
               href="/newsletter/premium/info"
