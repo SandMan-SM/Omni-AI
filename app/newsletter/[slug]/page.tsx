@@ -136,24 +136,6 @@ export default async function NewsletterPostPage({ params }: Props) {
         </div>
 
         {/* Premium exclusive sections */}
-        {isPremium && post.exclusive_insight && (
-          <div className="mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-400 mb-3">
-              Exclusive Insight
-            </p>
-            <p className="text-lg text-gray-200 leading-relaxed">{post.exclusive_insight}</p>
-          </div>
-        )}
-
-        {isPremium && post.ai_recommendation && (
-          <div className="mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-yellow-400 mb-3">
-              AI Tool of the Week
-            </p>
-            <p className="text-lg text-gray-200 leading-relaxed">{post.ai_recommendation}</p>
-          </div>
-        )}
-
         {/* Power Move */}
         <div className="mb-10">
           <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
