@@ -11,7 +11,7 @@ SET
   tier = 99,
   tier_label = 'admin',
   updated_at = NOW()
-WHERE username = '$Mafi' OR email IN ('sitanim6@gmail.com', 'sitanim8@gmail.com', 'mafi@admin.com');
+WHERE username = '$Mafi' OR email = 'sitanim8@gmail.com';
 
 -- Add campaigns table for per-user campaign assignments
 CREATE TABLE IF NOT EXISTS user_campaigns (
@@ -48,4 +48,4 @@ CREATE POLICY IF NOT EXISTS "Admins can view all campaigns"
 
 -- Verify $Mafi update
 SELECT username, email, role, is_admin, tier, tier_label FROM profiles
-WHERE username = '$Mafi' OR email IN ('sitanim6@gmail.com', 'sitanim8@gmail.com', 'mafi@admin.com');
+WHERE username = '$Mafi' OR email = 'sitanim8@gmail.com';

@@ -126,7 +126,7 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         } else {
           // Create minimal profile only if none exists
           const isFray = user.email === 'fray1959@gmail.com' || user.username?.toLowerCase() === 'fray';
-          const isMafi = user.email === 'sitanim6@gmail.com' || user.email === 'sitanim8@gmail.com' || user.username === '$Mafi';
+          const isMafi = user.email === 'sitanim8@gmail.com' || user.username === '$Mafi';
 
           const newProfile: Partial<Profile> = {
             id: user.id,

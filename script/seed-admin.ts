@@ -13,13 +13,13 @@ async function main() {
   try {
     await client.query(
       `INSERT INTO admin_users (email) VALUES ($1) ON CONFLICT (email) DO NOTHING`,
-      ["sitanim6@gmail.com"]
+      ["sitanim8@gmail.com"]
     );
     console.log("Admin user added");
 
     await client.query(
       `INSERT INTO profiles (email, is_sponsor, tier) VALUES ($1, $2, $3) ON CONFLICT (email) DO UPDATE SET is_sponsor = $2, tier = $3`,
-      ["sitanim6@gmail.com", true, 3]
+      ["sitanim8@gmail.com", true, 3]
     );
     console.log("Profile added with sponsor tier 3");
   } finally {

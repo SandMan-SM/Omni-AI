@@ -60,7 +60,7 @@ async function setupAuth() {
 
     // Check if users exist in auth.users
     const usersResult = await pool.query(`
-      SELECT id, email FROM auth.users WHERE email IN ('sitanim6@gmail.com', 'sitanim8@gmail.com');
+      SELECT id, email FROM auth.users WHERE email = 'sitanim8@gmail.com';
     `);
     
     const users = usersResult.rows;
@@ -70,11 +70,11 @@ async function setupAuth() {
       console.log(`Processing user: ${user.email} (${user.id})`);
       
       // Upsert profile
-      if (user.email === 'sitanim6@gmail.com') {
+      if (user.email === 'sitanim8@gmail.com') {
         // Admin with empire tier
         await pool.query(`
           INSERT INTO profiles (id, email, role, is_admin, is_sponsor, tier, name, onboarding_completed)
-          VALUES ($1, $2, 'admin', true, true, 3, 'Admin User', true)
+          VALUES ($1, $2, 'admin', true, true, 3, '$Mafi', true)
           ON CONFLICT (id) DO UPDATE SET
             role = 'admin',
             is_admin = true,
@@ -83,26 +83,13 @@ async function setupAuth() {
             updated_at = NOW();
         `, [user.id, user.email]);
         console.log(`  ✓ Set as admin with empire tier (tier 3)`);
-      } else if (user.email === 'sitanim8@gmail.com') {
-        // Regular free subscriber
-        await pool.query(`
-          INSERT INTO profiles (id, email, role, is_admin, is_sponsor, tier, onboarding_completed)
-          VALUES ($1, $2, 'user', false, false, 0, true)
-          ON CONFLICT (id) DO UPDATE SET
-            role = 'user',
-            is_admin = false,
-            is_sponsor = false,
-            tier = 0,
-            updated_at = NOW();
-        `, [user.id, user.email]);
-        console.log(`  ✓ Set as regular free subscriber (tier 0)`);
       }
     }
 
     // Verify profiles
     const profilesResult = await pool.query(`
       SELECT email, role, is_admin, is_sponsor, tier FROM profiles
-      WHERE email IN ('sitanim6@gmail.com', 'sitanim8@gmail.com');
+      WHERE email = 'sitanim8@gmail.com';
     `);
     
     console.log('\n--- Profile Verification ---');

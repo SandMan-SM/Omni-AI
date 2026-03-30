@@ -178,7 +178,7 @@ The table is auto-created on first user profile access. Required columns:
 - business_owner, business_name, business_niche, business_details
 - activated_platforms (text array), onboarding_completed (boolean)
 
-Admin user: sitanim6@gmail.com (auto-assigned admin role on profile creation)
+Admin user: sitanim8@gmail.com (auto-assigned admin role on profile creation)
 
 ## User Roles & Access
 - **user**: Default role, access to /dashboard and /join

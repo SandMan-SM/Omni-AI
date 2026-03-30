@@ -13,4 +13,4 @@ WHERE is_sponsor = true OR role IN ('admin', 'sponsor');
 
 -- Update $Mafi to admin crm status
 UPDATE profiles SET crm_status = 'client', lead_score = 'hot'
-WHERE username = '$Mafi' OR email IN ('sitanim6@gmail.com', 'sitanim8@gmail.com', 'mafi@admin.com');
+WHERE username = '$Mafi' OR email = 'sitanim8@gmail.com';
