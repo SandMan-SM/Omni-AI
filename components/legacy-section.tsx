@@ -66,15 +66,16 @@ export function LegacySection() {
                 className="relative group"
               >
                 <div className="glass-card rounded-md p-8 h-full border border-white/5 group-hover:border-white/10 transition-colors">
-                  <div
-                    className={`w-14 h-14 rounded-md bg-gradient-to-br ${item.color} flex items-center justify-center mb-6`}
-                  >
-                    <Icon className="w-7 h-7 text-white" />
+                  <div className="flex items-start justify-between gap-4 mb-4">
+                    <h3 className="text-2xl font-semibold text-white">
+                      {item.title}
+                    </h3>
+                    <div
+                      className={`w-14 h-14 rounded-md bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0`}
+                    >
+                      <Icon className="w-7 h-7 text-white" />
+                    </div>
                   </div>
-
-                  <h3 className="text-2xl font-semibold text-white mb-4">
-                    {item.title}
-                  </h3>
 
                   <p className="text-gray-400 leading-relaxed">
                     {item.description}

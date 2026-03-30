@@ -34,7 +34,7 @@ export function EcosystemSection() {
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-5 gap-6 sm:gap-8 md:gap-10 lg:gap-12 max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-3xl mx-auto">
+        <div className="flex justify-center items-start gap-6 sm:gap-8 md:gap-10 lg:gap-14">
           {flowSteps.map((step, index) => {
             const Icon = step.icon;
             return (
@@ -48,12 +48,12 @@ export function EcosystemSection() {
               >
                 <motion.div
                   whileHover={{ scale: 1.05 }}
-                  className="relative w-full aspect-square"
+                  className="relative"
                 >
                   <div
-                    className={`w-full h-full rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
+                    className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
                   >
-                    <Icon className="w-1/2 h-1/2 text-white" />
+                    <Icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-white" />
                   </div>
                   <motion.div
                     animate={{ opacity: [0.2, 0.45, 0.2] }}

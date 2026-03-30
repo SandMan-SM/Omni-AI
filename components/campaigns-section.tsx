@@ -146,13 +146,14 @@ export function CampaignsSection() {
                 className="relative group"
               >
                 <div className="glass-card rounded-md p-6 md:p-8 h-full border border-white/5 group-hover:border-white/10 transition-colors">
-                  <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mb-5 border border-white/5">
-                    <Icon className="w-6 h-6 text-purple-400" />
+                  <div className="flex items-start justify-between gap-4 mb-3">
+                    <h3 className="text-lg md:text-xl font-semibold text-white">
+                      {feature.title}
+                    </h3>
+                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center flex-shrink-0 border border-white/5">
+                      <Icon className="w-6 h-6 text-purple-400" />
+                    </div>
                   </div>
-
-                  <h3 className="text-lg md:text-xl font-semibold text-white mb-3">
-                    {feature.title}
-                  </h3>
 
                   <p className="text-gray-400 text-sm leading-relaxed">
                     {feature.description}

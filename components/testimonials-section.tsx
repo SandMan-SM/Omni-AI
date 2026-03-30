@@ -57,13 +57,7 @@ export function TestimonialsSection() {
               className="relative group"
             >
               <div className="glass-card rounded-md p-8 h-full border border-white/5 group-hover:border-white/10 transition-colors flex flex-col">
-                <Quote className="w-8 h-8 text-purple-500/50 mb-4" />
-                
-                <p className="text-gray-300 leading-relaxed flex-grow mb-6">
-                  "{testimonial.quote}"
-                </p>
-
-                <div className="flex items-center justify-between pt-4 border-t border-white/5">
+                <div className="flex items-center justify-between mb-6">
                   <div>
                     <p className="font-semibold text-white" data-testid={`text-testimonial-name-${index}`}>
                       {testimonial.name}
@@ -72,13 +66,17 @@ export function TestimonialsSection() {
                       {testimonial.title}
                     </p>
                   </div>
-                  <span 
+                  <span
                     className="px-3 py-1 rounded-full bg-white/5 text-xs text-gray-400"
                     data-testid={`badge-testimonial-tier-${index}`}
                   >
                     {testimonial.tier}
                   </span>
                 </div>
+
+                <p className="text-gray-300 leading-relaxed flex-grow">
+                  {testimonial.quote}
+                </p>
               </div>
             </motion.div>
           ))}
