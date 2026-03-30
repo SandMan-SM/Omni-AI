@@ -25,6 +25,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { SponsorTab } from "@/components/sponsor-tab";
 import { ExecutiveInsights } from "@/components/executive-insights";
+import { CommandCenter } from "@/components/command-center";
 
 function CircularProgress({ value, size = 120, strokeWidth = 10, color = "#a855f7", label = "" }: { value: number; size?: number; strokeWidth?: number; color?: string; label?: string }) {
   const radius = (size - strokeWidth) / 2;
@@ -347,32 +348,32 @@ export default function Dashboard() {
           </div>
         </motion.div>
 
-        <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            {metrics.map((metric, i) => {
-              const MetricIcon = metric.icon;
-              const isLocked = !isSponsor || (isSponsor && !profile?.sponsor_insights_paid);
-              return (
-                <motion.div key={metric.label} transition={{ duration: 0.4, delay: i * 0.06 }}>
-                  <Card className="bg-white/[0.03] border-white/[0.06]">
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <MetricIcon className="w-5 h-5 text-gray-500" />
-                        <span className={`text-xs font-medium ${isLocked ? 'blur-sm' : 'text-green-400'}`} data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
-                      </div>
-                      <p className={`text-2xl font-bold text-white ${isLocked ? 'blur-sm' : ''}`} data-testid={`text-metric-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.value}</p>
-                      <p className="text-xs text-gray-500 mt-1" data-testid={`text-label-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.label}</p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
-          </div>
-        </motion.div>
-
-        {isAdmin && (
+        {isAdmin ? (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-            <ExecutiveInsights />
+            <CommandCenter />
+          </motion.div>
+        ) : (
+          <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+              {metrics.map((metric, i) => {
+                const MetricIcon = metric.icon;
+                const isLocked = !isSponsor || (isSponsor && !profile?.sponsor_insights_paid);
+                return (
+                  <motion.div key={metric.label} transition={{ duration: 0.4, delay: i * 0.06 }}>
+                    <Card className="bg-white/[0.03] border-white/[0.06]">
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <MetricIcon className="w-5 h-5 text-gray-500" />
+                          <span className={`text-xs font-medium ${isLocked ? 'blur-sm' : 'text-green-400'}`} data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
+                        </div>
+                        <p className={`text-2xl font-bold text-white ${isLocked ? 'blur-sm' : ''}`} data-testid={`text-metric-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.value}</p>
+                        <p className="text-xs text-gray-500 mt-1" data-testid={`text-label-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.label}</p>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
           </motion.div>
         )}
 
