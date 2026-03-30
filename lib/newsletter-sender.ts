@@ -407,50 +407,103 @@ function buildPremiumEmailHtml(content: PremiumContent): string {
 
 // ── Telegram ─────────────────────────────────────────────────────────────────
 
-export async function sendToTelegram(content: NewsletterContent): Promise<boolean> {
+/**
+ * Low-level Telegram sender — sends raw text to the admin chat.
+ */
+async function sendTelegramMessage(text: string): Promise<boolean> {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return false;
-
-  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const insights = content.insights.map((ins, i) => `  ${i + 1}. ${ins}`).join('\n');
-  const isPremium = content.tier === 'premium';
-  const prefix = isPremium ? '👑 *Interlinked Premium*' : '📰 *Interlinked Daily*';
-  const dayTag = content.day_type ? ` · _${content.day_type === 'value' ? 'Value Day' : content.day_type === 'insight' ? 'Insight Day' : 'Offer Day'}_` : '';
-
-  // Quote (Left Brain) + Newsletter (Right Brain) + Offer (Commitment)
-  const parts = [
-    `${prefix}${dayTag}`,
-    `_${today}_`,
-    '',
-    // Left Brain — Quote
-    content.quote ? `🧠 ${content.quote}` : '',
-    '',
-    // Right Brain — Newsletter
-    content.intro,
-    '',
-    '*Key Insights:*',
-    insights,
-    '',
-    `💡 *Power Move:* _${content.power_move}_`,
-    '',
-    // Commitment — Offer
-    content.offer ? `🔥 *Today's Offer:* ${content.offer}` : '',
-    '',
-    `_${content.closing}_`,
-    '',
-    content.slug ? `📖 Read: ${SITE_URL}/newsletter/${content.slug}` : '',
-  ].filter(Boolean).join('\n');
-
   try {
     const res = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT_ID, text: parts, parse_mode: 'Markdown' }),
+      body: JSON.stringify({
+        chat_id: TELEGRAM_CHAT_ID,
+        text,
+        parse_mode: 'Markdown',
+        disable_web_page_preview: false,
+      }),
     });
     return res.ok;
   } catch (e) {
     console.error('Telegram send error:', e);
     return false;
   }
+}
+
+/**
+ * Legacy wrapper — kept for backward compat but now does nothing.
+ * The debrief is sent once via sendMorningDebrief() instead.
+ */
+export async function sendToTelegram(_content: NewsletterContent): Promise<boolean> {
+  return true; // no-op — debrief handles Telegram now
+}
+
+export interface DebriefData {
+  freeContent: NewsletterContent | null;
+  premiumContent: NewsletterContent | null;
+  meetingsToday: number;
+  recentFixes: string[];
+  insight: string;
+}
+
+/**
+ * Clean morning debrief — ONE message with links, calendar, fixes, and insight.
+ */
+export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
+  const today = new Date().toLocaleDateString('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  // Determine market subject from the free newsletter topic
+  const marketSubject = data.freeContent?.subject || 'AI & business intelligence';
+
+  const lines: string[] = [];
+
+  // Greeting
+  lines.push(`Good morning! Here's today's daily debrief on *${marketSubject}*.`);
+  lines.push(`_${today}_`);
+  lines.push('');
+
+  // Newsletter links — clean, just title + link
+  if (data.premiumContent?.slug) {
+    lines.push(`👑 Interlinked Premium: ${SITE_URL}/newsletter/${data.premiumContent.slug}`);
+    lines.push('');
+  }
+
+  if (data.freeContent?.slug) {
+    lines.push(`📰 Interlinked: ${SITE_URL}/newsletter/${data.freeContent.slug}`);
+    lines.push('');
+  }
+
+  // Calendar
+  if (data.meetingsToday === 0) {
+    lines.push(`You currently have 0 meetings booked for today.`);
+  } else {
+    lines.push(`You have *${data.meetingsToday} meeting${data.meetingsToday > 1 ? 's' : ''}* booked for today.`);
+  }
+  lines.push('');
+
+  // Fixes / features completed
+  if (data.recentFixes.length > 0) {
+    const topFix = data.recentFixes[0];
+    lines.push(`I've also shipped *${topFix}* while you were sleeping. Here's the full list:`);
+    lines.push('');
+    for (const fix of data.recentFixes) {
+      lines.push(`✅ ${fix}`);
+    }
+    lines.push('');
+  }
+
+  // Insight — actionable commitment driver
+  if (data.insight) {
+    lines.push(`💡 *Insight:* _${data.insight}_`);
+  }
+
+  return sendTelegramMessage(lines.join('\n'));
 }
 
 // ── Email Sending ────────────────────────────────────────────────────────────

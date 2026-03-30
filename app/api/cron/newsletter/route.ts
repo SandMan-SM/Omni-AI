@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { runDailyNewsletter, runPremiumNewsletter, generateDrafts } from '@/lib/newsletter-sender';
+import { runDailyNewsletter, runPremiumNewsletter, generateDrafts, sendMorningDebrief } from '@/lib/newsletter-sender';
 
 /**
  * Newsletter Cron — Called by Vercel Cron
  *
  * ?action=generate-drafts (6:00 AM ET): Generate draft newsletters without sending
- * Default (8:00 AM ET): Send FREE + PREMIUM newsletters (uses drafts if available)
+ * Default (8:00 AM ET): Send FREE + PREMIUM newsletters, then send ONE clean Telegram debrief
  */
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
@@ -38,14 +38,14 @@ export async function GET(request: Request) {
       });
     }
 
-    // Default: send newsletters (uses drafts if available)
+    // Default: send newsletters then send ONE clean debrief
 
-    // 1. Always send the FREE daily newsletter
+    // 1. Send the FREE daily newsletter
     const freeResult = await runDailyNewsletter(supabase as any);
 
     console.log(
       `[Newsletter Cron] FREE sent: ${freeResult.content.subject} | ` +
-      `Telegram: ${freeResult.telegramOk} | Email: ${freeResult.emailOk} | Free subs: ${freeResult.freeSent}`
+      `Email: ${freeResult.emailOk} | Free subs: ${freeResult.freeSent}`
     );
 
     // 2. On Mon/Wed/Fri, also send PREMIUM newsletter
@@ -54,17 +54,78 @@ export async function GET(request: Request) {
     if (!premiumResult.skipped) {
       console.log(
         `[Newsletter Cron] PREMIUM sent: ${premiumResult.content?.subject} | ` +
-        `Telegram: ${premiumResult.telegramOk} | Premium subs: ${premiumResult.premiumSent}`
+        `Premium subs: ${premiumResult.premiumSent}`
       );
     } else {
       console.log(`[Newsletter Cron] Premium skipped: ${premiumResult.reason}`);
     }
 
+    // 3. Gather debrief data — meetings today + recent fixes
+    let meetingsToday = 0;
+    const recentFixes: string[] = [];
+    let insight = '';
+
+    try {
+      // Count today's meetings from demo_bookings
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      const { count } = await (supabase as any)
+        .from('demo_bookings')
+        .select('id', { count: 'exact', head: true })
+        .gte('scheduled_at', todayStart.toISOString())
+        .lte('scheduled_at', todayEnd.toISOString());
+
+      meetingsToday = count || 0;
+    } catch {
+      meetingsToday = 0;
+    }
+
+    try {
+      // Pull recent system activity (fixes/features from last 24h)
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+      const { data: recentActivity } = await (supabase as any)
+        .from('activity_log')
+        .select('subject, type')
+        .in('type', ['feature', 'fix', 'improvement', 'deploy', 'system_health'])
+        .gte('created_at', yesterday)
+        .order('created_at', { ascending: false })
+        .limit(6);
+
+      if (recentActivity?.length) {
+        for (const a of recentActivity) {
+          recentFixes.push(a.subject);
+        }
+      }
+    } catch {
+      // No recent fixes — that's fine
+    }
+
+    // Generate an actionable insight from today's newsletter content
+    const freeInsights = freeResult.content.insights || [];
+    if (freeResult.content.power_move) {
+      insight = freeResult.content.power_move;
+    } else if (freeInsights.length > 0) {
+      insight = freeInsights[0];
+    }
+
+    // 4. Send ONE clean Telegram debrief
+    const debriefOk = await sendMorningDebrief({
+      freeContent: freeResult.content,
+      premiumContent: premiumResult.skipped ? null : (premiumResult.content || null),
+      meetingsToday,
+      recentFixes,
+      insight,
+    });
+
+    console.log(`[Newsletter Cron] Debrief sent: ${debriefOk}`);
+
     return NextResponse.json({
       success: true,
       free: {
         subject: freeResult.content.subject,
-        telegram: freeResult.telegramOk,
         email: freeResult.emailOk,
         free_recipients: freeResult.freeSent,
         slug: freeResult.content.slug,
@@ -73,10 +134,10 @@ export async function GET(request: Request) {
         ? { skipped: true, reason: premiumResult.reason }
         : {
             subject: premiumResult.content?.subject,
-            telegram: premiumResult.telegramOk,
             premium_recipients: premiumResult.premiumSent,
             day_type: premiumResult.content?.day_type,
           },
+      debrief: debriefOk,
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {
