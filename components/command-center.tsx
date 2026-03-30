@@ -3,16 +3,16 @@
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import {
-  Users, Target, Flame, Bell, TrendingUp, Mail, Shield, Bot,
-  BarChart3, MessageSquare, CheckCircle, Activity, Video, Share2, Mic,
-  AlertTriangle, DollarSign, Zap,
+  Users, Target, TrendingUp, Mail, Bot,
+  BarChart3, CheckCircle, Activity, Video, Share2, Mic,
+  AlertTriangle, Zap,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  RadialBarChart, RadialBar, Legend,
+  RadialBarChart, RadialBar,
 } from "recharts";
 
 interface Metrics {
@@ -108,20 +108,16 @@ export function CommandCenter() {
     { name: "Free", posts: operations.freePosts, color: COLORS.purple },
   ];
 
+  const hasNewsletterPosts = operations.premiumPosts > 0 || operations.freePosts > 0;
+
   const healthData = [
     { name: "Healthy", value: Math.max(clientHealth.totalClients - clientHealth.criticalClients, 0), color: COLORS.green },
     { name: "Critical", value: clientHealth.criticalClients, color: COLORS.red },
-    { name: "Need Follow-Up", value: clientHealth.needFollowUp, color: COLORS.yellow },
+    { name: "Follow-Up", value: clientHealth.needFollowUp, color: COLORS.yellow },
   ].filter(d => d.value > 0);
 
   const conversionGauge = [
     { name: "Conversion", value: revenue.conversionRate, fill: COLORS.cyan },
-  ];
-
-  const agentData = [
-    { name: "Voice", progress: agents.voiceAgent.status === "active" ? 100 : 35, fill: COLORS.purple },
-    { name: "Social", progress: agents.socialMediaAgent.status === "active" ? 100 : 25, fill: COLORS.blue },
-    { name: "Video", progress: agents.videoMarketing.status === "active" ? 100 : 15, fill: COLORS.orange },
   ];
 
   const hasAlerts = alerts.leadsNotContactedIn24h > 0 || alerts.criticalClients > 0;
@@ -139,12 +135,18 @@ export function CommandCenter() {
           <Card className="bg-red-500/[0.06] border-red-500/20">
             <CardContent className="p-3 flex items-center gap-3">
               <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
-              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs">
+              <div className="flex flex-wrap items-center gap-x-1 gap-y-1 text-xs">
                 {alerts.leadsNotContactedIn24h > 0 && (
                   <span className="text-gray-300"><span className="text-red-400 font-semibold">{alerts.leadsNotContactedIn24h} leads</span> not contacted in 24h+</span>
                 )}
+                {alerts.leadsNotContactedIn24h > 0 && alerts.criticalClients > 0 && (
+                  <span className="text-gray-600 mx-1">·</span>
+                )}
                 {alerts.criticalClients > 0 && (
                   <span className="text-gray-300"><span className="text-red-400 font-semibold">{alerts.criticalClients} clients</span> at critical health</span>
+                )}
+                {(alerts.leadsNotContactedIn24h > 0 || alerts.criticalClients > 0) && alerts.needFollowUp > 0 && (
+                  <span className="text-gray-600 mx-1">·</span>
                 )}
                 {alerts.needFollowUp > 0 && (
                   <span className="text-gray-300"><span className="text-yellow-400 font-semibold">{alerts.needFollowUp}</span> need follow-up</span>
@@ -155,7 +157,7 @@ export function CommandCenter() {
         </motion.div>
       )}
 
-      {/* ── Row 1: Big Numbers + Pipeline Donut ────────────────── */}
+      {/* ── Row 1: Big Numbers ────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <BigMetric
           label="Total Users"
@@ -163,8 +165,6 @@ export function CommandCenter() {
           sub={`${revenue.totalClients} clients`}
           icon={Users}
           color="text-purple-400"
-          trend={`+${clientHealth.totalUsers}`}
-          trendColor="text-purple-400"
         />
         <BigMetric
           label="Conversion Rate"
@@ -172,8 +172,6 @@ export function CommandCenter() {
           sub="leads → clients"
           icon={TrendingUp}
           color="text-cyan-400"
-          trend={revenue.conversionRate >= 40 ? "Strong" : "Growing"}
-          trendColor={revenue.conversionRate >= 40 ? "text-green-400" : "text-yellow-400"}
         />
         <BigMetric
           label="Newsletter Sends"
@@ -181,8 +179,6 @@ export function CommandCenter() {
           sub={`${operations.newslettersSentThisWeek} this week`}
           icon={Mail}
           color="text-blue-400"
-          trend="Active"
-          trendColor="text-green-400"
         />
         <BigMetric
           label="Campaigns"
@@ -190,8 +186,6 @@ export function CommandCenter() {
           sub={`${operations.activeCampaigns} active · ${operations.draftCampaigns} draft`}
           icon={Video}
           color="text-orange-400"
-          trend={operations.activeCampaigns > 0 ? "Live" : "Draft"}
-          trendColor={operations.activeCampaigns > 0 ? "text-green-400" : "text-yellow-400"}
         />
       </div>
 
@@ -200,53 +194,61 @@ export function CommandCenter() {
         {/* Pipeline Breakdown */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-1">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Target className="w-4 h-4 text-purple-400" /> Pipeline Breakdown
               </h3>
-              <span className="text-[10px] text-gray-500">{revenue.totalLeads + revenue.totalClients} total contacts</span>
+              <span className="text-[10px] text-gray-500">{revenue.totalLeads + revenue.totalClients} total</span>
             </div>
-            <div className="flex items-center gap-4">
-              <div className="w-[160px] h-[160px] flex-shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pipelineData}
-                      cx="50%" cy="50%"
-                      innerRadius={45} outerRadius={70}
-                      paddingAngle={3}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {pipelineData.map((d, i) => (
-                        <Cell key={i} fill={d.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<ChartTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
+            {pipelineData.length > 0 ? (
+              <div className="flex items-center gap-6">
+                <div className="w-[160px] h-[160px] flex-shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pipelineData}
+                        cx="50%" cy="50%"
+                        innerRadius={40} outerRadius={65}
+                        paddingAngle={3}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {pipelineData.map((d, i) => (
+                          <Cell key={i} fill={d.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<ChartTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 space-y-3">
+                  {pipelineData.map(d => (
+                    <div key={d.name} className="flex items-center gap-2.5">
+                      <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
+                      <span className="text-xs text-gray-400 flex-1">{d.name}</span>
+                      <span className="text-sm font-bold text-white">{d.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="flex-1 space-y-2.5">
-                {pipelineData.map(d => (
-                  <div key={d.name} className="flex items-center gap-2.5">
-                    <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="text-xs text-gray-400 flex-1">{d.name}</span>
-                    <span className="text-sm font-bold text-white">{d.value}</span>
-                  </div>
-                ))}
+            ) : (
+              <div className="h-[140px] flex items-center justify-center">
+                <p className="text-xs text-gray-600">No contacts yet</p>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
 
         {/* User Growth */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2 mb-3">
-              <Activity className="w-4 h-4 text-green-400" /> User Growth
-              <span className="text-[10px] text-gray-500 font-normal ml-auto">Last 7 days</span>
-            </h3>
-            <div className="h-[145px]">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Activity className="w-4 h-4 text-green-400" /> User Growth
+              </h3>
+              <span className="text-[10px] text-gray-500">Last 7 days</span>
+            </div>
+            <div className="h-[160px]">
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={charts.userGrowth}>
                   <defs>
@@ -285,35 +287,37 @@ export function CommandCenter() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Conversion Gauge */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5 flex flex-col items-center">
-            <h3 className="text-sm font-semibold text-white mb-2 self-start flex items-center gap-2">
+          <CardContent className="p-5">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
               <Zap className="w-4 h-4 text-cyan-400" /> Conversion Rate
             </h3>
-            <div className="w-[140px] h-[140px] relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <RadialBarChart
-                  cx="50%" cy="50%"
-                  innerRadius="70%" outerRadius="100%"
-                  startAngle={180} endAngle={0}
-                  data={conversionGauge}
-                  barSize={12}
-                >
-                  <RadialBar
-                    dataKey="value"
-                    cornerRadius={10}
-                    background={{ fill: "rgba(255,255,255,0.05)" }}
-                  />
-                </RadialBarChart>
-              </ResponsiveContainer>
-              <div className="absolute inset-0 flex flex-col items-center justify-center pt-2">
-                <span className="text-3xl font-bold text-white">{revenue.conversionRate}%</span>
-                <span className="text-[10px] text-gray-500">of leads converted</span>
+            <div className="flex flex-col items-center">
+              <div className="w-[130px] h-[80px] relative">
+                <ResponsiveContainer width="100%" height="100%">
+                  <RadialBarChart
+                    cx="50%" cy="100%"
+                    innerRadius="80%" outerRadius="110%"
+                    startAngle={180} endAngle={0}
+                    data={conversionGauge}
+                    barSize={10}
+                  >
+                    <RadialBar
+                      dataKey="value"
+                      cornerRadius={10}
+                      background={{ fill: "rgba(255,255,255,0.05)" }}
+                    />
+                  </RadialBarChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-end pb-0">
+                  <span className="text-2xl font-bold text-white">{revenue.conversionRate}%</span>
+                </div>
               </div>
-            </div>
-            <div className="flex items-center gap-4 mt-2 text-[10px]">
-              <span className="text-gray-500">{revenue.totalLeads} leads</span>
-              <span className="text-gray-600">→</span>
-              <span className="text-green-400 font-medium">{revenue.totalClients} clients</span>
+              <p className="text-[10px] text-gray-500 mt-2">of leads converted</p>
+              <div className="flex items-center gap-3 mt-2 text-[10px]">
+                <span className="text-gray-500">{revenue.totalLeads} leads</span>
+                <span className="text-gray-600">→</span>
+                <span className="text-green-400 font-medium">{revenue.totalClients} clients</span>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -322,66 +326,85 @@ export function CommandCenter() {
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
             <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
-              <Mail className="w-4 h-4 text-cyan-400" /> Newsletter Content
+              <Mail className="w-4 h-4 text-blue-400" /> Newsletter Content
             </h3>
-            <div className="h-[130px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={newsletterData} barSize={40}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
-                  <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis hide allowDecimals={false} />
-                  <Tooltip content={<ChartTooltip />} />
-                  <Bar dataKey="posts" name="Posts" radius={[6, 6, 0, 0]}>
-                    {newsletterData.map((d, i) => (
-                      <Cell key={i} fill={d.color} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-            <div className="flex items-center justify-between mt-2 text-[10px] text-gray-500 px-1">
-              <span>{operations.premiumSubscribers} premium subs</span>
-              <span>{operations.freeSubscribers} total subs</span>
-            </div>
+            {hasNewsletterPosts ? (
+              <>
+                <div className="h-[110px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={newsletterData} barSize={36}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                      <XAxis dataKey="name" tick={{ fill: "#6b7280", fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis hide allowDecimals={false} />
+                      <Tooltip content={<ChartTooltip />} />
+                      <Bar dataKey="posts" name="Posts" radius={[6, 6, 0, 0]}>
+                        {newsletterData.map((d, i) => (
+                          <Cell key={i} fill={d.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex items-center justify-between mt-3 text-[10px] text-gray-500">
+                  <span>{operations.premiumSubscribers} premium subs</span>
+                  <span>{operations.freeSubscribers} total subs</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-[130px]">
+                <Mail className="w-6 h-6 text-gray-700 mb-2" />
+                <p className="text-xs text-gray-600">No posts published yet</p>
+                <div className="flex items-center gap-4 mt-3 text-[10px] text-gray-500">
+                  <span>{operations.premiumSubscribers} premium subs</span>
+                  <span>{operations.freeSubscribers} total subs</span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        {/* Client Health Donut */}
+        {/* Client Health */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-1 flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-400" /> Client Health
             </h3>
-            <div className="flex items-center gap-3">
-              <div className="w-[120px] h-[120px] flex-shrink-0">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={healthData}
-                      cx="50%" cy="50%"
-                      innerRadius={35} outerRadius={52}
-                      paddingAngle={4}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {healthData.map((d, i) => (
-                        <Cell key={i} fill={d.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip content={<ChartTooltip />} />
-                  </PieChart>
-                </ResponsiveContainer>
+            {healthData.length > 0 ? (
+              <div className="flex items-center gap-4">
+                <div className="w-[120px] h-[120px] flex-shrink-0">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={healthData}
+                        cx="50%" cy="50%"
+                        innerRadius={32} outerRadius={50}
+                        paddingAngle={4}
+                        dataKey="value"
+                        stroke="none"
+                      >
+                        {healthData.map((d, i) => (
+                          <Cell key={i} fill={d.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip content={<ChartTooltip />} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <div className="flex-1 space-y-3">
+                  {healthData.map(d => (
+                    <div key={d.name} className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
+                      <span className="text-[11px] text-gray-400 flex-1 whitespace-nowrap">{d.name}</span>
+                      <span className="text-xs font-bold text-white">{d.value}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="flex-1 space-y-2">
-                {healthData.map(d => (
-                  <div key={d.name} className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: d.color }} />
-                    <span className="text-[11px] text-gray-400 flex-1">{d.name}</span>
-                    <span className="text-xs font-bold text-white">{d.value}</span>
-                  </div>
-                ))}
+            ) : (
+              <div className="h-[110px] flex items-center justify-center">
+                <p className="text-xs text-gray-600">No client data yet</p>
               </div>
-            </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -390,10 +413,12 @@ export function CommandCenter() {
       {charts.sendHistory.length > 0 && (
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-blue-400" /> Send Activity
-              <span className="text-[10px] text-gray-500 font-normal ml-auto">{operations.totalNewslettersSent} total sends</span>
-            </h3>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-blue-400" /> Send Activity
+              </h3>
+              <span className="text-[10px] text-gray-500">{operations.totalNewslettersSent} total sends</span>
+            </div>
             <div className="h-[100px]">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={charts.sendHistory} barSize={24}>
@@ -433,8 +458,8 @@ export function CommandCenter() {
             name="Voice Agent"
             icon={Mic}
             gradient="from-violet-600 to-purple-600"
-            progress={35}
             color={COLORS.purple}
+            status={agents.voiceAgent.status}
             metrics={[
               { label: "Calls Handled", value: agents.voiceAgent.callsHandled },
               { label: "Avg Duration", value: agents.voiceAgent.avgDuration },
@@ -445,8 +470,8 @@ export function CommandCenter() {
             name="Social Media"
             icon={Share2}
             gradient="from-blue-600 to-cyan-500"
-            progress={25}
             color={COLORS.blue}
+            status={agents.socialMediaAgent.status}
             metrics={[
               { label: "Posts Scheduled", value: agents.socialMediaAgent.postsScheduled },
               { label: "Engagement", value: agents.socialMediaAgent.engagement },
@@ -457,8 +482,8 @@ export function CommandCenter() {
             name="Video Marketing"
             icon={Video}
             gradient="from-orange-500 to-red-500"
-            progress={15}
             color={COLORS.orange}
+            status={agents.videoMarketing.status}
             metrics={[
               { label: "Videos Generated", value: agents.videoMarketing.videosGenerated },
               { label: "Views", value: agents.videoMarketing.views },
@@ -473,9 +498,9 @@ export function CommandCenter() {
 
 /* ── Sub-components ──────────────────────────────────────────── */
 
-function BigMetric({ label, value, sub, icon: Icon, color, trend, trendColor }: {
+function BigMetric({ label, value, sub, icon: Icon, color }: {
   label: string; value: number | string; sub: string;
-  icon: any; color: string; trend: string; trendColor: string;
+  icon: any; color: string;
 }) {
   return (
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
@@ -483,7 +508,6 @@ function BigMetric({ label, value, sub, icon: Icon, color, trend, trendColor }: 
         <CardContent className="p-4">
           <div className="flex items-center justify-between mb-3">
             <Icon className={`w-5 h-5 ${color} opacity-70`} />
-            <span className={`text-[10px] font-semibold uppercase tracking-wider ${trendColor}`}>{trend}</span>
           </div>
           <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{typeof value === "number" ? value.toLocaleString() : value}</p>
           <p className="text-[11px] text-gray-500 mt-1">{label}</p>
@@ -494,38 +518,31 @@ function BigMetric({ label, value, sub, icon: Icon, color, trend, trendColor }: 
   );
 }
 
-function AgentCard({ name, icon: Icon, gradient, progress, color, metrics }: {
-  name: string; icon: any; gradient: string; progress: number; color: string;
-  metrics: { label: string; value: number | string }[];
+function AgentCard({ name, icon: Icon, gradient, color, status, metrics }: {
+  name: string; icon: any; gradient: string; color: string;
+  status: string; metrics: { label: string; value: number | string }[];
 }) {
+  const isActive = status === "active";
+  const statusLabel = isActive ? "Live" : "In Development";
+  const statusColor = isActive ? "text-green-400" : "text-yellow-500";
+
   return (
     <Card className="bg-white/[0.02] border-white/[0.06]">
       <CardContent className="p-4">
         <div className="flex items-center gap-2.5 mb-4">
-          <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center`}>
+          <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${gradient} flex items-center justify-center ${!isActive ? "opacity-50" : ""}`}>
             <Icon className="w-4 h-4 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium text-white">{name}</p>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="flex-1 h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progress}%` }}
-                  transition={{ duration: 1, ease: "easeOut" }}
-                  className="h-full rounded-full"
-                  style={{ backgroundColor: color }}
-                />
-              </div>
-              <span className="text-[10px] text-gray-500">{progress}%</span>
-            </div>
+            <span className={`text-[10px] font-medium ${statusColor}`}>{statusLabel}</span>
           </div>
         </div>
         <div className="space-y-1.5">
           {metrics.map(m => (
             <div key={m.label} className="flex items-center justify-between">
               <span className="text-[10px] text-gray-500">{m.label}</span>
-              <span className="text-xs font-medium text-white">{m.value}</span>
+              <span className={`text-xs font-medium ${isActive ? "text-white" : "text-gray-600"}`}>{isActive ? m.value : "—"}</span>
             </div>
           ))}
         </div>

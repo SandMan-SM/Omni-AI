@@ -2,21 +2,20 @@
 export const dynamic = 'force-dynamic';
 
 import { useState, useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
-  Zap, Shield, Crown, Flame, Star, Calendar, Mail, Phone,
-  ArrowRight, User, Clock, Video, Play, Pause,
-  TrendingUp, Target, Bot, BarChart3, Settings, Eye, MousePointerClick,
-  CircleDollarSign, FileEdit, MoreHorizontal, DollarSign, Lock, LogOut,
-  Menu, X, ChevronRight, Loader2, Building2, Briefcase
+  Zap, Shield, Crown, Flame, Calendar, Mail,
+  ArrowRight, User, Clock, Video,
+  TrendingUp, Target, Bot, BarChart3, Settings,
+  CircleDollarSign, LogOut,
+  Menu, X, ChevronRight, Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,49 +23,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { SponsorTab } from "@/components/sponsor-tab";
-import { ExecutiveInsights } from "@/components/executive-insights";
 import { CommandCenter } from "@/components/command-center";
-
-function CircularProgress({ value, size = 120, strokeWidth = 10, color = "#a855f7", label = "" }: { value: number; size?: number; strokeWidth?: number; color?: string; label?: string }) {
-  const radius = (size - strokeWidth) / 2;
-  const circumference = radius * 2 * Math.PI;
-  const percentage = Math.min(value, 100);
-  const offset = circumference - (percentage / 100) * circumference;
-
-  return (
-    <div className="relative flex flex-col items-center" style={{ width: size + 20 }}>
-      <div className="relative" style={{ width: size, height: size }}>
-        <svg className="transform -rotate-90" width={size} height={size}>
-          <circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke="rgba(255,255,255,0.1)"
-            strokeWidth={strokeWidth}
-            fill="none"
-          />
-          <motion.circle
-            cx={size / 2}
-            cy={size / 2}
-            r={radius}
-            stroke={color}
-            strokeWidth={strokeWidth}
-            fill="none"
-            strokeLinecap="round"
-            strokeDasharray={circumference}
-            initial={{ strokeDashoffset: circumference }}
-            animate={{ strokeDashoffset: offset }}
-            transition={{ duration: 1, ease: "easeOut" }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold">{value.toLocaleString()}</span>
-          <span className="text-xs text-gray-400">{label}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: string; accent: string; level: number }> = {
   apprentice: { name: "Apprentice", icon: Zap, gradient: "from-slate-500 to-slate-600", accent: "text-slate-400", level: 0 },
@@ -75,8 +32,6 @@ const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: strin
   ascended: { name: "Empire", icon: Flame, gradient: "from-orange-500 to-red-500", accent: "text-orange-400", level: 3 },
   admin: { name: "Admin", icon: Shield, gradient: "from-purple-600 to-blue-600", accent: "text-purple-400", level: 99 },
 };
-
-const recentActivity: { action: string; detail: string; time: string }[] = [];
 
 const metrics = [
   { label: "Leads This Week", value: "0", change: "+0%", icon: Target },
@@ -109,7 +64,6 @@ interface DemoBooking {
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
   const { profile, profileLoading, isAdmin, isSponsor, tier, onboardingComplete, displayName, fetchProfile } = useProfile();
-  const pathname = usePathname();
   const router = useRouter();
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
@@ -173,6 +127,17 @@ export default function Dashboard() {
 
   const bookings = bookingsData?.bookings ?? [];
 
+  // Fetch real activity for admin
+  const { data: activityData } = useQuery<{ activities: { id: string; type: string; subject: string | null; channel: string; created_at: string }[] }>({
+    queryKey: ["admin-activity"],
+    queryFn: async () => {
+      const res = await fetch("/api/admin/activity?limit=6");
+      return res.json();
+    },
+    enabled: !!isAdmin,
+  });
+  const recentActivities = activityData?.activities ?? [];
+
   useEffect(() => {
     if (!loading && !user) {
       const timer = setTimeout(() => {
@@ -213,7 +178,7 @@ export default function Dashboard() {
       <CursorSpotlight />
 
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="text-xl font-bold text-gradient" data-testid="link-dashboard-home">
             Omni AI
           </Link>
@@ -296,7 +261,7 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <main className="max-w-[1440px] mx-auto px-6 py-6 space-y-6">
         {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
@@ -547,24 +512,23 @@ export default function Dashboard() {
                   )}
                 </div>
               ) : isAdmin ? (
-                <div className="flex items-center gap-4">
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-600 to-blue-600 p-[1px] flex-shrink-0">
-                    <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
-                      <Shield className="w-7 h-7 text-purple-400" />
-                    </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0">
+                    <Shield className="w-5 h-5 text-white" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-xl font-bold text-purple-400 mb-1" data-testid="text-current-tier-name">Admin</h3>
-                    <p className="text-sm text-gray-500" data-testid="text-tier-status">Active</p>
+                    <h3 className="text-base font-semibold text-white" data-testid="text-current-tier-name">Admin</h3>
+                    <p className="text-xs text-gray-500" data-testid="text-tier-status">System Administrator</p>
                   </div>
                   <Button
-                    variant="ghost"
-                    size="icon"
-                    className="w-8 h-8 rounded-full border border-white/10 text-gray-400 hover:text-white hover:border-purple-500/50 hover:bg-purple-500/10 transition-all flex-shrink-0"
-                    onClick={() => router.push("/admin/info")}
+                    size="sm"
+                    variant="outline"
+                    className="border-white/10 text-gray-400 hover:text-white text-xs h-8"
+                    onClick={() => router.push("/admin")}
                     data-testid="button-admin-info"
                   >
-                    <span className="text-sm font-semibold leading-none">i</span>
+                    Manage
+                    <ArrowRight className="w-3 h-3 ml-1" />
                   </Button>
                 </div>
               ) : isVIPSponsor ? (
@@ -728,7 +692,7 @@ export default function Dashboard() {
                                     <span className="text-xs font-medium text-white">{campaign.platform || 'TBD'}</span>
                                   </div>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-3 text-center">Campaign details and analytics coming soon</p>
+                                <p className="text-[10px] text-gray-600 mt-3 text-center">Analytics will appear once the campaign is active</p>
                               </div>
                             </motion.div>
                           )}
@@ -785,7 +749,7 @@ export default function Dashboard() {
           {isCPS && (
             <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
               <div className="mx-[-1rem] bg-gradient-to-r from-blue-600/15 via-blue-500/20 to-cyan-500/15 border-y border-blue-500/20 backdrop-blur-sm">
-                <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="max-w-[1440px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="text-center sm:text-left">
                     <p className="text-white font-bold text-lg">Activate Bot Development</p>
                     <p className="text-blue-200/80 text-sm">Begin tracking live analytics</p>
@@ -809,16 +773,18 @@ export default function Dashboard() {
                 <Clock className="w-4 h-4 text-gray-500" />
               </CardHeader>
               <CardContent>
-                {recentActivity.length > 0 ? (
+                {recentActivities.length > 0 ? (
                   <div className="space-y-4">
-                    {recentActivity.map((item, i) => (
-                      <div key={i} className="flex items-start gap-3" data-testid={`activity-item-${i}`}>
+                    {recentActivities.map((item, i) => (
+                      <div key={item.id} className="flex items-start gap-3" data-testid={`activity-item-${i}`}>
                         <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white" data-testid={`text-activity-action-${i}`}>{item.action}</p>
-                          <p className="text-xs text-gray-500 truncate" data-testid={`text-activity-detail-${i}`}>{item.detail}</p>
+                          <p className="text-sm text-white" data-testid={`text-activity-action-${i}`}>{item.subject || item.type}</p>
+                          <p className="text-xs text-gray-500 truncate" data-testid={`text-activity-detail-${i}`}>{item.channel}</p>
                         </div>
-                        <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0" data-testid={`text-activity-time-${i}`}>{item.time}</span>
+                        <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0" data-testid={`text-activity-time-${i}`}>
+                          {new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                        </span>
                       </div>
                     ))}
                   </div>
@@ -883,7 +849,7 @@ export default function Dashboard() {
       </main>
 
       <footer className="border-t border-white/5 mt-12">
-        <div className="max-w-7xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-sm text-gray-600" data-testid="text-copyright">&copy; {new Date().getFullYear()} Omni Leads LLC</span>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-sm text-gray-500 transition-colors" data-testid="link-footer-home">Home</Link>
