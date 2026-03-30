@@ -56,7 +56,7 @@ export default async function NewsletterIndexPage() {
             {freePosts.map((post) => {
               const date = new Date(post.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
               return (
-                <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all">
+                <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-3 sm:p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <h3 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors truncate">{post.subject}</h3>
@@ -65,11 +65,11 @@ export default async function NewsletterIndexPage() {
                         <details className="mt-2 group/tags">
                           <summary className="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
                             <svg className="w-3 h-3 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                            {post.keywords.length} tags
+                            {Math.min(post.keywords.length, 11)} tags
                           </summary>
-                          <div className="flex flex-wrap gap-1.5 mt-1.5">
-                            {post.keywords.slice(0, 6).map((kw: string) => (
-                              <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500">{kw}</span>
+                          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5">
+                            {post.keywords.slice(0, 11).map((kw: string) => (
+                              <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500 whitespace-nowrap">{kw}</span>
                             ))}
                           </div>
                         </details>

@@ -310,7 +310,7 @@ function buildFreeEmailHtml(content: NewsletterContent): string {
     `<li style="margin-bottom:12px;line-height:1.6;">${ins}</li>`
   ).join('');
   const keywordsHtml = content.keywords?.length
-    ? `<div style="margin-bottom:24px;"><p style="color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Trending Today</p><p style="color:#888;font-size:13px;">${content.keywords.slice(0, 6).join(' · ')}</p></div>`
+    ? `<div style="margin-bottom:24px;"><p style="color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Trending Today</p><p style="color:#888;font-size:13px;">${content.keywords.slice(0, 11).join(' · ')}</p></div>`
     : '';
 
   return `<!DOCTYPE html>

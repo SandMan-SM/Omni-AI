@@ -91,13 +91,13 @@ export default async function NewsletterPostPage({ params }: Props) {
             <details className="mb-6 group/tags">
               <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition-colors list-none flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                {post.keywords.length} tags
+                {Math.min(post.keywords.length, 11)} tags
               </summary>
-              <div className="flex flex-wrap gap-2 mt-2">
-                {post.keywords.slice(0, 8).map((kw: string) => (
+              <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
+                {post.keywords.slice(0, 11).map((kw: string) => (
                   <span
                     key={kw}
-                    className="text-[11px] px-2.5 py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-gray-400"
+                    className="text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-gray-400 whitespace-nowrap"
                   >
                     {kw}
                   </span>

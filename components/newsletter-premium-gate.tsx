@@ -124,7 +124,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
               <Link
                 key={post.slug}
                 href={`/newsletter/${post.slug}`}
-                className="block group p-5 rounded-xl bg-yellow-500/[0.02] border border-yellow-500/[0.08] hover:border-yellow-500/20 hover:bg-yellow-500/[0.04] transition-all"
+                className="block group p-3 sm:p-5 rounded-xl bg-yellow-500/[0.02] border border-yellow-500/[0.08] hover:border-yellow-500/20 hover:bg-yellow-500/[0.04] transition-all"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
@@ -143,11 +143,11 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                           </svg>
-                          {post.keywords.length} tags
+                          {Math.min(post.keywords.length, 11)} tags
                         </summary>
-                        <div className="flex flex-wrap gap-1.5 mt-1.5">
-                          {post.keywords.slice(0, 6).map((kw: string) => (
-                            <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500">
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5">
+                          {post.keywords.slice(0, 11).map((kw: string) => (
+                            <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500 whitespace-nowrap">
                               {kw}
                             </span>
                           ))}
