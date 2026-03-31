@@ -564,8 +564,21 @@ export async function sendEmail(content: NewsletterContent, to: string): Promise
  * Drafts are visible in the admin UI until the send cron (9:00 AM ET) publishes them.
  */
 export async function generateDrafts(supabase: any) {
+  // Clean up any old stale drafts (unpublished from previous days)
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    await supabase
+      .from('newsletter_posts')
+      .delete()
+      .is('published_at', null)
+      .lt('created_at', today.toISOString());
+    console.log('[generateDrafts] Cleaned up stale drafts');
+  } catch (e) {
+    console.error('[generateDrafts] Stale draft cleanup error:', e);
+  }
+
   const freeContent = await generateFreeContent();
-  const premiumContent = await generatePremiumContent();
 
   // Save free draft
   await supabase.from('newsletter_posts').insert({
@@ -582,31 +595,27 @@ export async function generateDrafts(supabase: any) {
     published_at: null, // DRAFT — not published yet
   });
 
-  // Save premium draft (only on Mon/Wed/Fri)
-  const dayType = getDayType();
-  let premiumSaved = false;
-  if (dayType) {
-    await supabase.from('newsletter_posts').insert({
-      slug: premiumContent.slug,
-      subject: premiumContent.subject,
-      intro: premiumContent.intro,
-      insights: premiumContent.insights,
-      power_move: premiumContent.power_move,
-      closing: premiumContent.closing,
-      quote: premiumContent.quote || null,
-      offer: premiumContent.offer || null,
-      exclusive_insight: (premiumContent as any).exclusive_insight || null,
-      ai_recommendation: (premiumContent as any).ai_recommendation || null,
-      keywords: premiumContent.keywords || [],
-      tier: 'premium',
-      published_at: null, // DRAFT
-    });
-    premiumSaved = true;
-  }
+  // Always generate a premium draft too (visible in admin as Draft)
+  const premiumContent = await generatePremiumContent();
+  await supabase.from('newsletter_posts').insert({
+    slug: premiumContent.slug,
+    subject: premiumContent.subject,
+    intro: premiumContent.intro,
+    insights: premiumContent.insights,
+    power_move: premiumContent.power_move,
+    closing: premiumContent.closing,
+    quote: premiumContent.quote || null,
+    offer: premiumContent.offer || null,
+    exclusive_insight: (premiumContent as any).exclusive_insight || null,
+    ai_recommendation: (premiumContent as any).ai_recommendation || null,
+    keywords: premiumContent.keywords || [],
+    tier: 'premium',
+    published_at: null, // DRAFT
+  });
 
   return {
     free: { subject: freeContent.subject, slug: freeContent.slug },
-    premium: premiumSaved ? { subject: premiumContent.subject, slug: premiumContent.slug } : null,
+    premium: { subject: premiumContent.subject, slug: premiumContent.slug },
   };
 }
 
@@ -621,7 +630,9 @@ export async function runDailyNewsletter(supabase: any = null) {
   let content: NewsletterContent;
   let draftId: string | null = null;
 
-  // Check for unpublished free draft first
+  // Check for unpublished free draft created TODAY (not stale old drafts)
+  const todayStart = new Date();
+  todayStart.setHours(0, 0, 0, 0);
   if (supabase) {
     try {
       const { data: draft } = await supabase
@@ -629,6 +640,7 @@ export async function runDailyNewsletter(supabase: any = null) {
         .select('*')
         .eq('tier', 'free')
         .is('published_at', null)
+        .gte('created_at', todayStart.toISOString())
         .order('created_at', { ascending: false })
         .limit(1)
         .single();
@@ -784,7 +796,9 @@ export async function runPremiumNewsletter(supabase: any = null) {
   let content: PremiumContent;
   let draftId: string | null = null;
 
-  // Check for unpublished premium draft first
+  // Check for unpublished premium draft created TODAY (not stale old drafts)
+  const todayStartPremium = new Date();
+  todayStartPremium.setHours(0, 0, 0, 0);
   if (supabase) {
     try {
       const { data: draft } = await supabase
@@ -792,6 +806,7 @@ export async function runPremiumNewsletter(supabase: any = null) {
         .select('*')
         .eq('tier', 'premium')
         .is('published_at', null)
+        .gte('created_at', todayStartPremium.toISOString())
         .order('created_at', { ascending: false })
         .limit(1)
         .single();

@@ -97,81 +97,59 @@ function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status =
 
   return (
     <Card className={`bg-white/[0.03] border-white/[0.06] overflow-hidden ${isDraft ? 'border-l-2 border-l-amber-500/40' : ''}`}>
-      <a
-        href={href || "#"}
-        onClick={e => { if (!href) e.preventDefault(); }}
-        className="block"
-      >
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex items-start sm:items-center gap-2.5">
-            <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0`}>
-              <Mail className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
-            </div>
-            <div className="flex-1 min-w-0">
-              {/* Top row: subject + eye icon (mobile: stacked, desktop: inline) */}
-              <div className="flex items-center gap-2">
-                <p className="text-xs sm:text-sm font-medium text-white truncate flex-1 min-w-0">{subject}</p>
-                {/* Eye icon — always visible on the right */}
-                {href ? (
-                  <a
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={e => e.stopPropagation()}
-                    className="p-1 sm:p-1.5 rounded-lg hover:bg-white/[0.06] transition-colors flex-shrink-0"
-                    title={isDraft ? "Preview draft" : "View newsletter page"}
-                  >
-                    <Eye className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-400 hover:text-white transition-colors" />
-                  </a>
-                ) : (
-                  <span className="p-1 sm:p-1.5 w-6 sm:w-7 flex-shrink-0" />
-                )}
-              </div>
-              {/* Date + badges row */}
-              <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                {sentAt ? (
-                  <>
-                    <span className="text-[10px] sm:text-[11px] text-gray-500 flex items-center gap-1">
-                      <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{formatDate(sentAt)}
-                    </span>
-                    <span className="text-[10px] sm:text-[11px] text-gray-400">· {timeAgo(sentAt)}</span>
-                  </>
-                ) : (
-                  <span className="text-[10px] sm:text-[11px] text-amber-500/70">Scheduled for next send</span>
-                )}
-                {newsletter && (
-                  <span className="hidden sm:inline text-[10px] sm:text-[11px] text-gray-600">
-                    · {newsletter.total} sent · {newsletter.opened} opened · {newsletter.clicked} clicked
+      <CardContent className="p-3 sm:p-4">
+        <div className="flex items-center gap-2.5">
+          <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
+            <Mail className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-white truncate">{subject}</p>
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              {sentAt ? (
+                <>
+                  <span className="text-[10px] sm:text-[11px] text-gray-500 flex items-center gap-1">
+                    <Calendar className="w-2.5 h-2.5 sm:w-3 sm:h-3" />{formatDate(sentAt)}
                   </span>
-                )}
-                <span className="flex-1" />
-                <Badge className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2.5 py-0 sm:py-0.5 border rounded-md ${
-                  isPremium
-                    ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
-                    : "bg-purple-500/15 text-purple-400 border-purple-500/20"
-                }`}>
-                  {isPremium ? "Premium" : "Free"}
-                </Badge>
-                <Badge className={`text-[9px] sm:text-[10px] px-1.5 sm:px-2.5 py-0 sm:py-0.5 border rounded-md ${
-                  isDraft
-                    ? "bg-amber-500/15 text-amber-400 border-amber-500/20"
-                    : "bg-green-500/15 text-green-400 border-green-500/20"
-                }`}>
-                  {isDraft ? "Draft" : "Sent"}
-                </Badge>
-              </div>
-              {/* Mobile-only analytics row */}
+                  <span className="text-[10px] sm:text-[11px] text-gray-400">· {timeAgo(sentAt)}</span>
+                </>
+              ) : (
+                <span className="text-[10px] sm:text-[11px] text-amber-500/70">Scheduled for next send</span>
+              )}
               {newsletter && (
-                <div className="sm:hidden flex items-center gap-1.5 mt-0.5">
-                  <span className="text-[9px] text-gray-600">
-                    {newsletter.total} sent · {newsletter.opened} opened · {newsletter.clicked} clicked
-                  </span>
-                </div>
+                <span className="text-[10px] sm:text-[11px] text-gray-600">
+                  · {newsletter.total} sent · {newsletter.opened} opened · {newsletter.clicked} clicked
+                </span>
               )}
             </div>
           </div>
-        </CardContent>
-      </a>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Badge className={`text-[9px] leading-none px-1.5 py-0.5 border rounded-md whitespace-nowrap ${
+              isPremium
+                ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
+                : "bg-purple-500/15 text-purple-400 border-purple-500/20"
+            }`}>
+              {isPremium ? "Premium" : "Free"}
+            </Badge>
+            <Badge className={`text-[9px] leading-none px-1.5 py-0.5 border rounded-md whitespace-nowrap ${
+              isDraft
+                ? "bg-amber-500/15 text-amber-400 border-amber-500/20"
+                : "bg-green-500/15 text-green-400 border-green-500/20"
+            }`}>
+              {isDraft ? "Draft" : "Sent"}
+            </Badge>
+            <a
+              href={href || "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={e => { if (!href) e.preventDefault(); }}
+              className={`p-1 rounded-lg hover:bg-white/[0.06] transition-colors ${!href ? 'opacity-30' : ''}`}
+              title={isDraft ? "Preview draft" : "View newsletter page"}
+            >
+              <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
+            </a>
+          </div>
+        </div>
+      </CardContent>
     </Card>
   );
 }
@@ -1037,7 +1015,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
               <div className="flex items-center gap-2 pt-2">
                 <Button
-                  onClick={handleSaveEdit}
+                  onClick={() => handleSaveEdit()}
                   disabled={editSaving}
                   className="flex-1 h-9 text-sm bg-purple-600 hover:bg-purple-700 text-white"
                 >
