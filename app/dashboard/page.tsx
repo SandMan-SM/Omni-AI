@@ -146,7 +146,7 @@ export default function Dashboard() {
       const res = await fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' });
       return res.json();
     },
-    enabled: !!user,
+    enabled: !!isAdmin,
   });
   const newsletterPosts = (newsletterData?.posts ?? []).slice(0, 6);
 
@@ -724,69 +724,71 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
-        {/* Newsletter Posts */}
-        <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.32 }}>
-          <Card className="bg-white/[0.03] border-white/[0.06]">
-            <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-              <CardTitle className="text-lg text-white flex items-center gap-2">
-                <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
-              </CardTitle>
-              <Link href="/admin" className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors">
-                View all →
-              </Link>
-            </CardHeader>
-            <CardContent>
-              {newsletterPosts.length > 0 ? (
-                <div className="space-y-3">
-                  {newsletterPosts.map((post) => {
-                    const isDraft = !post.published_at;
-                    const isPremium = post.tier === 'premium';
-                    const href = post.slug ? `/newsletter/${post.slug}` : null;
-                    const dateStr = post.published_at || post.created_at;
-                    return (
-                      <div key={post.id} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] last:border-0 ${isDraft ? 'border-l-2 border-l-amber-500/40 pl-2' : ''}`}>
-                        <div className={`w-8 h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
-                          <Mail className={`w-3.5 h-3.5 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
+        {/* Newsletter Posts — Admin only ($Mafi) */}
+        {isAdmin && (
+          <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.32 }}>
+            <Card className="bg-white/[0.03] border-white/[0.06]">
+              <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
+                <CardTitle className="text-lg text-white flex items-center gap-2">
+                  <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
+                </CardTitle>
+                <Link href="/admin" className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors">
+                  View all →
+                </Link>
+              </CardHeader>
+              <CardContent>
+                {newsletterPosts.length > 0 ? (
+                  <div className="space-y-3">
+                    {newsletterPosts.map((post) => {
+                      const isDraft = !post.published_at;
+                      const isPremium = post.tier === 'premium';
+                      const href = post.slug ? `/newsletter/${post.slug}` : null;
+                      const dateStr = post.published_at || post.created_at;
+                      return (
+                        <div key={post.id} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] last:border-0 ${isDraft ? 'border-l-2 border-l-amber-500/40 pl-2' : ''}`}>
+                          <div className={`w-8 h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
+                            <Mail className={`w-3.5 h-3.5 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-white truncate">{post.subject}</p>
+                            <p className="text-[11px] text-gray-500">
+                              {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Pending"}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
+                              isPremium ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"
+                            }`} style={{ fontSize: '9px', lineHeight: '1' }}>
+                              {isPremium ? "Premium" : "Free"}
+                            </span>
+                            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
+                              isDraft ? "bg-amber-500/15 text-amber-400 border-amber-500/20" : "bg-green-500/15 text-green-400 border-green-500/20"
+                            }`} style={{ fontSize: '9px', lineHeight: '1' }}>
+                              {isDraft ? "Draft" : "Sent"}
+                            </span>
+                            {href ? (
+                              <a href={href} target="_blank" rel="noopener noreferrer" className="p-1 rounded-lg hover:bg-white/[0.06] transition-colors">
+                                <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
+                              </a>
+                            ) : (
+                              <span className="p-1 opacity-30"><Eye className="w-3.5 h-3.5 text-gray-400" /></span>
+                            )}
+                          </div>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white truncate">{post.subject}</p>
-                          <p className="text-[11px] text-gray-500">
-                            {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Pending"}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-1.5 flex-shrink-0">
-                          <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
-                            isPremium ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"
-                          }`} style={{ fontSize: '9px', lineHeight: '1' }}>
-                            {isPremium ? "Premium" : "Free"}
-                          </span>
-                          <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
-                            isDraft ? "bg-amber-500/15 text-amber-400 border-amber-500/20" : "bg-green-500/15 text-green-400 border-green-500/20"
-                          }`} style={{ fontSize: '9px', lineHeight: '1' }}>
-                            {isDraft ? "Draft" : "Sent"}
-                          </span>
-                          {href ? (
-                            <a href={href} target="_blank" rel="noopener noreferrer" className="p-1 rounded-lg hover:bg-white/[0.06] transition-colors">
-                              <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
-                            </a>
-                          ) : (
-                            <span className="p-1 opacity-30"><Eye className="w-3.5 h-3.5 text-gray-400" /></span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-6">
-                  <Mail className="w-8 h-8 text-gray-700 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500 mb-1">No newsletter posts yet</p>
-                  <p className="text-xs text-gray-600">Drafts will appear here at 8:00 AM daily.</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </motion.div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="text-center py-6">
+                    <Mail className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+                    <p className="text-sm text-gray-500 mb-1">No newsletter posts yet</p>
+                    <p className="text-xs text-gray-600">Drafts will appear here at 8:00 AM daily.</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
 
         <div className="grid lg:grid-cols-2 gap-6">
           <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }}>
