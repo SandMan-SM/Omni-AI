@@ -344,12 +344,13 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     setEditTier(!s.active ? 'deactivated' : s.premium ? 'premium' : 'subscriber');
   };
 
-  // Save edit
-  const handleSaveEdit = async () => {
+  // Save edit — called by Save button OR auto-save on tier change
+  const handleSaveEdit = async (overrideTier?: 'deactivated' | 'subscriber' | 'premium') => {
     if (!editingSub) return;
     setEditSaving(true);
+    const tierToSave = overrideTier || editTier;
     try {
-      const subTier = editTier === 'deactivated' ? 'unsubscribed' : editTier === 'premium' ? 'premium' : 'subscribed';
+      const subTier = tierToSave === 'deactivated' ? 'unsubscribed' : tierToSave === 'premium' ? 'premium' : 'subscribed';
 
       if (editingSub.type === "profile") {
         // Update name/email on profile first
@@ -362,14 +363,14 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         await fetch("/api/admin/newsletter-toggle", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ profileId: editingSub.id, subscribed: editTier !== 'deactivated', tier: editTier }),
+          body: JSON.stringify({ profileId: editingSub.id, subscribed: tierToSave !== 'deactivated', tier: tierToSave }),
         });
       } else {
         // Website subscriber — update newsletter_subscriptions directly
         await fetch(`/api/newsletter/subscribers/${editingSub.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ first_name: editName, email: editEmail, subscription_tier: subTier, subscribed: editTier !== 'deactivated' }),
+          body: JSON.stringify({ first_name: editName, email: editEmail, subscription_tier: subTier, subscribed: tierToSave !== 'deactivated' }),
         });
       }
       setEditingSub(null);
@@ -381,6 +382,12 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     } finally {
       setEditSaving(false);
     }
+  };
+
+  // Auto-save when tier is clicked — immediate persistence
+  const handleTierChange = (newTier: 'deactivated' | 'subscriber' | 'premium') => {
+    setEditTier(newTier);
+    handleSaveEdit(newTier);
   };
 
   // Profiles NOT yet subscribed (for import modal)
@@ -990,36 +997,39 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                   <div className="grid grid-cols-3 gap-1.5">
                     <button
                       type="button"
-                      onClick={() => setEditTier('deactivated')}
+                      disabled={editSaving}
+                      onClick={() => handleTierChange('deactivated')}
                       className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
                         editTier === 'deactivated'
                           ? "bg-red-500/10 border-red-500/20 text-red-400"
                           : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
                       }`}
                     >
-                      Deactivated
+                      {editSaving && editTier === 'deactivated' ? <Loader2 className="w-3 h-3 animate-spin" /> : "Deactivated"}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditTier('subscriber')}
+                      disabled={editSaving}
+                      onClick={() => handleTierChange('subscriber')}
                       className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
                         editTier === 'subscriber'
                           ? "bg-purple-500/10 border-purple-500/20 text-purple-400"
                           : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
                       }`}
                     >
-                      Subscriber
+                      {editSaving && editTier === 'subscriber' ? <Loader2 className="w-3 h-3 animate-spin" /> : "Subscriber"}
                     </button>
                     <button
                       type="button"
-                      onClick={() => setEditTier('premium')}
+                      disabled={editSaving}
+                      onClick={() => handleTierChange('premium')}
                       className={`flex items-center justify-center gap-1.5 px-2 py-2 rounded-lg border text-xs font-medium transition-colors ${
                         editTier === 'premium'
                           ? "bg-yellow-500/10 border-yellow-500/20 text-yellow-400"
                           : "bg-white/[0.03] border-white/[0.08] text-gray-500 hover:text-gray-300"
                       }`}
                     >
-                      Premium
+                      {editSaving && editTier === 'premium' ? <Loader2 className="w-3 h-3 animate-spin" /> : "Premium"}
                     </button>
                   </div>
                 </div>
