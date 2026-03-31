@@ -11,14 +11,6 @@
     {
       "path": "/api/cron/newsletter",
       "schedule": "0 13 * * *"
-    },
-    {
-      "path": "/api/cron/health-check",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/cron/refresh-metrics",
-      "schedule": "30 * * * *"
     }
   ]
 }
