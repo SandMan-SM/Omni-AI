@@ -123,18 +123,18 @@ function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status =
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-px font-medium ${
+            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
               isPremium
                 ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
                 : "bg-purple-500/15 text-purple-400 border-purple-500/20"
-            }`} style={{ fontSize: '9px', lineHeight: '16px' }}>
+            }`} style={{ fontSize: '9px', lineHeight: '1' }}>
               {isPremium ? "Premium" : "Free"}
             </span>
-            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-px font-medium ${
+            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
               isDraft
                 ? "bg-amber-500/15 text-amber-400 border-amber-500/20"
                 : "bg-green-500/15 text-green-400 border-green-500/20"
-            }`} style={{ fontSize: '9px', lineHeight: '16px' }}>
+            }`} style={{ fontSize: '9px', lineHeight: '1' }}>
               {isDraft ? "Draft" : "Sent"}
             </span>
             <a
