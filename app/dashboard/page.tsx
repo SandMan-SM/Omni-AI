@@ -424,7 +424,7 @@ export default function Dashboard() {
                         </span>
                       </h3>
                       <p className="text-sm text-amber-200/80 mb-4 text-center px-2 leading-relaxed">
-                        Agents in development — please wait to activate VIP Sponsor Subscription
+                        Agents have been developed — please activate VIP Sponsor Subscription
                       </p>
                       <div className="flex justify-center">
                         <Button
