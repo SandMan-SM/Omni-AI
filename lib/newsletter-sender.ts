@@ -560,7 +560,8 @@ export async function sendEmail(content: NewsletterContent, to: string): Promise
 
 /**
  * Generate drafts for both free and premium newsletters.
- * Called by cron at 6:00 AM ET — saves as drafts (published_at = null).
+ * Called by cron at 8:00 AM ET — saves as drafts (published_at = null).
+ * Drafts are visible in the admin UI until the send cron (9:00 AM ET) publishes them.
  */
 export async function generateDrafts(supabase: any) {
   const freeContent = await generateFreeContent();
@@ -671,6 +672,7 @@ export async function runDailyNewsletter(supabase: any = null) {
         .eq('newsletter_subscribed', true);
 
       // Also check newsletter_subscriptions table if it exists
+      // BUT cross-reference with profiles to exclude deactivated users
       let extraEmails: string[] = [];
       try {
         const { data: freeSubs } = await supabase
@@ -684,19 +686,38 @@ export async function runDailyNewsletter(supabase: any = null) {
         // Table may not exist yet — that's fine
       }
 
-      // Dedupe all recipient emails
+      // Build set of deactivated emails (explicitly unsubscribed in profiles)
+      const deactivatedEmails = new Set<string>();
+      try {
+        const { data: deactivated } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('newsletter_subscribed', false);
+        if (deactivated?.length) {
+          for (const p of deactivated) {
+            if (p.email) deactivatedEmails.add(p.email.toLowerCase());
+          }
+        }
+      } catch {
+        // If query fails, continue without deactivation filter
+      }
+
+      // Dedupe all recipient emails — only active subscribers
       const allEmails = new Set<string>();
       if (activeProfiles?.length) {
         for (const p of activeProfiles) {
           if (p.email) allEmails.add(p.email.toLowerCase());
         }
       }
+      // Add newsletter_subscriptions emails ONLY if not deactivated in profiles
       for (const e of extraEmails) {
-        allEmails.add(e.toLowerCase());
+        if (!deactivatedEmails.has(e.toLowerCase())) {
+          allEmails.add(e.toLowerCase());
+        }
       }
 
-      // Always include the primary recipient
-      allEmails.add(NEWSLETTER_TO.toLowerCase());
+      // NEWSLETTER_TO is only included if they are actually subscribed — no force-add
+      // (DEV_MODE allowlist handles dev-only sends at the sendEmail level)
 
       if (allEmails.size > 0) {
         const results = await Promise.allSettled(

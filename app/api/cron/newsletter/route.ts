@@ -50,7 +50,7 @@ export async function GET(request: Request) {
         .gte('sent_at', `${todayDate}T00:00:00.000Z`)
         .lte('sent_at', `${todayDate}T23:59:59.999Z`);
 
-      if (count && count >= 2) {
+      if (count && count >= 1) {
         console.log(`[Newsletter Cron] Already sent ${count} newsletters today — skipping to prevent duplicates`);
         return NextResponse.json({
           success: true,
@@ -59,8 +59,13 @@ export async function GET(request: Request) {
           timestamp: new Date().toISOString(),
         });
       }
-    } catch {
-      // Table might not exist or query fails — proceed anyway
+    } catch (guardErr) {
+      console.error('[Newsletter Cron] Guard query failed — blocking send as safety measure:', guardErr);
+      return NextResponse.json({
+        success: false,
+        error: 'Guard query failed — refusing to send without dedup check',
+        timestamp: new Date().toISOString(),
+      }, { status: 500 });
     }
 
     // 1. Send the FREE daily newsletter
