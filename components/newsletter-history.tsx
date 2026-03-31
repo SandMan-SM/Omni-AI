@@ -123,26 +123,26 @@ function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status =
             </div>
           </div>
           <div className="flex items-center gap-1.5 flex-shrink-0">
-            <Badge className={`text-[9px] leading-none px-1.5 py-0.5 border rounded-md whitespace-nowrap ${
+            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-px font-medium ${
               isPremium
                 ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20"
                 : "bg-purple-500/15 text-purple-400 border-purple-500/20"
-            }`}>
+            }`} style={{ fontSize: '9px', lineHeight: '16px' }}>
               {isPremium ? "Premium" : "Free"}
-            </Badge>
-            <Badge className={`text-[9px] leading-none px-1.5 py-0.5 border rounded-md whitespace-nowrap ${
+            </span>
+            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-1.5 py-px font-medium ${
               isDraft
                 ? "bg-amber-500/15 text-amber-400 border-amber-500/20"
                 : "bg-green-500/15 text-green-400 border-green-500/20"
-            }`}>
+            }`} style={{ fontSize: '9px', lineHeight: '16px' }}>
               {isDraft ? "Draft" : "Sent"}
-            </Badge>
+            </span>
             <a
               href={href || "#"}
               target="_blank"
               rel="noopener noreferrer"
               onClick={e => { if (!href) e.preventDefault(); }}
-              className={`p-1 rounded-lg hover:bg-white/[0.06] transition-colors ${!href ? 'opacity-30' : ''}`}
+              className={`p-1 rounded-lg hover:bg-white/[0.06] transition-colors ${!href ? 'opacity-30 pointer-events-none' : ''}`}
               title={isDraft ? "Preview draft" : "View newsletter page"}
             >
               <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
@@ -496,15 +496,26 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     const usedPostIds = new Set<string>();
     const result: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string; status: 'draft' | 'sent' }[] = [];
 
-    // Find the closest unused post within 2h of a given timestamp
-    const findPost = (sentAt: string) => {
+    // Find matching post — first try exact subject match, then closest timestamp within 2h
+    const findPost = (sentAt: string, subject?: string) => {
+      // 1. Try exact subject match first (most reliable)
+      if (subject) {
+        for (const p of posts) {
+          if (usedPostIds.has(p.id) || !p.published_at) continue;
+          if (p.subject === subject) {
+            usedPostIds.add(p.id);
+            return p;
+          }
+        }
+      }
+      // 2. Fallback: closest by timestamp within 2h
       const sentTime = new Date(sentAt).getTime();
       let best: (typeof posts)[0] | null = null;
       let bestDiff = Infinity;
       for (const p of posts) {
         if (usedPostIds.has(p.id) || !p.published_at) continue;
         const diff = Math.abs(new Date(p.published_at).getTime() - sentTime);
-        if (diff < bestDiff && diff < 7200000) { // within 2h
+        if (diff < bestDiff && diff < 7200000) {
           bestDiff = diff;
           best = p;
         }
@@ -525,14 +536,14 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       for (const n of analytics.newsletters) {
         seen.add(n.subject);
         const matchingSend = sends.find(s => s.subject === n.subject);
-        const post = findPost(n.sent_at);
+        const post = findPost(n.sent_at, n.subject);
         result.push({ newsletter: n, send: matchingSend, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
       }
     }
 
     for (const s of sends) {
       if (!seen.has(s.subject)) {
-        const post = findPost(s.sent_at);
+        const post = findPost(s.sent_at, s.subject);
         result.push({ send: s, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
       }
     }
@@ -658,20 +669,23 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           </h3>
 
           {/* Business dropdown */}
-          <select
-            value={selectedProfile?.id || ""}
-            onChange={e => {
-              const id = e.target.value;
-              setSelectedProfile(id ? newsletterBusinesses.find(p => p.id === id) || null : null);
-            }}
-            className="h-7 text-[11px] bg-black border border-white/[0.10] text-white rounded-md px-2 pr-6 focus:outline-none focus:ring-1 focus:ring-purple-500/30 appearance-none cursor-pointer"
-            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 6px center' }}
-          >
-            <option value="">Select business</option>
-            {newsletterBusinesses.map(p => (
-              <option key={p.id} value={p.id}>{displayName(p)}</option>
-            ))}
-          </select>
+          <div className="relative">
+            <select
+              value={selectedProfile?.id || ""}
+              onChange={e => {
+                const id = e.target.value;
+                setSelectedProfile(id ? newsletterBusinesses.find(p => p.id === id) || null : null);
+              }}
+              className="h-7 text-[11px] bg-black border border-white/[0.10] text-white rounded-md pl-2 pr-6 focus:outline-none focus:ring-1 focus:ring-purple-500/30 cursor-pointer"
+              style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' } as React.CSSProperties}
+            >
+              <option value="">Select business</option>
+              {newsletterBusinesses.map(p => (
+                <option key={p.id} value={p.id}>{displayName(p)}</option>
+              ))}
+            </select>
+            <svg className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2"><path d="M6 9l6 6 6-6"/></svg>
+          </div>
         </div>
 
         {/* Selected business banner */}
