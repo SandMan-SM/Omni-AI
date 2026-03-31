@@ -12,15 +12,19 @@ import { logEvent } from '@/lib/events';
 export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
+  const { searchParams } = new URL(request.url);
+  const action = searchParams.get('action');
 
-  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  // Draft generation is safe (no sends) — allow without secret for manual triggers
+  // Sending still requires CRON_SECRET
+  if (action !== 'generate-drafts') {
+    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
   }
 
   try {
     const supabase = await createClient();
-    const { searchParams } = new URL(request.url);
-    const action = searchParams.get('action');
 
     // Draft generation mode
     if (action === 'generate-drafts') {
