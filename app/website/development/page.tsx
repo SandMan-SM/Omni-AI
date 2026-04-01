@@ -161,14 +161,14 @@ export default function WebsiteDevelopment() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
             >
               <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-base px-8 py-3.5 h-auto rounded-xl"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-[15px] px-10 h-14 rounded-xl neon-glow"
                 onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
               >
-                Get Started — $25/mo
+                Buy Now — $25/mo
               </Button>
               <Button
                 variant="outline"
-                className="border-white/10 text-gray-300 hover:bg-white/5 text-base px-8 py-3 h-auto"
+                className="border-white/15 bg-white/[0.03] text-white text-[15px] px-10 h-14 rounded-xl"
                 onClick={() => setIsDemoModalOpen(true)}
               >
                 Book a Demo
@@ -396,17 +396,17 @@ export default function WebsiteDevelopment() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Button
-                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-base px-10 py-3.5 h-auto rounded-xl"
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-[15px] px-10 h-14 rounded-xl neon-glow"
                       onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
                     >
-                      Subscribe — $25/mo
+                      Buy Now — $25/mo
                     </Button>
                     <Button
                       variant="outline"
-                      className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 text-base px-8 py-3 h-auto"
+                      className="border-white/15 bg-white/[0.03] text-white text-[15px] px-10 h-14 rounded-xl"
                       onClick={() => setIsDemoModalOpen(true)}
                     >
-                      Talk to Us
+                      Book a Demo
                       <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
