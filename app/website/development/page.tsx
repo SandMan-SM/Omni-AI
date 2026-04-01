@@ -142,14 +142,11 @@ export default function WebsiteDevelopment() {
                 Website Service
               </motion.div>
 
-              <h1 className="text-5xl lg:text-6xl font-bold mb-5">
+              <h1 className="text-5xl lg:text-6xl font-bold mb-6 whitespace-nowrap">
                 <span className="text-gradient">Website Development</span>
               </h1>
-              <p className="text-gray-400 text-xl max-w-2xl mx-auto mb-4">
-                Managed hosting infrastructure powered by AI-driven optimization.
-              </p>
-              <p className="text-gray-500 text-base max-w-xl mx-auto">
-                We deploy, monitor, and scale your web applications so you can focus on growth, not servers.
+              <p className="text-gray-400 text-lg max-w-lg mx-auto leading-relaxed">
+                AI-powered web development, hosting, and optimization — we build, deploy, and scale so you don't have to.
               </p>
             </motion.div>
 
