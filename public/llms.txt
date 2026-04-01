@@ -1,0 +1,25 @@
+# Omni AI
+
+> Autonomous AI systems that generate leads, run operations, and scale businesses 24/7. Built for entrepreneurs and agencies who want AI-powered growth without micromanagement.
+
+## Main Pages
+- [Homepage](https://omnileadsagi.com): Overview of Omni AI's autonomous lead generation and business automation platform.
+- [Campaigns](https://omnileadsagi.com/campaigns): AI-generated video marketing with automated testing, ranking, and optimization.
+- [Infographic](https://omnileadsagi.com/details): Visual breakdown of Omni AI's features and capabilities.
+- [AI Arena](https://omnileadsagi.com/arena): Competitive AI agent arena for testing and benchmarking AI performance.
+- [Interlinked](https://omnileadsagi.com/interlinked): Free training on building an AI CEO system for your business. Live webinar registration.
+
+## Products & Services
+- [AI Lead Generation](https://omnileadsagi.com): Autonomous agents that find, qualify, and convert high-value leads.
+- [AI Video Marketing](https://omnileadsagi.com/campaigns): AI scripts, produces, and edits marketing videos. Auto-tests and scales winners.
+- [Business Automation](https://omnileadsagi.com): AI-powered operations management with memory, decision logic, and self-improvement.
+
+## Newsletter
+- [Interlinked Newsletter](https://omnileadsagi.com/newsletter): Free and premium AI strategy newsletters covering lead generation, automation, and business scaling.
+
+## Getting Started
+- [Join / Sign Up](https://omnileadsagi.com/join): Create an account to access the Omni AI dashboard and tools.
+- [Book a Demo](https://omnileadsagi.com/interlinked): Schedule a free demo to see how Omni AI integrates into your business.
+
+## Optional
+- [Sponsor](https://omnileadsagi.com/sponsor): Partnership and sponsorship opportunities with Omni AI.
