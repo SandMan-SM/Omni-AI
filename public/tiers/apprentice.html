@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sponsored Program | Get Your AI Infrastructure Built for Free - Omni AI</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#050505;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;overflow-x:hidden}
+  .gradient-bar{height:4px;background:linear-gradient(90deg,#22c55e,#10b981,#06b6d4,#22c55e);background-size:300% 100%;animation:shimmer 4s ease infinite}
+  @keyframes shimmer{0%{background-position:300% 0}100%{background-position:-300% 0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes pulse-glow{0%,100%{box-shadow:0 0 20px rgba(34,197,94,.15)}50%{box-shadow:0 0 40px rgba(34,197,94,.25)}}
+  .fade-up{animation:fadeUp .8s ease forwards;opacity:0}
+  .fade-up:nth-child(2){animation-delay:.1s}
+  .fade-up:nth-child(3){animation-delay:.2s}
+  .fade-up:nth-child(4){animation-delay:.3s}
+  .fade-up:nth-child(5){animation-delay:.4s}
+  .container{max-width:960px;margin:0 auto;padding:0 24px}
+  header{padding:32px 0 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .logo{font-size:1.5rem;font-weight:700;color:#22c55e}
+  .back-link{color:#888;text-decoration:none;font-size:.875rem;transition:color .2s}
+  .back-link:hover{color:#22c55e}
+  .hero{text-align:center;padding:64px 0 48px}
+  .tier-badge{display:inline-block;padding:6px 20px;border:1px solid #22c55e;border-radius:100px;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:#22c55e;margin-bottom:24px;background:rgba(34,197,94,.08)}
+  h1{font-size:3rem;font-weight:800;color:#22c55e;margin-bottom:12px}
+  .tagline{font-size:1.25rem;color:#888;max-width:640px;margin:0 auto 32px}
+  .price-display{font-size:2.5rem;font-weight:700;color:#fff;margin-bottom:8px}
+  .price-highlight{color:#22c55e}
+  .price-note{color:#666;font-size:.875rem}
+  section{padding:48px 0}
+  .section-label{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:#22c55e;margin-bottom:12px}
+  h2{font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:24px}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .card{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:16px;padding:28px;transition:border-color .3s}
+  .card:hover{border-color:#22c55e}
+  .card h3{font-size:1.1rem;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .card h3 .icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#16a34a,#22c55e);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+  .card p,.card ul li{color:#aaa;font-size:.9rem}
+  .card ul{list-style:none;padding:0}
+  .card ul li{padding:6px 0;position:relative;padding-left:20px}
+  .card ul li::before{content:'';position:absolute;left:0;top:14px;width:6px;height:6px;border-radius:50%;background:#22c55e}
+  .sponsor-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-top:24px}
+  .sponsor-card{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:14px;padding:24px;text-align:center;transition:border-color .3s,transform .2s}
+  .sponsor-card:hover{border-color:#22c55e;transform:translateY(-2px)}
+  .sponsor-icon{width:56px;height:56px;border-radius:14px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem}
+  .sponsor-card h4{color:#fff;font-size:.95rem;margin-bottom:6px}
+  .sponsor-card p{color:#888;font-size:.8rem;line-height:1.5}
+  .highlight-box{background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:16px;padding:32px;margin:32px 0;animation:pulse-glow 3s ease-in-out infinite}
+  .highlight-box h3{color:#22c55e;font-size:1.25rem;margin-bottom:12px}
+  .highlight-box p{color:#ccc;font-size:1rem;line-height:1.7}
+  .how-it-works{counter-reset:step}
+  .step{position:relative;padding:24px 24px 24px 72px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:14px;margin-bottom:16px;transition:border-color .3s}
+  .step:hover{border-color:#22c55e}
+  .step::before{counter-increment:step;content:counter(step);position:absolute;left:20px;top:24px;width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:700;font-size:1rem;display:flex;align-items:center;justify-content:center}
+  .step h3{color:#fff;font-size:1rem;margin-bottom:4px}
+  .step p{color:#888;font-size:.9rem}
+  .qualify-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+  .qualify-item{display:flex;align-items:start;gap:12px;padding:16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:12px}
+  .qualify-check{width:24px;height:24px;border-radius:6px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#22c55e;font-size:.8rem;margin-top:2px}
+  .qualify-item p{color:#ccc;font-size:.9rem}
+  .cta-section{text-align:center;padding:64px 0 80px}
+  .cta-section h2{font-size:2rem}
+  .cta-section>p{color:#888;max-width:540px;margin:0 auto 32px;font-size:1.05rem}
+  .btn-primary{display:inline-block;padding:16px 48px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;text-decoration:none;border-radius:12px;font-weight:600;font-size:1.05rem;transition:transform .2s,box-shadow .2s}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(34,197,94,.35)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,#1a1a1a,transparent);margin:0}
+  footer{text-align:center;padding:32px 0;color:#444;font-size:.8rem;border-top:1px solid #111}
+</style>
+</head>
+<body>
+<div class="gradient-bar"></div>
+<div class="container">
+  <header>
+    <div class="logo">OMNI AI</div>
+    <a href="/details" class="back-link">&#8592; Back to Details</a>
+  </header>
+
+  <div class="hero fade-up">
+    <div class="tier-badge">Sponsored Program</div>
+    <h1>Apprentice</h1>
+    <p class="tagline">Get your entire Agentic AI infrastructure built out for free. Sponsors fund the deal. You get the technology.</p>
+    <div class="price-display"><span style="text-decoration:line-through;color:#666;font-size:1.5rem;">$1,000+/mo</span>&nbsp; <span class="price-highlight">$0</span></div>
+    <p class="price-note">100% sponsor-funded &mdash; no cost to qualifying businesses</p>
+  </div>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">The Big Idea</p>
+    <h2>What is the Sponsored Program?</h2>
+    <p style="color:#aaa;max-width:720px;font-size:1.05rem;margin-bottom:24px;">
+      The Apprentice tier is the entry point to the Omni AI ecosystem &mdash; and it's completely free. Through our sponsor network, qualified business owners get their entire agentic AI infrastructure built, deployed, and managed at zero cost. Sponsors invest in your growth because when you win, everyone wins.
+    </p>
+
+    <div class="highlight-box">
+      <h3>Here's the deal:</h3>
+      <p>
+        Sponsors pick up the tab for your AI setup, marketing automation, and lead generation infrastructure. You don't pay a dime. You don't owe anything. You just get access to the same technology that powers businesses paying $1,000-$25,000/month &mdash; built out for you, for free.
+      </p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">Sponsor Network</p>
+    <h2>Who Funds Your Build?</h2>
+    <p style="color:#aaa;max-width:680px;font-size:1rem;margin-bottom:28px;">
+      Our sponsors are companies and investors who see the future of AI-powered business. They fund Apprentice builds because they want to support entrepreneurs adopting the next generation of technology.
+    </p>
+
+    <div class="sponsor-grid">
+      <div class="sponsor-card">
+        <div class="sponsor-icon" style="background:linear-gradient(135deg,rgba(168,85,247,.15),rgba(168,85,247,.05));border:1px solid rgba(168,85,247,.2);">&#127968;</div>
+        <h4>Tech Accelerators</h4>
+        <p>Startup programs that fund AI adoption for early-stage businesses</p>
+      </div>
+      <div class="sponsor-card">
+        <div class="sponsor-icon" style="background:linear-gradient(135deg,rgba(59,130,246,.15),rgba(59,130,246,.05));border:1px solid rgba(59,130,246,.2);">&#128188;</div>
+        <h4>Enterprise Partners</h4>
+        <p>Large companies investing in small business AI infrastructure</p>
+      </div>
+      <div class="sponsor-card">
+        <div class="sponsor-icon" style="background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.05));border:1px solid rgba(245,158,11,.2);">&#128176;</div>
+        <h4>Angel Investors</h4>
+        <p>Individual investors backing high-potential businesses through AI enablement</p>
+      </div>
+      <div class="sponsor-card">
+        <div class="sponsor-icon" style="background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(34,197,94,.05));border:1px solid rgba(34,197,94,.2);">&#127760;</div>
+        <h4>AI Grant Programs</h4>
+        <p>Foundations and organizations funding the AI transformation of small businesses</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">What You Get</p>
+    <h2>Your Free AI Infrastructure</h2>
+    <div class="card-grid">
+      <div class="card">
+        <h3><span class="icon">&#9889;</span> AI Agent Setup</h3>
+        <ul>
+          <li>Custom AI agents configured for your business</li>
+          <li>Automated lead generation workflows</li>
+          <li>Intelligent response systems</li>
+          <li>24/7 autonomous operation</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#128218;</span> Education &amp; Training</h3>
+        <ul>
+          <li>AI CEO training sessions</li>
+          <li>Weekly intelligence briefings</li>
+          <li>Access to Interlinked premium newsletter</li>
+          <li>1-on-1 onboarding call</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#128640;</span> Marketing Automation</h3>
+        <ul>
+          <li>Email automation &amp; sequences</li>
+          <li>Social media content pipeline</li>
+          <li>Lead nurture workflows</li>
+          <li>Basic CRM setup</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#129309;</span> Community &amp; Support</h3>
+        <ul>
+          <li>Access to the Omni AI community</li>
+          <li>Peer networking with other founders</li>
+          <li>Priority support during build phase</li>
+          <li>Direct line to the Omni AI team</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">Process</p>
+    <h2>How It Works</h2>
+    <div class="how-it-works">
+      <div class="step">
+        <h3>Apply Below</h3>
+        <p>Fill out the form with your business info. Tell us what you do, where you're headed, and what's holding you back.</p>
+      </div>
+      <div class="step">
+        <h3>We Match You With a Sponsor</h3>
+        <p>Our team reviews your application and connects you with a sponsor whose investment thesis aligns with your business and industry.</p>
+      </div>
+      <div class="step">
+        <h3>Strategy Call</h3>
+        <p>We hop on a call to map out your custom AI infrastructure &mdash; what gets built, what gets automated, and what your business looks like in 90 days.</p>
+      </div>
+      <div class="step">
+        <h3>Build &amp; Deploy (Free)</h3>
+        <p>Our team builds out your entire agentic infrastructure. AI agents, automation, marketing systems &mdash; all deployed and managed for you at zero cost.</p>
+      </div>
+      <div class="step">
+        <h3>Grow &amp; Upgrade</h3>
+        <p>Once your systems are running and revenue is flowing, you have the option to upgrade to Master, Royal, or Empire for even more power. No pressure &mdash; the Apprentice tier is yours to keep.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">Eligibility</p>
+    <h2>Who Qualifies?</h2>
+    <p style="color:#aaa;max-width:680px;font-size:1rem;margin-bottom:24px;">
+      The Sponsored Program is designed for business owners who are serious about growth but may not have the budget to invest in AI infrastructure yet. If any of these sound like you, apply:
+    </p>
+    <div class="qualify-grid">
+      <div class="qualify-item">
+        <div class="qualify-check">&#10003;</div>
+        <p>You run a real business (product, service, or agency) and want to scale with AI</p>
+      </div>
+      <div class="qualify-item">
+        <div class="qualify-check">&#10003;</div>
+        <p>You're generating revenue but haven't automated your lead gen or marketing yet</p>
+      </div>
+      <div class="qualify-item">
+        <div class="qualify-check">&#10003;</div>
+        <p>You're a startup or early-stage company looking for an unfair advantage</p>
+      </div>
+      <div class="qualify-item">
+        <div class="qualify-check">&#10003;</div>
+        <p>You're willing to commit time to learning and implementing the AI systems we build for you</p>
+      </div>
+      <div class="qualify-item">
+        <div class="qualify-check">&#10003;</div>
+        <p>You're open to being featured as a case study (optional &mdash; not required)</p>
+      </div>
+      <div class="qualify-item">
+        <div class="qualify-check">&#10003;</div>
+        <p>You want to move fast and are ready to start within 2 weeks of acceptance</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="cta-section fade-up" id="book">
+    <p class="section-label">Apply Now</p>
+    <h2>Get Your AI Built for Free</h2>
+    <p style="margin-bottom:40px;">Spots are limited by sponsor availability. Fill out the form and our team will review your application within 48 hours.</p>
+
+    <div id="booking-form" style="max-width:480px;margin:0 auto;text-align:left;">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Full Name *</label>
+        <input type="text" id="f-name" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Email *</label>
+        <input type="email" id="f-email" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Phone *</label>
+        <input type="tel" id="f-phone" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Business Name *</label>
+        <input type="text" id="f-biz" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">What does your business do? (industry, product/service, current stage)</label>
+        <textarea id="f-about" rows="3" style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;resize:vertical;transition:border-color .2s;font-family:inherit" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'" placeholder="e.g. We're a landscaping company in Austin doing $15k/mo. We need more leads and a way to follow up automatically."></textarea>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">What's your biggest growth bottleneck right now?</label>
+        <textarea id="f-bottleneck" rows="2" style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;resize:vertical;transition:border-color .2s;font-family:inherit" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'" placeholder="e.g. Not enough leads, can't keep up with follow-ups, no marketing system in place"></textarea>
+      </div>
+      <div style="margin-bottom:24px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Preferred Date &amp; Time for Strategy Call</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <input type="date" id="f-date" style="padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'" />
+          <select id="f-time" style="padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s;cursor:pointer" onfocus="this.style.borderColor='#22c55e'" onblur="this.style.borderColor='#1a1a1a'">
+            <option value="">Select time</option>
+            <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>12:00 PM</option>
+            <option>1:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <button id="f-submit" onclick="submitBooking()" class="btn-primary" style="width:100%;border:none;cursor:pointer;text-align:center;font-size:1.05rem;padding:16px">
+        Apply for Sponsored Program
+      </button>
+      <p id="f-status" style="text-align:center;margin-top:16px;font-size:.9rem;display:none;"></p>
+    </div>
+
+    <div id="booking-success" style="display:none;text-align:center;padding:40px 0;">
+      <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:rgba(34,197,94,.15);border:2px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:2rem;">&#10003;</div>
+      <h3 style="color:#fff;font-size:1.5rem;margin-bottom:8px;">Application Submitted!</h3>
+      <p style="color:#aaa;margin-bottom:8px;">We'll review your business and match you with a <strong style="color:#22c55e">sponsor</strong> within 48 hours.</p>
+      <p style="color:#888;font-size:.9rem;margin-bottom:24px;">Check your email for confirmation details and a calendar invite for your strategy call.</p>
+      <a id="gcal-link" href="#" target="_blank" style="display:inline-block;padding:12px 32px;background:rgba(34,197,94,.15);border:1px solid rgba(34,197,94,.3);border-radius:10px;color:#22c55e;text-decoration:none;font-weight:600;font-size:.95rem;">Add to Google Calendar</a>
+    </div>
+  </section>
+
+  <footer>
+    &copy; 2026 Omni AI. All rights reserved.
+  </footer>
+</div>
+<script>
+async function submitBooking(){
+  const btn=document.getElementById('f-submit'),st=document.getElementById('f-status');
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const biz=document.getElementById('f-biz').value.trim();
+  const about=document.getElementById('f-about').value.trim();
+  const bottleneck=(document.getElementById('f-bottleneck').value||'').trim();
+  const date=document.getElementById('f-date').value;
+  const time=document.getElementById('f-time').value;
+  if(!name||!email||!phone||!biz){st.style.display='block';st.style.color='#ef4444';st.textContent='Please fill in all required fields.';return;}
+  btn.disabled=true;btn.textContent='Submitting...';btn.style.opacity='.6';
+  try{
+    const purpose='SPONSORED PROGRAM APPLICATION — Business: '+about+(bottleneck?' | Bottleneck: '+bottleneck:'');
+    const res=await fetch('/api/demo-booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone,businessName:biz,purpose,date:date||new Date().toISOString().split('T')[0],time:time||'TBD'})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Failed');
+    document.getElementById('booking-form').style.display='none';
+    document.getElementById('booking-success').style.display='block';
+    if(data.googleCalendarUrl)document.getElementById('gcal-link').href=data.googleCalendarUrl;
+  }catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Something went wrong. Please try again.';btn.disabled=false;btn.textContent='Apply for Sponsored Program';btn.style.opacity='1';}
+}
+</script>
+</body>
+</html>

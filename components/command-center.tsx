@@ -6,7 +6,7 @@ import Link from "next/link";
 import {
   Users, Target, TrendingUp, Mail, Bot,
   BarChart3, CheckCircle, Activity, Video, Share2, Mic,
-  AlertTriangle, Zap, FileText, Send, UserCircle, DollarSign,
+  AlertTriangle, Zap, FileText, Send, UserCircle, DollarSign, Eye,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -78,15 +78,29 @@ const ChartTooltip = ({ active, payload, label }: any) => {
   );
 };
 
+interface NewsletterPost {
+  id: string;
+  slug: string;
+  subject: string;
+  tier?: string;
+  published_at?: string | null;
+  created_at?: string;
+}
+
 export function CommandCenter() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
+  const [newsletterPosts, setNewsletterPosts] = useState<NewsletterPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/dashboard/metrics")
-      .then(r => r.json())
-      .then(d => { setMetrics(d); setLoading(false); })
-      .catch(() => setLoading(false));
+    Promise.all([
+      fetch("/api/dashboard/metrics").then(r => r.json()),
+      fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ posts: [] })),
+    ]).then(([metricsData, nlData]) => {
+      setMetrics(metricsData);
+      setNewsletterPosts((nlData?.posts ?? []).slice(0, 4));
+      setLoading(false);
+    }).catch(() => setLoading(false));
   }, []);
 
   if (loading) {
@@ -308,53 +322,6 @@ export function CommandCenter() {
           </CardContent>
         </Card>
 
-        {/* Newsletter Content — 3 most recent posts */}
-        <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-                <Mail className="w-4 h-4 text-blue-400" /> Newsletter Content
-              </h3>
-              <span className="text-[10px] text-gray-500">{operations.premiumPosts + operations.freePosts} posts</span>
-            </div>
-            {charts.recentPosts && charts.recentPosts.length > 0 ? (
-              <div className="space-y-2.5">
-                {charts.recentPosts.map((post: RecentPost) => (
-                  <Link
-                    key={post.slug}
-                    href={`/newsletter/${post.slug}`}
-                    className="flex items-start gap-2.5 p-2.5 rounded-lg bg-white/[0.02] border border-white/[0.04] hover:border-white/10 hover:bg-white/[0.04] transition-colors group"
-                  >
-                    <FileText className="w-3.5 h-3.5 text-gray-500 mt-0.5 flex-shrink-0 group-hover:text-white transition-colors" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-white truncate group-hover:text-white">{post.subject}</p>
-                      <p className="text-[10px] text-gray-600 mt-0.5">
-                        {new Date(post.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                      </p>
-                    </div>
-                    <span className={`text-[8px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded flex-shrink-0 ${post.tier === "premium" ? "bg-yellow-500/10 text-yellow-400" : "bg-purple-500/10 text-purple-400"}`}>
-                      {post.tier === "premium" ? "PRO" : "FREE"}
-                    </span>
-                  </Link>
-                ))}
-                <div className="flex items-center justify-between pt-1 text-[10px] text-gray-500">
-                  <span>{operations.premiumSubscribers} premium subs</span>
-                  <span>{operations.freeSubscribers} total subs</span>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-6">
-                <Mail className="w-6 h-6 text-gray-700 mb-2" />
-                <p className="text-xs text-gray-600">No posts published yet</p>
-                <div className="flex items-center gap-4 mt-3 text-[10px] text-gray-500">
-                  <span>{operations.premiumSubscribers} premium subs</span>
-                  <span>{operations.freeSubscribers} total subs</span>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Client Health */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-5">
@@ -395,6 +362,67 @@ export function CommandCenter() {
             ) : (
               <div className="h-[110px] flex items-center justify-center">
                 <p className="text-xs text-gray-600">No client data yet</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Newsletter Posts */}
+        <Card className="bg-white/[0.02] border-white/[0.06]">
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+                <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
+              </h3>
+              <Link href="/admin" className="text-[10px] text-purple-400 hover:text-purple-300 transition-colors">
+                View all →
+              </Link>
+            </div>
+            {newsletterPosts.length > 0 ? (
+              <div className="space-y-1.5">
+                {newsletterPosts.map((post) => {
+                  const isDraft = !post.published_at;
+                  const isPremium = post.tier === 'premium';
+                  const href = post.slug ? `/newsletter/${post.slug}` : null;
+                  const dateStr = post.published_at || post.created_at;
+                  return (
+                    <div key={post.id} className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border border-white/[0.04] ${isDraft ? 'border-l-2 border-l-amber-500/40' : ''} hover:bg-white/[0.02] transition-colors`}>
+                      <div className={`w-6 h-6 rounded-md ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
+                        <Mail className={`w-2.5 h-2.5 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[11px] font-medium text-white truncate">{post.subject}</p>
+                        <p className="text-[9px] text-gray-600">
+                          {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Pending"}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
+                          isPremium ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"
+                        }`} style={{ fontSize: '9px', lineHeight: '1' }}>
+                          {isPremium ? "Premium" : "Free"}
+                        </span>
+                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
+                          isDraft ? "bg-amber-500/15 text-amber-400 border-amber-500/20" : "bg-green-500/15 text-green-400 border-green-500/20"
+                        }`} style={{ fontSize: '9px', lineHeight: '1' }}>
+                          {isDraft ? "Draft" : "Sent"}
+                        </span>
+                        {href ? (
+                          <Link href={href} className="p-1 rounded hover:bg-white/[0.06] transition-colors">
+                            <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
+                          </Link>
+                        ) : (
+                          <span className="p-1 opacity-30"><Eye className="w-3.5 h-3.5 text-gray-400" /></span>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-4">
+                <Mail className="w-5 h-5 text-gray-700 mb-2" />
+                <p className="text-[10px] text-gray-600">No newsletter posts yet</p>
               </div>
             )}
           </CardContent>

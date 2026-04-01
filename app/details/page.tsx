@@ -65,6 +65,7 @@ const tiers = [
     gradient: "from-slate-500 to-slate-600",
     accentColor: "text-slate-400",
     borderColor: "border-slate-500/20",
+    pdfSlug: "apprentice",
     features: ["Educational content", "Weekly insights", "Community access", "AI awareness training"],
   },
   {

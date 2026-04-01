@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -149,6 +149,42 @@ export default function Dashboard() {
     enabled: !!isAdmin,
   });
   const newsletterPosts = (newsletterData?.posts ?? []).slice(0, 6);
+
+  // Compute next 3 AI CEO Training sessions (same schedule as /interlinked)
+  const upcomingTrainings = useMemo(() => {
+    const now = new Date();
+    const sessions: { date: Date; label: string }[] = [];
+
+    for (let offset = 0; offset < 6 && sessions.length < 3; offset++) {
+      const monthOffset = now.getMonth() + offset;
+      const month = monthOffset % 12;
+      const y = now.getFullYear() + Math.floor(monthOffset / 12);
+
+      // Second Saturday at 6 PM
+      const first = new Date(y, month, 1);
+      const firstDayOfWeek = first.getDay();
+      const firstSaturday = firstDayOfWeek <= 6 ? (6 - firstDayOfWeek + 1) : 1;
+      const secondSat = new Date(y, month, firstSaturday + 7, 18, 0, 0, 0);
+      if (secondSat > now && sessions.length < 3) {
+        sessions.push({ date: secondSat, label: "AI CEO Training — Live Session" });
+      }
+
+      // 11th at 12 PM
+      const eleventh = new Date(y, month, 11, 12, 0, 0, 0);
+      if (eleventh > now && sessions.length < 3) {
+        sessions.push({ date: eleventh, label: "AI CEO Training — Strategy Call" });
+      }
+
+      // 28th at 7 PM
+      const twentyEighth = new Date(y, month, 28, 19, 0, 0, 0);
+      if (twentyEighth > now && sessions.length < 3) {
+        sessions.push({ date: twentyEighth, label: "AI CEO Training — Implementation" });
+      }
+    }
+
+    sessions.sort((a, b) => a.date.getTime() - b.date.getTime());
+    return sessions.slice(0, 3);
+  }, []);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -724,72 +760,6 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
-        {/* Newsletter Posts — Admin only ($Mafi) */}
-        {isAdmin && (
-          <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.32 }}>
-            <Card className="bg-white/[0.03] border-white/[0.06]">
-              <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-                <CardTitle className="text-lg text-white flex items-center gap-2">
-                  <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
-                </CardTitle>
-                <Link href="/admin" className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors">
-                  View all →
-                </Link>
-              </CardHeader>
-              <CardContent>
-                {newsletterPosts.length > 0 ? (
-                  <div className="space-y-3">
-                    {newsletterPosts.map((post) => {
-                      const isDraft = !post.published_at;
-                      const isPremium = post.tier === 'premium';
-                      const href = post.slug ? `/newsletter/${post.slug}` : null;
-                      const dateStr = post.published_at || post.created_at;
-                      return (
-                        <div key={post.id} className={`flex items-center gap-3 py-2 border-b border-white/[0.05] last:border-0 ${isDraft ? 'border-l-2 border-l-amber-500/40 pl-2' : ''}`}>
-                          <div className={`w-8 h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
-                            <Mail className={`w-3.5 h-3.5 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-white truncate">{post.subject}</p>
-                            <p className="text-[11px] text-gray-500">
-                              {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "Pending"}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-1.5 flex-shrink-0">
-                            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
-                              isPremium ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"
-                            }`} style={{ fontSize: '9px', lineHeight: '1' }}>
-                              {isPremium ? "Premium" : "Free"}
-                            </span>
-                            <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
-                              isDraft ? "bg-amber-500/15 text-amber-400 border-amber-500/20" : "bg-green-500/15 text-green-400 border-green-500/20"
-                            }`} style={{ fontSize: '9px', lineHeight: '1' }}>
-                              {isDraft ? "Draft" : "Sent"}
-                            </span>
-                            {href ? (
-                              <a href={href} target="_blank" rel="noopener noreferrer" className="p-1 rounded-lg hover:bg-white/[0.06] transition-colors">
-                                <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
-                              </a>
-                            ) : (
-                              <span className="p-1 opacity-30"><Eye className="w-3.5 h-3.5 text-gray-400" /></span>
-                            )}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-6">
-                    <Mail className="w-8 h-8 text-gray-700 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500 mb-1">No newsletter posts yet</p>
-                    <p className="text-xs text-gray-600">Drafts will appear here at 8:00 AM daily.</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </motion.div>
-        )}
-
         <div className="grid lg:grid-cols-2 gap-6">
           <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }}>
             <Card className="bg-white/[0.03] border-white/[0.06]">
@@ -798,40 +768,52 @@ export default function Dashboard() {
                 <Calendar className="w-4 h-4 text-gray-500" />
               </CardHeader>
               <CardContent>
-                {bookings.length > 0 ? (
-                  <div className="space-y-4">
-                    {bookings.slice(0, 4).map((booking, i) => {
-                      const isTraining = booking.type === 'training';
-                      return (
-                        <div key={booking.id} className="flex items-start gap-3" data-testid={`booking-item-${i}`}>
-                          <div className={`w-10 h-10 rounded-lg ${isTraining ? "bg-blue-500/10" : "bg-purple-500/10"} flex items-center justify-center flex-shrink-0`}>
-                            {isTraining ? (
-                              <GraduationCap className="w-4 h-4 text-blue-400" />
-                            ) : (
-                              <Calendar className="w-4 h-4 text-purple-400" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm text-white" data-testid={`text-booking-name-${i}`}>{booking.name}</p>
-                            <p className="text-xs text-gray-500" data-testid={`text-booking-date-${i}`}>
-                              {booking.date} at {booking.time}
-                              <span className={`ml-2 text-[10px] ${isTraining ? "text-blue-400" : "text-purple-400"}`}>
-                                {isTraining ? "Training" : "Demo"}
-                              </span>
-                            </p>
-                          </div>
-                          <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0 max-w-[100px] truncate" data-testid={`text-booking-email-${i}`}>{booking.email}</span>
+                <div className="space-y-3">
+                  {upcomingTrainings.map((session, i) => (
+                    <Link
+                      key={i}
+                      href="/interlinked"
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                        <GraduationCap className="w-4 h-4 text-blue-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-white group-hover:text-blue-300 transition-colors">{session.label}</p>
+                        <p className="text-xs text-gray-500">
+                          {session.date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} at{" "}
+                          {session.date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                        </p>
+                      </div>
+                      <span className="inline-flex items-center whitespace-nowrap rounded-md border bg-blue-500/15 text-blue-400 border-blue-500/20 px-2.5 py-1 font-medium flex-shrink-0" style={{ fontSize: '9px', lineHeight: '1' }}>
+                        Training
+                      </span>
+                    </Link>
+                  ))}
+                  {bookings.slice(0, 2).map((booking, i) => {
+                    const isTraining = booking.type === 'training';
+                    return (
+                      <div key={booking.id} className="flex items-center gap-3 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors" data-testid={`booking-item-${i}`}>
+                        <div className={`w-10 h-10 rounded-lg ${isTraining ? "bg-blue-500/10 border border-blue-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
+                          {isTraining ? (
+                            <GraduationCap className="w-4 h-4 text-blue-400" />
+                          ) : (
+                            <Calendar className="w-4 h-4 text-purple-400" />
+                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="text-center py-6" data-testid="text-no-bookings">
-                    <Calendar className="w-8 h-8 text-gray-700 mx-auto mb-3" />
-                    <p className="text-sm text-gray-500 mb-1">No meetings or events booked yet</p>
-                    <p className="text-xs text-gray-600">Schedule a demo from the home page to see it here.</p>
-                  </div>
-                )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm text-white" data-testid={`text-booking-name-${i}`}>{booking.name}</p>
+                          <p className="text-xs text-gray-500" data-testid={`text-booking-date-${i}`}>
+                            {booking.date} at {booking.time}
+                          </p>
+                        </div>
+                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium flex-shrink-0 ${isTraining ? "bg-blue-500/15 text-blue-400 border-blue-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"}`} style={{ fontSize: '9px', lineHeight: '1' }}>
+                          {isTraining ? "Training" : "Demo"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </CardContent>
             </Card>
           </motion.div>

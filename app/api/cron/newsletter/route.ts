@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { runDailyNewsletter, runPremiumNewsletter, generateDrafts, sendMorningDebrief } from '@/lib/newsletter-sender';
 import { logEvent } from '@/lib/events';
 
@@ -26,9 +27,13 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient();
 
-    // Draft generation mode
+    // Draft generation mode — use service role key for DB writes
     if (action === 'generate-drafts') {
-      const drafts = await generateDrafts(supabase as any);
+      const serviceSupabase = createServiceClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const drafts = await generateDrafts(serviceSupabase as any);
 
       console.log(
         `[Newsletter Cron] Drafts generated: FREE="${drafts.free.subject}" | ` +
