@@ -142,7 +142,7 @@ export default function WebsiteDevelopment() {
                 Website Service
               </motion.div>
 
-              <h1 className="text-[clamp(2rem,8vw,3.75rem)] font-bold mb-6 whitespace-nowrap">
+              <h1 className="text-[clamp(2.5rem,13vw,8rem)] font-extrabold mb-6 whitespace-nowrap leading-none tracking-tight w-full">
                 <span className="text-gradient">Website Development</span>
               </h1>
               <p className="text-gray-400 text-[clamp(0.875rem,2.5vw,1.125rem)] max-w-lg mx-auto leading-relaxed px-2">
