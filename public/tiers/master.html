@@ -164,16 +164,83 @@
 
   <div class="divider"></div>
 
-  <section class="cta-section fade-up">
+  <section class="cta-section fade-up" id="book">
     <p class="section-label">Get Started</p>
     <h2>Ready to Master Your Market?</h2>
-    <p>Book a free strategy call and discover how the Master tier can transform your digital presence in 90 days.</p>
-    <a href="/interlinked" class="btn-primary">Schedule a Meeting</a>
+    <p style="margin-bottom:40px;">Fill out the form below and we'll prepare a custom breakdown of what the Master tier can do for your business.</p>
+
+    <div id="booking-form" style="max-width:480px;margin:0 auto;text-align:left;">
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Full Name *</label>
+        <input type="text" id="f-name" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#0077b6'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Email *</label>
+        <input type="email" id="f-email" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#0077b6'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Phone *</label>
+        <input type="tel" id="f-phone" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#0077b6'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Business Name *</label>
+        <input type="text" id="f-biz" required style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#0077b6'" onblur="this.style.borderColor='#1a1a1a'" />
+      </div>
+      <div style="margin-bottom:16px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Tell us about your business (what you do, goals, challenges)</label>
+        <textarea id="f-about" rows="4" style="width:100%;padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;resize:vertical;transition:border-color .2s;font-family:inherit" onfocus="this.style.borderColor='#0077b6'" onblur="this.style.borderColor='#1a1a1a'" placeholder="We'll use this to prepare a custom Master tier strategy for your first meeting."></textarea>
+      </div>
+      <div style="margin-bottom:24px;">
+        <label style="display:block;font-size:.8rem;color:#888;margin-bottom:6px;">Preferred Date &amp; Time</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <input type="date" id="f-date" style="padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='#0077b6'" onblur="this.style.borderColor='#1a1a1a'" />
+          <select id="f-time" style="padding:14px 16px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:10px;color:#fff;font-size:.95rem;outline:none;transition:border-color .2s;cursor:pointer" onfocus="this.style.borderColor='#0077b6'" onblur="this.style.borderColor='#1a1a1a'">
+            <option value="">Select time</option>
+            <option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>12:00 PM</option>
+            <option>1:00 PM</option><option>2:00 PM</option><option>3:00 PM</option><option>4:00 PM</option><option>5:00 PM</option>
+          </select>
+        </div>
+      </div>
+      <button id="f-submit" onclick="submitBooking()" class="btn-primary" style="width:100%;border:none;cursor:pointer;text-align:center;font-size:1.05rem;padding:16px">
+        Book My Master Strategy Call
+      </button>
+      <p id="f-status" style="text-align:center;margin-top:16px;font-size:.9rem;display:none;"></p>
+    </div>
+
+    <div id="booking-success" style="display:none;text-align:center;padding:40px 0;">
+      <div style="width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:rgba(34,197,94,.15);border:2px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:2rem;">&#10003;</div>
+      <h3 style="color:#fff;font-size:1.5rem;margin-bottom:8px;">You're Booked!</h3>
+      <p style="color:#aaa;margin-bottom:8px;">We'll prepare a custom <strong style="color:#00b4d8">Master tier breakdown</strong> for your business.</p>
+      <p style="color:#888;font-size:.9rem;margin-bottom:24px;">Check your email for confirmation details and a calendar invite.</p>
+      <a id="gcal-link" href="#" target="_blank" style="display:inline-block;padding:12px 32px;background:rgba(0,119,182,.15);border:1px solid rgba(0,119,182,.3);border-radius:10px;color:#00b4d8;text-decoration:none;font-weight:600;font-size:.95rem;">Add to Google Calendar</a>
+    </div>
   </section>
 
   <footer>
     &copy; 2026 Omni AI. All rights reserved.
   </footer>
 </div>
+<script>
+async function submitBooking(){
+  const btn=document.getElementById('f-submit'),st=document.getElementById('f-status');
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const biz=document.getElementById('f-biz').value.trim();
+  const about=document.getElementById('f-about').value.trim();
+  const date=document.getElementById('f-date').value;
+  const time=document.getElementById('f-time').value;
+  if(!name||!email||!phone||!biz){st.style.display='block';st.style.color='#ef4444';st.textContent='Please fill in all required fields.';return;}
+  btn.disabled=true;btn.textContent='Booking...';btn.style.opacity='.6';
+  try{
+    const res=await fetch('/api/demo-booking',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,email,phone,businessName:biz,purpose:'TIER 1: Master — '+about,date:date||new Date().toISOString().split('T')[0],time:time||'TBD'})});
+    const data=await res.json();
+    if(!res.ok)throw new Error(data.error||'Failed');
+    document.getElementById('booking-form').style.display='none';
+    document.getElementById('booking-success').style.display='block';
+    if(data.googleCalendarUrl)document.getElementById('gcal-link').href=data.googleCalendarUrl;
+  }catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Something went wrong. Please try again.';btn.disabled=false;btn.textContent='Book My Master Strategy Call';btn.style.opacity='1';}
+}
+</script>
 </body>
 </html>
