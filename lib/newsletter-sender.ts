@@ -208,9 +208,12 @@ export async function generatePremiumContent(avoidSubjects: string[] = []): Prom
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const dayType = getDayType();
   const randomSeed = Math.random().toString(36).slice(2, 8);
+  const keywords = await fetchTrendingKeywords();
 
   if (!ANTHROPIC_API_KEY || !dayType) {
-    return { ...premiumFallbackContent(today, dayType || 'value'), tier: 'premium', day_type: dayType || 'value' };
+    const fb = premiumFallbackContent(today, dayType || 'value');
+    fb.keywords = keywords;
+    return { ...fb, tier: 'premium', day_type: dayType || 'value' };
   }
 
   const avoidBlock = avoidSubjects.length > 0
@@ -297,6 +300,7 @@ Respond ONLY with valid JSON:
         const parsed = JSON.parse(text.slice(start, end)) as PremiumContent;
         parsed.tier = 'premium';
         parsed.day_type = dayType;
+        parsed.keywords = keywords;
         parsed.slug = createSlug(parsed.subject);
         return parsed;
       }
@@ -309,7 +313,9 @@ Respond ONLY with valid JSON:
     console.error('[generatePremiumContent] Exception:', e);
   }
 
-  return { ...premiumFallbackContent(today, dayType || 'value'), tier: 'premium', day_type: dayType || 'value' };
+  const fb = premiumFallbackContent(today, dayType || 'value');
+  fb.keywords = keywords;
+  return { ...fb, tier: 'premium', day_type: dayType || 'value' };
 }
 
 function fallbackContent(today: string): NewsletterContent {
@@ -396,28 +402,28 @@ function fallbackContent(today: string): NewsletterContent {
 
 function premiumFallbackContent(today: string, dayType: string): NewsletterContent {
   const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
-  // Premium subjects — completely different pool from free
+  // Premium subjects — completely different pool from free (no prefixes)
   const subjects = [
-    'The AI Playbook Nobody\'s Sharing (Until Now)',
-    'Inside the Machines: What Elite Operators Actually Do Differently',
+    'The AI Playbook Nobody\'s Sharing',
+    'What Elite Operators Actually Do Differently',
     'The Hidden Architecture of Businesses That Scale Effortlessly',
-    'Premium Intel: The Three AI Moves Worth More Than an MBA',
-    'Exclusive: How to Build an AI-First Operation in 72 Hours',
+    'Three AI Moves Worth More Than an MBA',
+    'How to Build an AI-First Operation in 72 Hours',
     'The Insider\'s Guide to AI Workflows That Print Money',
     'What I Learned Automating 200+ Business Processes',
-    'The Premium Edge: Systems Thinking in the Age of AI',
-    'Behind the Curtain: How AI-Native Companies Actually Operate',
-    'The Operator\'s Playbook: Advanced AI Integration Strategies',
-    'Deep Dive: The Revenue Machines Nobody Talks About',
-    'The Blueprint: From Manual Chaos to Automated Excellence',
-    'Elite Insights: The Compounding Effect of AI-First Decisions',
-    'The Inner Circle Report: What\'s Working Right Now in AI',
-    'Premium Breakdown: The Stack That\'s Replacing Entire Departments',
+    'Systems Thinking in the Age of AI',
+    'How AI-Native Companies Actually Operate',
+    'Advanced AI Integration Strategies for Operators',
+    'The Revenue Machines Nobody Talks About',
+    'From Manual Chaos to Automated Excellence',
+    'The Compounding Effect of AI-First Decisions',
+    'What\'s Working Right Now in AI',
+    'The Stack That\'s Replacing Entire Departments',
     'The Advanced Framework for AI-Driven Business Growth',
-    'Exclusive Analysis: Where Smart Money Is Moving in AI',
-    'The Architect\'s View: Building Businesses That Run Themselves',
-    'VIP Intel: The AI Strategies Worth 10x Their Weight',
-    'The Premium Dispatch: Signals From the Future of Work',
+    'Where Smart Money Is Moving in AI',
+    'Building Businesses That Run Themselves',
+    'The AI Strategies Worth 10x Their Weight',
+    'Signals From the Future of Work',
   ];
   const idx = (dayOfYear + 7) % subjects.length; // Offset from free to avoid same index
 
