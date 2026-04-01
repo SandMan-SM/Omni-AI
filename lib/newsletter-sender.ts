@@ -388,13 +388,47 @@ function fallbackContent(today: string): NewsletterContent {
     'List every decision your team makes repeatedly. The ones with clear patterns? AI handles those starting tomorrow. The ones requiring creativity? That\'s where your humans become unstoppable.',
   ];
 
+  const quotes = [
+    '"The future belongs to those who can feel it coming before they can prove it." — Unknown',
+    '"The best way to predict the future is to create it." — Peter Drucker',
+    '"Move fast and break things. Unless you are breaking stuff, you are not moving fast enough." — Mark Zuckerberg',
+    '"In the middle of difficulty lies opportunity." — Albert Einstein',
+    '"The only way to do great work is to love what you do." — Steve Jobs',
+    '"Innovation distinguishes between a leader and a follower." — Steve Jobs',
+    '"The biggest risk is not taking any risk." — Mark Zuckerberg',
+    '"Your most unhappy customers are your greatest source of learning." — Bill Gates',
+    '"It\'s not about ideas. It\'s about making ideas happen." — Scott Belsky',
+    '"The ones who are crazy enough to think they can change the world are the ones who do." — Steve Jobs',
+    '"Stay hungry. Stay foolish." — Stewart Brand / Steve Jobs',
+    '"If you\'re not embarrassed by the first version of your product, you\'ve launched too late." — Reid Hoffman',
+    '"The secret of getting ahead is getting started." — Mark Twain',
+    '"Opportunities don\'t happen. You create them." — Chris Grosser',
+    '"What would you do if you weren\'t afraid?" — Sheryl Sandberg',
+    '"Think big, start small, move fast." — Unknown',
+    '"The world is changed by your example, not your opinion." — Paulo Coelho',
+    '"Execution eats strategy for breakfast." — Unknown',
+    '"Don\'t find customers for your products, find products for your customers." — Seth Godin',
+    '"Speed is the ultimate weapon in business." — Jack Welch',
+    '"First they ignore you, then they laugh at you, then they fight you, then you win." — Mahatma Gandhi',
+    '"The way to get started is to quit talking and begin doing." — Walt Disney',
+    '"A year from now, you\'ll wish you had started today." — Karen Lamb',
+    '"Business has only two functions — marketing and innovation." — Milan Kundera',
+    '"Success is not final, failure is not fatal: it is the courage to continue that counts." — Winston Churchill',
+    '"Be so good they can\'t ignore you." — Steve Martin',
+    '"The cost of being wrong is less than the cost of doing nothing." — Seth Godin',
+    '"Vision without execution is hallucination." — Thomas Edison',
+    '"Done is better than perfect." — Sheryl Sandberg',
+    '"Culture eats strategy for breakfast." — Peter Drucker',
+    '"Fall seven times, stand up eight." — Japanese Proverb',
+  ];
+
   return {
     subject: subjects[idx],
     intro: intros[dayOfYear % intros.length],
     insights: insightSets[dayOfYear % insightSets.length],
     power_move: powerMoves[dayOfYear % powerMoves.length],
     closing: 'Powered by Omni AI',
-    quote: '"The future belongs to those who can feel it coming before they can prove it." — Unknown',
+    quote: quotes[dayOfYear % quotes.length],
     offer: 'Get your free AI business audit at omnileadsagi.com — see exactly where AI can 10x your operations.',
     tier: 'free',
   };
@@ -427,6 +461,29 @@ function premiumFallbackContent(today: string, dayType: string): NewsletterConte
   ];
   const idx = (dayOfYear + 7) % subjects.length; // Offset from free to avoid same index
 
+  const premiumQuotes = [
+    '"The best time to plant a tree was 20 years ago. The second best time is now. The third best time doesn\'t exist." — Proverb, adapted',
+    '"We always overestimate the change that will occur in the next two years and underestimate the change that will occur in the next ten." — Bill Gates',
+    '"The only limit to our realization of tomorrow is our doubts of today." — Franklin D. Roosevelt',
+    '"Do not wait to strike till the iron is hot, but make it hot by striking." — William Butler Yeats',
+    '"The reasonable man adapts himself to the world; the unreasonable one persists in trying to adapt the world to himself." — George Bernard Shaw',
+    '"The competitor to be feared is one who never bothers about you at all, but goes on making his own business better all the time." — Henry Ford',
+    '"I have not failed. I\'ve just found 10,000 ways that won\'t work." — Thomas Edison',
+    '"You can\'t connect the dots looking forward; you can only connect them looking backwards." — Steve Jobs',
+    '"Simplicity is the ultimate sophistication." — Leonardo da Vinci',
+    '"The question isn\'t who is going to let me; it\'s who is going to stop me." — Ayn Rand',
+    '"Play long-term games with long-term people." — Naval Ravikant',
+    '"Compound interest is the eighth wonder of the world. He who understands it, earns it; he who doesn\'t, pays it." — Albert Einstein',
+    '"Your margin is my opportunity." — Jeff Bezos',
+    '"The best investment you can make is in yourself." — Warren Buffett',
+    '"If you want to go fast, go alone. If you want to go far, go together." — African Proverb',
+    '"The measure of intelligence is the ability to change." — Albert Einstein',
+    '"What got you here won\'t get you there." — Marshall Goldsmith',
+    '"Discipline equals freedom." — Jocko Willink',
+    '"The impediment to action advances action. What stands in the way becomes the way." — Marcus Aurelius',
+    '"Build something 100 people love, not something 1 million people kind of like." — Paul Graham',
+  ];
+
   return {
     subject: subjects[idx],
     intro: `This premium edition is designed for operators who don't just want to know what's happening — they want the exact playbook. Today's ${dayType} edition goes deeper than the headlines.`,
@@ -437,7 +494,7 @@ function premiumFallbackContent(today: string, dayType: string): NewsletterConte
     ],
     power_move: 'Audit your tech stack this week. For every tool you pay for, ask: "Can an AI agent replace this AND make it smarter?" You\'ll find at least 3 tools that are costing you money and speed.',
     closing: 'Until next time — stay ahead, stay sharp.',
-    quote: '"The best time to plant a tree was 20 years ago. The second best time is now. The third best time doesn\'t exist." — Proverb, adapted',
+    quote: premiumQuotes[(dayOfYear + 3) % premiumQuotes.length],
     offer: 'Premium members get direct access to AI implementation strategy sessions. Book yours at omnileadsagi.com/interlinked',
     tier: 'premium',
   };
