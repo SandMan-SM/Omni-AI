@@ -23,6 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!post) return { title: "Newsletter Not Found" };
 
   const keywords = post.keywords?.join(", ") || "AI, business, automation";
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   return {
     title: `${post.subject} | Interlinked by Omni AI`,
     description: post.intro?.slice(0, 160),
@@ -32,7 +33,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.intro?.slice(0, 160),
       type: "article",
       publishedTime: post.published_at,
-      siteName: "Omni AI",
+      siteName: "Interlinked by Omni AI",
+      url: `${siteUrl}/newsletter/${slug}`,
     },
     twitter: {
       card: "summary_large_image",
