@@ -148,18 +148,18 @@ export default async function NewsletterPostPage({ params }: Props) {
           </p>
         </div>
 
-        {/* Offer CTA — FREE posts only */}
-        {!isPremium && post.offer && (
-          <div className="mb-10 text-center">
+        {/* CTA */}
+        <div className="mb-10 text-center">
+          {post.offer && (
             <p className="text-gray-200 leading-relaxed mb-4">{post.offer}</p>
-            <Link
-              href="/newsletter/premium/info"
-              className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
-            >
-              Upgrade to Premium
-            </Link>
-          </div>
-        )}
+          )}
+          <Link
+            href="/interlinked"
+            className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
+          >
+            Schedule a Meeting
+          </Link>
+        </div>
 
         {/* Closing */}
         <p className="text-center text-gray-400 italic text-lg my-10">
