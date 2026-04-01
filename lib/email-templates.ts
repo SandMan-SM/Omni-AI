@@ -24,66 +24,67 @@ export function bookerConfirmationEmail(booking: BookingDetails): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<body style="margin:0;padding:0;background:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
-    <!-- Header -->
-    <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:#ffffff;font-size:28px;margin:0 0 8px;">
-        <span style="color:#a855f7;">Omni AI</span>
-      </h1>
-      <p style="color:#9ca3af;font-size:14px;margin:0;">Your demo is confirmed</p>
-    </div>
 
-    <!-- Main Card -->
-    <div style="background:#1a1a2e;border:1px solid rgba(168,85,247,0.3);border-radius:16px;padding:32px;margin-bottom:24px;">
-      <h2 style="color:#ffffff;font-size:22px;margin:0 0 8px;">Hey ${booking.name}!</h2>
-      <p style="color:#d1d5db;font-size:15px;line-height:1.6;margin:0 0 24px;">
-        Your demo with Omni AI is locked in. We're excited to show you how autonomous AI can transform ${booking.businessName || 'your business'}.
-      </p>
+    <!-- Top Bar -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+      <tr>
+        <td style="color:#a855f7;font-size:14px;font-weight:700;letter-spacing:0.5px;">OMNI AI</td>
+        <td align="right" style="color:#22c55e;font-size:12px;font-weight:600;letter-spacing:1px;">CONFIRMED</td>
+      </tr>
+    </table>
 
-      <!-- Meeting Details Box -->
-      <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:12px;padding:20px;margin-bottom:24px;">
-        <table style="width:100%;border-collapse:collapse;">
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;width:80px;">Date</td>
-            <td style="color:#ffffff;font-size:15px;font-weight:600;padding:6px 0;">${booking.dateFormatted}</td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Time</td>
-            <td style="color:#ffffff;font-size:15px;font-weight:600;padding:6px 0;">${booking.time} CT</td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Purpose</td>
-            <td style="color:#d1d5db;font-size:14px;padding:6px 0;">${booking.purpose}</td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- CTA Button -->
-      <div style="text-align:center;margin-bottom:16px;">
-        <a href="${booking.googleCalendarUrl}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#2563eb);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;">
-          Add to Google Calendar
-        </a>
-      </div>
-      <p style="color:#6b7280;font-size:12px;text-align:center;margin:0;">
-        A calendar invite (.ics) is also attached to this email
+    <!-- Greeting -->
+    <div style="margin-bottom:28px;">
+      <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">You're all set, ${booking.name}.</h1>
+      <p style="color:#9ca3af;font-size:14px;line-height:1.6;margin:0;">
+        Your demo is locked in. We're excited to show you how autonomous AI can transform ${booking.businessName || 'your business'}.
       </p>
     </div>
+
+    <!-- Meeting Card -->
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:24px;margin-bottom:16px;">
+      <p style="color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 16px;">Your Meeting</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;width:80px;vertical-align:top;">Date</td>
+          <td style="color:#ffffff;font-size:14px;font-weight:600;padding:8px 0;">${booking.dateFormatted}</td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Time</td>
+          <td style="color:#ffffff;font-size:14px;font-weight:600;padding:8px 0;">${booking.time} CT</td>
+        </tr>
+        ${booking.purpose ? `<tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Purpose</td>
+          <td style="color:#d1d5db;font-size:14px;padding:8px 0;">${booking.purpose}</td>
+        </tr>` : ''}
+      </table>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;margin:28px 0 12px;">
+      <a href="${booking.googleCalendarUrl}" target="_blank" style="display:inline-block;background:#7c3aed;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:600;">
+        Add to Google Calendar
+      </a>
+    </div>
+    <p style="color:#4b5563;font-size:12px;text-align:center;margin:0 0 28px;">
+      A calendar invite (.ics) is also attached to this email.
+    </p>
 
     <!-- Reminder Note -->
-    <div style="background:#1a1a2e;border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:20px;margin-bottom:24px;">
-      <p style="color:#fbbf24;font-size:13px;font-weight:600;margin:0 0 4px;">Heads up</p>
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-left:3px solid #f59e0b;border-radius:8px;padding:16px 20px;margin-bottom:28px;">
+      <p style="color:#f59e0b;font-size:12px;font-weight:600;margin:0 0 4px;">Heads up</p>
       <p style="color:#9ca3af;font-size:13px;line-height:1.5;margin:0;">
-        If anything comes up, please let us know at least 24 hours in advance so we can fill the slot. You'll receive a reminder 24 hours and 1 hour before the meeting.
+        If anything comes up, let us know at least 24 hours in advance so we can fill the slot.
       </p>
     </div>
 
     <!-- Footer -->
-    <div style="text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);">
-      <p style="color:#6b7280;font-size:12px;margin:0 0 4px;">
-        Omni AI &mdash; Autonomous Lead Generation & Business Automation
+    <div style="text-align:center;padding-top:20px;border-top:1px solid #222222;">
+      <p style="color:#4b5563;font-size:11px;margin:0;">
+        Omni AI &middot; Autonomous Intelligence &middot; <a href="https://omnileadsagi.com" style="color:#6b7280;text-decoration:none;">omnileadsagi.com</a>
       </p>
-      <a href="https://omnileadsagi.com" style="color:#a855f7;font-size:12px;text-decoration:none;">omnileadsagi.com</a>
     </div>
   </div>
 </body>
@@ -101,77 +102,76 @@ export function ownerNotificationEmail(booking: BookingDetails): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<body style="margin:0;padding:0;background:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+
+    <!-- Top Bar -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+      <tr>
+        <td style="color:#a855f7;font-size:14px;font-weight:700;letter-spacing:0.5px;">OMNI AI</td>
+        <td align="right" style="color:#22c55e;font-size:12px;font-weight:600;letter-spacing:1px;">NEW BOOKING</td>
+      </tr>
+    </table>
+
     <!-- Header -->
-    <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:#ffffff;font-size:28px;margin:0 0 8px;">
-        <span style="color:#22c55e;">New Demo Booked!</span>
-      </h1>
+    <div style="margin-bottom:28px;">
+      <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 6px;letter-spacing:-0.3px;">New Demo Booked</h1>
+      <p style="color:#6b7280;font-size:13px;margin:0;">A new lead just scheduled a demo on your platform.</p>
     </div>
 
-    <!-- Main Card -->
-    <div style="background:#1a1a2e;border:1px solid rgba(34,197,94,0.3);border-radius:16px;padding:32px;margin-bottom:24px;">
-      <p style="color:#d1d5db;font-size:15px;line-height:1.6;margin:0 0 24px;">
-        Someone just booked a demo on Omni AI. Here are the details:
-      </p>
+    <!-- Contact Card -->
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:24px;margin-bottom:16px;">
+      <p style="color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 16px;">Contact</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;width:90px;vertical-align:top;">Name</td>
+          <td style="color:#ffffff;font-size:14px;font-weight:600;padding:8px 0;">${booking.name}</td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Email</td>
+          <td style="padding:8px 0;"><a href="mailto:${booking.email}" style="color:#60a5fa;font-size:14px;text-decoration:none;">${booking.email}</a></td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Phone</td>
+          <td style="padding:8px 0;"><a href="tel:${booking.phone}" style="color:#d1d5db;font-size:14px;text-decoration:none;">${booking.phone}</a></td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Business</td>
+          <td style="color:#d1d5db;font-size:14px;padding:8px 0;">${booking.businessName || 'Not specified'}</td>
+        </tr>
+      </table>
+    </div>
 
-      <!-- Contact Details -->
-      <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <table style="width:100%;border-collapse:collapse;">
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;width:100px;">Name</td>
-            <td style="color:#ffffff;font-size:15px;font-weight:600;padding:6px 0;">${booking.name}</td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Email</td>
-            <td style="color:#60a5fa;font-size:14px;padding:6px 0;">
-              <a href="mailto:${booking.email}" style="color:#60a5fa;text-decoration:none;">${booking.email}</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Phone</td>
-            <td style="color:#d1d5db;font-size:14px;padding:6px 0;">
-              <a href="tel:${booking.phone}" style="color:#d1d5db;text-decoration:none;">${booking.phone}</a>
-            </td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Business</td>
-            <td style="color:#d1d5db;font-size:14px;padding:6px 0;">${booking.businessName || 'Not specified'}</td>
-          </tr>
-        </table>
-      </div>
+    <!-- Meeting Card -->
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:24px;margin-bottom:16px;">
+      <p style="color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 16px;">Meeting Details</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;width:90px;vertical-align:top;">Date</td>
+          <td style="color:#ffffff;font-size:14px;font-weight:600;padding:8px 0;">${booking.dateFormatted}</td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Time</td>
+          <td style="color:#ffffff;font-size:14px;font-weight:600;padding:8px 0;">${booking.time} CT</td>
+        </tr>
+        ${booking.purpose ? `<tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Purpose</td>
+          <td style="color:#d1d5db;font-size:14px;padding:8px 0;">${booking.purpose}</td>
+        </tr>` : ''}
+      </table>
+    </div>
 
-      <!-- Meeting Details -->
-      <div style="background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.2);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <table style="width:100%;border-collapse:collapse;">
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;width:100px;">Date</td>
-            <td style="color:#ffffff;font-size:15px;font-weight:600;padding:6px 0;">${booking.dateFormatted}</td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Time</td>
-            <td style="color:#ffffff;font-size:15px;font-weight:600;padding:6px 0;">${booking.time} CT</td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Purpose</td>
-            <td style="color:#d1d5db;font-size:14px;padding:6px 0;">${booking.purpose}</td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- CTA -->
-      <div style="text-align:center;">
-        <a href="${booking.googleCalendarUrl}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#22c55e,#2563eb);color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600;">
-          Add to Google Calendar
-        </a>
-      </div>
+    <!-- CTA -->
+    <div style="text-align:center;margin:28px 0;">
+      <a href="${booking.googleCalendarUrl}" target="_blank" style="display:inline-block;background:#7c3aed;color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:600;">
+        Add to Calendar
+      </a>
     </div>
 
     <!-- Footer -->
-    <div style="text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);">
-      <p style="color:#6b7280;font-size:12px;margin:0;">
-        Omni AI Demo Booking System &mdash; <a href="https://omnileadsagi.com" style="color:#a855f7;text-decoration:none;">Dashboard</a>
+    <div style="text-align:center;padding-top:20px;border-top:1px solid #222222;">
+      <p style="color:#4b5563;font-size:11px;margin:0;">
+        Omni AI &middot; <a href="https://omnileadsagi.com" style="color:#6b7280;text-decoration:none;">omnileadsagi.com</a>
       </p>
     </div>
   </div>
@@ -190,40 +190,48 @@ export function reminderEmail(booking: BookingDetails): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+<body style="margin:0;padding:0;background:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
-    <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:#ffffff;font-size:24px;margin:0 0 8px;">
-        <span style="color:#a855f7;">Omni AI</span>
-      </h1>
-    </div>
 
-    <div style="background:#1a1a2e;border:1px solid rgba(251,191,36,0.3);border-radius:16px;padding:32px;margin-bottom:24px;">
-      <h2 style="color:#fbbf24;font-size:20px;margin:0 0 12px;">Reminder: Your Demo is Tomorrow</h2>
-      <p style="color:#d1d5db;font-size:15px;line-height:1.6;margin:0 0 20px;">
-        Hey ${booking.name}, just a friendly reminder that your Omni AI demo is coming up!
-      </p>
+    <!-- Top Bar -->
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+      <tr>
+        <td style="color:#a855f7;font-size:14px;font-weight:700;letter-spacing:0.5px;">OMNI AI</td>
+        <td align="right" style="color:#f59e0b;font-size:12px;font-weight:600;letter-spacing:1px;">REMINDER</td>
+      </tr>
+    </table>
 
-      <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:20px;margin-bottom:20px;">
-        <table style="width:100%;border-collapse:collapse;">
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;width:80px;">Date</td>
-            <td style="color:#ffffff;font-size:15px;font-weight:600;padding:6px 0;">${booking.dateFormatted}</td>
-          </tr>
-          <tr>
-            <td style="color:#9ca3af;font-size:13px;padding:6px 0;">Time</td>
-            <td style="color:#ffffff;font-size:15px;font-weight:600;padding:6px 0;">${booking.time} CT</td>
-          </tr>
-        </table>
-      </div>
-
-      <p style="color:#9ca3af;font-size:13px;line-height:1.5;margin:0;">
-        If you need to reschedule, please let us know as soon as possible. See you there!
+    <!-- Content -->
+    <div style="margin-bottom:28px;">
+      <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">Your demo is tomorrow</h1>
+      <p style="color:#9ca3af;font-size:14px;line-height:1.6;margin:0;">
+        Hey ${booking.name}, just a reminder that your Omni AI demo is coming up.
       </p>
     </div>
 
-    <div style="text-align:center;padding-top:16px;border-top:1px solid rgba(255,255,255,0.1);">
-      <a href="https://omnileadsagi.com" style="color:#a855f7;font-size:12px;text-decoration:none;">omnileadsagi.com</a>
+    <!-- Meeting Card -->
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:24px;margin-bottom:28px;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;width:80px;vertical-align:top;">Date</td>
+          <td style="color:#ffffff;font-size:14px;font-weight:600;padding:8px 0;">${booking.dateFormatted}</td>
+        </tr>
+        <tr>
+          <td style="color:#6b7280;font-size:13px;padding:8px 0;vertical-align:top;">Time</td>
+          <td style="color:#ffffff;font-size:14px;font-weight:600;padding:8px 0;">${booking.time} CT</td>
+        </tr>
+      </table>
+    </div>
+
+    <p style="color:#6b7280;font-size:13px;line-height:1.5;margin:0 0 28px;">
+      If you need to reschedule, please let us know as soon as possible. See you there.
+    </p>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding-top:20px;border-top:1px solid #222222;">
+      <p style="color:#4b5563;font-size:11px;margin:0;">
+        Omni AI &middot; <a href="https://omnileadsagi.com" style="color:#6b7280;text-decoration:none;">omnileadsagi.com</a>
+      </p>
     </div>
   </div>
 </body>
