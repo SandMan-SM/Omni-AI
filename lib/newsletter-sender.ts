@@ -96,12 +96,12 @@ async function fetchTrendingKeywords(): Promise<string[]> {
 
 // ── Content Generation ───────────────────────────────────────────────────────
 
-function getDayType(): 'value' | 'insight' | 'offer' | null {
+function getDayType(): 'value' | 'insight' | 'offer' {
   const day = new Date().getDay(); // 0=Sun, 1=Mon, ...
-  if (day === 1) return 'value';    // Monday: Teach something useful
-  if (day === 3) return 'insight';  // Wednesday: Insight/story
-  if (day === 5) return 'offer';    // Friday: Make money
-  return null;
+  if (day === 1 || day === 2) return 'value';    // Mon/Tue: Teach something useful
+  if (day === 3 || day === 0) return 'insight';  // Wed/Sun: Insight/story
+  if (day === 5 || day === 6) return 'offer';    // Fri/Sat: Make money
+  return 'value';                                // Thu: default to value
 }
 
 function createSlug(subject: string): string {
@@ -216,10 +216,10 @@ export async function generatePremiumContent(avoidSubjects: string[] = []): Prom
   const randomSeed = Math.random().toString(36).slice(2, 8);
   const keywords = await fetchTrendingKeywords();
 
-  if (!ANTHROPIC_API_KEY || !dayType) {
-    const fb = premiumFallbackContent(today, dayType || 'value');
+  if (!ANTHROPIC_API_KEY) {
+    const fb = premiumFallbackContent(today, dayType);
     fb.keywords = keywords;
-    return { ...fb, tier: 'premium', day_type: dayType || 'value' };
+    return { ...fb, tier: 'premium', day_type: dayType };
   }
 
   const avoidBlock = avoidSubjects.length > 0
@@ -363,8 +363,11 @@ function fallbackContent(today: string): NewsletterContent {
     'The Strategy No One Talks About That\'s Winning Everything',
     'From Overwhelmed to Unstoppable: The AI Transformation Story',
     'The Decision That Costs More Every Day You Delay It',
-    'How to Build a Business That Runs While You Sleep',
     'The Revolution Won\'t Wait for Your Next Board Meeting',
+    'The Nation\'s #1 Agentic Engineering Team Just Opened a $50,000 Program',
+    'NVIDIA Doesn\'t Partner With Everyone. Here\'s What That Means for You.',
+    'The Same Founders Who Built Blockchain Are Building the Next Wave',
+    'We\'re #1 in Agentic Engineering — And We\'re Bringing You With Us',
   ];
   const idx = dayOfYear % subjects.length;
 
@@ -468,8 +471,11 @@ function premiumFallbackContent(today: string, dayType: string): NewsletterConte
     'The Advanced Framework for AI-Driven Business Growth',
     'Where Smart Money Is Moving in AI',
     'Building Businesses That Run Themselves',
-    'The AI Strategies Worth 10x Their Weight',
     'Signals From the Future of Work',
+    'Inside the $50,000 Program Backed by the Nation\'s #1 Agentic Team',
+    'What the NVIDIA Partnership Means for Our Premium Members',
+    'The Blockchain Founders Behind Omni AI Are Doing It Again',
+    'Why Being Backed by the #1 Agentic Engineering Firm Changes Everything',
   ];
   const idx = (dayOfYear + 7) % subjects.length; // Offset from free to avoid same index
 
