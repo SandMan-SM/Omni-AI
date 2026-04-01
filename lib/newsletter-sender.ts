@@ -694,17 +694,33 @@ export async function sendEmail(content: NewsletterContent, to: string): Promise
  * Drafts are visible in the admin UI until the send cron (9:00 AM ET) publishes them.
  */
 export async function generateDrafts(supabase: any) {
+  const errors: string[] = [];
+
+  // Verify DB connectivity first
+  const { data: testData, error: testErr } = await supabase
+    .from('newsletter_posts')
+    .select('id')
+    .limit(1);
+  if (testErr) {
+    const msg = `[generateDrafts] DB connection failed: ${JSON.stringify(testErr)}`;
+    console.error(msg);
+    errors.push(msg);
+  } else {
+    console.log(`[generateDrafts] DB connected OK, found ${testData?.length ?? 0} posts`);
+  }
+
   // Clean up ALL existing drafts (unpublished) before generating fresh ones
-  try {
-    const { data: deleted, error: delErr } = await supabase
-      .from('newsletter_posts')
-      .delete()
-      .is('published_at', null)
-      .select('id');
-    if (delErr) console.error('[generateDrafts] Draft cleanup error:', delErr);
-    else console.log(`[generateDrafts] Cleaned up ${deleted?.length || 0} old drafts`);
-  } catch (e) {
-    console.error('[generateDrafts] Stale draft cleanup error:', e);
+  const { data: deleted, error: delErr } = await supabase
+    .from('newsletter_posts')
+    .delete()
+    .is('published_at', null)
+    .select('id');
+  if (delErr) {
+    const msg = `[generateDrafts] Draft cleanup error: ${JSON.stringify(delErr)}`;
+    console.error(msg);
+    errors.push(msg);
+  } else {
+    console.log(`[generateDrafts] Cleaned up ${deleted?.length || 0} old drafts`);
   }
 
   // Fetch recent subjects to avoid duplicates
@@ -725,10 +741,11 @@ export async function generateDrafts(supabase: any) {
 
   const freeContent = await generateFreeContent(avoidSubjects);
   const dateSuffix = new Date().toISOString().slice(0, 10);
+  const randomSuffix = Math.random().toString(36).slice(2, 6);
 
   // Save free draft
-  const freeSlug = `${freeContent.slug}-draft-${dateSuffix}`;
-  const { error: freeErr } = await supabase.from('newsletter_posts').insert({
+  const freeSlug = `${freeContent.slug || 'free'}-draft-${dateSuffix}-${randomSuffix}`;
+  const { data: freeData, error: freeErr } = await supabase.from('newsletter_posts').insert({
     slug: freeSlug,
     subject: freeContent.subject,
     intro: freeContent.intro,
@@ -740,15 +757,20 @@ export async function generateDrafts(supabase: any) {
     keywords: freeContent.keywords || [],
     tier: 'free',
     published_at: null, // DRAFT — not published yet
-  });
-  if (freeErr) console.error('[generateDrafts] Free draft insert error:', freeErr);
-  else console.log('[generateDrafts] Free draft saved:', freeContent.subject);
+  }).select('id');
+  if (freeErr) {
+    const msg = `[generateDrafts] Free draft insert error: ${JSON.stringify(freeErr)}`;
+    console.error(msg);
+    errors.push(msg);
+  } else {
+    console.log(`[generateDrafts] Free draft saved: "${freeContent.subject}" (id: ${freeData?.[0]?.id})`);
+  }
 
   // Always generate a premium draft too — include the free subject in avoidance list
   const premiumAvoid = [...avoidSubjects, freeContent.subject];
   const premiumContent = await generatePremiumContent(premiumAvoid);
-  const premiumSlug = `${premiumContent.slug}-premium-draft-${dateSuffix}`;
-  const { error: premiumErr } = await supabase.from('newsletter_posts').insert({
+  const premiumSlug = `${premiumContent.slug || 'premium'}-draft-${dateSuffix}-${randomSuffix}`;
+  const { data: premData, error: premiumErr } = await supabase.from('newsletter_posts').insert({
     slug: premiumSlug,
     subject: premiumContent.subject,
     intro: premiumContent.intro,
@@ -762,13 +784,20 @@ export async function generateDrafts(supabase: any) {
     keywords: premiumContent.keywords || [],
     tier: 'premium',
     published_at: null, // DRAFT
-  });
-  if (premiumErr) console.error('[generateDrafts] Premium draft insert error:', premiumErr);
-  else console.log('[generateDrafts] Premium draft saved:', premiumContent.subject);
+  }).select('id');
+  if (premiumErr) {
+    const msg = `[generateDrafts] Premium draft insert error: ${JSON.stringify(premiumErr)}`;
+    console.error(msg);
+    errors.push(msg);
+  } else {
+    console.log(`[generateDrafts] Premium draft saved: "${premiumContent.subject}" (id: ${premData?.[0]?.id})`);
+  }
 
   return {
-    free: { subject: freeContent.subject, slug: freeContent.slug },
-    premium: { subject: premiumContent.subject, slug: premiumContent.slug },
+    free: { subject: freeContent.subject, slug: freeSlug, saved: !freeErr, id: freeData?.[0]?.id },
+    premium: { subject: premiumContent.subject, slug: premiumSlug, saved: !premiumErr, id: premData?.[0]?.id },
+    deleted: deleted?.length || 0,
+    errors: errors.length > 0 ? errors : undefined,
   };
 }
 
