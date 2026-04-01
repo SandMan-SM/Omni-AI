@@ -95,7 +95,7 @@ export async function POST(request: Request) {
         tier: "free",
         published_at: null,
       })
-      .select("id, subject, keywords");
+      .select("id, subject, quote, keywords");
     if (freeErr) errors.push(`Free insert: ${JSON.stringify(freeErr)}`);
 
     // 5. Insert premium draft
@@ -117,13 +117,13 @@ export async function POST(request: Request) {
         tier: "premium",
         published_at: null,
       })
-      .select("id, subject, keywords");
+      .select("id, subject, quote, keywords");
     if (premErr) errors.push(`Premium insert: ${JSON.stringify(premErr)}`);
 
     // 6. Verify by reading back drafts
     const { data: verification } = await sb
       .from("newsletter_posts")
-      .select("id, subject, tier, keywords")
+      .select("id, subject, tier, quote, keywords")
       .is("published_at", null);
 
     return NextResponse.json({
