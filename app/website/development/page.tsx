@@ -172,7 +172,6 @@ export default function WebsiteDevelopment() {
                 onClick={() => setIsDemoModalOpen(true)}
               >
                 Book a Demo
-                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             </motion.div>
 
