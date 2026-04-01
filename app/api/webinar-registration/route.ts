@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { logEvent } from '@/lib/events';
 
 export async function GET() {
   try {
@@ -20,7 +22,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Transform camelCase form fields to snake_case DB columns
     const row = {
@@ -42,6 +44,19 @@ export async function POST(request: Request) {
       console.error('Supabase error:', error);
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+
+    // Log event (fire-and-forget)
+    logEvent(supabase as any, {
+      actor_type: 'user',
+      actor_id: row.email || 'anonymous',
+      event_type: 'training_registered',
+      event_category: 'crm',
+      action: 'create',
+      target_type: 'webinar_registration',
+      target_id: data?.id,
+      value_text: `${row.first_name} ${row.last_name}`.trim(),
+      properties: { email: row.email, session_date: row.session_date, session_time: row.session_time },
+    });
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
