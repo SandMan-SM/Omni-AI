@@ -117,9 +117,9 @@ export default function WebsiteDevelopment() {
         onSignIn={() => setIsAuthModalOpen(true)}
       />
 
-      <main className="pt-16 md:pt-20 pb-16 md:pb-20">
+      <main className="pt-20 pb-20">
         {/* Hero Section */}
-        <section className="relative px-4 py-16 md:py-24">
+        <section className="relative px-4 py-24">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
@@ -142,10 +142,10 @@ export default function WebsiteDevelopment() {
                 Website Service
               </motion.div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-5">
+              <h1 className="text-5xl lg:text-6xl font-bold mb-5">
                 <span className="text-gradient">Website Development</span>
               </h1>
-              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-4">
+              <p className="text-gray-400 text-xl max-w-2xl mx-auto mb-4">
                 Managed hosting infrastructure powered by AI-driven optimization.
               </p>
               <p className="text-gray-500 text-base max-w-xl mx-auto">
@@ -158,7 +158,7 @@ export default function WebsiteDevelopment() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
+              className="flex flex-row items-center justify-center gap-4 mb-16"
             >
               <Button
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-[15px] px-10 h-14 rounded-xl neon-glow"
@@ -180,7 +180,7 @@ export default function WebsiteDevelopment() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.4 }}
-              className="mb-16 md:mb-24"
+              className="mb-24"
             >
               <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-purple-500/5">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
@@ -199,13 +199,13 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-16 md:mb-24"
+              className="mb-24"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Layers className="w-5 h-5 text-purple-400" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white">What You Get</h2>
+                <h2 className="text-3xl font-bold text-white">What You Get</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
@@ -243,7 +243,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-16 md:mb-24"
+              className="mb-24"
             >
               <div className="relative rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
@@ -256,7 +256,7 @@ export default function WebsiteDevelopment() {
                       <Check className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-white">Everything Included</h2>
+                      <h2 className="text-3xl font-bold text-white">Everything Included</h2>
                       <p className="text-purple-400 text-sm font-medium">No hidden fees, no surprises</p>
                     </div>
                   </div>
@@ -276,7 +276,7 @@ export default function WebsiteDevelopment() {
                           <div className="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center flex-shrink-0">
                             <Icon className={`w-4 h-4 ${item.color}`} />
                           </div>
-                          <span className="text-gray-300 text-sm md:text-base">{item.text}</span>
+                          <span className="text-gray-300 text-base">{item.text}</span>
                         </motion.div>
                       );
                     })}
@@ -291,13 +291,13 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-16 md:mb-24"
+              className="mb-24"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Rocket className="w-5 h-5 text-purple-400" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white">How It Works</h2>
+                <h2 className="text-3xl font-bold text-white">How It Works</h2>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
@@ -331,13 +331,13 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-16 md:mb-24"
+              className="mb-24"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/5">
                   <BarChart3 className="w-5 h-5 text-blue-400" />
                 </div>
-                <h2 className="text-2xl md:text-3xl font-bold text-white">FAQ</h2>
+                <h2 className="text-3xl font-bold text-white">FAQ</h2>
               </div>
 
               <div className="space-y-3">
@@ -354,7 +354,7 @@ export default function WebsiteDevelopment() {
                       onClick={() => setOpenFaq(openFaq === index ? null : index)}
                     >
                       <div className="flex items-center justify-between p-5">
-                        <span className="text-white font-medium text-sm md:text-base pr-4">{item.q}</span>
+                        <span className="text-white font-medium text-base pr-4">{item.q}</span>
                         <ArrowRight className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-90' : ''}`} />
                       </div>
                       {openFaq === index && (
@@ -386,14 +386,14 @@ export default function WebsiteDevelopment() {
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent" />
 
                 <div className="relative px-6 py-12 md:px-12 md:py-16 text-center">
-                  <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  <h2 className="text-4xl font-bold mb-4">
                     <span className="text-gradient">Ready to Launch?</span>
                   </h2>
-                  <p className="text-gray-400 text-base md:text-lg max-w-xl mx-auto mb-8">
+                  <p className="text-gray-400 text-lg max-w-xl mx-auto mb-8">
                     Get a professionally built, AI-managed website that runs itself. Start your subscription today.
                   </p>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <div className="flex flex-row items-center justify-center gap-4">
                     <Button
                       className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-[15px] px-10 h-14 rounded-xl neon-glow"
                       onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
@@ -406,7 +406,6 @@ export default function WebsiteDevelopment() {
                       onClick={() => setIsDemoModalOpen(true)}
                     >
                       Book a Demo
-                      <ArrowRight className="w-4 h-4 ml-2" />
                     </Button>
                   </div>
 
