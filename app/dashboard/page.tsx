@@ -385,7 +385,7 @@ export default function Dashboard() {
                       </p>
                       <Button
                         className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 hover:from-emerald-500 hover:to-teal-400 text-white border-0 shadow-lg shadow-emerald-500/20 font-semibold text-sm"
-                        onClick={() => window.open('https://buy.stripe.com/aFa9ASeKocvGbCP8Dd5AQ0g', '_blank')}
+                        onClick={() => window.open('https://buy.stripe.com/8x200jbTI7qMcvJ9Ww9fW00', '_blank')}
                       >
                         <CircleDollarSign className="w-4 h-4 mr-2" />
                         Digital Assets
