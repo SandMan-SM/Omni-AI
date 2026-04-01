@@ -164,7 +164,7 @@ export default function WebsiteDevelopment() {
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-[15px] px-10 h-14 rounded-xl neon-glow"
                 onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
               >
-                Buy Now — $25/mo
+                Buy Now
               </Button>
               <Button
                 variant="outline"
@@ -399,7 +399,7 @@ export default function WebsiteDevelopment() {
                       className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-[15px] px-10 h-14 rounded-xl neon-glow"
                       onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
                     >
-                      Buy Now — $25/mo
+                      Buy Now
                     </Button>
                     <Button
                       variant="outline"
