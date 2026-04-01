@@ -63,9 +63,20 @@ export async function POST(request: Request) {
     const body = await request.json();
     const supabase = await createClient();
 
+    // Transform camelCase form fields to snake_case DB columns
+    const row = {
+      name: body.name || '',
+      phone: body.phone || '',
+      email: body.email || '',
+      business_name: body.businessName || body.business_name || '',
+      purpose: body.purpose || '',
+      date: body.date || '',
+      time: body.time || '',
+    };
+
     const { data, error } = await supabase
       .from('demo_bookings')
-      .insert([body])
+      .insert([row])
       .select()
       .single();
 
@@ -83,7 +94,7 @@ export async function POST(request: Request) {
       action: 'create',
       target_type: 'demo_booking',
       target_id: data?.id,
-      value_text: body.business_name || body.name || '',
+      value_text: body.businessName || body.business_name || body.name || '',
       properties: { email: body.email, purpose: body.purpose },
     });
 

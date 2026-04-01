@@ -85,8 +85,10 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
               onClick={() => {
                 if (user) {
                   router.push("/dashboard");
+                } else if (onDashboard) {
+                  onDashboard();
                 } else {
-                  onDashboard?.();
+                  router.push("/join");
                 }
               }}
               data-testid="button-nav-dashboard"
@@ -150,8 +152,10 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
                     setIsMobileMenuOpen(false);
                     if (user) {
                       router.push("/dashboard");
+                    } else if (onDashboard) {
+                      onDashboard();
                     } else {
-                      onDashboard?.();
+                      router.push("/join");
                     }
                   }}
                   data-testid="button-mobile-dashboard"

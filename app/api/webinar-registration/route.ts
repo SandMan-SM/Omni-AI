@@ -21,10 +21,20 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const supabase = await createClient();
-    
+
+    // Transform camelCase form fields to snake_case DB columns
+    const row = {
+      first_name: body.firstName || body.first_name || '',
+      last_name: body.lastName || body.last_name || '',
+      email: body.email || '',
+      phone: body.phone || '',
+      session_date: body.sessionDate || body.session_date || '',
+      session_time: body.sessionTime || body.session_time || '',
+    };
+
     const { data, error } = await supabase
       .from('webinar_registrations')
-      .insert([body])
+      .insert([row])
       .select()
       .single();
 
