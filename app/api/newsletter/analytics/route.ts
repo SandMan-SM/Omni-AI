@@ -41,7 +41,23 @@ export async function GET() {
     }
 
     const result = await res.json();
-    const emails: ResendEmail[] = result.data || [];
+    const allEmails: ResendEmail[] = result.data || [];
+
+    // Filter to only newsletter emails — exclude demo booking confirmations,
+    // webinar registrations, and other transactional emails
+    const NEWSLETTER_SENDERS = ['newsletter@omnileadsagi.com'];
+    const TRANSACTIONAL_PREFIXES = ['Demo Confirmed', 'New Demo Booked', 'Training Session Confirmed', 'New Training Registration'];
+
+    const emails = allEmails.filter(e => {
+      // Include if sent from newsletter sender
+      if (NEWSLETTER_SENDERS.some(s => e.from.includes(s))) return true;
+      // Exclude known transactional email subjects
+      if (TRANSACTIONAL_PREFIXES.some(p => e.subject.startsWith(p))) return false;
+      // Exclude anything from bookings@
+      if (e.from.includes('bookings@')) return false;
+      // Include everything else (legacy sends, etc.)
+      return true;
+    });
 
     // Compute aggregate stats
     const total = emails.length;
