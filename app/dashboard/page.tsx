@@ -377,18 +377,18 @@ export default function Dashboard() {
                     <div className="flex-1 text-center sm:text-left">
                       <h3 className="text-xl sm:text-2xl font-bold mb-1">
                         <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-300 bg-clip-text text-transparent">
-                          Digital Assets
+                          Website Service
                         </span>
                       </h3>
                       <p className="text-xs sm:text-sm text-emerald-200/60 mb-3">
-                        Monthly subscription — client portfolio showcase
+                        AI-managed hosting, monitoring & scaling — zero micromanagement
                       </p>
                       <Button
                         className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 hover:from-emerald-500 hover:to-teal-400 text-white border-0 shadow-lg shadow-emerald-500/20 font-semibold text-sm"
-                        onClick={() => window.open('https://buy.stripe.com/8x200jbTI7qMcvJ9Ww9fW00', '_blank')}
+                        onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
                       >
                         <CircleDollarSign className="w-4 h-4 mr-2" />
-                        Digital Assets
+                        Website Service
                       </Button>
                     </div>
                   </div>
