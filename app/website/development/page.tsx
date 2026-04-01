@@ -207,7 +207,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">What You Get</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                 {coreServices.map((service, index) => {
                   const Icon = service.icon;
                   return (
@@ -260,7 +260,7 @@ export default function WebsiteDevelopment() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     {whatsIncluded.map((item, index) => {
                       const Icon = item.icon;
                       return (
@@ -299,7 +299,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">How It Works</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
                 {process.map((step, index) => (
                   <motion.div
                     key={step.step}
@@ -339,7 +339,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">FAQ</h2>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 {faq.map((item, index) => (
                   <motion.div
                     key={index}
