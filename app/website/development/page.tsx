@@ -328,7 +328,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-24"
+              className="mb-32"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/5">
