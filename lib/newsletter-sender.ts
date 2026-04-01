@@ -113,14 +113,19 @@ function createSlug(subject: string): string {
     .slice(0, 80);
 }
 
-export async function generateFreeContent(): Promise<NewsletterContent> {
+export async function generateFreeContent(avoidSubjects: string[] = []): Promise<NewsletterContent> {
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const keywords = await fetchTrendingKeywords();
   const keywordStr = keywords.slice(0, 8).join(', ');
+  const randomSeed = Math.random().toString(36).slice(2, 8);
 
   if (!ANTHROPIC_API_KEY) {
     return { ...fallbackContent(today), keywords, tier: 'free' };
   }
+
+  const avoidBlock = avoidSubjects.length > 0
+    ? `\n\nCRITICAL: Do NOT reuse or closely resemble ANY of these previously used subjects:\n${avoidSubjects.map(s => `- "${s}"`).join('\n')}\nYour subject MUST be completely different and original.`
+    : '';
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -133,13 +138,15 @@ export async function generateFreeContent(): Promise<NewsletterContent> {
       body: JSON.stringify({
         model: 'claude-3-5-haiku-20241022',
         max_tokens: 1500,
+        temperature: 0.95,
         messages: [{
           role: 'user',
           content: `You are the Omni AI newsletter writer for "Interlinked" — a daily intelligence brief about AI Adaptation and Monopolizing on Attention.
 
 Today is ${today}. Trending keywords: ${keywordStr}
+Unique seed: ${randomSeed}
 
-Write a FREE tier daily newsletter. Weave trending keywords naturally into the content.
+Write a FREE tier daily newsletter. Weave trending keywords naturally into the content.${avoidBlock}
 
 Newsletter name: Interlinked
 Purpose: AI Adaptation and Monopolizing on Attention
@@ -181,9 +188,13 @@ Respond ONLY with valid JSON:
         parsed.slug = createSlug(parsed.subject);
         return parsed;
       }
+      console.error('[generateFreeContent] API response OK but no JSON found in:', text.slice(0, 200));
+    } else {
+      const errBody = await res.text().catch(() => 'Could not read error body');
+      console.error(`[generateFreeContent] API error ${res.status}: ${errBody.slice(0, 500)}`);
     }
   } catch (e) {
-    console.error('Free content generation error:', e);
+    console.error('[generateFreeContent] Exception:', e);
   }
 
   const fb = fallbackContent(today);
@@ -193,13 +204,18 @@ Respond ONLY with valid JSON:
   return fb;
 }
 
-export async function generatePremiumContent(): Promise<PremiumContent> {
+export async function generatePremiumContent(avoidSubjects: string[] = []): Promise<PremiumContent> {
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const dayType = getDayType();
+  const randomSeed = Math.random().toString(36).slice(2, 8);
 
   if (!ANTHROPIC_API_KEY || !dayType) {
-    return { ...fallbackContent(today), tier: 'premium', day_type: dayType || 'value' };
+    return { ...premiumFallbackContent(today, dayType || 'value'), tier: 'premium', day_type: dayType || 'value' };
   }
+
+  const avoidBlock = avoidSubjects.length > 0
+    ? `\n\nCRITICAL: Do NOT reuse or closely resemble ANY of these previously used subjects:\n${avoidSubjects.map(s => `- "${s}"`).join('\n')}\nYour subject MUST be completely different and original.`
+    : '';
 
   const dayPrompts: Record<string, string> = {
     value: `MONDAY = VALUE DAY. Teach something genuinely useful about AI/business that the reader can implement TODAY. Deep, actionable, not surface-level. This should make them think "I'm glad I'm paying for this."
@@ -235,13 +251,15 @@ Include:
       body: JSON.stringify({
         model: 'claude-3-5-haiku-20241022',
         max_tokens: 2000,
+        temperature: 0.95,
         messages: [{
           role: 'user',
           content: `You are the Omni AI PREMIUM newsletter writer for "Interlinked Premium".
 
 Today is ${today} (${dayType === 'value' ? 'Monday' : dayType === 'insight' ? 'Wednesday' : 'Friday'}).
+Unique seed: ${randomSeed}
 
-${dayPrompts[dayType]}
+${dayPrompts[dayType]}${avoidBlock}
 
 This is a PREMIUM newsletter — it should feel cinematic, deeply personal, and impossible to ignore.
 
@@ -282,28 +300,140 @@ Respond ONLY with valid JSON:
         parsed.slug = createSlug(parsed.subject);
         return parsed;
       }
+      console.error('[generatePremiumContent] API response OK but no JSON found in:', text.slice(0, 200));
+    } else {
+      const errBody = await res.text().catch(() => 'Could not read error body');
+      console.error(`[generatePremiumContent] API error ${res.status}: ${errBody.slice(0, 500)}`);
     }
   } catch (e) {
-    console.error('Premium content generation error:', e);
+    console.error('[generatePremiumContent] Exception:', e);
   }
 
-  return { ...fallbackContent(today), tier: 'premium', day_type: dayType || 'value' };
+  return { ...premiumFallbackContent(today, dayType || 'value'), tier: 'premium', day_type: dayType || 'value' };
 }
 
 function fallbackContent(today: string): NewsletterContent {
-  return {
-    subject: `The Quiet Revolution Happening While Everyone's Distracted`,
-    intro: 'Picture this: two businesses launched the same year, same market, same funding. One is thriving. The other is scrambling to survive. The difference wasn\'t talent or luck — it was timing. The ones who moved with AI didn\'t just adapt. They became untouchable.',
-    insights: [
-      'There\'s a founder in Austin who replaced her entire 12-person data entry team with one AI workflow built in a weekend. She didn\'t fire anyone — she moved them all into strategy roles. Revenue doubled in 90 days. The companies still debating whether AI is "ready" are already three quarters behind.',
-      'Your competitors aren\'t coming for your customers with better products. They\'re coming with faster decisions. AI-augmented teams make strategic calls in hours that used to take weeks of committee meetings. Speed is the new moat — and 73% of Fortune 500 companies have already built theirs.',
-      'The most dangerous lie in business right now is "we\'ll adopt AI next quarter." Every week you wait, the gap widens. Not linearly — exponentially. The data shows early movers compound their advantage by 15-25% per quarter. That\'s not a trend. That\'s a verdict.',
+  // Rotate through unique subjects based on day-of-year + random factor
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  const subjects = [
+    'The Businesses That Didn\'t Adapt Are Already Gone',
+    'Why 90% of Companies Will Be Unrecognizable in 18 Months',
+    'The AI Playbook Your Competitors Hope You Never Find',
+    'What Happens When Speed Becomes Your Only Advantage',
+    'The Silent Shift That\'s Rewriting Every Industry',
+    'Your Next Hire Should Be an AI Agent — Here\'s Why',
+    'The Founder Who Automated Everything and Tripled Revenue',
+    'Stop Planning for AI. Start Building With It.',
+    'The Gap Between AI Adopters and Everyone Else Just Doubled',
+    'Three Moves That Separate AI Leaders from AI Laggards',
+    'The Clock Is Ticking on Manual Business Operations',
+    'How One Weekend of AI Integration Changed Everything',
+    'The Real Cost of Waiting Another Quarter to Adopt AI',
+    'Your Competitors Made Their Move. Where Are You?',
+    'The Future Isn\'t Coming — It\'s Already Here and Compounding',
+    'What the Top 1% of Businesses Know About AI That You Don\'t',
+    'The Attention Economy Rewired: Who Wins and Who Vanishes',
+    'AI Isn\'t Replacing Jobs — It\'s Replacing Slow Decisions',
+    'The Moment Everything Changed for Small Business Owners',
+    'Why the Next 90 Days Will Define the Next 10 Years',
+    'The Quiet Power of Businesses That Move First',
+    'One AI Workflow. One Weekend. A Completely Different Business.',
+    'The Uncomfortable Truth About Business in 2026',
+    'While You Were Debating AI, Your Market Moved On',
+    'The New Moat: Why Speed Beats Everything Else Now',
+    'What 500 Founders Learned About AI the Hard Way',
+    'The Strategy No One Talks About That\'s Winning Everything',
+    'From Overwhelmed to Unstoppable: The AI Transformation Story',
+    'The Decision That Costs More Every Day You Delay It',
+    'How to Build a Business That Runs While You Sleep',
+    'The Revolution Won\'t Wait for Your Next Board Meeting',
+  ];
+  const idx = dayOfYear % subjects.length;
+
+  const intros = [
+    'Picture this: two businesses launched the same year, same market, same funding. One is thriving. The other is scrambling to survive. The difference wasn\'t talent or luck — it was timing.',
+    'There\'s a moment every founder remembers — the moment they realized the old playbook was dead. For some, it came too late. For the smart ones, it came just in time.',
+    'Somewhere right now, a company half your size is outperforming you. Not because they\'re smarter. Because they made one decision you haven\'t made yet.',
+    'The gap used to be about who had more people. Then more capital. Now? It\'s about who moves faster. And the fastest movers have an unfair advantage.',
+    'Every day you operate the old way, you\'re not just falling behind — you\'re paying a compounding tax on inefficiency that gets heavier by the week.',
+  ];
+
+  const insightSets = [
+    [
+      'A founder in Austin replaced her entire 12-person data entry team with one AI workflow built in a weekend. She didn\'t fire anyone — she moved them all into strategy roles. Revenue doubled in 90 days.',
+      'Your competitors aren\'t coming for your customers with better products. They\'re coming with faster decisions. AI-augmented teams make strategic calls in hours that used to take weeks of committee meetings.',
+      'The most dangerous lie in business right now is "we\'ll adopt AI next quarter." Every week you wait, the gap widens. Not linearly — exponentially.',
     ],
-    power_move: 'Close your laptop. Walk to the whiteboard. Draw your business as it runs today — every human touchpoint. Circle the three that feel heaviest. Those are where AI doesn\'t just help. It transforms.',
+    [
+      'A SaaS company cut their customer response time from 4 hours to 4 minutes using AI agents. Their retention rate jumped 34% in one quarter. Their competitors still haven\'t figured out what changed.',
+      'The average business wastes 23 hours per week on tasks AI can handle in seconds. That\'s not a productivity problem — it\'s a survival problem. The math doesn\'t lie.',
+      'Early AI adopters are compounding their advantage at 15-25% per quarter. That means by Q4, the gap between movers and waiters won\'t be a gap — it\'ll be a canyon.',
+    ],
+    [
+      'Three years ago, "AI strategy" meant a PowerPoint deck. Today it means autonomous agents handling your pipeline while you sleep. The companies that got this early are now untouchable.',
+      'A consulting firm replaced their 6-week client onboarding with a 48-hour AI-powered process. Client satisfaction went up. Costs went down 60%. Their competitors called it impossible.',
+      'The data is clear: businesses that integrated AI in 2024-2025 are growing 3.2x faster than those still "evaluating." Evaluation season is over.',
+    ],
+  ];
+
+  const powerMoves = [
+    'Close your laptop. Walk to the whiteboard. Draw your business as it runs today — every human touchpoint. Circle the three that feel heaviest. Those are where AI transforms everything.',
+    'Open your calendar. Find the 3 recurring meetings that exist just to "sync" on information. Those meetings are symptoms of missing AI infrastructure. Fix the infrastructure, kill the meetings.',
+    'List every decision your team makes repeatedly. The ones with clear patterns? AI handles those starting tomorrow. The ones requiring creativity? That\'s where your humans become unstoppable.',
+  ];
+
+  return {
+    subject: subjects[idx],
+    intro: intros[dayOfYear % intros.length],
+    insights: insightSets[dayOfYear % insightSets.length],
+    power_move: powerMoves[dayOfYear % powerMoves.length],
     closing: 'Powered by Omni AI',
     quote: '"The future belongs to those who can feel it coming before they can prove it." — Unknown',
     offer: 'Get your free AI business audit at omnileadsagi.com — see exactly where AI can 10x your operations.',
     tier: 'free',
+  };
+}
+
+function premiumFallbackContent(today: string, dayType: string): NewsletterContent {
+  const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000);
+  // Premium subjects — completely different pool from free
+  const subjects = [
+    'The AI Playbook Nobody\'s Sharing (Until Now)',
+    'Inside the Machines: What Elite Operators Actually Do Differently',
+    'The Hidden Architecture of Businesses That Scale Effortlessly',
+    'Premium Intel: The Three AI Moves Worth More Than an MBA',
+    'Exclusive: How to Build an AI-First Operation in 72 Hours',
+    'The Insider\'s Guide to AI Workflows That Print Money',
+    'What I Learned Automating 200+ Business Processes',
+    'The Premium Edge: Systems Thinking in the Age of AI',
+    'Behind the Curtain: How AI-Native Companies Actually Operate',
+    'The Operator\'s Playbook: Advanced AI Integration Strategies',
+    'Deep Dive: The Revenue Machines Nobody Talks About',
+    'The Blueprint: From Manual Chaos to Automated Excellence',
+    'Elite Insights: The Compounding Effect of AI-First Decisions',
+    'The Inner Circle Report: What\'s Working Right Now in AI',
+    'Premium Breakdown: The Stack That\'s Replacing Entire Departments',
+    'The Advanced Framework for AI-Driven Business Growth',
+    'Exclusive Analysis: Where Smart Money Is Moving in AI',
+    'The Architect\'s View: Building Businesses That Run Themselves',
+    'VIP Intel: The AI Strategies Worth 10x Their Weight',
+    'The Premium Dispatch: Signals From the Future of Work',
+  ];
+  const idx = (dayOfYear + 7) % subjects.length; // Offset from free to avoid same index
+
+  return {
+    subject: subjects[idx],
+    intro: `This premium edition is designed for operators who don't just want to know what's happening — they want the exact playbook. Today's ${dayType} edition goes deeper than the headlines.`,
+    insights: [
+      'The most advanced AI operators are building "decision engines" — automated systems that don\'t just process data but make judgment calls. One founder built a pricing engine that adjusts rates 47 times per day based on demand signals most humans would miss entirely.',
+      'Premium subscribers know this: the real ROI of AI isn\'t in replacing people. It\'s in amplifying the irreplaceable ones. The best teams use AI as a force multiplier — every human hour becomes 10x more impactful.',
+      'Here\'s what the public newsletter won\'t tell you: 78% of AI implementations fail because they automate the wrong things first. Start with decision velocity, not data entry. The speed of your strategic response is the metric that matters most.',
+    ],
+    power_move: 'Audit your tech stack this week. For every tool you pay for, ask: "Can an AI agent replace this AND make it smarter?" You\'ll find at least 3 tools that are costing you money and speed.',
+    closing: 'Until next time — stay ahead, stay sharp.',
+    quote: '"The best time to plant a tree was 20 years ago. The second best time is now. The third best time doesn\'t exist." — Proverb, adapted',
+    offer: 'Premium members get direct access to AI implementation strategy sessions. Book yours at omnileadsagi.com/interlinked',
+    tier: 'premium',
   };
 }
 
@@ -564,25 +694,42 @@ export async function sendEmail(content: NewsletterContent, to: string): Promise
  * Drafts are visible in the admin UI until the send cron (9:00 AM ET) publishes them.
  */
 export async function generateDrafts(supabase: any) {
-  // Clean up any old stale drafts (unpublished from previous days)
+  // Clean up ALL existing drafts (unpublished) before generating fresh ones
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    await supabase
+    const { data: deleted, error: delErr } = await supabase
       .from('newsletter_posts')
       .delete()
       .is('published_at', null)
-      .lt('created_at', today.toISOString());
-    console.log('[generateDrafts] Cleaned up stale drafts');
+      .select('id');
+    if (delErr) console.error('[generateDrafts] Draft cleanup error:', delErr);
+    else console.log(`[generateDrafts] Cleaned up ${deleted?.length || 0} old drafts`);
   } catch (e) {
     console.error('[generateDrafts] Stale draft cleanup error:', e);
   }
 
-  const freeContent = await generateFreeContent();
+  // Fetch recent subjects to avoid duplicates
+  let avoidSubjects: string[] = [];
+  try {
+    const { data: recentPosts } = await supabase
+      .from('newsletter_posts')
+      .select('subject')
+      .order('created_at', { ascending: false })
+      .limit(15);
+    if (recentPosts) {
+      avoidSubjects = Array.from(new Set(recentPosts.map((p: any) => p.subject)));
+    }
+    console.log(`[generateDrafts] Avoiding ${avoidSubjects.length} recent subjects`);
+  } catch (e) {
+    console.error('[generateDrafts] Failed to fetch recent subjects:', e);
+  }
+
+  const freeContent = await generateFreeContent(avoidSubjects);
+  const dateSuffix = new Date().toISOString().slice(0, 10);
 
   // Save free draft
-  await supabase.from('newsletter_posts').insert({
-    slug: freeContent.slug,
+  const freeSlug = `${freeContent.slug}-draft-${dateSuffix}`;
+  const { error: freeErr } = await supabase.from('newsletter_posts').insert({
+    slug: freeSlug,
     subject: freeContent.subject,
     intro: freeContent.intro,
     insights: freeContent.insights,
@@ -594,11 +741,15 @@ export async function generateDrafts(supabase: any) {
     tier: 'free',
     published_at: null, // DRAFT — not published yet
   });
+  if (freeErr) console.error('[generateDrafts] Free draft insert error:', freeErr);
+  else console.log('[generateDrafts] Free draft saved:', freeContent.subject);
 
-  // Always generate a premium draft too (visible in admin as Draft)
-  const premiumContent = await generatePremiumContent();
-  await supabase.from('newsletter_posts').insert({
-    slug: premiumContent.slug,
+  // Always generate a premium draft too — include the free subject in avoidance list
+  const premiumAvoid = [...avoidSubjects, freeContent.subject];
+  const premiumContent = await generatePremiumContent(premiumAvoid);
+  const premiumSlug = `${premiumContent.slug}-premium-draft-${dateSuffix}`;
+  const { error: premiumErr } = await supabase.from('newsletter_posts').insert({
+    slug: premiumSlug,
     subject: premiumContent.subject,
     intro: premiumContent.intro,
     insights: premiumContent.insights,
@@ -612,6 +763,8 @@ export async function generateDrafts(supabase: any) {
     tier: 'premium',
     published_at: null, // DRAFT
   });
+  if (premiumErr) console.error('[generateDrafts] Premium draft insert error:', premiumErr);
+  else console.log('[generateDrafts] Premium draft saved:', premiumContent.subject);
 
   return {
     free: { subject: freeContent.subject, slug: freeContent.slug },
