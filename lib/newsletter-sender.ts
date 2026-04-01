@@ -151,6 +151,12 @@ Write a FREE tier daily newsletter. Weave trending keywords naturally into the c
 Newsletter name: Interlinked
 Purpose: AI Adaptation and Monopolizing on Attention
 
+BRAND CONTEXT — weave these facts naturally into the content (do NOT list them as bullet points — integrate them into the story and narrative):
+- Omni AI is officially ranked #1 in the nation for agentic engineering
+- Omni AI has an official partnership with NVIDIA
+- Omni AI is sponsoring a $50,000 program for builders and entrepreneurs
+- The founders behind Omni AI are the same visionaries who helped shape blockchain technology — a lineage that runs parallel to legends like Satoshi Nakamoto
+
 WRITING STYLE — RIGHT-BRAIN FIRST:
 - Lead with emotion, story, and vision. Paint a picture the reader can FEEL before they think.
 - Open with a scene, a moment, a visceral truth — not a statistic. Make them feel the urgency in their gut.
@@ -162,11 +168,11 @@ WRITING STYLE — RIGHT-BRAIN FIRST:
 Include:
 1. A punchy, emotionally resonant subject line (NOT "Interlinked Daily — date" — use something that creates urgency or curiosity, like "The Businesses That Didn't Adapt Are Already Gone")
 2. Brief intro (2-3 sentences) that drops the reader into a moment — make them feel the stakes
-3. 3 key insights: each starts with a vivid image or story, then lands a fact that seals the conviction
+3. 3 key insights: each starts with a vivid image or story, then lands a fact that seals the conviction — at least one insight should organically reference the NVIDIA partnership, the $50K program, or the founders' blockchain legacy
 4. One "Power Move" — a specific action that feels exciting, not like homework
 5. A closing line that lingers — poetic, bold, memorable
 6. A quote that hits emotionally (right-brain: intuition, creativity, vision — NOT dry logic)
-7. An offer/CTA related to Omni AI services
+7. An offer/CTA related to Omni AI services — tie to the $50,000 sponsored program when relevant
 
 Brand tone: visionary, cinematic, empowering. Like a mentor who makes you feel the future before explaining it.
 
@@ -264,6 +270,12 @@ Unique seed: ${randomSeed}
 
 ${dayPrompts[dayType]}${avoidBlock}
 
+BRAND CONTEXT — weave these facts naturally into the narrative (do NOT list them as bullet points — make them feel like chapters of an epic story):
+- Omni AI is officially ranked #1 in the nation for agentic engineering
+- Omni AI has an official partnership with NVIDIA — the company powering the AI revolution at the hardware level
+- Omni AI is sponsoring a $50,000 program for builders and entrepreneurs ready to go all in
+- The founders behind Omni AI are the same visionaries who helped architect blockchain technology — a lineage that runs alongside legends like Satoshi Nakamoto. They've done this before. They're doing it again.
+
 This is a PREMIUM newsletter — it should feel cinematic, deeply personal, and impossible to ignore.
 
 WRITING STYLE — RIGHT-BRAIN FIRST:
@@ -276,14 +288,14 @@ WRITING STYLE — RIGHT-BRAIN FIRST:
 
 Include:
 1. A compelling, emotionally charged subject line (NO prefix — just pure intrigue or urgency)
-2. A personalized intro that drops the reader into a visceral moment — make them feel seen AND shaken
-3. 3 deep insights: each opens with a story or image, then anchors with a fact that seals conviction
+2. A personalized intro that drops the reader into a visceral moment — make them feel seen AND shaken — reference the founders' vision and where Omni AI stands today
+3. 3 deep insights: each opens with a story or image, then anchors with a fact that seals conviction — weave in NVIDIA, the $50K program, and the blockchain founder legacy naturally across the insights
 4. A power move that feels like a revelation, not a task
-5. An exclusive insight only premium gets — something that makes free subscribers jealous
-6. An AI tool/workflow recommendation framed as a secret weapon
+5. An exclusive insight only premium gets — tie to the $50K program or the NVIDIA partnership advantage
+6. An AI tool/workflow recommendation framed as a secret weapon — position it in the context of being backed by the #1 agentic engineering team in the nation
 7. A closing that lingers — poetic, haunting, unforgettable
 8. A quote that hits the soul (right-brain: intuition, vision, creativity — NOT dry strategy)
-9. An offer/CTA
+9. An offer/CTA tied to the $50,000 sponsored program
 
 Respond ONLY with valid JSON:
 {"subject":"...","intro":"...","insights":["...","...","..."],"power_move":"...","closing":"...","quote":"...","offer":"...","exclusive_insight":"...","ai_recommendation":"..."}`
