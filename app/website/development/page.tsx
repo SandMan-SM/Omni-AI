@@ -143,8 +143,8 @@ export default function WebsiteDevelopment() {
                 Website Service
               </motion.div>
 
-              <h1 className="text-[clamp(2.5rem,10vw,9rem)] font-extrabold mb-8 leading-[0.95] tracking-tighter w-full px-2">
-                <span className="text-gradient">Website<br className="sm:hidden" /> Development</span>
+              <h1 className="text-[clamp(1.75rem,11.5vw,12rem)] font-extrabold mb-8 leading-[0.9] tracking-[-0.06em] w-screen relative left-1/2 -translate-x-1/2 whitespace-nowrap overflow-hidden">
+                <span className="text-gradient">Website Development</span>
               </h1>
               <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed px-4">
                 AI-powered web development, hosting, and optimization — we build, deploy, and scale so you don't have to.
