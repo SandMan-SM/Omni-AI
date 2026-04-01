@@ -200,13 +200,39 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                 <p className="text-gray-500 text-sm mb-6">
                   Check your email for confirmation details.
                 </p>
-                <Button
-                  onClick={handleClose}
-                  className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-                  data-testid="button-close-confirmed"
-                >
-                  Done
-                </Button>
+                <div className="flex gap-3 justify-center">
+                  <Button
+                    onClick={() => {
+                      const session = sessions.find((s) => s.dateStr === selectedSession);
+                      if (!session) return;
+                      const start = new Date(session.date);
+                      const end = new Date(start.getTime() + 60 * 60 * 1000);
+                      const fmt = (d: Date) =>
+                        d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+                      const params = new URLSearchParams({
+                        action: "TEMPLATE",
+                        text: "Omni AI Training Session",
+                        dates: `${fmt(start)}/${fmt(end)}`,
+                        details: "Free AI CEO Training — Your Own Private AI CEO Will Run Your Business While You Sleep!\\n\\nHosted by Omni AI\\nhttps://omnileadsagi.com",
+                        ctz: "America/Chicago",
+                      });
+                      window.open(`https://calendar.google.com/calendar/render?${params.toString()}`, "_blank");
+                    }}
+                    variant="outline"
+                    className="border-purple-500/30 bg-purple-500/10 text-purple-300"
+                    data-testid="button-add-to-calendar"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Add to Calendar
+                  </Button>
+                  <Button
+                    onClick={handleClose}
+                    className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
+                    data-testid="button-close-confirmed"
+                  >
+                    Done
+                  </Button>
+                </div>
               </div>
             ) : (
               <div className="p-8">

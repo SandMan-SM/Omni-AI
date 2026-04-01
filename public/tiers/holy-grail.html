@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIER 4: Holy Grail | Silver - Omni AI</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#050505;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;overflow-x:hidden}
+  .gradient-bar{height:4px;background:linear-gradient(90deg,#94a3b8,#e2e8f0,#cbd5e1,#94a3b8);background-size:300% 100%;animation:shimmer 4s ease infinite}
+  @keyframes shimmer{0%{background-position:300% 0}100%{background-position:-300% 0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  @keyframes silverGlow{0%,100%{box-shadow:0 0 30px rgba(226,232,240,.08),0 0 60px rgba(148,163,184,.05)}50%{box-shadow:0 0 50px rgba(226,232,240,.15),0 0 80px rgba(148,163,184,.1)}}
+  @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  .fade-up{animation:fadeUp .8s ease forwards;opacity:0}
+  .fade-up:nth-child(2){animation-delay:.1s}
+  .fade-up:nth-child(3){animation-delay:.2s}
+  .fade-up:nth-child(4){animation-delay:.3s}
+  .fade-up:nth-child(5){animation-delay:.4s}
+  .container{max-width:960px;margin:0 auto;padding:0 24px}
+  header{padding:32px 0 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .logo{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#94a3b8,#e2e8f0);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .back-link{color:#888;text-decoration:none;font-size:.875rem;transition:color .2s}
+  .back-link:hover{color:#e2e8f0}
+  .hero{text-align:center;padding:64px 0 48px}
+  .invite-badge{display:inline-block;padding:8px 24px;background:linear-gradient(135deg,rgba(226,232,240,.1),rgba(148,163,184,.1));border:1px solid rgba(226,232,240,.2);border-radius:100px;font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:#e2e8f0;margin-bottom:16px;animation:float 3s ease infinite}
+  .tier-badge{display:inline-block;padding:6px 20px;border:1px solid #64748b;border-radius:100px;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:#94a3b8;margin-bottom:24px}
+  .includes-badge{display:inline-block;padding:4px 14px;background:rgba(148,163,184,.1);border:1px solid rgba(148,163,184,.25);border-radius:6px;font-size:.75rem;color:#94a3b8;margin-bottom:16px}
+  h1{font-size:3.25rem;font-weight:800;background:linear-gradient(135deg,#94a3b8,#e2e8f0,#cbd5e1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+  .tagline{font-size:1.25rem;color:#888;max-width:640px;margin:0 auto 32px}
+  .price-display{font-size:2.25rem;font-weight:700;color:#fff;margin-bottom:8px}
+  .price-note{color:#666;font-size:.875rem}
+  section{padding:48px 0}
+  .section-label{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:#94a3b8;margin-bottom:12px}
+  h2{font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:24px}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .card{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:16px;padding:28px;transition:border-color .3s,box-shadow .3s}
+  .card:hover{border-color:#64748b;box-shadow:0 4px 20px rgba(148,163,184,.08)}
+  .card.featured{border-color:#64748b;animation:silverGlow 4s ease infinite}
+  .card.inherited{border-style:dashed;opacity:.7}
+  .card.inherited:hover{opacity:1}
+  .card h3{font-size:1.1rem;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .card h3 .icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#64748b 0%,#e2e8f0 100%);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;color:#050505}
+  .card h3 .icon.inherited-icon{background:linear-gradient(135deg,#d97706 0%,#fbbf24 100%)}
+  .card ul{list-style:none;padding:0}
+  .card ul li{padding:6px 0;color:#aaa;font-size:.9rem;position:relative;padding-left:20px}
+  .card ul li::before{content:'';position:absolute;left:0;top:14px;width:6px;height:6px;border-radius:50%;background:#94a3b8}
+  .card.inherited ul li::before{background:#f59e0b}
+  .inherited-label{display:inline-block;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;color:#fbbf24;background:rgba(245,158,11,.1);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  .custom-box{background:linear-gradient(135deg,rgba(148,163,184,.05),rgba(226,232,240,.05));border:1px solid rgba(226,232,240,.15);border-radius:16px;padding:40px;text-align:center;margin-top:32px}
+  .custom-box h3{font-size:1.5rem;color:#e2e8f0;margin-bottom:12px}
+  .custom-box p{color:#888;max-width:480px;margin:0 auto;font-size:1rem}
+  .timeline{position:relative;padding-left:32px;border-left:2px solid #1a1a1a}
+  .timeline-item{position:relative;padding-bottom:36px}
+  .timeline-item:last-child{padding-bottom:0}
+  .timeline-dot{position:absolute;left:-39px;top:4px;width:14px;height:14px;border-radius:50%;background:#94a3b8;border:3px solid #050505}
+  .timeline-item h3{font-size:1rem;color:#fff;margin-bottom:4px}
+  .timeline-item p{color:#888;font-size:.9rem}
+  .timeline-label{font-size:.7rem;color:#94a3b8;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .cta-section{text-align:center;padding:64px 0 80px}
+  .cta-section h2{font-size:2rem}
+  .cta-section p{color:#888;max-width:520px;margin:0 auto 32px;font-size:1.05rem}
+  .btn-primary{display:inline-block;padding:16px 48px;background:linear-gradient(135deg,#64748b,#e2e8f0);color:#050505;text-decoration:none;border-radius:12px;font-weight:700;font-size:1.05rem;transition:transform .2s,box-shadow .2s}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(226,232,240,.2)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,#1a1a1a,transparent);margin:0}
+  .requirement-note{display:inline-block;margin-top:12px;padding:8px 20px;background:#0a0a0a;border:1px solid rgba(226,232,240,.15);border-radius:8px;color:#94a3b8;font-size:.85rem}
+  footer{text-align:center;padding:32px 0;color:#444;font-size:.8rem;border-top:1px solid #111}
+</style>
+</head>
+<body>
+<div class="gradient-bar"></div>
+<div class="container">
+  <header>
+    <div class="logo">OMNI AI</div>
+    <a href="/details" class="back-link">&#8592; Back to Details</a>
+  </header>
+
+  <div class="hero fade-up">
+    <div class="invite-badge">Invite Only</div><br>
+    <div class="tier-badge">Tier 4</div>
+    <h1>Holy Grail</h1>
+    <p class="tagline">Silver. The pinnacle of AI marketing. Self-optimizing, self-reporting, fully autonomous systems that evolve with your business. Reserved for those who have already proven they are ready.</p>
+    <div class="price-display">Custom Pricing</div>
+    <p class="price-note">Available exclusively to Tier 3 (Empire) clients</p>
+    <div class="requirement-note">Requires active Empire subscription to qualify</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">Overview</p>
+    <h2>What is the Holy Grail?</h2>
+    <p style="color:#aaa;max-width:680px;font-size:1.05rem;">The Holy Grail is the ultimate expression of the Omni AI system. It layers multiple autonomous agents, KPI-driven decision engines, and self-optimizing feedback loops on top of the full Empire stack. Your marketing doesn't just run itself -- it improves itself. Weekly performance reports, decision rules, and predictive intelligence keep you ahead of every competitor without lifting a finger.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">What's Included</p>
+    <h2>Everything in Holy Grail</h2>
+
+    <div style="margin-bottom:32px">
+      <div class="includes-badge">&#10003; Includes everything from Master + Royal + Empire</div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card featured">
+        <h3><span class="icon">&#9878;</span> Multi-Agent Autonomy</h3>
+        <ul>
+          <li>Multiple autonomous AI agents</li>
+          <li>Inter-agent communication &amp; coordination</li>
+          <li>Self-healing workflow recovery</li>
+          <li>Autonomous campaign launches</li>
+          <li>Zero-touch marketing operations</li>
+        </ul>
+      </div>
+      <div class="card featured">
+        <h3><span class="icon">&#128200;</span> KPI Intelligence Engine</h3>
+        <ul>
+          <li>Real-time KPI tracking &amp; alerts</li>
+          <li>Decision rules engine</li>
+          <li>Automated budget reallocation</li>
+          <li>Predictive revenue modeling</li>
+          <li>Anomaly detection &amp; response</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#128640;</span> Self-Optimizing Systems</h3>
+        <ul>
+          <li>Continuous performance optimization</li>
+          <li>Auto-generated A/B test hypotheses</li>
+          <li>Creative fatigue detection &amp; refresh</li>
+          <li>Audience expansion algorithms</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#128203;</span> Weekly Performance Reports</h3>
+        <ul>
+          <li>Executive summary dashboards</li>
+          <li>Channel-by-channel breakdowns</li>
+          <li>ROI &amp; ROAS analysis</li>
+          <li>Next-week recommendations</li>
+          <li>Competitive positioning updates</li>
+        </ul>
+      </div>
+      <div class="card inherited">
+        <span class="inherited-label">From Empire</span>
+        <h3><span class="icon inherited-icon">&#129504;</span> Full-Stack AI Marketing</h3>
+        <ul>
+          <li>Strategic AI brain &amp; decision-making</li>
+          <li>All paid media channels</li>
+          <li>All AI agents &amp; automations</li>
+          <li>Content, email &amp; social engine</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="custom-box">
+      <h3>Can't find what you want? NO PROBLEM.</h3>
+      <p>At the Holy Grail level, we build custom solutions for your exact needs. If you can imagine it, our AI systems can execute it. Every engagement is tailored to your business goals.</p>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">Timeline</p>
+    <h2>Your Custom Journey</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Days 1 - 7</div>
+        <h3>Deep Research &amp; Custom Architecture</h3>
+        <p>Since you are already an Empire client, we already know your business. This phase focuses on designing the autonomous layer -- multi-agent topology, KPI rules, and self-optimization parameters.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Months 1 - 2</div>
+        <h3>Agent Deployment &amp; Calibration</h3>
+        <p>Deploy the full autonomous agent network. Calibrate decision rules against real performance data. Train the self-optimization engine on your specific market dynamics.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Month 3+</div>
+        <h3>Full Autonomy &amp; Evolution</h3>
+        <p>The system reaches full autonomy. Weekly reports land in your inbox while the AI continuously optimizes. Your role shifts from operator to strategist -- the system handles execution.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="cta-section fade-up">
+    <p class="section-label">Apply Now</p>
+    <h2>Ready for the Holy Grail?</h2>
+    <p>This tier is reserved for Empire clients ready to unlock the next level. Schedule a call with our team to discuss your custom engagement.</p>
+    <a href="/interlinked" class="btn-primary">Schedule a Meeting</a>
+  </section>
+
+  <footer>
+    &copy; 2026 Omni AI. All rights reserved.
+  </footer>
+</div>
+</body>
+</html>

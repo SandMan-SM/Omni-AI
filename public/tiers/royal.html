@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TIER 2: Royal | Agentic Marketing - Omni AI</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#050505;color:#e0e0e0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;line-height:1.6;overflow-x:hidden}
+  .gradient-bar{height:4px;background:linear-gradient(90deg,#a855f7,#ec4899,#a855f7);background-size:200% 100%;animation:shimmer 3s ease infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+  .fade-up{animation:fadeUp .8s ease forwards;opacity:0}
+  .fade-up:nth-child(2){animation-delay:.1s}
+  .fade-up:nth-child(3){animation-delay:.2s}
+  .fade-up:nth-child(4){animation-delay:.3s}
+  .fade-up:nth-child(5){animation-delay:.4s}
+  .container{max-width:960px;margin:0 auto;padding:0 24px}
+  header{padding:32px 0 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+  .logo{font-size:1.5rem;font-weight:700;background:linear-gradient(135deg,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+  .back-link{color:#888;text-decoration:none;font-size:.875rem;transition:color .2s}
+  .back-link:hover{color:#a855f7}
+  .hero{text-align:center;padding:64px 0 48px}
+  .tier-badge{display:inline-block;padding:6px 20px;border:1px solid #a855f7;border-radius:100px;font-size:.75rem;letter-spacing:2px;text-transform:uppercase;color:#c084fc;margin-bottom:24px}
+  .includes-badge{display:inline-block;padding:4px 14px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:6px;font-size:.75rem;color:#c084fc;margin-bottom:16px}
+  h1{font-size:3rem;font-weight:800;background:linear-gradient(135deg,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px}
+  .tagline{font-size:1.25rem;color:#888;max-width:620px;margin:0 auto 32px}
+  .price-display{font-size:2.5rem;font-weight:700;color:#fff;margin-bottom:8px}
+  .price-display span{font-size:1rem;color:#666;font-weight:400}
+  .price-note{color:#666;font-size:.875rem}
+  section{padding:48px 0}
+  .section-label{font-size:.7rem;letter-spacing:3px;text-transform:uppercase;color:#a855f7;margin-bottom:12px}
+  h2{font-size:1.75rem;font-weight:700;color:#fff;margin-bottom:24px}
+  .card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+  .card{background:#0a0a0a;border:1px solid #1a1a1a;border-radius:16px;padding:28px;transition:border-color .3s}
+  .card:hover{border-color:#a855f7}
+  .card.inherited{border-style:dashed;opacity:.75}
+  .card.inherited:hover{opacity:1}
+  .card h3{font-size:1.1rem;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+  .card h3 .icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#a855f7 0%,#ec4899 100%);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0}
+  .card h3 .icon.inherited-icon{background:linear-gradient(135deg,#0077b6 0%,#00b4d8 100%)}
+  .card ul{list-style:none;padding:0}
+  .card ul li{padding:6px 0;color:#aaa;font-size:.9rem;position:relative;padding-left:20px}
+  .card ul li::before{content:'';position:absolute;left:0;top:14px;width:6px;height:6px;border-radius:50%;background:#a855f7}
+  .card.inherited ul li::before{background:#0077b6}
+  .inherited-label{display:inline-block;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;color:#00b4d8;background:rgba(0,180,216,.1);padding:2px 8px;border-radius:4px;margin-bottom:8px}
+  .timeline{position:relative;padding-left:32px;border-left:2px solid #1a1a1a}
+  .timeline-item{position:relative;padding-bottom:36px}
+  .timeline-item:last-child{padding-bottom:0}
+  .timeline-dot{position:absolute;left:-39px;top:4px;width:14px;height:14px;border-radius:50%;background:#a855f7;border:3px solid #050505}
+  .timeline-item h3{font-size:1rem;color:#fff;margin-bottom:4px}
+  .timeline-item p{color:#888;font-size:.9rem}
+  .timeline-label{font-size:.7rem;color:#a855f7;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+  .cta-section{text-align:center;padding:64px 0 80px}
+  .cta-section h2{font-size:2rem}
+  .cta-section p{color:#888;max-width:500px;margin:0 auto 32px;font-size:1.05rem}
+  .btn-primary{display:inline-block;padding:16px 48px;background:linear-gradient(135deg,#a855f7,#ec4899);color:#fff;text-decoration:none;border-radius:12px;font-weight:600;font-size:1.05rem;transition:transform .2s,box-shadow .2s}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(168,85,247,.35)}
+  .divider{height:1px;background:linear-gradient(90deg,transparent,#1a1a1a,transparent);margin:0}
+  .commitment{display:inline-block;margin-top:12px;padding:8px 20px;background:#0a0a0a;border:1px solid #1a1a1a;border-radius:8px;color:#888;font-size:.85rem}
+  footer{text-align:center;padding:32px 0;color:#444;font-size:.8rem;border-top:1px solid #111}
+</style>
+</head>
+<body>
+<div class="gradient-bar"></div>
+<div class="container">
+  <header>
+    <div class="logo">OMNI AI</div>
+    <a href="/details" class="back-link">&#8592; Back to Details</a>
+  </header>
+
+  <div class="hero fade-up">
+    <div class="tier-badge">Tier 2</div>
+    <h1>Royal</h1>
+    <p class="tagline">Agentic Marketing. AI agents that don't just execute -- they think, adapt, and book for you. Everything in Master, elevated with autonomous intelligence.</p>
+    <div class="price-display">$3k &ndash; $5k<span>/mo</span></div>
+    <p class="price-note">Based on scope &amp; ad spend</p>
+    <div class="commitment">3-month commitment &middot; Custom onboarding</div>
+  </div>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">Overview</p>
+    <h2>What is the Royal Tier?</h2>
+    <p style="color:#aaa;max-width:680px;font-size:1.05rem;">Royal takes everything in the Master tier and adds a layer of autonomous AI agents. These agents handle booking automation, intelligent follow-ups, and multi-step decision logic -- so your marketing engine runs even when you are not watching. Combine that with paid advertising across Facebook, Instagram, and Google, and you have a system that actively hunts for revenue.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">What's Included</p>
+    <h2>Everything in Royal</h2>
+
+    <div style="margin-bottom:32px">
+      <div class="includes-badge">&#10003; Includes everything from Master</div>
+    </div>
+
+    <div class="card-grid">
+      <div class="card">
+        <h3><span class="icon">&#129302;</span> AI Agent Suite</h3>
+        <ul>
+          <li>Booking automation agent</li>
+          <li>Intelligent follow-up logic</li>
+          <li>Multiple specialized AI agents</li>
+          <li>Automated SOPs &amp; workflows</li>
+          <li>Real-time analytics dashboard</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#128640;</span> Facebook &amp; Instagram Ads</h3>
+        <ul>
+          <li>5 ad creatives per month</li>
+          <li>Audience targeting &amp; segmentation</li>
+          <li>A/B testing on ad sets</li>
+          <li>Retargeting campaigns</li>
+          <li>Performance reporting</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#128269;</span> Google PPC</h3>
+        <ul>
+          <li>Search campaign setup &amp; management</li>
+          <li>Keyword research &amp; bid optimization</li>
+          <li>Ad copy creation &amp; testing</li>
+          <li>Conversion tracking</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3><span class="icon">&#127912;</span> Google Display &amp; Banner Ads</h3>
+        <ul>
+          <li>Display network campaigns</li>
+          <li>Banner ad design</li>
+          <li>Placement targeting</li>
+          <li>Remarketing audiences</li>
+        </ul>
+      </div>
+      <div class="card inherited">
+        <span class="inherited-label">From Master</span>
+        <h3><span class="icon inherited-icon">&#9881;</span> Lead Generation Engine</h3>
+        <ul>
+          <li>Lead scraper &amp; automated DMs</li>
+          <li>Comment-to-DM flows</li>
+          <li>Message templates &amp; CRM</li>
+        </ul>
+      </div>
+      <div class="card inherited">
+        <span class="inherited-label">From Master</span>
+        <h3><span class="icon inherited-icon">&#9998;</span> Content &amp; Email Marketing</h3>
+        <ul>
+          <li>3 SEO blogs/week (500+ words)</li>
+          <li>Full email automation</li>
+          <li>Social media management</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="fade-up">
+    <p class="section-label">Timeline</p>
+    <h2>Your 3-Month Journey</h2>
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Days 1 - 7</div>
+        <h3>Research &amp; Design</h3>
+        <p>Audit your current systems, map your customer journey, and architect the full AI agent + advertising strategy tailored to your business.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Months 1 - 2</div>
+        <h3>A/B Testing &amp; Agent Deployment</h3>
+        <p>Launch ad campaigns across Meta and Google while deploying AI agents. Test messaging, audiences, and automated workflows simultaneously.</p>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-label">Month 3</div>
+        <h3>Optimization &amp; Autonomy</h3>
+        <p>Refine agents, scale winning ad sets, and hand you a system that increasingly runs itself. Your AI agents learn and improve over time.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section class="cta-section fade-up">
+    <p class="section-label">Get Started</p>
+    <h2>Ready to Rule Your Market?</h2>
+    <p>Let AI agents handle the heavy lifting while you focus on closing deals. Book your strategy call today.</p>
+    <a href="/interlinked" class="btn-primary">Schedule a Meeting</a>
+  </section>
+
+  <footer>
+    &copy; 2026 Omni AI. All rights reserved.
+  </footer>
+</div>
+</body>
+</html>

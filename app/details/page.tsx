@@ -2,10 +2,10 @@
 export const dynamic = 'force-dynamic';
 
 import { motion } from "framer-motion";
-import { 
-  Brain, Zap, Target, TrendingUp, BarChart3, Users, Settings, 
+import {
+  Brain, Zap, Target, TrendingUp, BarChart3, Users, Settings,
   Rocket, Bot, ArrowRight, Shield, Crown, Flame, Lock, Star,
-  Check, Lightbulb, Layers, Network, Hexagon
+  Check, Lightbulb, Layers, Network, Hexagon, FileText
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -76,6 +76,7 @@ const tiers = [
     gradient: "from-blue-500 to-cyan-400",
     accentColor: "text-blue-400",
     borderColor: "border-blue-500/20",
+    pdfSlug: "master",
     features: ["Lead scraper", "Automated DMs", "Comment to DM flows", "Simple CRM", "Message templates"],
   },
   {
@@ -87,6 +88,7 @@ const tiers = [
     gradient: "from-purple-500 to-pink-500",
     accentColor: "text-purple-400",
     borderColor: "border-purple-500/20",
+    pdfSlug: "royal",
     features: ["Everything in Master", "Booking automation", "Follow-up logic", "Multiple AI agents", "SOPs & Analytics"],
   },
   {
@@ -100,6 +102,7 @@ const tiers = [
     borderColor: "border-amber-400/30",
     popular: true,
     chrome: true,
+    pdfSlug: "empire",
     features: ["Everything in Royal", "Full autonomy", "Strategic decision making", "Business AI", "Complete system control"],
   },
   {
@@ -114,6 +117,7 @@ const tiers = [
     locked: true,
     chrome: true,
     silver: true,
+    pdfSlug: "holy-grail",
     features: ["Multiple autonomous agents", "KPI tracking", "Decision rules engine", "Self-optimizing systems", "Weekly performance reports"],
   },
   {
@@ -485,6 +489,29 @@ export default function Details() {
                                 </div>
                               )}
                             </div>
+
+                            {"pdfSlug" in tier && tier.pdfSlug && (
+                              <>
+                                <div className="hidden md:block w-px h-12 bg-white/10"></div>
+                                <div className="md:w-auto flex-shrink-0">
+                                  <a
+                                    href={`/tiers/${tier.pdfSlug}.html`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-all border ${
+                                      isGold
+                                        ? 'bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20'
+                                        : isSilver
+                                        ? 'bg-gray-300/10 border-gray-300/30 text-gray-200 hover:bg-gray-300/20'
+                                        : 'bg-purple-500/10 border-purple-500/30 text-purple-300 hover:bg-purple-500/20'
+                                    }`}
+                                  >
+                                    <FileText className="w-4 h-4" />
+                                    See PDF
+                                  </a>
+                                </div>
+                              </>
+                            )}
                           </div>
                         </div>
                       </div>
