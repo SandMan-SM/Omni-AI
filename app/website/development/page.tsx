@@ -161,7 +161,7 @@ export default function WebsiteDevelopment() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
             >
               <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-base px-8 py-3 h-auto rounded-full"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-base px-8 py-3.5 h-auto rounded-xl"
                 onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
               >
                 Get Started — $25/mo
@@ -396,7 +396,7 @@ export default function WebsiteDevelopment() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Button
-                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-base px-10 py-3 h-auto rounded-full"
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-base px-10 py-3.5 h-auto rounded-xl"
                       onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
                     >
                       Subscribe — $25/mo
