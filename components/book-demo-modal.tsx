@@ -88,6 +88,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [googleCalendarUrl, setGoogleCalendarUrl] = useState("");
   const [calendarMonth, setCalendarMonth] = useState(() => {
     const now = new Date();
     return { year: now.getFullYear(), month: now.getMonth() };
@@ -106,6 +107,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
       setPurpose("");
       setSelectedDate("");
       setSelectedTime("");
+      setGoogleCalendarUrl("");
       const now = new Date();
       setCalendarMonth({ year: now.getFullYear(), month: now.getMonth() });
     }
@@ -151,7 +153,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
     if (!selectedDate || !selectedTime) return;
     setIsSubmitting(true);
     try {
-      await apiRequest("POST", "/api/demo-booking", {
+      const res = await apiRequest("POST", "/api/demo-booking", {
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim(),
@@ -160,6 +162,10 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
         date: selectedDate,
         time: selectedTime,
       });
+      const data = await res.json();
+      if (data.googleCalendarUrl) {
+        setGoogleCalendarUrl(data.googleCalendarUrl);
+      }
       setModalStep("success");
     } catch {
       toast({
@@ -476,7 +482,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   Request Complete!
                 </h2>
                 <p className="text-gray-400 text-sm mb-2 leading-relaxed px-2">
-                  Please add this to your calendar, and if anything comes up, let us know at least 24 hours in advance so we can fill the slot. Thank you!
+                  A confirmation email with a calendar invite has been sent to your inbox. If anything comes up, let us know at least 24 hours in advance so we can fill the slot!
                 </p>
                 <p className="text-purple-400 text-sm font-medium mb-6">
                   {formatSelectedDate()} at {selectedTime}
@@ -485,7 +491,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   <Button
                     variant="outline"
                     className="flex-1 border-purple-500/30 bg-purple-500/10 text-purple-300"
-                    onClick={() => window.open(buildGoogleCalendarUrl(), "_blank")}
+                    onClick={() => window.open(googleCalendarUrl || buildGoogleCalendarUrl(), "_blank")}
                     data-testid="button-add-calendar"
                   >
                     <Calendar className="w-4 h-4 mr-2" />
