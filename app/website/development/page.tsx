@@ -142,10 +142,10 @@ export default function WebsiteDevelopment() {
                 Website Service
               </motion.div>
 
-              <h1 className="text-5xl lg:text-6xl font-bold mb-6 whitespace-nowrap">
+              <h1 className="text-[clamp(2rem,8vw,3.75rem)] font-bold mb-6 whitespace-nowrap">
                 <span className="text-gradient">Website Development</span>
               </h1>
-              <p className="text-gray-400 text-lg max-w-lg mx-auto leading-relaxed">
+              <p className="text-gray-400 text-[clamp(0.875rem,2.5vw,1.125rem)] max-w-lg mx-auto leading-relaxed px-2">
                 AI-powered web development, hosting, and optimization — we build, deploy, and scale so you don't have to.
               </p>
             </motion.div>
@@ -158,14 +158,14 @@ export default function WebsiteDevelopment() {
               className="flex flex-row items-center justify-center gap-4 mb-16"
             >
               <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-[15px] px-10 h-14 rounded-xl neon-glow"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl neon-glow"
                 onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
               >
                 Buy Now
               </Button>
               <Button
                 variant="outline"
-                className="border-white/15 bg-white/[0.03] text-white text-[15px] px-10 h-14 rounded-xl"
+                className="border-white/15 bg-white/[0.03] text-white text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl"
                 onClick={() => setIsDemoModalOpen(true)}
               >
                 Book a Demo
