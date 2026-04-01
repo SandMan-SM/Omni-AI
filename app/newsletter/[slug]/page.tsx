@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -7,8 +7,9 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+// Use admin client so shared links always work — no auth/RLS gating on individual posts
 async function getPost(slug: string) {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
   const { data } = await supabase
     .from("newsletter_posts")
     .select("*")

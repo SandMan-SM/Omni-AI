@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function NewsletterIndexPage() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const { data: posts } = await supabase
     .from("newsletter_posts")

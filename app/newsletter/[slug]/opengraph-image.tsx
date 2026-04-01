@@ -10,9 +10,10 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
   const { slug } = params;
 
   // Fetch the post data
+  // Use service role so OG images always generate — no RLS gating on shared links
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { data: post } = await supabase
