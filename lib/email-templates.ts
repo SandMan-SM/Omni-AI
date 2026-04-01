@@ -29,7 +29,7 @@ export function bookerConfirmationEmail(booking: BookingDetails): string {
     <!-- Header -->
     <div style="text-align:center;margin-bottom:32px;">
       <h1 style="color:#ffffff;font-size:28px;margin:0 0 8px;">
-        <span style="background:linear-gradient(135deg,#a855f7,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Omni AI</span>
+        <span style="color:#a855f7;">Omni AI</span>
       </h1>
       <p style="color:#9ca3af;font-size:14px;margin:0;">Your demo is confirmed</p>
     </div>
@@ -106,7 +106,7 @@ export function ownerNotificationEmail(booking: BookingDetails): string {
     <!-- Header -->
     <div style="text-align:center;margin-bottom:32px;">
       <h1 style="color:#ffffff;font-size:28px;margin:0 0 8px;">
-        <span style="background:linear-gradient(135deg,#22c55e,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">New Demo Booked!</span>
+        <span style="color:#22c55e;">New Demo Booked!</span>
       </h1>
     </div>
 
@@ -194,7 +194,7 @@ export function reminderEmail(booking: BookingDetails): string {
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <div style="text-align:center;margin-bottom:32px;">
       <h1 style="color:#ffffff;font-size:24px;margin:0 0 8px;">
-        <span style="background:linear-gradient(135deg,#a855f7,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Omni AI</span>
+        <span style="color:#a855f7;">Omni AI</span>
       </h1>
     </div>
 

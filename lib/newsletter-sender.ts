@@ -516,7 +516,7 @@ function buildFreeEmailHtml(content: NewsletterContent): string {
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;color:#e0e0e0;margin:0;padding:0;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
     <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="background:linear-gradient(135deg,#a855f7,#3b82f6,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:28px;margin:0;">Interlinked</h1>
+      <h1 style="color:#a855f7;font-size:28px;margin:0;">Interlinked</h1>
       <p style="color:#888;font-size:13px;margin:8px 0 0;">by Omni AI · Daily Intelligence Brief · ${today}</p>
     </div>
     ${keywordsHtml}
@@ -525,7 +525,7 @@ function buildFreeEmailHtml(content: NewsletterContent): string {
     </div>
     ${content.quote ? `<div style="text-align:center;padding:20px;margin-bottom:24px;"><p style="color:#a855f7;font-size:15px;font-style:italic;margin:0;">${content.quote}</p></div>` : ''}
     <div style="margin-bottom:24px;">
-      <h2 style="background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:18px;margin-bottom:16px;">Today's Key Insights</h2>
+      <h2 style="color:#06b6d4;font-size:18px;margin-bottom:16px;">Today's Key Insights</h2>
       <ul style="padding-left:20px;color:#e0e0e0;font-size:15px;">${insightsHtml}</ul>
     </div>
     <div style="background:rgba(168,85,247,0.08);border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin-bottom:24px;">
@@ -566,7 +566,7 @@ function buildPremiumEmailHtml(content: PremiumContent): string {
       <span style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:4px 12px;border-radius:4px;">Premium</span>
     </div>
     <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="background:linear-gradient(135deg,#f59e0b,#ef4444,#a855f7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:28px;margin:0;">Interlinked Premium</h1>
+      <h1 style="color:#f59e0b;font-size:28px;margin:0;">Interlinked Premium</h1>
       <p style="color:#888;font-size:13px;margin:8px 0 0;">${dayLabel} · ${today}</p>
     </div>
     ${content.quote ? `<div style="text-align:center;padding:20px;margin-bottom:24px;border:1px solid rgba(245,158,11,0.2);border-radius:12px;background:rgba(245,158,11,0.05);"><p style="color:#f59e0b;font-size:15px;font-style:italic;margin:0;">${content.quote}</p></div>` : ''}
