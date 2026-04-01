@@ -362,40 +362,9 @@ export default function Dashboard() {
         </motion.div>
 
         {isAdmin ? (
-          <>
-            <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-              <CommandCenter />
-            </motion.div>
-            <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.1 }}>
-              <Card className="bg-gradient-to-br from-emerald-950/60 via-teal-950/40 to-emerald-950/60 border-2 border-emerald-500/30 shadow-[0_0_20px_rgba(16,185,129,0.15)] overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-400/5 via-transparent to-teal-400/5" />
-                <CardContent className="p-5 sm:p-6 relative">
-                  <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <div className="flex-shrink-0">
-                      <img src="/omni-homepage.png" alt="Omni AI Homepage" className="w-full sm:w-48 h-auto rounded-lg object-cover border border-emerald-500/20 shadow-lg shadow-emerald-500/10" />
-                    </div>
-                    <div className="flex-1 text-center sm:text-left">
-                      <h3 className="text-xl sm:text-2xl font-bold mb-1">
-                        <span className="bg-gradient-to-r from-emerald-300 via-teal-200 to-emerald-300 bg-clip-text text-transparent">
-                          Website Service
-                        </span>
-                      </h3>
-                      <p className="text-xs sm:text-sm text-emerald-200/60 mb-3">
-                        AI-managed hosting, monitoring & scaling — zero micromanagement
-                      </p>
-                      <Button
-                        className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 hover:from-emerald-500 hover:to-teal-400 text-white border-0 shadow-lg shadow-emerald-500/20 font-semibold text-sm"
-                        onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
-                      >
-                        <CircleDollarSign className="w-4 h-4 mr-2" />
-                        Website Service
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          </>
+          <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
+            <CommandCenter />
+          </motion.div>
         ) : (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
