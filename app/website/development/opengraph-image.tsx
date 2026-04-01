@@ -16,7 +16,7 @@ export default async function Image() {
           flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
-          background: "linear-gradient(135deg, #050505 0%, #0a1a14 40%, #051510 70%, #050505 100%)",
+          background: "linear-gradient(135deg, #050505 0%, #0d0520 40%, #10052a 70%, #050505 100%)",
           fontFamily: "system-ui, sans-serif",
           position: "relative",
           overflow: "hidden",
@@ -31,7 +31,7 @@ export default async function Image() {
             width: "400px",
             height: "400px",
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(16,185,129,0.15) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(147,51,234,0.18) 0%, transparent 70%)",
           }}
         />
         <div
@@ -42,7 +42,7 @@ export default async function Image() {
             width: "350px",
             height: "350px",
             borderRadius: "50%",
-            background: "radial-gradient(circle, rgba(6,182,212,0.1) 0%, transparent 70%)",
+            background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)",
           }}
         />
 
@@ -54,7 +54,7 @@ export default async function Image() {
             left: 0,
             right: 0,
             height: "4px",
-            background: "linear-gradient(90deg, transparent, #10b981, #06b6d4, transparent)",
+            background: "linear-gradient(90deg, transparent, #9333ea, #3b82f6, transparent)",
           }}
         />
 
@@ -66,8 +66,8 @@ export default async function Image() {
             gap: "8px",
             padding: "8px 20px",
             borderRadius: "999px",
-            background: "rgba(16,185,129,0.1)",
-            border: "1px solid rgba(16,185,129,0.25)",
+            background: "rgba(147,51,234,0.1)",
+            border: "1px solid rgba(147,51,234,0.25)",
             marginBottom: "24px",
           }}
         >
@@ -76,10 +76,10 @@ export default async function Image() {
               width: "8px",
               height: "8px",
               borderRadius: "50%",
-              background: "#10b981",
+              background: "#a855f7",
             }}
           />
-          <span style={{ color: "#6ee7b7", fontSize: "18px", fontWeight: 600 }}>
+          <span style={{ color: "#c084fc", fontSize: "18px", fontWeight: 600 }}>
             Website Service
           </span>
         </div>
@@ -91,7 +91,7 @@ export default async function Image() {
             fontSize: "64px",
             fontWeight: 800,
             letterSpacing: "-2px",
-            background: "linear-gradient(135deg, #6ee7b7, #5eead4, #a7f3d0)",
+            background: "linear-gradient(135deg, #c084fc, #818cf8, #60a5fa)",
             backgroundClip: "text",
             color: "transparent",
             marginBottom: "16px",
@@ -137,7 +137,7 @@ export default async function Image() {
                     width: "6px",
                     height: "6px",
                     borderRadius: "50%",
-                    background: "#10b981",
+                    background: "#a855f7",
                   }}
                 />
                 <span style={{ color: "#d1d5db", fontSize: "16px", fontWeight: 500 }}>
@@ -158,7 +158,7 @@ export default async function Image() {
             gap: "10px",
           }}
         >
-          <span style={{ color: "#6ee7b7", fontSize: "20px", fontWeight: 700 }}>
+          <span style={{ color: "#a855f7", fontSize: "20px", fontWeight: 700 }}>
             Omni AI
           </span>
           <span style={{ color: "#4b5563", fontSize: "20px" }}>•</span>

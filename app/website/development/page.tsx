@@ -77,7 +77,7 @@ const process = [
     step: "04",
     title: "Monitor & Scale",
     description: "Autonomous systems handle uptime monitoring, performance tuning, security, and scaling. You focus on growth.",
-    color: "from-teal-500 to-emerald-500",
+    color: "from-indigo-500 to-purple-500",
   },
 ];
 
@@ -121,7 +121,7 @@ export default function WebsiteDevelopment() {
         {/* Hero Section */}
         <section className="relative px-4 py-16 md:py-24">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-emerald-500/8 blur-[150px]" />
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
           </div>
 
@@ -136,7 +136,7 @@ export default function WebsiteDevelopment() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium bg-emerald-500/10 text-emerald-300 border border-emerald-500/20"
+                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20"
               >
                 <Globe className="w-4 h-4" />
                 Website Service
@@ -161,10 +161,9 @@ export default function WebsiteDevelopment() {
               className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
             >
               <Button
-                className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 hover:from-emerald-500 hover:to-teal-400 text-white border-0 shadow-lg shadow-emerald-500/20 font-semibold text-base px-8 py-3 h-auto"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-base px-8 py-3 h-auto rounded-full"
                 onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
               >
-                <CircleDollarSign className="w-5 h-5 mr-2" />
                 Get Started — $25/mo
               </Button>
               <Button
@@ -184,8 +183,8 @@ export default function WebsiteDevelopment() {
               transition={{ duration: 0.7, delay: 0.4 }}
               className="mb-16 md:mb-24"
             >
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-emerald-500/5">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-transparent to-cyan-500/10" />
+              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-purple-500/5">
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
                 <img
                   src="/omni-homepage.png"
                   alt="Omni AI — Website built and managed by our team"
@@ -204,8 +203,8 @@ export default function WebsiteDevelopment() {
               className="mb-16 md:mb-24"
             >
               <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 flex items-center justify-center border border-white/5">
-                  <Layers className="w-5 h-5 text-emerald-400" />
+                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
+                  <Layers className="w-5 h-5 text-purple-400" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white">What You Get</h2>
               </div>
@@ -248,18 +247,18 @@ export default function WebsiteDevelopment() {
               className="mb-16 md:mb-24"
             >
               <div className="relative rounded-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-600/10 via-transparent to-cyan-500/10" />
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
                 <div className="absolute inset-0 border border-white/10 rounded-2xl" />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
 
                 <div className="relative px-6 py-10 md:px-12 md:py-14">
                   <div className="flex items-center gap-3 mb-8">
-                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                       <Check className="w-6 h-6 text-white" />
                     </div>
                     <div>
                       <h2 className="text-2xl md:text-3xl font-bold text-white">Everything Included</h2>
-                      <p className="text-emerald-400 text-sm font-medium">No hidden fees, no surprises</p>
+                      <p className="text-purple-400 text-sm font-medium">No hidden fees, no surprises</p>
                     </div>
                   </div>
 
@@ -296,7 +295,7 @@ export default function WebsiteDevelopment() {
               className="mb-16 md:mb-24"
             >
               <div className="flex items-center gap-3 mb-8">
-                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-emerald-500/20 flex items-center justify-center border border-white/5">
+                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Rocket className="w-5 h-5 text-purple-400" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white">How It Works</h2>
@@ -383,9 +382,9 @@ export default function WebsiteDevelopment() {
               viewport={{ once: true }}
             >
               <div className="relative rounded-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-emerald-600/15 via-teal-500/10 to-cyan-500/15" />
-                <div className="absolute inset-0 border border-emerald-500/20 rounded-2xl" />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-400/50 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-600/15 via-blue-500/10 to-cyan-500/15" />
+                <div className="absolute inset-0 border border-purple-500/20 rounded-2xl" />
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent" />
 
                 <div className="relative px-6 py-12 md:px-12 md:py-16 text-center">
                   <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -397,15 +396,14 @@ export default function WebsiteDevelopment() {
 
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                     <Button
-                      className="bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 hover:from-emerald-500 hover:to-teal-400 text-white border-0 shadow-lg shadow-emerald-500/25 font-bold text-base px-10 py-3 h-auto"
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-base px-10 py-3 h-auto rounded-full"
                       onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
                     >
-                      <CircleDollarSign className="w-5 h-5 mr-2" />
                       Subscribe — $25/mo
                     </Button>
                     <Button
                       variant="outline"
-                      className="border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10 text-base px-8 py-3 h-auto"
+                      className="border-purple-500/30 text-purple-300 hover:bg-purple-500/10 text-base px-8 py-3 h-auto"
                       onClick={() => setIsDemoModalOpen(true)}
                     >
                       Talk to Us
@@ -415,15 +413,15 @@ export default function WebsiteDevelopment() {
 
                   <div className="flex items-center justify-center gap-6 mt-8 text-sm text-gray-500">
                     <span className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-purple-400" />
                       Cancel anytime
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-purple-400" />
                       No setup fees
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-purple-400" />
                       24/7 support
                     </span>
                   </div>
