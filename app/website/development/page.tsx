@@ -117,82 +117,82 @@ export default function WebsiteDevelopment() {
         onSignIn={() => setIsAuthModalOpen(true)}
       />
 
-      <main className="pt-20 pb-32">
-        {/* Hero Section */}
-        <section className="relative py-32 overflow-hidden">
+      <main className="pt-20">
+        {/* ──────────────── HERO ──────────────── */}
+        <section className="relative py-20 md:py-32 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
           </div>
 
-          {/* Hero text — full-width title, centered content */}
-          <div className="relative z-10">
+          <div className="relative z-10 max-w-5xl mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
-              className="text-center mb-16"
+              className="text-center"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full text-sm font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20"
+                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20"
               >
                 <Globe className="w-4 h-4" />
                 Website Service
               </motion.div>
 
               <h1
-                className="font-extrabold mb-16 leading-[0.9] tracking-[-0.07em] whitespace-nowrap text-center"
+                className="font-extrabold mb-6 leading-[0.9] tracking-[-0.07em] whitespace-nowrap text-center"
                 style={{ fontSize: 'clamp(2rem, 5vw, 5rem)' }}
               >
                 <span className="text-gradient">Website Development</span>
               </h1>
-              <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed px-4" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
+              <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
                 AI-powered web development, hosting, and optimization — we build, deploy, and scale so you don't have to.
               </p>
             </motion.div>
 
-            {/* Hero CTA */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-64"
+              className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5"
             >
               <Button
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl neon-glow"
+                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl neon-glow"
                 onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
               >
                 Buy Now
               </Button>
               <Button
                 variant="outline"
-                className="border-white/15 bg-white/[0.03] text-white text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl"
+                className="w-full sm:w-auto border-white/15 bg-white/[0.03] text-white text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl"
                 onClick={() => setIsDemoModalOpen(true)}
               >
                 Book a Demo
               </Button>
             </motion.div>
+          </div>
+        </section>
 
-            <div className="max-w-5xl mx-auto px-4">
-            {/* Core Services */}
+        {/* ──────────────── WHAT YOU GET ──────────────── */}
+        <section className="py-20 md:py-28">
+          <div className="max-w-5xl mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-52 mb-40"
             >
-              <div className="flex items-center gap-3 mb-12">
+              <div className="flex items-center gap-3 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Layers className="w-5 h-5 text-purple-400" />
                 </div>
                 <h2 className="text-3xl font-bold text-white">What You Get</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {coreServices.map((service, index) => {
                   const Icon = service.icon;
                   return (
@@ -202,41 +202,40 @@ export default function WebsiteDevelopment() {
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
                       viewport={{ once: true }}
-                      className="group"
+                      className="group mb-2"
                     >
-                      <div className="glass-card rounded-md p-8 h-full border border-white/5 group-hover:border-white/10 transition-colors relative overflow-visible">
-                        <div className="flex items-start gap-4">
-                          <div className={`w-11 h-11 rounded-md bg-gradient-to-br ${service.gradient} flex items-center justify-center flex-shrink-0`}>
-                            <Icon className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="text-white font-semibold text-lg mb-3">{service.title}</h3>
-                            <p className="text-gray-400 text-sm leading-relaxed">{service.description}</p>
-                          </div>
+                      <div className="glass-card rounded-xl p-10 h-full border border-white/5 group-hover:border-white/10 transition-colors relative overflow-visible">
+                        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${service.gradient} flex items-center justify-center mb-4`}>
+                          <Icon className="w-5 h-5 text-white" />
                         </div>
+                        <h3 className="text-white font-semibold text-lg mb-3">{service.title}</h3>
+                        <p className="text-gray-400 text-sm leading-relaxed">{service.description}</p>
                       </div>
                     </motion.div>
                   );
                 })}
               </div>
             </motion.div>
+          </div>
+        </section>
 
-            {/* What's Included */}
+        {/* ──────────────── EVERYTHING INCLUDED ──────────────── */}
+        <section className="py-20 md:py-28">
+          <div className="max-w-5xl mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-40 mb-40"
             >
               <div className="relative rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
                 <div className="absolute inset-0 border border-white/10 rounded-2xl" />
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
 
-                <div className="relative px-8 py-14 md:px-14 md:py-20">
-                  <div className="flex items-center gap-3 mb-12">
-                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                <div className="relative px-8 py-12 md:px-14 md:py-16">
+                  <div className="flex items-center gap-3 mb-10">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                       <Check className="w-6 h-6 text-white" />
                     </div>
                     <div>
@@ -245,7 +244,7 @@ export default function WebsiteDevelopment() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-10">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                     {whatsIncluded.map((item, index) => {
                       const Icon = item.icon;
                       return (
@@ -255,9 +254,9 @@ export default function WebsiteDevelopment() {
                           whileInView={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.06 }}
                           viewport={{ once: true }}
-                          className="flex items-center gap-3"
+                          className="flex items-center gap-3 py-1"
                         >
-                          <div className="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center flex-shrink-0">
+                          <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                             <Icon className={`w-4 h-4 ${item.color}`} />
                           </div>
                           <span className="text-gray-300 text-base">{item.text}</span>
@@ -268,23 +267,26 @@ export default function WebsiteDevelopment() {
                 </div>
               </div>
             </motion.div>
+          </div>
+        </section>
 
-            {/* Process */}
+        {/* ──────────────── HOW IT WORKS ──────────────── */}
+        <section className="py-20 md:py-28">
+          <div className="max-w-5xl mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-40 mb-40"
             >
-              <div className="flex items-center gap-3 mb-12">
+              <div className="flex items-center gap-3 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Rocket className="w-5 h-5 text-purple-400" />
                 </div>
                 <h2 className="text-3xl font-bold text-white">How It Works</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {process.map((step, index) => (
                   <motion.div
                     key={step.step}
@@ -292,39 +294,39 @@ export default function WebsiteDevelopment() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
+                    className="mb-2"
                   >
-                    <div className="glass-card rounded-md p-8 h-full border border-white/5 hover:border-white/10 transition-colors">
-                      <div className="flex items-start gap-4">
-                        <div className={`w-11 h-11 rounded-md bg-gradient-to-br ${step.color} flex items-center justify-center flex-shrink-0`}>
-                          <span className="text-white font-bold text-sm">{step.step}</span>
-                        </div>
-                        <div>
-                          <h3 className="text-white font-semibold text-lg mb-3">{step.title}</h3>
-                          <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
-                        </div>
+                    <div className="glass-card rounded-xl p-10 h-full border border-white/5 hover:border-white/10 transition-colors">
+                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${step.color} flex items-center justify-center mb-4`}>
+                        <span className="text-white font-bold text-sm">{step.step}</span>
                       </div>
+                      <h3 className="text-white font-semibold text-lg mb-3">{step.title}</h3>
+                      <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
                     </div>
                   </motion.div>
                 ))}
               </div>
             </motion.div>
+          </div>
+        </section>
 
-            {/* FAQ */}
+        {/* ──────────────── FAQ ──────────────── */}
+        <section className="py-20 md:py-28">
+          <div className="max-w-5xl mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-40 mb-40"
             >
-              <div className="flex items-center gap-3 mb-12">
+              <div className="flex items-center gap-3 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/5">
                   <BarChart3 className="w-5 h-5 text-blue-400" />
                 </div>
                 <h2 className="text-3xl font-bold text-white">FAQ</h2>
               </div>
 
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {faq.map((item, index) => (
                   <motion.div
                     key={index}
@@ -334,7 +336,7 @@ export default function WebsiteDevelopment() {
                     viewport={{ once: true }}
                   >
                     <div
-                      className="glass-card rounded-md border border-white/5 hover:border-white/10 transition-colors cursor-pointer overflow-hidden"
+                      className="glass-card rounded-xl border border-white/5 hover:border-white/10 transition-colors cursor-pointer overflow-hidden"
                       onClick={() => setOpenFaq(openFaq === index ? null : index)}
                     >
                       <div className="flex items-center justify-between p-6">
@@ -356,21 +358,24 @@ export default function WebsiteDevelopment() {
                 ))}
               </div>
             </motion.div>
+          </div>
+        </section>
 
-            {/* Bottom CTA */}
+        {/* ──────────────── BOTTOM CTA ──────────────── */}
+        <section className="py-20 md:py-28 pb-32">
+          <div className="max-w-5xl mx-auto px-4">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-40"
             >
               <div className="relative rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600/15 via-blue-500/10 to-cyan-500/15" />
                 <div className="absolute inset-0 border border-purple-500/20 rounded-2xl" />
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent" />
 
-                <div className="relative px-8 py-16 md:px-14 md:py-20 text-center">
+                <div className="relative px-8 py-14 md:px-14 md:py-20 text-center">
                   <h2 className="text-4xl font-bold mb-6">
                     <span className="text-gradient">Ready to Launch?</span>
                   </h2>
@@ -378,7 +383,7 @@ export default function WebsiteDevelopment() {
                     Get a professionally built, AI-managed website that runs itself. Start your subscription today.
                   </p>
 
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                  <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5">
                     <Button
                       className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-[15px] px-10 h-14 rounded-xl neon-glow"
                       onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
@@ -394,7 +399,7 @@ export default function WebsiteDevelopment() {
                     </Button>
                   </div>
 
-                  <div className="flex items-center justify-center gap-6 mt-8 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-500">
                     <span className="flex items-center gap-1.5">
                       <Check className="w-3.5 h-3.5 text-purple-400" />
                       Cancel anytime
@@ -411,7 +416,6 @@ export default function WebsiteDevelopment() {
                 </div>
               </div>
             </motion.div>
-            </div>
           </div>
         </section>
       </main>
