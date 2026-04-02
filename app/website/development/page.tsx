@@ -145,11 +145,11 @@ export default function WebsiteDevelopment() {
 
               <h1
                 className="font-extrabold mb-8 leading-[0.9] tracking-[-0.07em] whitespace-nowrap text-center"
-                style={{ fontSize: 'clamp(2rem, 9.5vw, 10.5rem)' }}
+                style={{ fontSize: 'clamp(2rem, 7vw, 7.5rem)' }}
               >
                 <span className="text-gradient">Website Development</span>
               </h1>
-              <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed px-4">
+              <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed px-4" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
                 AI-powered web development, hosting, and optimization — we build, deploy, and scale so you don't have to.
               </p>
             </motion.div>
