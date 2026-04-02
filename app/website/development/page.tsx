@@ -59,25 +59,25 @@ const process = [
     step: "01",
     title: "Discovery",
     description: "We learn your business, goals, and target audience to design the perfect digital presence.",
-    color: "from-purple-500 to-violet-500",
+    color: "from-purple-400 to-fuchsia-500",
   },
   {
     step: "02",
     title: "Design & Build",
     description: "Our team crafts a high-performance website with modern frameworks, responsive design, and conversion-focused UX.",
-    color: "from-blue-500 to-cyan-500",
+    color: "from-blue-400 to-cyan-400",
   },
   {
     step: "03",
     title: "Deploy & Optimize",
     description: "We launch on managed infrastructure with AI-driven optimization running from day one — no servers to manage.",
-    color: "from-cyan-500 to-teal-500",
+    color: "from-cyan-400 to-teal-400",
   },
   {
     step: "04",
     title: "Monitor & Scale",
     description: "Autonomous systems handle uptime monitoring, performance tuning, security, and scaling. You focus on growth.",
-    color: "from-violet-500 to-purple-500",
+    color: "from-pink-500 to-rose-400",
   },
 ];
 
