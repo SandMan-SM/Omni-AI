@@ -266,7 +266,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
                   <Building2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
                   <span className="text-base text-gray-200 font-medium truncate">{business.name}</span>
                 </div>
-                <span className="text-sm text-purple-400 whitespace-nowrap">In Development</span>
+                <span className="text-sm text-purple-400 whitespace-nowrap">Developed</span>
               </div>
             </CardHeader>
             {expandedBusiness === business.id && (
