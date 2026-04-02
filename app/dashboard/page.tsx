@@ -465,7 +465,7 @@ export default function Dashboard() {
                       <div className="flex justify-center">
                         <Button
                           className="btn-chrome-gold text-black border-0 shadow-lg shadow-amber-400/25 font-semibold text-sm"
-                          onClick={() => window.open('https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-34T698331T469030WNG6JOHY&custom_id=ExampleID', '_blank')}
+                          onClick={() => window.open('https://www.paypal.com/ncp/payment/NLHHZJS3UC48L', '_blank')}
                         >
                           <Crown className="w-4 h-4 mr-2" />
                           Activate Sponsor Subscription
