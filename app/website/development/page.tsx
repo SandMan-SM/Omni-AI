@@ -119,7 +119,7 @@ export default function WebsiteDevelopment() {
 
       <main className="pt-20 pb-20">
         {/* Hero Section */}
-        <section className="relative px-4 py-24">
+        <section className="relative py-24 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
@@ -143,7 +143,10 @@ export default function WebsiteDevelopment() {
                 Website Service
               </motion.div>
 
-              <h1 className="text-[clamp(1.75rem,11.5vw,12rem)] font-extrabold mb-8 leading-[0.9] tracking-[-0.06em] w-screen relative left-1/2 -translate-x-1/2 whitespace-nowrap overflow-hidden">
+              <h1
+                className="font-extrabold mb-8 leading-[0.9] tracking-[-0.05em] whitespace-nowrap text-center"
+                style={{ fontSize: 'min(11.5vw, 12rem)' }}
+              >
                 <span className="text-gradient">Website Development</span>
               </h1>
               <p className="text-gray-400 text-base sm:text-lg max-w-xl mx-auto leading-relaxed px-4">
@@ -173,7 +176,7 @@ export default function WebsiteDevelopment() {
               </Button>
             </motion.div>
 
-            <div className="max-w-5xl mx-auto">
+            <div className="max-w-5xl mx-auto px-4">
             {/* Homepage Screenshot */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
