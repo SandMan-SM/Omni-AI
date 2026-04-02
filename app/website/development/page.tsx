@@ -144,7 +144,7 @@ export default function WebsiteDevelopment() {
               </motion.div>
 
               <h1
-                className="font-extrabold mb-8 leading-[0.9] tracking-[-0.07em] whitespace-nowrap text-center"
+                className="font-extrabold mb-12 leading-[0.9] tracking-[-0.07em] whitespace-nowrap text-center"
                 style={{ fontSize: 'clamp(2rem, 5vw, 5rem)' }}
               >
                 <span className="text-gradient">Website Development</span>
@@ -159,7 +159,7 @@ export default function WebsiteDevelopment() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex flex-row items-center justify-center gap-4 mb-16"
+              className="flex flex-row items-center justify-center gap-4 mb-32"
             >
               <Button
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl neon-glow"
@@ -183,9 +183,9 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-32 mb-48"
+              className="mt-48 mb-64"
             >
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-3 mb-16">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Layers className="w-5 h-5 text-purple-400" />
                 </div>
@@ -227,7 +227,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-32 mb-48"
+              className="mt-48 mb-64"
             >
               <div className="relative rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
@@ -235,7 +235,7 @@ export default function WebsiteDevelopment() {
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
 
                 <div className="relative px-6 py-10 md:px-12 md:py-14">
-                  <div className="flex items-center gap-3 mb-8">
+                  <div className="flex items-center gap-3 mb-12">
                     <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                       <Check className="w-6 h-6 text-white" />
                     </div>
@@ -275,9 +275,9 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-32 mb-48"
+              className="mt-48 mb-64"
             >
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-3 mb-12">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Rocket className="w-5 h-5 text-purple-400" />
                 </div>
@@ -315,16 +315,16 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-32 mb-48"
+              className="mt-48 mb-64"
             >
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-3 mb-12">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/5">
                   <BarChart3 className="w-5 h-5 text-blue-400" />
                 </div>
                 <h2 className="text-3xl font-bold text-white">FAQ</h2>
               </div>
 
-              <div className="space-y-6">
+              <div className="space-y-8">
                 {faq.map((item, index) => (
                   <motion.div
                     key={index}
