@@ -145,7 +145,7 @@ export default function WebsiteDevelopment() {
 
               <h1
                 className="font-extrabold mb-8 leading-[0.9] tracking-[-0.07em] whitespace-nowrap text-center"
-                style={{ fontSize: 'clamp(2rem, 7vw, 7.5rem)' }}
+                style={{ fontSize: 'clamp(2rem, 5vw, 5rem)' }}
               >
                 <span className="text-gradient">Website Development</span>
               </h1>
