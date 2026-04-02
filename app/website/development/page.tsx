@@ -157,17 +157,17 @@ export default function WebsiteDevelopment() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5"
+              className="flex flex-row flex-wrap items-center justify-center gap-4"
             >
               <Button
-                className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl neon-glow"
+                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-semibold text-[15px] px-10 h-12 sm:h-14 rounded-xl neon-glow"
                 onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
               >
                 Buy Now
               </Button>
               <Button
                 variant="outline"
-                className="w-full sm:w-auto border-white/15 bg-white/[0.03] text-white text-sm sm:text-[15px] px-6 sm:px-10 h-11 sm:h-14 rounded-xl"
+                className="border-white/15 bg-white/[0.03] text-white text-[15px] px-10 h-12 sm:h-14 rounded-xl"
                 onClick={() => setIsDemoModalOpen(true)}
               >
                 Book a Demo
@@ -297,10 +297,12 @@ export default function WebsiteDevelopment() {
                     className="mb-2"
                   >
                     <div className="glass-card rounded-xl p-10 h-full border border-white/5 hover:border-white/10 transition-colors">
-                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${step.color} flex items-center justify-center mb-4`}>
-                        <span className="text-white font-bold text-sm">{step.step}</span>
+                      <div className="flex items-start justify-between gap-4 mb-3">
+                        <h3 className="text-white font-semibold text-lg">{step.title}</h3>
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${step.color} flex items-center justify-center flex-shrink-0`}>
+                          <span className="text-white font-bold text-sm">{step.step}</span>
+                        </div>
                       </div>
-                      <h3 className="text-white font-semibold text-lg mb-3">{step.title}</h3>
                       <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
                     </div>
                   </motion.div>
@@ -383,16 +385,16 @@ export default function WebsiteDevelopment() {
                     Get a professionally built, AI-managed website that runs itself. Start your subscription today.
                   </p>
 
-                  <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-5">
+                  <div className="flex flex-row flex-wrap items-center justify-center gap-4">
                     <Button
-                      className="w-full sm:w-auto bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-[15px] px-10 h-14 rounded-xl neon-glow"
+                      className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-500 hover:to-blue-500 text-white border-0 shadow-lg shadow-purple-500/25 font-bold text-[15px] px-10 h-14 rounded-xl neon-glow"
                       onClick={() => window.open('https://buy.stripe.com/7sY14n4rg12o7bpecM9fW01', '_blank')}
                     >
                       Buy Now
                     </Button>
                     <Button
                       variant="outline"
-                      className="w-full sm:w-auto border-white/15 bg-white/[0.03] text-white text-[15px] px-10 h-14 rounded-xl"
+                      className="border-white/15 bg-white/[0.03] text-white text-[15px] px-10 h-14 rounded-xl"
                       onClick={() => setIsDemoModalOpen(true)}
                     >
                       Book a Demo
