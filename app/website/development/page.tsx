@@ -380,7 +380,7 @@ export default function WebsiteDevelopment() {
                 <div className="absolute inset-0 border border-purple-500/20 rounded-2xl" />
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent" />
 
-                <div className="relative px-8 py-14 md:px-14 md:py-20 text-center">
+                <div className="relative px-8 py-20 md:px-14 md:py-28 text-center">
                   <h2 className="text-4xl font-bold mb-6">
                     <span className="text-gradient">Ready to Launch?</span>
                   </h2>
