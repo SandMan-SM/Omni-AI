@@ -59,25 +59,25 @@ const process = [
     step: "01",
     title: "Discovery",
     description: "We learn your business, goals, and target audience to design the perfect digital presence.",
-    color: "from-purple-400 to-fuchsia-500",
+    bg: "linear-gradient(135deg, #c084fc, #d946ef)",
   },
   {
     step: "02",
     title: "Design & Build",
     description: "Our team crafts a high-performance website with modern frameworks, responsive design, and conversion-focused UX.",
-    color: "from-blue-400 to-cyan-400",
+    bg: "linear-gradient(135deg, #60a5fa, #22d3ee)",
   },
   {
     step: "03",
     title: "Deploy & Optimize",
     description: "We launch on managed infrastructure with AI-driven optimization running from day one — no servers to manage.",
-    color: "from-cyan-400 to-teal-400",
+    bg: "linear-gradient(135deg, #22d3ee, #2dd4bf)",
   },
   {
     step: "04",
     title: "Monitor & Scale",
     description: "Autonomous systems handle uptime monitoring, performance tuning, security, and scaling. You focus on growth.",
-    color: "from-pink-500 to-rose-400",
+    bg: "linear-gradient(135deg, #ec4899, #fb7185)",
   },
 ];
 
@@ -299,7 +299,10 @@ export default function WebsiteDevelopment() {
                     <div className="glass-card rounded-xl p-10 h-full border border-white/5 hover:border-white/10 transition-colors">
                       <div className="flex items-start justify-between gap-4 mb-3">
                         <h3 className="text-white font-semibold text-lg">{step.title}</h3>
-                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${step.color} flex items-center justify-center flex-shrink-0`}>
+                        <div
+                          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                          style={{ background: step.bg }}
+                        >
                           <span className="text-white font-bold text-sm">{step.step}</span>
                         </div>
                       </div>
