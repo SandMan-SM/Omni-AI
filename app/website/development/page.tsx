@@ -144,8 +144,8 @@ export default function WebsiteDevelopment() {
               </motion.div>
 
               <h1
-                className="font-extrabold mb-8 leading-[0.9] tracking-[-0.05em] whitespace-nowrap text-center"
-                style={{ fontSize: 'min(8.5vw, 9rem)' }}
+                className="font-extrabold mb-8 leading-[0.9] tracking-[-0.07em] whitespace-nowrap text-center"
+                style={{ fontSize: 'clamp(2rem, 9.5vw, 10.5rem)' }}
               >
                 <span className="text-gradient">Website Development</span>
               </h1>
