@@ -182,7 +182,7 @@ export default function WebsiteDevelopment() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, delay: 0.4 }}
-              className="mb-32"
+              className="mb-40"
             >
               <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-purple-500/5">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
@@ -201,7 +201,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-32"
+              className="mb-40"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
@@ -210,7 +210,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">What You Get</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 {coreServices.map((service, index) => {
                   const Icon = service.icon;
                   return (
@@ -245,7 +245,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-32"
+              className="mb-40"
             >
               <div className="relative rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
@@ -263,7 +263,7 @@ export default function WebsiteDevelopment() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     {whatsIncluded.map((item, index) => {
                       const Icon = item.icon;
                       return (
@@ -293,7 +293,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-32"
+              className="mb-40"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
@@ -302,7 +302,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">How It Works</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 {process.map((step, index) => (
                   <motion.div
                     key={step.step}
@@ -333,7 +333,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-32"
+              className="mb-40"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/5">
@@ -342,7 +342,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">FAQ</h2>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-5">
                 {faq.map((item, index) => (
                   <motion.div
                     key={index}
