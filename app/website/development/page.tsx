@@ -201,9 +201,9 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-16 mb-40"
+              className="mt-20 mb-40"
             >
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-3 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Layers className="w-5 h-5 text-purple-400" />
                 </div>
@@ -245,7 +245,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mt-16 mb-40"
+              className="mt-20 mb-40"
             >
               <div className="relative rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
@@ -263,7 +263,7 @@ export default function WebsiteDevelopment() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
                     {whatsIncluded.map((item, index) => {
                       const Icon = item.icon;
                       return (
@@ -293,7 +293,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-40"
+              className="mt-20 mb-40"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
@@ -333,7 +333,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="mb-40"
+              className="mt-20 mb-40"
             >
               <div className="flex items-center gap-3 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/5">
@@ -342,7 +342,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">FAQ</h2>
               </div>
 
-              <div className="space-y-5">
+              <div className="space-y-6">
                 {faq.map((item, index) => (
                   <motion.div
                     key={index}
@@ -381,6 +381,7 @@ export default function WebsiteDevelopment() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
+              className="mt-20"
             >
               <div className="relative rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-600/15 via-blue-500/10 to-cyan-500/15" />
