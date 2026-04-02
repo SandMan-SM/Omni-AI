@@ -204,13 +204,13 @@ export default function WebsiteDevelopment() {
                       viewport={{ once: true }}
                       className="group"
                     >
-                      <div className="glass-card rounded-md p-6 h-full border border-white/5 group-hover:border-white/10 transition-colors relative overflow-visible">
+                      <div className="glass-card rounded-md p-8 h-full border border-white/5 group-hover:border-white/10 transition-colors relative overflow-visible">
                         <div className="flex items-start gap-4">
                           <div className={`w-11 h-11 rounded-md bg-gradient-to-br ${service.gradient} flex items-center justify-center flex-shrink-0`}>
                             <Icon className="w-5 h-5 text-white" />
                           </div>
                           <div>
-                            <h3 className="text-white font-semibold text-lg mb-1.5">{service.title}</h3>
+                            <h3 className="text-white font-semibold text-lg mb-3">{service.title}</h3>
                             <p className="text-gray-400 text-sm leading-relaxed">{service.description}</p>
                           </div>
                         </div>
@@ -234,7 +234,7 @@ export default function WebsiteDevelopment() {
                 <div className="absolute inset-0 border border-white/10 rounded-2xl" />
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
 
-                <div className="relative px-6 py-10 md:px-12 md:py-14">
+                <div className="relative px-8 py-14 md:px-14 md:py-20">
                   <div className="flex items-center gap-3 mb-28">
                     <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                       <Check className="w-6 h-6 text-white" />
@@ -293,13 +293,13 @@ export default function WebsiteDevelopment() {
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
                   >
-                    <div className="glass-card rounded-md p-6 h-full border border-white/5 hover:border-white/10 transition-colors">
+                    <div className="glass-card rounded-md p-8 h-full border border-white/5 hover:border-white/10 transition-colors">
                       <div className="flex items-start gap-4">
                         <div className={`w-11 h-11 rounded-md bg-gradient-to-br ${step.color} flex items-center justify-center flex-shrink-0`}>
                           <span className="text-white font-bold text-sm">{step.step}</span>
                         </div>
                         <div>
-                          <h3 className="text-white font-semibold text-lg mb-1.5">{step.title}</h3>
+                          <h3 className="text-white font-semibold text-lg mb-3">{step.title}</h3>
                           <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
                         </div>
                       </div>
@@ -337,7 +337,7 @@ export default function WebsiteDevelopment() {
                       className="glass-card rounded-md border border-white/5 hover:border-white/10 transition-colors cursor-pointer overflow-hidden"
                       onClick={() => setOpenFaq(openFaq === index ? null : index)}
                     >
-                      <div className="flex items-center justify-between p-5">
+                      <div className="flex items-center justify-between p-6">
                         <span className="text-white font-medium text-base pr-4">{item.q}</span>
                         <ArrowRight className={`w-4 h-4 text-gray-500 flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-90' : ''}`} />
                       </div>
@@ -346,7 +346,7 @@ export default function WebsiteDevelopment() {
                           initial={{ opacity: 0, height: 0 }}
                           animate={{ opacity: 1, height: 'auto' }}
                           transition={{ duration: 0.2 }}
-                          className="px-5 pb-5"
+                          className="px-6 pb-6"
                         >
                           <p className="text-gray-400 text-sm leading-relaxed border-t border-white/5 pt-4">{item.a}</p>
                         </motion.div>
@@ -370,7 +370,7 @@ export default function WebsiteDevelopment() {
                 <div className="absolute inset-0 border border-purple-500/20 rounded-2xl" />
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-400/50 to-transparent" />
 
-                <div className="relative px-6 py-12 md:px-12 md:py-16 text-center">
+                <div className="relative px-8 py-16 md:px-14 md:py-20 text-center">
                   <h2 className="text-4xl font-bold mb-4">
                     <span className="text-gradient">Ready to Launch?</span>
                   </h2>
