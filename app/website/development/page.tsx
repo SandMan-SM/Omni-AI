@@ -77,7 +77,7 @@ const process = [
     step: "04",
     title: "Monitor & Scale",
     description: "Autonomous systems handle uptime monitoring, performance tuning, security, and scaling. You focus on growth.",
-    color: "from-indigo-500 to-purple-500",
+    color: "from-violet-500 to-purple-500",
   },
 ];
 
@@ -192,7 +192,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">What You Get</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                 {coreServices.map((service, index) => {
                   const Icon = service.icon;
                   return (
@@ -286,7 +286,7 @@ export default function WebsiteDevelopment() {
                 <h2 className="text-3xl font-bold text-white">How It Works</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
                 {process.map((step, index) => (
                   <motion.div
                     key={step.step}
