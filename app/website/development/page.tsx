@@ -177,24 +177,6 @@ export default function WebsiteDevelopment() {
             </motion.div>
 
             <div className="max-w-5xl mx-auto px-4">
-            {/* Homepage Screenshot */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.4 }}
-              className="mb-56"
-            >
-              <div className="relative rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-purple-500/5">
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-600/10 via-transparent to-cyan-500/10" />
-                <img
-                  src="/omni-homepage.png"
-                  alt="Omni AI — Website built and managed by our team"
-                  className="w-full h-auto relative"
-                />
-                <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#050505] to-transparent" />
-              </div>
-            </motion.div>
-
             {/* Core Services */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
