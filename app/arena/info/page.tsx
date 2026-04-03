@@ -553,7 +553,7 @@ export default function AgentsPage() {
                   </p>
 
                   {/* Tier Thresholds */}
-                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+                  <div className="flex flex-wrap justify-center gap-3 mb-6">
                     {[
                       { label: "Diamond", range: "2000+", gradient: "linear-gradient(135deg, #22d3ee, #ffffff)", icon: Crown },
                       { label: "Gold", range: "1600–1999", gradient: "linear-gradient(135deg, #f59e0b, #eab308)", icon: Trophy },
@@ -563,7 +563,7 @@ export default function AgentsPage() {
                     ].map((tier) => {
                       const TierIcon = tier.icon;
                       return (
-                        <div key={tier.label} className="rounded-xl p-3 text-center bg-white/[0.03]">
+                        <div key={tier.label} className="rounded-xl p-3 text-center bg-white/[0.03] w-[calc(50%-6px)] sm:w-[calc(20%-10px)]">
                           <div
                             className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center"
                             style={{ background: tier.gradient }}
