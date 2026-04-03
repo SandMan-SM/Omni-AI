@@ -22,76 +22,70 @@ export default async function Image() {
           overflow: "hidden",
         }}
       >
-        {/* Clock circle — abstract timer */}
+        {/* Clock circle — abstract timer (outer) */}
         <div
           style={{
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
+            top: "105px",
+            left: "390px",
             width: "420px",
             height: "420px",
-            borderRadius: "50%",
+            borderRadius: "210px",
+            display: "flex",
             border: "1px solid rgba(147,51,234,0.08)",
           }}
         />
+        {/* Clock circle — outer ring */}
         <div
           style={{
             position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
+            top: "75px",
+            left: "360px",
             width: "480px",
             height: "480px",
-            borderRadius: "50%",
+            borderRadius: "240px",
+            display: "flex",
             border: "1px solid rgba(147,51,234,0.04)",
           }}
         />
 
-        {/* Tick marks around clock */}
-        {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
-          <div
-            key={deg}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              width: "2px",
-              height: "12px",
-              background: `rgba(147,51,234,${deg % 90 === 0 ? 0.2 : 0.08})`,
-              transform: `translate(-50%, -50%) rotate(${deg}deg) translateY(-205px)`,
-            }}
-          />
-        ))}
+        {/* Tick marks around clock — static dots at 12 positions instead of rotated lines */}
+        {/* 12 o'clock (top center) */}
+        <div style={{ position: "absolute", top: "85px", left: "598px", width: "4px", height: "12px", display: "flex", background: "rgba(147,51,234,0.2)" }} />
+        {/* 3 o'clock (right) */}
+        <div style={{ position: "absolute", top: "309px", left: "800px", width: "12px", height: "4px", display: "flex", background: "rgba(147,51,234,0.2)" }} />
+        {/* 6 o'clock (bottom) */}
+        <div style={{ position: "absolute", top: "525px", left: "598px", width: "4px", height: "12px", display: "flex", background: "rgba(147,51,234,0.2)" }} />
+        {/* 9 o'clock (left) */}
+        <div style={{ position: "absolute", top: "309px", left: "388px", width: "12px", height: "4px", display: "flex", background: "rgba(147,51,234,0.2)" }} />
+        {/* 1 o'clock */}
+        <div style={{ position: "absolute", top: "120px", left: "700px", width: "4px", height: "12px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
+        {/* 2 o'clock */}
+        <div style={{ position: "absolute", top: "200px", left: "775px", width: "12px", height: "4px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
+        {/* 4 o'clock */}
+        <div style={{ position: "absolute", top: "420px", left: "775px", width: "12px", height: "4px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
+        {/* 5 o'clock */}
+        <div style={{ position: "absolute", top: "490px", left: "700px", width: "4px", height: "12px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
+        {/* 7 o'clock */}
+        <div style={{ position: "absolute", top: "490px", left: "496px", width: "4px", height: "12px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
+        {/* 8 o'clock */}
+        <div style={{ position: "absolute", top: "420px", left: "413px", width: "12px", height: "4px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
+        {/* 10 o'clock */}
+        <div style={{ position: "absolute", top: "200px", left: "413px", width: "12px", height: "4px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
+        {/* 11 o'clock */}
+        <div style={{ position: "absolute", top: "120px", left: "496px", width: "4px", height: "12px", display: "flex", background: "rgba(147,51,234,0.08)" }} />
 
         {/* Pulse glow at center */}
-        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "200px", height: "200px", borderRadius: "50%", background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)" }} />
+        <div style={{ position: "absolute", top: "215px", left: "500px", width: "200px", height: "200px", borderRadius: "100px", display: "flex", background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)" }} />
 
         {/* Calendar accent dots */}
-        {[
-          { top: "100px", left: "180px" },
-          { top: "130px", right: "200px" },
-          { top: "420px", left: "220px" },
-          { top: "400px", right: "240px" },
-        ].map((dot, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              top: dot.top,
-              left: dot.left ?? undefined,
-              right: (dot as any).right ?? undefined,
-              width: "6px",
-              height: "6px",
-              borderRadius: "50%",
-              background: i % 2 === 0 ? "#3b82f6" : "#a855f7",
-              boxShadow: `0 0 10px 2px ${i % 2 === 0 ? "rgba(59,130,246,0.4)" : "rgba(168,85,247,0.4)"}`,
-            }}
-          />
-        ))}
+        <div style={{ position: "absolute", top: "100px", left: "180px", width: "6px", height: "6px", borderRadius: "3px", display: "flex", background: "#3b82f6" }} />
+        <div style={{ position: "absolute", top: "130px", left: "994px", width: "6px", height: "6px", borderRadius: "3px", display: "flex", background: "#a855f7" }} />
+        <div style={{ position: "absolute", top: "420px", left: "220px", width: "6px", height: "6px", borderRadius: "3px", display: "flex", background: "#3b82f6" }} />
+        <div style={{ position: "absolute", top: "400px", left: "954px", width: "6px", height: "6px", borderRadius: "3px", display: "flex", background: "#a855f7" }} />
 
         {/* Top accent */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, transparent, #3b82f6, #9333ea, transparent)" }} />
+        <div style={{ position: "absolute", top: "0px", left: "0px", width: "1200px", height: "4px", display: "flex", background: "linear-gradient(90deg, transparent, #3b82f6, #9333ea, transparent)" }} />
 
         {/* Badge */}
         <div
@@ -106,9 +100,9 @@ export default async function Image() {
             marginBottom: "20px",
           }}
         >
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#3b82f6", boxShadow: "0 0 8px 2px rgba(59,130,246,0.5)" }} />
-          <span style={{ color: "#60a5fa", fontSize: "16px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase" as const }}>
-            Live Sessions
+          <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#3b82f6", display: "flex" }} />
+          <span style={{ color: "#60a5fa", fontSize: "16px", fontWeight: 600, letterSpacing: "2px" }}>
+            LIVE SESSIONS
           </span>
         </div>
 
@@ -146,28 +140,26 @@ export default async function Image() {
 
         {/* Pills */}
         <div style={{ display: "flex", gap: "12px" }}>
-          {["Webinars", "Live Demo", "Q&A", "Strategy"].map((label, i) => (
-            <div
-              key={label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                padding: "10px 20px",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: ["#3b82f6", "#a855f7", "#818cf8", "#60a5fa"][i] }} />
-              <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>{label}</span>
-            </div>
-          ))}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#3b82f6", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Webinars</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#a855f7", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Live Demo</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#818cf8", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Q&A</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#60a5fa", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Strategy</span>
+          </div>
         </div>
 
         {/* Bottom branding */}
-        <div style={{ position: "absolute", bottom: "28px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ position: "absolute", top: "574px", left: "0px", width: "1200px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
           <span style={{ color: "#a855f7", fontSize: "18px", fontWeight: 700 }}>Omni AI</span>
           <span style={{ color: "#4b5563", fontSize: "18px" }}>•</span>
           <span style={{ color: "#6b7280", fontSize: "16px" }}>omnileadsagi.com</span>

@@ -27,44 +27,27 @@ export default async function Image() {
           style={{
             position: "absolute",
             top: "40px",
-            left: "50%",
-            transform: "translateX(-50%)",
+            left: "350px",
             width: "500px",
             height: "500px",
             borderRadius: "250px 250px 0 0",
+            display: "flex",
             background: "radial-gradient(ellipse at top, rgba(147,51,234,0.1) 0%, transparent 60%)",
           }}
         />
 
         {/* Side accent lines */}
-        <div style={{ position: "absolute", top: "120px", left: "100px", width: "1px", height: "400px", background: "linear-gradient(180deg, transparent, rgba(147,51,234,0.2), transparent)" }} />
-        <div style={{ position: "absolute", top: "120px", right: "100px", width: "1px", height: "400px", background: "linear-gradient(180deg, transparent, rgba(59,130,246,0.2), transparent)" }} />
+        <div style={{ position: "absolute", top: "120px", left: "100px", width: "1px", height: "400px", display: "flex", background: "linear-gradient(180deg, transparent, rgba(147,51,234,0.2), transparent)" }} />
+        <div style={{ position: "absolute", top: "120px", left: "1099px", width: "1px", height: "400px", display: "flex", background: "linear-gradient(180deg, transparent, rgba(59,130,246,0.2), transparent)" }} />
 
         {/* Scattered dots — onboarding steps */}
-        {[
-          { top: "160px", left: "200px", size: "10px", color: "rgba(168,85,247,0.4)" },
-          { top: "220px", left: "300px", size: "8px", color: "rgba(129,140,248,0.35)" },
-          { top: "180px", right: "250px", size: "10px", color: "rgba(96,165,250,0.4)" },
-          { top: "240px", right: "320px", size: "7px", color: "rgba(168,85,247,0.3)" },
-        ].map((dot, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              top: dot.top,
-              left: dot.left ?? undefined,
-              right: (dot as any).right ?? undefined,
-              width: dot.size,
-              height: dot.size,
-              borderRadius: "50%",
-              background: dot.color,
-              boxShadow: `0 0 12px 3px ${dot.color}`,
-            }}
-          />
-        ))}
+        <div style={{ position: "absolute", top: "160px", left: "200px", width: "10px", height: "10px", borderRadius: "5px", display: "flex", background: "rgba(168,85,247,0.4)" }} />
+        <div style={{ position: "absolute", top: "220px", left: "300px", width: "8px", height: "8px", borderRadius: "4px", display: "flex", background: "rgba(129,140,248,0.35)" }} />
+        <div style={{ position: "absolute", top: "180px", left: "940px", width: "10px", height: "10px", borderRadius: "5px", display: "flex", background: "rgba(96,165,250,0.4)" }} />
+        <div style={{ position: "absolute", top: "240px", left: "873px", width: "7px", height: "7px", borderRadius: "4px", display: "flex", background: "rgba(168,85,247,0.3)" }} />
 
         {/* Top accent */}
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "linear-gradient(90deg, transparent, #22c55e, #9333ea, #3b82f6, transparent)" }} />
+        <div style={{ position: "absolute", top: "0px", left: "0px", width: "1200px", height: "4px", display: "flex", background: "linear-gradient(90deg, transparent, #22c55e, #9333ea, #3b82f6, transparent)" }} />
 
         {/* Badge */}
         <div
@@ -79,9 +62,9 @@ export default async function Image() {
             marginBottom: "20px",
           }}
         >
-          <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px 2px rgba(34,197,94,0.5)" }} />
-          <span style={{ color: "#4ade80", fontSize: "16px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase" as const }}>
-            Get Started
+          <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#22c55e", display: "flex" }} />
+          <span style={{ color: "#4ade80", fontSize: "16px", fontWeight: 600, letterSpacing: "2px" }}>
+            GET STARTED
           </span>
         </div>
 
@@ -119,28 +102,26 @@ export default async function Image() {
 
         {/* Pills */}
         <div style={{ display: "flex", gap: "12px" }}>
-          {["Free Signup", "AI Agents", "Lead Gen", "Automation"].map((label, i) => (
-            <div
-              key={label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                padding: "10px 20px",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div style={{ width: "6px", height: "6px", borderRadius: "50%", background: ["#22c55e", "#a855f7", "#818cf8", "#60a5fa"][i] }} />
-              <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>{label}</span>
-            </div>
-          ))}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#22c55e", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Free Signup</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#a855f7", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>AI Agents</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#818cf8", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Lead Gen</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#60a5fa", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Automation</span>
+          </div>
         </div>
 
         {/* Bottom branding */}
-        <div style={{ position: "absolute", bottom: "28px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ position: "absolute", top: "574px", left: "0px", width: "1200px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
           <span style={{ color: "#a855f7", fontSize: "18px", fontWeight: 700 }}>Omni AI</span>
           <span style={{ color: "#4b5563", fontSize: "18px" }}>•</span>
           <span style={{ color: "#6b7280", fontSize: "16px" }}>omnileadsagi.com</span>

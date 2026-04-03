@@ -22,42 +22,27 @@ export default async function Image() {
           overflow: "hidden",
         }}
       >
-        {/* ELO score bars — abstract chart visualization */}
-        {[
-          { left: "100px", height: "120px", opacity: 0.15 },
-          { left: "160px", height: "180px", opacity: 0.2 },
-          { left: "220px", height: "240px", opacity: 0.25 },
-          { left: "280px", height: "160px", opacity: 0.18 },
-          { right: "280px", height: "140px", opacity: 0.16 },
-          { right: "220px", height: "200px", opacity: 0.22 },
-          { right: "160px", height: "260px", opacity: 0.28 },
-          { right: "100px", height: "190px", opacity: 0.2 },
-        ].map((bar, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              bottom: "0px",
-              left: bar.left ?? undefined,
-              right: (bar as any).right ?? undefined,
-              width: "40px",
-              height: bar.height,
-              borderRadius: "4px 4px 0 0",
-              background: `linear-gradient(180deg, rgba(147,51,234,${bar.opacity}) 0%, rgba(99,102,241,${bar.opacity * 0.6}) 100%)`,
-            }}
-          />
-        ))}
+        {/* ELO score bars — left side */}
+        <div style={{ position: "absolute", top: "510px", left: "100px", width: "40px", height: "120px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.15) 0%, rgba(99,102,241,0.09) 100%)" }} />
+        <div style={{ position: "absolute", top: "450px", left: "160px", width: "40px", height: "180px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.2) 0%, rgba(99,102,241,0.12) 100%)" }} />
+        <div style={{ position: "absolute", top: "390px", left: "220px", width: "40px", height: "240px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.25) 0%, rgba(99,102,241,0.15) 100%)" }} />
+        <div style={{ position: "absolute", top: "470px", left: "280px", width: "40px", height: "160px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.18) 0%, rgba(99,102,241,0.108) 100%)" }} />
+        {/* ELO score bars — right side */}
+        <div style={{ position: "absolute", top: "490px", left: "880px", width: "40px", height: "140px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.16) 0%, rgba(99,102,241,0.096) 100%)" }} />
+        <div style={{ position: "absolute", top: "430px", left: "940px", width: "40px", height: "200px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.22) 0%, rgba(99,102,241,0.132) 100%)" }} />
+        <div style={{ position: "absolute", top: "370px", left: "1000px", width: "40px", height: "260px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.28) 0%, rgba(99,102,241,0.168) 100%)" }} />
+        <div style={{ position: "absolute", top: "440px", left: "1060px", width: "40px", height: "190px", borderRadius: "4px 4px 0 0", display: "flex", background: "linear-gradient(180deg, rgba(147,51,234,0.2) 0%, rgba(99,102,241,0.12) 100%)" }} />
 
         {/* Central glow */}
         <div
           style={{
             position: "absolute",
             top: "100px",
-            left: "50%",
-            transform: "translateX(-50%)",
+            left: "350px",
             width: "500px",
             height: "400px",
-            borderRadius: "50%",
+            borderRadius: "250px",
+            display: "flex",
             background: "radial-gradient(circle, rgba(147,51,234,0.1) 0%, transparent 60%)",
           }}
         />
@@ -66,10 +51,11 @@ export default async function Image() {
         <div
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
+            top: "0px",
+            left: "0px",
+            width: "1200px",
             height: "4px",
+            display: "flex",
             background: "linear-gradient(90deg, transparent, #9333ea, #6366f1, #3b82f6, transparent)",
           }}
         />
@@ -91,13 +77,13 @@ export default async function Image() {
             style={{
               width: "8px",
               height: "8px",
-              borderRadius: "50%",
+              borderRadius: "4px",
               background: "#a855f7",
-              boxShadow: "0 0 8px 2px rgba(168,85,247,0.5)",
+              display: "flex",
             }}
           />
-          <span style={{ color: "#c084fc", fontSize: "16px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase" as const }}>
-            How It Works
+          <span style={{ color: "#c084fc", fontSize: "16px", fontWeight: 600, letterSpacing: "2px" }}>
+            HOW IT WORKS
           </span>
         </div>
 
@@ -135,48 +121,35 @@ export default async function Image() {
 
         {/* Metric pills */}
         <div style={{ display: "flex", gap: "12px" }}>
-          {[
-            { label: "Revenue", color: "#a855f7" },
-            { label: "Streaks", color: "#f59e0b" },
-            { label: "Campaigns", color: "#818cf8" },
-            { label: "Activity", color: "#60a5fa" },
-          ].map((pill) => (
-            <div
-              key={pill.label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                padding: "10px 20px",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  background: pill.color,
-                  boxShadow: `0 0 6px 1px ${pill.color}44`,
-                }}
-              />
-              <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>
-                {pill.label}
-              </span>
-            </div>
-          ))}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#a855f7", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Revenue</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#f59e0b", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Streaks</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#818cf8", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Campaigns</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#60a5fa", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Activity</span>
+          </div>
         </div>
 
         {/* Bottom branding */}
         <div
           style={{
             position: "absolute",
-            bottom: "28px",
+            top: "574px",
+            left: "0px",
+            width: "1200px",
+            height: "28px",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: "10px",
           }}
         >

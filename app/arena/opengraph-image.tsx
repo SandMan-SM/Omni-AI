@@ -26,11 +26,11 @@ export default async function Image() {
         <div
           style={{
             position: "absolute",
-            bottom: "0px",
-            left: "50%",
-            transform: "translateX(-50%)",
+            top: "330px",
+            left: "300px",
             width: "600px",
             height: "300px",
+            display: "flex",
             background: "radial-gradient(ellipse at bottom, rgba(234,179,8,0.12) 0%, rgba(147,51,234,0.06) 40%, transparent 70%)",
           }}
         />
@@ -42,7 +42,8 @@ export default async function Image() {
             left: "60px",
             width: "300px",
             height: "300px",
-            borderRadius: "50%",
+            borderRadius: "150px",
+            display: "flex",
             background: "radial-gradient(circle, rgba(147,51,234,0.15) 0%, transparent 70%)",
           }}
         />
@@ -51,52 +52,88 @@ export default async function Image() {
           style={{
             position: "absolute",
             top: "80px",
-            right: "80px",
+            left: "840px",
             width: "280px",
             height: "280px",
-            borderRadius: "50%",
+            borderRadius: "140px",
+            display: "flex",
             background: "radial-gradient(circle, rgba(59,130,246,0.12) 0%, transparent 70%)",
           }}
         />
 
-        {/* Rank indicators — floating badges */}
-        {[
-          { top: "120px", left: "140px", label: "#2", bg: "rgba(192,192,192,0.08)", border: "rgba(192,192,192,0.2)", color: "#c0c0c0" },
-          { top: "90px", left: "540px", label: "#1", bg: "rgba(234,179,8,0.1)", border: "rgba(234,179,8,0.25)", color: "#eab308" },
-          { top: "140px", right: "160px", label: "#3", bg: "rgba(205,127,50,0.08)", border: "rgba(205,127,50,0.2)", color: "#cd7f32" },
-        ].map((badge, i) => (
-          <div
-            key={i}
-            style={{
-              position: "absolute",
-              top: badge.top,
-              left: badge.left ?? undefined,
-              right: (badge as any).right ?? undefined,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "48px",
-              height: "48px",
-              borderRadius: "50%",
-              background: badge.bg,
-              border: `1px solid ${badge.border}`,
-              fontSize: "18px",
-              fontWeight: 800,
-              color: badge.color,
-            }}
-          >
-            {badge.label}
-          </div>
-        ))}
+        {/* Rank badge #2 */}
+        <div
+          style={{
+            position: "absolute",
+            top: "120px",
+            left: "140px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "48px",
+            height: "48px",
+            borderRadius: "24px",
+            background: "rgba(192,192,192,0.08)",
+            border: "1px solid rgba(192,192,192,0.2)",
+            fontSize: "18px",
+            fontWeight: 800,
+            color: "#c0c0c0",
+          }}
+        >
+          #2
+        </div>
+        {/* Rank badge #1 */}
+        <div
+          style={{
+            position: "absolute",
+            top: "90px",
+            left: "540px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "48px",
+            height: "48px",
+            borderRadius: "24px",
+            background: "rgba(234,179,8,0.1)",
+            border: "1px solid rgba(234,179,8,0.25)",
+            fontSize: "18px",
+            fontWeight: 800,
+            color: "#eab308",
+          }}
+        >
+          #1
+        </div>
+        {/* Rank badge #3 */}
+        <div
+          style={{
+            position: "absolute",
+            top: "140px",
+            left: "992px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            width: "48px",
+            height: "48px",
+            borderRadius: "24px",
+            background: "rgba(205,127,50,0.08)",
+            border: "1px solid rgba(205,127,50,0.2)",
+            fontSize: "18px",
+            fontWeight: 800,
+            color: "#cd7f32",
+          }}
+        >
+          #3
+        </div>
 
         {/* Top accent bar — gold gradient for arena */}
         <div
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
+            top: "0px",
+            left: "0px",
+            width: "1200px",
             height: "4px",
+            display: "flex",
             background: "linear-gradient(90deg, transparent, #eab308, #9333ea, #3b82f6, transparent)",
           }}
         />
@@ -118,13 +155,13 @@ export default async function Image() {
             style={{
               width: "8px",
               height: "8px",
-              borderRadius: "50%",
+              borderRadius: "4px",
               background: "#eab308",
-              boxShadow: "0 0 8px 2px rgba(234,179,8,0.5)",
+              display: "flex",
             }}
           />
-          <span style={{ color: "#fbbf24", fontSize: "16px", fontWeight: 600, letterSpacing: "2px", textTransform: "uppercase" as const }}>
-            The Arena
+          <span style={{ color: "#fbbf24", fontSize: "16px", fontWeight: 600, letterSpacing: "2px" }}>
+            THE ARENA
           </span>
         </div>
 
@@ -162,48 +199,35 @@ export default async function Image() {
 
         {/* Tier pills */}
         <div style={{ display: "flex", gap: "12px" }}>
-          {[
-            { label: "Diamond", color: "#b9f2ff" },
-            { label: "Gold", color: "#fbbf24" },
-            { label: "Silver", color: "#c0c0c0" },
-            { label: "Bronze", color: "#cd7f32" },
-          ].map((tier) => (
-            <div
-              key={tier.label}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: "8px",
-                padding: "10px 20px",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-              }}
-            >
-              <div
-                style={{
-                  width: "8px",
-                  height: "8px",
-                  borderRadius: "50%",
-                  background: tier.color,
-                  boxShadow: `0 0 6px 1px ${tier.color}44`,
-                }}
-              />
-              <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>
-                {tier.label}
-              </span>
-            </div>
-          ))}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#b9f2ff", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Diamond</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#fbbf24", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Gold</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#c0c0c0", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Silver</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#cd7f32", display: "flex" }} />
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Bronze</span>
+          </div>
         </div>
 
         {/* Bottom branding */}
         <div
           style={{
             position: "absolute",
-            bottom: "28px",
+            top: "574px",
+            left: "0px",
+            width: "1200px",
+            height: "28px",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: "10px",
           }}
         >
