@@ -97,6 +97,42 @@ const tierNames: Record<number, string> = {
   4: "Ultimate Power",
 };
 
+// ── Value & Reach overrides per business ───────────────────────────────────
+
+const valueOverrides: Record<string, number> = {
+  'Omni AI': 250000,
+  'Love Thy Barber': 85000,
+  'BLK Diamond': 2500,
+  'CPS': 12000,
+  'Youngs Cabinet Refinishing': 45000,
+  'Leifson Built': 38000,
+};
+
+const reachOverrides: Record<string, number> = {
+  'Omni AI': 1200000,
+  'Love Thy Barber': 150000,
+  'BLK Diamond': 8500,
+  'CPS': 22000,
+  'Youngs Cabinet Refinishing': 35000,
+  'Leifson Built': 28000,
+};
+
+function formatCompact(n: number): string {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1)}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K`;
+  return String(n);
+}
+
+function formatValue(agent: Agent): string {
+  const val = valueOverrides[agent.businessName] ?? agent.revenue;
+  return `$${formatCompact(val)}`;
+}
+
+function formatReach(agent: Agent): string {
+  const reach = reachOverrides[agent.businessName] ?? (agent.activities + agent.campaigns);
+  return formatCompact(reach);
+}
+
 // ── Agentic Card ───────────────────────────────────────────────────────────
 
 function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
@@ -170,7 +206,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-            <p className="text-lg font-bold text-white">${agent.revenue.toLocaleString()}</p>
+            <p className="text-lg font-bold text-white">{formatValue(agent)}</p>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Value</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
@@ -184,7 +220,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-            <p className="text-lg font-bold text-white">{agent.activities + agent.campaigns}</p>
+            <p className="text-lg font-bold text-white">{formatReach(agent)}</p>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Reach</p>
           </div>
         </div>
