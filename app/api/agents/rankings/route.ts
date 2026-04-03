@@ -136,6 +136,9 @@ export async function GET() {
   // Manual tier overrides
   const tierOverrides: Record<string, number> = {
     'Omni AI': 4,
+    'Love Thy Barber': 2,
+    'Youngs Cabinet Refinishing': 0,
+    'Leifson Built': 0,
   };
 
   // Compute ELO for each profile and update

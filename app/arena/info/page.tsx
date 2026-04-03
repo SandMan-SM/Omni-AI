@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Trophy, TrendingUp, Flame, Shield, Crown, Zap,
+  Trophy, TrendingUp, Flame, Shield, Crown,
   Activity, Target, DollarSign, Users, ChevronDown,
   BarChart3, Cpu, Lock, Loader2,
 } from "lucide-react";
@@ -189,22 +189,40 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
           </div>
         </div>
 
-        {/* Streak + Tier */}
+        {/* Tier */}
         <div className="flex items-center justify-between pt-3 border-t border-white/5">
-          <div className="flex items-center gap-2">
-            <Flame className={`w-4 h-4 ${agent.tier >= 3 ? 'text-orange-500' : 'text-gray-600'}`} />
-            <span className={`text-sm font-medium ${agent.tier >= 3 ? 'text-orange-400' : 'text-gray-500'}`}>
-              Tier {agent.tier + 1}
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-gray-500">
-              {tierNames[agent.tier] || 'Apprentice'}
-            </span>
-            {agent.isPremium && (
-              <Zap className="w-3.5 h-3.5 text-yellow-400" />
-            )}
-          </div>
+          <span
+            className="text-sm font-bold uppercase tracking-wider"
+            style={
+              agent.rank === 'diamond'
+                ? { background: 'linear-gradient(135deg, #22d3ee, #ffffff, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                : agent.rank === 'gold'
+                  ? { background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                  : agent.rank === 'silver'
+                    ? { background: 'linear-gradient(135deg, #9ca3af, #d1d5db, #9ca3af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                    : agent.rank === 'bronze'
+                      ? { background: 'linear-gradient(135deg, #ea580c, #d97706, #ea580c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                      : { color: '#6b7280' }
+            }
+          >
+            TIER {agent.tier + 1}
+          </span>
+          <span
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={
+              agent.rank === 'diamond'
+                ? { background: 'linear-gradient(135deg, #22d3ee, #ffffff, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                : agent.rank === 'gold'
+                  ? { background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                  : agent.rank === 'silver'
+                    ? { background: 'linear-gradient(135deg, #9ca3af, #d1d5db, #9ca3af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                    : agent.rank === 'bronze'
+                      ? { background: 'linear-gradient(135deg, #ea580c, #d97706, #ea580c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }
+                      : { color: '#6b7280' }
+            }
+          >
+            {tierNames[agent.tier] || 'Apprentice'}
+          </span>
         </div>
 
         {/* Expandable Details */}
