@@ -156,7 +156,7 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
       >
         <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
           <Trophy className="w-4 h-4 inline mr-2 text-amber-400" />
-          Diamond VIP Sponsors have their own separate rankings — visible only to sponsors
+          VIP Sponsors have their own separate rankings — visible only to sponsors
         </p>
       </motion.div>
     </div>
