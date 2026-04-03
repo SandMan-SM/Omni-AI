@@ -140,7 +140,7 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
               {agent.rank === 1 && (
                 <div className="absolute top-0 right-0 z-10">
                   <div
-                    className="text-[10px] sm:text-xs font-bold pl-1.5 pr-3 py-0.5 rounded-tr-xl rounded-bl-md uppercase tracking-wider"
+                    className="text-[10px] sm:text-xs font-bold pl-1.5 pr-5 py-0.5 rounded-tr-xl rounded-bl-md uppercase tracking-wider"
                     style={{ background: 'linear-gradient(135deg, #f59e0b, #fbbf24, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
                   >
                     #1 RANKED
