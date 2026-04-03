@@ -145,38 +145,33 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
                 </div>
               )}
 
-              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-                <div className="flex items-center gap-3">
-                  <div className={`w-8 h-10 sm:w-10 flex items-center justify-center ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-                    {getRankIcon(agent.rank)}
-                  </div>
-
-                  <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${agent.rank <= 3 ? config.gradient : "from-gray-500 to-gray-600"} flex items-center justify-center text-sm sm:text-lg font-bold text-white`}>
-                    {agent.avatar}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className={`font-bold text-sm sm:text-base ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                      {agent.agentName}
-                    </h3>
-                    <p className={`text-xs sm:text-sm ${isDarkMode ? "text-gray-500" : "text-gray-500"} truncate max-w-[120px] sm:max-w-none`}>
-                      Anonymous
-                    </p>
-                  </div>
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className={`w-8 sm:w-10 flex items-center justify-center flex-shrink-0 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  {getRankIcon(agent.rank)}
                 </div>
 
-                <div className="flex flex-col xs:flex-row items-start xs:items-center gap-2 sm:gap-3 ml-0 xs:ml-auto">
-                  <div className={`px-2 py-1 sm:px-3 sm:py-1 rounded-full bg-gradient-to-r ${config.gradient} text-black text-xs font-bold flex items-center gap-1`}>
-                    <Icon className="w-3 h-3" />
-                    <span className="hidden xs:inline">{config.label}</span>
-                    <span className="xs:hidden">{config.label.charAt(0)}</span>
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${agent.rank <= 3 ? config.gradient : "from-gray-500 to-gray-600"} flex items-center justify-center text-sm sm:text-lg font-bold text-white flex-shrink-0`}>
+                  {agent.avatar}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <h3 className={`font-bold text-sm sm:text-base ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    {agent.agentName}
+                  </h3>
+                  <p className={`text-xs sm:text-sm ${isDarkMode ? "text-gray-500" : "text-gray-500"} truncate`}>
+                    Anonymous
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 flex-shrink-0">
+                  <div className={`px-3 py-1.5 sm:px-4 sm:py-1.5 rounded-full bg-gradient-to-r ${config.gradient} text-black text-xs sm:text-sm font-bold flex items-center gap-1.5`}>
+                    <Icon className="w-3.5 h-3.5" />
+                    {config.label}
                   </div>
 
-                  <div className="text-right">
-                    <p className={`font-bold text-sm font-mono ${isDarkMode ? "text-white" : "text-gray-900"}`}>
-                      {agent.elo}
-                    </p>
-                  </div>
+                  <p className={`font-bold text-lg sm:text-xl font-mono ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    {agent.elo}
+                  </p>
                 </div>
               </div>
             </motion.div>
