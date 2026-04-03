@@ -1,15 +1,10 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 import { logEvent } from "@/lib/events";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// POST + PATCH /api/admin/newsletter-toggle
+// POST + PATCH /api/admin/newsletter-toggle (admin only)
 // Toggle newsletter_subscribed on a profile and sync to newsletter_subscriptions
-// Accepts: { profileId, subscribed, tier?: 'premium' | 'subscriber' | 'deactivated' }
 export async function POST(req: Request) {
   return handleToggle(req);
 }
@@ -19,6 +14,11 @@ export async function PATCH(req: Request) {
 }
 
 async function handleToggle(req: Request) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
+
   try {
     const body = await req.json();
     const { profileId, subscribed, tier } = body;
@@ -54,7 +54,6 @@ async function handleToggle(req: Request) {
       const firstName = data.first_name || data.name?.split(' ')[0] || '';
 
       if (isActive) {
-        // Determine the subscription tier
         const subTier = isPremiumTier ? 'premium' : (data.is_premium ? 'premium' : 'subscribed');
         const { error: upsertError } = await sb
           .from("newsletter_subscriptions")
@@ -72,7 +71,6 @@ async function handleToggle(req: Request) {
           console.error('newsletter_subscriptions upsert error:', upsertError.message);
         }
       } else {
-        // Deactivated — set subscribed=false but keep the row
         const { error: updateError } = await sb
           .from("newsletter_subscriptions")
           .update({ subscribed: false, subscription_tier: 'unsubscribed' })

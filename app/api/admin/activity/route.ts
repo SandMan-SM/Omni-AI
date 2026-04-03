@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 import { logEvent } from "@/lib/events";
 
 export const dynamic = "force-dynamic";
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
-// GET /api/admin/activity?profile_id=xxx — fetch activity for a user (or all)
+// GET /api/admin/activity?profile_id=xxx — fetch activity (admin only)
 export async function GET(req: NextRequest) {
-  const sb = getSupabase();
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
   const profileId = req.nextUrl.searchParams.get("profile_id");
   const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
 
@@ -30,9 +27,13 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ activities: data || [] });
 }
 
-// POST /api/admin/activity — log a new activity
+// POST /api/admin/activity — log a new activity (admin only)
 export async function POST(req: NextRequest) {
-  const sb = getSupabase();
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
+
   try {
     const body = await req.json();
     const { profile_id, type, subject, body: msgBody, channel, direction } = body;

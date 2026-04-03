@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// POST /api/admin/newsletter-import — import subscribers from CSV
+// POST /api/admin/newsletter-import — import subscribers from CSV (admin only)
 export async function POST(req: Request) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
+
   try {
     const text = await req.text();
     const lines = text.split("\n").map(l => l.trim()).filter(Boolean);

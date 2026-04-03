@@ -12,7 +12,7 @@ export default async function TwitterImage({ params }: { params: { slug: string 
   // Use service role so Twitter cards always generate — no RLS gating on shared links
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { data: post } = await supabase

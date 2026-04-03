@@ -1,103 +1,55 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-import { alertCritical, sendOmniUpdate } from "@/lib/telegram";
-
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createAdminClient } from "@/lib/supabase/admin";
+import { alertCritical } from "@/lib/telegram";
 
 export interface HealthStatus {
   status: "ok" | "degraded" | "down";
   timestamp: string;
-  checks: {
-    database:   CheckResult;
-    auth:       CheckResult;
-    newsletter: CheckResult;
-    api:        CheckResult;
-  };
   uptime_ms: number;
-}
-
-interface CheckResult {
-  ok:      boolean;
-  latency: number;
-  error?:  string;
-}
-
-async function checkDatabase(): Promise<CheckResult> {
-  const start = Date.now();
-  try {
-    const { error } = await sb.from("profiles").select("id").limit(1);
-    return { ok: !error, latency: Date.now() - start, error: error?.message };
-  } catch (e: any) {
-    return { ok: false, latency: Date.now() - start, error: e.message };
-  }
-}
-
-async function checkAuth(): Promise<CheckResult> {
-  const start = Date.now();
-  try {
-    const { error } = await sb.from("user_credentials").select("id").limit(1);
-    return { ok: !error, latency: Date.now() - start, error: error?.message };
-  } catch (e: any) {
-    return { ok: false, latency: Date.now() - start, error: e.message };
-  }
-}
-
-async function checkNewsletter(): Promise<CheckResult> {
-  const start = Date.now();
-  try {
-    const { error } = await sb.from("newsletter_sends").select("id").limit(1);
-    return { ok: !error, latency: Date.now() - start, error: error?.message };
-  } catch (e: any) {
-    return { ok: false, latency: Date.now() - start, error: e.message };
-  }
 }
 
 const startTime = Date.now();
 
 export async function GET(req: Request) {
+  // Require a secret token for detailed health checks
   const url = new URL(req.url);
-  const notify = url.searchParams.get("notify") === "true";
+  const token = url.searchParams.get("token");
+  const expectedToken = process.env.CRON_SECRET;
 
-  const [database, auth, newsletter] = await Promise.all([
-    checkDatabase(),
-    checkAuth(),
-    checkNewsletter(),
-  ]);
-
-  const api: CheckResult = { ok: true, latency: 0 };
-
-  const allChecks = [database, auth, newsletter, api];
-  const failedChecks = allChecks.filter(c => !c.ok);
-  const status: HealthStatus["status"] =
-    failedChecks.length === 0 ? "ok" :
-    failedChecks.length <= 1  ? "degraded" : "down";
-
-  const result: HealthStatus = {
-    status,
-    timestamp: new Date().toISOString(),
-    checks: { database, auth, newsletter, api },
-    uptime_ms: Date.now() - startTime,
-  };
-
-  // Alert Telegram on critical failures
-  if (notify && status !== "ok") {
-    const failedNames = [
-      !database.ok   ? `Database (${database.error})` : null,
-      !auth.ok       ? `Auth (${auth.error})` : null,
-      !newsletter.ok ? `Newsletter (${newsletter.error})` : null,
-    ].filter(Boolean).join(", ");
-
-    await alertCritical(
-      `System health check failed: ${status.toUpperCase()}`,
-      `Failed checks: ${failedNames}`
+  // Public health check — only returns status, no internals
+  if (!token || token !== expectedToken) {
+    return NextResponse.json(
+      { status: "ok", timestamp: new Date().toISOString() },
+      { headers: { "Cache-Control": "no-store" } }
     );
   }
 
-  return NextResponse.json(result, {
-    status: status === "down" ? 503 : 200,
-    headers: { "Cache-Control": "no-store" },
-  });
+  // Authenticated health check — full details
+  const sb = createAdminClient();
+  const notify = url.searchParams.get("notify") === "true";
+
+  const checks: Record<string, { ok: boolean; latency: number; error?: string }> = {};
+
+  for (const table of ["profiles", "user_credentials", "newsletter_sends"]) {
+    const start = Date.now();
+    try {
+      const { error } = await sb.from(table).select("id").limit(1);
+      checks[table] = { ok: !error, latency: Date.now() - start, error: error?.message };
+    } catch (e: any) {
+      checks[table] = { ok: false, latency: Date.now() - start, error: e.message };
+    }
+  }
+
+  const failedChecks = Object.entries(checks).filter(([, c]) => !c.ok);
+  const status = failedChecks.length === 0 ? "ok" : failedChecks.length <= 1 ? "degraded" : "down";
+
+  if (notify && status !== "ok") {
+    const failedNames = failedChecks.map(([name, c]) => `${name} (${c.error})`).join(", ");
+    await alertCritical(`System health: ${status.toUpperCase()}`, `Failed: ${failedNames}`);
+  }
+
+  return NextResponse.json(
+    { status, timestamp: new Date().toISOString(), checks, uptime_ms: Date.now() - startTime },
+    { status: status === "down" ? 503 : 200, headers: { "Cache-Control": "no-store" } }
+  );
 }

@@ -1,15 +1,8 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 // ELO rank thresholds
 function computeRank(elo: number): 'diamond' | 'gold' | 'silver' | 'bronze' | 'unranked' {
@@ -91,7 +84,7 @@ function computeElo(profile: any): { elo: number; wins: number; losses: number; 
 
 // GET /api/agents/rankings — fetch all agents with computed ELO
 export async function GET() {
-  const sb = getSupabase();
+  const sb = createAdminClient();
 
   // Fetch profiles with business names (include admins with agent_name set)
   const { data: profiles, error } = await sb

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 import { logEvent } from "@/lib/events";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// GET /api/admin/campaigns — fetch all campaigns (optionally by profile_id)
+// GET /api/admin/campaigns — fetch all campaigns (admin only)
 export async function GET(req: NextRequest) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
   const profileId = req.nextUrl.searchParams.get("profile_id");
 
   let query = sb
@@ -23,8 +23,13 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ campaigns: data || [] });
 }
 
-// POST /api/admin/campaigns — create a new campaign
+// POST /api/admin/campaigns — create a new campaign (admin only)
 export async function POST(req: NextRequest) {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
+
   try {
     const body = await req.json();
     const { profile_id, name, status, type, budget, platform, description, thumbnail } = body;

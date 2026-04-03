@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { runDailyNewsletter, runPremiumNewsletter, generateDrafts, sendMorningDebrief } from '@/lib/newsletter-sender';
 import { logEvent } from '@/lib/events';
 
@@ -16,12 +16,9 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
 
-  // Draft generation is safe (no sends) — allow without secret for manual triggers
-  // Sending still requires CRON_SECRET
-  if (action !== 'generate-drafts') {
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+  // ALL cron actions require CRON_SECRET
+  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   try {
@@ -29,10 +26,7 @@ export async function GET(request: Request) {
 
     // Draft generation mode — use service role key for DB writes
     if (action === 'generate-drafts') {
-      const serviceSupabase = createServiceClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-      );
+      const serviceSupabase = createAdminClient();
       const drafts = await generateDrafts(serviceSupabase as any);
 
       console.log(

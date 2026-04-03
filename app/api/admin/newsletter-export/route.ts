@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// GET /api/admin/newsletter-export — export subscribers as CSV
+// GET /api/admin/newsletter-export — export subscribers as CSV (admin only)
 export async function GET() {
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
+
   const [profilesRes, subsRes] = await Promise.all([
     sb.from("profiles").select("email, name, first_name, business_name, newsletter_subscribed"),
     sb.from("newsletter_subscriptions").select("email, first_name, subscribed, created_at"),

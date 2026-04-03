@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
+import { hashPassword } from "@/lib/password";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
-
-// POST /api/admin/users — create a new user
+// POST /api/admin/users — create a new user (admin only)
 export async function POST(req: NextRequest) {
+  // Auth guard
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const supabase = createAdminClient();
+
   try {
     const body = await req.json();
     const { username, password, email, name, role, tier, phone, business_name, crm_status, lead_score } = body;
@@ -56,10 +59,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: profileError.message }, { status: 500 });
     }
 
+    // Hash password before storing
+    const hashedPassword = await hashPassword(password);
+
     // Create credentials
     const { error: credError } = await supabase
       .from("user_credentials")
-      .insert({ username, password_hash: password, profile_id: profile.id });
+      .insert({ username, password_hash: hashedPassword, profile_id: profile.id });
 
     if (credError) {
       // Rollback profile

@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 import { generateFreeContent, generatePremiumContent } from "@/lib/newsletter-sender";
 
-function getSb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
-// GET /api/admin/newsletter-history
+// GET /api/admin/newsletter-history (admin only)
 export async function GET() {
-  const sb = getSb();
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
+
   const [sendsRes, profilesRes, postsRes, websiteSubsRes] = await Promise.all([
     sb
       .from("newsletter_sends")
@@ -42,10 +40,13 @@ export async function GET() {
   return res;
 }
 
-// POST /api/admin/newsletter-history?action=regenerate-drafts
-// Uses the SAME DB connection as the GET to guarantee consistency
+// POST /api/admin/newsletter-history?action=regenerate-drafts (admin only)
 export async function POST(request: Request) {
-  const sb = getSb();
+  const auth = await requireAdmin();
+  if (auth.error) return auth.error;
+
+  const sb = createAdminClient();
+
   const { searchParams } = new URL(request.url);
   const action = searchParams.get("action");
 
