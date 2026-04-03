@@ -166,13 +166,12 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-                  <div className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-gradient-to-r ${config.gradient} text-black text-[10px] sm:text-xs font-bold flex items-center gap-1`}>
-                    <Icon className="w-3 h-3" />
-                    <span className="hidden xs:inline">{config.label}</span>
-                    <span className="inline xs:hidden">{config.label}</span>
+                <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+                  <div className={`px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-gradient-to-r ${config.gradient} text-black text-[9px] sm:text-[11px] font-bold flex items-center gap-0.5 sm:gap-1`}>
+                    <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                    {config.label}
                   </div>
-                  <p className={`font-bold text-sm sm:text-lg font-mono ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                  <p className={`font-bold text-sm sm:text-base font-mono ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                     {agent.elo}
                   </p>
                 </div>
