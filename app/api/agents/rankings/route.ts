@@ -1,17 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { eloOverrides, tierOverrides, computeRank } from '@/lib/arena/config';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-// ELO rank thresholds
-function computeRank(elo: number): 'diamond' | 'gold' | 'silver' | 'bronze' | 'unranked' {
-  if (elo >= 2000) return 'diamond';
-  if (elo >= 1600) return 'gold';
-  if (elo >= 1300) return 'silver';
-  if (elo >= 1100) return 'bronze';
-  return 'unranked';
-}
 
 // Compute ELO from business performance metrics
 function computeElo(profile: any): { elo: number; wins: number; losses: number; streak: number } {
@@ -119,21 +112,6 @@ export async function GET() {
   (campaigns || []).forEach(c => {
     campaignCounts[c.profile_id] = (campaignCounts[c.profile_id] || 0) + 1;
   });
-
-  // Manual ELO overrides for specific businesses
-  const eloOverrides: Record<string, number> = {
-    'Love Thy Barber': 1750,
-    'Youngs Cabinet Refinishing': 1150,
-    'Leifson Built': 1100,
-  };
-
-  // Manual tier overrides
-  const tierOverrides: Record<string, number> = {
-    'Omni AI': 4,
-    'Love Thy Barber': 2,
-    'Youngs Cabinet Refinishing': 0,
-    'Leifson Built': 0,
-  };
 
   // Compute ELO for each profile and update
   const agents = (profiles || []).map((p, index) => {

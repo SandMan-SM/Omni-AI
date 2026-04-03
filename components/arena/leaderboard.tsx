@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Crown, Flame, Shield, Lock, Search, Loader2, X, DollarSign, Target, Activity, Users, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
+import { rankConfig, tierNames, valueOverrides, reachOverrides, formatCompact, getRating } from "@/lib/arena/config";
 
 interface LeaderboardProps {
   isDarkMode: boolean;
@@ -27,94 +28,6 @@ interface FullAgent {
   leaderboardPosition: number;
 }
 
-const rankConfig = {
-  diamond: {
-    gradient: "from-cyan-400 to-white",
-    cssGradient: "linear-gradient(135deg, #22d3ee, #ffffff)",
-    bgGradient: "from-cyan-500/20 to-transparent",
-    icon: Crown,
-    label: "Diamond",
-    borderColor: "border-cyan-400/30",
-    cssBorder: "rgba(34, 211, 238, 0.3)",
-    glowColor: "rgba(34, 211, 238, 0.15)",
-    chromeStyle: { background: 'linear-gradient(135deg, #22d3ee, #ffffff, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
-  },
-  gold: {
-    gradient: "from-amber-300 to-yellow-500",
-    cssGradient: "linear-gradient(135deg, #f59e0b, #eab308)",
-    bgGradient: "from-amber-500/20 to-transparent",
-    icon: Flame,
-    label: "Gold",
-    borderColor: "border-amber-400/30",
-    cssBorder: "rgba(245, 158, 11, 0.3)",
-    glowColor: "rgba(245, 158, 11, 0.15)",
-    chromeStyle: { background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
-  },
-  silver: {
-    gradient: "from-gray-300 to-gray-400",
-    cssGradient: "linear-gradient(135deg, #9ca3af, #d1d5db)",
-    bgGradient: "from-gray-400/20 to-transparent",
-    icon: Shield,
-    label: "Silver",
-    borderColor: "border-gray-400/30",
-    cssBorder: "rgba(156, 163, 175, 0.3)",
-    glowColor: "rgba(156, 163, 175, 0.1)",
-    chromeStyle: { background: 'linear-gradient(135deg, #9ca3af, #d1d5db, #9ca3af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
-  },
-  bronze: {
-    gradient: "from-orange-600 to-amber-700",
-    cssGradient: "linear-gradient(135deg, #ea580c, #d97706)",
-    bgGradient: "from-orange-600/20 to-transparent",
-    icon: Shield,
-    label: "Bronze",
-    borderColor: "border-orange-500/30",
-    cssBorder: "rgba(234, 88, 12, 0.3)",
-    glowColor: "rgba(234, 88, 12, 0.1)",
-    chromeStyle: { background: 'linear-gradient(135deg, #ea580c, #d97706, #ea580c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
-  },
-  unranked: {
-    gradient: "from-gray-500 to-gray-600",
-    cssGradient: "linear-gradient(135deg, #6b7280, #4b5563)",
-    bgGradient: "from-gray-500/20 to-transparent",
-    icon: Lock,
-    label: "Unranked",
-    borderColor: "border-gray-500/30",
-    cssBorder: "rgba(107, 114, 128, 0.2)",
-    glowColor: "rgba(107, 114, 128, 0.05)",
-    chromeStyle: { color: '#6b7280' } as React.CSSProperties,
-  },
-};
-
-const tierNames: Record<number, string> = {
-  0: "Apprentice",
-  1: "Master",
-  2: "Royal",
-  3: "Empire",
-  4: "Ultimate Power",
-};
-
-const valueOverrides: Record<string, number> = {
-  'Omni AI': 250000, 'Love Thy Barber': 85000, 'BLK Diamond': 2500,
-  'CPS': 12000, 'Youngs Cabinet Refinishing': 45000, 'Leifson Built': 38000,
-};
-
-const reachOverrides: Record<string, number> = {
-  'Omni AI': 1200000, 'Love Thy Barber': 150000, 'BLK Diamond': 8500,
-  'CPS': 22000, 'Youngs Cabinet Refinishing': 35000, 'Leifson Built': 28000,
-};
-
-function formatCompact(n: number): string {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1)}M`;
-  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K`;
-  return String(n);
-}
-
-function getRating(businessName: string): string {
-  if (businessName === 'BLK Diamond') return '1.0';
-  if (businessName === 'Youngs Cabinet Refinishing') return '4.4';
-  if (businessName === 'Leifson Built') return '4.3';
-  return '5.0';
-}
 
 // ── Agent Card Modal ─────────────────────────────────────────────────────
 

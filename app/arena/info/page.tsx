@@ -13,6 +13,7 @@ import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal } from "@/components/book-demo-modal";
 import { AuthModal } from "@/components/auth-modal";
+import { rankConfig, tierNames, valueOverrides, reachOverrides, formatCompact } from "@/lib/arena/config";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -39,89 +40,6 @@ interface Agent {
   leaderboardPosition: number;
 }
 
-// ── Rank Config ────────────────────────────────────────────────────────────
-
-const rankConfig = {
-  diamond: {
-    label: "Diamond",
-    gradient: "linear-gradient(135deg, #22d3ee, #ffffff)",
-    borderColor: "rgba(34, 211, 238, 0.3)",
-    glowColor: "rgba(34, 211, 238, 0.15)",
-    textColor: "#22d3ee",
-    icon: Crown,
-    minElo: 2000,
-  },
-  gold: {
-    label: "Gold",
-    gradient: "linear-gradient(135deg, #f59e0b, #eab308)",
-    borderColor: "rgba(245, 158, 11, 0.3)",
-    glowColor: "rgba(245, 158, 11, 0.15)",
-    textColor: "#f59e0b",
-    icon: Trophy,
-    minElo: 1600,
-  },
-  silver: {
-    label: "Silver",
-    gradient: "linear-gradient(135deg, #9ca3af, #d1d5db)",
-    borderColor: "rgba(156, 163, 175, 0.3)",
-    glowColor: "rgba(156, 163, 175, 0.1)",
-    textColor: "#9ca3af",
-    icon: Shield,
-    minElo: 1300,
-  },
-  bronze: {
-    label: "Bronze",
-    gradient: "linear-gradient(135deg, #ea580c, #d97706)",
-    borderColor: "rgba(234, 88, 12, 0.3)",
-    glowColor: "rgba(234, 88, 12, 0.1)",
-    textColor: "#ea580c",
-    icon: Shield,
-    minElo: 1100,
-  },
-  unranked: {
-    label: "Unranked",
-    gradient: "linear-gradient(135deg, #6b7280, #4b5563)",
-    borderColor: "rgba(107, 114, 128, 0.2)",
-    glowColor: "rgba(107, 114, 128, 0.05)",
-    textColor: "#6b7280",
-    icon: Lock,
-    minElo: 0,
-  },
-};
-
-const tierNames: Record<number, string> = {
-  0: "Apprentice",
-  1: "Master",
-  2: "Royal",
-  3: "Empire",
-  4: "Ultimate Power",
-};
-
-// ── Value & Reach overrides per business ───────────────────────────────────
-
-const valueOverrides: Record<string, number> = {
-  'Omni AI': 250000,
-  'Love Thy Barber': 85000,
-  'BLK Diamond': 2500,
-  'CPS': 12000,
-  'Youngs Cabinet Refinishing': 45000,
-  'Leifson Built': 38000,
-};
-
-const reachOverrides: Record<string, number> = {
-  'Omni AI': 1200000,
-  'Love Thy Barber': 150000,
-  'BLK Diamond': 8500,
-  'CPS': 22000,
-  'Youngs Cabinet Refinishing': 35000,
-  'Leifson Built': 28000,
-};
-
-function formatCompact(n: number): string {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1)}M`;
-  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K`;
-  return String(n);
-}
 
 function formatValue(agent: Agent): string {
   const val = valueOverrides[agent.businessName] ?? agent.revenue;
@@ -159,14 +77,14 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
 
       <div
         className="relative rounded-2xl p-6 bg-[#0a0a0a]/80 backdrop-blur-sm transition-all"
-        style={{ border: `1px solid ${config.borderColor}` }}
+        style={{ border: `1px solid ${config.cssBorder}` }}
       >
         {/* Header: Avatar + Rank + Status */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3">
             <div
               className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-lg"
-              style={{ background: config.gradient }}
+              style={{ background: config.cssGradient }}
             >
               {agent.avatar}
             </div>
@@ -190,7 +108,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
         <div className="flex items-center gap-2 mb-4">
           <div
             className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 text-black"
-            style={{ background: config.gradient }}
+            style={{ background: config.cssGradient }}
           >
             <Icon className="w-3 h-3" />
             {config.label}
@@ -349,7 +267,7 @@ function LeaderboardTable({ agents }: { agents: Agent[] }) {
               </span>
               <div
                 className="w-10 h-10 rounded-lg flex items-center justify-center text-sm font-bold text-white flex-shrink-0"
-                style={{ background: config.gradient }}
+                style={{ background: config.cssGradient }}
               >
                 {agent.avatar}
               </div>
@@ -359,7 +277,7 @@ function LeaderboardTable({ agents }: { agents: Agent[] }) {
               </div>
               <div
                 className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-black flex items-center gap-1"
-                style={{ background: config.gradient }}
+                style={{ background: config.cssGradient }}
               >
                 <Icon className="w-2.5 h-2.5" />
                 {config.label}
@@ -410,7 +328,7 @@ function RankDistribution({ agents }: { agents: Agent[] }) {
                   animate={{ width: `${pct}%` }}
                   transition={{ duration: 0.8, delay: 0.2 }}
                   className="h-full rounded-full"
-                  style={{ background: config.gradient }}
+                  style={{ background: config.cssGradient }}
                 />
               </div>
               <span className="text-xs text-gray-500 w-12 text-right">{count} ({pct}%)</span>
