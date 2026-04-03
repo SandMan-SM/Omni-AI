@@ -1,6 +1,5 @@
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Trophy, TrendingUp, Flame, Zap, Shield, Lock } from "lucide-react";
-import { rankConfig } from "@/lib/arena/config";
 
 interface Agent {
   id: string;
@@ -24,6 +23,43 @@ interface AgentCardProps {
   isDarkMode: boolean;
 }
 
+const rankConfig = {
+  diamond: {
+    gradient: "from-cyan-400 to-white",
+    bgGradient: "from-cyan-500/20 to-white/10",
+    border: "border-cyan-400/30",
+    icon: Trophy,
+    label: "Diamond",
+  },
+  gold: {
+    gradient: "from-amber-300 to-yellow-500",
+    bgGradient: "from-amber-500/20 to-yellow-500/10",
+    border: "border-amber-400/30",
+    icon: Flame,
+    label: "Gold",
+  },
+  silver: {
+    gradient: "from-gray-300 to-gray-400",
+    bgGradient: "from-gray-400/20 to-gray-300/10",
+    border: "border-gray-400/30",
+    icon: Shield,
+    label: "Silver",
+  },
+  bronze: {
+    gradient: "from-orange-600 to-amber-700",
+    bgGradient: "from-orange-600/20 to-amber-700/10",
+    border: "border-orange-500/30",
+    icon: Shield,
+    label: "Bronze",
+  },
+  unranked: {
+    gradient: "from-gray-500 to-gray-600",
+    bgGradient: "from-gray-500/20 to-gray-600/10",
+    border: "border-gray-500/30",
+    icon: Lock,
+    label: "Unranked",
+  },
+};
 
 const colorMap = {
   cyan: { from: "from-cyan-500", to: "to-cyan-600" },
