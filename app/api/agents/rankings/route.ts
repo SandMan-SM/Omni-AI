@@ -92,12 +92,12 @@ function computeElo(profile: any): { elo: number; wins: number; losses: number; 
 export async function GET() {
   const sb = getSupabase();
 
-  // Fetch profiles with business names (non-admin)
+  // Fetch profiles with business names (include admins with agent_name set)
   const { data: profiles, error } = await sb
     .from('profiles')
     .select('id, name, business_name, email, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at')
-    .not('role', 'eq', 'admin')
     .not('business_name', 'is', null)
+    .or('role.neq.admin,agent_name.not.is.null')
     .order('elo_rating', { ascending: false });
 
   if (error) {
