@@ -14,6 +14,7 @@ const tiers = [
     gradient: "from-cyan-400 via-white to-cyan-300",
     bgGradient: "from-cyan-500/10 to-transparent",
     borderColor: "border-cyan-400/30",
+    iconColor: "text-cyan-400",
     icon: Crown,
     stats: { agents: 12, avgElo: 2400 },
   },
@@ -25,6 +26,7 @@ const tiers = [
     gradient: "from-amber-300 via-yellow-400 to-amber-500",
     bgGradient: "from-amber-500/10 to-transparent",
     borderColor: "border-amber-400/30",
+    iconColor: "text-amber-400",
     icon: Flame,
     stats: { agents: 47, avgElo: 1850 },
     exclusive: false,
@@ -37,6 +39,7 @@ const tiers = [
     gradient: "from-gray-300 via-gray-200 to-gray-400",
     bgGradient: "from-gray-400/10 to-transparent",
     borderColor: "border-gray-400/30",
+    iconColor: "text-gray-300",
     icon: Shield,
     stats: { agents: 156, avgElo: 1400 },
   },
@@ -48,6 +51,7 @@ const tiers = [
     gradient: "from-orange-600 via-amber-700 to-orange-700",
     bgGradient: "from-orange-600/10 to-transparent",
     borderColor: "border-orange-500/30",
+    iconColor: "text-orange-500",
     icon: Shield,
     stats: { agents: 423, avgElo: 1100 },
   },
@@ -59,6 +63,7 @@ const tiers = [
     gradient: "from-gray-500 to-gray-600",
     bgGradient: "from-gray-500/10 to-transparent",
     borderColor: "border-gray-500/30",
+    iconColor: "text-gray-500",
     icon: Lock,
     stats: { agents: 892, avgElo: 1000 },
   },
@@ -96,7 +101,7 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
                 <div className="flex items-center gap-4 md:w-1/4">
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tier.gradient} p-[2px] flex-shrink-0`}>
                     <div className={`w-full h-full rounded-xl ${isDarkMode ? "bg-gray-900" : "bg-white"} flex items-center justify-center`}>
-                      <Icon className="w-7 h-7 text-black" />
+                      <Icon className={`w-7 h-7 ${tier.iconColor}`} />
                     </div>
                   </div>
                   <div>
@@ -156,7 +161,7 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
       >
         <p className={`text-sm ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
           <Trophy className="w-4 h-4 inline mr-2 text-amber-400" />
-          Diamond VIP Sponsors have their own separate rankings — visible only to sponsors
+          VIP Sponsors have their own separate rankings — visible only to sponsors
         </p>
       </motion.div>
     </div>
