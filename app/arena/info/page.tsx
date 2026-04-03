@@ -169,18 +169,16 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
         {/* Stats Grid */}
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-            <p className="text-lg font-bold text-green-400">{agent.wins}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Wins</p>
+            <p className="text-lg font-bold text-green-400">${agent.revenue.toLocaleString()}</p>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Value</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-            <p className="text-lg font-bold text-red-400">{agent.losses}</p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Losses</p>
+            <p className="text-lg font-bold" style={{ color: config.textColor }}>{agent.elo}</p>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-            <p className="text-lg font-bold" style={{ color: config.textColor }}>
-              {agent.winRate}%
-            </p>
-            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Win Rate</p>
+            <p className="text-lg font-bold text-cyan-400">{agent.activities + agent.campaigns}</p>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider">Reach</p>
           </div>
         </div>
 
