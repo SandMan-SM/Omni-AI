@@ -36,6 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       "crm_status", "lead_score", "satisfaction_score",
       "last_contacted", "crm_notes", "newsletter_subscribed",
       "metadata",
+      "agent_name", "agent_status", "elo_rating", "elo_rank",
     ];
 
     const updates: Record<string, any> = { updated_at: new Date().toISOString() };

@@ -234,7 +234,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [tab, setTab] = useState<"profile" | "account" | "crm" | "activity">("profile");
+  const [tab, setTab] = useState<"profile" | "account" | "crm" | "activity" | "arena">("profile");
   const [currentPassword, setCurrentPassword] = useState<string | null>(null);
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [phoneCountry, setPhoneCountry] = useState("+1");
@@ -281,6 +281,11 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
     lead_score: p.lead_score || "cold",
     satisfaction_score: String(p.satisfaction_score ?? ""),
     crm_notes: p.crm_notes || "",
+    // Arena
+    agent_name: p.agent_name || "",
+    agent_status: p.agent_status || "active",
+    elo_rating: String(p.elo_rating ?? 1000),
+    elo_rank: p.elo_rank || "unranked",
   });
 
   const [form, setForm] = useState(buildForm(u));
@@ -333,6 +338,10 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
         lead_score: form.lead_score,
         satisfaction_score: form.satisfaction_score ? parseInt(form.satisfaction_score) : null,
         crm_notes: form.crm_notes || null,
+        agent_name: form.agent_name || null,
+        agent_status: form.agent_status || "active",
+        elo_rating: form.elo_rating ? parseInt(form.elo_rating) : 1000,
+        elo_rank: form.elo_rank || "unranked",
       };
 
       // Only include password if it was changed
@@ -376,7 +385,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
     }
   };
 
-  const TABS = ["profile", "account", "crm", "activity"] as const;
+  const TABS = ["profile", "account", "crm", "activity", "arena"] as const;
 
   return (
     <Dialog open={open} onOpenChange={v => !v && onClose()}>
@@ -546,6 +555,33 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
 
           {/* Activity Tab */}
           {tab === "activity" && <ActivityFeed profileId={u.id} />}
+
+          {/* Arena Tab */}
+          {tab === "arena" && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <TextInput label="Agent Name" value={form.agent_name} onChange={set("agent_name")} placeholder="Custom agent name for Arena" />
+                <SelectInput label="Agent Status" value={form.agent_status} onChange={set("agent_status")}
+                  options={[
+                    { value: "active", label: "Active" },
+                    { value: "idle", label: "Idle" },
+                    { value: "dormant", label: "Dormant" },
+                  ]} />
+                <TextInput label="ELO Rating" value={form.elo_rating} onChange={set("elo_rating")} placeholder="1000" type="number" />
+                <SelectInput label="ELO Rank" value={form.elo_rank} onChange={set("elo_rank")}
+                  options={[
+                    { value: "diamond", label: "Diamond (2000+)" },
+                    { value: "gold", label: "Gold (1600-1999)" },
+                    { value: "silver", label: "Silver (1300-1599)" },
+                    { value: "bronze", label: "Bronze (1100-1299)" },
+                    { value: "unranked", label: "Unranked (<1100)" },
+                  ]} />
+              </div>
+              <p className="text-[10px] text-gray-600 leading-snug">
+                Agent Name overrides the business name on the Arena leaderboard. ELO and rank are auto-computed from performance but can be manually set here.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Footer actions */}

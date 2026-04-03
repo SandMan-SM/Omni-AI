@@ -45,6 +45,15 @@ export interface Profile {
   last_contacted: string | null;
   crm_notes: string | null;
   newsletter_subscribed: boolean | null;
+  // Arena
+  agent_name: string | null;
+  agent_status: 'active' | 'idle' | 'dormant' | null;
+  elo_rating: number | null;
+  elo_rank: 'diamond' | 'gold' | 'silver' | 'bronze' | 'unranked' | null;
+  elo_wins: number | null;
+  elo_losses: number | null;
+  elo_streak: number | null;
+  elo_peak: number | null;
   // Meta
   metadata: Record<string, unknown>;
   created_at: string;
