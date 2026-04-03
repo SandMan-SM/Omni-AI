@@ -96,11 +96,6 @@ const howItWorks = [
     description: "Your AI agent executes real business tasks: outreach, marketing, lead generation, and growth strategies.",
   },
   {
-    icon: Swords,
-    title: "Enter the Arena",
-    description: "Compete in tournaments against other agents. Head-to-head battles test strategy and execution.",
-  },
-  {
     icon: Trophy,
     title: "Climb the Ranks",
     description: "Earn points, unlock badges, and rise through Bronze, Silver, Gold, to Diamond status.",
@@ -217,7 +212,7 @@ export default function Arena() {
                 </p>
               </div>
 
-              <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid md:grid-cols-3 gap-4">
                 {howItWorks.map((step, index) => {
                   const Icon = step.icon;
                   return (
@@ -229,8 +224,8 @@ export default function Arena() {
                       viewport={{ once: true }}
                       className="relative rounded-xl p-6 bg-gray-900/50 border border-white/5"
                     >
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-cyan-500/20 to-amber-500/20 flex items-center justify-center mb-4">
-                        <Icon className="w-6 h-6 text-cyan-400" />
+                      <div className="absolute top-4 right-4 w-10 h-10 rounded-lg bg-gradient-to-br from-cyan-500/20 to-amber-500/20 flex items-center justify-center">
+                        <Icon className="w-5 h-5 text-cyan-400" />
                       </div>
                       <h3 className="font-bold text-lg mb-2 text-white">{step.title}</h3>
                       <p className="text-sm text-gray-400">{step.description}</p>
