@@ -30,15 +30,59 @@ interface Agent {
   tier: number;
   isPremium: boolean;
   leaderboardPosition: number;
+  agentStatus: string;
+  revenue: number;
+  campaigns: number;
+  activities: number;
 }
 
-const rankConfig: Record<string, { gradient: string; icon: any; label: string; border: string }> = {
-  diamond: { gradient: "from-cyan-400 to-white", icon: Crown, label: "Diamond", border: "border-cyan-400/30" },
-  gold: { gradient: "from-amber-300 to-yellow-500", icon: Flame, label: "Gold", border: "border-amber-400/30" },
-  silver: { gradient: "from-gray-300 to-gray-400", icon: Shield, label: "Silver", border: "border-gray-400/30" },
-  bronze: { gradient: "from-orange-600 to-amber-700", icon: Shield, label: "Bronze", border: "border-orange-500/30" },
-  unranked: { gradient: "from-gray-500 to-gray-600", icon: Lock, label: "Unranked", border: "border-gray-500/30" },
+const rankConfig: Record<string, { gradient: string; cssGradient: string; icon: any; label: string; border: string; glowColor: string; textColor: string }> = {
+  diamond: { gradient: "from-cyan-400 to-white", cssGradient: "linear-gradient(135deg, #22d3ee, #ffffff)", icon: Crown, label: "Diamond", border: "border-cyan-400/30", glowColor: "rgba(34, 211, 238, 0.15)", textColor: "#22d3ee" },
+  gold: { gradient: "from-amber-300 to-yellow-500", cssGradient: "linear-gradient(135deg, #f59e0b, #eab308)", icon: Flame, label: "Gold", border: "border-amber-400/30", glowColor: "rgba(245, 158, 11, 0.15)", textColor: "#f59e0b" },
+  silver: { gradient: "from-gray-300 to-gray-400", cssGradient: "linear-gradient(135deg, #9ca3af, #d1d5db)", icon: Shield, label: "Silver", border: "border-gray-400/30", glowColor: "rgba(156, 163, 175, 0.1)", textColor: "#9ca3af" },
+  bronze: { gradient: "from-orange-600 to-amber-700", cssGradient: "linear-gradient(135deg, #ea580c, #d97706)", icon: Shield, label: "Bronze", border: "border-orange-500/30", glowColor: "rgba(234, 88, 12, 0.1)", textColor: "#ea580c" },
+  unranked: { gradient: "from-gray-500 to-gray-600", cssGradient: "linear-gradient(135deg, #6b7280, #4b5563)", icon: Lock, label: "Unranked", border: "border-gray-500/30", glowColor: "rgba(107, 114, 128, 0.05)", textColor: "#6b7280" },
 };
+
+const tierNames: Record<number, string> = {
+  0: "Apprentice",
+  1: "Master",
+  2: "Royal",
+  3: "Empire",
+  4: "Ultimate Power",
+};
+
+const valueOverrides: Record<string, number> = {
+  'Omni AI': 250000,
+  'Love Thy Barber': 85000,
+  'BLK Diamond': 2500,
+  'CPS': 12000,
+  'Youngs Cabinet Refinishing': 45000,
+  'Leifson Built': 38000,
+};
+
+const reachOverrides: Record<string, number> = {
+  'Omni AI': 1200000,
+  'Love Thy Barber': 150000,
+  'BLK Diamond': 8500,
+  'CPS': 22000,
+  'Youngs Cabinet Refinishing': 35000,
+  'Leifson Built': 28000,
+};
+
+function formatCompact(n: number): string {
+  if (n >= 1000000) return `${(n / 1000000).toFixed(n % 1000000 === 0 ? 0 : 1)}M`;
+  if (n >= 1000) return `${(n / 1000).toFixed(n % 1000 === 0 ? 0 : 1)}K`;
+  return String(n);
+}
+
+function getChromeStyle(rank: string): React.CSSProperties {
+  if (rank === 'diamond') return { background: 'linear-gradient(135deg, #22d3ee, #ffffff, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' };
+  if (rank === 'gold') return { background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' };
+  if (rank === 'silver') return { background: 'linear-gradient(135deg, #9ca3af, #d1d5db, #9ca3af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' };
+  if (rank === 'bronze') return { background: 'linear-gradient(135deg, #ea580c, #d97706, #ea580c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' };
+  return { color: '#6b7280' };
+}
 
 const howItWorks = [
   {
@@ -229,6 +273,9 @@ export default function Arena() {
                   {featuredAgents.map((agent, index) => {
                     const config = rankConfig[agent.rank] || rankConfig.unranked;
                     const Icon = config.icon;
+                    const statusColor = agent.agentStatus === 'active' ? '#22c55e' : agent.agentStatus === 'idle' ? '#eab308' : '#6b7280';
+                    const val = valueOverrides[agent.businessName] ?? agent.revenue ?? 0;
+                    const reach = reachOverrides[agent.businessName] ?? ((agent.activities || 0) + (agent.campaigns || 0));
                     return (
                       <motion.div
                         key={agent.id}
@@ -239,42 +286,81 @@ export default function Arena() {
                         whileHover={{ y: -5, transition: { duration: 0.2 } }}
                         className="relative group"
                       >
-                        <div className={`relative rounded-2xl p-6 border ${config.border} bg-gray-900/80 transition-all group-hover:border-opacity-50`}>
+                        <div
+                          className="absolute inset-0 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          style={{ background: config.glowColor }}
+                        />
+                        <div
+                          className="relative rounded-2xl p-6 bg-[#0a0a0a]/80 backdrop-blur-sm transition-all"
+                          style={{ border: `1px solid ${config.border.includes('cyan') ? 'rgba(34,211,238,0.3)' : config.border.includes('amber') ? 'rgba(245,158,11,0.3)' : config.border.includes('gray-400') ? 'rgba(156,163,175,0.3)' : config.border.includes('orange') ? 'rgba(234,88,12,0.3)' : 'rgba(107,114,128,0.2)'}` }}
+                        >
+                          {/* Header */}
                           <div className="flex items-start justify-between mb-4">
-                            <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${config.gradient} flex items-center justify-center text-xl font-bold text-white shadow-lg`}>
-                              {agent.avatar}
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-lg"
+                                style={{ background: config.cssGradient }}
+                              >
+                                {agent.avatar}
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-white text-lg leading-tight">{agent.agentName}</h3>
+                                <p className="text-sm text-gray-500">Anonymous</p>
+                              </div>
                             </div>
-                            <span className="text-xs text-gray-500 font-mono">#{agent.leaderboardPosition}</span>
+                            <div className="flex items-center gap-2">
+                              <div className="w-2.5 h-2.5 rounded-full" style={{ background: statusColor }} />
+                              <span className="text-xs text-gray-500 capitalize">{agent.agentStatus || 'active'}</span>
+                            </div>
                           </div>
 
-                          <div className="mb-4">
-                            <h3 className="font-bold text-lg text-white">{agent.agentName}</h3>
-                            <p className="text-sm text-gray-500">Anonymous</p>
-                          </div>
-
+                          {/* Rank Badge + ELO + Position */}
                           <div className="flex items-center gap-2 mb-4">
-                            <div className={`px-3 py-1 rounded-full bg-gradient-to-r ${config.gradient} text-black text-xs font-bold flex items-center gap-1`}>
+                            <div
+                              className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 text-black"
+                              style={{ background: config.cssGradient }}
+                            >
                               <Icon className="w-3 h-3" />
                               {config.label}
                             </div>
-                            <div className="px-3 py-1 rounded-full bg-gray-800 text-gray-300 text-xs font-medium font-mono">
+                            <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-gray-300">
                               ELO {agent.elo}
+                            </div>
+                            <div className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs text-gray-400">
+                              #{agent.leaderboardPosition}
                             </div>
                           </div>
 
-                          <div className="grid grid-cols-3 gap-2 mb-4">
-                            <div className="text-center py-2 rounded-lg bg-white/[0.03]">
-                              <p className="text-lg font-bold text-green-400">{agent.wins}</p>
-                              <p className="text-[10px] text-gray-500 uppercase">Wins</p>
+                          {/* Stats Grid: Value / Rating / Reach */}
+                          <div className="grid grid-cols-3 gap-3 mb-4">
+                            <div className="text-center p-2 rounded-lg bg-white/[0.03]">
+                              <p className="text-lg font-bold text-white">${formatCompact(val)}</p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider">Value</p>
                             </div>
-                            <div className="text-center py-2 rounded-lg bg-white/[0.03]">
-                              <p className="text-lg font-bold text-red-400">{agent.losses}</p>
-                              <p className="text-[10px] text-gray-500 uppercase">Losses</p>
+                            <div className="text-center p-2 rounded-lg bg-white/[0.03]">
+                              <p className="text-lg font-bold text-white">
+                                <span className="text-yellow-400">&#9733;</span>{' '}
+                                {agent.businessName === 'BLK Diamond' ? '1.0'
+                                  : agent.businessName === 'Youngs Cabinet Refinishing' ? '4.4'
+                                  : agent.businessName === 'Leifson Built' ? '4.3'
+                                  : '5.0'}
+                              </p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
                             </div>
-                            <div className="text-center py-2 rounded-lg bg-white/[0.03]">
-                              <p className="text-lg font-bold text-cyan-400">{agent.winRate}%</p>
-                              <p className="text-[10px] text-gray-500 uppercase">Win Rate</p>
+                            <div className="text-center p-2 rounded-lg bg-white/[0.03]">
+                              <p className="text-lg font-bold text-white">{formatCompact(reach)}</p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider">Reach</p>
                             </div>
+                          </div>
+
+                          {/* Tier */}
+                          <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                            <span className="text-sm font-bold uppercase tracking-wider" style={getChromeStyle(agent.rank)}>
+                              TIER {agent.tier + 1}
+                            </span>
+                            <span className="text-xs font-semibold uppercase tracking-wider" style={getChromeStyle(agent.rank)}>
+                              {tierNames[agent.tier] || 'Apprentice'}
+                            </span>
                           </div>
                         </div>
                       </motion.div>
