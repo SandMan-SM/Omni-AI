@@ -94,6 +94,7 @@ const tierNames: Record<number, string> = {
   1: "Master",
   2: "Royal",
   3: "Empire",
+  4: "Ultimate Power",
 };
 
 // ── Agentic Card ───────────────────────────────────────────────────────────
@@ -191,9 +192,9 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
         {/* Streak + Tier */}
         <div className="flex items-center justify-between pt-3 border-t border-white/5">
           <div className="flex items-center gap-2">
-            <Flame className={`w-4 h-4 ${agent.streak >= 3 ? 'text-orange-500' : 'text-gray-600'}`} />
-            <span className={`text-sm font-medium ${agent.streak >= 3 ? 'text-orange-400' : 'text-gray-500'}`}>
-              {agent.streak} streak
+            <Flame className={`w-4 h-4 ${agent.tier >= 3 ? 'text-orange-500' : 'text-gray-600'}`} />
+            <span className={`text-sm font-medium ${agent.tier >= 3 ? 'text-orange-400' : 'text-gray-500'}`}>
+              Tier {agent.tier + 1}
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -311,7 +312,6 @@ function LeaderboardTable({ agents }: { agents: Agent[] }) {
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="text-white font-mono text-sm font-bold">{agent.elo}</p>
-                <p className="text-[10px] text-gray-500">{agent.winRate}% WR</p>
               </div>
             </div>
           );
@@ -507,12 +507,7 @@ export default function AgentsPage() {
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium border"
-                style={{
-                  background: 'linear-gradient(135deg, rgba(168,85,247,0.1), rgba(34,211,238,0.1))',
-                  borderColor: 'rgba(168,85,247,0.2)',
-                  color: '#a855f7',
-                }}
+                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20"
               >
                 <Cpu className="w-4 h-4" />
                 AI Agent Intelligence Network

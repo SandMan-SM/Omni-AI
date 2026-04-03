@@ -133,6 +133,11 @@ export async function GET() {
     'Leifson Built': 1100,
   };
 
+  // Manual tier overrides
+  const tierOverrides: Record<string, number> = {
+    'Omni AI': 4,
+  };
+
   // Compute ELO for each profile and update
   const agents = (profiles || []).map((p, index) => {
     const enriched = {
@@ -162,7 +167,7 @@ export async function GET() {
         : 0,
       streak: computed.streak,
       avatar: (p.business_name || p.name || '??').substring(0, 2).toUpperCase(),
-      tier: p.tier || 0,
+      tier: (p.business_name && tierOverrides[p.business_name] !== undefined) ? tierOverrides[p.business_name] : (p.tier || 0),
       isPremium: p.is_premium,
       crmStatus: p.crm_status,
       revenue: parseFloat(p.gross_revenue) || 0,
