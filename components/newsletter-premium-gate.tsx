@@ -11,6 +11,7 @@ interface Post {
   keywords: string[] | null;
   tier: string;
   published_at: string;
+  created_at?: string;
 }
 
 export function NewsletterHeader() {
@@ -115,7 +116,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => {
-            const date = new Date(post.published_at).toLocaleDateString("en-US", {
+            const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",

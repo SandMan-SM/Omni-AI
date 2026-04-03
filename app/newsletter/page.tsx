@@ -18,7 +18,7 @@ export default async function NewsletterIndexPage() {
 
   const { data: posts } = await supabase
     .from("newsletter_posts")
-    .select("slug, subject, intro, keywords, tier, published_at")
+    .select("slug, subject, intro, keywords, tier, published_at, created_at")
     .order("published_at", { ascending: false })
     .limit(50);
 
@@ -54,7 +54,7 @@ export default async function NewsletterIndexPage() {
           </div>
           <div className="space-y-4">
             {freePosts.map((post) => {
-              const date = new Date(post.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+              const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
               return (
                 <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-3 sm:p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all">
                   <div className="flex items-start justify-between gap-4">
