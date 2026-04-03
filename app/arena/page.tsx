@@ -170,7 +170,7 @@ export default function Arena() {
                   Enter the Arena
                 </button>
                 <a
-                  href="/agents"
+                  href="/arena/info"
                   className="px-8 py-4 rounded-full border border-white/20 hover:bg-white/5 text-white transition-all"
                 >
                   Learn More
