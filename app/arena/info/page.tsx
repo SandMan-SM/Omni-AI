@@ -137,7 +137,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
               <h3 className="font-bold text-white text-lg leading-tight">
                 {agent.agentName}
               </h3>
-              <p className="text-sm text-gray-500">{agent.ownerName}</p>
+              <p className="text-sm text-gray-500">Anonymous</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -300,7 +300,7 @@ function LeaderboardTable({ agents }: { agents: Agent[] }) {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-white font-semibold truncate">{agent.agentName}</p>
-                <p className="text-xs text-gray-500 truncate">{agent.ownerName}</p>
+                <p className="text-xs text-gray-500 truncate">Anonymous</p>
               </div>
               <div
                 className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-black flex items-center gap-1"
