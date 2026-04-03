@@ -175,7 +175,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
             <p className="text-lg font-bold text-white">
               <span className="text-yellow-400">&#9733;</span>{' '}
-              {agent.businessName === 'BlkdiamondSkateboardCo' ? '1.0'
+              {agent.businessName === 'BLK Diamond' ? '1.0'
                 : agent.businessName === 'Youngs Cabinet Refinishing' ? '4.4'
                 : agent.businessName === 'Leifson Built' ? '4.3'
                 : '5.0'}
