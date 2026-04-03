@@ -33,6 +33,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
     { href: "/campaigns", label: "Campaigns" },
     { href: "/details", label: "Infographic" },
     { href: "/arena", label: "Arena" },
+    { href: "/agents", label: "Agents" },
   ];
 
   return (

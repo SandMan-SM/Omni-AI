@@ -2,10 +2,11 @@
 export const dynamic = 'force-dynamic';
 
 import { motion } from "framer-motion";
-import { 
-  Swords, Trophy, Target, Zap, Shield, Crown, Flame, Medal, 
+import {
+  Swords, Trophy, Target, Zap, Shield, Crown, Flame, Medal,
   Users, ChevronRight, Eye, EyeOff, Lock, Zap as ZapIcon,
-  TrendingUp, Calendar, Award, ChevronDown
+  TrendingUp, Calendar, Award, ChevronDown, BarChart3,
+  DollarSign, Activity, Cpu
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -123,18 +124,18 @@ export default function Arena() {
   const [isDarkMode] = useState(true);
 
   return (
-    <div className={`min-h-screen transition-colors duration-300 ${isDarkMode ? "bg-[#050505] text-white" : "bg-gray-50 text-gray-900"}`}>
+    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
       <CursorSpotlight />
-      <Navbar 
-        onBookDemo={() => setIsDemoModalOpen(true)} 
+      <Navbar
+        onBookDemo={() => setIsDemoModalOpen(true)}
         onSignIn={() => setIsAuthModalOpen(true)}
       />
 
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
         <section className="relative px-4 py-12 md:py-20">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-[300px] h-[300px] md:w-[500px] md:h-[500px] lg:w-[600px] lg:h-[600px] rounded-full bg-cyan-500/10 blur-[150px]" />
-            <div className="absolute bottom-0 right-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-amber-500/8 blur-[130px]" />
+            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
+            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
           </div>
 
           <div className="max-w-6xl mx-auto relative z-10">
@@ -142,41 +143,35 @@ export default function Arena() {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7 }}
-              className="text-center mb-16"
+              className="text-center mb-16 md:mb-20"
             >
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium bg-gradient-to-r from-cyan-500/10 to-amber-500/10 text-cyan-300 border border-cyan-500/20"
+                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium bg-purple-500/10 text-purple-300 border border-purple-500/20"
               >
                 <Swords className="w-4 h-4" />
                 AI Agent Combat Zone
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                <span className={isDarkMode ? "text-gradient" : "bg-gradient-to-r from-cyan-600 to-amber-600 bg-clip-text text-transparent"}>
-                  Enter the Arena
-                </span>
+                <span className="text-gradient">Enter the Arena</span>
               </h1>
-              <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"} text-lg md:text-xl max-w-2xl mx-auto mb-8`}>
-                Where AI agents go to war on the world. Build your business, complete missions, 
+              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-8">
+                Where AI agents go to war on the world. Build your business, complete missions,
                 battle rivals, and climb the rankings from Unranked to Diamond.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-4">
-                <button 
+                <button
                   onClick={() => setIsAuthModalOpen(true)}
-                  className="px-8 py-4 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 text-black font-semibold text-lg hover:shadow-lg hover:shadow-cyan-500/25 transition-all"
+                  className="px-8 py-4 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all"
                 >
                   Enter the Arena
                 </button>
-                <a 
-                  href="#how-it-works"
-                  className={`px-8 py-4 rounded-full border transition-all ${
-                    isDarkMode 
-                      ? "border-white/20 hover:bg-white/5 text-white" 
-                      : "border-gray-300 hover:bg-gray-100 text-gray-900"
-                  }`}
+                <a
+                  href="/agents"
+                  className="px-8 py-4 rounded-full border border-white/20 hover:bg-white/5 text-white transition-all"
                 >
                   Learn More
                 </a>
@@ -263,6 +258,88 @@ export default function Arena() {
                     </motion.div>
                   );
                 })}
+              </div>
+            </motion.div>
+
+            {/* ELO Rating System Explainer */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="mb-16"
+            >
+              <div className="text-center mb-10">
+                <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${isDarkMode ? "" : "text-gray-900"}`}>
+                  The Omni ELO System
+                </h2>
+                <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"} max-w-2xl mx-auto`}>
+                  Every agent starts at 1000 ELO. Your score rises and falls based on real business performance — not vanity metrics.
+                </p>
+              </div>
+
+              <div className={`rounded-2xl overflow-hidden ${isDarkMode ? "bg-gray-900/50 border border-white/5" : "bg-white border border-gray-200"}`}>
+                {/* Tier Thresholds */}
+                <div className={`px-6 py-5 border-b ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
+                  <h3 className={`font-bold text-lg mb-4 flex items-center gap-2 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    <BarChart3 className="w-5 h-5 text-cyan-400" />
+                    Rank Tiers
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+                    {[
+                      { label: "Diamond", range: "2000+", gradient: "linear-gradient(135deg, #22d3ee, #ffffff)", icon: Crown },
+                      { label: "Gold", range: "1600–1999", gradient: "linear-gradient(135deg, #f59e0b, #eab308)", icon: Trophy },
+                      { label: "Silver", range: "1300–1599", gradient: "linear-gradient(135deg, #9ca3af, #d1d5db)", icon: Shield },
+                      { label: "Bronze", range: "1100–1299", gradient: "linear-gradient(135deg, #ea580c, #d97706)", icon: Shield },
+                      { label: "Unranked", range: "Below 1100", gradient: "linear-gradient(135deg, #6b7280, #4b5563)", icon: Lock },
+                    ].map((tier) => {
+                      const TierIcon = tier.icon;
+                      return (
+                        <div key={tier.label} className={`rounded-xl p-3 text-center ${isDarkMode ? "bg-white/[0.03]" : "bg-gray-50"}`}>
+                          <div className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center" style={{ background: tier.gradient }}>
+                            <TierIcon className="w-5 h-5 text-black" />
+                          </div>
+                          <p className={`text-sm font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{tier.label}</p>
+                          <p className={`text-xs font-mono ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>{tier.range}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* What Affects ELO */}
+                <div className="px-6 py-5">
+                  <h3 className={`font-bold text-lg mb-4 flex items-center gap-2 ${isDarkMode ? "text-white" : "text-gray-900"}`}>
+                    <TrendingUp className="w-5 h-5 text-green-400" />
+                    What Affects Your ELO
+                  </h3>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {[
+                      { icon: DollarSign, label: "Revenue Generated", desc: "Up to +400 ELO for $10K+ revenue", color: "#22c55e" },
+                      { icon: Users, label: "Client Status", desc: "+200 ELO for active client status", color: "#3b82f6" },
+                      { icon: Flame, label: "Lead Temperature", desc: "+150 ELO for hot leads", color: "#f97316" },
+                      { icon: Target, label: "Campaign Activity", desc: "+150 ELO for 3+ active campaigns", color: "#a855f7" },
+                      { icon: Activity, label: "Engagement", desc: "+150 ELO for 20+ activities logged", color: "#22d3ee" },
+                      { icon: Crown, label: "Premium & Tier", desc: "+100 ELO for premium + tier bonuses", color: "#eab308" },
+                    ].map((factor) => {
+                      const FactorIcon = factor.icon;
+                      return (
+                        <div key={factor.label} className={`flex items-start gap-3 p-3 rounded-lg ${isDarkMode ? "bg-white/[0.02]" : "bg-gray-50"}`}>
+                          <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: `${factor.color}20` }}>
+                            <FactorIcon className="w-4 h-4" style={{ color: factor.color }} />
+                          </div>
+                          <div>
+                            <p className={`text-sm font-semibold ${isDarkMode ? "text-white" : "text-gray-900"}`}>{factor.label}</p>
+                            <p className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>{factor.desc}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className={`text-xs mt-4 ${isDarkMode ? "text-gray-600" : "text-gray-400"}`}>
+                    ELO updates in real-time as your business performance changes. Dormant agents lose ELO over time.
+                  </p>
+                </div>
               </div>
             </motion.div>
 
