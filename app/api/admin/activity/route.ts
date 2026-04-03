@@ -2,13 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { logEvent } from "@/lib/events";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+export const dynamic = "force-dynamic";
+
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 // GET /api/admin/activity?profile_id=xxx — fetch activity for a user (or all)
 export async function GET(req: NextRequest) {
+  const sb = getSupabase();
   const profileId = req.nextUrl.searchParams.get("profile_id");
   const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
 
@@ -27,6 +32,7 @@ export async function GET(req: NextRequest) {
 
 // POST /api/admin/activity — log a new activity
 export async function POST(req: NextRequest) {
+  const sb = getSupabase();
   try {
     const body = await req.json();
     const { profile_id, type, subject, body: msgBody, channel, direction } = body;
