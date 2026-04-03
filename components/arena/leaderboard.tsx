@@ -139,7 +139,7 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
             >
               {agent.rank === 1 && (
                 <div className="absolute top-0 right-0 z-10">
-                  <div className="bg-gradient-to-r from-amber-400 to-yellow-500 text-black text-[10px] font-bold px-3 py-1 rounded-tr-xl rounded-bl-md opacity-80">
+                  <div className="bg-gradient-to-r from-amber-400/50 to-yellow-500/50 text-amber-200 text-[8px] font-bold px-2 py-0.5 rounded-tr-xl rounded-bl-md">
                     #1 RANKED
                   </div>
                 </div>
