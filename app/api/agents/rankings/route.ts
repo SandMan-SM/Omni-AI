@@ -126,6 +126,13 @@ export async function GET() {
     campaignCounts[c.profile_id] = (campaignCounts[c.profile_id] || 0) + 1;
   });
 
+  // Manual ELO overrides for specific businesses
+  const eloOverrides: Record<string, number> = {
+    'Love Thy Barber': 1750,
+    'Youngs Cabinet Refinishing': 1150,
+    'Leifson Built': 1100,
+  };
+
   // Compute ELO for each profile and update
   const agents = (profiles || []).map((p, index) => {
     const enriched = {
@@ -135,6 +142,10 @@ export async function GET() {
     };
 
     const computed = computeElo(enriched);
+    // Apply override if exists
+    if (p.business_name && eloOverrides[p.business_name]) {
+      computed.elo = eloOverrides[p.business_name];
+    }
     const rank = computeRank(computed.elo);
 
     return {
