@@ -182,9 +182,16 @@ export async function GET() {
     };
   });
 
-  // Sort by ELO descending
+  // Deduplicate by business name (keep highest ELO)
   agents.sort((a, b) => b.elo - a.elo);
-  agents.forEach((a, i) => { a.leaderboardPosition = i + 1; });
+  const seen = new Set<string>();
+  const deduped = agents.filter(a => {
+    const key = a.businessName?.toLowerCase();
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  deduped.forEach((a, i) => { a.leaderboardPosition = i + 1; });
 
   // Fire-and-forget: update ELO in database
   for (const agent of agents) {
@@ -199,5 +206,5 @@ export async function GET() {
     }).eq('id', agent.id).then(() => {});
   }
 
-  return NextResponse.json({ agents, updatedAt: new Date().toISOString() });
+  return NextResponse.json({ agents: deduped, updatedAt: new Date().toISOString() });
 }
