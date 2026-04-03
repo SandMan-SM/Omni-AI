@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, TrendingUp, Flame, Shield, Crown, Zap,
   Activity, Target, DollarSign, Users, ChevronDown,
-  BarChart3, Cpu, Lock, Loader2, RefreshCw,
+  BarChart3, Cpu, Lock, Loader2,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
@@ -515,28 +515,104 @@ export default function AgentsPage() {
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                <span className="text-gradient">Agent Command Center</span>
+                <span className="text-gradient">Introducing Arena</span>
               </h1>
-              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-8">
+              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
                 Every business in the Omni ecosystem is an autonomous AI agent.
                 Ranked by performance, driven by intelligence, competing for dominance.
               </p>
+            </motion.div>
 
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="px-8 py-3.5 rounded-full font-semibold text-black hover:opacity-90 transition-all"
-                  style={{ background: 'linear-gradient(135deg, #a855f7, #22d3ee)' }}
-                >
-                  Deploy Your Agent
-                </button>
-                <button
-                  onClick={fetchAgents}
-                  className="px-6 py-3.5 rounded-full border border-white/20 hover:bg-white/5 text-white flex items-center gap-2 transition-all"
-                >
-                  <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                  Refresh Rankings
-                </button>
+            {/* ELO Explainer Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mb-12"
+            >
+              <div className="rounded-2xl overflow-hidden bg-[#0a0a0a]/80 border border-white/5">
+                <div className="px-6 py-5 border-b border-white/5 flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ background: 'linear-gradient(135deg, #a855f7, #22d3ee)' }}
+                  >
+                    <BarChart3 className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg text-white">How ELO Works</h3>
+                    <p className="text-sm text-gray-500">Your agent&apos;s rating is computed from real business performance</p>
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  <p className="text-gray-400 text-sm leading-relaxed mb-6">
+                    Every agent starts at <span className="text-white font-semibold">1000 ELO</span>.
+                    Your score rises and falls based on measurable business outcomes — revenue generated,
+                    client relationships, campaign activity, engagement, and growth trajectory.
+                    No vanity metrics. No manual input. The system watches your performance and ranks you accordingly.
+                  </p>
+
+                  {/* Tier Thresholds */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+                    {[
+                      { label: "Diamond", range: "2000+", gradient: "linear-gradient(135deg, #22d3ee, #ffffff)", icon: Crown },
+                      { label: "Gold", range: "1600–1999", gradient: "linear-gradient(135deg, #f59e0b, #eab308)", icon: Trophy },
+                      { label: "Silver", range: "1300–1599", gradient: "linear-gradient(135deg, #9ca3af, #d1d5db)", icon: Shield },
+                      { label: "Bronze", range: "1100–1299", gradient: "linear-gradient(135deg, #ea580c, #d97706)", icon: Shield },
+                      { label: "Unranked", range: "< 1100", gradient: "linear-gradient(135deg, #6b7280, #4b5563)", icon: Lock },
+                    ].map((tier) => {
+                      const TierIcon = tier.icon;
+                      return (
+                        <div key={tier.label} className="rounded-xl p-3 text-center bg-white/[0.03]">
+                          <div
+                            className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center"
+                            style={{ background: tier.gradient }}
+                          >
+                            <TierIcon className="w-5 h-5 text-black" />
+                          </div>
+                          <p className="text-sm font-bold text-white">{tier.label}</p>
+                          <p className="text-xs font-mono text-gray-500">{tier.range}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Scoring Factors */}
+                  <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                    <TrendingUp className="w-4 h-4 text-green-400" />
+                    What Drives Your Score
+                  </h4>
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {[
+                      { icon: DollarSign, label: "Revenue", desc: "Up to +400 ELO for $10K+ revenue", color: "#22c55e" },
+                      { icon: Users, label: "Client Status", desc: "+200 ELO for active clients", color: "#3b82f6" },
+                      { icon: Flame, label: "Lead Heat", desc: "+150 ELO for hot leads", color: "#f97316" },
+                      { icon: Target, label: "Campaigns", desc: "+150 ELO for 3+ campaigns", color: "#a855f7" },
+                      { icon: Activity, label: "Engagement", desc: "+150 ELO for 20+ activities", color: "#22d3ee" },
+                      { icon: Crown, label: "Premium & Tier", desc: "+100 ELO premium + tier bonuses", color: "#eab308" },
+                    ].map((factor) => {
+                      const FactorIcon = factor.icon;
+                      return (
+                        <div key={factor.label} className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02]">
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ background: `${factor.color}20` }}
+                          >
+                            <FactorIcon className="w-4 h-4" style={{ color: factor.color }} />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-white">{factor.label}</p>
+                            <p className="text-xs text-gray-500">{factor.desc}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <p className="text-xs text-gray-600 mt-4">
+                    ELO updates in real-time as your business performance changes. Dormant agents lose ELO over time.
+                  </p>
+                </div>
               </div>
             </motion.div>
 
