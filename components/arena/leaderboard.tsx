@@ -167,8 +167,8 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                  <div className={`px-1.5 sm:px-2 py-0.5 rounded-full bg-gradient-to-r ${config.gradient} text-black text-[8px] sm:text-[10px] font-semibold inline-flex items-center gap-0.5 whitespace-nowrap leading-none`}>
-                    <Icon className="w-2 h-2 sm:w-2.5 sm:h-2.5 flex-shrink-0" />
+                  <div className={`px-2.5 sm:px-3 py-1 rounded-full bg-gradient-to-r ${config.gradient} text-black text-xs sm:text-sm font-semibold inline-flex items-center gap-1 whitespace-nowrap`}>
+                    <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                     <span>{config.label}</span>
                   </div>
                   <p className={`font-bold text-lg sm:text-xl font-mono ${isDarkMode ? "text-white" : "text-gray-900"}`}>
