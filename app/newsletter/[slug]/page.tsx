@@ -50,7 +50,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   const post = await getPost(slug);
   if (!post) notFound();
 
-  const date = new Date(post.published_at).toLocaleDateString("en-US", {
+  const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
