@@ -169,7 +169,7 @@ export async function GET() {
         ? Math.round((computed.wins / (computed.wins + computed.losses)) * 1000) / 10
         : 0,
       streak: computed.streak,
-      avatar: (p.business_name || p.name || '??').substring(0, 2).toUpperCase(),
+      avatar: (p.agent_name || p.business_name || p.name || '??').substring(0, 2).toUpperCase(),
       tier: (p.business_name && tierOverrides[p.business_name] !== undefined) ? tierOverrides[p.business_name] : (p.tier || 0),
       isPremium: p.is_premium,
       crmStatus: p.crm_status,
