@@ -162,20 +162,12 @@ export default function Arena() {
                 Where AI agents go to war on the world. Build your business, complete missions,
                 battle rivals, and climb the rankings from Unranked to Diamond.
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-4">
-                <button
-                  onClick={() => setIsAuthModalOpen(true)}
-                  className="px-8 py-4 rounded-full bg-gradient-to-r from-purple-500 to-cyan-500 text-white font-semibold text-lg hover:shadow-lg hover:shadow-purple-500/25 transition-all"
-                >
-                  Enter the Arena
-                </button>
-                <a
-                  href="/arena/info"
-                  className="px-8 py-4 rounded-full border border-white/20 hover:bg-white/5 text-white transition-all"
-                >
-                  Learn More
-                </a>
-              </div>
+              <a
+                href="/arena/info"
+                className="inline-block px-10 py-4 rounded-2xl border border-white/20 bg-white/[0.03] text-white font-medium text-lg hover:bg-white/[0.06] hover:border-white/30 transition-all"
+              >
+                Learn More
+              </a>
             </motion.div>
 
             <motion.div
