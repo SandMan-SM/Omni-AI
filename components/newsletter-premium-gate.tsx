@@ -116,7 +116,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
       ) : (
         <div className="space-y-4">
           {posts.map((post) => {
-            const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
+            const date = new Date(post.published_at || post.created_at || new Date()).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
               year: "numeric",
