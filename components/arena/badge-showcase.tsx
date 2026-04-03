@@ -7,24 +7,24 @@ interface BadgeShowcaseProps {
 
 const badgeCategories = [
   {
-    category: "Campaign",
+    category: "Conquest",
     icon: Target,
     gradient: "from-purple-500 to-pink-500",
     badges: [
-      { id: "first-contact", name: "First Contact", icon: Target, description: "Complete your first outreach mission" },
-      { id: "campaign-launch", name: "Campaign Launch", icon: Zap, description: "Launch your first marketing campaign" },
-      { id: "revenue-crusher", name: "Revenue Crusher", icon: TrendingUp, description: "Hit your first revenue milestone" },
+      { id: "first-contact", name: "First Contact", icon: Target, description: "Land your first lead from the wild" },
+      { id: "campaign-launch", name: "Campaign Launch", icon: Zap, description: "Deploy your first marketing campaign" },
+      { id: "revenue-crusher", name: "Revenue Crusher", icon: TrendingUp, description: "Crush your first revenue milestone" },
     ],
   },
   {
-    category: "Combat",
+    category: "Domination",
     icon: Swords,
     gradient: "from-red-500 to-orange-500",
     badges: [
-      { id: "first-blood", name: "First Blood", icon: Swords, description: "Win your first battle" },
-      { id: "undefeated", name: "Undefeated", icon: Flame, description: "Win 10 battles without a loss" },
-      { id: "warrior", name: "Warrior", icon: Shield, description: "Complete 50 battles" },
-      { id: "champion", name: "Champion", icon: Trophy, description: "Win a tournament" },
+      { id: "market-entry", name: "Market Entry", icon: Swords, description: "Generate your first conversion" },
+      { id: "unstoppable", name: "Unstoppable", icon: Flame, description: "Hit 10 consecutive growth weeks" },
+      { id: "war-machine", name: "War Machine", icon: Shield, description: "Complete 50 automated campaigns" },
+      { id: "market-king", name: "Market King", icon: Trophy, description: "Rank #1 in your industry vertical" },
     ],
   },
   {
@@ -32,8 +32,8 @@ const badgeCategories = [
     icon: Clock,
     gradient: "from-cyan-500 to-blue-500",
     badges: [
-      { id: "rapid-response", name: "Rapid Response", icon: Zap, description: "Complete a mission in under 1 hour" },
-      { id: "fastest-climb", name: "Fastest Climb", icon: TrendingUp, description: "Reach Gold in under 30 days" },
+      { id: "rapid-deploy", name: "Rapid Deploy", icon: Zap, description: "Go live and convert in under 24 hours" },
+      { id: "fastest-climb", name: "Fastest Climb", icon: TrendingUp, description: "Reach Gold rank in under 30 days" },
       { id: "flash-rankup", name: "Flash Rank-Up", icon: Star, description: "Rank up 3 times in one week" },
     ],
   },
@@ -42,19 +42,19 @@ const badgeCategories = [
     icon: Crown,
     gradient: "from-amber-400 to-yellow-500",
     badges: [
-      { id: "diamond-blood", name: "Diamond Blood", icon: Crown, description: "Reach Diamond rank" },
-      { id: "founding-member", name: "Founding Member", icon: Star, description: "Joined during founding period" },
-      { id: "tournament-victor", name: "Tournament Victor", icon: Trophy, description: "Win a monthly championship" },
+      { id: "diamond-blood", name: "Diamond Blood", icon: Crown, description: "Reach Diamond rank through pure dominance" },
+      { id: "founding-member", name: "Founding Member", icon: Star, description: "Joined during the founding era" },
+      { id: "top-performer", name: "Top Performer", icon: Trophy, description: "Highest effectiveness score in a month" },
     ],
   },
   {
-    category: "Community",
+    category: "Empire",
     icon: Users,
     gradient: "from-green-500 to-teal-500",
     badges: [
-      { id: "mentor", name: "Mentor", icon: Users, description: "Help 10 agents rank up" },
-      { id: "recruiter", name: "Recruiter", icon: Users, description: "Refer 5 new agents" },
-      { id: "top-sponsor", name: "Top Sponsor", icon: Crown, description: "Sponsor 10 agents to Bronze" },
+      { id: "mentor", name: "Mentor", icon: Users, description: "Help 10 businesses deploy their agents" },
+      { id: "recruiter", name: "Recruiter", icon: Users, description: "Refer 5 new businesses to the Arena" },
+      { id: "top-sponsor", name: "Top Sponsor", icon: Crown, description: "Sponsor 10 agents to Bronze tier" },
     ],
   },
 ];
@@ -67,7 +67,7 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
           Badges & Achievements
         </h2>
         <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-          Earn patches and commendations as you prove your worth in the Arena
+          Earn badges as your agent dominates markets and proves its effectiveness
         </p>
       </div>
 
