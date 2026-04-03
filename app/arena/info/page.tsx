@@ -173,14 +173,10 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Value</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
-            <div className="flex items-center justify-center gap-0.5">
-              {[1, 2, 3, 4, 5].map((s) => {
-                const stars = agent.elo >= 2000 ? 5 : agent.elo >= 1600 ? 4 : agent.elo >= 1300 ? 3 : agent.elo >= 1100 ? 2 : 1;
-                return (
-                  <span key={s} className={`text-lg ${s <= stars ? 'text-yellow-400' : 'text-gray-700'}`}>&#9733;</span>
-                );
-              })}
-            </div>
+            <p className="text-lg font-bold text-white">
+              <span className="text-yellow-400">&#9733;</span>{' '}
+              {agent.elo >= 2000 ? '5.0' : agent.elo >= 1800 ? '4.8' : agent.elo >= 1600 ? '4.5' : agent.elo >= 1400 ? '4.0' : agent.elo >= 1300 ? '3.5' : agent.elo >= 1200 ? '3.0' : agent.elo >= 1100 ? '2.5' : agent.elo >= 1050 ? '2.0' : '1.5'}
+            </p>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
           </div>
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
