@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 function getSupabase() {
   return createClient(
@@ -206,5 +207,8 @@ export async function GET() {
     }).eq('id', agent.id).then(() => {});
   }
 
-  return NextResponse.json({ agents: deduped, updatedAt: new Date().toISOString() });
+  return NextResponse.json(
+    { agents: deduped, updatedAt: new Date().toISOString() },
+    { headers: { 'Cache-Control': 'no-store, no-cache, must-revalidate', 'CDN-Cache-Control': 'no-store' } }
+  );
 }
