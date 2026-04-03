@@ -7,7 +7,8 @@ const bentoItems = [
     title: "Memory",
     description:
       "The system remembers every interaction, every decision, every outcome. It learns from patterns you can't see.",
-    color: "from-purple-500 to-violet-600",
+    bg: "linear-gradient(135deg, #a855f7, #7c3aed)",
+    hoverBar: "#a855f7",
     delay: 0,
   },
   {
@@ -15,7 +16,8 @@ const bentoItems = [
     title: "Decision Logic",
     description:
       "Autonomous reasoning that adapts in real-time. It doesn't just follow rules — it creates them.",
-    color: "from-blue-500 to-cyan-500",
+    bg: "linear-gradient(135deg, #3b82f6, #22d3ee)",
+    hoverBar: "#3b82f6",
     delay: 0.1,
   },
   {
@@ -23,7 +25,8 @@ const bentoItems = [
     title: "Self-Improvement",
     description:
       "Every cycle makes it smarter. The system evolves, optimizes, and compounds its intelligence over time.",
-    color: "from-cyan-500 to-teal-500",
+    bg: "linear-gradient(135deg, #06b6d4, #14b8a6)",
+    hoverBar: "#06b6d4",
     delay: 0.2,
   },
 ];
@@ -71,7 +74,8 @@ export function LegacySection() {
                       {item.title}
                     </h3>
                     <div
-                      className={`w-14 h-14 rounded-md bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0`}
+                      className="w-14 h-14 rounded-md flex items-center justify-center flex-shrink-0"
+                      style={{ background: item.bg }}
                     >
                       <Icon className="w-7 h-7 text-white" />
                     </div>
@@ -82,7 +86,8 @@ export function LegacySection() {
                   </p>
 
                   <div
-                    className={`absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r ${item.color} opacity-0 group-hover:opacity-100 transition-opacity rounded-b-md`}
+                    className="absolute bottom-0 left-0 right-0 h-1 opacity-0 group-hover:opacity-100 transition-opacity rounded-b-md"
+                    style={{ background: item.bg }}
                   />
                 </div>
               </motion.div>
