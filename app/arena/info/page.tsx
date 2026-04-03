@@ -175,7 +175,10 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
             <p className="text-lg font-bold text-white">
               <span className="text-yellow-400">&#9733;</span>{' '}
-              {agent.elo >= 2000 ? '5.0' : agent.elo >= 1800 ? '4.8' : agent.elo >= 1600 ? '4.5' : agent.elo >= 1400 ? '4.0' : agent.elo >= 1300 ? '3.5' : agent.elo >= 1200 ? '3.0' : agent.elo >= 1100 ? '2.5' : agent.elo >= 1050 ? '2.0' : '1.5'}
+              {agent.businessName === 'BlkdiamondSkateboardCo' ? '1.0'
+                : agent.businessName === 'Youngs Cabinet Refinishing' ? '4.4'
+                : agent.businessName === 'Leifson Built' ? '4.3'
+                : '5.0'}
             </p>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
           </div>
