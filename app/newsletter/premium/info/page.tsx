@@ -2,11 +2,24 @@ import Link from "next/link";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Interlinked Premium | Omni AI Newsletter",
+  title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
   description:
-    "Unlock exclusive agentic AI intelligence with Interlinked Premium. AI agents, automation playbooks, and strategic insights delivered Mon/Wed/Fri.",
+    "Agentic AI strategies that compound your advantage — every week. Playbooks, automation frameworks, and intelligence delivered Mon/Wed/Fri.",
   keywords:
-    "Interlinked Premium, agentic AI, AI agents, AI automation, Omni AI, premium newsletter, AI business strategy",
+    "Interlinked Premium, agentic AI, AI agents, AI automation, Omni AI, premium newsletter, AI business strategy, automation playbooks",
+  openGraph: {
+    title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
+    description:
+      "Agentic AI strategies that compound your advantage — every week. Playbooks, automation, and intelligence.",
+    url: "https://omnileadsagi.com/newsletter/premium/info",
+    siteName: "Omni AI",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
+    description:
+      "Agentic AI strategies that compound your advantage — every week. Playbooks, automation, and intelligence.",
+  },
 };
 
 export default function PremiumInfoPage() {

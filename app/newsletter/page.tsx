@@ -4,11 +4,24 @@ import { Metadata } from "next";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 
 export const metadata: Metadata = {
-  title: "Omni AI Newsletter",
+  title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
   description:
-    "Daily AI intelligence briefs on adaptation and monopolizing attention. Free newsletter from Omni AI.",
+    "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium AI intelligence from Omni AI.",
   keywords:
-    "AI newsletter, business intelligence, AI automation, Omni AI, Interlinked",
+    "AI newsletter, business intelligence, AI automation, Omni AI, Interlinked, daily AI briefs, AI strategy",
+  openGraph: {
+    title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
+    description:
+      "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium tiers available.",
+    url: "https://omnileadsagi.com/newsletter",
+    siteName: "Omni AI",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
+    description:
+      "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium tiers available.",
+  },
 };
 
 export const dynamic = "force-dynamic";
