@@ -46,8 +46,30 @@ export default function SponsorApplication() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    
+
     try {
+      // Save application data via waitlist/lead capture API
+      const res = await fetch("/api/waitlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+          message: formData.message,
+          available_date: formData.availableDate,
+          source: "sponsor_application",
+          role: "sponsor",
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        // Ignore duplicate entry error — just mark as submitted
+        if (err?.error && !err.error.includes("duplicate")) {
+          throw new Error(err.error);
+        }
+      }
+      // Update user profile role if authenticated
       if (user) {
         await upsertProfile({ role: "sponsor" });
       }
