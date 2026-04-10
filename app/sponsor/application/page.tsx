@@ -195,7 +195,7 @@ export default function SponsorApplication() {
           <DialogHeader>
             <DialogTitle className="text-xl font-bold">Apply Today</DialogTitle>
             <DialogDescription className="text-gray-400">
-              Fill out the form below and we'll be in touch.
+              Fill out the form below and we&apos;ll be in touch.
             </DialogDescription>
           </DialogHeader>
           
@@ -206,7 +206,7 @@ export default function SponsorApplication() {
               </div>
               <h3 className="text-xl font-bold mb-2">Application Submitted!</h3>
               <p className="text-gray-400 mb-4">
-                Thank you for your interest. We'll review your application and get back to you within 2-3 business days.
+                Thank you for your interest. We&apos;ll review your application and get back to you within 2-3 business days.
               </p>
               <Button 
                 onClick={() => setShowApplyModal(false)}

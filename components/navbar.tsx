@@ -1,6 +1,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Image from "next/image";
 import { Menu, X, LayoutDashboard, Command } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -52,7 +53,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
             <span className="text-xl md:text-2xl font-bold text-gradient">
               Omni AI
             </span>
-            <img src="/omni-logo.svg" alt="Omni AI Logo" className="h-7 md:h-9 w-auto" />
+            <Image src="/omni-logo.svg" alt="Omni AI Logo" width={36} height={36} className="h-7 md:h-9 w-auto" />
           </a>
 
           <div className="hidden md:flex items-center justify-center gap-8 flex-1 absolute md:relative left-0 right-0 md:left-auto md:right-auto pointer-events-none md:pointer-events-auto">

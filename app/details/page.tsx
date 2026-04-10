@@ -302,7 +302,7 @@ export default function Details() {
                     <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-white/5">
                       <Users className="w-5 h-5 text-purple-400" />
                     </div>
-                    <h2 className="text-xl md:text-2xl font-bold text-white">Who It's For</h2>
+                    <h2 className="text-xl md:text-2xl font-bold text-white">Who It&apos;s For</h2>
                   </div>
 
                   <div className="space-y-4">

@@ -48,7 +48,7 @@ export function ServicesSection({ onTierSelect }: ServicesSectionProps) {
           className="text-center mb-10 md:mb-16"
         >
           <p className="text-lg md:text-xl text-gray-600 italic px-4">
-            "Tools make you faster. Systems make you inevitable."
+            &ldquo;Tools make you faster. Systems make you inevitable.&rdquo;
           </p>
         </motion.div>
 

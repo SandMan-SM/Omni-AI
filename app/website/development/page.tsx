@@ -149,7 +149,7 @@ export default function WebsiteDevelopment() {
                 <span className="text-gradient">Website Development</span>
               </h1>
               <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed mb-10" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
-                AI-powered web development, hosting, and optimization — we build, deploy, and scale so you don't have to.
+                AI-powered web development, hosting, and optimization — we build, deploy, and scale so you don&apos;t have to.
               </p>
             </motion.div>
 

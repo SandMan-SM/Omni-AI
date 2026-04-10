@@ -139,16 +139,17 @@ export default function Dashboard() {
   });
   const recentActivities = activityData?.activities ?? [];
 
-  // Fetch newsletter posts for the Newsletter Posts section
-  const { data: newsletterData } = useQuery<{ posts: { id: string; slug: string; subject: string; tier?: string; published_at?: string; created_at?: string }[] }>({
+  // Fetch newsletter posts for the Newsletter Posts section (public endpoint — all users can see)
+  const { data: newsletterData } = useQuery<{ posts: { id: string; slug: string; subject: string; tier?: string; published_at?: string }[] }>({
     queryKey: ["newsletter-posts"],
     queryFn: async () => {
-      const res = await fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`/api/newsletter/posts?_t=${Date.now()}`, { cache: 'no-store' });
       return res.json();
     },
-    enabled: !!isAdmin,
   });
-  const newsletterPosts = (newsletterData?.posts ?? []).slice(0, 6);
+  const allNewsletterPosts = (newsletterData?.posts ?? []).filter(p => p.published_at);
+  const recentFreePosts = allNewsletterPosts.filter(p => p.tier !== "premium").slice(0, 3);
+  const recentPremiumPosts = allNewsletterPosts.filter(p => p.tier === "premium").slice(0, 3);
 
   // Compute next 3 AI CEO Training sessions (same schedule as /interlinked)
   const upcomingTrainings = useMemo(() => {
@@ -317,7 +318,7 @@ export default function Dashboard() {
               data-testid="banner-complete-account"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white">You haven't finished setting up your account</p>
+                <p className="text-sm font-medium text-white">You haven&apos;t finished setting up your account</p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {!(profile.name || profile.first_name) || !profile.phone
                     ? "Please fill out your basic info to continue."
@@ -447,34 +448,9 @@ export default function Dashboard() {
               </div>
             )}
 
-            {/* Fray's Agentic Agents card - ONLY shows for Fray */}
+            {/* Fray's Sponsor Tab - ONLY shows for Fray */}
             {isFray && (
               <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-                <div className="mb-4">
-                  <Card className="bg-gradient-to-br from-amber-900/40 via-amber-950/60 to-yellow-900/40 border-2 border-amber-400 shadow-[0_0_20px_rgba(251,191,36,0.3)] overflow-hidden relative max-w-md mx-auto">
-                    <div className="absolute inset-0 bg-gradient-to-br from-amber-400/10 via-transparent to-yellow-400/10" />
-                    <CardContent className="p-5 relative">
-                      <h3 className="text-2xl font-bold text-center mb-2">
-                        <span className="bg-gradient-to-r from-amber-200 via-yellow-300 to-amber-200 bg-clip-text text-transparent animate-shine">
-                          Activate VIP Sponsorship
-                        </span>
-                      </h3>
-                      <p className="text-sm text-amber-200/80 mb-4 text-center px-2 leading-relaxed">
-                        Agents have been developed — please activate VIP Sponsor Subscription
-                      </p>
-                      <div className="flex justify-center">
-                        <Button
-                          className="btn-chrome-gold text-black border-0 shadow-lg shadow-amber-400/25 font-semibold text-sm"
-                          onClick={() => window.open('https://www.paypal.com/ncp/payment/NLHHZJS3UC48L', '_blank')}
-                        >
-                          <Crown className="w-4 h-4 mr-2" />
-                          Activate Sponsor Subscription
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-
                 <div className="mt-6">
                   <SponsorTab isLocked={false} />
                 </div>
@@ -835,6 +811,62 @@ export default function Dashboard() {
                   </Button>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* Newsletter Posts */}
+          {(recentFreePosts.length > 0 || recentPremiumPosts.length > 0) && (
+            <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }}>
+              <Card className="bg-white/[0.03] border-white/[0.06]">
+                <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
+                  <CardTitle className="text-lg text-white">Newsletter Posts</CardTitle>
+                  <Mail className="w-4 h-4 text-gray-500" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {recentFreePosts.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-purple-400 uppercase tracking-wider font-medium mb-2">Free</p>
+                      <div className="space-y-2">
+                        {recentFreePosts.map(p => (
+                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
+                            <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+                              <Mail className="w-3.5 h-3.5 text-purple-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs sm:text-sm text-white truncate group-hover:text-purple-300 transition-colors">{p.subject}</p>
+                              {p.published_at && (
+                                <p className="text-[10px] text-gray-600">{new Date(p.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                              )}
+                            </div>
+                            <Eye className="w-3.5 h-3.5 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {recentPremiumPosts.length > 0 && (
+                    <div>
+                      <p className="text-[10px] text-yellow-400 uppercase tracking-wider font-medium mb-2">Premium</p>
+                      <div className="space-y-2">
+                        {recentPremiumPosts.map(p => (
+                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
+                            <div className="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
+                              <Crown className="w-3.5 h-3.5 text-yellow-400" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs sm:text-sm text-white truncate group-hover:text-yellow-300 transition-colors">{p.subject}</p>
+                              {p.published_at && (
+                                <p className="text-[10px] text-gray-600">{new Date(p.published_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</p>
+                              )}
+                            </div>
+                            <Eye className="w-3.5 h-3.5 text-gray-600 group-hover:text-white transition-colors flex-shrink-0" />
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
           )}
 

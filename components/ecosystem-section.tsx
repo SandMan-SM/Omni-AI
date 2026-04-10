@@ -77,7 +77,7 @@ export function EcosystemSection() {
           className="text-center mt-16"
         >
           <p className="text-xl text-gray-500 italic">
-            "The loop never stops. Every cycle makes the system stronger."
+            &ldquo;The loop never stops. Every cycle makes the system stronger.&rdquo;
           </p>
         </motion.div>
       </div>

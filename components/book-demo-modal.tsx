@@ -253,7 +253,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   Book a Demo
                 </h2>
                 <p className="text-gray-400 text-sm text-center mb-6">
-                  Let's explore how Omni AI can transform your business
+                  Let&apos;s explore how Omni AI can transform your business
                 </p>
 
                 <form onSubmit={handleFormSubmit} className="space-y-4">

@@ -42,7 +42,7 @@ export function TestimonialsSection() {
             <span className="text-gradient">See What Others Have to Say</span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">
-            From those who've ascended through the tiers.
+            From those who&apos;ve ascended through the tiers.
           </p>
         </motion.div>
 

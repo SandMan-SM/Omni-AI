@@ -205,7 +205,7 @@ export function ExecutiveInsights() {
             {loading ? (
               <p className="text-xs text-gray-600 py-2">Loading...</p>
             ) : topClients.length === 0 ? (
-              <p className="text-xs text-gray-600 py-2">No clients yet — set a contact's CRM status to 'client'.</p>
+              <p className="text-xs text-gray-600 py-2">No clients yet — set a contact&apos;s CRM status to &apos;client&apos;.</p>
             ) : topClients.map(u => {
               const score = clientHealth(u);
               const h = hc(score);

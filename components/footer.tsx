@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Image from "next/image";
 
 const footerLinks = [
   { href: "/interlinked", label: "Interlinked" },
@@ -19,7 +20,7 @@ export function Footer() {
         <div className="flex flex-col items-center justify-center gap-6">
           <div className="flex items-center gap-2">
             <span className="text-xl md:text-2xl font-bold text-gradient">Omni AI</span>
-            <img src="/omni-logo.svg" alt="Omni AI Logo" className="h-7 md:h-9 w-auto" />
+            <Image src="/omni-logo.svg" alt="Omni AI Logo" width={36} height={36} className="h-7 md:h-9 w-auto" />
           </div>
 
           <nav className="flex items-center justify-center gap-4 md:gap-8" data-testid="footer-nav">
@@ -36,7 +37,7 @@ export function Footer() {
           </nav>
 
           <p className="text-gray-600 text-sm italic" data-testid="text-tagline">
-            "This is not a tool. This is a transformation."
+            &ldquo;This is not a tool. This is a transformation.&rdquo;
           </p>
         </div>
 

@@ -190,7 +190,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                 >
                   <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
                 </motion.div>
-                <h3 className="text-2xl font-bold text-white mb-2">You're In!</h3>
+                <h3 className="text-2xl font-bold text-white mb-2">You&apos;re In!</h3>
                 <p className="text-gray-400 mb-2">Your seat has been reserved.</p>
                 {selectedSession && (
                   <p className="text-purple-400 font-medium mb-4">

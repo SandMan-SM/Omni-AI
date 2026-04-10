@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import Image from "next/image";
 import { Sparkles, Clock, Eye, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
@@ -148,11 +149,13 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           </span>
           <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-14">
             {partners.map((partner) => (
-              <img
+              <Image
                 key={partner.name}
                 src={partner.logo}
                 alt={partner.name}
-                className="h-14 sm:h-16 md:h-20 opacity-70 hover:opacity-100 transition-opacity"
+                width={80}
+                height={80}
+                className="h-14 sm:h-16 md:h-20 w-auto opacity-70 hover:opacity-100 transition-opacity"
               />
             ))}
           </div>

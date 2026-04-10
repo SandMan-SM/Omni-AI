@@ -5,8 +5,9 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { 
-  Zap, Shield, Crown, Users, TrendingUp, DollarSign, 
+import Image from "next/image";
+import {
+  Zap, Shield, Crown, Users, TrendingUp, DollarSign,
   Brain, MessageSquare, Calendar, Send, Search, FileText,
   Bot, BarChart3, ChevronRight, CheckCircle, Sparkles,
   ArrowRight, Gift, Wallet, Building2, Target, Eye,
@@ -200,16 +201,18 @@ export default function SponsorInfo() {
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
-                How You'll See Results
+                How You&apos;ll See Results
               </h2>
               <p className="text-gray-400 text-sm md:text-base">Your Sponsor Dashboard provides real-time reporting on lead volume, engagement activity, response performance, and growth trends.</p>
             </motion.div>
 
             <motion.div variants={fadeUp} className="mb-6 md:mb-8">
               <div className="rounded-xl md:rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl shadow-purple-900/30">
-                <img
+                <Image
                   src="/dashboard-screenshot.png"
                   alt="Omni AI Sponsor Dashboard"
+                  width={1200}
+                  height={675}
                   className="w-full h-auto block"
                 />
               </div>

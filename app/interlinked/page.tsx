@@ -194,11 +194,11 @@ export default function Interlinked() {
             My private AI runs my businesses while I work just 4 focused hours a day instead of 8.
           </p>
           <p className="text-gray-400 leading-relaxed">
-            It's built specifically for me. It's connected to my Gmail, ad accounts, accounting software, calendar, analytics, payroll, team systems — everything.
+            It&apos;s built specifically for me. It&apos;s connected to my Gmail, ad accounts, accounting software, calendar, analytics, payroll, team systems — everything.
           </p>
           <p className="text-purple-400 font-semibold text-lg">One central brain.</p>
           <p className="text-gray-400 leading-relaxed">
-            And in this free training, I'm going to show you how to build the exact same system for your business using Omni AI.
+            And in this free training, I&apos;m going to show you how to build the exact same system for your business using Omni AI.
           </p>
         </motion.div>
 
@@ -226,7 +226,7 @@ export default function Interlinked() {
             "Operational risk",
           ]} />
           <p className="text-gray-400 leading-relaxed">
-            Then you'll see how to implement the same structure inside your company.
+            Then you&apos;ll see how to implement the same structure inside your company.
           </p>
         </motion.div>
 
@@ -241,7 +241,7 @@ export default function Interlinked() {
           className="space-y-6 mb-12"
         >
           <p className="text-gray-300">Most business owners want to grow.</p>
-          <p className="text-gray-400">But they're terrified of the operational headache.</p>
+          <p className="text-gray-400">But they&apos;re terrified of the operational headache.</p>
           <p className="text-gray-400">More revenue usually means:</p>
           <BulletList
             icon={AlertTriangle}
@@ -259,7 +259,7 @@ export default function Interlinked() {
 
         <div className="border-t border-white/5 my-12" />
 
-        <SectionHeading>In This Free Webinar, I'll Reveal:</SectionHeading>
+        <SectionHeading>In This Free Webinar, I&apos;ll Reveal:</SectionHeading>
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -270,10 +270,10 @@ export default function Interlinked() {
         >
           <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
             <Brain className="w-5 h-5 text-purple-400" />
-            Why ChatGPT Isn't Enough
+            Why ChatGPT Isn&apos;t Enough
           </h3>
           <p className="text-gray-400 mb-4">
-            There's a massive difference between "glorified search AI" and a true AI CEO.
+            There&apos;s a massive difference between &ldquo;glorified search AI&rdquo; and a true AI CEO.
           </p>
           <p className="text-gray-400 mb-4">Most tools wait for you to ask questions.</p>
           <p className="text-gray-300 mb-3">A real AI CEO:</p>
@@ -284,7 +284,7 @@ export default function Interlinked() {
             "Alerts you to problems before you see them",
             "Surfaces opportunities automatically",
           ]} />
-          <p className="text-purple-400 font-semibold mt-4">That's what we built inside Omni AI.</p>
+          <p className="text-purple-400 font-semibold mt-4">That&apos;s what we built inside Omni AI.</p>
         </motion.div>
 
         <motion.div
@@ -326,7 +326,7 @@ export default function Interlinked() {
           className="glass-card rounded-md p-8 mb-12 neon-border text-center"
         >
           <p className="text-gray-300 mb-4">
-            If you're already operating at scale and want to see how Omni AI would integrate directly into your business:
+            If you&apos;re already operating at scale and want to see how Omni AI would integrate directly into your business:
           </p>
           <Button
             onClick={() => setIsDemoModalOpen(true)}
@@ -447,18 +447,18 @@ export default function Interlinked() {
           viewport={{ once: true }}
           className="space-y-4 mb-12"
         >
-          <p className="text-gray-300">I'm the founder of Omni AI.</p>
+          <p className="text-gray-300">I&apos;m the founder of Omni AI.</p>
           <p className="text-gray-400 leading-relaxed">
-            I've built and scaled multiple businesses, generated significant revenue across industries, and spent millions in paid advertising testing what actually works.
+            I&apos;ve built and scaled multiple businesses, generated significant revenue across industries, and spent millions in paid advertising testing what actually works.
           </p>
           <p className="text-gray-400 leading-relaxed">Through that process, I realized something:</p>
           <p className="text-purple-400 font-semibold">
             The bottleneck in every growing business is decision-making and operational visibility.
           </p>
           <p className="text-gray-400 leading-relaxed">So I built a centralized AI system to solve it.</p>
-          <p className="text-gray-400 leading-relaxed">Now I'm showing you how to do the same.</p>
+          <p className="text-gray-400 leading-relaxed">Now I&apos;m showing you how to do the same.</p>
           <p className="text-gray-400 leading-relaxed">
-            In this free training, I'll walk you through the roadmap I would use to build and scale a business today using AI leverage from day one.
+            In this free training, I&apos;ll walk you through the roadmap I would use to build and scale a business today using AI leverage from day one.
           </p>
           <p className="text-white font-medium">
             This is practical. This is implementable. And this is built for serious operators.
@@ -520,7 +520,7 @@ export default function Interlinked() {
             Questions?
           </h3>
           <p className="text-gray-400 mb-4">
-            If you have questions about Omni AI or whether this training is right for you, contact support and we'll help clarify your next steps.
+            If you have questions about Omni AI or whether this training is right for you, contact support and we&apos;ll help clarify your next steps.
           </p>
           <div className="flex flex-col gap-2 text-sm">
             <span className="text-gray-500">
@@ -546,8 +546,8 @@ export default function Interlinked() {
           <p className="text-gray-300 mb-1">If you want to scale intelligently instead of chaotically...</p>
           <p className="text-gray-300 mb-4">If you want leverage instead of burnout...</p>
           <p className="text-white font-bold text-lg mb-2">Reserve your seat now.</p>
-          <p className="text-gray-400 mb-1">Omni AI isn't about working harder.</p>
-          <p className="text-purple-400 font-semibold text-lg">It's about building an AI CEO that works for you.</p>
+          <p className="text-gray-400 mb-1">Omni AI isn&apos;t about working harder.</p>
+          <p className="text-purple-400 font-semibold text-lg">It&apos;s about building an AI CEO that works for you.</p>
         </motion.div>
 
         <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />

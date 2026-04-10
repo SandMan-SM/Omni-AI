@@ -9,7 +9,7 @@ import {
   UserCog, Mail, Phone, Building2, Command, ArrowRight,
   Plus, Edit2, Target, Flame, Thermometer, Snowflake,
   MessageSquare, Clock, X, Send, ChevronDown, Trash2, AlertTriangle,
-  Activity, Briefcase, RefreshCw
+  Activity, Briefcase, RefreshCw, BarChart3
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +26,7 @@ import { NewsletterHistory } from "@/components/newsletter-history";
 import { AdminCRM } from "@/components/admin-crm";
 import { SystemMonitor } from "@/components/system-monitor";
 import { AdminCampaigns } from "@/components/admin-campaigns";
+import { AdminOverview } from "@/components/admin-overview";
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -291,6 +292,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
   const [form, setForm] = useState(buildForm(u));
 
   // Re-initialize form when a different user is selected or dialog opens
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (open) {
       setForm(buildForm(u));
@@ -308,7 +310,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
         if (d.password) setCurrentPassword(d.password);
       }).catch(() => {});
     }
-  }, [open, u.id]);
+  }, [open, u.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const set = (k: string) => (v: string | boolean) => setForm(prev => ({ ...prev, [k]: v }));
   const toggle = (k: string) => () => setForm(prev => ({ ...prev, [k]: !(prev as any)[k] }));
@@ -797,7 +799,8 @@ export default function Admin() {
       toast({ title: "Access Denied", variant: "destructive" });
       router.push("/dashboard");
     }
-  }, [profile, profileLoading, isAdmin, router]);
+  }, [profile, profileLoading, isAdmin, router]); // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { if (isAdmin) loadUsers(); }, [isAdmin]);
 
   const loadUsers = async () => {
@@ -853,8 +856,11 @@ export default function Admin() {
           </div>
         </div>
 
-        <Tabs defaultValue="users" className="space-y-6">
+        <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-white/5 border border-white/10 p-1.5 h-auto w-full overflow-x-auto flex-nowrap gap-1" style={{ display: 'flex' }}>
+            <TabsTrigger value="overview" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
+              <BarChart3 className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Overview
+            </TabsTrigger>
             <TabsTrigger value="users" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
               <UserCog className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Users
             </TabsTrigger>
@@ -871,6 +877,14 @@ export default function Admin() {
               <Activity className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> System
             </TabsTrigger>
           </TabsList>
+
+          {/* ── Overview ──────────────────────────────────────────────── */}
+          <TabsContent value="overview" className="mt-0">
+            {usersLoading
+              ? <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-purple-400" /></div>
+              : <AdminOverview users={users} onEditUser={setEditingUser} />
+            }
+          </TabsContent>
 
           {/* ── Users ────────────────────────────────────────────────── */}
           <TabsContent value="users" className="space-y-6 mt-0">
