@@ -1,0 +1,20 @@
+import { createClient } from "@/lib/supabase/server";
+import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("agent_edits")
+      .select("id, project, commit_message, category, lines_added, files_changed, created_at")
+      .order("created_at", { ascending: false })
+      .limit(50);
+
+    if (error) throw error;
+    return NextResponse.json(data || []);
+  } catch {
+    return NextResponse.json([], { status: 500 });
+  }
+}
