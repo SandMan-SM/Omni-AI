@@ -491,37 +491,32 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
   // Merge analytics with sends, matching posts by closest timestamp (1:1)
   // Also includes draft posts (published_at is null) with status='draft'
+  // Build a subject→post lookup for O(1) matching (normalized for whitespace/case)
+  const postBySubject = useMemo(() => {
+    const map = new Map<string, (typeof posts)[0]>();
+    for (const p of posts) {
+      map.set(p.subject.trim().toLowerCase(), p);
+    }
+    return map;
+  }, [posts]);
+
   const mergedNewsletters = useMemo(() => {
     const seen = new Set<string>();
     const usedPostIds = new Set<string>();
     const result: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string; status: 'draft' | 'sent' }[] = [];
 
-    // Find matching post — first try exact subject match, then closest timestamp within 2h
-    const findPost = (sentAt: string, subject?: string) => {
-      // 1. Try exact subject match first (most reliable)
-      if (subject) {
-        for (const p of posts) {
-          if (usedPostIds.has(p.id) || !p.published_at) continue;
-          if (p.subject === subject) {
-            usedPostIds.add(p.id);
-            return p;
-          }
-        }
+    // Normalize subjects for matching — handles whitespace/case differences between Resend analytics, sends, and posts
+    const normalize = (s: string) => s.trim().toLowerCase();
+
+    // Find matching post by normalized subject — no timestamp guessing
+    const findPost = (subject?: string) => {
+      if (!subject) return null;
+      const post = postBySubject.get(normalize(subject));
+      if (post && !usedPostIds.has(post.id) && post.published_at) {
+        usedPostIds.add(post.id);
+        return post;
       }
-      // 2. Fallback: closest by timestamp within 2h
-      const sentTime = new Date(sentAt).getTime();
-      let best: (typeof posts)[0] | null = null;
-      let bestDiff = Infinity;
-      for (const p of posts) {
-        if (usedPostIds.has(p.id) || !p.published_at) continue;
-        const diff = Math.abs(new Date(p.published_at).getTime() - sentTime);
-        if (diff < bestDiff && diff < 7200000) {
-          bestDiff = diff;
-          best = p;
-        }
-      }
-      if (best) usedPostIds.add(best.id);
-      return best;
+      return null;
     };
 
     // 1. Add draft posts first (published_at is null) — they show at the top
@@ -531,28 +526,45 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       result.push({ slug: draft.slug, tier: draft.tier, postSubject: draft.subject, status: 'draft' });
     }
 
-    // 2. Merge analytics with sends
+    // 2. Merge analytics with sends — use normalized subject match for tier
     if (analytics?.newsletters) {
       for (const n of analytics.newsletters) {
-        seen.add(n.subject);
-        const matchingSend = sends.find(s => s.subject === n.subject);
-        const post = findPost(n.sent_at, n.subject);
+        seen.add(normalize(n.subject));
+        const matchingSend = sends.find(s => normalize(s.subject) === normalize(n.subject));
+        const post = findPost(n.subject);
         result.push({ newsletter: n, send: matchingSend, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
       }
     }
 
     for (const s of sends) {
-      if (!seen.has(s.subject)) {
-        const post = findPost(s.sent_at, s.subject);
+      if (!seen.has(normalize(s.subject))) {
+        const post = findPost(s.subject);
         result.push({ send: s, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
       }
     }
 
-    return result;
-  }, [analytics, sends, posts]);
+    // 3. Add any published posts that weren't matched to a send or analytic
+    //    This ensures ALL posts show up with their correct tier
+    for (const p of posts) {
+      if (!usedPostIds.has(p.id) && p.published_at) {
+        result.push({ slug: p.slug, tier: p.tier, postSubject: p.subject, status: 'sent' });
+      }
+    }
 
-  // Only show the most recent 5
-  const recentNewsletters = mergedNewsletters.slice(0, 5);
+    // Sort: drafts first, then by date descending
+    result.sort((a, b) => {
+      if (a.status === 'draft' && b.status !== 'draft') return -1;
+      if (b.status === 'draft' && a.status !== 'draft') return 1;
+      const dateA = a.newsletter?.sent_at || a.send?.sent_at || '';
+      const dateB = b.newsletter?.sent_at || b.send?.sent_at || '';
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
+    });
+
+    return result;
+  }, [analytics, sends, posts, postBySubject]);
+
+  // Show first 5, rest visible via scroll
+  const recentNewsletters = mergedNewsletters;
 
   const summary = analytics?.summary;
 
@@ -726,7 +738,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             No newsletters yet. Drafts and sends will appear here automatically.
           </div>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
             {recentNewsletters.map((item, i) => (
               <AnalyticsSendCard
                 key={item.newsletter?.subject || item.send?.id || item.slug || i}
@@ -738,11 +750,6 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 status={item.status}
               />
             ))}
-            {mergedNewsletters.length > 5 && (
-              <p className="text-center text-[11px] text-gray-500 pt-1">
-                Showing 5 of {mergedNewsletters.length} newsletters
-              </p>
-            )}
           </div>
         )}
       </div>
