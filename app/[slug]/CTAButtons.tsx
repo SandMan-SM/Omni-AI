@@ -25,8 +25,8 @@ export default function CTAButtons({ slug }: CTAButtonsProps) {
           See How Omni AI Does It →
         </button>
         <a
-          href="/"
-          className="w-full sm:w-auto whitespace-nowrap rounded-xl px-8 py-4 text-base font-semibold text-gray-300 text-center transition-all duration-200 hover:text-white hover:bg-white/10 border border-white/40 bg-white/[0.04]"
+          href="/details"
+          className="w-full sm:w-auto whitespace-nowrap rounded-xl px-8 py-4 text-base font-semibold text-gray-300 text-center transition-all duration-200 hover:text-white hover:bg-white/10 border border-white/60 bg-white/[0.04]"
         >
           Learn More
         </a>
