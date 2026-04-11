@@ -13,10 +13,10 @@ export default function CTAButtons({ slug }: CTAButtonsProps) {
   return (
     <>
       {/* Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md mx-auto">
+      <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md sm:max-w-xl mx-auto">
         <button
           onClick={() => setOpen(true)}
-          className="w-full sm:flex-1 rounded-xl px-6 py-4 text-base font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
+          className="w-full sm:flex-1 sm:whitespace-nowrap rounded-xl px-6 py-4 text-base font-bold text-white transition-all duration-200 hover:-translate-y-0.5"
           style={{
             background: "linear-gradient(135deg, #6366f1, #ec4899)",
             boxShadow: "0 0 32px rgba(99,102,241,0.4)",
@@ -26,7 +26,7 @@ export default function CTAButtons({ slug }: CTAButtonsProps) {
         </button>
         <a
           href="/"
-          className="w-full sm:flex-1 rounded-xl px-6 py-4 text-base font-semibold text-gray-300 text-center transition-all duration-200 hover:text-white hover:bg-white/10 border border-white/15 bg-white/[0.04]"
+          className="w-full sm:flex-1 rounded-xl px-6 py-4 text-base font-semibold text-gray-300 text-center transition-all duration-200 hover:text-white hover:bg-white/10 border border-white/40 bg-white/[0.04]"
         >
           Learn More
         </a>
