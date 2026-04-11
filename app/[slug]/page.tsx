@@ -2,7 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import LeadForm from "./LeadForm";
+import CTAButtons from "./CTAButtons";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -168,10 +168,8 @@ export default async function TrendingLandingPage({ params }: Props) {
           {description}
         </p>
 
-        {/* Lead form */}
-        <div className="w-full max-w-md mx-auto">
-          <LeadForm slug={slug} />
-        </div>
+        {/* CTA Buttons */}
+        <CTAButtons slug={slug} />
 
         {/* Stats */}
         <div className="flex flex-nowrap justify-center items-center mt-36 w-full max-w-2xl mx-auto">
@@ -200,7 +198,7 @@ export default async function TrendingLandingPage({ params }: Props) {
         </div>
 
         {/* Topic pill */}
-        <p className="mt-16 text-xs text-gray-600 uppercase tracking-widest">
+        <p className="mt-16 text-xs text-white uppercase tracking-widest">
           Today&apos;s trend: {page.topic}
         </p>
       </main>
