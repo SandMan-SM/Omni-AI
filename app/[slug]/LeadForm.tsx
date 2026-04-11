@@ -72,7 +72,7 @@ export default function LeadForm({ slug }: LeadFormProps) {
         value={fields.name}
         onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))}
         disabled={loading}
-        className="w-full rounded-xl px-5 py-4 text-base text-white placeholder-gray-500 border border-white/10 bg-white/[0.05] focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.07] transition-all disabled:opacity-50"
+        className="w-full rounded-xl px-5 py-4 text-base text-white placeholder-gray-500 border border-white/10 bg-white/[0.08] focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.12] transition-all disabled:opacity-50"
       />
       <input
         type="tel"
@@ -80,7 +80,7 @@ export default function LeadForm({ slug }: LeadFormProps) {
         value={fields.phone}
         onChange={(e) => setFields((f) => ({ ...f, phone: e.target.value }))}
         disabled={loading}
-        className="w-full rounded-xl px-5 py-4 text-base text-white placeholder-gray-500 border border-white/10 bg-white/[0.05] focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.07] transition-all disabled:opacity-50"
+        className="w-full rounded-xl px-5 py-4 text-base text-white placeholder-gray-500 border border-white/10 bg-white/[0.08] focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.12] transition-all disabled:opacity-50"
       />
       <input
         type="email"
@@ -88,7 +88,7 @@ export default function LeadForm({ slug }: LeadFormProps) {
         value={fields.email}
         onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}
         disabled={loading}
-        className="w-full rounded-xl px-5 py-4 text-base text-white placeholder-gray-500 border border-white/10 bg-white/[0.05] focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.07] transition-all disabled:opacity-50"
+        className="w-full rounded-xl px-5 py-4 text-base text-white placeholder-gray-500 border border-white/10 bg-white/[0.08] focus:outline-none focus:border-purple-500/60 focus:bg-white/[0.12] transition-all disabled:opacity-50"
       />
 
       {error && (
