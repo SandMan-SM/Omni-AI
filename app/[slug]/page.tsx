@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
+import LeadForm from "./LeadForm";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -178,36 +179,33 @@ export default async function TrendingLandingPage({ params }: Props) {
           {description}
         </p>
 
-        {/* CTA */}
-        <Link
-          href="https://omnileadsagi.com"
-          className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-lg text-white transition-all duration-200 hover:-translate-y-1"
-          style={{
-            background: "linear-gradient(135deg, #6366f1, #ec4899)",
-            boxShadow: "0 0 40px rgba(99,102,241,0.45)",
-          }}
-        >
-          See How Omni AI Does It
-          <span className="transition-transform group-hover:translate-x-1">→</span>
-        </Link>
+        {/* Lead form */}
+        <div className="w-full max-w-md mx-auto">
+          <LeadForm slug={slug} />
+        </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-12 mt-20">
+        <div className="flex flex-wrap justify-center items-center gap-0 mt-24 w-full max-w-2xl mx-auto">
           {[
             { num: "10x", label: "Faster Content" },
             { num: "80%", label: "Cost Reduction" },
             { num: "24/7", label: "AI on Autopilot" },
-          ].map(({ num, label }) => (
-            <div key={label} className="text-center">
-              <div
-                className="text-4xl font-black bg-clip-text text-transparent mb-1"
-                style={{ backgroundImage: "linear-gradient(135deg, #818cf8, #22d3ee)" }}
-              >
-                {num}
+          ].map(({ num, label }, i) => (
+            <div key={label} className="flex items-center">
+              <div className="text-center px-10 py-2">
+                <div
+                  className="text-5xl font-black bg-clip-text text-transparent mb-2"
+                  style={{ backgroundImage: "linear-gradient(135deg, #818cf8, #22d3ee)" }}
+                >
+                  {num}
+                </div>
+                <div className="text-sm text-gray-400 font-semibold uppercase tracking-widest">
+                  {label}
+                </div>
               </div>
-              <div className="text-xs text-gray-500 font-semibold uppercase tracking-widest">
-                {label}
-              </div>
+              {i < 2 && (
+                <div className="w-px h-12 bg-white/10 shrink-0" />
+              )}
             </div>
           ))}
         </div>

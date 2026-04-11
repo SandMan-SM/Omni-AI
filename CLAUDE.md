@@ -41,6 +41,34 @@ npm run check     # TypeScript check
 - Consistent section padding: `py-16 md:py-24`
 - Max container: `max-w-7xl mx-auto px-4`
 
+## Daily Trending Post System
+
+This site serves daily AI/business trending topic landing pages at `omnileadsagi.com/[slug]`.
+
+### How it works
+- **`app/[slug]/page.tsx`** — Dynamic route. Fetches `title`, `description`, `topic` from the `landing_pages` Supabase table and renders a branded landing page with full SEO metadata (OG, Twitter card, JSON-LD).
+- **`app/[slug]/LeadForm.tsx`** — Client component. Name/Phone/Email form. POSTs to `/api/landing-lead`.
+- **`app/api/landing-lead/route.ts`** — Inserts lead into `landing_page_leads`, sends owner notification to `sitanim8@gmail.com`, sends thank-you email to the lead via Resend.
+- **`app/api/og/route.tsx`** — Edge route. Generates 1200×630 branded OG image for Twitter/LinkedIn rich cards via `next/og`.
+
+### Daily post workflow (automated via scheduled task)
+1. Find today's trending topic (viral, business/AI/culture angle)
+2. Generate: `slug` (kebab-case + date), `title` (punchy headline), `description` (one-line bridge to Omni AI)
+3. Insert into Supabase `landing_pages` table — page auto-live at `omnileadsagi.com/[slug]`
+4. Tweet via Blotato (accountId `16153`) with the URL in the tweet text — **no manually attached image**. Twitter auto-renders the OG card from the page's meta tags.
+5. Update `landing_pages` row with tweet URL and text
+6. Log to `posted-content-log.json`
+
+### Key tables (Supabase project `odvxtychuxxsudfpcqqs`)
+- `landing_pages` — slug, topic, title, description, html, date, tweet_url, tweet_text
+- `landing_page_leads` — slug, name, phone, email, is_newsletter_subscriber, created_at
+- `landing_page_analytics` — slug, event, referrer, user_agent (tracked client-side)
+
+### Email (Resend)
+- From: `Omni AI <bookings@omnileadsagi.com>`
+- Owner notifications → `sitanim8@gmail.com`
+- User emails: warm thank-you with gradient HTML template
+
 ## Do NOT Touch
 - `.env` / `.env.local` — never modify env files
 - `drizzle.config.ts` — database config
