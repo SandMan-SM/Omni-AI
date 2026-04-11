@@ -1,0 +1,252 @@
+import { createAdminClient } from "@/lib/supabase/admin";
+import { notFound } from "next/navigation";
+import { Metadata } from "next";
+import Link from "next/link";
+
+interface Props {
+  params: Promise<{ slug: string }>;
+}
+
+async function getLandingPage(slug: string) {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("landing_pages")
+    .select("slug, topic, title, description, date, tweet_url")
+    .eq("slug", slug)
+    .single();
+  return data;
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const page = await getLandingPage(slug);
+  if (!page) return { title: "Not Found" };
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
+  const title = page.title || page.topic;
+  const description =
+    page.description ||
+    `${page.topic} — See how Omni AI helps businesses automate marketing and win with AI.`;
+  const ogImage = `${siteUrl}/api/og?slug=${slug}&title=${encodeURIComponent(title)}&topic=${encodeURIComponent(page.topic)}`;
+
+  return {
+    title: `${title} | Omni AI`,
+    description,
+    keywords: `AI marketing, AI automation, ${page.topic}, Omni AI, business AI, lead generation`,
+    openGraph: {
+      title,
+      description,
+      type: "article",
+      url: `${siteUrl}/${slug}`,
+      siteName: "Omni AI",
+      images: [{ url: ogImage, width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [ogImage],
+      site: "@SitaniMafi",
+    },
+    alternates: {
+      canonical: `${siteUrl}/${slug}`,
+    },
+  };
+}
+
+export default async function TrendingLandingPage({ params }: Props) {
+  const { slug } = await params;
+  const page = await getLandingPage(slug);
+  if (!page) notFound();
+
+  const title = page.title || page.topic;
+  const description =
+    page.description ||
+    `${page.topic} — See how Omni AI helps businesses automate marketing and win with AI.`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebPage",
+    name: title,
+    description,
+    url: `${siteUrl}/${slug}`,
+    publisher: {
+      "@type": "Organization",
+      name: "Omni AI",
+      url: siteUrl,
+      logo: { "@type": "ImageObject", url: `${siteUrl}/logo.png` },
+    },
+    datePublished: page.date,
+    inLanguage: "en-US",
+    about: {
+      "@type": "Thing",
+      name: page.topic,
+    },
+  };
+
+  return (
+    <div className="min-h-screen bg-[#050508] text-white overflow-x-hidden">
+      {/* JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      {/* Animated gradient background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div
+          className="absolute rounded-full opacity-20 blur-3xl"
+          style={{
+            width: 700,
+            height: 700,
+            background: "radial-gradient(circle, #6366f1, transparent 70%)",
+            top: -200,
+            left: -200,
+            animation: "drift1 14s ease-in-out infinite alternate",
+          }}
+        />
+        <div
+          className="absolute rounded-full opacity-15 blur-3xl"
+          style={{
+            width: 500,
+            height: 500,
+            background: "radial-gradient(circle, #ec4899, transparent 70%)",
+            bottom: -100,
+            right: -100,
+            animation: "drift2 18s ease-in-out infinite alternate",
+          }}
+        />
+      </div>
+
+      {/* Top shimmer bar */}
+      <div
+        className="fixed top-0 left-0 right-0 h-[3px] z-50"
+        style={{
+          background: "linear-gradient(90deg, #6366f1, #ec4899, #06b6d4, #6366f1)",
+          backgroundSize: "200% 100%",
+          animation: "shimmer 3s linear infinite",
+        }}
+      />
+
+      {/* Nav */}
+      <header className="relative z-10 border-b border-white/5">
+        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
+          <Link
+            href="/"
+            className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent"
+          >
+            Omni AI
+          </Link>
+          <Link
+            href="/interlinked"
+            className="text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            Book a Call →
+          </Link>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-[90vh] text-center px-5 py-20">
+        {/* Eyebrow */}
+        <div
+          className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest text-purple-300 border border-purple-500/30"
+          style={{ background: "rgba(99,102,241,0.1)" }}
+        >
+          <span
+            className="w-1.5 h-1.5 rounded-full bg-purple-400"
+            style={{ animation: "pulse 1.5s ease-in-out infinite" }}
+          />
+          Trending Now · Omni AI
+        </div>
+
+        {/* Headline */}
+        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight mb-6 max-w-5xl">
+          <span
+            className="bg-clip-text text-transparent"
+            style={{
+              backgroundImage: "linear-gradient(135deg, #c4b5fd 0%, #f0abfc 40%, #67e8f9 100%)",
+            }}
+          >
+            {title}
+          </span>
+        </h1>
+
+        {/* Subheadline */}
+        <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10">
+          {description}
+        </p>
+
+        {/* CTA */}
+        <Link
+          href="https://omnileadsagi.com"
+          className="inline-flex items-center gap-3 px-8 py-4 rounded-full font-bold text-lg text-white transition-all duration-200 hover:-translate-y-1"
+          style={{
+            background: "linear-gradient(135deg, #6366f1, #ec4899)",
+            boxShadow: "0 0 40px rgba(99,102,241,0.45)",
+          }}
+        >
+          See How Omni AI Does It
+          <span className="transition-transform group-hover:translate-x-1">→</span>
+        </Link>
+
+        {/* Stats */}
+        <div className="flex flex-wrap justify-center gap-12 mt-20">
+          {[
+            { num: "10x", label: "Faster Content" },
+            { num: "80%", label: "Cost Reduction" },
+            { num: "24/7", label: "AI on Autopilot" },
+          ].map(({ num, label }) => (
+            <div key={label} className="text-center">
+              <div
+                className="text-4xl font-black bg-clip-text text-transparent mb-1"
+                style={{ backgroundImage: "linear-gradient(135deg, #818cf8, #22d3ee)" }}
+              >
+                {num}
+              </div>
+              <div className="text-xs text-gray-500 font-semibold uppercase tracking-widest">
+                {label}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Topic pill */}
+        <p className="mt-16 text-xs text-gray-600 uppercase tracking-widest">
+          Today&apos;s trend: {page.topic}
+        </p>
+      </main>
+
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-white/5 py-8 text-center">
+        <p className="text-sm text-gray-600">
+          Powered by{" "}
+          <Link href="https://omnileadsagi.com" className="text-gray-400 hover:text-white transition-colors">
+            Omni AI
+          </Link>{" "}
+          — omnileadsagi.com
+        </p>
+      </footer>
+
+      <style>{`
+        @keyframes drift1 {
+          from { transform: translate(0, 0) scale(1); }
+          to { transform: translate(80px, 60px) scale(1.2); }
+        }
+        @keyframes drift2 {
+          from { transform: translate(0, 0) scale(1); }
+          to { transform: translate(-60px, -50px) scale(1.15); }
+        }
+        @keyframes shimmer {
+          from { background-position: 200% 0; }
+          to { background-position: -200% 0; }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.4; transform: scale(0.75); }
+        }
+      `}</style>
+    </div>
+  );
+}
