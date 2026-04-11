@@ -8,14 +8,14 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://omnileadsagi.com"),
-  title: "Omni AI — Autonomous Lead Generation & AI Business Automation",
+  title: "Omni AI — Autonomous Lead Generation & Agentic Infrastructure",
   description: "Omni AI builds autonomous AI systems that generate leads, run operations, and scale businesses 24/7. Explore AI-powered campaigns, lead qualification, and real-time optimization.",
   keywords: ["AI lead generation", "autonomous AI", "AI business automation", "marketing automation", "AI agents", "lead qualification", "AI campaigns"],
   alternates: {
     canonical: "https://omnileadsagi.com",
   },
   openGraph: {
-    title: "Omni AI — Autonomous Lead Generation & AI Business Automation",
+    title: "Omni AI — Autonomous Lead Generation & Agentic Infrastructure",
     description: "Autonomous AI systems that generate leads, run operations, and scale businesses 24/7. No micromanagement required.",
     url: "https://omnileadsagi.com",
     siteName: "Omni AI",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Omni AI — Autonomous Lead Generation & AI Business Automation",
+    title: "Omni AI — Autonomous Lead Generation & Agentic Infrastructure",
     description: "Autonomous AI systems that generate leads, run operations, and scale businesses 24/7.",
   },
   icons: {

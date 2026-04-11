@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
 export const alt =
-  "Omni AI — Autonomous Lead Generation & AI Business Automation";
+  "Omni AI — Autonomous Lead Generation & Agentic Infrastructure";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -49,26 +49,8 @@ export default async function Image() {
           }}
         />
 
-        {/* Badge */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            padding: "10px 24px",
-            borderRadius: "999px",
-            background: "rgba(147,51,234,0.1)",
-            border: "1px solid rgba(147,51,234,0.3)",
-            marginBottom: "32px",
-          }}
-        >
-          <div style={{ width: "8px", height: "8px", borderRadius: "4px", background: "#a855f7", marginRight: "10px", display: "flex" }} />
-          <span style={{ color: "#c084fc", fontSize: "15px", fontWeight: 700, letterSpacing: "3px" }}>
-            AUTONOMOUS AI PLATFORM
-          </span>
-        </div>
-
         {/* Main Title */}
-        <div style={{ display: "flex", fontSize: "76px", fontWeight: 800, letterSpacing: "-2px", color: "#a855f7", lineHeight: 1.1, marginBottom: "8px" }}>
+        <div style={{ display: "flex", fontSize: "76px", fontWeight: 800, letterSpacing: "-2px", color: "#4A9EE5", lineHeight: 1.1, marginBottom: "8px" }}>
           Omni AI
         </div>
 
