@@ -94,7 +94,7 @@ export default async function TrendingLandingPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* Animated gradient background */}
+      {/* Animated gradient background — single purple glow top-left only, no pink blob */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div
           className="absolute rounded-full opacity-20 blur-3xl"
@@ -105,17 +105,6 @@ export default async function TrendingLandingPage({ params }: Props) {
             top: -200,
             left: -200,
             animation: "drift1 14s ease-in-out infinite alternate",
-          }}
-        />
-        <div
-          className="absolute rounded-full opacity-15 blur-3xl"
-          style={{
-            width: 500,
-            height: 500,
-            background: "radial-gradient(circle, #ec4899, transparent 70%)",
-            bottom: -100,
-            right: -100,
-            animation: "drift2 18s ease-in-out infinite alternate",
           }}
         />
       </div>
@@ -185,26 +174,26 @@ export default async function TrendingLandingPage({ params }: Props) {
         </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap justify-center items-center gap-0 mt-24 w-full max-w-2xl mx-auto">
+        <div className="flex flex-nowrap justify-center items-center mt-36 w-full max-w-2xl mx-auto">
           {[
             { num: "10x", label: "Faster Content" },
             { num: "80%", label: "Cost Reduction" },
             { num: "24/7", label: "AI on Autopilot" },
           ].map(({ num, label }, i) => (
-            <div key={label} className="flex items-center">
-              <div className="text-center px-10 py-2">
+            <div key={label} className="flex items-center flex-1">
+              <div className="text-center w-full py-2">
                 <div
-                  className="text-5xl font-black bg-clip-text text-transparent mb-2"
+                  className="text-4xl sm:text-5xl font-black bg-clip-text text-transparent mb-2"
                   style={{ backgroundImage: "linear-gradient(135deg, #818cf8, #22d3ee)" }}
                 >
                   {num}
                 </div>
-                <div className="text-sm text-gray-400 font-semibold uppercase tracking-widest">
+                <div className="text-xs sm:text-sm text-white font-semibold uppercase tracking-widest">
                   {label}
                 </div>
               </div>
               {i < 2 && (
-                <div className="w-px h-12 bg-white/10 shrink-0" />
+                <div className="w-px h-14 bg-white/15 shrink-0" />
               )}
             </div>
           ))}
@@ -231,10 +220,6 @@ export default async function TrendingLandingPage({ params }: Props) {
         @keyframes drift1 {
           from { transform: translate(0, 0) scale(1); }
           to { transform: translate(80px, 60px) scale(1.2); }
-        }
-        @keyframes drift2 {
-          from { transform: translate(0, 0) scale(1); }
-          to { transform: translate(-60px, -50px) scale(1.15); }
         }
         @keyframes shimmer {
           from { background-position: 200% 0; }

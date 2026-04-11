@@ -51,6 +51,12 @@ This site serves daily AI/business trending topic landing pages at `omnileadsagi
 - **`app/api/landing-lead/route.ts`** — Inserts lead into `landing_page_leads`, sends owner notification to `sitanim8@gmail.com`, sends thank-you email to the lead via Resend.
 - **`app/api/og/route.tsx`** — Edge route. Generates 1200×630 branded OG image for Twitter/LinkedIn rich cards via `next/og`.
 
+### Landing page styling rules (DO NOT violate)
+- **One background glow only** — single purple radial gradient (`#6366f1`) top-left, `opacity-20`, `blur-3xl`. NO second pink/magenta blob. A second glow at the bottom creates an ugly pink circle that overwhelms the design.
+- **Stats section**: always `flex-nowrap` so all 3 stats stay on one row. Use `flex-1` per stat. Labels must be `text-white` (not gray) so they're visible against the dark background. At least `mt-36` gap between the form and stats.
+- **Stat labels**: always white (`text-white`), `uppercase`, `tracking-widest`, `text-xs sm:text-sm`.
+- **OG image in tweets**: always attach via Blotato `mediaUrls` — do not rely on Twitter auto-crawling OG tags (slow and unreliable for new pages).
+
 ### Daily post workflow (automated via scheduled task)
 1. Find today's trending topic (viral, business/AI/culture angle)
 2. Generate: `slug` (kebab-case + date), `title` (punchy headline), `description` (one-line bridge to Omni AI)
