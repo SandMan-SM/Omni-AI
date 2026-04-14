@@ -159,7 +159,7 @@ export default function FrayVIPSponsor() {
               <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed mb-4" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
                 Fund the complete digital marketing infrastructure for Youngs, Leifson Built, and Omni Leads LLC — websites, AI-managed ads, lead capture, and newsletters. All autonomous.
               </p>
-              <p className="text-amber-400/80 text-lg font-semibold mb-3">
+              <p className="text-amber-400/80 text-lg font-semibold mb-4">
                 $3,000/month · 3 businesses · 4-month commitment
               </p>
               <p className="text-gray-500 text-sm max-w-lg mx-auto mb-10">
@@ -200,7 +200,7 @@ export default function FrayVIPSponsor() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-4 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/10">
                   <Star className="w-5 h-5 text-amber-400" />
                 </div>
@@ -225,7 +225,7 @@ export default function FrayVIPSponsor() {
                           <Icon className="w-5 h-5 text-white" />
                         </div>
                         <h3 className="text-white font-semibold text-lg mb-1">{biz.name}</h3>
-                        <p className="text-amber-400/60 text-sm mb-3">{biz.location}</p>
+                        <p className="text-amber-400/60 text-sm mb-4">{biz.location}</p>
                         <p className="text-gray-400 text-sm leading-relaxed mb-4">{biz.description}</p>
                         <div className="flex flex-wrap gap-2">
                           {biz.services.map((service) => (
@@ -261,7 +261,7 @@ export default function FrayVIPSponsor() {
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
 
                 <div className="relative px-8 py-12 md:px-14 md:py-16">
-                  <div className="flex items-center gap-3 mb-10">
+                  <div className="flex items-center gap-4 mb-10">
                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
                       <Check className="w-6 h-6 text-white" />
                     </div>
@@ -281,7 +281,7 @@ export default function FrayVIPSponsor() {
                           whileInView={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.06 }}
                           viewport={{ once: true }}
-                          className="flex items-center gap-3 py-1"
+                          className="flex items-center gap-4 py-1"
                         >
                           <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
                             <Icon className={`w-4 h-4 ${item.color}`} />
@@ -306,7 +306,7 @@ export default function FrayVIPSponsor() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-4 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/10">
                   <Rocket className="w-5 h-5 text-amber-400" />
                 </div>
@@ -324,7 +324,7 @@ export default function FrayVIPSponsor() {
                     className="mb-2"
                   >
                     <div className="glass-card rounded-xl p-10 h-full border border-amber-500/10 hover:border-amber-500/20 transition-colors">
-                      <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex items-start justify-between gap-4 mb-4">
                         <h3 className="text-white font-semibold text-lg">{step.title}</h3>
                         <div
                           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -357,7 +357,7 @@ export default function FrayVIPSponsor() {
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
 
                 <div className="relative px-8 py-12 md:px-14 md:py-16">
-                  <div className="flex items-center gap-3 mb-8">
+                  <div className="flex items-center gap-4 mb-8">
                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
                       <CircleDollarSign className="w-6 h-6 text-white" />
                     </div>
@@ -426,7 +426,7 @@ export default function FrayVIPSponsor() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-4 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-orange-500/20 to-amber-500/20 flex items-center justify-center border border-amber-500/10">
                   <BarChart3 className="w-5 h-5 text-orange-400" />
                 </div>

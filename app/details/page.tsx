@@ -193,7 +193,7 @@ export default function Details() {
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
 
                 <div className="relative px-6 py-10 md:px-12 md:py-14">
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-4 mb-6">
                     <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
                       <Brain className="w-6 h-6 text-white" />
                     </div>
@@ -217,14 +217,14 @@ export default function Details() {
               viewport={{ once: true }}
               className="mb-16 md:mb-24"
             >
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-4 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center border border-white/5">
                   <Layers className="w-5 h-5 text-purple-400" />
                 </div>
                 <h2 className="text-2xl md:text-3xl font-bold text-white">Key Features</h2>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {keyFeatures.map((feature, index) => {
                   const Icon = feature.icon;
                   return (
@@ -253,7 +253,7 @@ export default function Details() {
               </div>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mb-16 md:mb-24">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-6 mb-16 md:mb-24">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -261,7 +261,7 @@ export default function Details() {
                 viewport={{ once: true }}
               >
                 <div className="glass-card rounded-md p-6 md:p-8 h-full border border-white/5">
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-4 mb-6">
                     <div className="w-10 h-10 rounded-md bg-gradient-to-br from-green-500/20 to-cyan-500/20 flex items-center justify-center border border-white/5">
                       <Rocket className="w-5 h-5 text-green-400" />
                     </div>
@@ -278,7 +278,7 @@ export default function Details() {
                           whileInView={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.1 }}
                           viewport={{ once: true }}
-                          className="flex items-center gap-3"
+                          className="flex items-center gap-4"
                         >
                           <div className="w-8 h-8 rounded-md bg-white/5 flex items-center justify-center flex-shrink-0">
                             <Icon className={`w-4 h-4 ${benefit.color}`} />
@@ -298,7 +298,7 @@ export default function Details() {
                 viewport={{ once: true }}
               >
                 <div className="glass-card rounded-md p-6 md:p-8 h-full border border-white/5">
-                  <div className="flex items-center gap-3 mb-6">
+                  <div className="flex items-center gap-4 mb-6">
                     <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-white/5">
                       <Users className="w-5 h-5 text-purple-400" />
                     </div>
@@ -313,7 +313,7 @@ export default function Details() {
                         whileInView={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.4, delay: index * 0.1 }}
                         viewport={{ once: true }}
-                        className="flex items-center gap-3"
+                        className="flex items-center gap-4"
                       >
                         <div className="w-5 h-5 rounded-full bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
                           <Check className="w-3 h-3 text-white" />
@@ -338,7 +338,7 @@ export default function Details() {
                 <div className="absolute inset-0 border border-white/10 rounded-2xl" />
 
                 <div className="relative px-6 py-8 md:px-12 md:py-10">
-                  <div className="flex items-center gap-3 mb-5">
+                  <div className="flex items-center gap-4 mb-6">
                     <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center">
                       <Lightbulb className="w-5 h-5 text-white" />
                     </div>
@@ -346,13 +346,13 @@ export default function Details() {
                   </div>
 
                   <div className="space-y-4">
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-4">
                       <ArrowRight className="w-5 h-5 text-purple-400 mt-0.5 flex-shrink-0" />
                       <p className="text-gray-300 text-sm md:text-base leading-relaxed">
                         Uses intelligent systems to generate leads, run marketing, and optimize campaigns without manual intervention.
                       </p>
                     </div>
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-4">
                       <ArrowRight className="w-5 h-5 text-cyan-400 mt-0.5 flex-shrink-0" />
                       <p className="text-gray-300 text-sm md:text-base leading-relaxed">
                         Acts as an AI assistant driving your business processes — from lead discovery to conversion to retention.
@@ -370,7 +370,7 @@ export default function Details() {
               viewport={{ once: true }}
             >
               <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-4xl font-bold mb-3">
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
                   <span className="text-gradient">The Ascension Model</span>
                 </h2>
                 <p className="text-gray-400 text-base md:text-lg max-w-xl mx-auto">
@@ -396,7 +396,7 @@ export default function Details() {
                       viewport={{ once: true }}
                       className={`relative ${isPopular ? 'md:-mt-4' : ''}`}
                     >
-                      <div className={`glass-card rounded-md p-5 md:p-6 border ${isPopular ? 'border-yellow-500/40' : 'border-white/5'} ${isLocked ? 'opacity-70' : ''} ${isGold ? 'relative overflow-hidden' : ''}`}>
+                      <div className={`glass-card rounded-md p-6 md:p-6 border ${isPopular ? 'border-yellow-500/40' : 'border-white/5'} ${isLocked ? 'opacity-70' : ''} ${isGold ? 'relative overflow-hidden' : ''}`}>
                         {isPopular && (
                           <div className="absolute top-0 right-0">
                             <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-black text-[10px] font-bold px-4 py-1.5 rounded-tr-md">

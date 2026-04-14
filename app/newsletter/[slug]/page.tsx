@@ -80,7 +80,7 @@ export default async function NewsletterPostPage({ params }: Props) {
       <article className="max-w-3xl mx-auto px-5 py-12 md:py-20">
         {/* Meta */}
         <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-4 mb-4">
             <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
               {isPremium ? "Interlinked Premium" : "Daily Intelligence"}
             </span>
@@ -141,7 +141,7 @@ export default async function NewsletterPostPage({ params }: Props) {
         {/* Premium exclusive sections */}
         {/* Power Move */}
         <div className="mb-10">
-          <p className={`text-xs font-bold uppercase tracking-widest mb-3 ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
+          <p className={`text-xs font-bold uppercase tracking-widest mb-4 ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
             Power Move
           </p>
           <p className="text-lg text-gray-200 leading-relaxed">

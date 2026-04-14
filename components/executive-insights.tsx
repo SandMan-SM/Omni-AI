@@ -133,14 +133,14 @@ export function ExecutiveInsights() {
       </div>
 
       {/* ── KPI row ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4">
         {stats.map((s, i) => {
           const Icon = s.icon;
           return (
             <motion.div key={s.label} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.06 }}>
               <Card className="bg-white/[0.03] border-white/[0.06]">
-                <CardContent className="p-3 flex items-center gap-2.5">
+                <CardContent className="p-4 flex items-center gap-2.5">
                   <div className={`p-1.5 rounded-lg ${s.bg} flex-shrink-0`}>
                     <Icon className={`w-3.5 h-3.5 ${s.color}`} />
                   </div>

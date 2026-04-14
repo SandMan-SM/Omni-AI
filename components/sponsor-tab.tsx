@@ -262,7 +262,7 @@ export function SponsorTab({ isLocked = false }: { isLocked?: boolean }) {
               onClick={() => toggleBusiness(business.id)}
             >
               <div className="flex items-center justify-between w-full pr-4 gap-4">
-                <div className="flex items-center gap-3 min-w-0">
+                <div className="flex items-center gap-4 min-w-0">
                   <Building2 className="w-5 h-5 text-purple-400 flex-shrink-0" />
                   <span className="text-base text-gray-200 font-medium truncate">{business.name}</span>
                 </div>

@@ -63,7 +63,7 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
   return (
     <div>
       <div className="text-center mb-10">
-        <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${isDarkMode ? "" : "text-gray-900"}`}>
+        <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${isDarkMode ? "" : "text-gray-900"}`}>
           Badges & Achievements
         </h2>
         <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -82,7 +82,7 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
               transition={{ duration: 0.5, delay: catIndex * 0.1 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-4 mb-4">
                 <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center`}>
                   <CategoryIcon className="w-5 h-5 text-white" />
                 </div>
@@ -91,7 +91,7 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
                 </h3>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {category.badges.map((badge, badgeIndex) => {
                   const BadgeIcon = badge.icon;
                   return (
@@ -111,7 +111,7 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
                       <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
                       
                       <div className="relative">
-                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${category.gradient} p-[2px] mx-auto mb-3`}>
+                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${category.gradient} p-[2px] mx-auto mb-4`}>
                           <div className={`w-full h-full rounded-full ${isDarkMode ? "bg-gray-900" : "bg-white"} flex items-center justify-center`}>
                             <BadgeIcon className="w-6 h-6 text-white" />
                           </div>

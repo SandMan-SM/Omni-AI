@@ -82,7 +82,7 @@ export default function SponsorInfo() {
           <Link href="/" className="text-xl font-bold text-gradient">
             Omni AI
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button 
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
               onClick={() => user ? setLocation("/dashboard") : setLocation("/?signin=true")}

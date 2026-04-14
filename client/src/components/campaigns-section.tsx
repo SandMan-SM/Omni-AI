@@ -91,7 +91,7 @@ export function CampaignsSection() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
               viewport={{ once: true }}
-              className="flex items-center justify-center gap-3"
+              className="flex items-center justify-center gap-4"
             >
               <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
                 <Video className="w-4 h-4 text-purple-400" />
@@ -103,7 +103,7 @@ export function CampaignsSection() {
           </div>
         </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-16 md:mb-20">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4 mb-16 md:mb-20">
           {steps.map((step, index) => {
             const Icon = step.icon;
             return (
@@ -115,8 +115,8 @@ export function CampaignsSection() {
                 viewport={{ once: true }}
                 className="relative"
               >
-                <div className="glass-card rounded-md p-4 md:p-5 text-center h-full border border-white/5">
-                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-3 border border-white/5">
+                <div className="glass-card rounded-md p-4 md:p-6 text-center h-full border border-white/5">
+                  <div className="w-10 h-10 md:w-12 md:h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-4 border border-white/5">
                     <Icon className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
                   </div>
                   <p className="text-white text-sm md:text-base font-semibold mb-1">{step.label}</p>
@@ -146,11 +146,11 @@ export function CampaignsSection() {
                 className="relative group"
               >
                 <div className="glass-card rounded-md p-6 md:p-8 h-full border border-white/5 group-hover:border-white/10 transition-colors">
-                  <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mb-5 border border-white/5">
+                  <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mb-6 border border-white/5">
                     <Icon className="w-6 h-6 text-purple-400" />
                   </div>
 
-                  <h3 className="text-lg md:text-xl font-semibold text-white mb-3">
+                  <h3 className="text-lg md:text-xl font-semibold text-white mb-4">
                     {feature.title}
                   </h3>
 

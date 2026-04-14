@@ -66,7 +66,7 @@ export function ContactSection() {
       >
         <div className="glass-card rounded-2xl p-10 md:p-12 neon-border">
           <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4">
               <span className="text-gradient">Stay in the Loop</span>
             </h2>
             <p className="text-gray-400 text-lg">

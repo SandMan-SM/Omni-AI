@@ -45,7 +45,7 @@ export default function LeadForm({ slug }: LeadFormProps) {
     return (
       <div className="w-full max-w-md mx-auto text-center py-10 px-6 rounded-2xl border border-white/10 bg-white/[0.03]">
         <div
-          className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-5"
+          className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-6"
           style={{ background: "linear-gradient(135deg, #6366f1, #ec4899)" }}
         >
           <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
@@ -63,7 +63,7 @@ export default function LeadForm({ slug }: LeadFormProps) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full max-w-md mx-auto flex flex-col gap-3"
+      className="w-full max-w-md mx-auto flex flex-col gap-4"
       noValidate
     >
       <input

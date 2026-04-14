@@ -172,7 +172,7 @@ export default function AdminInfo() {
         </motion.div>
 
         {/* Sections */}
-        <div className="grid gap-5">
+        <div className="grid gap-6">
           {sections.map((section, i) => {
             const Icon = section.icon;
             return (
@@ -184,7 +184,7 @@ export default function AdminInfo() {
               >
                 <Card className={`border ${section.border} ${section.bg}`}>
                   <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-3 text-base">
+                    <CardTitle className="flex items-center gap-4 text-base">
                       <div className={`w-8 h-8 rounded-lg bg-black/40 flex items-center justify-center flex-shrink-0`}>
                         <Icon className={`w-4 h-4 ${section.color}`} />
                       </div>
@@ -212,7 +212,7 @@ export default function AdminInfo() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.4, delay: 0.5 }}
-          className="flex items-center gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 text-sm text-gray-500"
+          className="flex items-center gap-4 p-4 rounded-xl bg-white/[0.02] border border-white/5 text-sm text-gray-500"
         >
           <Eye className="w-4 h-4 text-gray-600 flex-shrink-0" />
           This page is only visible to admin accounts. It does not appear in public navigation.

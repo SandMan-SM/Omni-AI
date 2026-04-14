@@ -147,7 +147,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
     <div className="space-y-6">
 
       {/* ── KEY METRICS ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
           { label: "Total Users", value: metrics.total, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },
           { label: "Active Clients", value: metrics.clients.length, icon: Crown, color: "text-green-400", bg: "bg-green-500/10" },
@@ -159,7 +159,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
           const Icon = m.icon;
           return (
             <Card key={m.label} className="bg-white/[0.03] border-white/[0.06]">
-              <CardContent className="p-3 sm:p-4">
+              <CardContent className="p-4 sm:p-4">
                 <div className="flex items-center gap-2 mb-2">
                   <div className={`p-1.5 rounded-lg ${m.bg} flex-shrink-0`}>
                     <Icon className={`w-3.5 h-3.5 ${m.color}`} />
@@ -178,8 +178,8 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
         {/* Pipeline Funnel — 3 cols */}
         <Card className="lg:col-span-3 bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-5">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-purple-400" /> Sales Pipeline
               </h3>
@@ -205,8 +205,8 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
             {/* Lead temp breakdown */}
             <div className="mt-5 pt-4 border-t border-white/5">
-              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Lead Temperature</p>
-              <div className="flex gap-3">
+              <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-4">Lead Temperature</p>
+              <div className="flex gap-4">
                 {[
                   { label: "Hot", count: metrics.hot.length, icon: Flame, color: "text-red-400 bg-red-500/10 border-red-500/20" },
                   { label: "Warm", count: metrics.warm.length, icon: Thermometer, color: "text-orange-400 bg-orange-500/10 border-orange-500/20" },
@@ -230,7 +230,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
         {/* Action Items — 2 cols */}
         <Card className="lg:col-span-2 bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
               <Zap className="w-4 h-4 text-amber-400" /> Action Items
               {actions.length > 0 && (
@@ -242,7 +242,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
             {actions.length === 0 ? (
               <div className="text-center py-8">
-                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-3">
+                <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center mx-auto mb-4">
                   <Activity className="w-5 h-5 text-green-400" />
                 </div>
                 <p className="text-sm text-green-400 font-medium">All clear</p>
@@ -253,7 +253,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
                 {actions.map((a, i) => {
                   const Icon = severityIcons[a.severity];
                   return (
-                    <div key={i} className={`p-3 rounded-xl border ${severityColors[a.severity]}`}>
+                    <div key={i} className={`p-4 rounded-xl border ${severityColors[a.severity]}`}>
                       <div className="flex items-start gap-2.5">
                         <Icon className="w-4 h-4 flex-shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
@@ -285,7 +285,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
         {/* Top Clients by Revenue */}
         <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
               <DollarSign className="w-4 h-4 text-green-400" /> Top Clients
             </h3>
@@ -297,7 +297,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
                   <button
                     key={u.id}
                     onClick={() => onEditUser(u)}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                    className="w-full flex items-center gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
                   >
                     <span className="text-[10px] text-gray-600 font-mono w-4">{i + 1}.</span>
                     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-green-600/30 to-emerald-600/30 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
@@ -317,7 +317,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
         {/* Recent Activity */}
         <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
               <Activity className="w-4 h-4 text-purple-400" /> Recent Updates
             </h3>
@@ -329,7 +329,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
                   <button
                     key={u.id}
                     onClick={() => onEditUser(u)}
-                    className="w-full flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
+                    className="w-full flex items-center gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors text-left"
                   >
                     <div className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-600/30 to-blue-600/30 border border-white/10 flex items-center justify-center text-[10px] font-bold text-white flex-shrink-0">
                       {(u.name || u.email || "?")[0].toUpperCase()}
@@ -351,13 +351,13 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
         {/* Sponsor & Arena Summary */}
         <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
               <Crown className="w-4 h-4 text-amber-400" /> Sponsors & Arena
             </h3>
 
             {/* Sponsors */}
-            <div className="space-y-3 mb-5">
+            <div className="space-y-3 mb-6">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">Sponsors</p>
               <div className="grid grid-cols-3 gap-2">
                 <div className="text-center p-2.5 rounded-xl bg-amber-500/5 border border-amber-500/10">
@@ -393,7 +393,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
             {/* Newsletter */}
             <div className="space-y-3 pt-4 border-t border-white/5">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">Newsletter</p>
-              <div className="flex items-center gap-3 p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/10">
+              <div className="flex items-center gap-4 p-2.5 rounded-xl bg-blue-500/5 border border-blue-500/10">
                 <Mail className="w-4 h-4 text-blue-400 flex-shrink-0" />
                 <div className="flex-1">
                   <p className="text-sm font-bold text-white">{metrics.newsletterSubs.length}</p>

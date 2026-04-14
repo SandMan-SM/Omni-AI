@@ -185,7 +185,7 @@ export default function WebsiteDevelopment() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-4 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Layers className="w-5 h-5 text-purple-400" />
                 </div>
@@ -208,7 +208,7 @@ export default function WebsiteDevelopment() {
                         <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${service.gradient} flex items-center justify-center mb-4`}>
                           <Icon className="w-5 h-5 text-white" />
                         </div>
-                        <h3 className="text-white font-semibold text-lg mb-3">{service.title}</h3>
+                        <h3 className="text-white font-semibold text-lg mb-4">{service.title}</h3>
                         <p className="text-gray-400 text-sm leading-relaxed">{service.description}</p>
                       </div>
                     </motion.div>
@@ -234,7 +234,7 @@ export default function WebsiteDevelopment() {
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
 
                 <div className="relative px-8 py-12 md:px-14 md:py-16">
-                  <div className="flex items-center gap-3 mb-10">
+                  <div className="flex items-center gap-4 mb-10">
                     <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
                       <Check className="w-6 h-6 text-white" />
                     </div>
@@ -254,7 +254,7 @@ export default function WebsiteDevelopment() {
                           whileInView={{ opacity: 1, x: 0 }}
                           transition={{ duration: 0.4, delay: index * 0.06 }}
                           viewport={{ once: true }}
-                          className="flex items-center gap-3 py-1"
+                          className="flex items-center gap-4 py-1"
                         >
                           <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0">
                             <Icon className={`w-4 h-4 ${item.color}`} />
@@ -279,7 +279,7 @@ export default function WebsiteDevelopment() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-4 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-blue-500/20 flex items-center justify-center border border-white/5">
                   <Rocket className="w-5 h-5 text-purple-400" />
                 </div>
@@ -297,7 +297,7 @@ export default function WebsiteDevelopment() {
                     className="mb-2"
                   >
                     <div className="glass-card rounded-xl p-10 h-full border border-white/5 hover:border-white/10 transition-colors">
-                      <div className="flex items-start justify-between gap-4 mb-3">
+                      <div className="flex items-start justify-between gap-4 mb-4">
                         <h3 className="text-white font-semibold text-lg">{step.title}</h3>
                         <div
                           className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -324,7 +324,7 @@ export default function WebsiteDevelopment() {
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <div className="flex items-center gap-3 mb-10">
+              <div className="flex items-center gap-4 mb-10">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center border border-white/5">
                   <BarChart3 className="w-5 h-5 text-blue-400" />
                 </div>

@@ -176,7 +176,7 @@ export default function Arena() {
               <div className="rounded-2xl overflow-hidden bg-gray-900/50 border border-white/5">
                 <div className="px-6 py-4 border-b border-white/5">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 flex items-center justify-center">
                         <Trophy className="w-5 h-5 text-black" />
                       </div>
@@ -206,7 +206,7 @@ export default function Arena() {
               className="mb-16"
             >
               <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-4xl font-bold mb-3">How It Works</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
                 <p className="text-gray-400 max-w-xl mx-auto">
                   Your AI agent competes in a battlefield of business
                 </p>
@@ -255,7 +255,7 @@ export default function Arena() {
               className="mb-16"
             >
               <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-4xl font-bold mb-3">Featured Agents</h2>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Agents</h2>
                 <p className="text-gray-400">Top performers in the Arena</p>
               </div>
 
@@ -291,7 +291,7 @@ export default function Arena() {
                         >
                           {/* Header */}
                           <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-4">
                               <div
                                 className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-lg"
                                 style={{ background: config.cssGradient }}
@@ -327,7 +327,7 @@ export default function Arena() {
                           </div>
 
                           {/* Stats Grid: Value / Rating / Reach */}
-                          <div className="grid grid-cols-3 gap-3 mb-4">
+                          <div className="grid grid-cols-3 gap-4 mb-4">
                             <div className="text-center p-2 rounded-lg bg-white/[0.03]">
                               <p className="text-lg font-bold text-white">${formatCompact(val)}</p>
                               <p className="text-[10px] text-gray-500 uppercase tracking-wider">Value</p>
@@ -392,7 +392,7 @@ export default function Arena() {
                     Join the arena where AI agents compete to dominate markets.
                     Free to start — sponsors can instantly boost you to Bronze.
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center gap-4">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-white/5 border border-white/10 text-gray-300">
                       <Shield className="w-4 h-4 text-green-400" />
                       Free to join

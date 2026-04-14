@@ -131,14 +131,14 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-3 gap-4 sm:gap-4">
         {[
           { label: "Total", value: totalCampaigns, color: "text-purple-400", bg: "bg-purple-500/10" },
           { label: "Active", value: activeCampaigns, color: "text-green-400", bg: "bg-green-500/10" },
           { label: "Businesses", value: Object.keys(grouped).filter(k => k !== "unassigned").length, color: "text-blue-400", bg: "bg-blue-500/10" },
         ].map(s => (
           <Card key={s.label} className="bg-white/[0.03] border-white/[0.06]">
-            <CardContent className="p-3 flex items-center gap-2.5">
+            <CardContent className="p-4 flex items-center gap-2.5">
               <div className={`p-1.5 rounded-lg ${s.bg} flex-shrink-0`}>
                 <Briefcase className={`w-3.5 h-3.5 ${s.color}`} />
               </div>
@@ -154,7 +154,7 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
       {/* Campaigns card — matches dashboard style */}
       <Card className="bg-white/[0.03] border-white/[0.06]">
         <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <CardTitle className="text-lg text-white">Campaigns</CardTitle>
             <Badge className={`text-xs ${statusColors.active}`}>
               {activeCampaigns} active
@@ -187,7 +187,7 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
             <div className="flex justify-center py-10"><Loader2 className="w-6 h-6 animate-spin text-purple-400" /></div>
           ) : filteredCampaigns.length === 0 ? (
             <div className="text-center py-8">
-              <Video className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+              <Video className="w-8 h-8 text-gray-700 mx-auto mb-4" />
               <p className="text-sm text-gray-500 mb-1">
                 {search ? "No campaigns match your search." : "No campaigns match this filter"}
               </p>
@@ -209,7 +209,7 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
                     className={`flex flex-col gap-0 rounded-xl border transition-all duration-200 cursor-pointer overflow-hidden ${isExpanded ? 'border-purple-500/40 bg-purple-500/5' : 'bg-white/[0.02] border-white/[0.04] hover:border-white/10 hover:bg-white/[0.04]'}`}
                     onClick={() => setExpandedId(isExpanded ? null : c.id)}
                   >
-                    <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+                    <div className="flex items-center gap-4 sm:gap-4 p-4 sm:p-4">
                       <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${c.thumbnail} flex-shrink-0 p-[1px]`}>
                         <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
                           <Video className="w-5 h-5 text-white/70" />
@@ -244,23 +244,23 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
                           className="overflow-hidden"
                         >
                           <div className="px-4 pb-4 pt-0 border-t border-white/5">
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-                              <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
+                              <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                 <Target className="w-4 h-4 text-purple-400" />
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">Status</span>
                                 <span className="text-xs font-medium text-white">{statusLabels[c.status] || c.status}</span>
                               </div>
-                              <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                              <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                 <TrendingUp className="w-4 h-4 text-cyan-400" />
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">Type</span>
                                 <span className="text-xs font-medium text-white truncate max-w-full">{c.type || 'TBD'}</span>
                               </div>
-                              <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                              <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                 <CircleDollarSign className="w-4 h-4 text-green-400" />
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">Budget</span>
                                 <span className="text-xs font-medium text-white">{c.budget || '$0'}</span>
                               </div>
-                              <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                              <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                 <BarChart3 className="w-4 h-4 text-blue-400" />
                                 <span className="text-[10px] text-gray-500 uppercase tracking-wide">Platform</span>
                                 <span className="text-xs font-medium text-white">{c.platform || 'TBD'}</span>
@@ -429,7 +429,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
               className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-9 text-sm" />
           </Field>
 
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-4">
             <Field label="Status">
               <select value={form.status} onChange={e => set("status")(e.target.value)}
                 className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50 h-9">
@@ -479,7 +479,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
           <AnimatePresence>
             {confirmDelete && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 mb-2">
+                <div className="flex items-center gap-2 p-4 rounded-lg bg-red-500/10 border border-red-500/20 mb-2">
                   <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
                   <p className="text-xs text-red-300 flex-1">Delete this campaign permanently?</p>
                   <Button size="sm" className="bg-red-600 hover:bg-red-500 border-0 text-white h-7 text-xs flex-shrink-0" onClick={handleDelete} disabled={deleting}>

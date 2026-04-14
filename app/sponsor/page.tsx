@@ -170,7 +170,7 @@ export default function Sponsor() {
           <Link href="/" className="text-xl font-bold text-gradient">
             Omni AI
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button 
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
               onClick={() => router.push("/dashboard")}
@@ -223,7 +223,7 @@ export default function Sponsor() {
                   onClick={() => toggleBusiness(business.id)}
                   className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
                       <Building2 className="w-5 h-5 text-purple-400" />
                     </div>
@@ -267,7 +267,7 @@ export default function Sponsor() {
                       <div className="border border-white/10 rounded-lg overflow-hidden">
                         <button
                           onClick={() => toggleAgent(business.id, "personal")}
-                          className="w-full p-3 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
+                          className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-blue-400" />
@@ -280,16 +280,16 @@ export default function Sponsor() {
                           )}
                         </button>
                         {expandedAgent?.business === business.id && expandedAgent?.agent === "personal" && (
-                          <div className="p-3 bg-black/20 border-t border-white/5 grid md:grid-cols-3 gap-3">
-                            <div className="bg-white/5 rounded p-3">
+                          <div className="p-4 bg-black/20 border-t border-white/5 grid md:grid-cols-3 gap-4">
+                            <div className="bg-white/5 rounded p-4">
                               <p className="text-xs text-gray-400">Tasks Completed</p>
                               <p className="font-bold">{business.personalAssistant.tasksCompleted}</p>
                             </div>
-                            <div className="bg-white/5 rounded p-3">
+                            <div className="bg-white/5 rounded p-4">
                               <p className="text-xs text-gray-400">Meetings Booked</p>
                               <p className="font-bold">{business.personalAssistant.meetingsBooked}</p>
                             </div>
-                            <div className="bg-white/5 rounded p-3">
+                            <div className="bg-white/5 rounded p-4">
                               <p className="text-xs text-gray-400">Messages Sent</p>
                               <p className="font-bold">{business.personalAssistant.messagesSent}</p>
                             </div>
@@ -300,7 +300,7 @@ export default function Sponsor() {
                       <div className="border border-white/10 rounded-lg overflow-hidden">
                         <button
                           onClick={() => toggleAgent(business.id, "newsletter")}
-                          className="w-full p-3 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
+                          className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             <Mail className="w-4 h-4 text-green-400" />
@@ -313,22 +313,22 @@ export default function Sponsor() {
                           )}
                         </button>
                         {expandedAgent?.business === business.id && expandedAgent?.agent === "newsletter" && (
-                          <div className="p-3 bg-black/20 border-t border-white/5 space-y-3">
-                            <div className="grid md:grid-cols-3 gap-3">
-                              <div className="bg-white/5 rounded p-3">
+                          <div className="p-4 bg-black/20 border-t border-white/5 space-y-3">
+                            <div className="grid md:grid-cols-3 gap-4">
+                              <div className="bg-white/5 rounded p-4">
                                 <p className="text-xs text-gray-400">Content Generated</p>
                                 <p className="font-bold">{business.newsletterAgent.contentGenerated} posts</p>
                               </div>
-                              <div className="bg-white/5 rounded p-3">
+                              <div className="bg-white/5 rounded p-4">
                                 <p className="text-xs text-gray-400">Lifetime Subscribers</p>
                                 <p className="font-bold">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
                               </div>
-                              <div className="bg-white/5 rounded p-3">
+                              <div className="bg-white/5 rounded p-4">
                                 <p className="text-xs text-gray-400">Subscribers Generated</p>
                                 <p className="font-bold">+{business.newsletterAgent.subscribersGenerated}</p>
                               </div>
                             </div>
-                            <div className="bg-white/5 rounded p-3">
+                            <div className="bg-white/5 rounded p-4">
                               <p className="text-xs text-gray-400 mb-2">Most Popular Content</p>
                               <div className="space-y-1">
                                 {business.newsletterAgent.mostPopularContent.map((content, idx) => (
@@ -346,7 +346,7 @@ export default function Sponsor() {
                       <div className="border border-white/10 rounded-lg overflow-hidden">
                         <button
                           onClick={() => toggleAgent(business.id, "marketing")}
-                          className="w-full p-3 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
+                          className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
                         >
                           <div className="flex items-center gap-2">
                             <Target className="w-4 h-4 text-pink-400" />
@@ -359,16 +359,16 @@ export default function Sponsor() {
                           )}
                         </button>
                         {expandedAgent?.business === business.id && expandedAgent?.agent === "marketing" && (
-                          <div className="p-3 bg-black/20 border-t border-white/5 grid md:grid-cols-3 gap-3">
-                            <div className="bg-white/5 rounded p-3">
+                          <div className="p-4 bg-black/20 border-t border-white/5 grid md:grid-cols-3 gap-4">
+                            <div className="bg-white/5 rounded p-4">
                               <p className="text-xs text-gray-400">Content Generated</p>
                               <p className="font-bold">{business.marketingAgent.contentGeneratedMinutes} min</p>
                             </div>
-                            <div className="bg-white/5 rounded p-3">
+                            <div className="bg-white/5 rounded p-4">
                               <p className="text-xs text-gray-400">Views Generated</p>
                               <p className="font-bold">{business.marketingAgent.viewsGenerated.toLocaleString()}</p>
                             </div>
-                            <div className="bg-white/5 rounded p-3">
+                            <div className="bg-white/5 rounded p-4">
                               <p className="text-xs text-gray-400">Conversion Rate</p>
                               <p className="font-bold">{business.marketingAgent.conversionRate}%</p>
                             </div>

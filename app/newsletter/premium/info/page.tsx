@@ -59,7 +59,7 @@ export default function PremiumInfoPage() {
           <h2 className="text-sm font-semibold uppercase tracking-widest text-yellow-400/60 mb-6 text-center">
             What You Get
           </h2>
-          <div className="grid gap-4 md:gap-5">
+          <div className="grid gap-4 md:gap-6">
             {[
               {
                 icon: "\u2699\ufe0f",
@@ -124,9 +124,9 @@ export default function PremiumInfoPage() {
             ].map((item, i) => (
               <div
                 key={i}
-                className="p-5 rounded-xl bg-yellow-500/[0.02] border border-yellow-500/[0.08] hover:border-yellow-500/15 transition-colors"
+                className="p-6 rounded-xl bg-yellow-500/[0.02] border border-yellow-500/[0.08] hover:border-yellow-500/15 transition-colors"
               >
-                <div className="flex items-start gap-3.5">
+                <div className="flex items-start gap-4.5">
                   <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
                   <div>
                     <h3 className="text-sm font-semibold text-yellow-400 mb-1.5">
@@ -148,8 +148,8 @@ export default function PremiumInfoPage() {
             Free vs Premium
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
-              <h3 className="text-sm font-semibold text-purple-400 mb-3">Daily Intelligence</h3>
+            <div className="p-6 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+              <h3 className="text-sm font-semibold text-purple-400 mb-4">Daily Intelligence</h3>
               <ul className="space-y-2 text-sm text-gray-500">
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Daily AI briefing</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> 3 key insights</li>
@@ -159,8 +159,8 @@ export default function PremiumInfoPage() {
                 <li className="flex items-center gap-2"><span className="text-gray-700">&mdash;</span> <span className="text-gray-700">No community access</span></li>
               </ul>
             </div>
-            <div className="p-5 rounded-xl bg-yellow-500/[0.03] border border-yellow-500/[0.12]">
-              <h3 className="text-sm font-semibold text-yellow-400 mb-3">Interlinked Premium</h3>
+            <div className="p-6 rounded-xl bg-yellow-500/[0.03] border border-yellow-500/[0.12]">
+              <h3 className="text-sm font-semibold text-yellow-400 mb-4">Interlinked Premium</h3>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Everything in Free</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> 3x/week deep dives</li>
@@ -177,7 +177,7 @@ export default function PremiumInfoPage() {
         <div className="text-center">
           <Link
             href="/?signin=true"
-            className="inline-block bg-gradient-to-r from-yellow-600 to-yellow-500 text-black px-8 py-3.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
+            className="inline-block bg-gradient-to-r from-yellow-600 to-yellow-500 text-black px-8 py-4 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
           >
             Get Premium Access
           </Link>

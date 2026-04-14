@@ -144,7 +144,7 @@ export function CommandCenter() {
       {hasAlerts && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
           <Card className="bg-red-500/[0.06] border-red-500/20">
-            <CardContent className="p-3 flex items-center gap-3">
+            <CardContent className="p-4 flex items-center gap-4">
               <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
               <div className="flex flex-wrap items-center text-xs">
                 {alerts.leadsNotContactedIn24h > 0 && (
@@ -204,8 +204,8 @@ export function CommandCenter() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Pipeline Breakdown */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-3">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Target className="w-4 h-4 text-purple-400" /> Pipeline Breakdown
               </h3>
@@ -252,8 +252,8 @@ export function CommandCenter() {
 
         {/* User Growth */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-3">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Activity className="w-4 h-4 text-green-400" /> User Growth
               </h3>
@@ -298,7 +298,7 @@ export function CommandCenter() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Conversion Rate — simple stat, no chart overlap */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5">
+          <CardContent className="p-6">
             <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
               <Zap className="w-4 h-4 text-cyan-400" /> Conversion Rate
             </h3>
@@ -313,7 +313,7 @@ export function CommandCenter() {
                   className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-500"
                 />
               </div>
-              <div className="flex items-center gap-3 mt-3 text-[11px]">
+              <div className="flex items-center gap-4 mt-3 text-[11px]">
                 <span className="text-gray-500">{revenue.totalLeads} leads</span>
                 <span className="text-gray-600">→</span>
                 <span className="text-green-400 font-medium">{revenue.totalClients} clients</span>
@@ -324,8 +324,8 @@ export function CommandCenter() {
 
         {/* Client Health */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5">
-            <h3 className="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+          <CardContent className="p-6">
+            <h3 className="text-sm font-semibold text-white mb-4 flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-green-400" /> Client Health
             </h3>
             {healthData.length > 0 ? (
@@ -369,8 +369,8 @@ export function CommandCenter() {
 
         {/* Newsletter Posts */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-3">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
               </h3>
@@ -432,8 +432,8 @@ export function CommandCenter() {
       {/* ── Row 4: Newsletter Send Timeline ────────────────────── */}
       {charts.sendHistory.length > 0 && (
         <Card className="bg-white/[0.02] border-white/[0.06]">
-          <CardContent className="p-5">
-            <div className="flex items-center justify-between mb-3">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <BarChart3 className="w-4 h-4 text-blue-400" /> Send Activity
               </h3>
@@ -468,7 +468,7 @@ export function CommandCenter() {
 
       {/* ── Row 5: AI Agent Fleet ──────────────────────────────── */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
+        <div className="flex items-center gap-2 mb-4">
           <Bot className="w-4 h-4 text-purple-400" />
           <h3 className="text-sm font-semibold text-white">AI Agent Fleet</h3>
         </div>
@@ -561,7 +561,7 @@ function BigMetric({ label, value, sub, icon: Icon, color }: {
     <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
       <Card className="bg-white/[0.02] border-white/[0.06] hover:border-white/[0.12] transition-colors">
         <CardContent className="p-4">
-          <div className="mb-3">
+          <div className="mb-4">
             <Icon className={`w-5 h-5 ${color} opacity-70`} />
           </div>
           <p className="text-2xl sm:text-3xl font-bold text-white tracking-tight">{typeof value === "number" ? value.toLocaleString() : value}</p>

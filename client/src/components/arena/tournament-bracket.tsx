@@ -46,14 +46,14 @@ export function TournamentBracket({ isDarkMode }: TournamentBracketProps) {
             <div className={`text-center text-xs font-medium mb-2 ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>
               {round.name}
             </div>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {round.matches.map((match) => (
                 <motion.div
                   key={match.id}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ duration: 0.3, delay: roundIndex * 0.1 + match.id * 0.05 }}
-                  className={`relative rounded-lg p-3 min-w-[160px] border ${
+                  className={`relative rounded-lg p-4 min-w-[160px] border ${
                     isDarkMode 
                       ? "bg-gray-800/50 border-white/10" 
                       : "bg-gray-50 border-gray-200"

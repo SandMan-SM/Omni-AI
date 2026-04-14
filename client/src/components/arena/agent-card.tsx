@@ -123,7 +123,7 @@ export function AgentCard({ agent, index, isDarkMode }: AgentCardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="text-center">
             <p className={`text-xl font-bold ${isDarkMode ? "text-green-400" : "text-green-600"}`}>
               {agent.wins}

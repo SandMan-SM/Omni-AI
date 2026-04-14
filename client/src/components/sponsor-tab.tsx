@@ -128,7 +128,7 @@ export function SponsorTab() {
         <p className="text-sm text-gray-400">Your sponsored business analytics</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-4">
         <Card className="bg-purple-900/20 border-purple-500/20">
           <CardContent className="p-4">
             <p className="text-purple-400 text-sm">Total Tasks</p>
@@ -158,13 +158,13 @@ export function SponsorTab() {
             <div key={business.id} className="border border-white/10 rounded-lg overflow-hidden">
               <button
                 onClick={() => toggleBusiness(business.id)}
-                className="w-full p-3 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
+                className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
               >
                 <div className="flex items-center gap-2">
                   <Building2 className="w-4 h-4 text-purple-400" />
                   <span className="font-medium">{business.name}</span>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <span className="text-sm text-gray-400">{business.totalTasksCompleted} tasks</span>
                   {expandedBusiness === business.id ? (
                     <ChevronDown className="w-4 h-4" />
@@ -175,7 +175,7 @@ export function SponsorTab() {
               </button>
               
               {expandedBusiness === business.id && (
-                <div className="p-3 bg-black/20 border-t border-white/5 space-y-2">
+                <div className="p-4 bg-black/20 border-t border-white/5 space-y-2">
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white/5 rounded p-2">
                       <p className="text-xs text-gray-400">Tasks</p>

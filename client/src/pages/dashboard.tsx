@@ -199,7 +199,7 @@ export default function Dashboard() {
             Omni AI
           </Link>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {(isAdmin || isSponsor) && (
               <div className="relative">
                 <Button
@@ -261,7 +261,7 @@ export default function Dashboard() {
         {!onboardingComplete && profile && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
-              className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
+              className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
               data-testid="banner-complete-account"
             >
               <div className="flex-1 min-w-0">
@@ -313,7 +313,7 @@ export default function Dashboard() {
               <motion.div key={metric.label} {...fadeUp} transition={{ duration: 0.4, delay: i * 0.06 }}>
                 <Card className="bg-white/[0.03] border-white/[0.06]">
                   <CardContent className="p-4">
-                    <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center justify-between mb-4">
                       <MetricIcon className="w-5 h-5 text-gray-500" />
                       <span className="text-xs text-green-400 font-medium" data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
                     </div>
@@ -394,7 +394,7 @@ export default function Dashboard() {
                   className="bg-white/[0.03] border-white/[0.06] hover-elevate cursor-pointer overflow-visible"
                   data-testid={`card-action-${action.label.toLowerCase().replace(/\s/g, "-")}`}
                 >
-                  <CardContent className="p-4 flex flex-col items-start gap-3">
+                  <CardContent className="p-4 flex flex-col items-start gap-4">
                     <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${action.gradient} p-[1px]`}>
                       <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
                         <ActionIcon className="w-5 h-5 text-white/80" />
@@ -414,7 +414,7 @@ export default function Dashboard() {
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.33 }}>
           <Card className="bg-white/[0.03] border-white/[0.06]">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <CardTitle className="text-lg text-white">Campaigns</CardTitle>
                 <Badge className={`text-xs no-default-hover-elevate no-default-active-elevate ${statusConfig.active.color}`} data-testid="text-campaign-count">
                   {campaigns.filter(c => c.status === "active").length} active
@@ -452,7 +452,7 @@ export default function Dashboard() {
                         className="flex flex-col sm:flex-row sm:items-center gap-4 p-4 rounded-lg bg-white/[0.02] border border-white/[0.04] hover-elevate cursor-pointer"
                         data-testid={`card-campaign-${campaign.id}`}
                       >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex items-center gap-4 flex-1 min-w-0">
                           <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} p-[1px] flex-shrink-0`}>
                             <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
                               <Video className="w-5 h-5 text-white/70" />
@@ -512,7 +512,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="text-center py-8" data-testid="text-no-campaigns">
-                  <Video className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+                  <Video className="w-8 h-8 text-gray-700 mx-auto mb-4" />
                   <p className="text-sm text-gray-500 mb-1">No campaigns match this filter</p>
                   <p className="text-xs text-gray-600">Try selecting a different status filter above.</p>
                 </div>
@@ -532,7 +532,7 @@ export default function Dashboard() {
                 {bookings.length > 0 ? (
                   <div className="space-y-4">
                     {bookings.slice(0, 4).map((booking, i) => (
-                      <div key={booking.id} className="flex items-start gap-3" data-testid={`booking-item-${i}`}>
+                      <div key={booking.id} className="flex items-start gap-4" data-testid={`booking-item-${i}`}>
                         <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
                           <Calendar className="w-4 h-4 text-purple-400" />
                         </div>
@@ -546,7 +546,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-6" data-testid="text-no-bookings">
-                    <Calendar className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+                    <Calendar className="w-8 h-8 text-gray-700 mx-auto mb-4" />
                     <p className="text-sm text-gray-500 mb-1">No demos booked yet</p>
                     <p className="text-xs text-gray-600">Schedule a demo from the home page to see it here.</p>
                   </div>
@@ -564,7 +564,7 @@ export default function Dashboard() {
               <CardContent>
                 <div className="space-y-4">
                   {recentActivity.map((item, i) => (
-                    <div key={i} className="flex items-start gap-3" data-testid={`activity-item-${i}`}>
+                    <div key={i} className="flex items-start gap-4" data-testid={`activity-item-${i}`}>
                       <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm text-white" data-testid={`text-activity-action-${i}`}>{item.action}</p>

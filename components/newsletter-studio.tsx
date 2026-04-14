@@ -231,7 +231,7 @@ export function NewsletterStudio() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
             <Mail className="w-5 h-5 text-purple-400" />
@@ -251,10 +251,10 @@ export function NewsletterStudio() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {statCards.map(s => (
           <Card key={s.label} className="bg-white/5 border-white/10">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-4 flex items-center gap-4">
               <div className={`p-2 rounded-lg ${s.bg}`}>
                 <s.icon className={`w-4 h-4 ${s.color}`} />
               </div>
@@ -268,7 +268,7 @@ export function NewsletterStudio() {
       </div>
 
       {/* Actions */}
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-4">
         {/* Send Now */}
         <Button
           className="bg-gradient-to-r from-green-600 to-emerald-600 border-0 text-white"
@@ -372,7 +372,7 @@ export function NewsletterStudio() {
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 flex items-start gap-3"
+          className="p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 flex items-start gap-4"
         >
           <Crown className="w-4 h-4 text-yellow-400 mt-0.5 shrink-0" />
           <div className="min-w-0">
@@ -411,7 +411,7 @@ export function NewsletterStudio() {
                   key={sub.id}
                   initial={{ opacity: 0, y: 4 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-wrap items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.02]"
+                  className="flex flex-wrap items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]"
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">

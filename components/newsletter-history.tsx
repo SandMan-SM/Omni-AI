@@ -97,7 +97,7 @@ function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status =
 
   return (
     <Card className={`bg-white/[0.03] border-white/[0.06] overflow-hidden ${isDraft ? 'border-l-2 border-l-amber-500/40' : ''}`}>
-      <CardContent className="p-3 sm:p-4">
+      <CardContent className="p-4 sm:p-4">
         <div className="flex items-center gap-2.5">
           <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
             <Mail className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
@@ -571,7 +571,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   return (
     <div className="space-y-6 pt-1">
       {/* Live Analytics Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Total Sent", value: summary?.total_sent ?? sends.length, icon: Send, color: "text-purple-400", bg: "bg-purple-500/10" },
           { label: "Open Rate", value: summary ? `${summary.open_rate}%` : "\u2014", icon: Eye, color: "text-cyan-400", bg: "bg-cyan-500/10" },
@@ -581,7 +581,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           const Icon = s.icon;
           return (
             <Card key={s.label} className="bg-white/[0.03] border-white/[0.06]">
-              <CardContent className="p-3 flex items-center gap-2.5">
+              <CardContent className="p-4 flex items-center gap-2.5">
                 <div className={`p-1.5 rounded-lg ${s.bg} flex-shrink-0`}>
                   <Icon className={`w-3.5 h-3.5 ${s.color}`} />
                 </div>
@@ -637,7 +637,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 />
               )}
             </div>
-            <div className="flex items-center gap-3 sm:gap-4 text-[9px] sm:text-[10px] flex-wrap">
+            <div className="flex items-center gap-4 sm:gap-4 text-[9px] sm:text-[10px] flex-wrap">
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-blue-500" /> Clicked ({summary.clicked})</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-cyan-500" /> Opened ({summary.opened})</span>
               <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-green-500/60" /> Delivered ({summary.delivered})</span>
@@ -648,9 +648,9 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       )}
 
       {/* Premium / Active stats */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-4">
         <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-3 flex items-center gap-2.5">
+          <CardContent className="p-4 flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-yellow-500/10 flex-shrink-0">
               <TrendingUp className="w-3.5 h-3.5 text-yellow-400" />
             </div>
@@ -661,7 +661,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           </CardContent>
         </Card>
         <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-3 flex items-center gap-2.5">
+          <CardContent className="p-4 flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-purple-500/10 flex-shrink-0">
               <Mail className="w-3.5 h-3.5 text-purple-400" />
             </div>
@@ -675,7 +675,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
       {/* Past Sends — limited to 5 most recent */}
       <div>
-        <div className="flex items-center justify-between gap-3 mb-3">
+        <div className="flex items-center justify-between gap-4 mb-4">
           <h3 className="text-sm font-semibold text-white flex items-center gap-2 flex-shrink-0">
             <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
           </h3>
@@ -707,7 +707,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-3 overflow-hidden"
+              className="mb-4 overflow-hidden"
             >
               <div className="flex items-center gap-2 px-3 py-2 bg-purple-500/10 border border-purple-500/20 rounded-lg text-[11px]">
                 <Building2 className="w-3 h-3 text-purple-400 flex-shrink-0" />
@@ -756,7 +756,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
       {/* Subscriber Management */}
       <div>
-        <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <h3 className="text-sm font-semibold text-white flex items-center gap-2 flex-shrink-0">
             <Users className="w-4 h-4 text-blue-400" />
             Manage Subscribers
@@ -832,7 +832,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-3 overflow-hidden"
+              className="mb-4 overflow-hidden"
             >
               <div className="flex items-center justify-between px-3 py-2 bg-green-500/10 border border-green-500/20 rounded-lg text-[11px]">
                 <span className="text-green-400">
@@ -854,10 +854,10 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="mb-3 overflow-hidden"
+              className="mb-4 overflow-hidden"
             >
               <Card className="bg-white/[0.03] border-white/[0.06]">
-                <CardContent className="p-3 space-y-2">
+                <CardContent className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-white">Add Subscriber</p>
                     <button onClick={() => setShowAddSub(false)} className="text-gray-500 hover:text-white">
@@ -894,7 +894,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         </AnimatePresence>
 
         {!selectedProfile && (
-          <div className="relative mb-3">
+          <div className="relative mb-4">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
             <Input
               value={subSearch}
@@ -919,7 +919,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               filteredSubscribers.map(s => (
                 <button
                   key={s.id}
-                  className="w-full flex items-center gap-3 py-3 border-b border-white/[0.05] last:border-0 text-left hover:bg-white/[0.02] transition-colors rounded-sm"
+                  className="w-full flex items-center gap-4 py-3 border-b border-white/[0.05] last:border-0 text-left hover:bg-white/[0.02] transition-colors rounded-sm"
                   onClick={() => openEdit(s)}
                 >
                   <div className="w-7 h-7 rounded-full bg-white/[0.06] flex items-center justify-center text-xs text-gray-400 font-medium flex-shrink-0">
@@ -963,7 +963,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-sm bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-5 space-y-4"
+              className="w-full max-w-sm bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-6 space-y-4"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -1077,7 +1077,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-md bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-5 space-y-3"
+              className="w-full max-w-md bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-6 space-y-3"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -1132,7 +1132,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                       <button
                         key={p.id}
                         onClick={() => toggleUserSelection(p.id)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors ${
+                        className={`w-full flex items-center gap-4 px-3 py-2.5 text-left transition-colors ${
                           selected ? "bg-blue-500/10" : "hover:bg-white/[0.03]"
                         }`}
                       >

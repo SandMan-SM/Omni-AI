@@ -110,7 +110,7 @@ export default function Admin() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gradient flex items-center gap-3" data-testid="text-admin-heading">
+            <h1 className="text-2xl md:text-3xl font-bold text-gradient flex items-center gap-4" data-testid="text-admin-heading">
               <Shield className="w-7 h-7 text-purple-400" />
               Admin Panel
             </h1>
@@ -120,7 +120,7 @@ export default function Admin() {
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
           <Card className="bg-white/5 border-white/10">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-4 flex items-center gap-4">
               <div className="p-2 rounded-lg bg-purple-500/10">
                 <Users className="w-5 h-5 text-purple-400" />
               </div>
@@ -131,7 +131,7 @@ export default function Admin() {
             </CardContent>
           </Card>
           <Card className="bg-white/5 border-white/10">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-4 flex items-center gap-4">
               <div className="p-2 rounded-lg bg-orange-500/10">
                 <Crown className="w-5 h-5 text-orange-400" />
               </div>
@@ -142,7 +142,7 @@ export default function Admin() {
             </CardContent>
           </Card>
           <Card className="bg-white/5 border-white/10">
-            <CardContent className="p-4 flex items-center gap-3">
+            <CardContent className="p-4 flex items-center gap-4">
               <div className="p-2 rounded-lg bg-green-500/10">
                 <Check className="w-5 h-5 text-green-400" />
               </div>
@@ -184,7 +184,7 @@ export default function Admin() {
                     key={u.id}
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-wrap items-center gap-3 p-3 rounded-lg border border-white/5 bg-white/[0.02]"
+                    className="flex flex-wrap items-center gap-4 p-4 rounded-lg border border-white/5 bg-white/[0.02]"
                     data-testid={`user-row-${u.id}`}
                   >
                     <div className="flex-1 min-w-0">
@@ -207,7 +207,7 @@ export default function Admin() {
                           </Badge>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 mt-1 text-xs text-gray-500 flex-wrap">
+                      <div className="flex items-center gap-4 mt-1 text-xs text-gray-500 flex-wrap">
                         <span className="flex items-center gap-1">
                           <Mail className="w-3 h-3" />
                           {u.email}

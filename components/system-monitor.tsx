@@ -448,7 +448,7 @@ function DeploymentTracker({ deployments }: { deployments: Deployment[] }) {
 
       <CardContent className="px-4 pb-4">
         {/* Quick status grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
           {Object.entries(PROJECT_EMOJI).map(([project, emoji]) => {
             const latest = latestByProject[project];
             const cfg = latest ? (DEPLOY_STATUS_CONFIG[latest.status] || DEPLOY_STATUS_CONFIG.queued) : null;
@@ -606,7 +606,7 @@ function ProjectCard({ p }: { p: ProjectIntelligence }) {
       className="border border-white/[0.06] rounded-xl bg-white/[0.02] overflow-hidden"
     >
       <div
-        className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-white/[0.03] transition-colors"
+        className="flex items-center gap-4 px-4 py-3 cursor-pointer hover:bg-white/[0.03] transition-colors"
         onClick={() => setExpanded(!expanded)}
       >
         <span className="text-lg">{emoji}</span>
@@ -859,7 +859,7 @@ export function SystemMonitor() {
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {lastRefresh && (
               <span className="text-[10px] text-gray-600">
                 {lastRefresh.toLocaleTimeString()}
@@ -876,7 +876,7 @@ export function SystemMonitor() {
       </AnimatePresence>
 
       {/* ── Stats Row ────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: "Uptime",       value: uptimeStr,            icon: Clock,     color: "text-blue-400",   bg: "bg-blue-500/10"   },
           { label: "Avg AI Score", value: `${avgScore}/100`,    icon: Brain,     color: "text-purple-400", bg: "bg-purple-500/10" },
@@ -886,7 +886,7 @@ export function SystemMonitor() {
           const Icon = s.icon;
           return (
             <Card key={s.label} className="bg-white/[0.03] border-white/[0.06]">
-              <CardContent className="p-3 flex items-center gap-2.5">
+              <CardContent className="p-4 flex items-center gap-2.5">
                 <div className={`p-1.5 rounded-lg ${s.bg} flex-shrink-0`}>
                   <Icon className={`w-3.5 h-3.5 ${s.color}`} />
                 </div>
@@ -983,7 +983,7 @@ export function SystemMonitor() {
                     <Icon className="w-3.5 h-3.5 text-gray-500" />
                     <span className="text-sm text-gray-300">{meta.label}</span>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-4">
                     {check.error && <span className="text-[10px] text-red-400 max-w-[160px] truncate">{check.error}</span>}
                     <span className={`text-[11px] font-mono ${latencyColor(check.latency)}`}>{check.latency}ms</span>
                     <Badge className={`text-[10px] px-1.5 py-0 border ${check.ok ? "bg-green-500/10 text-green-400 border-green-500/20" : "bg-red-500/10 text-red-400 border-red-500/20"}`}>

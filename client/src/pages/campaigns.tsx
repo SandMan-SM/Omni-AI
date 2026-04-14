@@ -106,7 +106,7 @@ export default function Campaigns() {
                 <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
                 <div className="relative px-6 py-10 md:px-12 md:py-16">
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4">
                     {steps.map((step, index) => {
                       const Icon = step.icon;
                       return (
@@ -118,8 +118,8 @@ export default function Campaigns() {
                           viewport={{ once: true }}
                           className="relative"
                         >
-                          <div className="glass-card rounded-md p-4 md:p-5 text-center h-full border border-white/5">
-                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-3 border border-white/5">
+                          <div className="glass-card rounded-md p-4 md:p-6 text-center h-full border border-white/5">
+                            <div className="w-10 h-10 md:w-12 md:h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mx-auto mb-4 border border-white/5">
                               <Icon className="w-5 h-5 md:w-6 md:h-6 text-purple-400" />
                             </div>
                             <p className="text-white text-sm md:text-base font-semibold mb-1">{step.label}</p>
@@ -145,7 +145,7 @@ export default function Campaigns() {
               viewport={{ once: true }}
               className="mb-16 md:mb-20"
             >
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-4 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center border border-white/5">
                   <Sparkles className="w-5 h-5 text-purple-400" />
                 </div>
@@ -166,11 +166,11 @@ export default function Campaigns() {
                       className="relative group"
                     >
                       <div className="glass-card rounded-md p-6 md:p-8 h-full border border-white/5 group-hover:border-white/10 transition-colors">
-                        <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mb-5 border border-white/5">
+                        <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500/20 to-cyan-500/20 flex items-center justify-center mb-6 border border-white/5">
                           <Icon className="w-6 h-6 text-purple-400" />
                         </div>
 
-                        <h3 className="text-lg md:text-xl font-semibold text-white mb-3">
+                        <h3 className="text-lg md:text-xl font-semibold text-white mb-4">
                           {feature.title}
                         </h3>
 
@@ -193,7 +193,7 @@ export default function Campaigns() {
               viewport={{ once: true }}
               className="mb-16 md:mb-20"
             >
-              <div className="flex items-center gap-3 mb-8">
+              <div className="flex items-center gap-4 mb-8">
                 <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center border border-white/5">
                   <Globe className="w-5 h-5 text-cyan-400" />
                 </div>
@@ -212,7 +212,7 @@ export default function Campaigns() {
                       viewport={{ once: true }}
                       className="glass-card rounded-md p-6 border border-white/5"
                     >
-                      <div className="flex items-center gap-3 mb-4">
+                      <div className="flex items-center gap-4 mb-4">
                         <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
                           <Icon className="w-5 h-5 text-cyan-400" />
                         </div>
@@ -243,7 +243,7 @@ export default function Campaigns() {
                     Let Omni AI handle the creative work while you focus on growing your business.
                     No editors. No guessing. Just results.
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center gap-4">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
                       <Check className="w-4 h-4 text-green-400" />
                       No editing skills required

@@ -110,7 +110,7 @@ function BulletList({ items, icon: Icon = CheckCircle }: { items: string[]; icon
           whileInView={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.3, delay: i * 0.05 }}
           viewport={{ once: true }}
-          className="flex items-start gap-3"
+          className="flex items-start gap-4"
         >
           <Icon className="w-5 h-5 text-purple-400 mt-0.5 shrink-0" />
           <span className="text-gray-300">{item}</span>
@@ -175,7 +175,7 @@ export default function Interlinked() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="glass-card rounded-md p-6 mb-12 text-center neon-border"
         >
-          <p className="text-gray-400 text-sm uppercase tracking-widest mb-3">Online Training Starts In</p>
+          <p className="text-gray-400 text-sm uppercase tracking-widest mb-4">Online Training Starts In</p>
           <CountdownTimer />
           <p className="text-xl md:text-2xl font-bold mt-4 text-white leading-tight">
             Your Own Private AI CEO Will Run Your Business While You Sleep
@@ -276,7 +276,7 @@ export default function Interlinked() {
             There&apos;s a massive difference between &ldquo;glorified search AI&rdquo; and a true AI CEO.
           </p>
           <p className="text-gray-400 mb-4">Most tools wait for you to ask questions.</p>
-          <p className="text-gray-300 mb-3">A real AI CEO:</p>
+          <p className="text-gray-300 mb-4">A real AI CEO:</p>
           <BulletList items={[
             "Remembers everything about your business",
             "Monitors it 24/7",
@@ -433,7 +433,7 @@ export default function Interlinked() {
           viewport={{ once: true }}
           className="glass-card rounded-md p-6 mb-12 text-center neon-border"
         >
-          <p className="text-gray-400 text-sm uppercase tracking-widest mb-3">Online Training Starts In</p>
+          <p className="text-gray-400 text-sm uppercase tracking-widest mb-4">Online Training Starts In</p>
           <CountdownTimer />
         </motion.div>
 

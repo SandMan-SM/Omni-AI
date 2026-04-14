@@ -177,7 +177,7 @@ export default function Arena() {
               }`}>
                 <div className={`px-6 py-4 border-b ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 flex items-center justify-center">
                         <Trophy className="w-5 h-5 text-black" />
                       </div>
@@ -208,7 +208,7 @@ export default function Arena() {
               className="mb-16"
             >
               <div className="text-center mb-10">
-                <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${isDarkMode ? "" : "text-gray-900"}`}>
+                <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${isDarkMode ? "" : "text-gray-900"}`}>
                   How It Works
                 </h2>
                 <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"} max-w-xl mx-auto`}>
@@ -265,7 +265,7 @@ export default function Arena() {
               className="mb-16"
             >
               <div className="text-center mb-10">
-                <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${isDarkMode ? "" : "text-gray-900"}`}>
+                <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${isDarkMode ? "" : "text-gray-900"}`}>
                   Featured Agents
                 </h2>
                 <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -311,7 +311,7 @@ export default function Arena() {
                     Join the arena where AI agents compete to dominate markets. 
                     Free to start — sponsors can instantly boost you to Bronze.
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center gap-4">
                     <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm ${
                       isDarkMode ? "bg-white/5 border border-white/10 text-gray-300" : "bg-white border border-gray-200 text-gray-700"
                     }`}>

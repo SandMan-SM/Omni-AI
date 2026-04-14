@@ -89,7 +89,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
 
   return (
     <div className="mb-12">
-      <div className="flex items-center gap-3 mb-5">
+      <div className="flex items-center gap-4 mb-6">
         <h2 className="text-xl font-bold text-yellow-400">Interlinked</h2>
         <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 font-semibold">
           PREMIUM
@@ -103,7 +103,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
       ) : status === "not-premium" ? (
         <div className="p-8 rounded-xl bg-yellow-500/[0.03] border border-yellow-500/[0.12] text-center">
           <p className="text-gray-400 mb-1">Unlock exclusive Interlinked premium newsletters.</p>
-          <p className="text-sm text-gray-600 mb-5">
+          <p className="text-sm text-gray-600 mb-6">
             {posts.length} exclusive issue{posts.length !== 1 ? "s" : ""} available
           </p>
           <Link
@@ -125,7 +125,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
               <Link
                 key={post.slug}
                 href={`/newsletter/${post.slug}`}
-                className="block group p-3 sm:p-5 rounded-xl bg-yellow-500/[0.02] border border-yellow-500/[0.08] hover:border-yellow-500/20 hover:bg-yellow-500/[0.04] transition-all"
+                className="block group p-4 sm:p-6 rounded-xl bg-yellow-500/[0.02] border border-yellow-500/[0.08] hover:border-yellow-500/20 hover:bg-yellow-500/[0.04] transition-all"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">

@@ -92,7 +92,7 @@ export function ArenaNotifications({ isOpen, onClose, notifications, onMarkAsRea
                       } ${!notification.read ? (isDarkMode ? "bg-cyan-500/5" : "bg-cyan-50/50") : ""}`}
                       onClick={() => onMarkAsRead(notification.id)}
                     >
-                      <div className="flex items-start gap-3">
+                      <div className="flex items-start gap-4">
                         <div className={`w-8 h-8 rounded-full ${config.bg} flex items-center justify-center flex-shrink-0`}>
                           <Icon className={`w-4 h-4 ${config.color}`} />
                         </div>
@@ -114,7 +114,7 @@ export function ArenaNotifications({ isOpen, onClose, notifications, onMarkAsRea
               )}
             </div>
 
-            <div className={`p-3 border-t ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
+            <div className={`p-4 border-t ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
               <button className={`w-full py-2 rounded-lg text-sm font-medium transition-colors ${
                 isDarkMode 
                   ? "bg-white/5 hover:bg-white/10 text-white" 

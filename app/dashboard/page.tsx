@@ -238,7 +238,7 @@ export default function Dashboard() {
             <Link href="/arena" className="hover:text-white transition-colors">Arena</Link>
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             {isAdmin ? (
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/40" data-testid="badge-tier-status">
                 <Shield className="w-4 h-4 text-purple-400" />
@@ -314,7 +314,7 @@ export default function Dashboard() {
         {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
-              className="flex flex-wrap items-center gap-3 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
+              className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
               data-testid="banner-complete-account"
             >
               <div className="flex-1 min-w-0">
@@ -368,7 +368,7 @@ export default function Dashboard() {
           </motion.div>
         ) : (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
               {metrics.map((metric, i) => {
                 const MetricIcon = metric.icon;
                 const isLocked = !isSponsor || (isSponsor && !profile?.sponsor_insights_paid);
@@ -376,7 +376,7 @@ export default function Dashboard() {
                   <motion.div key={metric.label} transition={{ duration: 0.4, delay: i * 0.06 }}>
                     <Card className="bg-white/[0.03] border-white/[0.06]">
                       <CardContent className="p-4">
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-between mb-4">
                           <MetricIcon className="w-5 h-5 text-gray-500" />
                           <span className={`text-xs font-medium ${isLocked ? 'blur-sm' : 'text-green-400'}`} data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
                         </div>
@@ -409,7 +409,7 @@ export default function Dashboard() {
                       <p className="text-xs sm:text-sm text-gray-300 mb-4 text-center px-2">
                         Get started by activating bot development for all assets and begin with live analytics.
                       </p>
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                       <div className="flex items-center justify-center gap-2 bg-purple-500/20 px-4 py-3 rounded-full border border-purple-500/30 h-12 blur-sm select-none">
                         <BarChart3 className="w-4 h-4 text-purple-400 flex-shrink-0" />
                         <span className="text-xs text-purple-300/50 text-center leading-tight">Sponsor Insights</span>
@@ -427,7 +427,7 @@ export default function Dashboard() {
                         <span className="text-xs text-purple-300 text-center leading-tight">Advanced Analytics</span>
                       </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-3">
+                    <div className="flex flex-col sm:flex-row gap-4">
                       <Button
                         className="flex-1 btn-chrome-gold text-black border-0 shadow-lg shadow-amber-400/30 font-bold text-sm sm:text-base py-2.5 sm:py-0"
                         onClick={() => window.open('https://www.paypal.com/ncp/payment/CHLWVK2X9TF4E', '_blank')}
@@ -463,7 +463,7 @@ export default function Dashboard() {
                 <div className="mb-4">
                   <Card className="bg-gradient-to-br from-blue-900/40 via-cyan-950/60 to-blue-900/40 border-2 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden relative max-w-md mx-auto">
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 via-transparent to-blue-400/10" />
-                    <CardContent className="p-5 relative">
+                    <CardContent className="p-6 relative">
                       <h3 className="text-2xl font-bold text-center mb-2">
                         <span className="bg-gradient-to-r from-blue-200 via-cyan-300 to-blue-200 bg-clip-text text-transparent animate-shine">
                           Traditional Marketing Handled by AI
@@ -536,7 +536,7 @@ export default function Dashboard() {
                   )}
                 </div>
               ) : isAdmin ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-600 to-blue-600 flex items-center justify-center flex-shrink-0">
                     <Shield className="w-5 h-5 text-white" />
                   </div>
@@ -632,7 +632,7 @@ export default function Dashboard() {
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.33 }}>
           <Card className="bg-white/[0.03] border-white/[0.06]">
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <CardTitle className="text-lg text-white">Campaigns</CardTitle>
                 <Badge className={`text-xs no-default-hover-elevate no-default-active-elevate ${statusConfig.active.color}`} data-testid="text-campaign-count">
                   {allUserCampaigns.filter((c: any) => c.status === "active").length} active
@@ -668,7 +668,7 @@ export default function Dashboard() {
                           onClick={() => setSelectedCampaignId(selectedCampaignId === campaign.id ? null : campaign.id)}
                           data-testid={`card-campaign-${campaign.id}`}
                         >
-                        <div className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4">
+                        <div className="flex items-center gap-4 sm:gap-4 p-4 sm:p-4">
                           <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${campaign.thumbnail} flex-shrink-0 p-[1px]`}>
                             <div className="w-full h-full rounded-lg bg-[#0a0a0a] flex items-center justify-center">
                               <Video className="w-5 h-5 text-white/70" />
@@ -694,23 +694,23 @@ export default function Dashboard() {
                               className="overflow-hidden"
                             >
                               <div className="px-4 pb-4 pt-0 border-t border-white/5">
-                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-3">
+                                  <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                     <Target className="w-4 h-4 text-purple-400" />
                                     <span className="text-[10px] text-gray-500 uppercase tracking-wide">Status</span>
                                     <span className="text-xs font-medium text-white">{status.label}</span>
                                   </div>
-                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                  <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                     <TrendingUp className="w-4 h-4 text-cyan-400" />
                                     <span className="text-[10px] text-gray-500 uppercase tracking-wide">Type</span>
                                     <span className="text-xs font-medium text-white truncate max-w-full">{campaign.type}</span>
                                   </div>
-                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                  <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                     <CircleDollarSign className="w-4 h-4 text-green-400" />
                                     <span className="text-[10px] text-gray-500 uppercase tracking-wide">Budget</span>
                                     <span className="text-xs font-medium text-white">{campaign.budget}</span>
                                   </div>
-                                  <div className="flex flex-col items-center gap-1 p-3 rounded-lg bg-white/[0.03] border border-white/5">
+                                  <div className="flex flex-col items-center gap-1 p-4 rounded-lg bg-white/[0.03] border border-white/5">
                                     <BarChart3 className="w-4 h-4 text-blue-400" />
                                     <span className="text-[10px] text-gray-500 uppercase tracking-wide">Platform</span>
                                     <span className="text-xs font-medium text-white">{campaign.platform || 'TBD'}</span>
@@ -727,7 +727,7 @@ export default function Dashboard() {
                 </div>
               ) : (
                 <div className="text-center py-8" data-testid="text-no-campaigns">
-                  <Video className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+                  <Video className="w-8 h-8 text-gray-700 mx-auto mb-4" />
                   <p className="text-sm text-gray-500 mb-1">No campaigns match this filter</p>
                   <p className="text-xs text-gray-600">Try selecting a different status filter above.</p>
                 </div>
@@ -749,7 +749,7 @@ export default function Dashboard() {
                     <Link
                       key={i}
                       href="/interlinked"
-                      className="flex items-center gap-3 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors group"
+                      className="flex items-center gap-4 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors group"
                     >
                       <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
                         <GraduationCap className="w-4 h-4 text-blue-400" />
@@ -769,7 +769,7 @@ export default function Dashboard() {
                   {bookings.slice(0, 2).map((booking, i) => {
                     const isTraining = booking.type === 'training';
                     return (
-                      <div key={booking.id} className="flex items-center gap-3 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors" data-testid={`booking-item-${i}`}>
+                      <div key={booking.id} className="flex items-center gap-4 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors" data-testid={`booking-item-${i}`}>
                         <div className={`w-10 h-10 rounded-lg ${isTraining ? "bg-blue-500/10 border border-blue-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
                           {isTraining ? (
                             <GraduationCap className="w-4 h-4 text-blue-400" />
@@ -828,7 +828,7 @@ export default function Dashboard() {
                       <p className="text-[10px] text-purple-400 uppercase tracking-wider font-medium mb-2">Free</p>
                       <div className="space-y-2">
                         {recentFreePosts.map(p => (
-                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
+                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
                             <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
                               <Mail className="w-3.5 h-3.5 text-purple-400" />
                             </div>
@@ -849,7 +849,7 @@ export default function Dashboard() {
                       <p className="text-[10px] text-yellow-400 uppercase tracking-wider font-medium mb-2">Premium</p>
                       <div className="space-y-2">
                         {recentPremiumPosts.map(p => (
-                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
+                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
                             <div className="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
                               <Crown className="w-3.5 h-3.5 text-yellow-400" />
                             </div>
@@ -880,7 +880,7 @@ export default function Dashboard() {
                 {recentActivities.length > 0 ? (
                   <div className="space-y-4">
                     {recentActivities.map((item, i) => (
-                      <div key={item.id} className="flex items-start gap-3" data-testid={`activity-item-${i}`}>
+                      <div key={item.id} className="flex items-start gap-4" data-testid={`activity-item-${i}`}>
                         <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm text-white" data-testid={`text-activity-action-${i}`}>{item.subject || item.type}</p>
@@ -894,7 +894,7 @@ export default function Dashboard() {
                   </div>
                 ) : (
                   <div className="text-center py-6" data-testid="text-no-activity">
-                    <Clock className="w-8 h-8 text-gray-700 mx-auto mb-3" />
+                    <Clock className="w-8 h-8 text-gray-700 mx-auto mb-4" />
                     <p className="text-sm text-gray-500">No recent activity</p>
                   </div>
                 )}

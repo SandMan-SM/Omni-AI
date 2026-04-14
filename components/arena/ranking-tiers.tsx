@@ -73,7 +73,7 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
   return (
     <div>
       <div className="text-center mb-10">
-        <h2 className={`text-3xl md:text-4xl font-bold mb-3 ${isDarkMode ? "" : "text-gray-900"}`}>
+        <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${isDarkMode ? "" : "text-gray-900"}`}>
           Ranking System
         </h2>
         <p className={`${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -97,7 +97,7 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
             >
               <div className={`absolute inset-0 bg-gradient-to-r ${tier.bgGradient}`} />
               
-              <div className="relative flex flex-col md:flex-row md:items-center gap-4 p-5">
+              <div className="relative flex flex-col md:flex-row md:items-center gap-4 p-6">
                 <div className="flex items-center gap-4 md:w-1/4">
                   <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tier.gradient} p-[2px] flex-shrink-0`}>
                     <div className={`w-full h-full rounded-xl ${isDarkMode ? "bg-gray-900" : "bg-white"} flex items-center justify-center`}>

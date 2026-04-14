@@ -151,8 +151,8 @@ export function TierCard({ tier, index, onCTAClick }: TierCardProps) {
           }`}
         />
 
-        <div className="relative h-full p-5 md:p-6 flex flex-col z-[2]">
-          <div className="flex items-center gap-3 mb-4">
+        <div className="relative h-full p-6 md:p-6 flex flex-col z-[2]">
+          <div className="flex items-center gap-4 mb-4">
             <motion.div
               className={`w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-br ${data.gradient} p-[1px] flex-shrink-0`}
               whileHover={!isLocked && !prefersReducedMotion ? { y: -2, transition: { duration: 0.2 } } : undefined}

@@ -13,7 +13,7 @@ export default function CTAButtons({ slug }: CTAButtonsProps) {
   return (
     <>
       {/* Buttons */}
-      <div className="flex flex-col sm:flex-row items-center gap-3 w-full max-w-md sm:w-auto mx-auto">
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full max-w-md sm:w-auto mx-auto">
         <button
           onClick={() => setOpen(true)}
           className="w-full sm:w-auto whitespace-nowrap rounded-xl px-6 py-4 text-base font-bold text-white transition-all duration-200 hover:-translate-y-0.5"

@@ -86,7 +86,7 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="flex items-center gap-3 p-3 rounded-lg border border-green-500/30 bg-green-500/10 mb-5"
+                className="flex items-center gap-4 p-4 rounded-lg border border-green-500/30 bg-green-500/10 mb-6"
                 data-testid="banner-profile-complete"
               >
                 <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />

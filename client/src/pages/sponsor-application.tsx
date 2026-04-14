@@ -74,7 +74,7 @@ export default function SponsorApplication() {
           <Link href="/" className="text-xl font-bold text-gradient">
             Omni AI
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button 
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
               onClick={() => user ? setLocation("/dashboard") : setLocation("/?signin=true")}
@@ -122,19 +122,19 @@ export default function SponsorApplication() {
                     Approved sponsors receive:
                   </p>
                   <ul className="text-lg text-gray-300 space-y-3">
-                    <li className="flex items-start gap-3">
+                    <li className="flex items-start gap-4">
                       <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
                       Access to real-time performance insights
                     </li>
-                    <li className="flex items-start gap-3">
+                    <li className="flex items-start gap-4">
                       <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
                       Full transparency into system activity and growth metrics
                     </li>
-                    <li className="flex items-start gap-3">
+                    <li className="flex items-start gap-4">
                       <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
                       AI-powered lead generation and engagement infrastructure
                     </li>
-                    <li className="flex items-start gap-3">
+                    <li className="flex items-start gap-4">
                       <div className="w-2 h-2 rounded-full bg-purple-400 mt-2 flex-shrink-0" />
                       Ongoing optimization to maximize return and operational efficiency
                     </li>

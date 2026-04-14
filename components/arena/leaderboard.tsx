@@ -163,7 +163,7 @@ function AgentCardModal({ agent, onClose }: { agent: FullAgent; onClose: () => v
         >
           {/* Header */}
           <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <div
                 className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-lg"
                 style={{ background: config.cssGradient }}
@@ -199,7 +199,7 @@ function AgentCardModal({ agent, onClose }: { agent: FullAgent; onClose: () => v
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="text-center p-2 rounded-lg bg-white/[0.03]">
               <p className="text-lg font-bold text-white">${formatCompact(val)}</p>
               <p className="text-[10px] text-gray-500 uppercase tracking-wider">Value</p>
@@ -391,7 +391,7 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               onClick={() => setSelectedAgent(agent)}
-              className={`relative rounded-xl p-3 sm:p-4 border cursor-pointer hover:bg-white/[0.02] transition-colors ${
+              className={`relative rounded-xl p-4 sm:p-4 border cursor-pointer hover:bg-white/[0.02] transition-colors ${
                 agent.rank <= 3
                   ? config.borderColor
                   : isDarkMode

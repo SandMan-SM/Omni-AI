@@ -59,7 +59,7 @@ export default async function NewsletterIndexPage() {
 
         {/* Daily Intelligence — Free */}
         <div>
-          <div className="flex items-center gap-3 mb-5">
+          <div className="flex items-center gap-4 mb-6">
             <h2 className="text-xl font-bold text-purple-400">Daily Intelligence</h2>
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 font-semibold">
               FREE
@@ -69,7 +69,7 @@ export default async function NewsletterIndexPage() {
             {freePosts.map((post) => {
               const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
               return (
-                <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-3 sm:p-5 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all">
+                <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-4 sm:p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <h3 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors truncate">{post.subject}</h3>

@@ -174,7 +174,7 @@ function ActivityFeed({ profileId }: { profileId: string }) {
         {logOpen && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="space-y-2.5 p-3 rounded-xl bg-white/[0.03] border border-white/5">
+            <div className="space-y-2.5 p-4 rounded-xl bg-white/[0.03] border border-white/5">
               <div className="grid grid-cols-2 gap-2">
                 <SelectInput label="Type" value={form.type}
                   onChange={v => setForm(f => ({ ...f, type: v }))}
@@ -401,7 +401,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
         <div className="flex-shrink-0 border-b border-white/5">
           <div style={{ height: 24 }} />
           <DialogHeader className="px-6 pb-4">
-            <DialogTitle className="flex items-center gap-3 text-white text-base">
+            <DialogTitle className="flex items-center gap-4 text-white text-base">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600/50 to-blue-600/50 flex items-center justify-center text-sm font-bold flex-shrink-0">
                 {(u.name || u.email || "?")[0].toUpperCase()}
               </div>
@@ -427,7 +427,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
           {/* Profile Tab */}
           {tab === "profile" && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <TextInput label="Display Name" value={form.name} onChange={set("name")} placeholder="How they appear" />
                 <TextInput label="Email" value={form.email} onChange={set("email")} placeholder="email@example.com" type="email" />
                 <TextInput label="First Name" value={form.first_name} onChange={set("first_name")} placeholder="First" />
@@ -472,7 +472,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
               </div>
               <div className="space-y-3 pt-1 border-t border-white/5">
                 <p className="text-[11px] text-gray-500 uppercase tracking-wider pt-1">Business</p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <TextInput label="Business Name" value={form.business_name} onChange={set("business_name")} placeholder="Company name" />
                   <TextInput label="Niche / Industry" value={form.business_niche} onChange={set("business_niche")} placeholder="e.g. Real Estate" />
                 </div>
@@ -517,7 +517,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
                 </Field>
                 <TextInput label="New Password" value={form.password} onChange={set("password")} placeholder="Leave blank to keep current" type="password" />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SelectInput label="Role" value={form.role} onChange={set("role")} options={ROLE_OPTIONS} />
                 <SelectInput label="Tier" value={form.tier} onChange={set("tier")} options={TIER_OPTIONS} />
                 <SelectInput label="Subscription Status" value={form.subscription_status}
@@ -539,7 +539,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
           {/* CRM Tab */}
           {tab === "crm" && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <SelectInput label="CRM Status" value={form.crm_status} onChange={set("crm_status")} options={CRM_STATUS_OPTIONS} />
                 <SelectInput label="Lead Score" value={form.lead_score} onChange={set("lead_score")} options={LEAD_SCORE_OPTIONS} />
                 <SelectInput label="Satisfaction (1-5)"
@@ -561,7 +561,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
           {/* Arena Tab */}
           {tab === "arena" && (
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <TextInput label="Agent Name" value={form.agent_name} onChange={set("agent_name")} placeholder="Custom agent name for Arena" />
                 <SelectInput label="Agent Status" value={form.agent_status} onChange={set("agent_status")}
                   options={[
@@ -597,7 +597,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
                 exit={{ opacity: 0, height: 0 }}
                 className="overflow-hidden"
               >
-                <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 mb-2">
+                <div className="flex items-center gap-2 p-4 rounded-lg bg-red-500/10 border border-red-500/20 mb-2">
                   <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0" />
                   <p className="text-xs text-red-300 flex-1">This permanently deletes the profile, credentials, and all activity. Cannot be undone.</p>
                   <Button size="sm" className="bg-red-600 hover:bg-red-500 border-0 text-white h-7 text-xs gap-1 flex-shrink-0" onClick={handleDelete} disabled={deleting}>
@@ -685,16 +685,16 @@ function AddUserDialog({ open, onClose, onSaved }: { open: boolean; onClose: () 
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4 mt-1">
-          <div className="space-y-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+          <div className="space-y-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
             <p className="text-[11px] text-gray-500 uppercase tracking-wider">Credentials</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <TextInput label="Username *" value={form.username} onChange={set("username")} placeholder="@handle" />
               <TextInput label="Password *" value={form.password} onChange={set("password")} placeholder="Temp password" type="password" />
             </div>
           </div>
-          <div className="space-y-3 p-3 rounded-xl bg-white/[0.02] border border-white/5">
+          <div className="space-y-3 p-4 rounded-xl bg-white/[0.02] border border-white/5">
             <p className="text-[11px] text-gray-500 uppercase tracking-wider">Profile</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <TextInput label="Name" value={form.name} onChange={set("name")} placeholder="Full name" />
               <TextInput label="Email" value={form.email} onChange={set("email")} placeholder="email@example.com" type="email" />
               <TextInput label="Phone" value={form.phone} onChange={set("phone")} placeholder="+1 555 000 0000" />
@@ -744,7 +744,7 @@ function UserRow({ u, onEdit }: { u: Profile; onEdit: (u: Profile) => void }) {
 
   return (
     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-3 p-3 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+      className="flex items-center gap-4 p-4 rounded-xl border border-white/[0.05] bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
       data-testid={`user-row-${u.id}`}>
 
       <div className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-600/30 to-blue-600/30 border border-white/10 flex items-center justify-center text-sm font-semibold text-white flex-shrink-0">
@@ -762,7 +762,7 @@ function UserRow({ u, onEdit }: { u: Profile; onEdit: (u: Profile) => void }) {
             <Badge className={`text-[10px] border ${leadColors[u.lead_score] || ""} hidden sm:inline-flex`}>{u.lead_score}</Badge>
           )}
         </div>
-        <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+        <div className="flex items-center gap-4 mt-0.5 flex-wrap">
           <span className="text-xs text-gray-600 truncate max-w-[160px]">{u.email}</span>
           {u.business_name && <span className="text-xs text-gray-600 hidden sm:inline">{u.business_name}</span>}
           {u.phone && <span className="text-xs text-gray-600 hidden sm:inline">{u.phone}</span>}
@@ -837,7 +837,7 @@ export default function Admin() {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <div className="flex-1">
-            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-3">
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-4">
               <Shield className="w-6 h-6 text-purple-400" />
               <span className="text-gradient">Admin Panel</span>
             </h1>
@@ -889,7 +889,7 @@ export default function Admin() {
           {/* ── Users ────────────────────────────────────────────────── */}
           <TabsContent value="users" className="space-y-6 mt-0">
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-3 sm:gap-4">
+            <div className="grid grid-cols-3 gap-4 sm:gap-4">
               {[
                 { label: "Total Users", value: users.length, icon: Users, color: "text-purple-400", bg: "bg-purple-500/10" },
                 { label: "Active Clients", value: clientCount, icon: Crown, color: "text-green-400", bg: "bg-green-500/10" },
@@ -898,7 +898,7 @@ export default function Admin() {
                 const Icon = s.icon;
                 return (
                   <Card key={s.label} className="bg-white/5 border-white/10">
-                    <CardContent className="p-3 sm:p-4 flex items-center gap-2 sm:gap-3">
+                    <CardContent className="p-4 sm:p-4 flex items-center gap-2 sm:gap-4">
                       <div className={`p-1.5 sm:p-2 rounded-lg ${s.bg} flex-shrink-0`}><Icon className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${s.color}`} /></div>
                       <div className="min-w-0">
                         <p className="text-lg sm:text-xl font-bold text-white leading-tight">{s.value}</p>

@@ -244,7 +244,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="flex items-center justify-center gap-3 mb-2">
+                <div className="flex items-center justify-center gap-4 mb-2">
                   <div className="w-10 h-10 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
                     <Calendar className="w-5 h-5 text-purple-400" />
                   </div>
@@ -315,7 +315,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                           key={option}
                           type="button"
                           onClick={() => setPurpose(option)}
-                          className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-all ${
+                          className={`w-full flex items-center gap-4 p-4 rounded-lg border text-left transition-all ${
                             purpose === option
                               ? "border-purple-500/50 bg-purple-500/10"
                               : "border-white/10 bg-white/5"
@@ -370,7 +370,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   </h2>
                 </div>
 
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={() => navigateCalendar("prev")}
                     className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
@@ -398,7 +398,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   ))}
                 </div>
 
-                <div className="grid grid-cols-7 gap-1 mb-5">
+                <div className="grid grid-cols-7 gap-1 mb-6">
                   {calendarDays.map((day, idx) => {
                     const isDisabled = !day.isCurrentMonth;
                     const isSelected = selectedDate === day.date;
@@ -433,7 +433,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                       <Clock className="w-4 h-4" />
                       Select a time for {formatSelectedDate()}
                     </p>
-                    <div className="grid grid-cols-4 gap-2 mb-5">
+                    <div className="grid grid-cols-4 gap-2 mb-6">
                       {timeSlots.map((time) => (
                         <button
                           key={time}
@@ -478,7 +478,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                 <div className="w-16 h-16 rounded-full bg-green-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-4">
                   <Check className="w-8 h-8 text-green-400" />
                 </div>
-                <h2 className="text-xl font-bold text-white mb-3" data-testid="text-demo-success">
+                <h2 className="text-xl font-bold text-white mb-4" data-testid="text-demo-success">
                   Request Complete!
                 </h2>
                 <p className="text-gray-400 text-sm mb-2 leading-relaxed px-2">
@@ -487,7 +487,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                 <p className="text-purple-400 text-sm font-medium mb-6">
                   {formatSelectedDate()} at {selectedTime}
                 </p>
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <Button
                     variant="outline"
                     className="flex-1 border-purple-500/30 bg-purple-500/10 text-purple-300"

@@ -163,7 +163,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
       >
         {/* Header: Avatar + Rank + Status */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <div
               className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-lg"
               style={{ background: config.gradient }}
@@ -204,7 +204,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-4 mb-4">
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
             <p className="text-lg font-bold text-white">{formatValue(agent)}</p>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Value</p>
@@ -321,7 +321,7 @@ function LeaderboardTable({ agents }: { agents: Agent[] }) {
   return (
     <div className="rounded-2xl overflow-hidden bg-[#0a0a0a]/80 border border-white/5">
       <div className="px-6 py-4 border-b border-white/5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           <div
             className="w-10 h-10 rounded-full flex items-center justify-center"
             style={{ background: 'linear-gradient(135deg, #22d3ee, #f59e0b)' }}
@@ -397,7 +397,7 @@ function RankDistribution({ agents }: { agents: Agent[] }) {
           const Icon = config.icon;
           const pct = Math.round((count / total) * 100);
           return (
-            <div key={rank} className="flex items-center gap-3">
+            <div key={rank} className="flex items-center gap-4">
               <div className="flex items-center gap-2 w-24">
                 <Icon className="w-4 h-4" style={{ color: config.textColor }} />
                 <span className="text-sm font-medium" style={{ color: config.textColor }}>
@@ -448,7 +448,7 @@ function StatsOverview({ agents }: { agents: Agent[] }) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: i * 0.1 }}
-            className="rounded-xl p-5 bg-[#0a0a0a]/80 border border-white/5"
+            className="rounded-xl p-6 bg-[#0a0a0a]/80 border border-white/5"
           >
             <div className="flex items-center gap-2 mb-2">
               <Icon className="w-4 h-4" style={{ color: stat.color }} />
@@ -480,7 +480,7 @@ function EloTiersExplainer() {
         {tiers.map((tier) => {
           const Icon = tier.icon;
           return (
-            <div key={tier.label} className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/[0.02] transition-colors">
+            <div key={tier.label} className="flex items-center gap-4 p-2 rounded-lg hover:bg-white/[0.02] transition-colors">
               <div
                 className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                 style={{ background: tier.gradient }}
@@ -584,7 +584,7 @@ export default function AgentsPage() {
               className="mb-12"
             >
               <div className="rounded-2xl overflow-hidden bg-[#0a0a0a]/80 border border-white/5">
-                <div className="px-6 py-5 border-b border-white/5 flex items-center gap-3">
+                <div className="px-6 py-5 border-b border-white/5 flex items-center gap-4">
                   <div
                     className="w-10 h-10 rounded-lg flex items-center justify-center"
                     style={{ background: 'linear-gradient(135deg, #a855f7, #22d3ee)' }}
@@ -606,7 +606,7 @@ export default function AgentsPage() {
                   </p>
 
                   {/* Tier Thresholds */}
-                  <div className="flex flex-wrap justify-center gap-3 mb-6">
+                  <div className="flex flex-wrap justify-center gap-4 mb-6">
                     {[
                       { label: "Diamond", range: "2000+", gradient: "linear-gradient(135deg, #22d3ee, #ffffff)", icon: Crown },
                       { label: "Gold", range: "1600–1999", gradient: "linear-gradient(135deg, #f59e0b, #eab308)", icon: Trophy },
@@ -616,7 +616,7 @@ export default function AgentsPage() {
                     ].map((tier) => {
                       const TierIcon = tier.icon;
                       return (
-                        <div key={tier.label} className="rounded-xl p-3 text-center bg-white/[0.03] w-[calc(50%-6px)] sm:w-[calc(20%-10px)]">
+                        <div key={tier.label} className="rounded-xl p-4 text-center bg-white/[0.03] w-[calc(50%-6px)] sm:w-[calc(20%-10px)]">
                           <div
                             className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center"
                             style={{ background: tier.gradient }}
@@ -631,11 +631,11 @@ export default function AgentsPage() {
                   </div>
 
                   {/* Scoring Factors */}
-                  <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                  <h4 className="text-white font-semibold text-sm mb-4 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4 text-green-400" />
                     What Drives Your Score
                   </h4>
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[
                       { icon: DollarSign, label: "Revenue", desc: "Up to +400 ELO for $10K+ revenue", color: "#22c55e" },
                       { icon: Users, label: "Client Status", desc: "+200 ELO for active clients", color: "#3b82f6" },
@@ -646,7 +646,7 @@ export default function AgentsPage() {
                     ].map((factor) => {
                       const FactorIcon = factor.icon;
                       return (
-                        <div key={factor.label} className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02]">
+                        <div key={factor.label} className="flex items-start gap-4 p-4 rounded-lg bg-white/[0.02]">
                           <div
                             className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
                             style={{ background: `${factor.color}20` }}
@@ -762,7 +762,7 @@ export default function AgentsPage() {
                     Every business starts as an Unranked agent. Build campaigns, close deals,
                     and climb from Bronze to Diamond. Your ELO updates in real-time.
                   </p>
-                  <div className="flex flex-wrap items-center justify-center gap-3">
+                  <div className="flex flex-wrap items-center justify-center gap-4">
                     <div className="flex items-center gap-2 px-4 py-2 rounded-full text-sm bg-white/5 border border-white/10 text-gray-300">
                       <Cpu className="w-4 h-4 text-purple-400" />
                       Auto-ranked

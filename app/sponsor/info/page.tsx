@@ -88,7 +88,7 @@ export default function SponsorInfo() {
           <Link href="/" className="text-xl font-bold text-gradient">
             Omni AI
           </Link>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <Button 
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
               onClick={() => user ? router.push("/dashboard") : router.push("/?signin=true")}
@@ -142,17 +142,17 @@ export default function SponsorInfo() {
         <section className="py-12 md:py-16 px-4 bg-black/30">
           <div className="max-w-6xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 Where Your Investment Goes
               </h2>
               <p className="text-gray-400 text-sm md:text-base">Your sponsorship directly funds:</p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-4">
               {investmentAreas.map((item, idx) => (
                 <motion.div key={idx} variants={fadeUp}>
                   <Card className="bg-white/5 border-white/10 hover:border-purple-500/30 transition-colors h-full">
-                    <CardContent className="p-4 md:p-6 flex items-start gap-3 md:gap-4">
+                    <CardContent className="p-4 md:p-6 flex items-start gap-4 md:gap-4">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center flex-shrink-0">
                         <item.icon className="w-5 md:w-6 h-5 md:h-6 text-purple-400" />
                       </div>
@@ -171,17 +171,17 @@ export default function SponsorInfo() {
         <section className="py-12 md:py-20 px-4">
           <div className="max-w-6xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 AI Infrastructure in Action
               </h2>
               <p className="text-gray-400 text-sm md:text-base">8 powerful systems working continuously for your growth</p>
             </motion.div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-4">
               {aiCapabilities.map((cap, idx) => (
                 <motion.div key={idx} variants={fadeUp}>
                   <Card className="bg-gradient-to-r from-purple-900/20 to-pink-900/10 border-purple-500/20">
-                    <CardContent className="p-4 md:p-6 flex items-start gap-3 md:gap-4">
+                    <CardContent className="p-4 md:p-6 flex items-start gap-4 md:gap-4">
                       <div className="w-10 md:w-12 h-10 md:h-12 rounded-xl bg-purple-500/20 flex items-center justify-center flex-shrink-0">
                         <cap.icon className="w-5 md:w-6 h-5 md:h-6 text-purple-400" />
                       </div>
@@ -200,7 +200,7 @@ export default function SponsorInfo() {
         <section className="py-12 md:py-16 px-4 bg-black/30">
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 How You&apos;ll See Results
               </h2>
               <p className="text-gray-400 text-sm md:text-base">Your Sponsor Dashboard provides real-time reporting on lead volume, engagement activity, response performance, and growth trends.</p>
@@ -236,7 +236,7 @@ export default function SponsorInfo() {
         <section className="py-12 md:py-16 px-4">
           <div className="max-w-6xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-3 md:mb-4">
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 Proven Results
               </h2>
               <p className="text-gray-400 text-sm md:text-lg">Real businesses. Measurable growth. Documented performance.</p>
@@ -247,11 +247,11 @@ export default function SponsorInfo() {
                 <motion.div key={idx} variants={fadeUp}>
                   <Card className="bg-gradient-to-br from-white/10 to-white/5 border-white/10 h-full">
                     <CardContent className="p-6 md:p-8 text-center">
-                      <div className="w-12 md:w-16 h-12 md:h-16 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mx-auto mb-3 md:mb-4">
+                      <div className="w-12 md:w-16 h-12 md:h-16 rounded-full bg-gradient-to-br from-purple-500/30 to-pink-500/30 flex items-center justify-center mx-auto mb-4 md:mb-4">
                         <Building2 className="w-6 md:w-8 h-6 md:h-8 text-purple-300" />
                       </div>
                       <h4 className="font-bold text-lg md:text-xl mb-1">{study.name}</h4>
-                      <p className="text-gray-400 mb-3 md:mb-4 text-sm">{study.company}</p>
+                      <p className="text-gray-400 mb-4 md:mb-4 text-sm">{study.company}</p>
                       <p className="text-xl md:text-2xl font-bold text-green-400">{study.metric}</p>
                     </CardContent>
                   </Card>
@@ -269,7 +269,7 @@ export default function SponsorInfo() {
             <p className="text-gray-400 mb-6 md:mb-8 text-sm md:text-base">
               Access your dashboard to monitor performance — or apply to become an approved Omni AI sponsor.
             </p>
-            <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-4 md:gap-4 justify-center">
               {isSponsor ? (
                 <Button 
                   onClick={() => router.push("/sponsor")}

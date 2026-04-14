@@ -91,7 +91,7 @@ function ExpandedRow({ u, onMarkContact, onUpdateScore }: {
       <div className="px-4 py-3 bg-white/[0.01] space-y-3">
         {/* Notes */}
         {u.crm_notes && (
-          <p className="text-xs text-gray-400 bg-white/[0.03] rounded-lg p-3 border border-white/5 leading-relaxed">
+          <p className="text-xs text-gray-400 bg-white/[0.03] rounded-lg p-4 border border-white/5 leading-relaxed">
             <span className="text-gray-600 mr-1">Notes:</span>{u.crm_notes}
           </p>
         )}
@@ -170,7 +170,7 @@ function NurtureRow({ u, onMarkContact, onUpdateScore }: {
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
       <div
-        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-white/[0.03] transition-colors"
+        className="flex items-center gap-4 p-4 cursor-pointer hover:bg-white/[0.03] transition-colors"
         onClick={() => setOpen(!open)}
       >
         {/* Score dot */}
@@ -218,7 +218,7 @@ function ClientRow({ u, onMarkContact, onUpdateScore }: {
   return (
     <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
       <div
-        className="flex items-center gap-3 p-3 cursor-pointer hover:bg-white/[0.03] transition-colors"
+        className="flex items-center gap-4 p-4 cursor-pointer hover:bg-white/[0.03] transition-colors"
         onClick={() => setOpen(!open)}
       >
         {/* Health dot */}
@@ -269,7 +269,7 @@ function ClientRow({ u, onMarkContact, onUpdateScore }: {
 function EmptyState({ label }: { label: string }) {
   return (
     <div className="text-center py-12">
-      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-3">
+      <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
         <Users className="w-5 h-5 text-gray-600" />
       </div>
       <p className="text-sm text-gray-500">{label}</p>
@@ -400,12 +400,12 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
     <div className="space-y-6">
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4">
         {stats.map(s => {
           const Icon = s.icon;
           return (
             <Card key={s.label} className="bg-white/5 border-white/10">
-              <CardContent className="p-3 flex items-center gap-2.5">
+              <CardContent className="p-4 flex items-center gap-2.5">
                 <div className={`p-1.5 rounded-lg bg-white/5 flex-shrink-0`}>
                   <Icon className={`w-3.5 h-3.5 ${s.color}`} />
                 </div>
@@ -456,7 +456,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
           {LISTS.find(l => l.id === activeList)?.desc}
         </p>
         {activeList === "clients" && (
-          <div className="flex items-center gap-3 text-[10px] text-gray-600">
+          <div className="flex items-center gap-4 text-[10px] text-gray-600">
             <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-purple-400 inline-block" /> Newsletter</span>
             <span className="flex items-center gap-1"><Star className="w-3 h-3 text-amber-400" /> Satisfaction</span>
           </div>
@@ -465,7 +465,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
 
       {/* Column headers */}
       {activeList === "clients" && currentList.length > 0 && (
-        <div className="hidden sm:grid grid-cols-[auto_1fr_100px_100px_100px_20px_20px] items-center gap-3 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[auto_1fr_100px_100px_100px_20px_20px] items-center gap-4 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
           <div className="w-2" />
           <span>Client</span>
           <span>Health</span>
@@ -477,7 +477,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
       )}
 
       {activeList === "nurture" && currentList.length > 0 && (
-        <div className="hidden sm:grid grid-cols-[auto_1fr_80px_100px_20px] items-center gap-3 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[auto_1fr_80px_100px_20px] items-center gap-4 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
           <div className="w-2" />
           <span>Lead</span>
           <span>Score</span>

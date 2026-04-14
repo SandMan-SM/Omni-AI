@@ -467,7 +467,7 @@ export default function Join() {
                   </div>
                 </div>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-4 mt-6">
                   <Button
                     variant="outline"
                     className="border-white/20 bg-transparent text-gray-400"
@@ -501,7 +501,7 @@ export default function Join() {
                 <h2 className="text-xl font-semibold mb-1" data-testid="text-step-business">Business Info</h2>
                 <p className="text-gray-400 text-sm mb-6">Are you a business owner?</p>
 
-                <div className="flex gap-3 mb-6">
+                <div className="flex gap-4 mb-6">
                   <Button
                     variant={businessOwner === true ? "default" : "outline"}
                     className={businessOwner === true
@@ -566,7 +566,7 @@ export default function Join() {
                   )}
                 </AnimatePresence>
 
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-4 mt-6">
                   <Button
                     variant="outline"
                     className="border-white/20 bg-transparent text-gray-400"
@@ -611,7 +611,7 @@ export default function Join() {
                     <h2 className="text-xl font-semibold mb-1" data-testid="text-step-activation">Activate Platforms</h2>
                     <p className="text-gray-400 text-sm mb-6">Would you like to activate your platforms now?</p>
 
-                    <div className="flex gap-3 mb-6">
+                    <div className="flex gap-4 mb-6">
                       <Button
                         className="flex-1 bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
                         onClick={startActivationSequence}
@@ -629,7 +629,7 @@ export default function Join() {
                       </Button>
                     </div>
 
-                    <div className="flex gap-3">
+                    <div className="flex gap-4">
                       <Button
                         variant="outline"
                         className="border-white/20 bg-transparent text-gray-400"
@@ -667,7 +667,7 @@ export default function Join() {
                     </p>
 
                     <div
-                      className="flex items-center gap-3 p-4 rounded-lg border border-purple-500/30 bg-purple-500/10 mb-6"
+                      className="flex items-center gap-4 p-4 rounded-lg border border-purple-500/30 bg-purple-500/10 mb-6"
                       data-testid="platform-cycling-box"
                     >
                       <Loader2 className="w-5 h-5 text-purple-400 animate-spin flex-shrink-0" />
@@ -678,7 +678,7 @@ export default function Join() {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -8 }}
                           transition={{ duration: 0.15 }}
-                          className="flex items-center gap-3"
+                          className="flex items-center gap-4"
                         >
                           {platforms[currentPlatformIndex]?.icon && (
                             (() => {
@@ -711,12 +711,12 @@ export default function Join() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.4 }}
                   >
-                    <div className="flex items-center gap-3 p-3 rounded-lg border border-green-500/30 bg-green-500/10 mb-4" data-testid="banner-profile-complete">
+                    <div className="flex items-center gap-4 p-4 rounded-lg border border-green-500/30 bg-green-500/10 mb-4" data-testid="banner-profile-complete">
                       <Check className="w-5 h-5 text-green-400 flex-shrink-0" />
                       <p className="text-sm font-medium text-green-300">Profile Complete</p>
                     </div>
 
-                    <div className="flex items-start gap-3 p-3 rounded-lg border border-amber-500/30 bg-amber-500/10 mb-6" data-testid="banner-verify-email">
+                    <div className="flex items-start gap-4 p-4 rounded-lg border border-amber-500/30 bg-amber-500/10 mb-6" data-testid="banner-verify-email">
                       <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
                       <div className="text-left">
                         <p className="text-sm font-medium text-amber-300">Please verify your email before signing in</p>
@@ -725,7 +725,7 @@ export default function Join() {
                     </div>
 
                     <h2 className="text-xl font-semibold mb-1 text-center">Sign In</h2>
-                    <p className="text-gray-400 text-sm mb-5 text-center">Sign in to access your dashboard</p>
+                    <p className="text-gray-400 text-sm mb-6 text-center">Sign in to access your dashboard</p>
 
                     <form onSubmit={handleSignInAfterActivation} className="space-y-4">
                       <div className="relative">

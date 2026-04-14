@@ -200,7 +200,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                 <p className="text-gray-500 text-sm mb-6">
                   Check your email for confirmation details.
                 </p>
-                <div className="flex gap-3 justify-center">
+                <div className="flex gap-4 justify-center">
                   <Button
                     onClick={() => {
                       const session = sessions.find((s) => s.dateStr === selectedSession);
@@ -242,7 +242,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                 <p className="text-gray-500 text-sm mb-6">Reserve your free training seat below.</p>
 
                 <div className="mb-6">
-                  <label className="text-sm font-medium text-gray-300 mb-3 block">
+                  <label className="text-sm font-medium text-gray-300 mb-4 block">
                     Select Your Training Session
                     <span className="text-red-400 ml-1">*</span>
                   </label>
@@ -250,7 +250,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                     {sessions.map((session) => (
                       <label
                         key={session.dateStr}
-                        className={`flex items-center gap-3 p-3 rounded-md border cursor-pointer transition-all ${
+                        className={`flex items-center gap-4 p-4 rounded-md border cursor-pointer transition-all ${
                           selectedSession === session.dateStr
                             ? "border-purple-500 bg-purple-500/10"
                             : "border-white/10 bg-white/5 hover:border-white/20"

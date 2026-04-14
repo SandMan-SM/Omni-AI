@@ -61,7 +61,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight mb-5 md:mb-6 whitespace-nowrap"
+          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight mb-6 md:mb-6 whitespace-nowrap"
         >
           <span className="text-gradient">Welcome to AGI</span>
         </motion.h1>
@@ -82,7 +82,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="flex flex-row items-center justify-center gap-3 sm:gap-4"
+          className="flex flex-row items-center justify-center gap-4 sm:gap-4"
         >
           <Button
             size="lg"

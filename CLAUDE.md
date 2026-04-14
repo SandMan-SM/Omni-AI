@@ -54,7 +54,8 @@ This site serves daily AI/business trending topic landing pages at `omnileadsagi
 
 ### Landing page styling rules (DO NOT violate)
 - **One background glow only** — single purple radial gradient (`#6366f1`) top-left, `opacity-20`, `blur-3xl`. NO second pink/magenta blob. A second glow at the bottom creates an ugly pink circle that overwhelms the design.
-- **CTA section**: two buttons — primary gradient (`#6366f1 → #ec4899`) "See How Omni AI Does It →", secondary grey border "Learn More" (links to `/`). Primary opens a modal with `<LeadForm>` inside. Do NOT render the form directly on the page. Container is `max-w-md sm:w-auto` (no max-width cap on desktop). Both buttons must have `whitespace-nowrap sm:w-auto` — never use `flex-1` on desktop or the text will wrap. Learn More border: `border-white/40` (not lower — too dim).
+- **CTA section**: two buttons — primary gradient (`#6366f1 → #ec4899`) "See How Omni AI Does It →", secondary grey border "Learn More" (links to `/details`). Primary opens a modal with `<LeadForm>` inside. Do NOT render the form directly on the page. Container is `max-w-md sm:w-auto` (no max-width cap on desktop). Both buttons must have `whitespace-nowrap sm:w-auto` — never use `flex-1` on desktop or the text will wrap. Learn More border: `border-white/60` (not lower — too dim).
+- **Lead form inputs**: always `bg-white/[0.08]` (transparent grey) — never white/opaque. Focus state: `bg-white/[0.12]`.
 - **Stats section**: always `flex-nowrap` so all 3 stats stay on one row. Use `flex-1` per stat. Labels must be `text-white` (not gray) so they're visible against the dark background. At least `mt-36` gap between the CTA buttons and stats.
 - **Topic pill**: always `text-white` — "Today's trend: [topic]" must be fully visible.
 - **Stat labels**: always white (`text-white`), `uppercase`, `tracking-widest`, `text-xs sm:text-sm`.
