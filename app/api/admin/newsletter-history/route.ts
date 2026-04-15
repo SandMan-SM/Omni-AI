@@ -211,5 +211,21 @@ export async function POST(request: Request) {
     });
   }
 
+  if (action === 'update-email-log') {
+    const body = await request.json();
+    const { logId, notes, improvement_tags } = body;
+    if (!logId) return NextResponse.json({ error: 'logId required' }, { status: 400 });
+
+    const { data, error } = await sb
+      .from('email_send_logs')
+      .update({ notes, improvement_tags })
+      .eq('id', logId)
+      .select()
+      .single();
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true, log: data });
+  }
+
   return NextResponse.json({ error: "Unknown action" }, { status: 400 });
 }
