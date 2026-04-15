@@ -212,7 +212,7 @@ export default function FrayDashboard() {
               Hey Fray 👋
             </h1>
             <p className="text-gray-500 text-sm mt-1">
-              Here's everything happening with your 3 businesses — updated live.
+              Here&apos;s everything happening with your 3 businesses — updated live.
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -243,7 +243,7 @@ export default function FrayDashboard() {
             {
               label: "Monthly Revenue",
               value: fmt$(revenue.mrr),
-              sub: "What you're earning each month right now.",
+              sub: "What you&apos;re earning each month right now.",
               icon: DollarSign,
               color: "text-green-400",
               bg: "bg-green-500/10",
@@ -458,7 +458,7 @@ export default function FrayDashboard() {
               <Globe className="w-4 h-4 text-amber-400" /> Your 3 Businesses
             </h2>
             <p className="text-[11px] text-gray-600 mt-1">
-              Live status for each business you're sponsoring — website, ads, and newsletter.
+              Live status for each business you&apos;re sponsoring — website, ads, and newsletter.
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -540,7 +540,7 @@ export default function FrayDashboard() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-[12px] font-semibold text-white">Send Newsletter</p>
-                      <p className="text-[10px] text-gray-500">Push today's draft to subscribers.</p>
+                      <p className="text-[10px] text-gray-500">Push today&apos;s draft to subscribers.</p>
                     </div>
                     <ArrowRight className="w-3.5 h-3.5 text-gray-600 ml-auto flex-shrink-0 group-hover:text-purple-400 transition-colors" />
                   </div>
@@ -552,7 +552,7 @@ export default function FrayDashboard() {
                     </div>
                     <div className="min-w-0">
                       <p className="text-[12px] font-semibold text-white">View Leads</p>
-                      <p className="text-[10px] text-gray-500">See who's in your pipeline right now.</p>
+                      <p className="text-[10px] text-gray-500">See who&apos;s in your pipeline right now.</p>
                     </div>
                     <ArrowRight className="w-3.5 h-3.5 text-gray-600 ml-auto flex-shrink-0 group-hover:text-blue-400 transition-colors" />
                   </div>

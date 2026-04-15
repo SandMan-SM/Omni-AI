@@ -158,8 +158,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const [sends, setSends] = useState<NewsletterSend[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [websiteSubs, setWebsiteSubs] = useState<WebsiteSubscriber[]>([]);
-  const [posts, setPosts] = useState<{ id: string; slug: string; subject: string; tier?: string; published_at?: string | null; created_at?: string; sent_at?: string | null; recipients_count?: number | null; email_sent?: boolean | null; telegram_sent?: boolean | null }[]>([]);
-  const [historySummary, setHistorySummary] = useState<{ totalPosts: number; freePosts: number; premiumPosts: number; drafts: number; sentThisWeek: number } | null>(null);
+  const [posts, setPosts] = useState<{ id: string; slug: string; subject: string; tier?: string; published_at?: string; created_at?: string }[]>([]);
   const [analytics, setAnalytics] = useState<{ summary: AnalyticsSummary; newsletters: NewsletterAnalytic[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
@@ -193,12 +192,6 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const [editEmail, setEditEmail] = useState("");
   const [editTier, setEditTier] = useState<'deactivated' | 'subscriber' | 'premium'>('subscriber');
   const [editSaving, setEditSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState<'posts' | 'memory'>('posts');
-  const [emailLogs, setEmailLogs] = useState<any[]>([]);
-  const [editingLog, setEditingLog] = useState<any | null>(null);
-  const [logNotes, setLogNotes] = useState('');
-  const [logTags, setLogTags] = useState<string[]>([]);
-  const [savingLog, setSavingLog] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -214,8 +207,6 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         setProfiles(data.profiles || []);
         setWebsiteSubs(data.websiteSubscribers || []);
         setPosts(data.posts || []);
-        setEmailLogs(data.emailLogs || []);
-        if (data.summary) setHistorySummary(data.summary);
       }
       if (analyticsRes.ok) {
         const data = await analyticsRes.json();
@@ -498,56 +489,79 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
   const displayName = (p: Profile) => p.business_name || p.name || p.first_name || p.email || "Unknown";
 
-  // Build a subject→send lookup for O(1) decorating (normalized for whitespace/case)
-  const sendBySubject = useMemo(() => {
-    const map = new Map<string, NewsletterSend>();
-    for (const s of sends) {
-      map.set(s.subject.trim().toLowerCase(), s);
+  // Merge analytics with sends, matching posts by closest timestamp (1:1)
+  // Also includes draft posts (published_at is null) with status='draft'
+  // Build a subject→post lookup for O(1) matching (normalized for whitespace/case)
+  const postBySubject = useMemo(() => {
+    const map = new Map<string, (typeof posts)[0]>();
+    for (const p of posts) {
+      map.set(p.subject.trim().toLowerCase(), p);
     }
     return map;
-  }, [sends]);
+  }, [posts]);
 
-  // Build a subject→analytic lookup
-  const analyticBySubject = useMemo(() => {
-    const map = new Map<string, NewsletterAnalytic>();
-    for (const n of (analytics?.newsletters || [])) {
-      map.set(n.subject.trim().toLowerCase(), n);
-    }
-    return map;
-  }, [analytics]);
-
-  // posts is the single source of truth — all posts come from newsletter_posts table.
-  // sends and analytics are decoration only (add open/click stats).
-  // drafts (published_at=null) sort to the top; published posts sort newest first.
   const mergedNewsletters = useMemo(() => {
+    const seen = new Set<string>();
+    const usedPostIds = new Set<string>();
+    const result: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string; status: 'draft' | 'sent' }[] = [];
+
+    // Normalize subjects for matching — handles whitespace/case differences between Resend analytics, sends, and posts
     const normalize = (s: string) => s.trim().toLowerCase();
 
-    return posts.map(p => {
-      const key = normalize(p.subject);
-      const send = sendBySubject.get(key);
-      const newsletter = analyticBySubject.get(key);
-      const isDraft = !p.published_at;
-      return {
-        newsletter,
-        send,
-        slug: p.slug,
-        tier: p.tier,
-        postSubject: p.subject,
-        status: isDraft ? 'draft' as const : 'sent' as const,
-        published_at: p.published_at,
-        // send-tracking fields stored directly on the post row
-        email_sent: p.email_sent,
-        telegram_sent: p.telegram_sent,
-        recipients_count: p.recipients_count,
-      };
-    }).sort((a, b) => {
-      // drafts first
+    // Find matching post by normalized subject — no timestamp guessing
+    const findPost = (subject?: string) => {
+      if (!subject) return null;
+      const post = postBySubject.get(normalize(subject));
+      if (post && !usedPostIds.has(post.id) && post.published_at) {
+        usedPostIds.add(post.id);
+        return post;
+      }
+      return null;
+    };
+
+    // 1. Add draft posts first (published_at is null) — they show at the top
+    const draftPosts = posts.filter(p => !p.published_at);
+    for (const draft of draftPosts) {
+      usedPostIds.add(draft.id);
+      result.push({ slug: draft.slug, tier: draft.tier, postSubject: draft.subject, status: 'draft' });
+    }
+
+    // 2. Merge analytics with sends — use normalized subject match for tier
+    if (analytics?.newsletters) {
+      for (const n of analytics.newsletters) {
+        seen.add(normalize(n.subject));
+        const matchingSend = sends.find(s => normalize(s.subject) === normalize(n.subject));
+        const post = findPost(n.subject);
+        result.push({ newsletter: n, send: matchingSend, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
+      }
+    }
+
+    for (const s of sends) {
+      if (!seen.has(normalize(s.subject))) {
+        const post = findPost(s.subject);
+        result.push({ send: s, slug: post?.slug, tier: post?.tier, postSubject: post?.subject, status: 'sent' });
+      }
+    }
+
+    // 3. Add any published posts that weren't matched to a send or analytic
+    //    This ensures ALL posts show up with their correct tier
+    for (const p of posts) {
+      if (!usedPostIds.has(p.id) && p.published_at) {
+        result.push({ slug: p.slug, tier: p.tier, postSubject: p.subject, status: 'sent' });
+      }
+    }
+
+    // Sort: drafts first, then by date descending
+    result.sort((a, b) => {
       if (a.status === 'draft' && b.status !== 'draft') return -1;
       if (b.status === 'draft' && a.status !== 'draft') return 1;
-      // then by published_at desc
-      return new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime();
+      const dateA = a.newsletter?.sent_at || a.send?.sent_at || '';
+      const dateB = b.newsletter?.sent_at || b.send?.sent_at || '';
+      return new Date(dateB).getTime() - new Date(dateA).getTime();
     });
-  }, [posts, sendBySubject, analyticBySubject]);
+
+    return result;
+  }, [analytics, sends, posts, postBySubject]);
 
   // Show first 5, rest visible via scroll
   const recentNewsletters = mergedNewsletters;
@@ -559,9 +573,9 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       {/* Live Analytics Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
-          { label: "Total Posts", value: historySummary?.totalPosts ?? posts.length, icon: Send, color: "text-purple-400", bg: "bg-purple-500/10" },
-          { label: "Sent This Week", value: historySummary?.sentThisWeek ?? "\u2014", icon: TrendingUp, color: "text-cyan-400", bg: "bg-cyan-500/10" },
-          { label: "Drafts Pending", value: historySummary?.drafts ?? posts.filter(p => !p.published_at).length, icon: Eye, color: "text-amber-400", bg: "bg-amber-500/10" },
+          { label: "Total Sent", value: summary?.total_sent ?? sends.length, icon: Send, color: "text-purple-400", bg: "bg-purple-500/10" },
+          { label: "Open Rate", value: summary ? `${summary.open_rate}%` : "\u2014", icon: Eye, color: "text-cyan-400", bg: "bg-cyan-500/10" },
+          { label: "Click Rate", value: summary ? `${summary.click_rate}%` : "\u2014", icon: MousePointerClick, color: "text-blue-400", bg: "bg-blue-500/10" },
           { label: "Subscribers", value: activeSubs, icon: Users, color: "text-green-400", bg: "bg-green-500/10" },
         ].map(s => {
           const Icon = s.icon;
@@ -633,45 +647,12 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         </Card>
       )}
 
-      {/* Free / Premium / Website / Open Rate stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-4 flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-purple-500/10 flex-shrink-0">
-              <Mail className="w-3.5 h-3.5 text-purple-400" />
-            </div>
-            <div>
-              <p className="text-base font-bold text-white leading-tight">{loading ? "\u2014" : (historySummary?.freePosts ?? posts.filter(p => p.tier === "free" && p.published_at).length)}</p>
-              <p className="text-[10px] text-gray-500 leading-tight">Free Posts</p>
-            </div>
-          </CardContent>
-        </Card>
+      {/* Premium / Active stats */}
+      <div className="grid grid-cols-2 gap-4">
         <Card className="bg-white/[0.03] border-white/[0.06]">
           <CardContent className="p-4 flex items-center gap-2.5">
             <div className="p-1.5 rounded-lg bg-yellow-500/10 flex-shrink-0">
               <TrendingUp className="w-3.5 h-3.5 text-yellow-400" />
-            </div>
-            <div>
-              <p className="text-base font-bold text-white leading-tight">{loading ? "\u2014" : (historySummary?.premiumPosts ?? posts.filter(p => p.tier === "premium" && p.published_at).length)}</p>
-              <p className="text-[10px] text-gray-500 leading-tight">Premium Posts</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-4 flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-cyan-500/10 flex-shrink-0">
-              <Eye className="w-3.5 h-3.5 text-cyan-400" />
-            </div>
-            <div>
-              <p className="text-base font-bold text-white leading-tight">{loading ? "\u2014" : (summary ? `${summary.open_rate}%` : "\u2014")}</p>
-              <p className="text-[10px] text-gray-500 leading-tight">Open Rate</p>
-            </div>
-          </CardContent>
-        </Card>
-        <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="p-4 flex items-center gap-2.5">
-            <div className="p-1.5 rounded-lg bg-blue-500/10 flex-shrink-0">
-              <MousePointerClick className="w-3.5 h-3.5 text-blue-400" />
             </div>
             <div>
               <p className="text-base font-bold text-white leading-tight">{loading ? "\u2014" : websiteSubCount}</p>
@@ -679,27 +660,19 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             </div>
           </CardContent>
         </Card>
+        <Card className="bg-white/[0.03] border-white/[0.06]">
+          <CardContent className="p-4 flex items-center gap-2.5">
+            <div className="p-1.5 rounded-lg bg-purple-500/10 flex-shrink-0">
+              <Mail className="w-3.5 h-3.5 text-purple-400" />
+            </div>
+            <div>
+              <p className="text-base font-bold text-white leading-tight">{loading ? "\u2014" : sends.length}</p>
+              <p className="text-[10px] text-gray-500 leading-tight">Newsletters Sent</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Tab switcher: Posts vs Email Memory */}
-      <div className="flex gap-1 mb-4 p-1 bg-white/[0.04] rounded-lg w-fit">
-        {(['posts', 'memory'] as const).map(tab => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-colors ${
-              activeTab === tab
-                ? 'bg-purple-600 text-white'
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            {tab === 'posts' ? '📤 Posts' : '🧠 Email Memory'}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === 'posts' ? (
-      <>
       {/* Past Sends — limited to 5 most recent */}
       <div>
         <div className="flex items-center justify-between gap-4 mb-4">
@@ -779,156 +752,6 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             ))}
           </div>
         )}
-      </div>
-      </> : (
-      /* ── Email Memory Tab ── */
-      <div>
-        <div className="flex items-center justify-between gap-3 mb-4">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">📝 Improvement Notes</span>
-            <span className="text-[10px] text-gray-500">Every send is remembered — tag what worked so the next one hits harder.</span>
-          </div>
-        </div>
-
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
-          </div>
-        ) : emailLogs.length === 0 ? (
-          <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-8 text-center">
-            <p className="text-gray-500 text-sm mb-1">No emails logged yet</p>
-            <p className="text-gray-600 text-[11px]">Send a newsletter — it'll show up here with a memory card.</p>
-          </div>
-        ) : (
-          <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
-            {emailLogs.map(log => (
-              <div
-                key={log.id}
-                className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-colors cursor-pointer"
-                onClick={() => {
-                  setEditingLog(log);
-                  setLogNotes(log.notes || '');
-                  setLogTags(log.improvement_tags || []);
-                }}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-xs font-medium truncate">{log.subject}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-[10px] text-gray-500">
-                        {log.sent_at ? new Date(log.sent_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '—'}
-                      </span>
-                      {log.recipients_count > 0 && (
-                        <span className="text-[10px] text-gray-600">· {log.recipients_count} recipients</span>
-                      )}
-                      {log.open_rate > 0 && (
-                        <span className="text-[10px] text-cyan-400">{Math.round(log.open_rate)}% opened</span>
-                      )}
-                    </div>
-                    {log.improvement_tags && log.improvement_tags.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {log.improvement_tags.map(tag => (
-                          <span
-                            key={tag}
-                            className="inline-block px-1.5 py-0.5 rounded text-[9px] bg-purple-500/20 text-purple-300 border border-purple-500/30"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    {log.notes && (
-                      <p className="text-[10px] text-gray-400 mt-2 italic">"{log.notes}"</p>
-                    )}
-                  </div>
-                  <span className="text-xs text-gray-600 flex-shrink-0">✏️</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Edit modal */}
-        {editingLog && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={() => setEditingLog(null)}>
-            <div className="bg-[#111] border border-white/10 rounded-xl p-5 w-[420px] max-w-[90vw] space-y-4" onClick={e => e.stopPropagation()}>
-              <div>
-                <p className="text-white text-sm font-medium">{editingLog.subject}</p>
-                <p className="text-gray-500 text-[10px] mt-0.5">
-                  Sent {editingLog.sent_at ? new Date(editingLog.sent_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '—'}
-                </p>
-              </div>
-
-              {/* Quick tags */}
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-2">Quick Tags</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {['strong subject line', 'weak CTA', 'best one yet', 'too long', 'great opener', 'needs punch', 'perfect', 'overdone'].map(tag => {
-                    const selected = logTags.includes(tag);
-                    return (
-                      <button
-                        key={tag}
-                        onClick={() => setLogTags(selected ? logTags.filter(t => t !== tag) : [...logTags, tag])}
-                        className={`px-2 py-1 rounded text-[10px] transition-colors ${
-                          selected
-                            ? 'bg-purple-600 text-white'
-                            : 'bg-white/[0.06] text-gray-400 hover:text-white border border-white/[0.08]'
-                        }`}
-                      >
-                        {tag}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Notes */}
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-1.5">What worked / what to fix</p>
-                <textarea
-                  value={logNotes}
-                  onChange={e => setLogNotes(e.target.value)}
-                  placeholder="e.g. Subject line got tons of opens. Power Move was too abstract — make it more concrete next time."
-                  rows={3}
-                  className="w-full bg-black/40 border border-white/[0.08] rounded-lg px-3 py-2 text-white text-[11px] placeholder:text-gray-600 focus:outline-none focus:border-purple-500/40 resize-none"
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="flex items-center gap-2 pt-1">
-                <button
-                  onClick={async () => {
-                    setSavingLog(true);
-                    try {
-                      const res = await fetch(`/api/admin/newsletter-history`, {
-                        method: 'PATCH',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ logId: editingLog.id, notes: logNotes, improvement_tags: logTags }),
-                      });
-                      if (res.ok) {
-                        setEmailLogs(emailLogs.map(l => l.id === editingLog.id ? { ...l, notes: logNotes, improvement_tags: logTags } : l));
-                        setEditingLog(null);
-                      }
-                    } catch {}
-                    setSavingLog(false);
-                  }}
-                  disabled={savingLog}
-                  className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-medium rounded-lg transition-colors disabled:opacity-50"
-                >
-                  {savingLog ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Save Note'}
-                </button>
-                <button
-                  onClick={() => setEditingLog(null)}
-                  className="px-4 py-2 text-gray-400 hover:text-white text-[11px] transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-      )}
       </div>
 
       {/* Subscriber Management */}
