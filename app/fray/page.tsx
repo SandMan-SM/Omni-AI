@@ -1,544 +1,584 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
-  Crown, Megaphone, Globe, Zap, BarChart3,
-  Check, ArrowRight, Target, TrendingUp, Users,
-  Mail, Rocket, Shield, Star, CircleDollarSign,
-  Wrench, Home, Search,
+  Users, TrendingUp, Mail, BarChart3,
+  CheckCircle, DollarSign, Wrench, Home, Search,
+  Globe, Megaphone, ArrowRight, RefreshCw, Loader2,
+  Send, MousePointerClick, AlertTriangle, Star,
 } from "lucide-react";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { CursorSpotlight } from "@/components/cursor-spotlight";
-import { BookDemoModal } from "@/components/book-demo-modal";
-import { AuthModal } from "@/components/auth-modal";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 
-const PAYMENT_LINK = "https://buy.stripe.com/14A6oG8m00MYayL4mX5AQ0j";
+// ── Types ────────────────────────────────────────────────────────────────────
 
-const businesses = [
+interface LeadStage {
+  label: string;
+  count: number;
+  value: number;
+  color: string;
+  description: string;
+}
+
+interface BusinessAsset {
+  name: string;
+  location: string;
+  icon: React.ElementType;
+  gradient: string;
+  websiteStatus: "live" | "building" | "not-started";
+  adSpend: number;
+  leadsGenerated: number;
+  newsletterStatus: "active" | "drafting" | "paused";
+}
+
+interface NewsletterStat {
+  totalPosts: number;
+  freePosts: number;
+  premiumPosts: number;
+  drafts: number;
+  sentThisWeek: number;
+  openRate: string;
+  clickRate: string;
+}
+
+interface RevenueData {
+  mrr: number;
+  newClientsThisMonth: number;
+  churn: number;
+  totalClients: number;
+}
+
+// ── Static data (update these as real data flows in) ─────────────────────────
+
+const businesses: BusinessAsset[] = [
   {
-    icon: Wrench,
     name: "Youngs Cabinet Refinishing",
     location: "Sandy, UT",
-    description: "Full website build, newsletter, and AI-managed Facebook ads driving homeowner leads for cabinet refinishing services.",
+    icon: Wrench,
     gradient: "from-amber-500 to-orange-600",
-    services: ["Custom Website", "Facebook Ads", "Lead Capture", "Newsletter"],
+    websiteStatus: "building",
+    adSpend: 30,   // $1/day × 30 days
+    leadsGenerated: 0,
+    newsletterStatus: "drafting",
   },
   {
-    icon: Home,
     name: "Leifson Built",
     location: "Sandy, UT",
-    description: "AI ad campaigns across decks, kitchens, bathrooms, and basements — split-tested daily to find winning angles that convert.",
+    icon: Home,
     gradient: "from-amber-600 to-yellow-500",
-    services: ["Facebook Ads", "Lead Capture", "Newsletter", "Ad Optimization"],
+    websiteStatus: "live",
+    adSpend: 30,
+    leadsGenerated: 0,
+    newsletterStatus: "drafting",
   },
   {
-    icon: Search,
     name: "Omni Leads LLC",
     location: "Salt Lake City, UT",
-    description: "SEO agency lead generation with free audit funnels, automated email sequences, and AI-optimized ad creative.",
+    icon: Search,
     gradient: "from-yellow-500 to-amber-500",
-    services: ["Facebook Ads", "SEO Funnels", "Lead Capture", "Newsletter"],
+    websiteStatus: "live",
+    adSpend: 30,
+    leadsGenerated: 0,
+    newsletterStatus: "active",
   },
 ];
 
-const whatsIncluded = [
-  { icon: Globe, text: "Website development for Youngs (from scratch)", color: "text-amber-400" },
-  { icon: Megaphone, text: "AI-managed Facebook ads for all 3 businesses", color: "text-orange-400" },
-  { icon: Target, text: "10 daily split tests per business — winners scale automatically", color: "text-yellow-400" },
-  { icon: Mail, text: "Newsletter infrastructure & email capture for all 3", color: "text-amber-300" },
-  { icon: TrendingUp, text: "Lead database that compounds over time", color: "text-orange-300" },
-  { icon: Users, text: "Custom landing pages with offer hooks per service", color: "text-yellow-300" },
-  { icon: BarChart3, text: "Performance dashboards & weekly reporting", color: "text-amber-400" },
-  { icon: Shield, text: "Full compliance — AI disclosures, privacy, opt-ins", color: "text-orange-400" },
-];
-
-const howItWorks = [
+const leadPipeline: LeadStage[] = [
   {
-    step: "01",
-    title: "We Build the Foundations",
-    description: "Custom website for Youngs, landing pages for all 3 businesses, newsletter systems, and email capture forms — all designed to convert.",
-    bg: "linear-gradient(135deg, #f59e0b, #d97706)",
+    label: "New Leads",
+    count: 0,
+    value: 0,
+    color: "#3b82f6",
+    description: "People who just showed interest — haven't been contacted yet.",
   },
   {
-    step: "02",
-    title: "AI Creates & Tests Ads",
-    description: "10 unique ad angles per business launched daily at $0.10 each. Different hooks, headlines, and offers competing head-to-head.",
-    bg: "linear-gradient(135deg, #d97706, #b45309)",
+    label: "Contacted",
+    count: 0,
+    value: 0,
+    color: "#8b5cf6",
+    description: "We reached out. Now we wait for a response.",
   },
   {
-    step: "03",
-    title: "Winners Graduate, Losers Die",
-    description: "Top-performing ads automatically scale up. Underperformers get replaced with new tests. Your database grows every day.",
-    bg: "linear-gradient(135deg, #b45309, #92400e)",
+    label: "Qualified",
+    count: 0,
+    value: 0,
+    color: "#f59e0b",
+    description: "They're interested AND a good fit. These are hot.",
   },
   {
-    step: "04",
-    title: "Compound & Scale",
-    description: "As winning ads compound, leads flow in on autopilot. Email sequences nurture. You collect the business — we run the machine.",
-    bg: "linear-gradient(135deg, #92400e, #78350f)",
+    label: "Won",
+    count: 0,
+    value: 0,
+    color: "#22c55e",
+    description: "Closed deal. Money in the door.",
   },
 ];
 
-const faq = [
-  {
-    q: "What exactly am I sponsoring?",
-    a: "You're funding the complete digital marketing infrastructure for 3 local businesses — Youngs Cabinet Refinishing, Leifson Built, and Omni Leads LLC. This includes website development, Facebook ad management, lead capture systems, and newsletter automation.",
-  },
-  {
-    q: "How does the $1/day ad budget work?",
-    a: "Each business gets $1/day in ad spend, split across 10 different ad variations at $0.10 each. The AI identifies which angles convert best and scales winners while replacing losers — every single day.",
-  },
-  {
-    q: "What's in it for me as a sponsor?",
-    a: "You own a stake in the lead generation infrastructure. As the databases grow and the businesses convert leads into paying customers, your sponsorship drives real revenue. You get full transparency via performance dashboards and weekly reports.",
-  },
-  {
-    q: "Can I cancel anytime?",
-    a: "This is a 4-month commitment ($12,000 total). AI ad optimization needs time to split-test, find winners, and build compounding lead databases. After the initial 4 months, you can cancel, continue month-to-month, or scale up.",
-  },
-  {
-    q: "What happens to the leads?",
-    a: "Leads are captured via email forms on each business's landing page. They enter automated email sequences and the business owners follow up directly. You get reporting on lead volume, ad performance, and conversion rates.",
-  },
-];
+// ── Helpers ──────────────────────────────────────────────────────────────────
 
-export default function FrayVIPSponsor() {
-  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [openFaq, setOpenFaq] = useState<number | null>(null);
+function fmt$(n: number) {
+  if (n >= 1000) return `$${(n / 1000).toFixed(1)}k`;
+  return `$${n.toLocaleString()}`;
+}
+
+function StatusDot({ status }: { status: "live" | "building" | "not-started" | "active" | "drafting" | "paused" }) {
+  const map: Record<string, { color: string; label: string }> = {
+    live:        { color: "bg-green-400",  label: "Live" },
+    building:    { color: "bg-amber-400",  label: "Building" },
+    "not-started": { color: "bg-gray-500", label: "Not started" },
+    active:      { color: "bg-green-400",  label: "Active" },
+    drafting:    { color: "bg-amber-400",  label: "Drafting" },
+    paused:      { color: "bg-red-400",    label: "Paused" },
+  };
+  const { color, label } = map[status] ?? { color: "bg-gray-500", label: status };
+  return (
+    <span className="flex items-center gap-1.5 text-[11px] text-gray-400">
+      <span className={`w-1.5 h-1.5 rounded-full ${color} flex-shrink-0`} />
+      {label}
+    </span>
+  );
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
+export default function FrayDashboard() {
+  const [nlStats, setNlStats] = useState<NewsletterStat | null>(null);
+  const [revenue] = useState<RevenueData>({
+    mrr: 3000,
+    newClientsThisMonth: 1,
+    churn: 0,
+    totalClients: 1,
+  });
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+
+  const load = async (showRefresh = false) => {
+    if (showRefresh) setRefreshing(true);
+    try {
+      const [nlRes, analyticsRes] = await Promise.all([
+        fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' }),
+        fetch(`/api/newsletter/analytics?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null),
+      ]);
+
+      if (nlRes.ok) {
+        const nlData = await nlRes.json();
+        const summary = nlData.summary ?? {};
+        let openRate = "—";
+        let clickRate = "—";
+        if (analyticsRes?.ok) {
+          const analyticsData = await analyticsRes.json();
+          openRate = analyticsData?.summary?.open_rate ? `${analyticsData.summary.open_rate}%` : "—";
+          clickRate = analyticsData?.summary?.click_rate ? `${analyticsData.summary.click_rate}%` : "—";
+        }
+        setNlStats({
+          totalPosts: summary.totalPosts ?? 0,
+          freePosts: summary.freePosts ?? 0,
+          premiumPosts: summary.premiumPosts ?? 0,
+          drafts: summary.drafts ?? 0,
+          sentThisWeek: summary.sentThisWeek ?? 0,
+          openRate,
+          clickRate,
+        });
+      }
+      setLastUpdated(new Date());
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const totalLeadCount = leadPipeline.reduce((s, l) => s + l.count, 0);
+  const totalPipelineValue = leadPipeline.reduce((s, l) => s + l.value, 0);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
-      <CursorSpotlight />
-      <Navbar
-        onBookDemo={() => setIsDemoModalOpen(true)}
-        onSignIn={() => setIsAuthModalOpen(true)}
-      />
+    <div className="min-h-screen bg-[#050505] text-white">
+      <div className="max-w-6xl mx-auto px-4 py-10 space-y-8">
 
-      <main className="pt-20">
-        {/* ──────────────── HERO ──────────────── */}
-        <section className="relative py-20 md:py-32 overflow-hidden">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-amber-500/8 blur-[150px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-orange-500/5 blur-[130px]" />
+        {/* ── Header ──────────────────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="flex items-center justify-between gap-4 flex-wrap"
+        >
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">
+              Hey Fray 👋
+            </h1>
+            <p className="text-gray-500 text-sm mt-1">
+              Here's everything happening with your 3 businesses — updated live.
+            </p>
           </div>
-
-          <div className="relative z-10 max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7 }}
-              className="text-center"
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] text-gray-600">
+              Updated {lastUpdated.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => load(true)}
+              disabled={refreshing}
+              className="h-8 px-3 text-[12px] border-white/10 text-gray-400 hover:text-white gap-1.5"
             >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-                className="inline-flex items-center gap-2 px-4 py-1.5 mb-6 rounded-full text-sm font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20"
-              >
-                <Crown className="w-4 h-4" />
-                VIP Sponsor
-              </motion.div>
-
-              <h1
-                className="font-extrabold mb-6 leading-[0.9] tracking-[-0.07em] text-center"
-                style={{ fontSize: 'clamp(2rem, 5vw, 4.5rem)' }}
-              >
-                <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                  Sponsor 3 Businesses.
-                </span>
-                <br />
-                <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                  One Monthly Investment.
-                </span>
-              </h1>
-              <p className="text-gray-400 max-w-2xl mx-auto leading-relaxed mb-4" style={{ fontSize: 'clamp(1rem, 2vw, 1.25rem)' }}>
-                Fund the complete digital marketing infrastructure for Youngs, Leifson Built, and Omni Leads LLC — websites, AI-managed ads, lead capture, and newsletters. All autonomous.
-              </p>
-              <p className="text-amber-400/80 text-lg font-semibold mb-4">
-                $3,000/month · 3 businesses · 4-month commitment
-              </p>
-              <p className="text-gray-500 text-sm max-w-lg mx-auto mb-10">
-                Total investment: $12,000 over 4 months. This gives the AI ad system enough runway to split-test, find winners, build your lead databases, and deliver compounding returns.
-              </p>
-            </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.3 }}
-              className="flex flex-row flex-wrap items-center justify-center gap-4"
-            >
-              <Button
-                className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white border-0 shadow-lg shadow-amber-500/25 font-semibold text-[15px] px-10 h-12 sm:h-14 rounded-xl"
-                onClick={() => window.open(PAYMENT_LINK, '_blank')}
-              >
-                <Crown className="w-4 h-4 mr-2" />
-                Become VIP Sponsor — $3,000/mo
-              </Button>
-              <Button
-                variant="outline"
-                className="border-amber-500/20 bg-amber-500/[0.03] text-amber-100 text-[15px] px-10 h-12 sm:h-14 rounded-xl hover:bg-amber-500/10"
-                onClick={() => setIsDemoModalOpen(true)}
-              >
-                Book a Call
-              </Button>
-            </motion.div>
+              {refreshing ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+              Refresh
+            </Button>
           </div>
-        </section>
+        </motion.div>
 
-        {/* ──────────────── THE 3 BUSINESSES ──────────────── */}
-        <section className="py-20 md:py-28">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/10">
-                  <Star className="w-5 h-5 text-amber-400" />
-                </div>
-                <h2 className="text-3xl font-bold text-white">The 3 Businesses You&apos;re Sponsoring</h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {businesses.map((biz, index) => {
-                  const Icon = biz.icon;
-                  return (
-                    <motion.div
-                      key={biz.name}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                      viewport={{ once: true }}
-                      className="group"
-                    >
-                      <div className="glass-card rounded-xl p-8 h-full border border-amber-500/10 group-hover:border-amber-500/25 transition-colors relative overflow-hidden">
-                        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-500/30 to-transparent" />
-                        <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${biz.gradient} flex items-center justify-center mb-4`}>
-                          <Icon className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-white font-semibold text-lg mb-1">{biz.name}</h3>
-                        <p className="text-amber-400/60 text-sm mb-4">{biz.location}</p>
-                        <p className="text-gray-400 text-sm leading-relaxed mb-4">{biz.description}</p>
-                        <div className="flex flex-wrap gap-2">
-                          {biz.services.map((service) => (
-                            <span
-                              key={service}
-                              className="text-xs px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-300/80 border border-amber-500/15"
-                            >
-                              {service}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ──────────────── EVERYTHING INCLUDED ──────────────── */}
-        <section className="py-20 md:py-28">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative rounded-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-600/10 via-transparent to-orange-500/10" />
-                <div className="absolute inset-0 border border-amber-500/15 rounded-2xl" />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
-
-                <div className="relative px-8 py-12 md:px-14 md:py-16">
-                  <div className="flex items-center gap-4 mb-10">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center">
-                      <Check className="w-6 h-6 text-white" />
+        {/* ── Row 1: Big Numbers ─────────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+        >
+          {[
+            {
+              label: "Monthly Revenue",
+              value: fmt$(revenue.mrr),
+              sub: "What you're earning each month right now.",
+              icon: DollarSign,
+              color: "text-green-400",
+              bg: "bg-green-500/10",
+            },
+            {
+              label: "New Clients",
+              value: revenue.newClientsThisMonth,
+              sub: "Clients that signed up this month.",
+              icon: Users,
+              color: "text-blue-400",
+              bg: "bg-blue-500/10",
+            },
+            {
+              label: "Newsletters Sent",
+              value: loading ? "—" : (nlStats?.totalPosts ?? "—"),
+              sub: "Total newsletters published across all tiers.",
+              icon: Mail,
+              color: "text-purple-400",
+              bg: "bg-purple-500/10",
+            },
+            {
+              label: "Sent This Week",
+              value: loading ? "—" : (nlStats?.sentThisWeek ?? "—"),
+              sub: "How many went out in the last 7 days.",
+              icon: TrendingUp,
+              color: "text-cyan-400",
+              bg: "bg-cyan-500/10",
+            },
+          ].map((stat, i) => {
+            const Icon = stat.icon;
+            return (
+              <Card key={stat.label} className="bg-white/[0.03] border-white/[0.06]">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2.5 mb-2">
+                    <div className={`p-1.5 rounded-lg ${stat.bg} flex-shrink-0`}>
+                      <Icon className={`w-3.5 h-3.5 ${stat.color}`} />
                     </div>
-                    <div>
-                      <h2 className="text-3xl font-bold text-white">Everything Included</h2>
-                      <p className="text-amber-400 text-sm font-medium">All 3 businesses, fully managed</p>
-                    </div>
+                    <p className="text-xl font-bold text-white leading-tight">{stat.value}</p>
                   </div>
+                  <p className="text-[11px] font-medium text-gray-300 mb-0.5">{stat.label}</p>
+                  <p className="text-[10px] text-gray-600 leading-snug">{stat.sub}</p>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </motion.div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
-                    {whatsIncluded.map((item, index) => {
-                      const Icon = item.icon;
-                      return (
-                        <motion.div
-                          key={item.text}
-                          initial={{ opacity: 0, x: -10 }}
-                          whileInView={{ opacity: 1, x: 0 }}
-                          transition={{ duration: 0.4, delay: index * 0.06 }}
-                          viewport={{ once: true }}
-                          className="flex items-center gap-4 py-1"
-                        >
-                          <div className="w-9 h-9 rounded-lg bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                            <Icon className={`w-4 h-4 ${item.color}`} />
+        {/* ── Row 2: Leads Pipeline ──────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.15 }}
+        >
+          <Card className="bg-white/[0.02] border-white/[0.06]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-1">
+                <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-400" /> Leads Pipeline
+                </h2>
+                <Link href="/admin" className="text-[10px] text-blue-400 hover:text-blue-300 transition-colors">
+                  Manage leads →
+                </Link>
+              </div>
+              <p className="text-[11px] text-gray-600 mb-5">
+                This shows where every potential customer is in your sales funnel — from first contact to closed deal.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                {leadPipeline.map((stage) => (
+                  <div key={stage.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4 hover:bg-white/[0.04] transition-colors">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-[11px] font-semibold text-gray-300">{stage.label}</span>
+                      <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: stage.color }} />
+                    </div>
+                    <p className="text-2xl font-bold text-white mb-1">{stage.count}</p>
+                    <p className="text-[10px] text-gray-600 mb-2">{stage.count === 0 ? "None yet" : fmt$(stage.value)}</p>
+                    <p className="text-[10px] text-gray-500 leading-snug">{stage.description}</p>
+                  </div>
+                ))}
+              </div>
+              {totalLeadCount === 0 ? (
+                <div className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-500/[0.06] border border-blue-500/10 text-[11px] text-blue-400/80">
+                  <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+                  No leads tracked yet. As ads run and forms get submitted, this fills up automatically.
+                </div>
+              ) : (
+                <div className="mt-4 flex items-center gap-4 text-[11px] text-gray-500">
+                  <span className="text-white font-medium">{totalLeadCount} total leads</span>
+                  <span>Pipeline value: <span className="text-green-400 font-medium">{fmt$(totalPipelineValue)}</span></span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── Row 3: Revenue Tracker ─────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          <Card className="bg-white/[0.02] border-white/[0.06]">
+            <CardContent className="p-6">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2 mb-1">
+                <DollarSign className="w-4 h-4 text-green-400" /> Revenue Tracker
+              </h2>
+              <p className="text-[11px] text-gray-600 mb-5">
+                What your business is making. MRR = Monthly Recurring Revenue — the money you can count on every month.
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="rounded-xl border border-green-500/15 bg-green-500/[0.04] p-4">
+                  <p className="text-[11px] text-gray-400 mb-1">Total MRR</p>
+                  <p className="text-2xl font-bold text-green-400">{fmt$(revenue.mrr)}</p>
+                  <p className="text-[10px] text-gray-600 mt-1">Money coming in each month on repeat.</p>
+                </div>
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                  <p className="text-[11px] text-gray-400 mb-1">New Clients This Month</p>
+                  <p className="text-2xl font-bold text-white">{revenue.newClientsThisMonth}</p>
+                  <p className="text-[10px] text-gray-600 mt-1">Fresh clients who just said yes.</p>
+                </div>
+                <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                  <p className="text-[11px] text-gray-400 mb-1">Churn</p>
+                  <p className="text-2xl font-bold text-white">{revenue.churn}</p>
+                  <p className="text-[10px] text-gray-600 mt-1">Clients who cancelled. Lower = better.</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── Row 4: Content Performance ─────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.25 }}
+        >
+          <Card className="bg-white/[0.02] border-white/[0.06]">
+            <CardContent className="p-6">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2 mb-1">
+                <Mail className="w-4 h-4 text-purple-400" /> Content Performance
+              </h2>
+              <p className="text-[11px] text-gray-600 mb-5">
+                How your newsletter is doing. Open rate = how many people open it. Click rate = how many click a link inside it.
+              </p>
+              {loading ? (
+                <div className="flex items-center gap-2 text-gray-600 text-sm">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Loading...
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {[
+                    {
+                      label: "Newsletters Sent",
+                      value: nlStats?.totalPosts ?? 0,
+                      sub: "Total posts published.",
+                      icon: Send,
+                      color: "text-purple-400",
+                      bg: "bg-purple-500/10",
+                    },
+                    {
+                      label: "Drafts Waiting",
+                      value: nlStats?.drafts ?? 0,
+                      sub: "Ready to send but not published yet.",
+                      icon: Star,
+                      color: "text-amber-400",
+                      bg: "bg-amber-500/10",
+                    },
+                    {
+                      label: "Open Rate",
+                      value: nlStats?.openRate ?? "—",
+                      sub: "% of subscribers who opened the email.",
+                      icon: TrendingUp,
+                      color: "text-cyan-400",
+                      bg: "bg-cyan-500/10",
+                    },
+                    {
+                      label: "Click Rate",
+                      value: nlStats?.clickRate ?? "—",
+                      sub: "% who clicked a link inside the email.",
+                      icon: MousePointerClick,
+                      color: "text-blue-400",
+                      bg: "bg-blue-500/10",
+                    },
+                  ].map((stat) => {
+                    const Icon = stat.icon;
+                    return (
+                      <div key={stat.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className={`p-1.5 rounded-lg ${stat.bg}`}>
+                            <Icon className={`w-3.5 h-3.5 ${stat.color}`} />
                           </div>
-                          <span className="text-gray-300 text-base">{item.text}</span>
-                        </motion.div>
-                      );
-                    })}
-                  </div>
+                          <span className="text-xl font-bold text-white">{stat.value}</span>
+                        </div>
+                        <p className="text-[11px] font-medium text-gray-300 mb-0.5">{stat.label}</p>
+                        <p className="text-[10px] text-gray-600 leading-snug">{stat.sub}</p>
+                      </div>
+                    );
+                  })}
                 </div>
-              </div>
-            </motion.div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
+
+        {/* ── Row 5: Business Assets ─────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
+        >
+          <div className="mb-3">
+            <h2 className="text-sm font-semibold text-white flex items-center gap-2">
+              <Globe className="w-4 h-4 text-amber-400" /> Your 3 Businesses
+            </h2>
+            <p className="text-[11px] text-gray-600 mt-1">
+              Live status for each business you're sponsoring — website, ads, and newsletter.
+            </p>
           </div>
-        </section>
-
-        {/* ──────────────── HOW IT WORKS ──────────────── */}
-        <section className="py-20 md:py-28">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center border border-amber-500/10">
-                  <Rocket className="w-5 h-5 text-amber-400" />
-                </div>
-                <h2 className="text-3xl font-bold text-white">How It Works</h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
-                {howItWorks.map((step, index) => (
-                  <motion.div
-                    key={step.step}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.1 }}
-                    viewport={{ once: true }}
-                    className="mb-2"
-                  >
-                    <div className="glass-card rounded-xl p-10 h-full border border-amber-500/10 hover:border-amber-500/20 transition-colors">
-                      <div className="flex items-start justify-between gap-4 mb-4">
-                        <h3 className="text-white font-semibold text-lg">{step.title}</h3>
-                        <div
-                          className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ background: step.bg }}
-                        >
-                          <span className="text-white font-bold text-sm">{step.step}</span>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {businesses.map((biz, i) => {
+              const Icon = biz.icon;
+              return (
+                <motion.div
+                  key={biz.name}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: 0.3 + i * 0.08 }}
+                >
+                  <Card className="bg-white/[0.02] border-white/[0.06] hover:border-amber-500/20 transition-colors h-full">
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${biz.gradient} flex items-center justify-center flex-shrink-0`}>
+                          <Icon className="w-4.5 h-4.5 text-white" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-[13px] font-semibold text-white truncate">{biz.name}</p>
+                          <p className="text-[10px] text-gray-500">{biz.location}</p>
                         </div>
                       </div>
-                      <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ──────────────── 4-MONTH COMMITMENT ──────────────── */}
-        <section className="py-20 md:py-28">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative rounded-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-amber-600/8 via-transparent to-orange-600/8" />
-                <div className="absolute inset-0 border border-amber-500/15 rounded-2xl" />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/30 to-transparent" />
-
-                <div className="relative px-8 py-12 md:px-14 md:py-16">
-                  <div className="flex items-center gap-4 mb-8">
-                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center">
-                      <CircleDollarSign className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-bold text-white">Why 4 Months?</h2>
-                      <p className="text-amber-400 text-sm font-medium">The minimum runway for compounding results</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {[
-                      {
-                        month: "Month 1",
-                        title: "Build & Launch",
-                        detail: "Websites, landing pages, newsletters, and ad accounts go live. First 10 split tests per business begin running.",
-                      },
-                      {
-                        month: "Month 2",
-                        title: "Test & Learn",
-                        detail: "AI identifies winning ad angles. Lead databases start growing. Email sequences begin nurturing captured leads.",
-                      },
-                      {
-                        month: "Month 3",
-                        title: "Optimize & Scale",
-                        detail: "Winners compound. Cost-per-lead drops as the system learns. Databases hit critical mass for meaningful outreach.",
-                      },
-                      {
-                        month: "Month 4",
-                        title: "Harvest & Decide",
-                        detail: "Full performance review. Lead-to-customer conversion data in hand. You decide whether to continue, scale, or walk.",
-                      },
-                    ].map((m, i) => (
-                      <motion.div
-                        key={m.month}
-                        initial={{ opacity: 0, y: 15 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.4, delay: i * 0.1 }}
-                        viewport={{ once: true }}
-                        className="text-center md:text-left"
-                      >
-                        <div className="text-amber-400 text-xs font-bold tracking-widest uppercase mb-2">{m.month}</div>
-                        <h3 className="text-white font-semibold text-base mb-2">{m.title}</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">{m.detail}</p>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  <div className="mt-10 pt-8 border-t border-amber-500/10 text-center">
-                    <p className="text-gray-400 text-sm">
-                      <span className="text-amber-300 font-semibold">$3,000/mo × 4 months = $12,000 total commitment.</span>{" "}
-                      After month 4, you can cancel, continue monthly, or scale up. No lock-in beyond the initial 4 months.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ──────────────── FAQ ──────────────── */}
-        <section className="py-20 md:py-28">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="flex items-center gap-4 mb-10">
-                <div className="w-10 h-10 rounded-md bg-gradient-to-br from-orange-500/20 to-amber-500/20 flex items-center justify-center border border-amber-500/10">
-                  <BarChart3 className="w-5 h-5 text-orange-400" />
-                </div>
-                <h2 className="text-3xl font-bold text-white">FAQ</h2>
-              </div>
-
-              <div className="space-y-6">
-                {faq.map((item, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 10 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.06 }}
-                    viewport={{ once: true }}
-                  >
-                    <div
-                      className="glass-card rounded-xl border border-amber-500/10 hover:border-amber-500/20 transition-colors cursor-pointer overflow-hidden"
-                      onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                    >
-                      <div className="flex items-center justify-between p-6">
-                        <span className="text-white font-medium text-base pr-4">{item.q}</span>
-                        <ArrowRight className={`w-4 h-4 text-amber-500/50 flex-shrink-0 transition-transform duration-200 ${openFaq === index ? 'rotate-90' : ''}`} />
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1.5">
+                            <Globe className="w-3 h-3" /> Website
+                          </span>
+                          <StatusDot status={biz.websiteStatus} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1.5">
+                            <Megaphone className="w-3 h-3" /> Ad Spend
+                          </span>
+                          <span className="text-[11px] text-amber-400 font-medium">{fmt$(biz.adSpend)}/mo</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1.5">
+                            <Users className="w-3 h-3" /> Leads
+                          </span>
+                          <span className="text-[11px] text-white font-medium">
+                            {biz.leadsGenerated === 0 ? <span className="text-gray-600">Building pipeline...</span> : biz.leadsGenerated}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] text-gray-500 flex items-center gap-1.5">
+                            <Mail className="w-3 h-3" /> Newsletter
+                          </span>
+                          <StatusDot status={biz.newsletterStatus} />
+                        </div>
                       </div>
-                      {openFaq === index && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          transition={{ duration: 0.2 }}
-                          className="px-6 pb-6"
-                        >
-                          <p className="text-gray-400 text-sm leading-relaxed border-t border-amber-500/10 pt-4">{item.a}</p>
-                        </motion.div>
-                      )}
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              );
+            })}
+          </div>
+        </motion.div>
+
+        {/* ── Row 6: Quick Actions ───────────────────────────── */}
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+        >
+          <Card className="bg-white/[0.02] border-white/[0.06]">
+            <CardContent className="p-6">
+              <h2 className="text-sm font-semibold text-white flex items-center gap-2 mb-1">
+                <CheckCircle className="w-4 h-4 text-green-400" /> Quick Actions
+              </h2>
+              <p className="text-[11px] text-gray-600 mb-5">
+                Things you can do right now to push the business forward.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Link href="/admin">
+                  <div className="group flex items-center gap-3 px-4 py-3 rounded-xl border border-purple-500/20 bg-purple-500/[0.04] hover:bg-purple-500/[0.08] hover:border-purple-500/30 transition-colors cursor-pointer">
+                    <div className="w-8 h-8 rounded-lg bg-purple-500/15 flex items-center justify-center flex-shrink-0">
+                      <Send className="w-3.5 h-3.5 text-purple-400" />
                     </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-          </div>
-        </section>
-
-        {/* ──────────────── BOTTOM CTA ──────────────── */}
-        <section className="py-20 md:py-28 pb-32">
-          <div className="max-w-5xl mx-auto px-4">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              viewport={{ once: true }}
-            >
-              <div className="relative rounded-2xl overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-r from-amber-600/15 via-orange-500/10 to-yellow-500/15" />
-                <div className="absolute inset-0 border border-amber-500/20 rounded-2xl" />
-                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-amber-400/50 to-transparent" />
-
-                <div className="relative px-8 py-20 md:px-14 md:py-28 text-center">
-                  <h2 className="text-4xl font-bold mb-6">
-                    <span className="bg-gradient-to-r from-amber-300 via-yellow-400 to-orange-400 bg-clip-text text-transparent">
-                      Ready to Invest?
-                    </span>
-                  </h2>
-                  <p className="text-gray-400 text-lg max-w-xl mx-auto mb-10">
-                    3 businesses. AI-managed marketing. Compounding lead databases. One monthly payment.
-                  </p>
-
-                  <div className="flex flex-row flex-wrap items-center justify-center gap-4">
-                    <Button
-                      className="bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white border-0 shadow-lg shadow-amber-500/25 font-bold text-[15px] px-10 h-14 rounded-xl"
-                      onClick={() => window.open(PAYMENT_LINK, '_blank')}
-                    >
-                      <Crown className="w-4 h-4 mr-2" />
-                      Become VIP Sponsor — $3,000/mo
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="border-amber-500/20 bg-amber-500/[0.03] text-amber-100 text-[15px] px-10 h-14 rounded-xl hover:bg-amber-500/10"
-                      onClick={() => setIsDemoModalOpen(true)}
-                    >
-                      Book a Call
-                    </Button>
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-semibold text-white">Send Newsletter</p>
+                      <p className="text-[10px] text-gray-500">Push today's draft to subscribers.</p>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-600 ml-auto flex-shrink-0 group-hover:text-purple-400 transition-colors" />
                   </div>
-
-                  <div className="flex flex-wrap items-center justify-center gap-6 mt-8 text-sm text-gray-500">
-                    <span className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-amber-400" />
-                      4-month commitment
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-amber-400" />
-                      Full transparency
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Check className="w-3.5 h-3.5 text-amber-400" />
-                      Weekly reporting
-                    </span>
+                </Link>
+                <Link href="/admin">
+                  <div className="group flex items-center gap-3 px-4 py-3 rounded-xl border border-blue-500/20 bg-blue-500/[0.04] hover:bg-blue-500/[0.08] hover:border-blue-500/30 transition-colors cursor-pointer">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+                      <Users className="w-3.5 h-3.5 text-blue-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-semibold text-white">View Leads</p>
+                      <p className="text-[10px] text-gray-500">See who's in your pipeline right now.</p>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-600 ml-auto flex-shrink-0 group-hover:text-blue-400 transition-colors" />
                   </div>
-                </div>
+                </Link>
+                <Link href="/admin">
+                  <div className="group flex items-center gap-3 px-4 py-3 rounded-xl border border-green-500/20 bg-green-500/[0.04] hover:bg-green-500/[0.08] hover:border-green-500/30 transition-colors cursor-pointer">
+                    <div className="w-8 h-8 rounded-lg bg-green-500/15 flex items-center justify-center flex-shrink-0">
+                      <BarChart3 className="w-3.5 h-3.5 text-green-400" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-semibold text-white">Generate Report</p>
+                      <p className="text-[10px] text-gray-500">Get a full summary of all activity.</p>
+                    </div>
+                    <ArrowRight className="w-3.5 h-3.5 text-gray-600 ml-auto flex-shrink-0 group-hover:text-green-400 transition-colors" />
+                  </div>
+                </Link>
               </div>
-            </motion.div>
-          </div>
-        </section>
-      </main>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-      <Footer />
-      <BookDemoModal
-        isOpen={isDemoModalOpen}
-        onClose={() => setIsDemoModalOpen(false)}
-      />
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
+        {/* ── Footer ──────────────────────────────────────────── */}
+        <div className="text-center text-[10px] text-gray-700 pb-4">
+          Powered by Omni AI · Dashboard auto-refreshes every 5 minutes
+        </div>
+      </div>
     </div>
   );
 }

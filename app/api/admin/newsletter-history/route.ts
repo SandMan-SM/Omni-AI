@@ -3,6 +3,53 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { generateFreeContent, generatePremiumContent } from "@/lib/newsletter-sender";
 
+/*
+ * SQL needed to enable full newsletter tracking (run once in Supabase SQL editor):
+ *
+ * CREATE TABLE IF NOT EXISTS public.newsletter_sends (
+ *   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+ *   post_id UUID REFERENCES public.newsletter_posts(id),
+ *   subject TEXT,
+ *   tier TEXT,
+ *   recipients_total INTEGER DEFAULT 0,
+ *   telegram_ok BOOLEAN DEFAULT false,
+ *   email_ok BOOLEAN DEFAULT false,
+ *   sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+ * );
+ *
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS sent_at TIMESTAMP WITH TIME ZONE;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS recipients_count INTEGER DEFAULT 0;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT false;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS telegram_sent BOOLEAN DEFAULT false;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS send_feedback TEXT;
+ *
+ * CREATE TABLE IF NOT EXISTS public.email_send_logs (
+ *   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+ *   post_id UUID REFERENCES public.newsletter_posts(id),
+ *   subject TEXT,
+ *   sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+ *   recipients_count INTEGER DEFAULT 0,
+ *   opened_count INTEGER DEFAULT 0,
+ *   clicked_count INTEGER DEFAULT 0,
+ *   bounced_count INTEGER DEFAULT 0,
+ *   unsubscribed_count INTEGER DEFAULT 0,
+ *   open_rate FLOAT DEFAULT 0,
+ *   click_rate FLOAT DEFAULT 0,
+ *   notes TEXT,
+ *   improvement_tags TEXT[],
+ *   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+ * );
+ *
+ * -- Allow anon reads on tracking tables for dashboard API
+ * ALTER TABLE public.newsletter_sends ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "Admins can read newsletter_sends" ON public.newsletter_sends FOR SELECT USING (true);
+ * CREATE POLICY "Admins can insert newsletter_sends" ON public.newsletter_sends FOR INSERT WITH CHECK (true);
+ *
+ * ALTER TABLE public.email_send_logs ENABLE ROW LEVEL SECURITY;
+ * CREATE POLICY "Admins can read email_send_logs" ON public.email_send_logs FOR SELECT USING (true);
+ * CREATE POLICY "Admins can insert email_send_logs" ON public.email_send_logs FOR INSERT WITH CHECK (true);
+ */
+
 // GET /api/admin/newsletter-history (admin only)
 export async function GET() {
   const auth = await requireAdmin();
@@ -10,7 +57,7 @@ export async function GET() {
 
   const sb = createAdminClient();
 
-  const [sendsRes, profilesRes, postsRes, websiteSubsRes] = await Promise.all([
+  const [sendsRes, profilesRes, postsRes, websiteSubsRes, logsRes] = await Promise.all([
     sb
       .from("newsletter_sends")
       .select("*")
@@ -21,20 +68,47 @@ export async function GET() {
       .order("business_name", { ascending: true }),
     sb
       .from("newsletter_posts")
-      .select("id, slug, subject, tier, keywords, quote, published_at, created_at")
+      .select("id, slug, subject, tier, keywords, quote, published_at, created_at, sent_at, recipients_count, email_sent, telegram_sent, send_feedback")
       .order("published_at", { ascending: false, nullsFirst: true }),
     sb
       .from("newsletter_subscriptions")
       .select("id, email, first_name, subscription_tier, subscribed, created_at")
       .order("created_at", { ascending: false }),
+    sb
+      .from("email_send_logs")
+      .select("*")
+      .order("sent_at", { ascending: false })
+      .limit(50),
   ]);
+
+  // Build send-status summary from posts directly
+  const posts = postsRes.data || [];
+  const now = new Date();
+  const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+  const totalPosts = posts.length;
+  const freePosts = posts.filter((p: any) => p.tier === "free" && p.published_at).length;
+  const premiumPosts = posts.filter((p: any) => p.tier === "premium" && p.published_at).length;
+  const drafts = posts.filter((p: any) => !p.published_at).length;
+  const sentThisWeek = posts.filter(
+    (p: any) => p.published_at && new Date(p.published_at) >= weekAgo
+  ).length;
 
   const res = NextResponse.json({
     sends: sendsRes.data || [],
     subscribers: [],
     profiles: profilesRes.data || [],
     websiteSubscribers: websiteSubsRes.data || [],
-    posts: postsRes.data || [],
+    posts,
+    emailLogs: logsRes.data || [],
+    // Convenient summary for dashboard widgets
+    summary: {
+      totalPosts,
+      freePosts,
+      premiumPosts,
+      drafts,
+      sentThisWeek,
+    },
   });
   res.headers.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   return res;

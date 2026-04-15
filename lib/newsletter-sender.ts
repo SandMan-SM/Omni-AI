@@ -7,6 +7,42 @@
  *               Adaptive frequency based on engagement.
  *               Personalized content + Telegram agent updates.
  * TELEGRAM  — Quote (Left Brain) + Newsletter (Right Brain) + Offer (Commitment)
+ *
+ * SQL required for newsletter tracking (run once in Supabase SQL editor):
+ *
+ * CREATE TABLE IF NOT EXISTS public.newsletter_sends (
+ *   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+ *   post_id UUID REFERENCES public.newsletter_posts(id),
+ *   subject TEXT,
+ *   tier TEXT,
+ *   recipients_total INTEGER DEFAULT 0,
+ *   telegram_ok BOOLEAN DEFAULT false,
+ *   email_ok BOOLEAN DEFAULT false,
+ *   sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+ * );
+ *
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS sent_at TIMESTAMP WITH TIME ZONE;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS recipients_count INTEGER DEFAULT 0;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS email_sent BOOLEAN DEFAULT false;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS telegram_sent BOOLEAN DEFAULT false;
+ * ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS send_feedback TEXT;
+ *
+ * CREATE TABLE IF NOT EXISTS public.email_send_logs (
+ *   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+ *   post_id UUID REFERENCES public.newsletter_posts(id),
+ *   subject TEXT,
+ *   sent_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+ *   recipients_count INTEGER DEFAULT 0,
+ *   opened_count INTEGER DEFAULT 0,
+ *   clicked_count INTEGER DEFAULT 0,
+ *   bounced_count INTEGER DEFAULT 0,
+ *   unsubscribed_count INTEGER DEFAULT 0,
+ *   open_rate FLOAT DEFAULT 0,
+ *   click_rate FLOAT DEFAULT 0,
+ *   notes TEXT,
+ *   improvement_tags TEXT[],
+ *   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+ * );
  */
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
@@ -95,6 +131,23 @@ async function fetchTrendingKeywords(): Promise<string[]> {
 }
 
 // ── Content Generation ───────────────────────────────────────────────────────
+
+/**
+ * Strip markdown-style bullet points from intro text.
+ * AI sometimes returns "- item" or "* item" lines; we want clean prose.
+ */
+function cleanIntro(text: string): string {
+  if (!text) return text;
+  // Remove leading "- " or "* " bullet markers from each line
+  const lines = text.split('\n').map(line => line.replace(/^[\s]*[-*•]\s+/, '').trim()).filter(Boolean);
+  // If multiple short bullet fragments were joined, re-join as a sentence paragraph
+  return lines.join(' ');
+}
+
+function cleanInsights(insights: string[]): string[] {
+  // Strip any leading bullet characters from insight text so HTML list items are clean
+  return insights.map(ins => ins.replace(/^[\s]*[-*•]\s+/, '').trim());
+}
 
 function getDayType(): 'value' | 'insight' | 'offer' {
   const day = new Date().getDay(); // 0=Sun, 1=Mon, ...
@@ -189,6 +242,7 @@ Respond ONLY with valid JSON:
       const end = text.lastIndexOf('}') + 1;
       if (start >= 0) {
         const parsed = JSON.parse(text.slice(start, end)) as NewsletterContent;
+        parsed.intro = cleanIntro(parsed.intro);
         parsed.keywords = keywords;
         parsed.tier = 'free';
         parsed.slug = createSlug(parsed.subject);
@@ -310,8 +364,8 @@ Respond ONLY with valid JSON:
       const end = text.lastIndexOf('}') + 1;
       if (start >= 0) {
         const parsed = JSON.parse(text.slice(start, end)) as PremiumContent;
-        parsed.tier = 'premium';
-        parsed.day_type = dayType;
+        parsed.intro = cleanIntro(parsed.intro);
+        parsed.insights = cleanInsights(parsed.insights);
         parsed.keywords = keywords;
         parsed.slug = createSlug(parsed.subject);
         return parsed;
@@ -1080,11 +1134,19 @@ export async function runDailyNewsletter(supabase: any = null) {
         emailOk = freeSent > 0;
       }
 
+      const sentAt = new Date().toISOString();
+
       if (draftId) {
-        // Publish the existing draft
+        // Publish the existing draft + stamp send tracking fields
         await supabase
           .from('newsletter_posts')
-          .update({ published_at: new Date().toISOString() })
+          .update({
+            published_at: sentAt,
+            sent_at: sentAt,
+            recipients_count: 1 + freeSent,
+            email_sent: emailOk,
+            telegram_sent: telegramOk,
+          })
           .eq('id', draftId);
       } else {
         // Save newsletter as a new publishable post
@@ -1099,21 +1161,33 @@ export async function runDailyNewsletter(supabase: any = null) {
           offer: content.offer || null,
           keywords: content.keywords || [],
           tier: 'free',
-          published_at: new Date().toISOString(),
+          published_at: sentAt,
+          sent_at: sentAt,
+          recipients_count: 1 + freeSent,
+          email_sent: emailOk,
+          telegram_sent: telegramOk,
         }).then(() => {}).catch((e: any) => console.error('Post save error:', e));
       }
 
-      // Log the send
+      // Log — link to post if we have a draftId
       await supabase.from('newsletter_sends').insert({
+        post_id: draftId || null,
         subject: content.subject,
-        intro: content.intro,
-        insights: content.insights,
-        power_move: content.power_move,
-        closing: content.closing,
+        tier: 'free',
         recipients_total: 1 + freeSent,
         telegram_ok: telegramOk,
         email_ok: emailOk,
-        sent_at: new Date().toISOString(),
+        sent_at: sentAt,
+      });
+
+      // Memory log: track every email send for improvement analysis
+      await supabase.from('email_send_logs').insert({
+        post_id: draftId || null,
+        subject: content.subject,
+        sent_at: sentAt,
+        recipients_count: 1 + freeSent,
+        notes: null,
+        improvement_tags: [],
       });
     } catch (e) {
       console.error('Free newsletter send error:', e);
@@ -1209,11 +1283,19 @@ export async function runPremiumNewsletter(supabase: any = null) {
       // Also send premium Telegram update
       telegramOk = await sendToTelegram(content);
 
+      const premiumSentAt = new Date().toISOString();
+
       if (draftId) {
-        // Publish the existing draft
+        // Publish the existing draft + stamp send tracking fields
         await supabase
           .from('newsletter_posts')
-          .update({ published_at: new Date().toISOString() })
+          .update({
+            published_at: premiumSentAt,
+            sent_at: premiumSentAt,
+            recipients_count: premiumSent,
+            email_sent: premiumSent > 0,
+            telegram_sent: telegramOk,
+          })
           .eq('id', draftId);
       } else {
         // Save premium newsletter as a new publishable post
@@ -1230,21 +1312,33 @@ export async function runPremiumNewsletter(supabase: any = null) {
           ai_recommendation: content.ai_recommendation || null,
           keywords: content.keywords || [],
           tier: 'premium',
-          published_at: new Date().toISOString(),
+          published_at: premiumSentAt,
+          sent_at: premiumSentAt,
+          recipients_count: premiumSent,
+          email_sent: premiumSent > 0,
+          telegram_sent: telegramOk,
         }).then(() => {}).catch((e: any) => console.error('Premium post save error:', e));
       }
 
-      // Log
+      // Log — link to post if we have a draftId
       await supabase.from('newsletter_sends').insert({
+        post_id: draftId || null,
         subject: content.subject,
-        intro: content.intro,
-        insights: content.insights,
-        power_move: content.power_move,
-        closing: content.closing,
+        tier: 'premium',
         recipients_total: premiumSent,
         telegram_ok: telegramOk,
         email_ok: premiumSent > 0,
-        sent_at: new Date().toISOString(),
+        sent_at: premiumSentAt,
+      });
+
+      // Memory log: track every email send for improvement analysis
+      await supabase.from('email_send_logs').insert({
+        post_id: draftId || null,
+        subject: content.subject,
+        sent_at: premiumSentAt,
+        recipients_count: premiumSent,
+        notes: null,
+        improvement_tags: [],
       });
     } catch (e) {
       console.error('Premium newsletter send error:', e);

@@ -85,20 +85,39 @@ interface NewsletterPost {
   tier?: string;
   published_at?: string | null;
   created_at?: string;
+  email_sent?: boolean | null;
+  telegram_sent?: boolean | null;
+  recipients_count?: number | null;
+}
+
+interface NewsletterSummary {
+  totalPosts: number;
+  freePosts: number;
+  premiumPosts: number;
+  drafts: number;
+  sentThisWeek: number;
 }
 
 export function CommandCenter() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [newsletterPosts, setNewsletterPosts] = useState<NewsletterPost[]>([]);
+  const [nlSummary, setNlSummary] = useState<NewsletterSummary | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       fetch("/api/dashboard/metrics").then(r => r.json()),
-      fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ posts: [] })),
+      fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ posts: [], summary: null })),
     ]).then(([metricsData, nlData]) => {
       setMetrics(metricsData);
-      setNewsletterPosts((nlData?.posts ?? []).slice(0, 4));
+      // Show last 10 posts (drafts first, then published newest → oldest)
+      const sorted = (nlData?.posts ?? []).sort((a: NewsletterPost, b: NewsletterPost) => {
+        if (!a.published_at && b.published_at) return -1;
+        if (a.published_at && !b.published_at) return 1;
+        return new Date(b.published_at || b.created_at || 0).getTime() - new Date(a.published_at || a.created_at || 0).getTime();
+      });
+      setNewsletterPosts(sorted.slice(0, 10));
+      if (nlData?.summary) setNlSummary(nlData.summary);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -186,8 +205,8 @@ export function CommandCenter() {
         />
         <BigMetric
           label="Newsletter Sends"
-          value={operations.totalNewslettersSent}
-          sub={`${operations.newslettersSentThisWeek} this week`}
+          value={nlSummary?.totalPosts ?? operations.totalNewslettersSent}
+          sub={`${nlSummary?.sentThisWeek ?? operations.newslettersSentThisWeek} this week · ${nlSummary?.drafts ?? 0} drafts`}
           icon={Mail}
           color="text-blue-400"
         />
@@ -370,7 +389,7 @@ export function CommandCenter() {
         {/* Newsletter Posts */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-3">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
               </h3>
@@ -378,8 +397,15 @@ export function CommandCenter() {
                 View all →
               </Link>
             </div>
+            {nlSummary && (
+              <div className="flex items-center gap-3 mb-3 text-[10px] text-gray-500 flex-wrap">
+                <span className="text-white font-medium">{nlSummary.totalPosts} total</span>
+                <span>{nlSummary.freePosts} free · {nlSummary.premiumPosts} premium</span>
+                {nlSummary.drafts > 0 && <span className="text-amber-400/80">{nlSummary.drafts} draft{nlSummary.drafts !== 1 ? 's' : ''} waiting</span>}
+              </div>
+            )}
             {newsletterPosts.length > 0 ? (
-              <div className="space-y-1.5">
+              <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
                 {newsletterPosts.map((post) => {
                   const isDraft = !post.published_at;
                   const isPremium = post.tier === 'premium';
@@ -394,6 +420,7 @@ export function CommandCenter() {
                         <p className="text-[11px] font-medium text-white truncate">{post.subject}</p>
                         <p className="text-[9px] text-gray-600">
                           {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Pending"}
+                          {post.recipients_count ? ` · ${post.recipients_count} sent` : ''}
                         </p>
                       </div>
                       <div className="flex items-center gap-1.5 flex-shrink-0">
