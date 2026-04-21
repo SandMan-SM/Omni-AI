@@ -1,388 +1,356 @@
 "use client";
-export const dynamic = 'force-dynamic';
-
-import { useState } from "react";
+export const dynamic = "force-dynamic";
+/**
+ * Sponsor portal — real data only. Pulls from /api/sponsor/overview which
+ * reads the `sponsorships` table + `build_log` for live activity on
+ * sponsored clients. No mocks, no placeholder numbers.
+ *
+ * Design contract: docs/web-design-system.md. Accent: purple.
+ */
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { 
-  Landmark, Building2, Bot, Calendar, Mail, Target, ChevronDown, ChevronRight,
-  CheckCircle, TrendingUp, Users, FileText, Eye, MousePointer, DollarSign,
-  MessageSquare, BarChart3, LayoutDashboard
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Loader2, Building2, ArrowRight } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
-import { useProfile } from "@/hooks/use-profile";
-import { CursorSpotlight } from "@/components/cursor-spotlight";
+import {
+  PageShell,
+  PageTopBar,
+  PageHero,
+  KpiGrid,
+  SectionLabel,
+  Card,
+  PillBadge,
+  CtaRow,
+  PageFooter,
+  WEB,
+  fmtMoney,
+} from "@/components/ui/web-primitives";
 
-interface BusinessData {
-  id: string;
-  name: string;
-  totalTasksCompleted: number;
-  totalRevenue: number;
-  personalAssistant: {
-    tasksCompleted: number;
-    meetingsBooked: number;
-    messagesSent: number;
+interface Ship {
+  title: string;
+  kind: string;
+  detail: string | null;
+  unlocks: string | null;
+  created_at: string;
+}
+interface SponsoredClient {
+  sponsorship_id: string;
+  sponsor_name: string;
+  amount_usd: number;
+  cadence: string;
+  started_at: string;
+  client: {
+    slug: string;
+    name: string;
+    emoji: string;
+    mrr_usd: number;
+    arr_usd: number;
+    status: string;
   };
-  newsletterAgent: {
-    contentGenerated: number;
-    lifetimeSubscribers: number;
-    subscribersGenerated: number;
-    mostPopularContent: { title: string; views: number }[];
-  };
-  marketingAgent: {
-    contentGeneratedMinutes: number;
-    viewsGenerated: number;
-    conversionRate: number;
-  };
+  ships_30d: number;
+  ships_by_kind: Record<string, number>;
+  recent_ships: Ship[];
+}
+interface OverviewPayload {
+  authorized: boolean;
+  sponsor?: string;
+  sponsorships: SponsoredClient[];
+  totals: { funded_usd: number; client_count: number; ships_30d: number } | null;
 }
 
-const mockSponsorData: BusinessData[] = [
-  {
-    id: "1",
-    name: "Valley Recovery Center",
-    totalTasksCompleted: 847,
-    totalRevenue: 24500,
-    personalAssistant: {
-      tasksCompleted: 312,
-      meetingsBooked: 28,
-      messagesSent: 184,
-    },
-    newsletterAgent: {
-      contentGenerated: 45,
-      lifetimeSubscribers: 4521,
-      subscribersGenerated: 892,
-      mostPopularContent: [
-        { title: "The Path to Recovery", views: 1243 },
-        { title: "Understanding Addiction", views: 987 },
-        { title: "Family Support Guide", views: 756 },
-      ],
-    },
-    marketingAgent: {
-      contentGeneratedMinutes: 234,
-      viewsGenerated: 45600,
-      conversionRate: 4.8,
-    },
-  },
-  {
-    id: "2",
-    name: "Horizon Wellness",
-    totalTasksCompleted: 623,
-    totalRevenue: 18200,
-    personalAssistant: {
-      tasksCompleted: 245,
-      meetingsBooked: 19,
-      messagesSent: 156,
-    },
-    newsletterAgent: {
-      contentGenerated: 38,
-      lifetimeSubscribers: 3214,
-      subscribersGenerated: 567,
-      mostPopularContent: [
-        { title: "Wellness Tips", views: 892 },
-        { title: "Mindfulness Practices", views: 654 },
-        { title: "Healthy Living", views: 521 },
-      ],
-    },
-    marketingAgent: {
-      contentGeneratedMinutes: 187,
-      viewsGenerated: 32100,
-      conversionRate: 3.9,
-    },
-  },
-  {
-    id: "3",
-    name: "New Dawn Treatment",
-    totalTasksCompleted: 412,
-    totalRevenue: 12800,
-    personalAssistant: {
-      tasksCompleted: 178,
-      meetingsBooked: 14,
-      messagesSent: 98,
-    },
-    newsletterAgent: {
-      contentGenerated: 28,
-      lifetimeSubscribers: 2156,
-      subscribersGenerated: 324,
-      mostPopularContent: [
-        { title: "Treatment Options", views: 678 },
-        { title: "Recovery Stories", views: 543 },
-        { title: "Success Rates", views: 412 },
-      ],
-    },
-    marketingAgent: {
-      contentGeneratedMinutes: 123,
-      viewsGenerated: 21400,
-      conversionRate: 3.2,
-    },
-  },
-];
+const tAgo = (d: string) => {
+  const ms = Date.now() - new Date(d).getTime();
+  const m = Math.floor(ms / 60000),
+    h = Math.floor(m / 60),
+    dy = Math.floor(h / 24);
+  return dy > 0 ? `${dy}d` : h > 0 ? `${h}h` : m > 0 ? `${m}m` : "now";
+};
 
-export default function Sponsor() {
-  const { user, loading: authLoading } = useAuth();
-  const { profile, profileLoading } = useProfile();
-  const pathname = usePathname();
+export default function SponsorPortal() {
   const router = useRouter();
-  const [expandedBusiness, setExpandedBusiness] = useState<string | null>(null);
-  const [expandedAgent, setExpandedAgent] = useState<{ business: string; agent: string } | null>(null);
+  const { user, loading: authLoading } = useAuth();
+  const [data, setData] = useState<OverviewPayload | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const isSponsor = profile?.role === "sponsor" || profile?.is_sponsor === true;
+  const load = useCallback(async () => {
+    try {
+      const r = await fetch("/api/sponsor/overview", { credentials: "include" });
+      if (r.ok) setData(await r.json());
+    } catch {}
+    setLoading(false);
+  }, []);
 
-  if (!isSponsor) {
+  useEffect(() => {
+    if (!authLoading) load();
+    const iv = setInterval(() => load(), 20000);
+    return () => clearInterval(iv);
+  }, [authLoading, load]);
+
+  if (authLoading || loading)
     return (
-      <div className="min-h-screen bg-[#050505] text-white noise-overlay">
-        <CursorSpotlight />
-        <div className="relative z-10 flex flex-col items-center justify-center min-h-screen px-4 text-center">
-          <h1 className="text-4xl font-bold mb-4">Sponsor Access Required</h1>
-          <p className="text-gray-400 mb-8">You need to be a sponsor to view this page.</p>
-          <Button onClick={() => router.push("/sponsor/info")}>
-            View Sponsor Info
-          </Button>
+      <PageShell accent="purple">
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin" style={{ color: WEB.purple }} />
         </div>
-      </div>
+      </PageShell>
+    );
+
+  if (!user) {
+    return (
+      <PageShell accent="purple">
+        <div className="min-h-screen flex flex-col items-center justify-center px-5 text-center gap-5">
+          <h1 className="text-3xl md:text-4xl font-bold" style={{ color: WEB.textPrimary }}>
+            Sign in to view your sponsor portal
+          </h1>
+          <p className="text-base max-w-lg" style={{ color: WEB.textMuted }}>
+            The portal shows every business you&apos;re sponsoring and the real activity
+            happening on each one — ships, content, deals — pulled live.
+          </p>
+          <CtaRow
+            primary={{ label: "Sign in", href: "/?signin=true" }}
+            secondary={{ label: "Learn about sponsoring", href: "/sponsor/info" }}
+            accent="purple"
+          />
+        </div>
+      </PageShell>
     );
   }
 
-  const toggleBusiness = (id: string) => {
-    setExpandedBusiness(expandedBusiness === id ? null : id);
-  };
+  if (!data?.authorized || !data?.sponsorships?.length) {
+    return (
+      <PageShell accent="purple">
+        <PageTopBar label="Sponsor portal" accent="purple" />
+        <PageHero
+          eyebrow="Sponsor portal"
+          title="No active sponsorships yet"
+          meta={`Signed in as ${user.email}`}
+          lede="Once a sponsorship is attached to your email, this page will show every business you're funding with live build-log activity — content shipped, deals closed, metrics moving."
+          accent="purple"
+          right={
+            <CtaRow
+              primary={{ label: "Apply to sponsor", href: "/sponsor/application" }}
+              secondary={{ label: "How sponsorship works", href: "/sponsor/info" }}
+              accent="purple"
+            />
+          }
+        />
+        <PageFooter
+          tagline="Omni AI · Sponsor Program"
+          links={[
+            { label: "Sponsor info", href: "/sponsor/info" },
+            { label: "Apply", href: "/sponsor/application" },
+          ]}
+        />
+      </PageShell>
+    );
+  }
 
-  const toggleAgent = (businessId: string, agent: string) => {
-    const key = `${businessId}-${agent}`;
-    const current = expandedAgent?.business === businessId && expandedAgent?.agent === agent;
-    setExpandedAgent(current ? null : { business: businessId, agent });
-  };
-
-  const fadeUp = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-  };
+  const t = data.totals!;
+  const sponsorLabel = data.sponsorships[0]?.sponsor_name || data.sponsor || "Sponsor";
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
-      <CursorSpotlight />
-      
-      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/5">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
-          <Link href="/" className="text-xl font-bold text-gradient">
-            Omni AI
-          </Link>
-          <div className="flex items-center gap-4">
-            <Button 
-              className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-              onClick={() => router.push("/dashboard")}
+    <PageShell accent="purple">
+      <PageTopBar
+        label={`Sponsor · ${sponsorLabel}`}
+        accent="purple"
+        right={
+          <button
+            onClick={() => router.push("/dashboard")}
+            className="text-xs font-mono uppercase tracking-[0.16em] hover:opacity-80"
+            style={{ color: WEB.textMuted }}
+          >
+            Dashboard
+          </button>
+        }
+      />
+
+      <PageHero
+        eyebrow="Sponsor portal · live"
+        title={`${sponsorLabel}`}
+        meta={`${t.client_count} sponsored ${t.client_count === 1 ? "business" : "businesses"} · ${t.ships_30d} ships in the last 30 days`}
+        lede="Every dollar you've put in is attached to a real business with a public build log. Scroll down to see what's shipped this month on each one."
+        accent="purple"
+      />
+
+      <KpiGrid
+        items={[
+          { value: fmtMoney(t.funded_usd), label: "Funded to date", color: WEB.purple },
+          { value: String(t.client_count), label: "Businesses sponsored" },
+          { value: String(t.ships_30d), label: "Ships · 30d", color: WEB.purple },
+          {
+            value: t.client_count ? fmtMoney(Math.round(t.funded_usd / t.client_count)) : "$0",
+            label: "Avg per business",
+          },
+        ]}
+      />
+
+      <SectionLabel accent="purple">Sponsored businesses</SectionLabel>
+      <div className="max-w-6xl mx-auto px-5 md:px-8 space-y-4">
+        {data.sponsorships.map((s, i) => (
+          <motion.div
+            key={s.sponsorship_id}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: i * 0.05 }}
+            className="rounded-2xl border overflow-hidden"
+            style={{ backgroundColor: WEB.surface, borderColor: WEB.borderDefault }}
+          >
+            <div
+              className="flex flex-wrap items-start gap-4 p-6 md:p-8 border-b"
+              style={{ borderColor: WEB.borderDefault }}
             >
-              <LayoutDashboard className="w-4 h-4 mr-2" />
-              Dashboard
-            </Button>
-            <Button variant="ghost" onClick={() => router.push("/sponsor/info")}>
-              Learn More
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <main className="relative z-10 max-w-6xl mx-auto px-4 py-8">
-        <motion.div initial="initial" animate="animate" variants={fadeUp} className="mb-8">
-          <h2 className="text-2xl font-bold mb-2">Sponsor Insights</h2>
-          <p className="text-gray-400">Your sponsored business analytics</p>
-        </motion.div>
-
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <Card className="bg-purple-900/20 border-purple-500/20">
-            <CardContent className="p-6">
-              <p className="text-purple-400 text-sm">Total Tasks</p>
-              <p className="text-3xl font-bold">{mockSponsorData.reduce((a, b) => a + b.totalTasksCompleted, 0).toLocaleString()}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-purple-900/20 border-purple-500/20">
-            <CardContent className="p-6">
-              <p className="text-purple-400 text-sm">Total Revenue</p>
-              <p className="text-3xl font-bold">${mockSponsorData.reduce((a, b) => a + b.totalRevenue, 0).toLocaleString()}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-purple-900/20 border-purple-500/20">
-            <CardContent className="p-6">
-              <p className="text-purple-400 text-sm">Assets</p>
-              <p className="text-3xl font-bold">{mockSponsorData.length}</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <motion.div variants={fadeUp}>
-          <h3 className="text-lg font-semibold mb-4">Assets (Businesses)</h3>
-          <div className="space-y-4">
-            {mockSponsorData.map((business) => (
-              <div key={business.id} className="border border-white/10 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => toggleBusiness(business.id)}
-                  className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center">
-                      <Building2 className="w-5 h-5 text-purple-400" />
-                    </div>
-                    <div className="text-left">
-                      <h4 className="font-semibold">{business.name}</h4>
-                      <p className="text-sm text-gray-400">
-                        {business.totalTasksCompleted.toLocaleString()} tasks • ${business.totalRevenue.toLocaleString()}
-                      </p>
-                    </div>
-                  </div>
-                  {expandedBusiness === business.id ? (
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5 text-gray-400" />
-                  )}
-                </button>
-                
-                {expandedBusiness === business.id && (
-                  <motion.div 
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: "auto", opacity: 1 }}
-                    className="bg-black/20 border-t border-white/5"
-                  >
-                    <div className="p-4 grid md:grid-cols-2 gap-4">
-                      <div className="bg-white/5 rounded-lg p-4">
-                        <p className="text-gray-400 text-sm mb-1">Total Tasks Completed</p>
-                        <p className="text-2xl font-bold text-purple-400">{business.totalTasksCompleted.toLocaleString()}</p>
-                      </div>
-                      <div className="bg-white/5 rounded-lg p-4">
-                        <p className="text-gray-400 text-sm mb-1">Total Revenue Generated</p>
-                        <p className="text-2xl font-bold text-purple-400">${business.totalRevenue.toLocaleString()}</p>
-                      </div>
-                    </div>
-
-                    <div className="p-4 space-y-3">
-                      <h5 className="font-semibold text-gray-300 flex items-center gap-2">
-                        <Bot className="w-4 h-4 text-purple-400" />
-                        AI Agents
-                      </h5>
-                      
-                      <div className="border border-white/10 rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleAgent(business.id, "personal")}
-                          className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4 text-blue-400" />
-                            <span className="text-sm">Personal Assistant</span>
-                          </div>
-                          {expandedAgent?.business === business.id && expandedAgent?.agent === "personal" ? (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                          )}
-                        </button>
-                        {expandedAgent?.business === business.id && expandedAgent?.agent === "personal" && (
-                          <div className="p-4 bg-black/20 border-t border-white/5 grid md:grid-cols-3 gap-4">
-                            <div className="bg-white/5 rounded p-4">
-                              <p className="text-xs text-gray-400">Tasks Completed</p>
-                              <p className="font-bold">{business.personalAssistant.tasksCompleted}</p>
-                            </div>
-                            <div className="bg-white/5 rounded p-4">
-                              <p className="text-xs text-gray-400">Meetings Booked</p>
-                              <p className="font-bold">{business.personalAssistant.meetingsBooked}</p>
-                            </div>
-                            <div className="bg-white/5 rounded p-4">
-                              <p className="text-xs text-gray-400">Messages Sent</p>
-                              <p className="font-bold">{business.personalAssistant.messagesSent}</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="border border-white/10 rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleAgent(business.id, "newsletter")}
-                          className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Mail className="w-4 h-4 text-green-400" />
-                            <span className="text-sm">Newsletter Agent</span>
-                          </div>
-                          {expandedAgent?.business === business.id && expandedAgent?.agent === "newsletter" ? (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                          )}
-                        </button>
-                        {expandedAgent?.business === business.id && expandedAgent?.agent === "newsletter" && (
-                          <div className="p-4 bg-black/20 border-t border-white/5 space-y-3">
-                            <div className="grid md:grid-cols-3 gap-4">
-                              <div className="bg-white/5 rounded p-4">
-                                <p className="text-xs text-gray-400">Content Generated</p>
-                                <p className="font-bold">{business.newsletterAgent.contentGenerated} posts</p>
-                              </div>
-                              <div className="bg-white/5 rounded p-4">
-                                <p className="text-xs text-gray-400">Lifetime Subscribers</p>
-                                <p className="font-bold">{business.newsletterAgent.lifetimeSubscribers.toLocaleString()}</p>
-                              </div>
-                              <div className="bg-white/5 rounded p-4">
-                                <p className="text-xs text-gray-400">Subscribers Generated</p>
-                                <p className="font-bold">+{business.newsletterAgent.subscribersGenerated}</p>
-                              </div>
-                            </div>
-                            <div className="bg-white/5 rounded p-4">
-                              <p className="text-xs text-gray-400 mb-2">Most Popular Content</p>
-                              <div className="space-y-1">
-                                {business.newsletterAgent.mostPopularContent.map((content, idx) => (
-                                  <div key={idx} className="flex justify-between text-sm">
-                                    <span className="truncate">{content.title}</span>
-                                    <Badge variant="outline" className="border-white/20">{content.views.toLocaleString()} views</Badge>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="border border-white/10 rounded-lg overflow-hidden">
-                        <button
-                          onClick={() => toggleAgent(business.id, "marketing")}
-                          className="w-full p-4 flex items-center justify-between bg-white/5 hover:bg-white/10 transition-colors"
-                        >
-                          <div className="flex items-center gap-2">
-                            <Target className="w-4 h-4 text-pink-400" />
-                            <span className="text-sm">Marketing Agent</span>
-                          </div>
-                          {expandedAgent?.business === business.id && expandedAgent?.agent === "marketing" ? (
-                            <ChevronDown className="w-4 h-4 text-gray-400" />
-                          ) : (
-                            <ChevronRight className="w-4 h-4 text-gray-400" />
-                          )}
-                        </button>
-                        {expandedAgent?.business === business.id && expandedAgent?.agent === "marketing" && (
-                          <div className="p-4 bg-black/20 border-t border-white/5 grid md:grid-cols-3 gap-4">
-                            <div className="bg-white/5 rounded p-4">
-                              <p className="text-xs text-gray-400">Content Generated</p>
-                              <p className="font-bold">{business.marketingAgent.contentGeneratedMinutes} min</p>
-                            </div>
-                            <div className="bg-white/5 rounded p-4">
-                              <p className="text-xs text-gray-400">Views Generated</p>
-                              <p className="font-bold">{business.marketingAgent.viewsGenerated.toLocaleString()}</p>
-                            </div>
-                            <div className="bg-white/5 rounded p-4">
-                              <p className="text-xs text-gray-400">Conversion Rate</p>
-                              <p className="font-bold">{business.marketingAgent.conversionRate}%</p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
+              <div
+                className="w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0"
+                style={{ backgroundColor: WEB.surfaceRaised, border: `1px solid ${WEB.borderDefault}` }}
+              >
+                {s.client.emoji}
               </div>
-            ))}
-          </div>
-        </motion.div>
-      </main>
-    </div>
+              <div className="flex-1 min-w-[220px]">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <h3 className="text-xl md:text-2xl font-semibold" style={{ color: WEB.textPrimary }}>
+                    {s.client.name}
+                  </h3>
+                  <PillBadge accent="purple">{s.cadence.replace("_", " ")}</PillBadge>
+                </div>
+                <p className="text-sm" style={{ color: WEB.textMuted }}>
+                  Sponsored since{" "}
+                  {new Date(s.started_at).toLocaleDateString(undefined, {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+              </div>
+              <div className="text-right">
+                <div
+                  className="text-2xl md:text-3xl font-bold tabular-nums"
+                  style={{ color: WEB.purple }}
+                >
+                  {fmtMoney(s.amount_usd)}
+                </div>
+                <div
+                  className="text-[11px] font-mono uppercase tracking-[0.14em]"
+                  style={{ color: WEB.textSubtle }}
+                >
+                  Funded
+                </div>
+              </div>
+            </div>
+
+            {/* Stats strip */}
+            <div
+              className="grid grid-cols-2 md:grid-cols-4 divide-x border-b"
+              style={{
+                borderColor: WEB.borderDefault,
+                ["--tw-divide-opacity" as any]: 1,
+              }}
+            >
+              {[
+                { label: "Ships · 30d", value: String(s.ships_30d) },
+                { label: "MRR", value: fmtMoney(s.client.mrr_usd) },
+                { label: "ARR", value: fmtMoney(s.client.arr_usd) },
+                { label: "Status", value: s.client.status },
+              ].map((stat, j) => (
+                <div
+                  key={j}
+                  className="p-4 md:p-5"
+                  style={{ borderColor: WEB.borderDefault }}
+                >
+                  <div
+                    className="text-lg md:text-xl font-semibold tabular-nums"
+                    style={{ color: WEB.textPrimary }}
+                  >
+                    {stat.value}
+                  </div>
+                  <div
+                    className="text-[10px] md:text-[11px] font-mono uppercase tracking-[0.14em] mt-1"
+                    style={{ color: WEB.textSubtle }}
+                  >
+                    {stat.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Recent ships */}
+            <div className="p-4 md:p-6">
+              <p
+                className="text-[11px] font-mono uppercase tracking-[0.16em] mb-3"
+                style={{ color: WEB.purple }}
+              >
+                Recent ships · last 30 days
+              </p>
+              {s.recent_ships.length === 0 ? (
+                <p className="text-sm py-4" style={{ color: WEB.textMuted }}>
+                  No ships logged in the last 30 days on this business yet.
+                </p>
+              ) : (
+                <div className="space-y-3">
+                  {s.recent_ships.map((ship, k) => (
+                    <div
+                      key={k}
+                      className="flex items-start gap-3 p-3 rounded-lg"
+                      style={{ backgroundColor: WEB.surfaceRaised }}
+                    >
+                      <div className="pt-0.5">
+                        <PillBadge accent="purple">{ship.kind}</PillBadge>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p
+                          className="text-sm font-semibold"
+                          style={{ color: WEB.textPrimary }}
+                        >
+                          {ship.title}
+                        </p>
+                        {ship.detail && (
+                          <p
+                            className="text-xs mt-1 leading-relaxed"
+                            style={{ color: WEB.textMuted }}
+                          >
+                            {ship.detail}
+                          </p>
+                        )}
+                        {ship.unlocks && (
+                          <p
+                            className="text-[11px] mt-1 font-mono"
+                            style={{ color: WEB.purple }}
+                          >
+                            → unlocks: {ship.unlocks}
+                          </p>
+                        )}
+                      </div>
+                      <span
+                        className="text-[11px] font-mono shrink-0"
+                        style={{ color: WEB.textSubtle }}
+                      >
+                        {tAgo(ship.created_at)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        ))}
+      </div>
+
+      <div className="max-w-6xl mx-auto px-5 md:px-8 mt-12 flex justify-center">
+        <CtaRow
+          primary={{ label: "Book a strategy call", href: "/book-now" }}
+          secondary={{ label: "Add another sponsorship", href: "/sponsor/application" }}
+          accent="purple"
+        />
+      </div>
+
+      <PageFooter
+        tagline="Omni AI · Sponsor Program"
+        links={[
+          { label: "Sponsor info", href: "/sponsor/info" },
+          { label: "Apply", href: "/sponsor/application" },
+          { label: "Book a call", href: "/book-now" },
+        ]}
+      />
+    </PageShell>
   );
 }

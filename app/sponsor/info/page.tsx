@@ -39,10 +39,13 @@ const aiCapabilities = [
   { icon: LineChart, title: "Performance Intelligence & Reporting", desc: "Transforms marketing and inquiry data into actionable growth insights." },
 ];
 
+// Real, currently-funded sponsorships. No projections, no mocks — every line
+// here maps to a row in `public.sponsorships` in Supabase. If a sponsorship
+// ends or is added, update this list + the DB together.
 const caseStudies = [
-  { name: "Brent", company: "Young's Cabinet Refinishing", metric: "+247% leads" },
-  { name: "Adam", company: "Leifson Built", metric: "$1.2M generated" },
-  { name: "Steve", company: "Utah Addiction Center", metric: "89% conversion" },
+  { name: "Young's Cabinet Refinishing", company: "Sponsored by Fray", metric: "$1,500 funded" },
+  { name: "Leifson Built", company: "Sponsored by Fray", metric: "$1,500 funded" },
+  { name: "Omni Leads", company: "Sponsored by Fray", metric: "$1,500 funded" },
 ];
 
 export default function SponsorInfo() {
@@ -237,9 +240,9 @@ export default function SponsorInfo() {
           <div className="max-w-6xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
-                Proven Results
+                Currently Funded
               </h2>
-              <p className="text-gray-400 text-sm md:text-lg">Real businesses. Measurable growth. Documented performance.</p>
+              <p className="text-gray-400 text-sm md:text-lg">Every sponsorship on this list is real, tracked, and visible in the sponsor portal build log.</p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
