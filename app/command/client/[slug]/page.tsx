@@ -1,41 +1,40 @@
 "use client";
 export const dynamic = "force-dynamic";
+/**
+ * Client detail page — landing target for Weekly Investor Review emails.
+ * Contract: docs/web-design-system.md. All layout via components/ui/web-primitives.
+ * Any edit that bypasses the primitives is a regression — see the locked artifact.
+ */
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Rocket, AlertTriangle, TrendingUp, GitCommit, FileText, Loader2 } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowLeft, FileText, ExternalLink, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
+import {
+  PageShell,
+  PageTopBar,
+  PageHero,
+  KpiGrid,
+  SectionLabel,
+  Card,
+  Thermometer,
+  SparkArea,
+  PillBadge,
+  CtaRow,
+  PageFooter,
+  WEB,
+  fmtMoney,
+} from "@/components/ui/web-primitives";
 
-const fmtMoney = (n: number) =>
-  n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(1)}K` : `$${n}`;
 const tAgo = (d: string) => {
   const ms = Date.now() - new Date(d).getTime();
-  const m = Math.floor(ms / 60000), h = Math.floor(m / 60), dy = Math.floor(h / 24);
+  const m = Math.floor(ms / 60000),
+    h = Math.floor(m / 60),
+    dy = Math.floor(h / 24);
   return dy > 0 ? `${dy}d` : h > 0 ? `${h}h` : m > 0 ? `${m}m` : "now";
 };
-
-function Chart({ points, height = 120 }: { points: number[]; height?: number }) {
-  if (!points || points.length < 2) return <div style={{ height }} className="rounded bg-white/[.02]" />;
-  const max = Math.max(...points, 1);
-  const min = Math.min(...points);
-  const range = max - min || 1;
-  const path = points
-    .map((v, i) => `${(i / (points.length - 1)) * 100},${100 - ((v - min) / range) * 95}`)
-    .join(" ");
-  return (
-    <svg className="w-full" style={{ height }} viewBox="0 0 100 100" preserveAspectRatio="none">
-      <defs>
-        <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="rgb(16 185 129 / .4)" />
-          <stop offset="100%" stopColor="rgb(16 185 129 / 0)" />
-        </linearGradient>
-      </defs>
-      <polygon points={`0,100 ${path} 100,100`} fill="url(#g)" />
-      <polyline points={path} fill="none" stroke="rgb(16 185 129)" strokeWidth="1" />
-    </svg>
-  );
-}
 
 export default function ClientDetailPage() {
   const params = useParams<{ slug: string }>();
@@ -63,17 +62,30 @@ export default function ClientDetailPage() {
 
   if (authLoading || profileLoading || loading)
     return (
-      <div className="min-h-screen bg-[#030305] flex items-center justify-center">
-        <Loader2 className="w-6 h-6 text-emerald-400 animate-spin" />
-      </div>
+      <PageShell>
+        <div className="min-h-screen flex items-center justify-center">
+          <Loader2 className="w-6 h-6 animate-spin" style={{ color: WEB.green }} />
+        </div>
+      </PageShell>
     );
   if (!user || !isAdmin)
     return (
-      <div className="min-h-screen bg-[#030305] flex items-center justify-center">
-        <p className="text-sm font-mono text-red-400">Admin only</p>
-      </div>
+      <PageShell accent="red">
+        <div className="min-h-screen flex items-center justify-center">
+          <p className="text-sm font-mono" style={{ color: WEB.red }}>
+            Admin only
+          </p>
+        </div>
+      </PageShell>
     );
-  if (!data?.client) return <div className="p-8 text-gray-400">Client not found.</div>;
+  if (!data?.client)
+    return (
+      <PageShell>
+        <div className="p-8" style={{ color: WEB.textMuted }}>
+          Client not found.
+        </div>
+      </PageShell>
+    );
 
   const c = data.client;
   const metrics = data.metrics || [];
@@ -81,139 +93,219 @@ export default function ClientDetailPage() {
   const risks = data.risks || [];
   const mrrSeries = metrics.map((m: any) => m.mrr_usd || 0);
   const target = c.arr_target_usd || 1_000_000;
+  const progressPct = Math.min(100, Math.round(((c.current_arr_usd || 0) / target) * 100));
+  const openRisks = risks.filter((r: any) => !r.resolved_at);
 
-  const openReview = async () => {
+  const openReview = () => {
     setGenReview(true);
-    try {
-      window.open(`/api/portfolio/review/${slug}`, "_blank");
-    } finally {
-      setTimeout(() => setGenReview(false), 1200);
-    }
+    window.open(`/api/portfolio/review/${slug}`, "_blank");
+    setTimeout(() => setGenReview(false), 1200);
   };
 
   return (
-    <div className="min-h-screen bg-[#030305] text-white">
-      <style>{`.cc-p{border:1px solid rgba(16,185,129,.08);border-radius:12px;background:rgba(255,255,255,.01);overflow:hidden}.cc-h{padding:10px 14px;background:rgba(16,185,129,.03);border-bottom:1px solid rgba(16,185,129,.08);font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.1em;color:rgba(255,255,255,.5);text-transform:uppercase}`}</style>
-      <div className="max-w-[1600px] mx-auto px-4 lg:px-6 py-6">
-        <Link href="/command" className="inline-flex items-center gap-2 text-xs font-mono text-gray-500 hover:text-emerald-400 mb-4">
-          <ArrowLeft className="w-3 h-3" /> back to command
-        </Link>
+    <PageShell accent="green">
+      <PageTopBar
+        label={`Client · ${c.slug}`}
+        accent="green"
+        right={
+          <Link
+            href="/command"
+            className="inline-flex items-center gap-2 text-xs font-mono hover:opacity-80"
+            style={{ color: WEB.textMuted }}
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            back to command
+          </Link>
+        }
+      />
 
-        {/* Hero */}
-        <div className="cc-p mb-4">
-          <div className="p-6 flex flex-wrap items-start gap-6">
-            <span className="text-6xl">{c.emoji}</span>
-            <div className="flex-1 min-w-[200px]">
-              <h1 className="text-2xl font-mono font-bold text-white mb-1">{c.name}</h1>
-              <p className="text-xs font-mono text-gray-500 mb-3">{c.stack || "—"} · status: {c.status}</p>
-              <div className="flex items-baseline gap-3 mb-2">
-                <span className="text-4xl font-mono font-bold text-emerald-400">{fmtMoney(c.current_arr_usd)}</span>
-                <span className="text-xs font-mono text-gray-600">ARR</span>
-                <span className="text-lg font-mono text-cyan-400 ml-3">{fmtMoney(c.current_mrr_usd)}</span>
-                <span className="text-xs font-mono text-gray-600">MRR</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-2 rounded bg-white/[.05] overflow-hidden max-w-md">
-                  <div
-                    className="h-full bg-gradient-to-r from-emerald-500 via-cyan-400 to-yellow-400"
-                    style={{ width: `${c.progress_pct}%` }}
-                  />
-                </div>
-                <span className="text-xs font-mono text-gray-400">
-                  {c.progress_pct}% → {fmtMoney(target)}
-                </span>
-              </div>
-              {c.notes && <p className="text-xs font-mono text-gray-500 mt-3 italic">{c.notes}</p>}
+      <PageHero
+        eyebrow={`${c.emoji || "📦"} Investor-grade client view`}
+        title={c.name}
+        meta={`Stack: ${c.stack || "—"} · Status: ${c.status} · Target: ${fmtMoney(target)} ARR`}
+        lede={c.notes || undefined}
+        accent="green"
+        right={
+          <div className="flex flex-col gap-3">
+            <CtaRow
+              primary={{ label: genReview ? "Opening…" : "Generate review PDF", onClick: openReview }}
+              secondary={{ label: "Raw JSON", href: `/api/portfolio/review/${slug}?format=json` }}
+              accent="green"
+            />
+            <div className="flex items-center gap-2 justify-end">
+              <FileText className="w-3.5 h-3.5" style={{ color: WEB.textSubtle }} />
+              <span className="text-[11px] font-mono uppercase tracking-[0.14em]" style={{ color: WEB.textSubtle }}>
+                Investor-ready HTML
+              </span>
             </div>
-            <button
-              onClick={openReview}
-              disabled={genReview}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs disabled:opacity-50"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              {genReview ? "opening…" : "Generate investor review"}
-            </button>
           </div>
+        }
+      />
+
+      {/* Thermometer */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="max-w-6xl mx-auto px-5 md:px-8 mb-8"
+      >
+        <div
+          className="rounded-2xl border p-6 md:p-8"
+          style={{ backgroundColor: WEB.surfaceRaised, borderColor: WEB.borderDefault }}
+        >
+          <p
+            className="text-[11px] font-mono uppercase tracking-[0.18em] mb-4"
+            style={{ color: WEB.green }}
+          >
+            Progress to ${(target / 1_000_000).toFixed(1)}M ARR
+          </p>
+          <Thermometer value={c.current_arr_usd || 0} target={target} accent="green" />
         </div>
+      </motion.div>
 
-        {/* Chart + Risks */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-          <div className="cc-p lg:col-span-2">
-            <div className="cc-h">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400 inline mr-2" />
-              90-DAY MRR TRAJECTORY
-            </div>
-            <div className="p-4">
-              <Chart points={mrrSeries} height={160} />
-              <div className="flex justify-between text-[10px] font-mono text-gray-600 mt-2">
-                <span>{metrics[0]?.date || "—"}</span>
-                <span>{metrics[metrics.length - 1]?.date || "—"}</span>
-              </div>
-            </div>
-          </div>
-          <div className="cc-p">
-            <div className="cc-h">
-              <AlertTriangle className="w-3.5 h-3.5 text-yellow-400 inline mr-2" />
-              RISKS
-            </div>
-            <div className="p-4 space-y-2 max-h-[220px] overflow-y-auto">
-              {risks.length === 0 ? (
-                <p className="text-xs font-mono text-gray-600">No open risks. 🟢</p>
-              ) : (
-                risks.map((r: any) => (
-                  <div
-                    key={r.id}
-                    className={`p-2 rounded border ${
-                      r.severity === "red"
-                        ? "border-red-500/30 bg-red-500/5"
-                        : r.severity === "yellow"
-                        ? "border-yellow-500/30 bg-yellow-500/5"
-                        : "border-emerald-500/30 bg-emerald-500/5"
-                    }`}
-                  >
-                    <p className="text-xs font-mono text-white">{r.title}</p>
-                    {r.detail && <p className="text-[10px] font-mono text-gray-500 mt-0.5">{r.detail}</p>}
-                    <p className="text-[9px] font-mono text-gray-600 mt-1">
-                      {r.resolved_at ? "✅ resolved" : `opened ${tAgo(r.opened_at)} ago`}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+      {/* KPI strip */}
+      <KpiGrid
+        items={[
+          { value: fmtMoney(c.current_arr_usd || 0), label: "ARR", color: WEB.green },
+          { value: fmtMoney(c.current_mrr_usd || 0), label: "MRR", color: WEB.cyan },
+          { value: String(c.customer_count || 0), label: "Customers" },
+          { value: String(ships.length), label: "Ships · 90d" },
+          { value: String(openRisks.length), label: "Open risks", color: openRisks.length ? WEB.red : WEB.green },
+        ]}
+      />
+
+      {/* MRR trajectory */}
+      <SectionLabel accent="green">90-day MRR trajectory</SectionLabel>
+      <Card>
+        <SparkArea points={mrrSeries} accent="green" height={180} />
+        <div className="flex justify-between mt-3">
+          <span className="text-xs font-mono" style={{ color: WEB.textSubtle }}>
+            {metrics[0]?.date || "—"}
+          </span>
+          <span className="text-xs font-mono" style={{ color: WEB.textSubtle }}>
+            {metrics[metrics.length - 1]?.date || "—"}
+          </span>
         </div>
+      </Card>
 
-        {/* Ships */}
-        <div className="cc-p">
-          <div className="cc-h">
-            <GitCommit className="w-3.5 h-3.5 text-emerald-400 inline mr-2" />
-            RECENT SHIPS ({ships.length})
-          </div>
-          <div className="p-4 space-y-2">
-            {ships.length === 0 ? (
-              <p className="text-xs font-mono text-gray-600 text-center py-4">No ships yet — go build.</p>
-            ) : (
-              ships.map((s: any) => (
-                <div key={s.id} className="flex items-start gap-3 p-2 rounded border border-white/[.04] bg-white/[.015]">
-                  <Rocket className="w-3.5 h-3.5 text-emerald-400 mt-0.5 shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[9px] font-mono uppercase text-emerald-500/70">{s.kind}</span>
-                      <span className="text-xs font-mono text-white">{s.title}</span>
+      {/* Open risks */}
+      <SectionLabel accent={openRisks.length ? "red" : "green"}>Open risks</SectionLabel>
+      <Card padding="p-4 md:p-5">
+        {openRisks.length === 0 ? (
+          <p className="text-sm py-4 text-center" style={{ color: WEB.green }}>
+            🟢 No open risks. Ship into the open field.
+          </p>
+        ) : (
+          <div className="space-y-3">
+            {openRisks.map((r: any, i: number) => {
+              const sevAccent = r.severity === "red" ? "red" : "amber";
+              const sevHex = r.severity === "red" ? WEB.red : WEB.amber;
+              return (
+                <div
+                  key={i}
+                  className="rounded-xl p-4 md:p-5 border-l-[3px]"
+                  style={{
+                    backgroundColor: r.severity === "red" ? "#2d1215" : "#2a1f0a",
+                    borderLeftColor: sevHex,
+                  }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <PillBadge accent={sevAccent}>severity · {r.severity}</PillBadge>
+                        <span className="text-[11px] font-mono" style={{ color: WEB.textSubtle }}>
+                          opened {tAgo(r.opened_at)} ago
+                        </span>
+                      </div>
+                      <p className="text-sm md:text-base font-semibold" style={{ color: WEB.textPrimary }}>
+                        {r.title}
+                      </p>
+                      {r.detail && (
+                        <p className="text-sm mt-1.5 leading-relaxed" style={{ color: WEB.textBody }}>
+                          {r.detail}
+                        </p>
+                      )}
                     </div>
-                    {s.detail && <p className="text-[10px] font-mono text-gray-500 mt-0.5">{s.detail}</p>}
-                    {s.unlocks && <p className="text-[10px] font-mono text-emerald-500/70 mt-0.5">→ unlocks: {s.unlocks}</p>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+
+      {/* Ship timeline */}
+      <SectionLabel accent="green" right={
+        <span className="text-[11px] font-mono" style={{ color: WEB.textSubtle }}>
+          {ships.length} total
+        </span>
+      }>
+        Ship timeline · last 90 days
+      </SectionLabel>
+      <Card padding="p-2 md:p-3">
+        {ships.length === 0 ? (
+          <p className="text-sm text-center py-10" style={{ color: WEB.textMuted }}>
+            No ships in window — go build.
+          </p>
+        ) : (
+          <div className="divide-y" style={{ borderColor: WEB.borderDefault }}>
+            {ships
+              .slice()
+              .reverse()
+              .slice(0, 40)
+              .map((s: any, i: number) => (
+                <div key={s.id || i} className="flex items-start gap-4 px-4 md:px-5 py-4" style={{ borderColor: WEB.borderDefault }}>
+                  <div className="shrink-0 pt-0.5">
+                    <PillBadge accent="green">{s.kind}</PillBadge>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm md:text-[15px] font-semibold" style={{ color: WEB.textPrimary }}>
+                      {s.title}
+                    </p>
+                    {s.detail && (
+                      <p className="text-sm mt-1 leading-relaxed" style={{ color: WEB.textMuted }}>
+                        {s.detail}
+                      </p>
+                    )}
+                    {s.unlocks && (
+                      <p className="text-xs mt-1.5 font-mono" style={{ color: WEB.green }}>
+                        → unlocks: {s.unlocks}
+                      </p>
+                    )}
                     {s.file_paths?.length > 0 && (
-                      <p className="text-[9px] font-mono text-gray-600 mt-0.5 truncate">{s.file_paths.join(" · ")}</p>
+                      <p className="text-[11px] font-mono mt-1.5 truncate" style={{ color: WEB.textSubtle }}>
+                        {s.file_paths.join(" · ")}
+                      </p>
                     )}
                   </div>
-                  <span className="text-[9px] font-mono text-gray-600 shrink-0">{tAgo(s.created_at)}</span>
+                  <span
+                    className="shrink-0 text-[11px] font-mono tabular-nums"
+                    style={{ color: WEB.textSubtle }}
+                  >
+                    {tAgo(s.created_at)}
+                  </span>
                 </div>
-              ))
-            )}
+              ))}
           </div>
-        </div>
+        )}
+      </Card>
+
+      {/* CTA band */}
+      <div className="max-w-6xl mx-auto px-5 md:px-8 mt-12 flex justify-center">
+        <CtaRow
+          primary={{ label: "Open Command Center", href: "/command" }}
+          secondary={{ label: "Book a working session", href: "/book-now" }}
+          accent="green"
+        />
       </div>
-    </div>
+
+      <PageFooter
+        tagline="Omni AI · Portfolio Review"
+        links={[
+          { label: "Command Center", href: "/command" },
+          { label: "Book a session", href: "/book-now" },
+        ]}
+      />
+    </PageShell>
   );
 }

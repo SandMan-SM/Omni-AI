@@ -1,13 +1,19 @@
+/**
+ * Newsletter read-on-web — landing target for the "Read on the web" link
+ * in Interlinked Free and Premium emails.
+ * Contract: docs/web-design-system.md. One accent per page (free=purple,
+ * premium=amber). Prose is the hero; no dashboards here.
+ */
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
+import { WEB } from "@/components/ui/web-primitives";
 
 interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// Use admin client so shared links always work — no auth/RLS gating on individual posts
 async function getPost(slug: string) {
   const supabase = createAdminClient();
   const { data } = await supabase
@@ -22,7 +28,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) return { title: "Newsletter Not Found" };
-
   const keywords = post.keywords?.join(", ") || "AI, business, automation";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   return {
@@ -58,116 +63,249 @@ export default async function NewsletterPostPage({ params }: Props) {
   });
 
   const isPremium = post.tier === "premium";
+  const accent = isPremium ? WEB.amber : WEB.purple;
+  const accentSoft = isPremium ? "#2a1f0a" : "#1f1230";
+  const brandLabel = isPremium ? "Interlinked Premium" : "Interlinked · Daily Intelligence";
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
-      {/* Header */}
-      <header className="border-b border-white/5">
-        <div className="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-gradient">
+    <div className="min-h-screen relative" style={{ backgroundColor: WEB.canvas, color: WEB.textBody }}>
+      {/* Single top-left accent wash — never two */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-x-0 top-0 h-[520px] opacity-[0.12] blur-3xl"
+        style={{ background: `radial-gradient(700px 360px at 18% 0%, ${accent}, transparent 70%)` }}
+      />
+
+      {/* Top bar */}
+      <header
+        className="sticky top-0 z-40 backdrop-blur-md border-b"
+        style={{ backgroundColor: "rgba(5,5,10,0.8)", borderColor: WEB.borderDefault }}
+      >
+        <div className="max-w-3xl mx-auto px-5 md:px-8 h-14 flex items-center justify-between">
+          <Link
+            href="/"
+            className="text-sm font-semibold tracking-tight"
+            style={{ color: WEB.textPrimary }}
+          >
             Omni AI
           </Link>
           <Link
             href="/newsletter"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="text-[12px] font-mono uppercase tracking-[0.16em] hover:opacity-80"
+            style={{ color: WEB.textMuted }}
           >
-            All Issues
+            All issues
           </Link>
         </div>
       </header>
 
       {/* Article */}
-      <article className="max-w-3xl mx-auto px-5 py-12 md:py-20">
-        {/* Meta */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
-              {isPremium ? "Interlinked Premium" : "Daily Intelligence"}
-            </span>
-            <span className="text-xs text-gray-600">·</span>
-            <span className="text-xs text-gray-500">{date}</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">
-            {post.subject}
-          </h1>
-          {post.keywords?.length > 0 && (
-            <details className="mb-6 group/tags">
-              <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition-colors list-none flex items-center gap-1.5">
-                <svg className="w-3.5 h-3.5 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                {Math.min(post.keywords.length, 11)} tags
-              </summary>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
-                {post.keywords.slice(0, 11).map((kw: string) => (
-                  <span
-                    key={kw}
-                    className="text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-gray-400 whitespace-nowrap"
-                  >
-                    {kw}
-                  </span>
-                ))}
-              </div>
-            </details>
-          )}
+      <article className="relative max-w-3xl mx-auto px-5 md:px-8 pt-14 md:pt-24 pb-12">
+        {/* Eyebrow + date */}
+        <div className="flex flex-wrap items-center gap-3 mb-6">
+          <span
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-mono uppercase tracking-[0.18em] border"
+            style={{ backgroundColor: accentSoft, color: accent, borderColor: `${accent}33` }}
+          >
+            <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: accent }} />
+            {brandLabel}
+          </span>
+          <span className="text-xs" style={{ color: WEB.textSubtle }}>
+            {date}
+          </span>
         </div>
+
+        {/* Title */}
+        <h1
+          className="text-3xl md:text-5xl font-bold tracking-tight leading-[1.08] mb-6"
+          style={{ color: WEB.textPrimary }}
+        >
+          {post.subject}
+        </h1>
 
         {/* Quote */}
         {post.quote && (
-          <blockquote className={`border-l-2 ${isPremium ? "border-yellow-500" : "border-purple-500"} pl-4 mt-8 mb-12`}>
-            <p className="text-lg text-gray-300 italic leading-relaxed">
+          <blockquote
+            className="relative my-8 md:my-10 rounded-2xl p-6 md:p-7 border-l-[3px]"
+            style={{ backgroundColor: accentSoft, borderLeftColor: accent }}
+          >
+            <p
+              className="text-lg md:text-xl italic leading-relaxed"
+              style={{ color: WEB.textBody }}
+            >
               {post.quote}
             </p>
           </blockquote>
         )}
 
         {/* Intro */}
-        <div className="mb-12">
-          <p className="text-lg text-gray-200 leading-relaxed">{post.intro}</p>
-        </div>
+        {post.intro && (
+          <p
+            className="text-lg md:text-[19px] leading-[1.75] mb-10 md:mb-14"
+            style={{ color: WEB.textBody }}
+          >
+            {post.intro}
+          </p>
+        )}
 
         {/* Insights */}
-        <div className="mb-10">
-          <h2 className={`text-xl font-semibold mb-6 ${isPremium ? "text-yellow-400" : "text-gradient"}`}>
-            {isPremium ? "Premium Insights" : "Today\u2019s Key Insights"}
-          </h2>
-          <div className="space-y-4">
-            {post.insights?.map((insight: string, i: number) => (
-              <div key={i} className="py-4">
-                <p className="text-gray-300 leading-relaxed">{insight}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+        {post.insights?.length > 0 && (
+          <section className="mb-10 md:mb-14">
+            <p
+              className="text-[11px] font-mono uppercase tracking-[0.18em] mb-5"
+              style={{ color: accent }}
+            >
+              {isPremium ? "Premium insights" : "Today's key insights"}
+            </p>
+            <div className="space-y-6 md:space-y-7">
+              {post.insights.map((insight: string, i: number) => (
+                <p
+                  key={i}
+                  className="text-base md:text-[17px] leading-[1.8]"
+                  style={{ color: WEB.textBody }}
+                >
+                  {insight}
+                </p>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Premium exclusive sections */}
+        {/* Premium-only exclusive insight */}
+        {isPremium && post.exclusive_insight && (
+          <section
+            className="mb-10 md:mb-14 rounded-2xl p-6 md:p-8 border"
+            style={{ backgroundColor: WEB.surface, borderColor: `${accent}33` }}
+          >
+            <p
+              className="text-[11px] font-mono uppercase tracking-[0.18em] mb-4"
+              style={{ color: accent }}
+            >
+              Exclusive for premium
+            </p>
+            <p
+              className="text-base md:text-[17px] leading-[1.8]"
+              style={{ color: WEB.textBody }}
+            >
+              {post.exclusive_insight}
+            </p>
+          </section>
+        )}
+
+        {/* Premium AI recommendation */}
+        {isPremium && post.ai_recommendation && (
+          <section
+            className="mb-10 md:mb-14 rounded-2xl p-6 md:p-8 border-l-[3px]"
+            style={{ backgroundColor: accentSoft, borderLeftColor: accent }}
+          >
+            <p
+              className="text-[11px] font-mono uppercase tracking-[0.18em] mb-3"
+              style={{ color: accent }}
+            >
+              AI recommendation
+            </p>
+            <p
+              className="text-base md:text-[17px] leading-[1.8]"
+              style={{ color: WEB.textBody }}
+            >
+              {post.ai_recommendation}
+            </p>
+          </section>
+        )}
+
         {/* Power Move */}
-        <div className="mb-10">
-          <p className={`text-xs font-bold uppercase tracking-widest mb-4 ${isPremium ? "text-yellow-400" : "text-purple-400"}`}>
-            Power Move
-          </p>
-          <p className="text-lg text-gray-200 leading-relaxed">
-            {post.power_move}
-          </p>
-        </div>
+        {post.power_move && (
+          <section className="mb-10 md:mb-14">
+            <p
+              className="text-[11px] font-mono uppercase tracking-[0.18em] mb-4"
+              style={{ color: accent }}
+            >
+              Power move
+            </p>
+            <p
+              className="text-lg md:text-[19px] leading-[1.75] font-medium"
+              style={{ color: WEB.textPrimary }}
+            >
+              {post.power_move}
+            </p>
+          </section>
+        )}
 
         {/* CTA */}
-        <div className="mb-10 text-center">
+        <section
+          className="mt-14 md:mt-20 rounded-2xl p-8 md:p-10 border text-center"
+          style={{ backgroundColor: WEB.surface, borderColor: WEB.borderDefault }}
+        >
           {post.offer && (
-            <p className="text-gray-200 leading-relaxed mb-4">{post.offer}</p>
+            <p
+              className="text-base md:text-[17px] leading-[1.75] mb-6 max-w-2xl mx-auto"
+              style={{ color: WEB.textBody }}
+            >
+              {post.offer}
+            </p>
           )}
           <Link
-            href="/interlinked"
-            className="inline-block bg-gradient-to-r from-purple-600 to-blue-600 text-white px-8 py-3 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
+            href="/book-now"
+            className="inline-flex items-center justify-center h-12 px-7 rounded-xl text-sm md:text-[15px] font-semibold transition-opacity hover:opacity-90"
+            style={{ backgroundColor: accent, color: "#05050a" }}
           >
-            Schedule a Meeting
+            Book a working session
           </Link>
-        </div>
+          <p
+            className="mt-4 text-[11px] font-mono uppercase tracking-[0.16em]"
+            style={{ color: WEB.textSubtle }}
+          >
+            Powered by Omni AI
+          </p>
+        </section>
 
-        {/* Closing */}
-        <p className="text-center text-gray-400 italic text-lg my-10">
-          Powered by Omni AI
-        </p>
-
+        {/* Keywords */}
+        {post.keywords?.length > 0 && (
+          <div className="mt-10 flex flex-wrap gap-2">
+            {post.keywords.slice(0, 11).map((kw: string) => (
+              <span
+                key={kw}
+                className="text-[11px] px-2.5 py-1 rounded-full border"
+                style={{
+                  color: WEB.textMuted,
+                  borderColor: WEB.borderDefault,
+                  backgroundColor: WEB.surface,
+                }}
+              >
+                {kw}
+              </span>
+            ))}
+          </div>
+        )}
       </article>
+
+      {/* Footer */}
+      <footer
+        className="border-t py-10"
+        style={{ borderColor: WEB.borderDefault }}
+      >
+        <div className="max-w-3xl mx-auto px-5 md:px-8 text-center space-y-2">
+          <p
+            className="text-[11px] font-mono uppercase tracking-[0.2em]"
+            style={{ color: WEB.textSubtle }}
+          >
+            Omni AI · Interlinked
+          </p>
+          <p className="text-xs" style={{ color: WEB.textMuted }}>
+            <Link href="/newsletter" className="underline underline-offset-4 hover:opacity-80">
+              All issues
+            </Link>
+            <span style={{ color: WEB.textSubtle }}> · </span>
+            <Link href="/book-now" className="underline underline-offset-4 hover:opacity-80">
+              Book a session
+            </Link>
+            <span style={{ color: WEB.textSubtle }}> · </span>
+            <Link href="/interlinked/premium" className="underline underline-offset-4 hover:opacity-80">
+              Upgrade to Premium
+            </Link>
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
