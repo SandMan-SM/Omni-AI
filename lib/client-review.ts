@@ -1,7 +1,20 @@
 import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  wrapper,
+  header,
+  kpiRow,
+  callout,
+  sectionHeading,
+  section,
+  listRow,
+  ctaBlock,
+  footer,
+  fmtMoney,
+  THEME,
+  accentColor,
+} from '@/lib/email-template';
 
-const fmtMoney = (n: number) =>
-  n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(1)}K` : `$${n}`;
+// Rendering rules: docs/email-design-system.md. Don't inline layout HTML.
 
 export interface ClientReviewData {
   client: any;
@@ -36,137 +49,195 @@ export async function gatherClientReview(slug: string): Promise<ClientReviewData
   return { client, metrics: metrics || [], ships: ships || [], risks: risks || [] };
 }
 
-function chart(points: number[], width = 600, height = 180): string {
-  if (points.length < 2) return `<div style="height:${height}px;background:rgba(255,255,255,.02);border-radius:8px;"></div>`;
+/**
+ * Render a 90-day MRR chart as an inline SVG inside a bg-surface card.
+ * Kept simple + email-safe: `width="100%" height="auto" viewBox="..."`.
+ * Gmail and Apple Mail both render inline SVG. Outlook desktop falls back to
+ * an empty box — we accept that; the KPI row above carries the same story.
+ */
+function sparkSvg(points: number[], accent: string): string {
+  const W = 600;
+  const H = 160;
+  if (points.length < 2) {
+    return `<div style="height:${H}px;background:${THEME.surfaceRaised};border-radius:8px;"></div>`;
+  }
   const max = Math.max(...points, 1);
   const min = Math.min(...points);
   const range = max - min || 1;
-  const pts = points
-    .map((v, i) => `${(i / (points.length - 1)) * width},${height - ((v - min) / range) * (height - 20) - 10}`)
+  const coords = points
+    .map((v, i) => `${((i / (points.length - 1)) * W).toFixed(1)},${(H - ((v - min) / range) * (H - 24) - 12).toFixed(1)}`)
     .join(' ');
-  return `<svg width="100%" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" style="display:block;">
-    <defs><linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="rgb(16,185,129)" stop-opacity=".4"/>
-      <stop offset="100%" stop-color="rgb(16,185,129)" stop-opacity="0"/>
-    </linearGradient></defs>
-    <polygon points="0,${height} ${pts} ${width},${height}" fill="url(#g1)"/>
-    <polyline points="${pts}" fill="none" stroke="rgb(16,185,129)" stroke-width="2"/>
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="100%" height="${H}" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="display:block;">
+    <polygon points="0,${H} ${coords} ${W},${H}" fill="${accent}" fill-opacity="0.14"/>
+    <polyline points="${coords}" fill="none" stroke="${accent}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
   </svg>`;
 }
 
 export function buildClientReviewHtml(d: ClientReviewData): string {
   const c = d.client;
-  const mrrPoints = d.metrics.map((m) => m.mrr_usd || 0);
-  const target = c.arr_target_usd || 1_000_000;
-  const progress = Math.min(100, Math.round(((c.current_arr_usd || 0) / target) * 100));
   const reviewDate = new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+  const target = c.arr_target_usd || 1_000_000;
+  const progressPct = Math.min(100, Math.round(((c.current_arr_usd || 0) / target) * 100));
+  const mrrPoints = d.metrics.map((m) => m.mrr_usd || 0);
 
-  const shipsByMonth: Record<string, number> = {};
-  for (const s of d.ships) {
-    const k = s.created_at.slice(0, 7);
-    shipsByMonth[k] = (shipsByMonth[k] || 0) + 1;
-  }
-
+  // Ships grouped by kind for the velocity chip row
   const byKind: Record<string, number> = {};
   for (const s of d.ships) byKind[s.kind] = (byKind[s.kind] || 0) + 1;
 
-  const timelineHtml = d.ships
-    .slice(-30)
-    .reverse()
+  const openRisks = d.risks.filter((r) => !r.resolved_at);
+
+  // KPI row
+  const kpis = kpiRow([
+    { value: fmtMoney(c.current_arr_usd || 0), label: 'ARR', color: THEME.green },
+    { value: fmtMoney(c.current_mrr_usd || 0), label: 'MRR', color: THEME.cyan },
+    { value: String(c.customer_count || 0), label: 'Customers', color: THEME.textPrimary },
+    { value: `${progressPct}%`, label: `→ ${fmtMoney(target)}`, color: THEME.amber },
+    { value: String(d.ships.length), label: 'Ships · 90d', color: THEME.textPrimary },
+  ]);
+
+  // Progress bar (flat hex, table-based)
+  const progressBar = `
+<tr><td style="padding:0 0 20px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${THEME.surface};border:1px solid ${THEME.border};border-radius:12px;">
+    <tr><td style="padding:18px 22px;">
+      <p style="margin:0 0 10px;font-family:${THEME.fontMono};font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:${THEME.textSubtle};">Progress to $${(target / 1_000_000).toFixed(1)}M ARR target</p>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${THEME.surfaceRaised};border-radius:6px;">
+        <tr>
+          <td width="${progressPct}%" style="background:${THEME.green};height:10px;border-radius:6px 0 0 6px;font-size:0;line-height:0;">&nbsp;</td>
+          <td width="${100 - progressPct}%" style="font-size:0;line-height:0;">&nbsp;</td>
+        </tr>
+      </table>
+      <p style="margin:10px 0 0;font-size:13px;color:${THEME.textMuted};">
+        <strong style="color:${THEME.green};">${fmtMoney(c.current_arr_usd || 0)}</strong>
+        <span style="color:${THEME.textSubtle};"> of </span>
+        <strong style="color:${THEME.textPrimary};">${fmtMoney(target)}</strong>
+        <span style="color:${THEME.textSubtle};"> — ${progressPct}% complete</span>
+      </p>
+    </td></tr>
+  </table>
+</td></tr>`;
+
+  // 90-day trajectory (inline SVG inside surface card)
+  const chartCard = section(
+    mrrPoints.length >= 2
+      ? sparkSvg(mrrPoints, THEME.green)
+      : `<p style="margin:0;font-size:14px;color:${THEME.textMuted};text-align:center;padding:40px 0;">Not enough history yet. Back to you in ${90 - mrrPoints.length} days.</p>`,
+    { padding: '16px 16px' }
+  );
+
+  // Velocity-by-kind chips
+  const chips = Object.entries(byKind)
     .map(
-      (s) => `
-      <li style="padding:8px 0;border-bottom:1px solid #1f2937;">
-        <span style="font-family:monospace;font-size:10px;color:#10b981;text-transform:uppercase;">${s.kind}</span>
-        · <span style="font-size:10px;color:#6b7280;">${s.created_at.slice(0, 10)}</span>
-        <div style="font-size:14px;color:#e5e7eb;margin-top:2px;">${s.title}</div>
-        ${s.detail ? `<div style="font-size:12px;color:#9ca3af;margin-top:2px;">${s.detail}</div>` : ''}
-        ${s.unlocks ? `<div style="font-size:11px;color:#10b981;margin-top:2px;">→ unlocks: ${s.unlocks}</div>` : ''}
-      </li>`
+      ([k, n]) =>
+        `<span style="display:inline-block;margin:4px 6px 4px 0;padding:6px 12px;font-family:${THEME.fontMono};font-size:11px;letter-spacing:0.05em;background:${THEME.greenBg};color:${THEME.green};border:1px solid ${THEME.border};border-radius:999px;">${esc(k)} · ${n}</span>`
     )
     .join('');
+  const velocityCard = section(
+    chips || `<p style="margin:0;font-size:14px;color:${THEME.textMuted};">No ships logged yet in the 90-day window.</p>`
+  );
 
-  const openRisks = d.risks.filter((r) => !r.resolved_at);
-  const risksHtml = openRisks.length
+  // Ship timeline (last 30, chronological newest first)
+  const timelineBody = d.ships
+    .slice(-30)
+    .reverse()
+    .map((s) =>
+      listRow({
+        kind: s.kind,
+        when: s.created_at.slice(0, 10),
+        title: s.title,
+        detail: s.detail || undefined,
+        unlocks: s.unlocks || undefined,
+        accent: 'green',
+      })
+    )
+    .join('');
+  const timelineCard = section(
+    timelineBody
+      ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">${timelineBody}</table>`
+      : `<p style="margin:0;font-size:14px;color:${THEME.textMuted};">No ships in the review window.</p>`,
+    { padding: '6px 22px' }
+  );
+
+  // Risks
+  const risksInner = openRisks.length
     ? openRisks
-        .map(
-          (r) => `
-        <li style="padding:10px 12px;margin-bottom:8px;border-radius:8px;background:${r.severity === 'red' ? 'rgba(239,68,68,.08)' : 'rgba(251,191,36,.06)'};border-left:3px solid ${r.severity === 'red' ? '#ef4444' : '#f59e0b'};">
-          <div style="font-size:14px;color:#fff;">${r.title}</div>
-          ${r.detail ? `<div style="font-size:12px;color:#9ca3af;margin-top:4px;">${r.detail}</div>` : ''}
-        </li>`
-        )
+        .map((r) => {
+          const acc = r.severity === 'red' ? THEME.red : THEME.amber;
+          const bg = r.severity === 'red' ? '#2d1215' : '#2a1f0a';
+          return `
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;background:${bg};border-left:3px solid ${acc};border-radius:8px;">
+  <tr><td style="padding:12px 16px;">
+    <div style="font-size:14px;font-weight:700;color:${THEME.textPrimary};">${esc(r.title)}</div>
+    ${r.detail ? `<div style="margin-top:4px;font-size:13px;color:${THEME.textMuted};line-height:1.55;">${esc(r.detail)}</div>` : ''}
+    <div style="margin-top:6px;font-family:${THEME.fontMono};font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:${acc};">severity: ${r.severity}</div>
+  </td></tr>
+</table>`;
+        })
         .join('')
-    : '<p style="color:#10b981;font-size:14px;">🟢 No open risks.</p>';
+    : `<p style="margin:0;font-size:14px;color:${THEME.green};">🟢 No open risks. Ship into the open field.</p>`;
+  const risksCard = section(risksInner);
 
-  return `<!doctype html>
-<html><head><meta charset="utf-8"><title>${c.name} · Investor Review · ${reviewDate}</title>
-<style>
-  body{margin:0;background:#030305;color:#e5e7eb;font-family:-apple-system,Segoe UI,Roboto,sans-serif;}
-  .wrap{max-width:820px;margin:0 auto;padding:48px 32px;}
-  .cover{text-align:center;padding:80px 20px;border-radius:16px;background:linear-gradient(135deg,rgba(16,185,129,.12),rgba(6,182,212,.06));border:1px solid rgba(16,185,129,.2);margin-bottom:32px;}
-  .kpi{display:flex;gap:32px;flex-wrap:wrap;padding:24px;border-radius:12px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);margin-bottom:32px;}
-  .kpi > div{flex:1;min-width:120px;}
-  .kpi .v{font-size:32px;font-weight:700;color:#10b981;}
-  .kpi .l{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.1em;font-family:monospace;}
-  h2{font-size:16px;color:#10b981;text-transform:uppercase;letter-spacing:.15em;font-family:monospace;margin:40px 0 12px;}
-  .section{padding:20px;border-radius:12px;background:rgba(255,255,255,.015);border:1px solid rgba(255,255,255,.05);margin-bottom:16px;}
-</style></head>
-<body>
-<div class="wrap">
+  // Next quarter plan
+  const nextArr = Math.max((c.current_arr_usd || 0) * 2, 100000);
+  const planInner = `
+<p style="margin:0 0 12px;font-size:14px;line-height:1.7;color:${THEME.text};">Execution focus for the next 90 days:</p>
+<ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.85;color:${THEME.text};">
+  <li>Grow ARR from <strong style="color:${THEME.green};">${fmtMoney(c.current_arr_usd || 0)}</strong> toward <strong style="color:${THEME.green};">${fmtMoney(nextArr)}</strong> (2× or $100K floor).</li>
+  <li>Ship at least <strong>2 revenue-generating features per month</strong>, each logged in build_log with an unlock line.</li>
+  <li>Close every open red risk within 14 days of opening.</li>
+  <li>Install automated lead intake + SDR follow-up so pipeline compounds without manual touch.</li>
+</ol>`;
+  const planCard = section(planInner);
 
-  <div class="cover">
-    <div style="font-size:64px;margin-bottom:8px;">${c.emoji || '📦'}</div>
-    <h1 style="font-size:40px;font-weight:800;margin:0 0 8px;color:#fff;">${c.name}</h1>
-    <p style="font-size:14px;color:#9ca3af;margin:0 0 20px;">Investor Review · ${reviewDate}</p>
-    <p style="font-size:13px;color:#6b7280;margin:0;font-family:monospace;">Stack: ${c.stack || '—'} · Status: ${c.status}</p>
-  </div>
+  const body = [
+    header({
+      eyebrow: `${c.emoji || '📦'} Investor Review`,
+      title: c.name,
+      meta: `${reviewDate} · Stack: ${c.stack || '—'} · Status: ${c.status}`,
+      accent: 'green',
+    }),
+    kpis,
+    progressBar,
+    callout(
+      'One thing to fix this week',
+      c.next_move
+        ? `<strong style="color:${THEME.textPrimary};">${esc(c.next_move)}</strong>`
+        : openRisks[0]
+          ? `Resolve <strong style="color:${THEME.textPrimary};">${esc(openRisks[0].title)}</strong> — the highest-severity open risk.`
+          : `Pick the single action that moves ARR toward <strong style="color:${THEME.textPrimary};">${fmtMoney(nextArr)}</strong> this week. Ship it before Friday.`,
+      'amber'
+    ),
+    sectionHeading('90-day MRR trajectory', 'green'),
+    chartCard,
+    sectionHeading('Ship velocity · by kind', 'green'),
+    velocityCard,
+    sectionHeading('Ship timeline · last 30', 'green'),
+    timelineCard,
+    sectionHeading('Open risks', 'red'),
+    risksCard,
+    sectionHeading('Next quarter plan', 'green'),
+    planCard,
+    ctaBlock({
+      tagline: 'Open the live client page in Command Center to drill in.',
+      primary: { href: `https://omnileadsagi.com/command/client/${c.slug}`, label: 'Open client page', accent: 'green' },
+      secondary: { href: `https://omnileadsagi.com/api/portfolio/review/${c.slug}?format=json`, label: 'Raw data' },
+    }),
+    footer({
+      tagline: 'Omni AI · Portfolio Review',
+      links: [
+        { label: 'Command Center', href: 'https://omnileadsagi.com/command' },
+        { label: 'Book a working session', href: 'https://omnileadsagi.com/book-now' },
+      ],
+    }),
+  ].join('');
 
-  <div class="kpi">
-    <div><div class="v">${fmtMoney(c.current_arr_usd || 0)}</div><div class="l">ARR</div></div>
-    <div><div class="v" style="color:#06b6d4;">${fmtMoney(c.current_mrr_usd || 0)}</div><div class="l">MRR</div></div>
-    <div><div class="v" style="color:#fbbf24;">${c.customer_count || 0}</div><div class="l">Customers</div></div>
-    <div><div class="v" style="color:#a78bfa;">${progress}%</div><div class="l">→ ${fmtMoney(target)}</div></div>
-    <div><div class="v" style="color:#fff;">${d.ships.length}</div><div class="l">Ships · 90d</div></div>
-  </div>
+  return wrapper({
+    title: `${c.name} · Investor Review · ${reviewDate}`,
+    preheader: `${c.name}: ${fmtMoney(c.current_arr_usd || 0)} ARR · ${progressPct}% to ${fmtMoney(target)} · ${d.ships.length} ships in 90d · ${openRisks.length} open risks`,
+    body,
+  });
+}
 
-  <h2>90-Day MRR Trajectory</h2>
-  <div class="section">${chart(mrrPoints)}</div>
-
-  <h2>Ship Velocity · by kind</h2>
-  <div class="section">
-    <div style="display:flex;gap:12px;flex-wrap:wrap;">
-      ${Object.entries(byKind)
-        .map(
-          ([k, n]) =>
-            `<span style="padding:6px 12px;border-radius:999px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);font-family:monospace;font-size:12px;color:#10b981;">${k} · ${n}</span>`
-        )
-        .join('')}
-      ${d.ships.length === 0 ? '<p style="color:#6b7280;font-size:14px;">No ships logged yet.</p>' : ''}
-    </div>
-  </div>
-
-  <h2>Ship Timeline · last 30</h2>
-  <div class="section"><ul style="list-style:none;padding:0;margin:0;">${timelineHtml || '<li style="color:#6b7280;">No ships in review window.</li>'}</ul></div>
-
-  <h2>Open Risks</h2>
-  <div class="section"><ul style="list-style:none;padding:0;margin:0;">${risksHtml}</ul></div>
-
-  <h2>Next Quarter Plan</h2>
-  <div class="section">
-    <p style="font-size:14px;color:#d1d5db;line-height:1.6;">
-      Execution focus for the next 90 days:
-    </p>
-    <ol style="font-size:14px;color:#d1d5db;line-height:1.8;padding-left:20px;">
-      <li>Grow ARR from <strong style="color:#10b981;">${fmtMoney(c.current_arr_usd || 0)}</strong> toward <strong style="color:#10b981;">${fmtMoney(Math.max((c.current_arr_usd || 0) * 2, 100000))}</strong> (2× or $100K floor).</li>
-      <li>Ship at minimum <strong>2 revenue-generating features per month</strong> logged in build_log.</li>
-      <li>Close every open red risk within 14 days of opening.</li>
-      <li>Install automated lead intake + SDR follow-up so pipeline compounds without manual touch.</li>
-    </ol>
-  </div>
-
-  <p style="text-align:center;font-size:11px;color:#6b7280;margin-top:48px;font-family:monospace;">
-    OMNI AI · CEO OPS SUITE · ${reviewDate}
-  </p>
-</div>
-</body></html>`;
+function esc(s: string): string {
+  return String(s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m] as string);
 }

@@ -1,8 +1,23 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegram } from '@/lib/telegram';
+import {
+  wrapper,
+  header,
+  kpiRow,
+  callout,
+  sectionHeading,
+  section,
+  dataTable,
+  listRow,
+  ctaBlock,
+  footer,
+  fmtMoney,
+  THEME,
+  dot,
+} from '@/lib/email-template';
 
-const fmtMoney = (n: number) =>
-  n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(2)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(1)}K` : `$${n}`;
+// NOTE: email rendering rules are locked in docs/email-design-system.md.
+// Do not inline layout HTML here — extend lib/email-template.ts instead.
 
 export interface DailyBriefPayload {
   date: string;
@@ -95,83 +110,95 @@ export async function gatherDailyBrief(): Promise<DailyBriefPayload> {
 }
 
 export function buildDailyBriefHtml(b: DailyBriefPayload): string {
-  const date = new Date(b.date).toLocaleDateString(undefined, {
+  const dateLong = new Date(b.date).toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   });
 
-  const clientRows = b.per_client
-    .sort((a, b) => b.arr_usd - a.arr_usd)
-    .map(
-      (c) => `
-        <tr>
-          <td style="padding:8px 4px;font-size:14px;">${c.emoji} ${c.name}</td>
-          <td style="padding:8px 4px;font-size:14px;color:#10b981;text-align:right;">${fmtMoney(c.arr_usd)}</td>
-          <td style="padding:8px 4px;font-size:14px;color:#06b6d4;text-align:right;">${fmtMoney(c.mrr_usd)}</td>
-          <td style="padding:8px 4px;font-size:14px;text-align:right;color:#9ca3af;">${c.ships_24h} ship${c.ships_24h === 1 ? '' : 's'}</td>
-          <td style="padding:8px 4px;font-size:14px;text-align:right;">${c.severity === 'red' ? '🔴' : c.severity === 'yellow' ? '🟡' : '🟢'}</td>
-        </tr>`
-    )
-    .join('');
+  // 1. Top-line KPIs
+  const kpis = kpiRow([
+    { value: fmtMoney(b.portfolio_arr_usd), label: 'Portfolio ARR', color: THEME.green },
+    { value: fmtMoney(b.portfolio_mrr_usd), label: 'MRR', color: THEME.cyan },
+    { value: String(b.ships_24h), label: 'Ships · 24h', color: THEME.textPrimary },
+    { value: String(b.reds), label: 'Red risks', color: b.reds > 0 ? THEME.red : THEME.green },
+  ]);
 
-  const shipRows = b.recent_ships.length
-    ? b.recent_ships
-        .map(
-          (s) => `
-          <li style="margin-bottom:6px;font-size:13px;color:#d1d5db;">
-            <span style="color:#10b981;font-family:monospace;font-size:11px;text-transform:uppercase;">${s.kind}</span>
-            · ${s.client_slug || '—'} · ${s.title}
-          </li>`
-        )
-        .join('')
-    : '<li style="color:#6b7280;font-size:13px;">No ships in the last 24 hours.</li>';
+  // 2. Biggest-mover line + today's focus callout
+  const moverLine =
+    b.biggest_mover && b.biggest_mover.delta_mrr_usd !== 0
+      ? `<tr><td style="padding:0 2px 14px;font-size:14px;line-height:1.6;color:${THEME.text};">
+          Biggest mover: <strong style="color:${THEME.green};">${escapeTxt(b.biggest_mover.name)}</strong>
+          <span style="color:${THEME.textMuted};">
+            ${b.biggest_mover.delta_mrr_usd >= 0 ? '+' : ''}${fmtMoney(b.biggest_mover.delta_mrr_usd)} MRR vs yesterday
+          </span>
+        </td></tr>`
+      : '';
 
-  return `<!doctype html>
-<html><head><meta charset="utf-8"><title>CEO Daily Brief — ${date}</title></head>
-<body style="margin:0;background:#050508;color:#e5e7eb;font-family:-apple-system,Segoe UI,Roboto,sans-serif;">
-  <div style="max-width:640px;margin:0 auto;padding:32px 20px;">
-    <p style="font-family:monospace;font-size:11px;letter-spacing:.15em;text-transform:uppercase;color:#10b981;margin:0 0 4px;">CEO Daily Brief</p>
-    <h1 style="font-size:26px;margin:0 0 24px;color:#fff;">${date}</h1>
+  const focusCallout = callout("Today's focus", `<strong style="color:${THEME.textPrimary};">${escapeTxt(b.focus)}</strong>`, 'amber');
 
-    <div style="padding:20px;border-radius:12px;background:linear-gradient(135deg,rgba(16,185,129,.08),rgba(6,182,212,.04));border:1px solid rgba(16,185,129,.15);margin-bottom:20px;">
-      <p style="font-size:13px;color:#9ca3af;margin:0 0 8px;">Portfolio position</p>
-      <div style="display:flex;gap:24px;flex-wrap:wrap;">
-        <div><span style="font-size:28px;font-weight:700;color:#10b981;">${fmtMoney(b.portfolio_arr_usd)}</span><span style="font-size:12px;color:#6b7280;margin-left:6px;">ARR</span></div>
-        <div><span style="font-size:28px;font-weight:700;color:#06b6d4;">${fmtMoney(b.portfolio_mrr_usd)}</span><span style="font-size:12px;color:#6b7280;margin-left:6px;">MRR</span></div>
-        <div><span style="font-size:28px;font-weight:700;color:#fff;">${b.ships_24h}</span><span style="font-size:12px;color:#6b7280;margin-left:6px;">ships 24h</span></div>
-        <div><span style="font-size:28px;font-weight:700;color:${b.reds > 0 ? '#ef4444' : '#10b981'};">${b.reds}</span><span style="font-size:12px;color:#6b7280;margin-left:6px;">red risks</span></div>
-      </div>
-    </div>
+  // 3. Portfolio table
+  const portfolioRows = b.per_client
+    .slice()
+    .sort((x, y) => y.arr_usd - x.arr_usd)
+    .map((c) => ({
+      cells: [
+        { content: `${c.emoji} ${escapeTxt(c.name)}`, align: 'left' as const },
+        { content: fmtMoney(c.arr_usd), align: 'right' as const, color: THEME.green },
+        { content: fmtMoney(c.mrr_usd), align: 'right' as const, color: THEME.cyan },
+        { content: `${c.ships_24h}`, align: 'right' as const, color: THEME.textMuted },
+        { content: dot(c.severity as 'red' | 'yellow' | 'green'), align: 'right' as const },
+      ],
+    }));
+  const portfolioTable = dataTable(['Client', 'ARR', 'MRR', 'Ships 24h', 'State'], portfolioRows);
 
-    ${
-      b.biggest_mover && b.biggest_mover.delta_mrr_usd !== 0
-        ? `<p style="font-size:14px;color:#d1d5db;margin:0 0 12px;">Biggest mover: <strong style="color:#10b981;">${b.biggest_mover.name}</strong> ${b.biggest_mover.delta_mrr_usd >= 0 ? '+' : ''}${fmtMoney(b.biggest_mover.delta_mrr_usd)} MRR.</p>`
-        : ''
-    }
-    <p style="font-size:15px;color:#fde68a;margin:0 0 24px;padding:12px 16px;background:rgba(251,191,36,.08);border-left:3px solid #f59e0b;border-radius:6px;">${b.focus}</p>
+  // 4. Ship timeline
+  const shipsInner = b.recent_ships.length
+    ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+        ${b.recent_ships
+          .map((s) =>
+            listRow({
+              kind: s.kind,
+              when: `${s.client_slug || '—'} · ${new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+              title: s.title,
+            })
+          )
+          .join('')}
+      </table>`
+    : `<p style="margin:0;font-size:14px;color:${THEME.textMuted};">No ships logged in the last 24 hours.</p>`;
 
-    <h2 style="font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#10b981;margin:24px 0 8px;font-family:monospace;">Portfolio</h2>
-    <table style="width:100%;border-collapse:collapse;">
-      <thead><tr style="border-bottom:1px solid rgba(255,255,255,.08);">
-        <th style="text-align:left;padding:8px 4px;font-size:11px;color:#6b7280;text-transform:uppercase;font-family:monospace;">Client</th>
-        <th style="text-align:right;padding:8px 4px;font-size:11px;color:#6b7280;text-transform:uppercase;font-family:monospace;">ARR</th>
-        <th style="text-align:right;padding:8px 4px;font-size:11px;color:#6b7280;text-transform:uppercase;font-family:monospace;">MRR</th>
-        <th style="text-align:right;padding:8px 4px;font-size:11px;color:#6b7280;text-transform:uppercase;font-family:monospace;">24h</th>
-        <th style="text-align:right;padding:8px 4px;font-size:11px;color:#6b7280;text-transform:uppercase;font-family:monospace;">State</th>
-      </tr></thead>
-      <tbody>${clientRows}</tbody>
-    </table>
+  const body = [
+    header({ eyebrow: 'CEO Daily Brief', title: dateLong, meta: `Portfolio pulse across ${b.per_client.length} clients`, accent: 'green' }),
+    kpis,
+    moverLine,
+    focusCallout,
+    sectionHeading('Portfolio · ranked by ARR', 'green'),
+    portfolioTable,
+    sectionHeading('Ships · last 24 hours', 'green'),
+    section(shipsInner, { padding: '6px 22px' }),
+    ctaBlock({
+      tagline: 'Every decision compounds. Open the Command Center and ship one more thing before EOD.',
+      primary: { href: 'https://omnileadsagi.com/command', label: 'Open Command Center', accent: 'green' },
+      secondary: { href: 'https://omnileadsagi.com/command/client/omni-ai', label: 'Omni AI detail' },
+    }),
+    footer({
+      tagline: 'Omni AI · CEO Ops Suite',
+      links: [
+        { label: 'Command Center', href: 'https://omnileadsagi.com/command' },
+        { label: 'Build Log', href: 'https://omnileadsagi.com/command#build-log' },
+      ],
+    }),
+  ].join('');
 
-    <h2 style="font-size:14px;letter-spacing:.1em;text-transform:uppercase;color:#10b981;margin:32px 0 8px;font-family:monospace;">Ships · last 24h</h2>
-    <ul style="padding:0 0 0 18px;margin:0 0 24px;">${shipRows}</ul>
+  return wrapper({
+    title: `CEO Daily Brief · ${dateLong}`,
+    preheader: `${fmtMoney(b.portfolio_arr_usd)} ARR · ${b.ships_24h} ships · ${b.reds} reds · ${b.focus}`,
+    body,
+  });
+}
 
-    <div style="text-align:center;padding:20px 0;border-top:1px solid rgba(255,255,255,.06);margin-top:24px;">
-      <a href="https://omnileadsagi.com/command" style="display:inline-block;padding:10px 20px;background:linear-gradient(90deg,#10b981,#06b6d4);color:#fff;text-decoration:none;border-radius:8px;font-weight:600;font-size:14px;">Open Command Center →</a>
-    </div>
-    <p style="text-align:center;font-size:11px;color:#6b7280;margin:12px 0 0;font-family:monospace;">OMNI AI · CEO OPS SUITE</p>
-  </div>
-</body></html>`;
+function escapeTxt(s: string): string {
+  return String(s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m] as string);
 }
 
 export function buildTelegramBrief(b: DailyBriefPayload): string {

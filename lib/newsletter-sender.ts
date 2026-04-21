@@ -728,102 +728,155 @@ function premiumFallbackContent(today: string, dayType: string): NewsletterConte
 
 // ── Email Templates ──────────────────────────────────────────────────────────
 
+// Rendering rules: docs/email-design-system.md. Don't inline layout HTML here.
+// Accent: purple for free, amber for premium. Exactly one accent per email.
+import {
+  wrapper as tplWrapper,
+  header as tplHeader,
+  callout as tplCallout,
+  sectionHeading as tplSectionHeading,
+  section as tplSection,
+  ctaBlock as tplCtaBlock,
+  footer as tplFooter,
+  THEME as EMAIL_THEME,
+  accentColor as emailAccent,
+  accentBg as emailAccentBg,
+} from '@/lib/email-template';
+
 function buildNewsletterEmailHtml(content: NewsletterContent, tier: 'free' | 'premium'): string {
   const isPremium = tier === 'premium';
-  const accent = isPremium ? '#f59e0b' : '#a855f7';
-  const accentSoft = isPremium ? 'rgba(245,158,11,0.08)' : 'rgba(168,85,247,0.08)';
-  const accentBorder = isPremium ? 'rgba(245,158,11,0.25)' : 'rgba(168,85,247,0.25)';
-  const buttonGradient = isPremium
-    ? 'linear-gradient(135deg,#f59e0b,#ef4444)'
-    : 'linear-gradient(135deg,#a855f7,#3b82f6)';
+  const accent = isPremium ? 'amber' : 'purple';
+  const accentHex = emailAccent(accent);
+  const accentBgHex = emailAccentBg(accent);
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const title = isPremium ? 'Interlinked Premium' : 'Interlinked';
   const subtitle = isPremium
-    ? `by Omni AI · Daily Premium Intelligence Brief · ${today}`
-    : `by Omni AI · Daily Intelligence Brief · ${today}`;
-
-  const insightsHtml = content.insights
-    .map(ins => `<p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#e0e0e0;">${ins}</p>`)
-    .join('');
+    ? `Daily Premium Intelligence Brief · ${today}`
+    : `Daily Intelligence Brief · ${today}`;
 
   const postUrl = content.slug ? `${SITE_URL}/newsletter/${content.slug}` : SITE_URL;
   const shareSubject = encodeURIComponent(`Interlinked: ${content.subject}`);
   const shareBody = encodeURIComponent(
-    `Thought you'd appreciate today's Interlinked brief from Omni AI:\n\n${content.subject}\n\n${postUrl}\n\nSchedule a free consultation anytime: ${SITE_URL}/book-now`
+    `Today's Interlinked brief from Omni AI:\n\n${content.subject}\n\n${postUrl}\n\nBook a working session anytime: ${SITE_URL}/book-now`,
   );
   const shareHref = `mailto:?subject=${shareSubject}&body=${shareBody}`;
 
-  const keywordsHtml = content.keywords?.length
-    ? `<div style="margin:0 0 24px;text-align:left;">
-        <p style="color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;">Today's Trends</p>
-        <p style="color:#888;font-size:13px;line-height:1.7;margin:0;">${content.keywords.slice(0, 12).join(' · ')}</p>
-      </div>`
+  // Quote pull (optional, exactly one)
+  const quoteBlock = content.quote
+    ? `<tr><td style="padding:0 0 20px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${accentBgHex};border:1px solid ${EMAIL_THEME.border};border-radius:12px;">
+          <tr><td style="padding:22px 26px;">
+            <p style="margin:0;font-size:16px;font-style:italic;line-height:1.65;color:${accentHex};text-align:center;">${esc(content.quote)}</p>
+          </td></tr>
+        </table>
+      </td></tr>`
     : '';
 
+  // Subject as heading above the body
+  const subjectHeading = `
+<tr><td style="padding:8px 0 18px;">
+  <h2 style="margin:0;font-family:${EMAIL_THEME.fontBody};font-size:22px;line-height:1.3;font-weight:800;color:${EMAIL_THEME.textPrimary};letter-spacing:-0.01em;">${esc(content.subject)}</h2>
+</td></tr>`;
+
+  // Intro paragraph
+  const introBlock = `
+<tr><td style="padding:0 0 22px;">
+  <p style="margin:0;font-size:16px;line-height:1.75;color:${EMAIL_THEME.text};">${esc(content.intro)}</p>
+</td></tr>`;
+
+  // Insights — paragraphs only (per design rule: never bullets)
+  const insightsInner = content.insights
+    .map((ins) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.75;color:${EMAIL_THEME.text};">${esc(ins)}</p>`)
+    .join('');
+  const insightsBlock =
+    tplSectionHeading("Today's insights", accent as any) +
+    tplSection(insightsInner);
+
+  // Premium-only: exclusive_insight + ai_recommendation
+  const premiumExtras = isPremium
+    ? [
+        (content as PremiumContent).exclusive_insight
+          ? tplSectionHeading('Premium · exclusive insight', 'amber') +
+            tplSection(`<p style="margin:0;font-size:15px;line-height:1.75;color:${EMAIL_THEME.text};">${esc((content as PremiumContent).exclusive_insight!)}</p>`)
+          : '',
+        (content as PremiumContent).ai_recommendation
+          ? tplCallout('AI tool of the week', esc((content as PremiumContent).ai_recommendation!), 'amber')
+          : '',
+      ].join('')
+    : '';
+
+  // Power move callout (always)
+  const powerMoveBlock = tplCallout('Power move', esc(content.power_move), accent as any);
+
+  // CTA block — table-based two-button row
+  const ctaBlockHtml = tplCtaBlock({
+    tagline: 'Book a free 30-minute strategy session — or share this with someone who needs it.',
+    primary: { href: `${SITE_URL}/book-now`, label: 'Book Now', accent: accent as any },
+    secondary: { href: shareHref, label: 'Share' },
+  });
+
+  // Read-on-web link + $50K callout
+  const webLink = `
+<tr><td align="center" style="padding:0 0 16px;">
+  <a href="${postUrl}" style="font-size:13px;color:${EMAIL_THEME.cyan};text-decoration:underline;">Read this on the web →</a>
+</td></tr>`;
+
+  const fiftyKCallout = `
+<tr><td style="padding:0 0 24px;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${accentBgHex};border:1px solid ${EMAIL_THEME.border};border-radius:10px;">
+    <tr><td align="center" style="padding:16px 20px;">
+      <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:${accentHex};">Get a $50,000 certification — free</p>
+      <p style="margin:0;font-size:12px;color:${EMAIL_THEME.textMuted};">Sponsored by Omni AI · <a href="https://t.me/+HxMnLSV1FYs0YmIx" style="color:${EMAIL_THEME.cyan};text-decoration:underline;">Join the community</a></p>
+    </td></tr>
+  </table>
+</td></tr>`;
+
+  // Keywords pill strip
+  const keywordsBlock = content.keywords?.length
+    ? `<tr><td style="padding:0 0 16px;">
+        <p style="margin:0 0 8px;font-family:${EMAIL_THEME.fontMono};font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:${EMAIL_THEME.textSubtle};">Today's trends</p>
+        <p style="margin:0;font-size:13px;line-height:1.8;color:${EMAIL_THEME.textMuted};">${content.keywords.slice(0, 12).map((k) => esc(k)).join(' <span style=\"color:' + EMAIL_THEME.textSubtle + ';\">·</span> ')}</p>
+      </td></tr>`
+    : '';
+
+  // Footer
   const footerLinks = isPremium
-    ? `<a href="${SITE_URL}/dashboard" style="color:${accent};text-decoration:underline;">Manage account</a> · <a href="${SITE_URL}/affiliate/info" style="color:#06b6d4;text-decoration:underline;">Affiliate program</a>`
-    : `<a href="${SITE_URL}/dashboard" style="color:${accent};text-decoration:underline;">Manage subscription</a> · <a href="${SITE_URL}/interlinked/premium" style="color:#06b6d4;text-decoration:underline;">Upgrade to Premium</a>`;
+    ? [
+        { label: 'Manage account', href: `${SITE_URL}/dashboard` },
+        { label: 'Affiliate program', href: `${SITE_URL}/affiliate/info` },
+      ]
+    : [
+        { label: 'Manage subscription', href: `${SITE_URL}/dashboard` },
+        { label: 'Upgrade to Premium', href: `${SITE_URL}/interlinked/premium` },
+      ];
 
-  return `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;color:#e0e0e0;margin:0;padding:0;">
-  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+  const body = [
+    tplHeader({ eyebrow: title, title: subtitle, accent: accent as any }),
+    quoteBlock,
+    subjectHeading,
+    introBlock,
+    insightsBlock,
+    premiumExtras,
+    powerMoveBlock,
+    ctaBlockHtml,
+    webLink,
+    fiftyKCallout,
+    keywordsBlock,
+    tplFooter({
+      tagline: `Omni AI · Interlinked ${isPremium ? 'Premium' : ''}`.trim(),
+      links: footerLinks,
+    }),
+  ].join('');
 
-    <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:${accent};font-size:30px;margin:0;font-weight:800;letter-spacing:-0.5px;">${title}</h1>
-      <p style="color:#888;font-size:13px;margin:10px 0 0;">${subtitle}</p>
-    </div>
+  return tplWrapper({
+    title: `${title} · ${content.subject}`,
+    preheader: content.intro.slice(0, 140),
+    body,
+  });
+}
 
-    ${content.quote ? `<div style="background:${accentSoft};border:1px solid ${accentBorder};border-radius:14px;padding:22px 26px;margin-bottom:24px;text-align:center;">
-      <p style="color:${accent};font-size:15px;font-style:italic;line-height:1.6;margin:0;">${content.quote}</p>
-    </div>` : ''}
-
-    <div style="margin-bottom:28px;">
-      <p style="font-size:16px;line-height:1.75;color:#e0e0e0;margin:0;">${content.intro}</p>
-    </div>
-
-    <div style="margin-bottom:28px;">
-      <h2 style="color:#06b6d4;font-size:18px;margin:0 0 14px;font-weight:700;">Today's Key Insights</h2>
-      ${insightsHtml}
-    </div>
-
-    <div style="background:${accentSoft};border-left:3px solid ${accent};padding:20px 24px;border-radius:0 8px 8px 0;margin-bottom:28px;">
-      <p style="color:${accent};font-weight:bold;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Power Move</p>
-      <p style="color:#e0e0e0;font-size:15px;line-height:1.7;margin:0;">${content.power_move}</p>
-    </div>
-
-    <div style="background:${accentSoft};border:1px solid ${accentBorder};border-radius:14px;padding:24px;margin:0 0 14px;text-align:center;">
-      <p style="color:#e0e0e0;font-size:15px;line-height:1.65;margin:0 0 18px;">Schedule a free consultation anytime — and remember, you can share this with a friend.</p>
-      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;">
-        <tr>
-          <td style="padding:0 6px;">
-            <a href="${SITE_URL}/book-now" style="display:inline-block;background:${buttonGradient};color:#fff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Book Now</a>
-          </td>
-          <td style="padding:0 6px;">
-            <a href="${shareHref}" style="display:inline-block;background:rgba(255,255,255,0.06);color:#e0e0e0;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;border:1px solid rgba(255,255,255,0.12);">Share</a>
-          </td>
-        </tr>
-      </table>
-    </div>
-
-    <p style="color:#777;font-size:12px;font-style:italic;line-height:1.6;margin:0 0 28px;text-align:center;">Power move, restated: ${content.power_move}</p>
-
-    <p style="text-align:center;margin:0 0 20px;"><a href="${postUrl}" style="color:#06b6d4;font-size:13px;text-decoration:underline;">Read this on the web</a></p>
-
-    <div style="background:${accentSoft};border:1px solid ${accentBorder};border-radius:10px;padding:16px 20px;margin-bottom:24px;text-align:center;">
-      <p style="color:${accent};font-size:14px;font-weight:700;margin:0 0 6px;">Get a $50,000 certification for FREE</p>
-      <p style="color:#888;font-size:12px;margin:0;">Sponsored by Omni AI · <a href="https://t.me/+HxMnLSV1FYs0YmIx" style="color:#06b6d4;text-decoration:underline;">Join the community</a></p>
-    </div>
-
-    ${keywordsHtml}
-
-    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:24px 0;">
-    <div style="text-align:center;">
-      <p style="font-size:12px;color:#555;margin:0 0 8px;">You're receiving the ${isPremium ? 'Premium' : 'free'} Interlinked newsletter from Omni AI.</p>
-      <p style="font-size:12px;margin:0;">${footerLinks}</p>
-    </div>
-  </div>
-</body></html>`;
+function esc(s: string): string {
+  return String(s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m] as string);
 }
 
 function buildFreeEmailHtml(content: NewsletterContent): string {
