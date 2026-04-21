@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface NewsletterSend {
   id: string;
@@ -70,6 +71,25 @@ interface NewsletterAnalytic {
   bounced: number;
 }
 
+interface RawEmail {
+  id: string;
+  to: string[];
+  from: string;
+  subject: string;
+  status: string;
+  sent_at: string;
+}
+
+type ItemStatus = 'draft' | 'sent';
+interface ListItem {
+  newsletter?: NewsletterAnalytic;
+  send?: NewsletterSend;
+  slug?: string;
+  tier?: string;
+  postSubject?: string;
+  status: ItemStatus;
+}
+
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short", day: "numeric", year: "numeric",
@@ -88,10 +108,9 @@ function timeAgo(dateStr: string) {
   return "Just now";
 }
 
-function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status = 'sent' }: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string; status?: 'draft' | 'sent' }) {
+function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status = 'sent', onView }: { newsletter?: NewsletterAnalytic; send?: NewsletterSend; slug?: string; tier?: string; postSubject?: string; status?: 'draft' | 'sent'; onView?: () => void }) {
   const subject = postSubject || newsletter?.subject || send?.subject || "";
   const sentAt = newsletter?.sent_at || send?.sent_at || "";
-  const href = slug ? `/newsletter/${slug}` : null;
   const isPremium = tier === "premium";
   const isDraft = status === 'draft';
 
@@ -137,16 +156,13 @@ function AnalyticsSendCard({ newsletter, send, slug, tier, postSubject, status =
             }`} style={{ fontSize: '9px', lineHeight: '1' }}>
               {isDraft ? "Draft" : "Sent"}
             </span>
-            <a
-              href={href || "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={e => { if (!href) e.preventDefault(); }}
-              className={`p-1 rounded-lg hover:bg-white/[0.06] transition-colors ${!href ? 'opacity-30 pointer-events-none' : ''}`}
-              title={isDraft ? "Preview draft" : "View newsletter page"}
+            <button
+              onClick={onView}
+              className="p-1 rounded-lg hover:bg-white/[0.06] transition-colors"
+              title={isDraft ? "Preview draft" : "View recipients & analytics"}
             >
               <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
-            </a>
+            </button>
           </div>
         </div>
       </CardContent>
@@ -159,9 +175,10 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [websiteSubs, setWebsiteSubs] = useState<WebsiteSubscriber[]>([]);
   const [posts, setPosts] = useState<{ id: string; slug: string; subject: string; tier?: string; published_at?: string; created_at?: string }[]>([]);
-  const [analytics, setAnalytics] = useState<{ summary: AnalyticsSummary; newsletters: NewsletterAnalytic[] } | null>(null);
+  const [analytics, setAnalytics] = useState<{ summary: AnalyticsSummary; newsletters: NewsletterAnalytic[]; emails?: RawEmail[] } | null>(null);
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState<string | null>(null);
+  const [detailItem, setDetailItem] = useState<ListItem | null>(null);
 
   // Business dropdown
   const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
@@ -197,9 +214,11 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     setLoading(true);
     try {
       const bust = `_t=${Date.now()}`;
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
       const [historyRes, analyticsRes] = await Promise.all([
-        fetch(`/api/admin/newsletter-history?${bust}`, { cache: 'no-store' }),
-        fetch(`/api/newsletter/analytics?${bust}`, { cache: 'no-store' }),
+        fetch(`/api/admin/newsletter-history?${bust}`, { cache: 'no-store', headers: authHeaders }),
+        fetch(`/api/newsletter/analytics?${bust}`, { cache: 'no-store', headers: authHeaders }),
       ]);
       if (historyRes.ok) {
         const data = await historyRes.json();
@@ -563,8 +582,17 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     return result;
   }, [analytics, sends, posts, postBySubject]);
 
-  // Show first 5, rest visible via scroll
-  const recentNewsletters = mergedNewsletters;
+  // Split into newsletter posts (matched to newsletter_posts row or drafts) vs personal emails
+  const { newsletterItems, personalItems } = useMemo(() => {
+    const newsletterItems: typeof mergedNewsletters = [];
+    const personalItems: typeof mergedNewsletters = [];
+    for (const item of mergedNewsletters) {
+      const isNewsletter = item.status === 'draft' || !!item.slug || !!item.postSubject;
+      if (isNewsletter) newsletterItems.push(item);
+      else personalItems.push(item);
+    }
+    return { newsletterItems, personalItems };
+  }, [mergedNewsletters]);
 
   const summary = analytics?.summary;
 
@@ -733,13 +761,13 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           <div className="flex justify-center py-10">
             <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
           </div>
-        ) : recentNewsletters.length === 0 ? (
+        ) : newsletterItems.length === 0 ? (
           <div className="text-center py-10 text-gray-500 text-sm">
             No newsletters yet. Drafts and sends will appear here automatically.
           </div>
         ) : (
-          <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
-            {recentNewsletters.map((item, i) => (
+          <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            {newsletterItems.map((item, i) => (
               <AnalyticsSendCard
                 key={item.newsletter?.subject || item.send?.id || item.slug || i}
                 newsletter={item.newsletter}
@@ -748,6 +776,34 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 tier={item.tier}
                 postSubject={item.postSubject}
                 status={item.status}
+                onView={() => setDetailItem(item)}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Personal Emails — CEO briefings and other one-off emails */}
+      <div>
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <h3 className="text-sm font-semibold text-white flex items-center gap-2">
+            <Mail className="w-4 h-4 text-cyan-400" /> Personal Emails Sent
+          </h3>
+          <span className="text-[10px] text-gray-500">{personalItems.length} sent</span>
+        </div>
+        {loading ? null : personalItems.length === 0 ? (
+          <div className="text-center py-6 text-gray-500 text-xs">
+            No personal emails logged yet. CEO briefings and one-off sends from the email agent appear here.
+          </div>
+        ) : (
+          <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
+            {personalItems.map((item, i) => (
+              <AnalyticsSendCard
+                key={item.newsletter?.subject || item.send?.id || i}
+                newsletter={item.newsletter}
+                send={item.send}
+                status={item.status}
+                onView={() => setDetailItem(item)}
               />
             ))}
           </div>
@@ -906,7 +962,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         )}
 
         <Card className="bg-white/[0.03] border-white/[0.06]">
-          <CardContent className="px-4 py-2">
+          <CardContent className="px-4 py-2 max-h-[420px] overflow-y-auto">
             {loading ? (
               <div className="flex justify-center py-6">
                 <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
@@ -947,6 +1003,110 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           {activeSubs} subscriber{activeSubs !== 1 ? "s" : ""}
         </p>
       </div>
+
+      {/* Detail modal — recipients + per-email analytics */}
+      <Dialog open={!!detailItem} onOpenChange={open => !open && setDetailItem(null)}>
+        <DialogContent className="bg-[#0a0a0a] border-white/10 text-white max-w-2xl p-0 gap-0 overflow-hidden">
+          {detailItem && (() => {
+            const subject = detailItem.postSubject || detailItem.newsletter?.subject || detailItem.send?.subject || "";
+            const sentAt = detailItem.newsletter?.sent_at || detailItem.send?.sent_at || "";
+            const isDraft = detailItem.status === 'draft';
+            const recipients = (analytics?.emails || []).filter(e => e.subject === subject);
+            const n = detailItem.newsletter;
+            const previewHref = detailItem.slug ? `/newsletter/${detailItem.slug}` : null;
+            return (
+              <>
+                <DialogHeader className="px-6 pt-6 pb-4 border-b border-white/[0.06]">
+                  <DialogTitle className="text-base font-semibold text-white pr-8">{subject}</DialogTitle>
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap text-[11px] text-gray-500">
+                    {sentAt ? (
+                      <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{formatDate(sentAt)}</span>
+                    ) : (
+                      <span className="text-amber-400">Draft — not sent yet</span>
+                    )}
+                    {detailItem.tier && (
+                      <span className={`px-2 py-0.5 rounded-md border ${detailItem.tier === 'premium' ? 'text-yellow-400 border-yellow-500/20 bg-yellow-500/10' : 'text-purple-400 border-purple-500/20 bg-purple-500/10'}`}>
+                        {detailItem.tier === 'premium' ? 'Premium' : 'Free'}
+                      </span>
+                    )}
+                  </div>
+                </DialogHeader>
+                <div className="px-6 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+                  {isDraft ? (
+                    <div className="text-center py-6 text-sm text-gray-400">
+                      This draft hasn&apos;t been sent yet. It will go out on the next scheduled send.
+                      {previewHref && (
+                        <div className="mt-3">
+                          <a href={previewHref} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 underline text-xs">
+                            Preview draft page →
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Aggregate stats */}
+                      {n && (
+                        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+                          {[
+                            { label: "Sent", value: n.total, color: "text-purple-400" },
+                            { label: "Delivered", value: n.delivered, color: "text-green-400" },
+                            { label: "Opened", value: n.opened, color: "text-cyan-400" },
+                            { label: "Clicked", value: n.clicked, color: "text-blue-400" },
+                            { label: "Bounced", value: n.bounced, color: "text-red-400" },
+                          ].map(s => (
+                            <div key={s.label} className="bg-white/[0.03] border border-white/[0.06] rounded-lg p-2.5">
+                              <p className={`text-base font-bold ${s.color}`}>{s.value}</p>
+                              <p className="text-[10px] text-gray-500 uppercase tracking-wider">{s.label}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Recipients */}
+                      <div>
+                        <h4 className="text-xs font-semibold text-white flex items-center gap-2 mb-2">
+                          <Users className="w-3.5 h-3.5 text-blue-400" /> Recipients
+                          <span className="text-[10px] text-gray-500 font-normal">{recipients.length}</span>
+                        </h4>
+                        {recipients.length === 0 ? (
+                          <p className="text-xs text-gray-500 py-4 text-center bg-white/[0.02] rounded-lg">
+                            No per-recipient data available from Resend.
+                          </p>
+                        ) : (
+                          <div className="border border-white/[0.06] rounded-lg divide-y divide-white/[0.04] max-h-[300px] overflow-y-auto">
+                            {recipients.map(r => (
+                              <div key={r.id} className="flex items-center justify-between px-3 py-2 text-xs">
+                                <span className="text-gray-300 truncate">{r.to.join(", ")}</span>
+                                <span className={`px-2 py-0.5 rounded-md text-[10px] font-medium border ${
+                                  r.status === 'clicked' ? 'text-blue-400 border-blue-500/20 bg-blue-500/10' :
+                                  r.status === 'opened' ? 'text-cyan-400 border-cyan-500/20 bg-cyan-500/10' :
+                                  r.status === 'delivered' ? 'text-green-400 border-green-500/20 bg-green-500/10' :
+                                  r.status === 'bounced' ? 'text-red-400 border-red-500/20 bg-red-500/10' :
+                                  'text-gray-400 border-white/10 bg-white/[0.04]'
+                                }`}>
+                                  {r.status}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {previewHref && (
+                        <div className="pt-2 border-t border-white/[0.06]">
+                          <a href={previewHref} target="_blank" rel="noopener noreferrer" className="text-xs text-purple-400 hover:text-purple-300 underline">
+                            Open newsletter page →
+                          </a>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
 
       {/* Edit subscriber modal */}
       <AnimatePresence>

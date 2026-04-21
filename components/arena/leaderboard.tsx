@@ -30,7 +30,7 @@ interface FullAgent {
 const rankConfig = {
   diamond: {
     gradient: "from-cyan-400 to-white",
-    cssGradient: "linear-gradient(135deg, #22d3ee, #ffffff)",
+    cssGradient: "linear-gradient(135deg, #a5f3fc 0%, #ffffff 25%, #67e8f9 50%, #ffffff 75%, #22d3ee 100%)",
     bgGradient: "from-cyan-500/20 to-transparent",
     icon: Crown,
     label: "Diamond",
@@ -40,37 +40,37 @@ const rankConfig = {
     chromeStyle: { background: 'linear-gradient(135deg, #22d3ee, #ffffff, #22d3ee)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
   },
   gold: {
-    gradient: "from-amber-300 to-yellow-500",
-    cssGradient: "linear-gradient(135deg, #f59e0b, #eab308)",
+    gradient: "from-yellow-200 via-amber-400 to-yellow-700",
+    cssGradient: "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)",
     bgGradient: "from-amber-500/20 to-transparent",
     icon: Flame,
     label: "Gold",
-    borderColor: "border-amber-400/30",
-    cssBorder: "rgba(245, 158, 11, 0.3)",
-    glowColor: "rgba(245, 158, 11, 0.15)",
-    chromeStyle: { background: 'linear-gradient(135deg, #f59e0b, #eab308, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
+    borderColor: "border-amber-400/40",
+    cssBorder: "rgba(250, 204, 21, 0.4)",
+    glowColor: "rgba(250, 204, 21, 0.2)",
+    chromeStyle: { background: 'linear-gradient(135deg, #fde68a, #facc15, #b45309, #facc15, #fde68a)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
   },
   silver: {
-    gradient: "from-gray-300 to-gray-400",
-    cssGradient: "linear-gradient(135deg, #9ca3af, #d1d5db)",
-    bgGradient: "from-gray-400/20 to-transparent",
+    gradient: "from-gray-100 via-slate-300 to-gray-500",
+    cssGradient: "linear-gradient(135deg, #ffffff 0%, #e2e8f0 20%, #94a3b8 45%, #e2e8f0 70%, #ffffff 100%)",
+    bgGradient: "from-slate-400/20 to-transparent",
     icon: Shield,
     label: "Silver",
-    borderColor: "border-gray-400/30",
-    cssBorder: "rgba(156, 163, 175, 0.3)",
-    glowColor: "rgba(156, 163, 175, 0.1)",
-    chromeStyle: { background: 'linear-gradient(135deg, #9ca3af, #d1d5db, #9ca3af)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
+    borderColor: "border-slate-300/40",
+    cssBorder: "rgba(203, 213, 225, 0.4)",
+    glowColor: "rgba(203, 213, 225, 0.15)",
+    chromeStyle: { background: 'linear-gradient(135deg, #f8fafc, #cbd5e1, #64748b, #cbd5e1, #f8fafc)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
   },
   bronze: {
-    gradient: "from-orange-600 to-amber-700",
-    cssGradient: "linear-gradient(135deg, #ea580c, #d97706)",
-    bgGradient: "from-orange-600/20 to-transparent",
+    gradient: "from-orange-300 via-amber-600 to-yellow-900",
+    cssGradient: "linear-gradient(135deg, #fed7aa 0%, #cd7f32 20%, #7c2d12 45%, #cd7f32 70%, #fed7aa 100%)",
+    bgGradient: "from-amber-700/20 to-transparent",
     icon: Shield,
     label: "Bronze",
-    borderColor: "border-orange-500/30",
-    cssBorder: "rgba(234, 88, 12, 0.3)",
-    glowColor: "rgba(234, 88, 12, 0.1)",
-    chromeStyle: { background: 'linear-gradient(135deg, #ea580c, #d97706, #ea580c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
+    borderColor: "border-amber-600/40",
+    cssBorder: "rgba(217, 119, 6, 0.4)",
+    glowColor: "rgba(217, 119, 6, 0.15)",
+    chromeStyle: { background: 'linear-gradient(135deg, #fdba74, #d97706, #7c2d12, #d97706, #fdba74)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' } as React.CSSProperties,
   },
   unranked: {
     gradient: "from-gray-500 to-gray-600",
@@ -94,13 +94,13 @@ const tierNames: Record<number, string> = {
 };
 
 const valueOverrides: Record<string, number> = {
-  'Omni AI': 250000, 'Love Thy Barber': 85000, 'BLK Diamond': 2500,
-  'CPS': 12000, 'Youngs Cabinet Refinishing': 45000, 'Leifson Built': 38000,
+  'Omni AI': 28000, 'Love Thy Barber': 0, 'BLK Diamond': 0,
+  'CPS': 0, 'Youngs Cabinet Refinishing': 0, 'Leifson Built': 0,
 };
 
 const reachOverrides: Record<string, number> = {
-  'Omni AI': 1200000, 'Love Thy Barber': 150000, 'BLK Diamond': 8500,
-  'CPS': 22000, 'Youngs Cabinet Refinishing': 35000, 'Leifson Built': 28000,
+  'Omni AI': 1111, 'Love Thy Barber': 0, 'BLK Diamond': 0,
+  'CPS': 0, 'Youngs Cabinet Refinishing': 0, 'Leifson Built': 0,
 };
 
 function formatCompact(n: number): string {
@@ -110,10 +110,7 @@ function formatCompact(n: number): string {
 }
 
 function getRating(businessName: string): string {
-  if (businessName === 'BLK Diamond') return '1.0';
-  if (businessName === 'Youngs Cabinet Refinishing') return '4.4';
-  if (businessName === 'Leifson Built') return '4.3';
-  return '5.0';
+  return businessName === 'Omni AI' ? '5.0' : '0.0';
 }
 
 // ── Agent Card Modal ─────────────────────────────────────────────────────
@@ -121,9 +118,8 @@ function getRating(businessName: string): string {
 function AgentCardModal({ agent, onClose }: { agent: FullAgent; onClose: () => void }) {
   const config = rankConfig[agent.rankTier];
   const Icon = config.icon;
-  const statusColor = agent.agentStatus === 'active' ? '#22c55e' : agent.agentStatus === 'idle' ? '#eab308' : '#6b7280';
   const val = valueOverrides[agent.businessName] ?? agent.revenue ?? 0;
-  const reach = reachOverrides[agent.businessName] ?? (agent.activities + agent.campaigns);
+  const reach = reachOverrides[agent.businessName] ?? (agent as any).reach ?? (agent.activities + agent.campaigns);
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -139,17 +135,9 @@ function AgentCardModal({ agent, onClose }: { agent: FullAgent; onClose: () => v
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.9, y: 20 }}
         transition={{ type: "spring", duration: 0.4 }}
-        className="relative w-full max-w-sm"
+        className="relative w-full max-w-xs"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute -top-2 -right-2 z-10 w-8 h-8 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center hover:bg-gray-700 transition-colors"
-        >
-          <X className="w-4 h-4 text-gray-400" />
-        </button>
-
         {/* Glow */}
         <div
           className="absolute inset-0 rounded-2xl blur-xl"
@@ -175,10 +163,13 @@ function AgentCardModal({ agent, onClose }: { agent: FullAgent; onClose: () => v
                 <p className="text-sm text-gray-500">Anonymous</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full" style={{ background: statusColor }} />
-              <span className="text-xs text-gray-500 capitalize">{agent.agentStatus || 'active'}</span>
-            </div>
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center hover:bg-gray-700 transition-colors flex-shrink-0"
+              aria-label="Close"
+            >
+              <X className="w-4 h-4 text-gray-400" />
+            </button>
           </div>
 
           {/* Rank Badge + ELO + Position */}
@@ -342,7 +333,7 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
 
   return (
     <div>
-      <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-6">
+      <div className="flex flex-col md:flex-row items-center justify-between gap-6 md:gap-5 mt-2 mb-10">
         <div className="relative w-full md:w-64">
           <Search className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 ${isDarkMode ? "text-gray-500" : "text-gray-400"}`} />
           <input
@@ -358,24 +349,36 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
           />
         </div>
 
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 -mx-2 px-2 scrollbar-hide">
-          {["all", "diamond", "gold", "silver", "bronze"].map((tier) => (
-            <button
-              key={tier}
-              onClick={() => setSelectedTier(tier)}
-              className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
-                selectedTier === tier
-                  ? tier === "all"
-                    ? "bg-gradient-to-r from-cyan-500 to-amber-500 text-black"
-                    : `bg-gradient-to-r ${rankConfig[tier as keyof typeof rankConfig]?.gradient} text-black`
-                  : isDarkMode
-                    ? "bg-gray-800 text-gray-400 hover:text-white"
-                    : "bg-gray-100 text-gray-600 hover:text-gray-900"
-              }`}
-            >
-              {tier.charAt(0).toUpperCase() + tier.slice(1)}
-            </button>
-          ))}
+        <div className="flex flex-wrap sm:flex-nowrap items-center justify-center sm:justify-start gap-2 sm:gap-5 sm:overflow-x-auto py-1 px-1 scrollbar-hide w-full min-w-0">
+          {["all", "diamond", "gold", "silver", "bronze"].map((tier) => {
+            const isSelected = selectedTier === tier;
+            const tierCfg = rankConfig[tier as keyof typeof rankConfig];
+            const selectedStyle: React.CSSProperties | undefined = isSelected
+              ? tier === "all"
+                ? { background: "linear-gradient(135deg, #22d3ee, #f59e0b)", color: "#000" }
+                : {
+                    background: tierCfg?.cssGradient,
+                    color: "#000",
+                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 10px ${tierCfg?.glowColor}`,
+                  }
+              : undefined;
+            return (
+              <button
+                key={tier}
+                onClick={() => setSelectedTier(tier)}
+                style={selectedStyle}
+                className={`px-4 py-2 rounded-full text-xs font-medium transition-all whitespace-nowrap flex-shrink-0 ${
+                  isSelected
+                    ? ""
+                    : isDarkMode
+                      ? "bg-gray-800 text-gray-400 hover:text-white"
+                      : "bg-gray-100 text-gray-600 hover:text-gray-900"
+                }`}
+              >
+                {tier.charAt(0).toUpperCase() + tier.slice(1)}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -391,7 +394,7 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
               onClick={() => setSelectedAgent(agent)}
-              className={`relative rounded-xl p-4 sm:p-4 border cursor-pointer hover:bg-white/[0.02] transition-colors ${
+              className={`relative rounded-xl px-3 sm:px-6 py-3 sm:py-4 border cursor-pointer hover:bg-white/[0.02] transition-colors ${
                 agent.rank <= 3
                   ? config.borderColor
                   : isDarkMode
@@ -401,23 +404,24 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
                 agent.rank === 1 ? "ring-1 ring-amber-400/30" : ""
               }`}
             >
-              {agent.rank === 1 && (
-                <div className="absolute top-1.5 right-3 z-10">
-                  <div
-                    className="text-[10px] sm:text-xs font-bold uppercase tracking-wider"
-                    style={{ background: 'linear-gradient(135deg, #f59e0b, #fbbf24, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}
-                  >
-                    #1 RANKED
-                  </div>
-                </div>
-              )}
-
               <div className="flex items-center gap-2 sm:gap-4">
                 <div className={`w-8 sm:w-10 flex items-center justify-center flex-shrink-0 ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
                   {getRankIcon(agent.rank)}
                 </div>
 
-                <div className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-br ${agent.rank <= 3 ? config.gradient : "from-gray-500 to-gray-600"} flex items-center justify-center text-sm sm:text-lg font-bold text-white flex-shrink-0`}>
+                <div
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center text-sm sm:text-lg font-bold flex-shrink-0 ${
+                    agent.rank <= 3 ? "text-black" : "text-white bg-gradient-to-br from-gray-500 to-gray-600"
+                  }`}
+                  style={
+                    agent.rank <= 3
+                      ? {
+                          background: config.cssGradient,
+                          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.25), 0 0 12px ${config.glowColor}`,
+                        }
+                      : undefined
+                  }
+                >
                   {agent.avatar}
                 </div>
 
@@ -431,7 +435,13 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
                 </div>
 
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-                  <div className={`px-2.5 sm:px-3 py-1 rounded-full bg-gradient-to-r ${config.gradient} text-black text-xs sm:text-sm font-semibold inline-flex items-center gap-1 whitespace-nowrap`}>
+                  <div
+                    className="px-2.5 sm:px-3 py-1 rounded-full text-black text-xs sm:text-sm font-semibold inline-flex items-center gap-1 whitespace-nowrap shadow-inner"
+                    style={{
+                      background: config.cssGradient,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 8px ${config.glowColor}`,
+                    }}
+                  >
                     <Icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
                     <span>{config.label}</span>
                   </div>

@@ -1,7 +1,7 @@
 "use client";
 export const dynamic = 'force-dynamic';
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import {
   Swords, Trophy, Target, Zap, Shield, Crown, Flame,
   Lock, Zap as ZapIcon, Loader2
@@ -11,10 +11,13 @@ import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal } from "@/components/book-demo-modal";
 import { AuthModal } from "@/components/auth-modal";
+import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { Leaderboard } from "@/components/arena/leaderboard";
 import { RankingTiers } from "@/components/arena/ranking-tiers";
 import { BadgeShowcase } from "@/components/arena/badge-showcase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+
+interface Spark { x: number; y: number; vx: number; vy: number; r: number; alpha: number; life: number; maxLife: number; }
 
 interface Agent {
   id: string;
@@ -37,11 +40,11 @@ interface Agent {
 }
 
 const rankConfig: Record<string, { gradient: string; cssGradient: string; icon: any; label: string; border: string; glowColor: string; textColor: string }> = {
-  diamond: { gradient: "from-cyan-400 to-white", cssGradient: "linear-gradient(135deg, #22d3ee, #ffffff)", icon: Crown, label: "Diamond", border: "border-cyan-400/30", glowColor: "rgba(34, 211, 238, 0.15)", textColor: "#22d3ee" },
-  gold: { gradient: "from-amber-300 to-yellow-500", cssGradient: "linear-gradient(135deg, #f59e0b, #eab308)", icon: Flame, label: "Gold", border: "border-amber-400/30", glowColor: "rgba(245, 158, 11, 0.15)", textColor: "#f59e0b" },
-  silver: { gradient: "from-gray-300 to-gray-400", cssGradient: "linear-gradient(135deg, #9ca3af, #d1d5db)", icon: Shield, label: "Silver", border: "border-gray-400/30", glowColor: "rgba(156, 163, 175, 0.1)", textColor: "#9ca3af" },
-  bronze: { gradient: "from-orange-600 to-amber-700", cssGradient: "linear-gradient(135deg, #ea580c, #d97706)", icon: Shield, label: "Bronze", border: "border-orange-500/30", glowColor: "rgba(234, 88, 12, 0.1)", textColor: "#ea580c" },
-  unranked: { gradient: "from-gray-500 to-gray-600", cssGradient: "linear-gradient(135deg, #6b7280, #4b5563)", icon: Lock, label: "Unranked", border: "border-gray-500/30", glowColor: "rgba(107, 114, 128, 0.05)", textColor: "#6b7280" },
+  diamond: { gradient: "from-cyan-400 to-white", cssGradient: "linear-gradient(135deg, #a5f3fc 0%, #ffffff 25%, #67e8f9 50%, #ffffff 75%, #22d3ee 100%)", icon: Crown, label: "Diamond", border: "rgba(34, 211, 238, 0.4)", glowColor: "rgba(34, 211, 238, 0.25)", textColor: "#22d3ee" },
+  gold: { gradient: "from-amber-300 to-yellow-500", cssGradient: "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)", icon: Flame, label: "Gold", border: "rgba(250, 204, 21, 0.45)", glowColor: "rgba(250, 204, 21, 0.3)", textColor: "#facc15" },
+  silver: { gradient: "from-gray-300 to-gray-400", cssGradient: "linear-gradient(135deg, #ffffff 0%, #e2e8f0 20%, #94a3b8 45%, #e2e8f0 70%, #ffffff 100%)", icon: Shield, label: "Silver", border: "rgba(203, 213, 225, 0.45)", glowColor: "rgba(203, 213, 225, 0.25)", textColor: "#cbd5e1" },
+  bronze: { gradient: "from-orange-600 to-amber-700", cssGradient: "linear-gradient(135deg, #fed7aa 0%, #cd7f32 20%, #7c2d12 45%, #cd7f32 70%, #fed7aa 100%)", icon: Shield, label: "Bronze", border: "rgba(217, 119, 6, 0.45)", glowColor: "rgba(217, 119, 6, 0.25)", textColor: "#d97706" },
+  unranked: { gradient: "from-gray-500 to-gray-600", cssGradient: "linear-gradient(135deg, #6b7280, #4b5563)", icon: Lock, label: "Unranked", border: "rgba(107, 114, 128, 0.3)", glowColor: "rgba(107, 114, 128, 0.05)", textColor: "#6b7280" },
 };
 
 const tierNames: Record<number, string> = {
@@ -53,21 +56,21 @@ const tierNames: Record<number, string> = {
 };
 
 const valueOverrides: Record<string, number> = {
-  'Omni AI': 250000,
-  'Love Thy Barber': 85000,
-  'BLK Diamond': 2500,
-  'CPS': 12000,
-  'Youngs Cabinet Refinishing': 45000,
-  'Leifson Built': 38000,
+  'Omni AI': 28000,
+  'Love Thy Barber': 0,
+  'BLK Diamond': 0,
+  'CPS': 0,
+  'Youngs Cabinet Refinishing': 0,
+  'Leifson Built': 0,
 };
 
 const reachOverrides: Record<string, number> = {
-  'Omni AI': 1200000,
-  'Love Thy Barber': 150000,
-  'BLK Diamond': 8500,
-  'CPS': 22000,
-  'Youngs Cabinet Refinishing': 35000,
-  'Leifson Built': 28000,
+  'Omni AI': 1111,
+  'Love Thy Barber': 0,
+  'BLK Diamond': 0,
+  'CPS': 0,
+  'Youngs Cabinet Refinishing': 0,
+  'Leifson Built': 0,
 };
 
 function formatCompact(n: number): string {
@@ -108,6 +111,111 @@ export default function Arena() {
   const [isDarkMode] = useState(true);
   const [featuredAgents, setFeaturedAgents] = useState<Agent[]>([]);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mouseRef = useRef({ x: 0, y: 0, active: false });
+  const rafRef = useRef<number | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const count = Math.round(140 * (isMobile ? 0.35 : 1));
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
+
+    let width = 0, height = 0;
+    let sparks: Spark[] = [];
+
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const makeSpark = (x?: number, y?: number): Spark => ({
+      x: x ?? Math.random() * width,
+      y: y ?? Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: -Math.random() * 0.8 - 0.2,
+      r: Math.random() * 1.8 + 0.4,
+      alpha: Math.random() * 0.5 + 0.5,
+      life: 0,
+      maxLife: Math.random() * 180 + 120,
+    });
+
+    const seed = () => {
+      sparks = Array.from({ length: count }, () => makeSpark());
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      for (let i = 0; i < sparks.length; i++) {
+        const s = sparks[i];
+        s.x += s.vx;
+        s.y += s.vy;
+        s.life++;
+        if (mouseRef.current.active) {
+          const dx = mouseRef.current.x - s.x;
+          const dy = mouseRef.current.y - s.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 160) {
+            const f = (160 - dist) / 160;
+            s.x -= (dx / dist) * f * 0.8;
+            s.y -= (dy / dist) * f * 0.8;
+          }
+        }
+        if (s.life > s.maxLife || s.y < -10 || s.x < -10 || s.x > width + 10) {
+          sparks[i] = makeSpark(Math.random() * width, height + Math.random() * 20);
+          continue;
+        }
+        const fade = 1 - s.life / s.maxLife;
+        const a = s.alpha * fade;
+        // Red/orange ember palette
+        const palette = [
+          `rgba(248,113,113,${a})`,   // red-400
+          `rgba(239,68,68,${a})`,     // red-500
+          `rgba(251,146,60,${a})`,    // orange-400
+          `rgba(250,204,21,${a * 0.9})`, // yellow-400 (rarely)
+        ];
+        ctx.fillStyle = palette[i % 4];
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = `rgba(239,68,68,${a})`;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.shadowBlur = 0;
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    resize(); seed(); draw();
+    const onResize = () => { resize(); seed(); };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [prefersReducedMotion]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top, active: true };
+  }, []);
+
+  const onPointerLeave = useCallback(() => {
+    mouseRef.current.active = false;
+  }, []);
 
   useEffect(() => {
     fetch('/api/agents/rankings')
@@ -120,7 +228,8 @@ export default function Arena() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen text-white noise-overlay">
+      <FireSparksBackdrop />
       <CursorSpotlight />
       <Navbar
         onBookDemo={() => setIsDemoModalOpen(true)}
@@ -128,11 +237,24 @@ export default function Arena() {
       />
 
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
-        <section className="relative px-4 py-12 md:py-20">
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
-            <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
-          </div>
+        <section
+          onPointerMove={onPointerMove}
+          onPointerLeave={onPointerLeave}
+          className="relative px-2 sm:px-4 py-12 md:py-20 overflow-hidden"
+        >
+          <div
+            aria-hidden
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background:
+                "radial-gradient(ellipse at 30% 40%, rgba(239,68,68,0.18), transparent 55%), radial-gradient(ellipse at 70% 60%, rgba(251,146,60,0.14), transparent 55%)",
+            }}
+          />
+          <canvas
+            ref={canvasRef}
+            aria-hidden
+            className="absolute inset-0 w-full h-full pointer-events-none"
+          />
 
           <div className="max-w-6xl mx-auto relative z-10">
             <motion.div
@@ -151,8 +273,17 @@ export default function Arena() {
                 AI Agent Combat Zone
               </motion.div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                <span className="text-gradient">Enter the Arena</span>
+              <h1
+                className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4"
+                style={{
+                  backgroundImage: "linear-gradient(135deg, #ffffff 0%, #fca5a5 50%, #fb923c 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  textShadow: "0 0 80px rgba(239,68,68,0.25)",
+                }}
+              >
+                Enter the Arena
               </h1>
               <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-8">
                 Where AI agents go to war on the world. Build your business, complete missions,
@@ -174,23 +305,23 @@ export default function Arena() {
               className="mb-16"
             >
               <div className="rounded-2xl overflow-hidden bg-gray-900/50 border border-white/5">
-                <div className="px-6 py-4 border-b border-white/5">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 flex items-center justify-center">
+                <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-white/5">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-6 min-w-0">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-r from-cyan-500 to-amber-500 flex items-center justify-center flex-shrink-0">
                         <Trophy className="w-5 h-5 text-black" />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-lg">Leaderboard</h3>
-                        <p className="text-sm text-gray-400">Top AI Agents in the Arena</p>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-lg truncate">Leaderboard</h3>
+                        <p className="text-sm text-gray-400 truncate">Top AI Agents in the Arena</p>
                       </div>
                     </div>
-                    <span className="px-4 py-1.5 rounded-full text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30">
+                    <span className="px-3 sm:px-4 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium bg-green-500/20 text-green-400 border border-green-500/30 flex-shrink-0">
                       Live
                     </span>
                   </div>
                 </div>
-                <div className="p-6">
+                <div className="px-6 py-5 sm:p-8">
                   <Leaderboard isDarkMode={isDarkMode} />
                 </div>
               </div>
@@ -270,7 +401,7 @@ export default function Arena() {
                     const Icon = config.icon;
                     const statusColor = agent.agentStatus === 'active' ? '#22c55e' : agent.agentStatus === 'idle' ? '#eab308' : '#6b7280';
                     const val = valueOverrides[agent.businessName] ?? agent.revenue ?? 0;
-                    const reach = reachOverrides[agent.businessName] ?? ((agent.activities || 0) + (agent.campaigns || 0));
+                    const reach = reachOverrides[agent.businessName] ?? (agent as any).reach ?? ((agent.activities || 0) + (agent.campaigns || 0));
                     return (
                       <motion.div
                         key={agent.id}
@@ -287,14 +418,17 @@ export default function Arena() {
                         />
                         <div
                           className="relative rounded-2xl p-6 bg-[#0a0a0a]/80 backdrop-blur-sm transition-all"
-                          style={{ border: `1px solid ${config.border.includes('cyan') ? 'rgba(34,211,238,0.3)' : config.border.includes('amber') ? 'rgba(245,158,11,0.3)' : config.border.includes('gray-400') ? 'rgba(156,163,175,0.3)' : config.border.includes('orange') ? 'rgba(234,88,12,0.3)' : 'rgba(107,114,128,0.2)'}` }}
+                          style={{ border: `1px solid ${config.border}` }}
                         >
                           {/* Header */}
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center gap-4">
                               <div
-                                className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-white shadow-lg"
-                                style={{ background: config.cssGradient }}
+                                className="w-14 h-14 rounded-xl flex items-center justify-center text-lg font-bold text-black shadow-lg"
+                                style={{
+                                  background: config.cssGradient,
+                                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.25), 0 0 14px ${config.glowColor}`,
+                                }}
                               >
                                 {agent.avatar}
                               </div>
@@ -313,7 +447,10 @@ export default function Arena() {
                           <div className="flex items-center gap-2 mb-4">
                             <div
                               className="px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 text-black"
-                              style={{ background: config.cssGradient }}
+                              style={{
+                                background: config.cssGradient,
+                                boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 8px ${config.glowColor}`,
+                              }}
                             >
                               <Icon className="w-3 h-3" />
                               {config.label}
@@ -335,10 +472,7 @@ export default function Arena() {
                             <div className="text-center p-2 rounded-lg bg-white/[0.03]">
                               <p className="text-lg font-bold text-white">
                                 <span className="text-yellow-400">&#9733;</span>{' '}
-                                {agent.businessName === 'BLK Diamond' ? '1.0'
-                                  : agent.businessName === 'Youngs Cabinet Refinishing' ? '4.4'
-                                  : agent.businessName === 'Leifson Built' ? '4.3'
-                                  : '5.0'}
+                                {agent.businessName === 'Omni AI' ? '5.0' : '0.0'}
                               </p>
                               <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
                             </div>

@@ -13,6 +13,7 @@ import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal } from "@/components/book-demo-modal";
 import { AuthModal } from "@/components/auth-modal";
+import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -44,7 +45,7 @@ interface Agent {
 const rankConfig = {
   diamond: {
     label: "Diamond",
-    gradient: "linear-gradient(135deg, #22d3ee, #ffffff)",
+    gradient: "linear-gradient(135deg, #a5f3fc 0%, #ffffff 25%, #67e8f9 50%, #ffffff 75%, #22d3ee 100%)",
     borderColor: "rgba(34, 211, 238, 0.3)",
     glowColor: "rgba(34, 211, 238, 0.15)",
     textColor: "#22d3ee",
@@ -53,28 +54,28 @@ const rankConfig = {
   },
   gold: {
     label: "Gold",
-    gradient: "linear-gradient(135deg, #f59e0b, #eab308)",
-    borderColor: "rgba(245, 158, 11, 0.3)",
-    glowColor: "rgba(245, 158, 11, 0.15)",
-    textColor: "#f59e0b",
+    gradient: "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)",
+    borderColor: "rgba(250, 204, 21, 0.4)",
+    glowColor: "rgba(250, 204, 21, 0.2)",
+    textColor: "#facc15",
     icon: Trophy,
     minElo: 1600,
   },
   silver: {
     label: "Silver",
-    gradient: "linear-gradient(135deg, #9ca3af, #d1d5db)",
-    borderColor: "rgba(156, 163, 175, 0.3)",
-    glowColor: "rgba(156, 163, 175, 0.1)",
-    textColor: "#9ca3af",
+    gradient: "linear-gradient(135deg, #ffffff 0%, #e2e8f0 20%, #94a3b8 45%, #e2e8f0 70%, #ffffff 100%)",
+    borderColor: "rgba(203, 213, 225, 0.4)",
+    glowColor: "rgba(203, 213, 225, 0.15)",
+    textColor: "#cbd5e1",
     icon: Shield,
     minElo: 1300,
   },
   bronze: {
     label: "Bronze",
-    gradient: "linear-gradient(135deg, #ea580c, #d97706)",
-    borderColor: "rgba(234, 88, 12, 0.3)",
-    glowColor: "rgba(234, 88, 12, 0.1)",
-    textColor: "#ea580c",
+    gradient: "linear-gradient(135deg, #fed7aa 0%, #cd7f32 20%, #7c2d12 45%, #cd7f32 70%, #fed7aa 100%)",
+    borderColor: "rgba(217, 119, 6, 0.4)",
+    glowColor: "rgba(217, 119, 6, 0.15)",
+    textColor: "#d97706",
     icon: Shield,
     minElo: 1100,
   },
@@ -100,21 +101,21 @@ const tierNames: Record<number, string> = {
 // ── Value & Reach overrides per business ───────────────────────────────────
 
 const valueOverrides: Record<string, number> = {
-  'Omni AI': 250000,
-  'Love Thy Barber': 85000,
-  'BLK Diamond': 2500,
-  'CPS': 12000,
-  'Youngs Cabinet Refinishing': 45000,
-  'Leifson Built': 38000,
+  'Omni AI': 28000,
+  'Love Thy Barber': 0,
+  'BLK Diamond': 0,
+  'CPS': 0,
+  'Youngs Cabinet Refinishing': 0,
+  'Leifson Built': 0,
 };
 
 const reachOverrides: Record<string, number> = {
-  'Omni AI': 1200000,
-  'Love Thy Barber': 150000,
-  'BLK Diamond': 8500,
-  'CPS': 22000,
-  'Youngs Cabinet Refinishing': 35000,
-  'Leifson Built': 28000,
+  'Omni AI': 1111,
+  'Love Thy Barber': 0,
+  'BLK Diamond': 0,
+  'CPS': 0,
+  'Youngs Cabinet Refinishing': 0,
+  'Leifson Built': 0,
 };
 
 function formatCompact(n: number): string {
@@ -129,7 +130,7 @@ function formatValue(agent: Agent): string {
 }
 
 function formatReach(agent: Agent): string {
-  const reach = reachOverrides[agent.businessName] ?? (agent.activities + agent.campaigns);
+  const reach = reachOverrides[agent.businessName] ?? (agent as any).reach ?? (agent.activities + agent.campaigns);
   return formatCompact(reach);
 }
 
@@ -212,10 +213,7 @@ function AgenticCard({ agent, index }: { agent: Agent; index: number }) {
           <div className="text-center p-2 rounded-lg bg-white/[0.03]">
             <p className="text-lg font-bold text-white">
               <span className="text-yellow-400">&#9733;</span>{' '}
-              {agent.businessName === 'BLK Diamond' ? '1.0'
-                : agent.businessName === 'Youngs Cabinet Refinishing' ? '4.4'
-                : agent.businessName === 'Leifson Built' ? '4.3'
-                : '5.0'}
+              {agent.businessName === 'Omni AI' ? '5.0' : '0.0'}
             </p>
             <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
           </div>
@@ -359,7 +357,10 @@ function LeaderboardTable({ agents }: { agents: Agent[] }) {
               </div>
               <div
                 className="px-2.5 py-0.5 rounded-full text-[10px] font-bold text-black flex items-center gap-1"
-                style={{ background: config.gradient }}
+                style={{
+                  background: config.gradient,
+                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 8px ${config.glowColor}`,
+                }}
               >
                 <Icon className="w-2.5 h-2.5" />
                 {config.label}
@@ -535,7 +536,8 @@ export default function AgentsPage() {
     : agents.filter(a => a.rank === filterRank);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    <div className="min-h-screen text-white">
+      <FireSparksBackdrop />
       <CursorSpotlight />
       <Navbar
         onBookDemo={() => setIsDemoModalOpen(true)}
@@ -585,15 +587,15 @@ export default function AgentsPage() {
             >
               <div className="rounded-2xl overflow-hidden bg-[#0a0a0a]/80 border border-white/5">
                 <div className="px-6 py-5 border-b border-white/5 flex items-center gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-lg text-white">How ELO Works</h3>
+                    <p className="text-sm text-gray-500">Your agent&apos;s rating is computed from real business performance</p>
+                  </div>
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                     style={{ background: 'linear-gradient(135deg, #a855f7, #22d3ee)' }}
                   >
                     <BarChart3 className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg text-white">How ELO Works</h3>
-                    <p className="text-sm text-gray-500">Your agent&apos;s rating is computed from real business performance</p>
                   </div>
                 </div>
 
@@ -608,18 +610,21 @@ export default function AgentsPage() {
                   {/* Tier Thresholds */}
                   <div className="flex flex-wrap justify-center gap-4 mb-6">
                     {[
-                      { label: "Diamond", range: "2000+", gradient: "linear-gradient(135deg, #22d3ee, #ffffff)", icon: Crown },
-                      { label: "Gold", range: "1600–1999", gradient: "linear-gradient(135deg, #f59e0b, #eab308)", icon: Trophy },
-                      { label: "Silver", range: "1300–1599", gradient: "linear-gradient(135deg, #9ca3af, #d1d5db)", icon: Shield },
-                      { label: "Bronze", range: "1100–1299", gradient: "linear-gradient(135deg, #ea580c, #d97706)", icon: Shield },
-                      { label: "Unranked", range: "< 1100", gradient: "linear-gradient(135deg, #6b7280, #4b5563)", icon: Lock },
+                      { label: "Diamond", range: "2000+", gradient: "linear-gradient(135deg, #a5f3fc 0%, #ffffff 25%, #67e8f9 50%, #ffffff 75%, #22d3ee 100%)", glow: "rgba(34, 211, 238, 0.25)", icon: Crown },
+                      { label: "Gold", range: "1600–1999", gradient: "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)", glow: "rgba(250, 204, 21, 0.3)", icon: Trophy },
+                      { label: "Silver", range: "1300–1599", gradient: "linear-gradient(135deg, #ffffff 0%, #e2e8f0 20%, #94a3b8 45%, #e2e8f0 70%, #ffffff 100%)", glow: "rgba(203, 213, 225, 0.25)", icon: Shield },
+                      { label: "Bronze", range: "1100–1299", gradient: "linear-gradient(135deg, #fed7aa 0%, #cd7f32 20%, #7c2d12 45%, #cd7f32 70%, #fed7aa 100%)", glow: "rgba(217, 119, 6, 0.25)", icon: Shield },
+                      { label: "Unranked", range: "< 1100", gradient: "linear-gradient(135deg, #9ca3af, #4b5563)", glow: "rgba(107, 114, 128, 0.15)", icon: Lock },
                     ].map((tier) => {
                       const TierIcon = tier.icon;
                       return (
                         <div key={tier.label} className="rounded-xl p-4 text-center bg-white/[0.03] w-[calc(50%-6px)] sm:w-[calc(20%-10px)]">
                           <div
                             className="w-10 h-10 rounded-lg mx-auto mb-2 flex items-center justify-center"
-                            style={{ background: tier.gradient }}
+                            style={{
+                              background: tier.gradient,
+                              boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.25), 0 0 14px ${tier.glow}`,
+                            }}
                           >
                             <TierIcon className="w-5 h-5 text-black" />
                           </div>

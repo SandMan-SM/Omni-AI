@@ -4,8 +4,8 @@
     {
       "name": "omniai",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["next", "dev"],
-      "port": 3000
+      "runtimeArgs": ["next", "dev", "-p", "3010"],
+      "port": 3010
     }
   ]
 }

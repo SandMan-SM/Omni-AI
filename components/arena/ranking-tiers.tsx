@@ -12,6 +12,8 @@ const tiers = [
     revenue: "$2M+",
     description: "Multi-million dollar operations. The elite of the Arena.",
     gradient: "from-cyan-400 via-white to-cyan-300",
+    cssGradient: "linear-gradient(135deg, #a5f3fc 0%, #ffffff 25%, #67e8f9 50%, #ffffff 75%, #22d3ee 100%)",
+    glowColor: "rgba(34, 211, 238, 0.25)",
     bgGradient: "from-cyan-500/10 to-transparent",
     borderColor: "border-cyan-400/30",
     iconColor: "text-cyan-400",
@@ -24,8 +26,10 @@ const tiers = [
     revenue: "$1M - $2M",
     description: "Proven empires commanding 8-figure businesses.",
     gradient: "from-amber-300 via-yellow-400 to-amber-500",
+    cssGradient: "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)",
+    glowColor: "rgba(250, 204, 21, 0.3)",
     bgGradient: "from-amber-500/10 to-transparent",
-    borderColor: "border-amber-400/30",
+    borderColor: "border-amber-400/40",
     iconColor: "text-amber-400",
     icon: Flame,
     stats: { agents: 47, avgElo: 1850 },
@@ -37,9 +41,11 @@ const tiers = [
     revenue: "$100K - $500K",
     description: "Growing businesses with proven AI execution.",
     gradient: "from-gray-300 via-gray-200 to-gray-400",
-    bgGradient: "from-gray-400/10 to-transparent",
-    borderColor: "border-gray-400/30",
-    iconColor: "text-gray-300",
+    cssGradient: "linear-gradient(135deg, #ffffff 0%, #e2e8f0 20%, #94a3b8 45%, #e2e8f0 70%, #ffffff 100%)",
+    glowColor: "rgba(203, 213, 225, 0.25)",
+    bgGradient: "from-slate-400/10 to-transparent",
+    borderColor: "border-slate-300/40",
+    iconColor: "text-slate-200",
     icon: Shield,
     stats: { agents: 156, avgElo: 1400 },
   },
@@ -49,9 +55,11 @@ const tiers = [
     revenue: "$12K - $100K",
     description: "Building foundations. Rising stars in the making.",
     gradient: "from-orange-600 via-amber-700 to-orange-700",
-    bgGradient: "from-orange-600/10 to-transparent",
-    borderColor: "border-orange-500/30",
-    iconColor: "text-orange-500",
+    cssGradient: "linear-gradient(135deg, #fed7aa 0%, #cd7f32 20%, #7c2d12 45%, #cd7f32 70%, #fed7aa 100%)",
+    glowColor: "rgba(217, 119, 6, 0.25)",
+    bgGradient: "from-amber-700/10 to-transparent",
+    borderColor: "border-amber-600/40",
+    iconColor: "text-amber-500",
     icon: Shield,
     stats: { agents: 423, avgElo: 1100 },
   },
@@ -61,6 +69,8 @@ const tiers = [
     revenue: "Under $10K",
     description: "New recruits. Free to start. Climb your way up.",
     gradient: "from-gray-500 to-gray-600",
+    cssGradient: "linear-gradient(135deg, #9ca3af, #4b5563)",
+    glowColor: "rgba(107, 114, 128, 0.15)",
     bgGradient: "from-gray-500/10 to-transparent",
     borderColor: "border-gray-500/30",
     iconColor: "text-gray-500",
@@ -99,13 +109,25 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
               
               <div className="relative flex flex-col md:flex-row md:items-center gap-4 p-6">
                 <div className="flex items-center gap-4 md:w-1/4">
-                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${tier.gradient} p-[2px] flex-shrink-0`}>
-                    <div className={`w-full h-full rounded-xl ${isDarkMode ? "bg-gray-900" : "bg-white"} flex items-center justify-center`}>
-                      <Icon className={`w-7 h-7 ${tier.iconColor}`} />
-                    </div>
+                  <div
+                    className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                    style={{
+                      background: tier.cssGradient,
+                      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.25), 0 0 14px ${tier.glowColor}`,
+                    }}
+                  >
+                    <Icon className="w-7 h-7 text-black" />
                   </div>
                   <div>
-                    <h3 className={`font-bold text-xl bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
+                    <h3
+                      className="font-bold text-xl"
+                      style={{
+                        background: tier.cssGradient,
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
+                      }}
+                    >
                       {tier.name}
                     </h3>
                     <p className={`text-sm font-medium ${isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
@@ -132,7 +154,15 @@ export function RankingTiers({ isDarkMode }: RankingTiersProps) {
                     </p>
                   </div>
                   <div className="text-right">
-                    <p className={`text-2xl font-bold bg-gradient-to-r ${tier.gradient} bg-clip-text text-transparent`}>
+                    <p
+                      className="text-2xl font-bold"
+                      style={{
+                        background: tier.cssGradient,
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        backgroundClip: "text",
+                      }}
+                    >
                       {tier.stats.avgElo}
                     </p>
                     <p className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>

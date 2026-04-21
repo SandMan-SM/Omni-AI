@@ -9,7 +9,7 @@ import {
   UserCog, Mail, Phone, Building2, Command, ArrowRight,
   Plus, Edit2, Target, Flame, Thermometer, Snowflake,
   MessageSquare, Clock, X, Send, ChevronDown, Trash2, AlertTriangle,
-  Activity, Briefcase, RefreshCw, BarChart3
+  Activity, Briefcase, RefreshCw, BarChart3, DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,9 @@ import { AdminCRM } from "@/components/admin-crm";
 import { SystemMonitor } from "@/components/system-monitor";
 import { AdminCampaigns } from "@/components/admin-campaigns";
 import { AdminOverview } from "@/components/admin-overview";
+import { PayPalFinance } from "@/components/paypal-finance";
+
+const FINANCE_ADMIN_EMAILS = ["sitanim8@gmail.com", "benjones@omnileadsllc.com"];
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -871,11 +874,16 @@ export default function Admin() {
               <Briefcase className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Campaigns
             </TabsTrigger>
             <TabsTrigger value="newsletter" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
-              <Mail className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Newsletter
+              <Mail className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Email
             </TabsTrigger>
             <TabsTrigger value="system" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
               <Activity className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> System
             </TabsTrigger>
+            {user?.email && FINANCE_ADMIN_EMAILS.includes(user.email.toLowerCase()) && (
+              <TabsTrigger value="finance" className="flex-1 justify-center data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400 gap-1.5 text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-md whitespace-nowrap">
+                <DollarSign className="w-3.5 h-3.5 flex-shrink-0 hidden sm:block" /> Finance
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* ── Overview ──────────────────────────────────────────────── */}
@@ -970,6 +978,13 @@ export default function Admin() {
           <TabsContent value="system" className="mt-0">
             <SystemMonitor />
           </TabsContent>
+
+          {/* ── Finance (Omni AI admins only) ───────────────────────── */}
+          {user?.email && FINANCE_ADMIN_EMAILS.includes(user.email.toLowerCase()) && (
+            <TabsContent value="finance" className="mt-0">
+              <PayPalFinance />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 

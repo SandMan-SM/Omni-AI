@@ -1,6 +1,63 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useEffect, useRef, useState } from "react";
+
+function FitTitle() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const [fontSize, setFontSize] = useState(24);
+
+  useEffect(() => {
+    const fit = () => {
+      const c = containerRef.current;
+      const m = measureRef.current;
+      if (!c || !m) return;
+      const natural = m.getBoundingClientRect().width;
+      if (natural <= 0) return;
+      const target = c.clientWidth;
+      const next = (target / natural) * 100 * 0.88;
+      setFontSize(Math.max(14, Math.min(next, 72)));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (containerRef.current) ro.observe(containerRef.current);
+    window.addEventListener("resize", fit);
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(fit).catch(() => {});
+    }
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+    };
+  }, []);
+
+  return (
+    <div ref={containerRef} className="max-w-2xl mx-auto mb-4 md:mb-6 text-center overflow-hidden">
+      <span
+        ref={measureRef}
+        aria-hidden
+        className="absolute -z-50 opacity-0 pointer-events-none font-bold whitespace-nowrap"
+        style={{ fontSize: "100px", left: "-9999px", top: "-9999px" }}
+      >
+        Omni AI Introducing Campaigns
+      </span>
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.3 }}
+        viewport={{ once: true }}
+        className="font-bold whitespace-nowrap leading-[1.1] inline-block"
+        style={{ fontSize: `${fontSize}px` }}
+      >
+        <span className="text-white">Omni AI </span>
+        <span className="text-gradient">Introducing Campaigns</span>
+      </motion.h2>
+    </div>
+  );
+}
 
 const features = [
   {
@@ -63,16 +120,7 @@ export function CampaignsSection() {
               New Feature
             </motion.div>
 
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              viewport={{ once: true }}
-              className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6"
-            >
-              <span className="text-white">Omni AI </span>
-              <span className="text-gradient">Introducing Campaigns</span>
-            </motion.h2>
+            <FitTitle />
 
             <motion.p
               initial={{ opacity: 0, y: 15 }}
@@ -93,10 +141,10 @@ export function CampaignsSection() {
               viewport={{ once: true }}
               className="flex items-center justify-center gap-4"
             >
-              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-sm text-gray-300">
-                <Video className="w-4 h-4 text-purple-400" />
-                Available in your Dashboard
-                <ArrowRight className="w-3 h-3 text-gray-500" />
+              <div className="inline-flex max-w-full items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white/5 border border-white/10 text-xs sm:text-base text-gray-300 whitespace-nowrap">
+                <Video className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
+                <span>Available in your Dashboard</span>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
                 <span className="text-purple-400 font-medium">Campaigns Tab</span>
               </div>
             </motion.div>
@@ -122,11 +170,6 @@ export function CampaignsSection() {
                   <p className="text-white text-sm md:text-base font-semibold mb-1">{step.label}</p>
                   <p className="text-gray-500 text-xs md:text-sm">{step.sublabel}</p>
                 </div>
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-1/2 -right-2 transform -translate-y-1/2 z-10">
-                    <ArrowRight className="w-4 h-4 text-gray-600" />
-                  </div>
-                )}
               </motion.div>
             );
           })}

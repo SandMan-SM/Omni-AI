@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runDailyNewsletter, runPremiumNewsletter, generateDrafts, sendMorningDebrief } from '@/lib/newsletter-sender';
+import { runCEOBriefing } from '@/lib/ceo-briefing';
 import { logEvent } from '@/lib/events';
 
 /**
@@ -22,12 +22,11 @@ export async function GET(request: Request) {
   }
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     // Draft generation mode — use service role key for DB writes
     if (action === 'generate-drafts') {
-      const serviceSupabase = createAdminClient();
-      const drafts = await generateDrafts(serviceSupabase as any);
+      const drafts = await generateDrafts(supabase as any);
 
       console.log(
         `[Newsletter Cron] Drafts generated: FREE="${drafts.free.subject}" | ` +
@@ -153,6 +152,17 @@ export async function GET(request: Request) {
 
     console.log(`[Newsletter Cron] Debrief sent: ${debriefOk}`);
 
+    // 5. Run the AI CEO briefing — daily business digest to Telegram + email
+    let ceoBriefingResult: Awaited<ReturnType<typeof runCEOBriefing>> | null = null;
+    try {
+      ceoBriefingResult = await runCEOBriefing(supabase as any);
+      console.log(
+        `[Newsletter Cron] CEO briefing sent: telegram=${ceoBriefingResult?.telegramOk} email=${ceoBriefingResult?.emailOk} | ${ceoBriefingResult?.briefing?.headline}`
+      );
+    } catch (ceoErr) {
+      console.error('[Newsletter Cron] CEO briefing failed (non-fatal):', ceoErr);
+    }
+
     // Log events for the newsletter run
     logEvent(supabase as any, {
       actor_type: 'cron',
@@ -211,6 +221,7 @@ export async function GET(request: Request) {
             day_type: premiumResult.content?.day_type,
           },
       debrief: debriefOk,
+      ceo_briefing: ceoBriefingResult,
       timestamp: new Date().toISOString(),
     });
   } catch (error: unknown) {

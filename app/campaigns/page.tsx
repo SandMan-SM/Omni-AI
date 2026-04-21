@@ -2,7 +2,7 @@
 export const dynamic = 'force-dynamic';
 
 import { motion } from "framer-motion";
-import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight, MessageSquare, Users, Globe, Check } from "lucide-react";
+import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight, MessageSquare, Users, Globe, Check, Mail, DollarSign } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
@@ -45,9 +45,10 @@ const steps = [
 ];
 
 const platforms = [
-  { icon: Globe, name: "Social Media", platforms: "Instagram, TikTok, YouTube, LinkedIn" },
-  { icon: Users, name: "Paid Ads", platforms: "Meta, Google, TikTok Ads" },
-  { icon: MessageSquare, name: "Email", platforms: "Automated sequences & newsletters" },
+  { icon: Users, name: "Social Media" },
+  { icon: DollarSign, name: "Paid Ads" },
+  { icon: Mail, name: "Email" },
+  { icon: MessageSquare, name: "SMS" },
 ];
 
 export default function Campaigns() {
@@ -55,7 +56,7 @@ export default function Campaigns() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen text-white noise-overlay">
       <CursorSpotlight />
       <Navbar 
         onBookDemo={() => setIsDemoModalOpen(true)} 
@@ -203,7 +204,7 @@ export default function Campaigns() {
                 <h2 className="text-2xl md:text-3xl font-bold text-white">Platforms</h2>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                 {platforms.map((platform, index) => {
                   const Icon = platform.icon;
                   return (
@@ -215,13 +216,12 @@ export default function Campaigns() {
                       viewport={{ once: true }}
                       className="glass-card rounded-md p-6 border border-white/5"
                     >
-                      <div className="flex items-center gap-4 mb-4">
+                      <div className="flex items-center gap-4">
                         <div className="w-10 h-10 rounded-md bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center">
                           <Icon className="w-5 h-5 text-cyan-400" />
                         </div>
                         <h3 className="text-lg font-semibold text-white">{platform.name}</h3>
                       </div>
-                      <p className="text-gray-400 text-sm">{platform.platforms}</p>
                     </motion.div>
                   );
                 })}

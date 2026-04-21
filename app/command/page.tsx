@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Shield, Lock, Eye, EyeOff, AlertTriangle, Activity, CheckCircle2, XCircle, RefreshCw, Clock, Zap, TrendingUp, Brain, Bot, Cpu, GitCommit, Server, Send, Rocket, Terminal, AlertCircle, CheckCheck, Loader2, Database, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
+import { ClientPortfolioPanel, BuildLogPanel, RiskLanesPanel } from "@/components/command/PortfolioPanels";
 const EM: Record<string, string> = { "omni-ai": "\u{1F9E0}", imperium: "\u{1F451}", cps: "\u{1F3E5}", "omni-leads": "\u{1F4C8}", leifson: "\u{1F528}", youngs: "\u{1FA9A}" };
 function tAgo(d: string) { if (!d) return "\u2014"; const ms = Date.now() - new Date(d).getTime(); const m = Math.floor(ms / 60000), h = Math.floor(m / 60), dy = Math.floor(h / 24); return dy > 0 ? `${dy}d` : h > 0 ? `${h}h` : m > 0 ? `${m}m` : "now"; }
 function grade(s: number) { if (s >= 85) return { l: "A", c: "text-emerald-400" }; if (s >= 70) return { l: "B", c: "text-green-400" }; if (s >= 55) return { l: "C", c: "text-yellow-400" }; if (s >= 40) return { l: "D", c: "text-orange-400" }; return { l: "F", c: "text-red-400" }; }
@@ -117,7 +118,10 @@ export default function CommandCenter() {
       </div>
       <div className="max-w-[1600px] mx-auto px-4 lg:px-6 py-4"><div className="grid grid-cols-2 sm:grid-cols-4 gap-4">{[{ l: "UPTIME", v: health ? `${Math.floor(health.uptime_ms / 60000)}m` : "\u2014", c: "text-blue-400", b: "border-blue-500/15" }, { l: "AI SCORE", v: `${avg}/100`, c: "text-purple-400", b: "border-purple-500/15" }, { l: "COMMITS", v: String(tc), c: "text-emerald-400", b: "border-emerald-500/15" }, { l: "LINES", v: tl.toLocaleString(), c: "text-yellow-400", b: "border-yellow-500/15" }].map(s => (<div key={s.l} className={`flex items-center gap-4 p-4 rounded-xl border bg-white/[.01] ${s.b}`}><span className={`text-sm font-mono font-bold ${s.c}`}>{s.v}</span><span className="text-[9px] font-mono text-gray-600">{s.l}</span></div>))}</div></div>
       <div className="max-w-[1600px] mx-auto px-4 lg:px-6 pb-12 space-y-4">
+        <ClientPortfolioPanel />
+        <RiskLanesPanel />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <BuildLogPanel />
           <div className="min-h-[400px]"><LiveChat /></div>
           <div className="cc-p"><div className="cc-h"><Brain className="w-3.5 h-3.5 text-purple-400 inline mr-2" />SYNTHETIC INTELLIGENCE</div><div className="p-4 space-y-1.5">{proj.length === 0 ? <p className="text-xs font-mono text-gray-600 text-center py-6">No data</p> : proj.sort((a: any, b: any) => b.overall_score - a.overall_score).map((p: any) => { const g = grade(p.overall_score); return (<div key={p.project} className="flex items-center gap-4 px-3 py-2.5 rounded-lg border border-white/[.04] bg-white/[.015]"><span className="text-lg">{EM[p.project] || "\u{1F4E6}"}</span><div className="flex-1 min-w-0"><span className="text-sm font-mono font-medium text-white capitalize">{p.project}</span><p className="text-[10px] font-mono text-gray-600 truncate">{p.current_focus || "Idle"}</p></div><span className={`text-2xl font-mono font-bold ${g.c}`}>{g.l}</span><span className="text-xs font-mono text-gray-500">{p.overall_score}</span></div>); })}</div></div>
         </div>

@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { cookies } from 'next/headers';
+import { cookies, headers } from 'next/headers';
+import { createAdminClient } from './supabase/admin';
 
 /**
  * Admin Auth Guard — verifies the request comes from an authenticated admin user.
- * Use at the top of every /api/admin/* route handler.
+ * Supports two auth schemes:
+ *   1. Supabase cookie session (server actions / SSR flows)
+ *   2. Bearer token in the Authorization header — the custom base64(JSON) `omni_token`
+ *      minted by the `auth-login` edge function (localStorage-based client auth).
  *
  * Returns { user, profile } on success, or a NextResponse 401/403 on failure.
  */
@@ -13,6 +17,32 @@ export async function requireAdmin(): Promise<
   | { error: NextResponse; user?: never; profile?: never }
 > {
   try {
+    // ── 1. Try Bearer token (omni_token) first ──────────────────────────
+    const hdrs = await headers();
+    const authz = hdrs.get('authorization') || '';
+    const bearer = authz.replace(/^Bearer\s+/i, '').trim();
+
+    if (bearer) {
+      try {
+        const json = Buffer.from(bearer, 'base64').toString('utf8');
+        const payload = JSON.parse(json);
+        if (payload?.sub && (typeof payload.exp !== 'number' || payload.exp >= Date.now())) {
+          const sb = createAdminClient();
+          const { data: profile } = await sb
+            .from('profiles')
+            .select('id, role, is_admin, tier_label, email')
+            .eq('id', payload.sub)
+            .single();
+          if (profile && (profile.is_admin === true || profile.role === 'admin' || profile.tier_label === 'admin')) {
+            return { user: { id: profile.id, email: profile.email }, profile };
+          }
+        }
+      } catch {
+        // fall through to cookie check
+      }
+    }
+
+    // ── 2. Fallback: Supabase cookie session ────────────────────────────
     const cookieStore = await cookies();
 
     const supabase = createServerClient(
@@ -30,7 +60,6 @@ export async function requireAdmin(): Promise<
       }
     );
 
-    // 1. Verify JWT / session
     const { data: { user }, error: authError } = await supabase.auth.getUser();
 
     if (authError || !user) {
@@ -42,7 +71,6 @@ export async function requireAdmin(): Promise<
       };
     }
 
-    // 2. Check admin role in profiles table
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, role, is_admin')

@@ -157,6 +157,36 @@ function getDayType(): 'value' | 'insight' | 'offer' {
   return 'value';                                // Thu: default to value
 }
 
+export interface AvoidSnippets {
+  subjects?: string[];
+  intros?: string[];
+  power_moves?: string[];
+  closings?: string[];
+}
+
+function sharesLeadingChars(a: string, b: string, n = 50): boolean {
+  if (!a || !b) return false;
+  const na = a.trim().slice(0, n).toLowerCase();
+  const nb = b.trim().slice(0, n).toLowerCase();
+  return na.length >= n && na === nb;
+}
+
+function hasDuplicateSnippet(c: NewsletterContent, avoid: AvoidSnippets): boolean {
+  if (avoid.intros?.some(x => sharesLeadingChars(c.intro, x))) return true;
+  if (avoid.power_moves?.some(x => sharesLeadingChars(c.power_move, x))) return true;
+  if (avoid.closings?.some(x => sharesLeadingChars(c.closing, x))) return true;
+  return false;
+}
+
+function subjectTailoredClosing(subject: string, tier: 'free' | 'premium'): string {
+  const clean = subject.replace(/[\[\(].*?[\]\)]/g, '').replace(/[—–-].*$/, '').trim();
+  const topic = clean.split(/\s+/).slice(0, 6).join(' ').replace(/[.?!]$/, '');
+  const signoff = tier === 'premium'
+    ? `Take one idea from this brief and put it in motion before the next one lands.`
+    : `Pick the smallest move you can make today and compound it tomorrow.`;
+  return topic ? `${signoff} That's how ${topic.toLowerCase()} stops being a headline and starts being your advantage.` : signoff;
+}
+
 function createSlug(subject: string): string {
   return subject
     .toLowerCase()
@@ -166,19 +196,50 @@ function createSlug(subject: string): string {
     .slice(0, 80);
 }
 
-export async function generateFreeContent(avoidSubjects: string[] = []): Promise<NewsletterContent> {
+export async function generateFreeContent(avoidSubjectsOrSnippets: string[] | AvoidSnippets = []): Promise<NewsletterContent> {
+  const avoid: AvoidSnippets = Array.isArray(avoidSubjectsOrSnippets)
+    ? { subjects: avoidSubjectsOrSnippets }
+    : avoidSubjectsOrSnippets;
+  const avoidSubjects = avoid.subjects || [];
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const keywords = await fetchTrendingKeywords();
   const keywordStr = keywords.slice(0, 8).join(', ');
-  const randomSeed = Math.random().toString(36).slice(2, 8);
 
   if (!ANTHROPIC_API_KEY) {
     return { ...fallbackContent(today), keywords, tier: 'free' };
   }
 
-  const avoidBlock = avoidSubjects.length > 0
+  const snippetAvoidBlock = [
+    avoid.intros?.length ? `Recently used INTRO openers (do NOT start similarly):\n${avoid.intros.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
+    avoid.power_moves?.length ? `Recently used POWER MOVES (do NOT repeat):\n${avoid.power_moves.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
+    avoid.closings?.length ? `Recently used CLOSINGS (do NOT repeat — generate a fresh one tailored to the subject):\n${avoid.closings.slice(0, 10).map(s => `- "${s.slice(0, 80)}"`).join('\n')}` : '',
+  ].filter(Boolean).join('\n\n');
+
+  const avoidBlock = (avoidSubjects.length > 0
     ? `\n\nCRITICAL: Do NOT reuse or closely resemble ANY of these previously used subjects:\n${avoidSubjects.map(s => `- "${s}"`).join('\n')}\nYour subject MUST be completely different and original.`
-    : '';
+    : '') + (snippetAvoidBlock ? `\n\n${snippetAvoidBlock}` : '');
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const result = await generateFreeOnce(today, keywords, keywordStr, avoidBlock);
+    if (!result) break;
+    if (!hasDuplicateSnippet(result, avoid)) return result;
+    console.log(`[generateFreeContent] Attempt ${attempt + 1}: snippet duplicate detected, retrying`);
+  }
+  const fb = fallbackContent(today);
+  fb.keywords = keywords;
+  fb.tier = 'free';
+  fb.slug = createSlug(fb.subject);
+  fb.closing = subjectTailoredClosing(fb.subject, 'free');
+  return fb;
+}
+
+async function generateFreeOnce(
+  today: string,
+  keywords: string[],
+  keywordStr: string,
+  avoidBlock: string,
+): Promise<NewsletterContent | null> {
+  const randomSeed = Math.random().toString(36).slice(2, 8);
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -257,14 +318,14 @@ Respond ONLY with valid JSON:
     console.error('[generateFreeContent] Exception:', e);
   }
 
-  const fb = fallbackContent(today);
-  fb.keywords = keywords;
-  fb.tier = 'free';
-  fb.slug = createSlug(fb.subject);
-  return fb;
+  return null;
 }
 
-export async function generatePremiumContent(avoidSubjects: string[] = []): Promise<PremiumContent> {
+export async function generatePremiumContent(avoidSubjectsOrSnippets: string[] | AvoidSnippets = []): Promise<PremiumContent> {
+  const avoid: AvoidSnippets = Array.isArray(avoidSubjectsOrSnippets)
+    ? { subjects: avoidSubjectsOrSnippets }
+    : avoidSubjectsOrSnippets;
+  const avoidSubjects = avoid.subjects || [];
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const dayType = getDayType();
   const randomSeed = Math.random().toString(36).slice(2, 8);
@@ -276,9 +337,15 @@ export async function generatePremiumContent(avoidSubjects: string[] = []): Prom
     return { ...fb, tier: 'premium', day_type: dayType };
   }
 
-  const avoidBlock = avoidSubjects.length > 0
+  const snippetAvoidBlock = [
+    avoid.intros?.length ? `Recently used INTRO openers (do NOT start similarly):\n${avoid.intros.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
+    avoid.power_moves?.length ? `Recently used POWER MOVES (do NOT repeat):\n${avoid.power_moves.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
+    avoid.closings?.length ? `Recently used CLOSINGS (do NOT repeat — generate a fresh one tailored to the subject):\n${avoid.closings.slice(0, 10).map(s => `- "${s.slice(0, 80)}"`).join('\n')}` : '',
+  ].filter(Boolean).join('\n\n');
+
+  const avoidBlock = (avoidSubjects.length > 0
     ? `\n\nCRITICAL: Do NOT reuse or closely resemble ANY of these previously used subjects:\n${avoidSubjects.map(s => `- "${s}"`).join('\n')}\nYour subject MUST be completely different and original.`
-    : '';
+    : '') + (snippetAvoidBlock ? `\n\n${snippetAvoidBlock}` : '');
 
   const dayPrompts: Record<string, string> = {
     value: `MONDAY = VALUE DAY. Teach something genuinely useful about AI/business that the reader can implement TODAY. Deep, actionable, not surface-level. This should make them think "I'm glad I'm paying for this."
@@ -303,6 +370,7 @@ Include:
 - A clear, compelling CTA with urgency`,
   };
 
+  for (let attempt = 0; attempt < 3; attempt++) {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -368,7 +436,11 @@ Respond ONLY with valid JSON:
         parsed.insights = cleanInsights(parsed.insights);
         parsed.keywords = keywords;
         parsed.slug = createSlug(parsed.subject);
-        return parsed;
+        parsed.tier = 'premium';
+        parsed.day_type = dayType;
+        if (!hasDuplicateSnippet(parsed, avoid)) return parsed;
+        console.log(`[generatePremiumContent] Attempt ${attempt + 1}: snippet duplicate, retrying`);
+        continue;
       }
       console.error('[generatePremiumContent] API response OK but no JSON found in:', text.slice(0, 200));
     } else {
@@ -378,9 +450,11 @@ Respond ONLY with valid JSON:
   } catch (e) {
     console.error('[generatePremiumContent] Exception:', e);
   }
+  }
 
   const fb = premiumFallbackContent(today, dayType || 'value');
   fb.keywords = keywords;
+  fb.closing = subjectTailoredClosing(fb.subject, 'premium');
   return { ...fb, tier: 'premium', day_type: dayType || 'value' };
 }
 
@@ -526,12 +600,13 @@ function fallbackContent(today: string): NewsletterContent {
 
   // Use different prime offsets per field + random factor to avoid same-day duplicates
   const r = Math.floor(Math.random() * 1000);
+  const chosenSubject = subjects[(idx + r) % subjects.length];
   return {
-    subject: subjects[(idx + r) % subjects.length],
+    subject: chosenSubject,
     intro: intros[(dayOfYear * 3 + r + 7) % intros.length],
     insights: insightSets[(dayOfYear * 7 + r + 13) % insightSets.length],
     power_move: powerMoves[(dayOfYear * 11 + r + 19) % powerMoves.length],
-    closing: 'Powered by Omni AI',
+    closing: subjectTailoredClosing(chosenSubject, 'free'),
     quote: quotes[(dayOfYear * 13 + r + 23) % quotes.length],
     offer: 'Get your free AI business audit at omnileadsagi.com — see exactly where AI can 10x your operations.',
     tier: 'free',
@@ -638,12 +713,13 @@ function premiumFallbackContent(today: string, dayType: string): NewsletterConte
   ];
 
   const r = Math.floor(Math.random() * 1000);
+  const chosenSubject = subjects[(idx + r) % subjects.length];
   return {
-    subject: subjects[(idx + r) % subjects.length],
+    subject: chosenSubject,
     intro: premiumIntros[(dayOfYear * 3 + r + 11) % premiumIntros.length],
     insights: premiumInsightSets[(dayOfYear * 7 + r + 17) % premiumInsightSets.length],
     power_move: premiumPowerMoves[(dayOfYear * 11 + r + 23) % premiumPowerMoves.length],
-    closing: 'Until next time — stay ahead, stay sharp.',
+    closing: subjectTailoredClosing(chosenSubject, 'premium'),
     quote: premiumQuotes[(dayOfYear * 13 + r + 29) % premiumQuotes.length],
     offer: 'Premium members get direct access to AI implementation strategy sessions. Book yours at omnileadsagi.com/interlinked',
     tier: 'premium',
@@ -652,105 +728,110 @@ function premiumFallbackContent(today: string, dayType: string): NewsletterConte
 
 // ── Email Templates ──────────────────────────────────────────────────────────
 
-function buildFreeEmailHtml(content: NewsletterContent): string {
+function buildNewsletterEmailHtml(content: NewsletterContent, tier: 'free' | 'premium'): string {
+  const isPremium = tier === 'premium';
+  const accent = isPremium ? '#f59e0b' : '#a855f7';
+  const accentSoft = isPremium ? 'rgba(245,158,11,0.08)' : 'rgba(168,85,247,0.08)';
+  const accentBorder = isPremium ? 'rgba(245,158,11,0.25)' : 'rgba(168,85,247,0.25)';
+  const buttonGradient = isPremium
+    ? 'linear-gradient(135deg,#f59e0b,#ef4444)'
+    : 'linear-gradient(135deg,#a855f7,#3b82f6)';
   const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const insightsHtml = content.insights.map(ins =>
-    `<li style="margin-bottom:12px;line-height:1.6;">${ins}</li>`
-  ).join('');
+  const title = isPremium ? 'Interlinked Premium' : 'Interlinked';
+  const subtitle = isPremium
+    ? `by Omni AI · Daily Premium Intelligence Brief · ${today}`
+    : `by Omni AI · Daily Intelligence Brief · ${today}`;
+
+  const insightsHtml = content.insights
+    .map(ins => `<p style="margin:0 0 16px;font-size:15px;line-height:1.7;color:#e0e0e0;">${ins}</p>`)
+    .join('');
+
+  const postUrl = content.slug ? `${SITE_URL}/newsletter/${content.slug}` : SITE_URL;
+  const shareSubject = encodeURIComponent(`Interlinked: ${content.subject}`);
+  const shareBody = encodeURIComponent(
+    `Thought you'd appreciate today's Interlinked brief from Omni AI:\n\n${content.subject}\n\n${postUrl}\n\nSchedule a free consultation anytime: ${SITE_URL}/book-now`
+  );
+  const shareHref = `mailto:?subject=${shareSubject}&body=${shareBody}`;
+
   const keywordsHtml = content.keywords?.length
-    ? `<div style="margin-bottom:24px;"><p style="color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;">Trending Today</p><p style="color:#888;font-size:13px;">${content.keywords.slice(0, 11).join(' · ')}</p></div>`
+    ? `<div style="margin:0 0 24px;text-align:left;">
+        <p style="color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;">Today's Trends</p>
+        <p style="color:#888;font-size:13px;line-height:1.7;margin:0;">${content.keywords.slice(0, 12).join(' · ')}</p>
+      </div>`
     : '';
+
+  const footerLinks = isPremium
+    ? `<a href="${SITE_URL}/dashboard" style="color:${accent};text-decoration:underline;">Manage account</a> · <a href="${SITE_URL}/affiliate/info" style="color:#06b6d4;text-decoration:underline;">Affiliate program</a>`
+    : `<a href="${SITE_URL}/dashboard" style="color:${accent};text-decoration:underline;">Manage subscription</a> · <a href="${SITE_URL}/interlinked/premium" style="color:#06b6d4;text-decoration:underline;">Upgrade to Premium</a>`;
 
   return `<!DOCTYPE html>
 <html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;color:#e0e0e0;margin:0;padding:0;">
   <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+
     <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:#a855f7;font-size:28px;margin:0;">Interlinked</h1>
-      <p style="color:#888;font-size:13px;margin:8px 0 0;">by Omni AI · Daily Intelligence Brief · ${today}</p>
+      <h1 style="color:${accent};font-size:30px;margin:0;font-weight:800;letter-spacing:-0.5px;">${title}</h1>
+      <p style="color:#888;font-size:13px;margin:10px 0 0;">${subtitle}</p>
     </div>
-    ${keywordsHtml}
-    <div style="background:rgba(168,85,247,0.08);border:1px solid rgba(168,85,247,0.2);border-radius:12px;padding:28px;margin-bottom:24px;">
-      <p style="font-size:16px;line-height:1.7;color:#e0e0e0;margin:0;">${content.intro}</p>
+
+    ${content.quote ? `<div style="background:${accentSoft};border:1px solid ${accentBorder};border-radius:14px;padding:22px 26px;margin-bottom:24px;text-align:center;">
+      <p style="color:${accent};font-size:15px;font-style:italic;line-height:1.6;margin:0;">${content.quote}</p>
+    </div>` : ''}
+
+    <div style="margin-bottom:28px;">
+      <p style="font-size:16px;line-height:1.75;color:#e0e0e0;margin:0;">${content.intro}</p>
     </div>
-    ${content.quote ? `<div style="text-align:center;padding:20px;margin-bottom:24px;"><p style="color:#a855f7;font-size:15px;font-style:italic;margin:0;">${content.quote}</p></div>` : ''}
-    <div style="margin-bottom:24px;">
-      <h2 style="color:#06b6d4;font-size:18px;margin-bottom:16px;">Today's Key Insights</h2>
-      <ul style="padding-left:20px;color:#e0e0e0;font-size:15px;">${insightsHtml}</ul>
+
+    <div style="margin-bottom:28px;">
+      <h2 style="color:#06b6d4;font-size:18px;margin:0 0 14px;font-weight:700;">Today's Key Insights</h2>
+      ${insightsHtml}
     </div>
-    <div style="background:rgba(168,85,247,0.08);border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin-bottom:24px;">
-      <p style="color:#a855f7;font-weight:bold;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Power Move</p>
+
+    <div style="background:${accentSoft};border-left:3px solid ${accent};padding:20px 24px;border-radius:0 8px 8px 0;margin-bottom:28px;">
+      <p style="color:${accent};font-weight:bold;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Power Move</p>
       <p style="color:#e0e0e0;font-size:15px;line-height:1.7;margin:0;">${content.power_move}</p>
     </div>
-    ${content.offer ? `<div style="background:linear-gradient(135deg,rgba(168,85,247,0.15),rgba(59,130,246,0.15));border:1px solid rgba(168,85,247,0.3);border-radius:12px;padding:24px;margin-bottom:24px;text-align:center;">
-      <p style="color:#e0e0e0;font-size:15px;line-height:1.6;margin:0 0 16px;">${content.offer}</p>
-      <a href="${SITE_URL}/interlinked" style="display:inline-block;background:linear-gradient(135deg,#a855f7,#3b82f6);color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Learn More</a>
-    </div>` : ''}
-    <p style="text-align:center;color:#888;font-style:italic;font-size:15px;margin-bottom:24px;">${content.closing}</p>
-    <div style="background:rgba(168,85,247,0.06);border:1px solid rgba(168,85,247,0.15);border-radius:8px;padding:16px;margin-bottom:24px;text-align:center;">
-      <p style="color:#a855f7;font-size:13px;font-weight:600;margin:0 0 4px;">Get a $50,000 certification for FREE!</p>
-      <p style="color:#888;font-size:12px;margin:0;">Sponsored by Omni AI · <a href="${SITE_URL}/join" style="color:#06b6d4;text-decoration:underline;">Join the community</a></p>
+
+    <div style="background:${accentSoft};border:1px solid ${accentBorder};border-radius:14px;padding:24px;margin:0 0 14px;text-align:center;">
+      <p style="color:#e0e0e0;font-size:15px;line-height:1.65;margin:0 0 18px;">Schedule a free consultation anytime — and remember, you can share this with a friend.</p>
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" style="margin:0 auto;">
+        <tr>
+          <td style="padding:0 6px;">
+            <a href="${SITE_URL}/book-now" style="display:inline-block;background:${buttonGradient};color:#fff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;">Book Now</a>
+          </td>
+          <td style="padding:0 6px;">
+            <a href="${shareHref}" style="display:inline-block;background:rgba(255,255,255,0.06);color:#e0e0e0;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:15px;border:1px solid rgba(255,255,255,0.12);">Share</a>
+          </td>
+        </tr>
+      </table>
     </div>
-    ${content.slug ? `<p style="text-align:center;margin-bottom:24px;"><a href="${SITE_URL}/newsletter/${content.slug}" style="color:#06b6d4;font-size:13px;">Read this on the web</a></p>` : ''}
+
+    <p style="color:#777;font-size:12px;font-style:italic;line-height:1.6;margin:0 0 28px;text-align:center;">Power move, restated: ${content.power_move}</p>
+
+    <p style="text-align:center;margin:0 0 20px;"><a href="${postUrl}" style="color:#06b6d4;font-size:13px;text-decoration:underline;">Read this on the web</a></p>
+
+    <div style="background:${accentSoft};border:1px solid ${accentBorder};border-radius:10px;padding:16px 20px;margin-bottom:24px;text-align:center;">
+      <p style="color:${accent};font-size:14px;font-weight:700;margin:0 0 6px;">Get a $50,000 certification for FREE</p>
+      <p style="color:#888;font-size:12px;margin:0;">Sponsored by Omni AI · <a href="https://t.me/+HxMnLSV1FYs0YmIx" style="color:#06b6d4;text-decoration:underline;">Join the community</a></p>
+    </div>
+
+    ${keywordsHtml}
+
     <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:24px 0;">
     <div style="text-align:center;">
-      <p style="font-size:12px;color:#555;margin:0 0 8px;">You're receiving the free Interlinked newsletter from Omni AI.</p>
-      <p style="font-size:12px;margin:0;"><a href="${SITE_URL}/dashboard" style="color:#a855f7;">Manage subscription</a> · <a href="${SITE_URL}/sponsor" style="color:#06b6d4;">Upgrade to Premium</a></p>
+      <p style="font-size:12px;color:#555;margin:0 0 8px;">You're receiving the ${isPremium ? 'Premium' : 'free'} Interlinked newsletter from Omni AI.</p>
+      <p style="font-size:12px;margin:0;">${footerLinks}</p>
     </div>
   </div>
 </body></html>`;
 }
 
-function buildPremiumEmailHtml(content: PremiumContent): string {
-  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const dayLabel = content.day_type === 'value' ? 'Value Day' : content.day_type === 'insight' ? 'Insight Day' : 'Offer Day';
-  const insightsHtml = content.insights.map(ins =>
-    `<li style="margin-bottom:12px;line-height:1.6;">${ins}</li>`
-  ).join('');
+function buildFreeEmailHtml(content: NewsletterContent): string {
+  return buildNewsletterEmailHtml(content, 'free');
+}
 
-  return `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0a0f;color:#e0e0e0;margin:0;padding:0;">
-  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
-    <div style="text-align:center;margin-bottom:8px;">
-      <span style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:4px 12px;border-radius:4px;">Premium</span>
-    </div>
-    <div style="text-align:center;margin-bottom:32px;">
-      <h1 style="color:#f59e0b;font-size:28px;margin:0;">Interlinked Premium</h1>
-      <p style="color:#888;font-size:13px;margin:8px 0 0;">${dayLabel} · ${today}</p>
-    </div>
-    ${content.quote ? `<div style="text-align:center;padding:20px;margin-bottom:24px;border:1px solid rgba(245,158,11,0.2);border-radius:12px;background:rgba(245,158,11,0.05);"><p style="color:#f59e0b;font-size:15px;font-style:italic;margin:0;">${content.quote}</p></div>` : ''}
-    <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:12px;padding:28px;margin-bottom:24px;">
-      <p style="font-size:16px;line-height:1.7;color:#e0e0e0;margin:0;">${content.intro}</p>
-    </div>
-    <div style="margin-bottom:24px;">
-      <h2 style="color:#f59e0b;font-size:18px;margin-bottom:16px;">Deep Insights</h2>
-      <ul style="padding-left:20px;color:#e0e0e0;font-size:15px;">${insightsHtml}</ul>
-    </div>
-    ${content.exclusive_insight ? `<div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);border-radius:12px;padding:24px;margin-bottom:24px;">
-      <p style="color:#f59e0b;font-weight:bold;margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;">Premium Exclusive</p>
-      <p style="color:#e0e0e0;font-size:15px;line-height:1.7;margin:0;">${content.exclusive_insight}</p>
-    </div>` : ''}
-    <div style="background:rgba(168,85,247,0.08);border-left:3px solid #a855f7;padding:20px 24px;border-radius:0 8px 8px 0;margin-bottom:24px;">
-      <p style="color:#a855f7;font-weight:bold;margin:0 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:1px;">Power Move</p>
-      <p style="color:#e0e0e0;font-size:15px;line-height:1.7;margin:0;">${content.power_move}</p>
-    </div>
-    ${content.ai_recommendation ? `<div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:24px;margin-bottom:24px;">
-      <p style="color:#06b6d4;font-weight:bold;margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:1.5px;">AI Recommendation</p>
-      <p style="color:#e0e0e0;font-size:15px;line-height:1.7;margin:0;">${content.ai_recommendation}</p>
-    </div>` : ''}
-    ${content.offer ? `<div style="background:linear-gradient(135deg,rgba(245,158,11,0.15),rgba(239,68,68,0.15));border:1px solid rgba(245,158,11,0.3);border-radius:12px;padding:24px;margin-bottom:24px;text-align:center;">
-      <p style="color:#e0e0e0;font-size:15px;line-height:1.6;margin:0 0 16px;">${content.offer}</p>
-      <a href="${SITE_URL}/interlinked" style="display:inline-block;background:linear-gradient(135deg,#f59e0b,#ef4444);color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">Exclusive Access</a>
-    </div>` : ''}
-    <p style="text-align:center;color:#888;font-style:italic;font-size:15px;">${content.closing}</p>
-    <hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:24px 0;">
-    <div style="text-align:center;">
-      <p style="font-size:12px;color:#555;margin:0 0 8px;">You're receiving the Premium Interlinked newsletter.</p>
-      <p style="font-size:12px;margin:0;"><a href="${SITE_URL}/dashboard" style="color:#f59e0b;">Manage subscription</a></p>
-    </div>
-  </div>
-</body></html>`;
+function buildPremiumEmailHtml(content: PremiumContent): string {
+  return buildNewsletterEmailHtml(content, 'premium');
 }
 
 // ── Telegram ─────────────────────────────────────────────────────────────────
@@ -936,23 +1017,28 @@ export async function generateDrafts(supabase: any) {
     console.log(`[generateDrafts] Cleaned up ${deleted?.length || 0} old drafts`);
   }
 
-  // Fetch recent subjects to avoid duplicates
-  let avoidSubjects: string[] = [];
+  // Fetch recent subjects + snippets to avoid duplicates (last 30 days)
+  const avoid: AvoidSnippets = { subjects: [], intros: [], power_moves: [], closings: [] };
   try {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: recentPosts } = await supabase
       .from('newsletter_posts')
-      .select('subject')
+      .select('subject, intro, power_move, closing')
+      .gte('created_at', thirtyDaysAgo)
       .order('created_at', { ascending: false })
-      .limit(15);
+      .limit(30);
     if (recentPosts) {
-      avoidSubjects = Array.from(new Set(recentPosts.map((p: any) => p.subject)));
+      avoid.subjects = Array.from(new Set(recentPosts.map((p: any) => p.subject).filter(Boolean)));
+      avoid.intros = Array.from(new Set(recentPosts.map((p: any) => p.intro).filter(Boolean)));
+      avoid.power_moves = Array.from(new Set(recentPosts.map((p: any) => p.power_move).filter(Boolean)));
+      avoid.closings = Array.from(new Set(recentPosts.map((p: any) => p.closing).filter(Boolean)));
     }
-    console.log(`[generateDrafts] Avoiding ${avoidSubjects.length} recent subjects`);
+    console.log(`[generateDrafts] Avoiding ${avoid.subjects?.length} subjects, ${avoid.intros?.length} intros, ${avoid.power_moves?.length} power_moves, ${avoid.closings?.length} closings`);
   } catch (e) {
-    console.error('[generateDrafts] Failed to fetch recent subjects:', e);
+    console.error('[generateDrafts] Failed to fetch recent content:', e);
   }
 
-  const freeContent = await generateFreeContent(avoidSubjects);
+  const freeContent = await generateFreeContent(avoid);
   const dateSuffix = new Date().toISOString().slice(0, 10);
   const randomSuffix = Math.random().toString(36).slice(2, 6);
 
@@ -979,8 +1065,13 @@ export async function generateDrafts(supabase: any) {
     console.log(`[generateDrafts] Free draft saved: "${freeContent.subject}" (id: ${freeData?.[0]?.id})`);
   }
 
-  // Always generate a premium draft too — include the free subject in avoidance list
-  const premiumAvoid = [...avoidSubjects, freeContent.subject];
+  // Always generate a premium draft too — include the free post's content in avoidance
+  const premiumAvoid: AvoidSnippets = {
+    subjects: [...(avoid.subjects || []), freeContent.subject],
+    intros: [...(avoid.intros || []), freeContent.intro],
+    power_moves: [...(avoid.power_moves || []), freeContent.power_move],
+    closings: [...(avoid.closings || []), freeContent.closing],
+  };
   const premiumContent = await generatePremiumContent(premiumAvoid);
   const premiumSlug = `${premiumContent.slug || 'premium'}-draft-${dateSuffix}-${randomSuffix}`;
   const { data: premData, error: premiumErr } = await supabase.from('newsletter_posts').insert({

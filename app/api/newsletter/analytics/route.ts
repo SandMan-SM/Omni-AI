@@ -49,13 +49,9 @@ export async function GET() {
     const TRANSACTIONAL_PREFIXES = ['Demo Confirmed', 'New Demo Booked', 'Training Session Confirmed', 'New Training Registration'];
 
     const emails = allEmails.filter(e => {
-      // Include if sent from newsletter sender
-      if (NEWSLETTER_SENDERS.some(s => e.from.includes(s))) return true;
-      // Exclude known transactional email subjects
+      // Only include newsletter-sender emails — exclude transactional / legacy
+      if (!NEWSLETTER_SENDERS.some(s => e.from.includes(s))) return false;
       if (TRANSACTIONAL_PREFIXES.some(p => e.subject.startsWith(p))) return false;
-      // Exclude anything from bookings@
-      if (e.from.includes('bookings@')) return false;
-      // Include everything else (legacy sends, etc.)
       return true;
     });
 

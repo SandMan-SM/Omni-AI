@@ -142,7 +142,7 @@ export default function Details() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen text-white noise-overlay">
       <CursorSpotlight />
       <Navbar 
         onBookDemo={() => setIsDemoModalOpen(true)} 
@@ -150,7 +150,7 @@ export default function Details() {
       />
 
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
-        <section className="relative px-4 py-12 md:py-20">
+        <section className="relative px-5 sm:px-6 py-12 md:py-20">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
             <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] rounded-full bg-cyan-500/5 blur-[130px]" />
@@ -173,10 +173,10 @@ export default function Details() {
                 Infographic
               </motion.div>
 
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-[1.1]">
                 <span className="text-gradient">AGI Marketing Platform</span>
               </h1>
-              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
+              <p className="text-gray-400 text-base sm:text-lg md:text-xl max-w-2xl mx-auto">
                 Automated Lead Generation & Business Growth
               </p>
             </motion.div>
@@ -192,18 +192,18 @@ export default function Details() {
                 <div className="absolute inset-0 border border-white/10 rounded-2xl" />
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
 
-                <div className="relative px-6 py-10 md:px-12 md:py-14">
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-md bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center">
-                      <Brain className="w-6 h-6 text-white" />
+                <div className="relative px-5 py-8 sm:px-8 sm:py-10 md:px-12 md:py-14">
+                  <div className="flex items-center gap-4 mb-8 sm:mb-10">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-md bg-gradient-to-br from-purple-500 to-cyan-500 flex items-center justify-center shrink-0">
+                      <Brain className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     </div>
                     <div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-white">Core Concept</h2>
-                      <p className="text-purple-400 text-sm font-medium">AI-Driven Automation</p>
+                      <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white leading-tight">Core Concept</h2>
+                      <p className="text-purple-400 text-xs sm:text-sm font-medium">AI-Driven Automation</p>
                     </div>
                   </div>
-                  <p className="text-gray-300 text-base md:text-lg leading-relaxed max-w-3xl">
-                    A platform built to autonomously generate and manage leads, run marketing campaigns, 
+                  <p className="text-gray-300 text-[15px] sm:text-base md:text-lg leading-relaxed max-w-3xl">
+                    A platform built to autonomously generate and manage leads, run marketing campaigns,
                     and scale business operations using artificial intelligence.
                   </p>
                 </div>
@@ -396,7 +396,7 @@ export default function Details() {
                       viewport={{ once: true }}
                       className={`relative ${isPopular ? 'md:-mt-4' : ''}`}
                     >
-                      <div className={`glass-card rounded-md p-6 md:p-6 border ${isPopular ? 'border-yellow-500/40' : 'border-white/5'} ${isLocked ? 'opacity-70' : ''} ${isGold ? 'relative overflow-hidden' : ''}`}>
+                      <div className={`glass-card rounded-md p-4 sm:p-6 border ${isPopular ? 'border-yellow-500/40' : 'border-white/5'} ${isLocked ? 'opacity-70' : ''} ${isGold ? 'relative overflow-hidden' : ''}`}>
                         {isPopular && (
                           <div className="absolute top-0 right-0">
                             <div className="bg-gradient-to-r from-yellow-500 to-amber-500 text-black text-[10px] font-bold px-4 py-1.5 rounded-tr-md">
@@ -429,19 +429,19 @@ export default function Details() {
                               <div>
                                 <span className="text-[10px] font-bold tracking-wider text-gray-500 uppercase">{tier.label}</span>
                                 {isGold ? (
-                                  <h3 className="text-lg font-bold bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 bg-clip-text text-transparent animate-pulse">
+                                  <h3 className="text-sm sm:text-lg font-bold bg-gradient-to-r from-yellow-200 via-amber-300 to-yellow-200 bg-clip-text text-transparent animate-pulse break-words">
                                     {tier.name} | {tier.category}
                                   </h3>
                                 ) : isSilver ? (
-                                  <h3 className="text-lg font-bold bg-gradient-to-r from-gray-200 via-white to-gray-200 bg-clip-text text-transparent animate-pulse">
+                                  <h3 className="text-sm sm:text-lg font-bold bg-gradient-to-r from-gray-200 via-white to-gray-200 bg-clip-text text-transparent animate-pulse break-words">
                                     {tier.name} | {tier.category}
                                   </h3>
                                 ) : isDiamond ? (
-                                  <h3 className="text-lg font-bold bg-gradient-to-r from-cyan-200 via-white to-cyan-200 bg-clip-text text-transparent animate-pulse">
+                                  <h3 className="text-sm sm:text-lg font-bold bg-gradient-to-r from-cyan-200 via-white to-cyan-200 bg-clip-text text-transparent animate-pulse break-words">
                                     {tier.name} | {tier.category}
                                   </h3>
                                 ) : (
-                                  <h3 className="text-lg font-bold text-white">
+                                  <h3 className="text-sm sm:text-lg font-bold text-white break-words">
                                     {tier.name} | {tier.category}
                                   </h3>
                                 )}

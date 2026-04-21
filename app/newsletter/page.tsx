@@ -32,6 +32,8 @@ export default async function NewsletterIndexPage() {
   const { data: posts } = await supabase
     .from("newsletter_posts")
     .select("slug, subject, intro, keywords, tier, published_at, created_at")
+    .not("published_at", "is", null)
+    .lte("published_at", new Date().toISOString())
     .order("published_at", { ascending: false })
     .limit(50);
 

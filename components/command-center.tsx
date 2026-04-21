@@ -22,6 +22,17 @@ interface RecentPost {
   published_at: string;
 }
 
+interface EmailLog {
+  id: string;
+  subject: string | null;
+  sent_at: string | null;
+  recipients_count: number | null;
+  opened_count: number | null;
+  clicked_count: number | null;
+  open_rate: number | null;
+  click_rate: number | null;
+}
+
 interface Metrics {
   revenue: {
     totalLeads: number; hotLeads: number; warmLeads: number;
@@ -43,7 +54,7 @@ interface Metrics {
   };
   charts: {
     userGrowth: { date: string; signups: number }[];
-    sendHistory: { date: string; subject: string }[];
+    sendHistory: { date: string; subject: string; recipients: number }[];
     recentPosts: RecentPost[];
   };
   agents: {
@@ -102,22 +113,28 @@ export function CommandCenter() {
   const [metrics, setMetrics] = useState<Metrics | null>(null);
   const [newsletterPosts, setNewsletterPosts] = useState<NewsletterPost[]>([]);
   const [nlSummary, setNlSummary] = useState<NewsletterSummary | null>(null);
+  const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+    const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
     Promise.all([
-      fetch("/api/dashboard/metrics").then(r => r.json()),
-      fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' }).then(r => r.json()).catch(() => ({ posts: [], summary: null })),
+      fetch("/api/dashboard/metrics", { headers: authHeaders }).then(r => r.json()),
+      fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store', headers: authHeaders }).then(r => r.json()).catch(() => ({ posts: [], summary: null })),
     ]).then(([metricsData, nlData]) => {
       setMetrics(metricsData);
-      // Show last 10 posts (drafts first, then published newest → oldest)
-      const sorted = (nlData?.posts ?? []).sort((a: NewsletterPost, b: NewsletterPost) => {
-        if (!a.published_at && b.published_at) return -1;
-        if (a.published_at && !b.published_at) return 1;
-        return new Date(b.published_at || b.created_at || 0).getTime() - new Date(a.published_at || a.created_at || 0).getTime();
-      });
-      setNewsletterPosts(sorted.slice(0, 10));
+      // Newest published per tier: one free + one premium
+      const published = (nlData?.posts ?? [])
+        .filter((p: NewsletterPost) => p.published_at)
+        .sort((a: NewsletterPost, b: NewsletterPost) =>
+          new Date(b.published_at || 0).getTime() - new Date(a.published_at || 0).getTime()
+        );
+      const latestFree = published.find((p: NewsletterPost) => (p.tier || '').toLowerCase() !== 'premium');
+      const latestPremium = published.find((p: NewsletterPost) => (p.tier || '').toLowerCase() === 'premium');
+      setNewsletterPosts([latestPremium, latestFree].filter(Boolean) as NewsletterPost[]);
       if (nlData?.summary) setNlSummary(nlData.summary);
+      if (nlData?.emailLogs?.length) setEmailLogs(nlData.emailLogs);
       setLoading(false);
     }).catch(() => setLoading(false));
   }, []);
@@ -389,57 +406,70 @@ export function CommandCenter() {
         {/* Newsletter Posts */}
         <Card className="bg-white/[0.02] border-white/[0.06]">
           <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                 <Send className="w-4 h-4 text-purple-400" /> Newsletter Posts
               </h3>
-              <Link href="/admin" className="text-[10px] text-purple-400 hover:text-purple-300 transition-colors">
+              <Link href="/admin" className="text-[11px] text-purple-400 hover:text-purple-300 transition-colors">
                 View all →
               </Link>
             </div>
             {nlSummary && (
-              <div className="flex items-center gap-3 mb-3 text-[10px] text-gray-500 flex-wrap">
+              <p className="mb-4 text-[11px] text-gray-500">
                 <span className="text-white font-medium">{nlSummary.totalPosts} total</span>
-                <span>{nlSummary.freePosts} free · {nlSummary.premiumPosts} premium</span>
-                {nlSummary.drafts > 0 && <span className="text-amber-400/80">{nlSummary.drafts} draft{nlSummary.drafts !== 1 ? 's' : ''} waiting</span>}
-              </div>
+                <span className="mx-2 text-gray-700">•</span>
+                <span>{nlSummary.freePosts} free</span>
+                <span className="mx-2 text-gray-700">•</span>
+                <span>{nlSummary.premiumPosts} premium</span>
+                {nlSummary.drafts > 0 && (
+                  <>
+                    <span className="mx-2 text-gray-700">•</span>
+                    <span className="text-amber-400/80">{nlSummary.drafts} draft{nlSummary.drafts !== 1 ? 's' : ''} waiting</span>
+                  </>
+                )}
+              </p>
             )}
             {newsletterPosts.length > 0 ? (
-              <div className="space-y-1.5 max-h-[320px] overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-[320px] overflow-y-auto pr-1">
                 {newsletterPosts.map((post) => {
                   const isDraft = !post.published_at;
                   const isPremium = post.tier === 'premium';
                   const href = post.slug ? `/newsletter/${post.slug}` : null;
                   const dateStr = post.published_at || post.created_at;
                   return (
-                    <div key={post.id} className={`flex items-center gap-2 px-2.5 py-2 rounded-lg border border-white/[0.04] ${isDraft ? 'border-l-2 border-l-amber-500/40' : ''} hover:bg-white/[0.02] transition-colors`}>
-                      <div className={`w-6 h-6 rounded-md ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
-                        <Mail className={`w-2.5 h-2.5 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
+                    <div key={post.id} className={`flex items-center gap-4 px-4 py-3.5 rounded-xl border border-white/[0.06] ${isDraft ? 'border-l-2 border-l-amber-500/40' : ''} hover:bg-white/[0.02] transition-colors`}>
+                      <div className={`w-10 h-10 rounded-xl ${isPremium ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
+                        <Mail className={`w-4 h-4 ${isPremium ? "text-yellow-400" : "text-purple-400"}`} />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-[11px] font-medium text-white truncate">{post.subject}</p>
-                        <p className="text-[9px] text-gray-600">
-                          {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Pending"}
-                          {post.recipients_count ? ` · ${post.recipients_count} sent` : ''}
+                        <p className="text-sm font-medium text-white truncate">{post.subject}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {isDraft
+                            ? "Scheduled for next send"
+                            : <>
+                                {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Pending"}
+                                {post.recipients_count ? ` · ${post.recipients_count} sent` : ''}
+                              </>
+                          }
                         </p>
                       </div>
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
-                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
-                          isPremium ? "bg-yellow-500/15 text-yellow-400 border-yellow-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"
-                        }`} style={{ fontSize: '9px', lineHeight: '1' }}>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 text-[11px] font-medium ${
+                          isPremium ? "bg-yellow-500/10 text-yellow-400 border-yellow-500/30" : "bg-purple-500/10 text-purple-400 border-purple-500/30"
+                        }`}>
                           {isPremium ? "Premium" : "Free"}
                         </span>
-                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium ${
-                          isDraft ? "bg-amber-500/15 text-amber-400 border-amber-500/20" : "bg-green-500/15 text-green-400 border-green-500/20"
-                        }`} style={{ fontSize: '9px', lineHeight: '1' }}>
-                          {isDraft ? "Draft" : "Sent"}
-                        </span>
+                        {isDraft && (
+                          <span className="inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 text-[11px] font-medium bg-amber-500/10 text-amber-400 border-amber-500/30">
+                            Draft
+                          </span>
+                        )}
                         {href ? (
-                          <Link href={href} className="p-1 rounded hover:bg-white/[0.06] transition-colors">
-                            <Eye className="w-3.5 h-3.5 text-gray-400 hover:text-white transition-colors" />
+                          <Link href={href} className="p-1.5 rounded hover:bg-white/[0.06] transition-colors">
+                            <Eye className="w-4 h-4 text-gray-400 hover:text-white transition-colors" />
                           </Link>
                         ) : (
-                          <span className="p-1 opacity-30"><Eye className="w-3.5 h-3.5 text-gray-400" /></span>
+                          <span className="p-1.5 opacity-30"><Eye className="w-4 h-4 text-gray-400" /></span>
                         )}
                       </div>
                     </div>
@@ -451,6 +481,15 @@ export function CommandCenter() {
                 <Mail className="w-5 h-5 text-gray-700 mb-2" />
                 <p className="text-[10px] text-gray-600">No newsletter posts yet</p>
               </div>
+            )}
+            {emailLogs.length > 0 && emailLogs[0].open_rate != null && (
+              <p className="mt-4 pt-4 border-t border-white/[0.04] text-[11px] text-gray-500">
+                <span className="text-gray-400 font-medium">Latest send</span>
+                <span className="mx-2 text-gray-700">•</span>
+                <span>Open <span className="text-white ml-1">{Math.round((emailLogs[0].open_rate ?? 0) * 100)}%</span></span>
+                <span className="mx-2 text-gray-700">•</span>
+                <span>Click <span className="text-white ml-1">{Math.round((emailLogs[0].click_rate ?? 0) * 100)}%</span></span>
+              </p>
             )}
           </CardContent>
         </Card>
@@ -481,7 +520,7 @@ export function CommandCenter() {
                       </div>
                     );
                   }} />
-                  <Bar dataKey={() => 1} name="Sent" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="recipients" name="Recipients" radius={[4, 4, 0, 0]}>
                     {charts.sendHistory.map((_, i) => (
                       <Cell key={i} fill={i % 2 === 0 ? COLORS.cyan : COLORS.blue} />
                     ))}

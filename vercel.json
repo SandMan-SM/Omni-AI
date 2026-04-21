@@ -2,15 +2,5 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "crons": [
-    {
-      "path": "/api/cron/newsletter?action=generate-drafts",
-      "schedule": "0 12 * * *"
-    },
-    {
-      "path": "/api/cron/newsletter",
-      "schedule": "0 13 * * *"
-    }
-  ]
+  "outputDirectory": ".next"
 }

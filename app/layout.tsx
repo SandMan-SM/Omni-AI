@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { JsonLd, organizationSchema, websiteSchema, softwareSchema } from "@/components/json-ld";
+import { SpaceBackdrop } from "@/components/space-backdrop";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -53,6 +54,7 @@ export default function RootLayout({
         <JsonLd data={softwareSchema} />
       </head>
       <body className={`${inter.className} overflow-x-hidden`}>
+        <SpaceBackdrop />
         <Providers>{children}</Providers>
       </body>
     </html>

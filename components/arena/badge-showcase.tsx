@@ -41,6 +41,8 @@ const badgeCategories = [
     category: "Elite",
     icon: Crown,
     gradient: "from-amber-400 to-yellow-500",
+    cssGradient: "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)",
+    glowColor: "rgba(250, 204, 21, 0.3)",
     badges: [
       { id: "diamond-blood", name: "Diamond Blood", icon: Crown, description: "Reach Diamond rank through pure dominance" },
       { id: "founding-member", name: "Founding Member", icon: Star, description: "Joined during the founding era" },
@@ -50,7 +52,9 @@ const badgeCategories = [
   {
     category: "Empire",
     icon: Users,
-    gradient: "from-green-500 to-teal-500",
+    gradient: "from-cyan-400 to-white",
+    cssGradient: "linear-gradient(135deg, #a5f3fc 0%, #ffffff 25%, #67e8f9 50%, #ffffff 75%, #22d3ee 100%)",
+    glowColor: "rgba(34, 211, 238, 0.25)",
     badges: [
       { id: "mentor", name: "Mentor", icon: Users, description: "Help 10 businesses deploy their agents" },
       { id: "recruiter", name: "Recruiter", icon: Users, description: "Refer 5 new businesses to the Arena" },
@@ -83,8 +87,20 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
               viewport={{ once: true }}
             >
               <div className="flex items-center gap-4 mb-4">
-                <div className={`w-10 h-10 rounded-lg bg-gradient-to-br ${category.gradient} flex items-center justify-center`}>
-                  <CategoryIcon className="w-5 h-5 text-white" />
+                <div
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                    (category as any).cssGradient ? "" : `bg-gradient-to-br ${category.gradient}`
+                  }`}
+                  style={
+                    (category as any).cssGradient
+                      ? {
+                          background: (category as any).cssGradient,
+                          boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.25), 0 0 12px ${(category as any).glowColor}`,
+                        }
+                      : undefined
+                  }
+                >
+                  <CategoryIcon className={`w-5 h-5 ${(category as any).cssGradient ? "text-black" : "text-white"}`} />
                 </div>
                 <h3 className={`text-xl font-bold ${isDarkMode ? "text-white" : "text-gray-900"}`}>
                   {category.category} Badges
@@ -111,7 +127,19 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
                       <div className={`absolute inset-0 rounded-xl bg-gradient-to-br ${category.gradient} opacity-0 group-hover:opacity-10 transition-opacity`} />
                       
                       <div className="relative">
-                        <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${category.gradient} p-[2px] mx-auto mb-4`}>
+                        <div
+                          className={`w-12 h-12 rounded-full p-[2px] mx-auto mb-4 ${
+                            (category as any).cssGradient ? "" : `bg-gradient-to-br ${category.gradient}`
+                          }`}
+                          style={
+                            (category as any).cssGradient
+                              ? {
+                                  background: (category as any).cssGradient,
+                                  boxShadow: `0 0 10px ${(category as any).glowColor}`,
+                                }
+                              : undefined
+                          }
+                        >
                           <div className={`w-full h-full rounded-full ${isDarkMode ? "bg-gray-900" : "bg-white"} flex items-center justify-center`}>
                             <BadgeIcon className="w-6 h-6 text-white" />
                           </div>
@@ -124,8 +152,20 @@ export function BadgeShowcase({ isDarkMode }: BadgeShowcaseProps) {
                         </p>
                       </div>
 
-                      <div className={`absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gradient-to-br ${category.gradient} flex items-center justify-center`}>
-                        <Award className="w-3 h-3 text-white" />
+                      <div
+                        className={`absolute -top-1 -right-1 w-5 h-5 rounded-full flex items-center justify-center ${
+                          (category as any).cssGradient ? "" : `bg-gradient-to-br ${category.gradient}`
+                        }`}
+                        style={
+                          (category as any).cssGradient
+                            ? {
+                                background: (category as any).cssGradient,
+                                boxShadow: `0 0 6px ${(category as any).glowColor}`,
+                              }
+                            : undefined
+                        }
+                      >
+                        <Award className={`w-3 h-3 ${(category as any).cssGradient ? "text-black" : "text-white"}`} />
                       </div>
                     </motion.div>
                   );

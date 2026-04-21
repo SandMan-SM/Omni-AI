@@ -972,7 +972,7 @@ export function SystemMonitor() {
               <RefreshCw className="w-4 h-4 animate-spin text-purple-400" />
               <span className="text-sm text-gray-500">Running checks…</span>
             </div>
-          ) : health ? (
+          ) : health && health.checks ? (
             Object.entries(health.checks).map(([key, check]) => {
               const meta = CHECK_META[key] || { label: key, icon: Activity };
               const Icon = meta.icon;
@@ -993,6 +993,10 @@ export function SystemMonitor() {
                 </div>
               );
             })
+          ) : health ? (
+            <div className="py-4 text-center text-xs text-gray-500">
+              Overall status: <span className="text-gray-300">{health.status}</span> — detailed checks require a service token.
+            </div>
           ) : null}
         </CardContent>
       </Card>

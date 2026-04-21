@@ -1,8 +1,10 @@
+"use client";
+
 import { motion } from "framer-motion";
 import { Mail, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getSupabase } from "@/lib/supabase";
 
@@ -10,6 +12,34 @@ export function ContactSection() {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const subtitleRef = useRef<HTMLSpanElement>(null);
+  const measureRef = useRef<HTMLSpanElement>(null);
+  const [titleSize, setTitleSize] = useState(24);
+
+  useEffect(() => {
+    const fit = () => {
+      const s = subtitleRef.current;
+      const m = measureRef.current;
+      if (!s || !m) return;
+      const target = s.getBoundingClientRect().width;
+      const natural = m.getBoundingClientRect().width;
+      if (natural <= 0 || target <= 0) return;
+      const isMobile = window.matchMedia("(max-width: 640px)").matches;
+      const scale = isMobile ? 0.78 : 1;
+      setTitleSize(Math.max(16, Math.min((target / natural) * 100 * scale, 80)));
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    if (subtitleRef.current) ro.observe(subtitleRef.current);
+    window.addEventListener("resize", fit);
+    if (typeof document !== "undefined" && document.fonts?.ready) {
+      document.fonts.ready.then(fit).catch(() => {});
+    }
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", fit);
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,13 +94,26 @@ export function ContactSection() {
         viewport={{ once: true }}
         className="max-w-4xl mx-auto relative z-10"
       >
-        <div className="glass-card rounded-2xl p-10 md:p-12 neon-border">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <div className="glass-card rounded-2xl p-6 sm:p-10 md:p-12 neon-border">
+          <div className="text-center mb-6 sm:mb-8 overflow-hidden">
+            <span
+              ref={measureRef}
+              aria-hidden
+              className="absolute -z-50 opacity-0 pointer-events-none font-bold whitespace-nowrap"
+              style={{ fontSize: "100px", left: "-9999px", top: "-9999px" }}
+            >
+              Stay in the Loop
+            </span>
+            <h2
+              className="font-bold mb-3 sm:mb-4 whitespace-nowrap leading-[1.1] inline-block"
+              style={{ fontSize: `${titleSize}px` }}
+            >
               <span className="text-gradient">Stay in the Loop</span>
             </h2>
-            <p className="text-gray-400 text-lg">
-              Subscribe for exclusive updates and insights.
+            <p className="text-gray-400 text-sm sm:text-base md:text-lg whitespace-nowrap">
+              <span ref={subtitleRef} className="inline-block">
+                Subscribe for exclusive updates and insights.
+              </span>
             </p>
           </div>
 
@@ -83,7 +126,7 @@ export function ContactSection() {
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="bg-transparent border-0 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 text-sm h-10"
+                  className="bg-transparent border-0 text-white placeholder:text-gray-500 focus-visible:ring-0 focus-visible:ring-offset-0 text-base sm:text-sm h-10"
                   data-testid="input-email"
                   required
                 />

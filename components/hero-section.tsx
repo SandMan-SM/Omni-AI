@@ -1,4 +1,7 @@
-import { motion } from "framer-motion";
+"use client";
+
+import { useEffect, useRef, useCallback } from "react";
+import { motion, useReducedMotion } from "framer-motion";
 import Image from "next/image";
 import { Sparkles, Clock, Eye, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,8 +17,11 @@ const metrics = [
 const partners = [
   { name: "Nvidia", logo: "/logos/nvidia.svg" },
   { name: "Meta", logo: "/logos/meta.svg" },
-  { name: "Anthropic", logo: "/logos/anthropic.svg" },
+  { name: "Claude", logo: "/logos/claude.svg" },
   { name: "OpenAI", logo: "/logos/openai.svg" },
+  { name: "Gemini", logo: "/logos/gemini.svg" },
+  { name: "Grok", logo: "/logos/grok.svg" },
+  { name: "Perplexity", logo: "/logos/perplexity.svg" },
 ];
 
 interface HeroSectionProps {
@@ -23,18 +29,127 @@ interface HeroSectionProps {
   onSignIn?: () => void;
 }
 
+interface Particle {
+  x: number; y: number; vx: number; vy: number; r: number; hue: "purple" | "cyan"; alpha: number;
+}
+
 export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
   const { user } = useAuth();
   const router = useRouter();
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mouseRef = useRef({ x: 0, y: 0, active: false });
+  const rafRef = useRef<number | null>(null);
+  const prefersReducedMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (prefersReducedMotion) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const count = Math.round(140 * (isMobile ? 0.35 : 1));
+    const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
+
+    let width = 0, height = 0;
+    let particles: Particle[] = [];
+
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    };
+
+    const seed = () => {
+      particles = Array.from({ length: count }, (_, i) => ({
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * 0.2,
+        vy: (Math.random() - 0.5) * 0.2,
+        r: Math.random() * 1.6 + 0.3,
+        hue: i % 2 === 0 ? "purple" : "cyan",
+        alpha: Math.random() * 0.6 + 0.2,
+      }));
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, width, height);
+      for (const p of particles) {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (mouseRef.current.active) {
+          const dx = mouseRef.current.x - p.x;
+          const dy = mouseRef.current.y - p.y;
+          const dist = Math.hypot(dx, dy);
+          if (dist < 180) {
+            const f = (180 - dist) / 180;
+            p.x += (dx / dist) * f * 0.6;
+            p.y += (dy / dist) * f * 0.6;
+          }
+        }
+        if (p.x < -5) p.x = width + 5;
+        else if (p.x > width + 5) p.x = -5;
+        if (p.y < -5) p.y = height + 5;
+        else if (p.y > height + 5) p.y = -5;
+        ctx.fillStyle = p.hue === "purple"
+          ? `rgba(167,139,250,${p.alpha})`
+          : `rgba(34,211,238,${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      rafRef.current = requestAnimationFrame(draw);
+    };
+
+    resize(); seed(); draw();
+    const onResize = () => { resize(); seed(); };
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [prefersReducedMotion]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    mouseRef.current = { x: e.clientX - rect.left, y: e.clientY - rect.top, active: true };
+  }, []);
+
+  const onPointerLeave = useCallback(() => {
+    mouseRef.current.active = false;
+  }, []);
 
   return (
-    <section className="relative min-h-[100svh] px-5 overflow-hidden" style={{ paddingTop: 'clamp(120px, 20vh, 200px)' }}>
-      {/* Background blurs */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute top-1/4 left-1/4 w-[250px] h-[250px] md:w-[400px] md:h-[400px] lg:w-[500px] lg:h-[500px] rounded-full bg-purple-500/10 blur-[120px]" />
-        <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] md:w-[300px] md:h-[300px] lg:w-[400px] lg:h-[400px] rounded-full bg-blue-500/10 blur-[100px]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] md:w-[400px] md:h-[400px] lg:w-[600px] lg:h-[600px] rounded-full bg-cyan-500/5 blur-[150px]" />
-      </div>
+    <section
+      onPointerMove={onPointerMove}
+      onPointerLeave={onPointerLeave}
+      className="relative min-h-[100svh] px-5 overflow-hidden"
+      style={{ paddingTop: 'clamp(120px, 20vh, 200px)' }}
+    >
+      {/* Radial glow backdrop */}
+      <div
+        aria-hidden
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 30% 40%, rgba(167,139,250,0.18), transparent 55%), radial-gradient(ellipse at 70% 60%, rgba(34,211,238,0.14), transparent 55%)",
+        }}
+      />
+
+      {/* Particle canvas */}
+      <canvas
+        ref={canvasRef}
+        aria-hidden
+        className="absolute inset-0 w-full h-full pointer-events-none"
+      />
 
       {/* Main content */}
       <motion.div
@@ -43,7 +158,6 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
         transition={{ duration: 0.6 }}
         className="relative z-10 text-center max-w-5xl mx-auto flex flex-col items-center"
       >
-        {/* Badge */}
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -56,17 +170,22 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           </span>
         </motion.div>
 
-        {/* Title — much bigger than body text */}
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight mb-6 md:mb-6 whitespace-nowrap"
+          className="relative text-5xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-bold tracking-tight mb-6 whitespace-nowrap"
+          style={{
+            backgroundImage: "linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #67e8f9 100%)",
+            WebkitBackgroundClip: "text",
+            backgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            textShadow: "0 0 80px rgba(167,139,250,0.25)",
+          }}
         >
-          <span className="text-gradient">Welcome to AGI</span>
+          Welcome to AGI
         </motion.h1>
 
-        {/* Subtitle */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -77,16 +196,15 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           businesses without human micromanagement.
         </motion.p>
 
-        {/* Buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="flex flex-row items-center justify-center gap-4 sm:gap-4"
+          className="flex flex-row items-center justify-center gap-4"
         >
           <Button
             size="lg"
-            className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white px-10 h-12 sm:h-11 text-[15px] font-medium rounded-xl neon-glow active:scale-[0.98] transition-transform"
+            className="bg-gradient-to-r from-purple-600 to-cyan-500 border-0 text-white px-10 h-12 sm:h-11 text-[15px] font-medium rounded-xl shadow-[0_0_40px_rgba(167,139,250,0.35)] hover:shadow-[0_0_60px_rgba(167,139,250,0.55)] active:scale-[0.98] transition-all"
             onClick={() => router.push("/interlinked")}
             data-testid="button-interlinked"
           >
@@ -95,21 +213,14 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           <Button
             size="lg"
             variant="outline"
-            className="border-white/15 bg-white/[0.03] backdrop-blur-sm text-white px-10 h-12 sm:h-11 text-[15px] font-medium rounded-xl active:scale-[0.98] transition-transform"
-            onClick={() => {
-              if (user) {
-                router.push("/dashboard");
-              } else {
-                onSignIn?.();
-              }
-            }}
+            className="border-white/15 bg-white/[0.03] backdrop-blur-sm text-white px-10 h-12 sm:h-11 text-[15px] font-medium rounded-xl hover:bg-white/[0.06] active:scale-[0.98] transition-all"
+            onClick={() => { if (user) router.push("/dashboard"); else onSignIn?.(); }}
             data-testid="button-sign-in"
           >
             Sign In
           </Button>
         </motion.div>
 
-        {/* Metrics — decent gap below buttons */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -127,7 +238,15 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
               data-testid={`metric-${metric.label.toLowerCase()}`}
             >
               <metric.icon className="w-5 h-5 text-purple-400" />
-              <span className="text-2xl md:text-3xl font-bold text-gradient">
+              <span
+                className="text-2xl md:text-3xl font-bold"
+                style={{
+                  backgroundImage: "linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #67e8f9 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
                 {metric.value}
               </span>
               <span className="text-[11px] sm:text-xs text-gray-500 tracking-wide">
@@ -137,7 +256,6 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           ))}
         </motion.div>
 
-        {/* Partnered with */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -147,16 +265,24 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           <span className="text-sm sm:text-base text-white/80 tracking-wider">
             Partnered with platforms like
           </span>
-          <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-14">
+          <div
+            className="flex flex-nowrap items-center justify-center mx-auto pb-2 px-4 max-w-full"
+            style={{ gap: "clamp(12px, 3vw, 33px)" }}
+          >
             {partners.map((partner) => (
-              <Image
+              <div
                 key={partner.name}
-                src={partner.logo}
-                alt={partner.name}
-                width={80}
-                height={80}
-                className="h-14 sm:h-16 md:h-20 w-auto opacity-70 hover:opacity-100 transition-opacity"
-              />
+                className="flex items-center justify-center shrink-0"
+                style={{ width: "clamp(40px, 11vw, 100px)", height: "clamp(40px, 11vw, 100px)" }}
+              >
+                <Image
+                  src={partner.logo}
+                  alt={partner.name}
+                  width={100}
+                  height={100}
+                  className="object-contain opacity-90 hover:opacity-100 transition-opacity w-full h-full"
+                />
+              </div>
             ))}
           </div>
         </motion.div>

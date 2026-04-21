@@ -1,10 +1,10 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   const [
     { data: profiles },
@@ -12,12 +12,14 @@ export async function GET() {
     { data: newsletterSends },
     { data: newsletterPosts },
     { data: activities },
+    { data: newsletterSubs },
   ] = await Promise.all([
     supabase.from("profiles").select("id,name,email,crm_status,lead_score,total_spent,gross_revenue,newsletter_subscribed,is_premium,is_sponsor,sponsor_tier,last_contacted,satisfaction_score,created_at"),
     supabase.from("campaigns").select("id,profile_id,name,status,type,budget,platform,created_at"),
-    supabase.from("newsletter_sends").select("id,subject,sent_at").order("sent_at", { ascending: false }),
+    supabase.from("newsletter_sends").select("id,subject,sent_at,recipients_total").order("sent_at", { ascending: false }),
     supabase.from("newsletter_posts").select("id,slug,subject,tier,published_at,keywords").order("published_at", { ascending: false }),
     supabase.from("activity_log").select("id,profile_id,type,subject,channel,created_at").order("created_at", { ascending: false }).limit(20),
+    supabase.from("newsletter_subscriptions").select("subscribed,subscription_tier"),
   ]);
 
   const allProfiles = profiles || [];
@@ -25,6 +27,7 @@ export async function GET() {
   const allSends = newsletterSends || [];
   const allPosts = newsletterPosts || [];
   const allActivities = activities || [];
+  const allSubs = newsletterSubs || [];
 
   // --- Revenue Engine ---
   const totalLeads = allProfiles.filter(p => p.crm_status === "lead" || p.crm_status === "prospect").length;
@@ -51,8 +54,8 @@ export async function GET() {
   const totalNewslettersSent = allSends.length;
   const premiumPosts = allPosts.filter(p => p.tier === "premium").length;
   const freePosts = allPosts.filter(p => p.tier === "free").length;
-  const premiumSubscribers = allProfiles.filter(p => p.is_premium && p.newsletter_subscribed).length;
-  const freeSubscribers = allProfiles.filter(p => p.newsletter_subscribed).length;
+  const premiumSubscribers = allSubs.filter(s => s.subscription_tier === "premium" && s.subscribed !== false).length;
+  const freeSubscribers = allSubs.filter(s => s.subscribed !== false).length;
 
   // --- Client Health ---
   const needFollowUp = allProfiles.filter(p => {
@@ -97,6 +100,7 @@ export async function GET() {
   const sendHistory = allSends.slice(0, 7).map(s => ({
     date: new Date(s.sent_at).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
     subject: s.subject,
+    recipients: s.recipients_total || 0,
   })).reverse();
 
   // --- Recent newsletter posts (3 most recent) ---

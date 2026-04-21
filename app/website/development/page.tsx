@@ -110,7 +110,7 @@ export default function WebsiteDevelopment() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen text-white noise-overlay">
       <CursorSpotlight />
       <Navbar
         onBookDemo={() => setIsDemoModalOpen(true)}

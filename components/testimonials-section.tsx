@@ -38,7 +38,7 @@ export function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-[1.45rem] sm:text-4xl md:text-5xl font-bold mb-4 whitespace-nowrap">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4">
             <span className="text-gradient">See What Others Have to Say</span>
           </h2>
           <p className="text-gray-400 max-w-2xl mx-auto text-lg">

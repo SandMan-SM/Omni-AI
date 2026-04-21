@@ -137,7 +137,9 @@ export default function Dashboard() {
     },
     enabled: !!isAdmin,
   });
-  const recentActivities = activityData?.activities ?? [];
+  const recentActivities = (activityData?.activities ?? []).filter(
+    a => !/newsletter/i.test(a.type || "") && !/newsletter/i.test(a.channel || "")
+  );
 
   // Fetch newsletter posts for the Newsletter Posts section (public endpoint — all users can see)
   const { data: newsletterData } = useQuery<{ posts: { id: string; slug: string; subject: string; tier?: string; published_at?: string }[] }>({
@@ -814,8 +816,8 @@ export default function Dashboard() {
             </motion.div>
           )}
 
-          {/* Newsletter Posts */}
-          {(recentFreePosts.length > 0 || recentPremiumPosts.length > 0) && (
+          {/* Newsletter Posts — hidden for admins (CommandCenter already shows them) */}
+          {!isAdmin && (recentFreePosts.length > 0 || recentPremiumPosts.length > 0) && (
             <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }}>
               <Card className="bg-white/[0.03] border-white/[0.06]">
                 <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">

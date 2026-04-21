@@ -120,6 +120,26 @@ export async function GET() {
     campaignCounts[c.profile_id] = (campaignCounts[c.profile_id] || 0) + 1;
   });
 
+  // Omni AI's real stats: PayPal gross revenue + newsletter reach
+  let omniRevenue = 0;
+  let omniReach = 0;
+  try {
+    const [{ data: txns }, { count: subCount }, { data: sends }] = await Promise.all([
+      sb.from('paypal_transactions').select('transaction_amount,transaction_status'),
+      sb.from('newsletter_subscribers').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+      sb.from('newsletter_sends').select('recipients_total'),
+    ]);
+    omniRevenue = (txns || []).reduce((sum, t: any) => {
+      const status = (t.transaction_status || '').toUpperCase();
+      if (status === 'S' || status === 'COMPLETED' || status === '') {
+        return sum + (Number(t.transaction_amount) || 0);
+      }
+      return sum;
+    }, 0);
+    const sendsTotal = (sends || []).reduce((sum, s: any) => sum + (Number(s.recipients_total) || 0), 0);
+    omniReach = (subCount || 0) + sendsTotal;
+  } catch {}
+
   // Manual ELO overrides for specific businesses
   const eloOverrides: Record<string, number> = {
     'Love Thy Barber': 1750,
@@ -167,7 +187,8 @@ export async function GET() {
       tier: (p.business_name && tierOverrides[p.business_name] !== undefined) ? tierOverrides[p.business_name] : (p.tier || 0),
       isPremium: p.is_premium,
       crmStatus: p.crm_status,
-      revenue: parseFloat(p.gross_revenue) || 0,
+      revenue: p.business_name === 'Omni AI' ? omniRevenue : (parseFloat(p.gross_revenue) || 0),
+      reach: p.business_name === 'Omni AI' ? omniReach : undefined,
       campaigns: campaignCounts[p.id] || 0,
       activities: activityCounts[p.id] || 0,
       agentStatus: p.agent_status || 'active',

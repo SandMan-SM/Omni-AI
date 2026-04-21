@@ -146,7 +146,7 @@ export default function Interlinked() {
   const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen text-white noise-overlay">
       <CursorSpotlight />
       <Navbar 
         onBookDemo={() => setIsDemoModalOpen(true)} 
@@ -294,8 +294,7 @@ export default function Interlinked() {
           viewport={{ once: true }}
           className="glass-card rounded-md p-8 mb-12 border border-white/5"
         >
-          <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-purple-400" />
+          <h3 className="text-xl font-bold text-white mb-4">
             The AI CEO That Thinks About Your Business Constantly
           </h3>
           <p className="text-gray-400 mb-4">I built a centralized AI brain connected to:</p>

@@ -174,10 +174,10 @@ export function AdminOverview({ users, onEditUser }: Props) {
       </div>
 
       {/* ── MAIN GRID: Pipeline + Actions ─────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-4">
 
         {/* Pipeline Funnel — 3 cols */}
-        <Card className="lg:col-span-3 bg-white/[0.03] border-white/[0.06]">
+        <Card className="xl:col-span-3 bg-white/[0.03] border-white/[0.06]">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-sm font-semibold text-white flex items-center gap-2">
@@ -206,7 +206,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
             {/* Lead temp breakdown */}
             <div className="mt-5 pt-4 border-t border-white/5">
               <p className="text-[10px] text-gray-500 uppercase tracking-wider mb-4">Lead Temperature</p>
-              <div className="flex gap-4">
+              <div className="grid grid-cols-3 gap-2">
                 {[
                   { label: "Hot", count: metrics.hot.length, icon: Flame, color: "text-red-400 bg-red-500/10 border-red-500/20" },
                   { label: "Warm", count: metrics.warm.length, icon: Thermometer, color: "text-orange-400 bg-orange-500/10 border-orange-500/20" },
@@ -214,7 +214,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
                 ].map(t => {
                   const Icon = t.icon;
                   return (
-                    <div key={t.label} className={`flex-1 flex items-center gap-2 px-3 py-2.5 rounded-xl border ${t.color}`}>
+                    <div key={t.label} className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border ${t.color}`}>
                       <Icon className="w-3.5 h-3.5 flex-shrink-0" />
                       <div>
                         <p className="text-sm font-bold text-white">{t.count}</p>
@@ -229,7 +229,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
         </Card>
 
         {/* Action Items — 2 cols */}
-        <Card className="lg:col-span-2 bg-white/[0.03] border-white/[0.06]">
+        <Card className="xl:col-span-2 bg-white/[0.03] border-white/[0.06]">
           <CardContent className="p-6">
             <h3 className="text-sm font-semibold text-white flex items-center gap-2 mb-4">
               <Zap className="w-4 h-4 text-amber-400" /> Action Items
