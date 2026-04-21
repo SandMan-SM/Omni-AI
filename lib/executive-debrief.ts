@@ -266,9 +266,9 @@ export function buildExecDebriefHtml(d: ExecDebriefPayload): string {
     sectionHeading('Path to all 4 AI CEOs running', 'green'),
     roadmapCard,
     ctaBlock({
-      tagline: 'Open the live Command Center to see every ship land as it happens.',
-      primary: { href: 'https://omnileadsagi.com/command', label: 'Open Command Center', accent: 'green' },
-      secondary: { href: 'https://omnileadsagi.com/sponsor', label: 'Sponsor portal' },
+      tagline: 'Ready to move? Book a 30-minute working session or read the Interlinked letter first.',
+      primary: { href: 'https://omnileadsagi.com/interlinked/book-now', label: 'Book Now', accent: 'green' },
+      secondary: { href: 'https://omnileadsagi.com/interlinked', label: 'Learn More' },
     }),
     footer({
       tagline: 'Omni AI · Executive Debrief',
