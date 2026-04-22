@@ -291,7 +291,7 @@ export default function Arena() {
               </p>
               <a
                 href="/arena/info"
-                className="inline-block px-10 py-4 rounded-2xl border border-white/20 bg-white/[0.03] text-white font-medium text-lg hover:bg-white/[0.06] hover:border-white/30 transition-all"
+                className="inline-flex items-center justify-center px-10 h-12 sm:h-11 rounded-xl border border-white/15 bg-white/[0.03] backdrop-blur-sm text-white font-medium text-[15px] hover:bg-white/[0.06] active:scale-[0.98] transition-all"
               >
                 Learn More
               </a>
