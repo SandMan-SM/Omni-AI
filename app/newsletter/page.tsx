@@ -26,26 +26,67 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+// Manual floors so the page never under-represents reach when a signup
+// source hasn't been wired into Supabase yet. Update these as real counts
+// grow past them.
+const SUBSCRIBERS_FLOOR = 13;
+const IMPRESSIONS_FLOOR = 2000;
+
+function fmtCompact(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M+`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}k+`;
+  return `${n}`;
+}
+
 export default async function NewsletterIndexPage() {
   const supabase = createAdminClient();
 
-  const { data: posts } = await supabase
-    .from("newsletter_posts")
-    .select("slug, subject, intro, keywords, tier, published_at, created_at")
-    .not("published_at", "is", null)
-    .lte("published_at", new Date().toISOString())
-    .order("published_at", { ascending: false })
-    .limit(50);
+  // Pull posts + live counts in parallel. The three stat queries are cheap
+  // COUNTs; failures fall back to 0 and the floor kicks in.
+  const [postsRes, profileSubRes, newsletterSubRes, sendsRes] = await Promise.all([
+    supabase
+      .from("newsletter_posts")
+      .select("slug, subject, intro, keywords, tier, published_at, created_at")
+      .not("published_at", "is", null)
+      .lte("published_at", new Date().toISOString())
+      .order("published_at", { ascending: false })
+      .limit(50),
+    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("newsletter_subscribed", true),
+    supabase.from("newsletter_subscriptions").select("id", { count: "exact", head: true }),
+    supabase.from("newsletter_sends").select("recipients_count"),
+  ]);
 
-  const premiumPosts = posts?.filter(p => p.tier === "premium") || [];
-  const freePosts = posts?.filter(p => p.tier !== "premium") || [];
+  const posts = postsRes.data || [];
+  const premiumPosts = posts.filter(p => p.tier === "premium");
+  const freePosts = posts.filter(p => p.tier !== "premium");
+
+  const postsSent = posts.length;
+  const liveSubs = (profileSubRes.count || 0) + (newsletterSubRes.count || 0);
+  const subscribersCount = Math.max(liveSubs, SUBSCRIBERS_FLOOR);
+
+  // Rough viewer estimate: every send × avg 2 opens (open-rate proxy) until
+  // real tracking lands. Floor guarantees the number matches what we've
+  // already done manually/externally.
+  const sendsTotal = (sendsRes.data || []).reduce(
+    (sum, r: { recipients_count?: number | null }) => sum + (r.recipients_count || 0),
+    0
+  );
+  const viewersEstimate = sendsTotal * 2 + postsSent * 20;
+  const viewersCount = Math.max(viewersEstimate, IMPRESSIONS_FLOOR);
+
+  const stats = [
+    { value: String(postsSent), label: "Issues Sent" },
+    { value: String(subscribersCount), label: "Subscribers" },
+    { value: fmtCompact(viewersCount), label: "Viewers" },
+  ];
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
+    // No opaque bg here — root layout's <SpaceBackdrop /> drifts behind.
+    <div className="min-h-screen text-white relative">
       <NewsletterHeader />
 
-      <main className="max-w-4xl mx-auto px-5 py-12 md:py-20">
-        <div className="text-center mb-12">
+      <main className="relative z-10 max-w-4xl mx-auto px-5 py-12 md:py-20">
+        <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">
             Omni AI Newsletter
           </h1>
@@ -54,6 +95,23 @@ export default async function NewsletterIndexPage() {
             untouchable. Stories, strategies, and the signals that matter.
             Daily intelligence briefs delivered every morning at 8:00 AM.
           </p>
+        </div>
+
+        {/* Stats row — live counts from Supabase with floors for reach. */}
+        <div className="mb-12 grid grid-cols-3 gap-px rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.08] backdrop-blur-sm">
+          {stats.map((s) => (
+            <div
+              key={s.label}
+              className="bg-[#0a0a12]/80 px-4 py-5 sm:px-6 sm:py-7 flex flex-col items-center text-center gap-1.5"
+            >
+              <div className="text-2xl sm:text-4xl font-bold tracking-tight tabular-nums text-gradient leading-none">
+                {s.value}
+              </div>
+              <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.16em] text-gray-500">
+                {s.label}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Interlinked — Premium (client-side auth gate) */}
@@ -71,7 +129,7 @@ export default async function NewsletterIndexPage() {
             {freePosts.map((post) => {
               const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
               return (
-                <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-4 sm:p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all">
+                <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-4 sm:p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all backdrop-blur-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <h3 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors truncate">{post.subject}</h3>

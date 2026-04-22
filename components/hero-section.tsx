@@ -10,8 +10,8 @@ import { useRouter } from "next/navigation";
 
 const metrics = [
   { icon: Clock, value: "24/7", label: "Execution" },
-  { icon: Users, value: "500k+", label: "Subscribers" },
-  { icon: Eye, value: "20M+", label: "Impressions" },
+  { icon: Users, value: "13", label: "Subscribers" },
+  { icon: Eye, value: "2k+", label: "Impressions" },
 ];
 
 const partners = [
