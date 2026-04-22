@@ -98,6 +98,28 @@ export default function CommandCenter() {
   useEffect(() => { if (!authLoading && user && !profileLoading && isAdmin) setAuthed(true); }, [user, authLoading, profileLoading, isAdmin]);
   const fetchAll = useCallback(async () => { setLoading(true); const safe = async (url: string) => { try { const r = await fetch(url); return r.ok ? await r.json() : []; } catch { return []; } }; const safeObj = async (url: string) => { try { const r = await fetch(url); return r.ok ? await r.json() : null; } catch { return null; } }; setProj(await safe("/api/agents/intelligence")); setEdits(await safe("/api/agents/edits")); setDeps(await safe("/api/agents/deployments")); setHealth(await safeObj("/api/health")); setLoading(false); }, []);
   useEffect(() => { if (authed) { fetchAll(); const iv = setInterval(fetchAll, 20000); return () => clearInterval(iv); } }, [authed, fetchAll]);
+  const [port, setPort] = useState<{ arr: number; mrr: number; paying: number; ships30: number }>({ arr: 0, mrr: 0, paying: 0, ships30: 0 });
+  useEffect(() => {
+    if (!authed) return;
+    let dead = false;
+    const run = async () => {
+      try {
+        const [cr, br] = await Promise.all([
+          fetch("/api/portfolio/clients").then(r => r.ok ? r.json() : null),
+          fetch("/api/portfolio/build-log?limit=500").then(r => r.ok ? r.json() : null),
+        ]);
+        if (dead) return;
+        const paying = (cr?.clients || []).filter((c: any) => (c.current_mrr_usd || 0) > 0).length;
+        const cutoff = Date.now() - 30 * 864e5;
+        const ships30 = (br?.entries || []).filter((s: any) => new Date(s.created_at).getTime() > cutoff).length;
+        setPort({ arr: cr?.portfolio_arr_usd || 0, mrr: cr?.portfolio_mrr_usd || 0, paying, ships30 });
+      } catch {}
+    };
+    run();
+    const iv = setInterval(run, 15000);
+    return () => { dead = true; clearInterval(iv); };
+  }, [authed]);
+  const fmtK = (n: number) => n >= 1_000_000 ? `$${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `$${(n / 1_000).toFixed(1)}K` : `$${n}`;
   if (!authed) return <LoginGate onAuth={() => setAuthed(true)} />;
   if (authLoading || profileLoading) return <div className="min-h-screen bg-[#030305] flex items-center justify-center"><Loader2 className="w-6 h-6 text-emerald-400 animate-spin" /></div>;
   if (!isAdmin) return <div className="min-h-screen bg-[#030305] flex items-center justify-center"><Lock className="w-8 h-8 text-red-400" /></div>;
@@ -116,7 +138,7 @@ export default function CommandCenter() {
           <div className="flex items-center gap-4 ml-auto md:ml-0"><span className="text-xs font-mono text-emerald-400/60 tabular-nums hidden sm:block">{clock.toLocaleTimeString([], { hour12: false })}</span><button onClick={fetchAll} disabled={loading} className="w-7 h-7 rounded-lg bg-white/[.03] border border-white/[.06] flex items-center justify-center text-gray-500 hover:text-emerald-400"><RefreshCw className={`w-3 h-3 ${loading ? "animate-spin" : ""}`} /></button></div>
         </div>
       </div>
-      <div className="max-w-[1600px] mx-auto px-4 lg:px-6 py-4"><div className="grid grid-cols-2 sm:grid-cols-4 gap-4">{[{ l: "UPTIME", v: health ? `${Math.floor(health.uptime_ms / 60000)}m` : "\u2014", c: "text-blue-400", b: "border-blue-500/15" }, { l: "AI SCORE", v: `${avg}/100`, c: "text-purple-400", b: "border-purple-500/15" }, { l: "COMMITS", v: String(tc), c: "text-emerald-400", b: "border-emerald-500/15" }, { l: "LINES", v: tl.toLocaleString(), c: "text-yellow-400", b: "border-yellow-500/15" }].map(s => (<div key={s.l} className={`flex items-center gap-4 p-4 rounded-xl border bg-white/[.01] ${s.b}`}><span className={`text-sm font-mono font-bold ${s.c}`}>{s.v}</span><span className="text-[9px] font-mono text-gray-600">{s.l}</span></div>))}</div></div>
+      <div className="max-w-[1600px] mx-auto px-4 lg:px-6 py-4"><div className="grid grid-cols-2 sm:grid-cols-4 gap-4">{[{ l: "PORTFOLIO MRR", v: fmtK(port.mrr), c: "text-emerald-400", b: "border-emerald-500/15" }, { l: "PORTFOLIO ARR", v: fmtK(port.arr), c: "text-cyan-400", b: "border-cyan-500/15" }, { l: "PAYING CLIENTS", v: String(port.paying), c: "text-purple-400", b: "border-purple-500/15" }, { l: "SHIPS · 30D", v: String(port.ships30), c: "text-yellow-400", b: "border-yellow-500/15" }].map(s => (<div key={s.l} className={`flex items-center gap-4 p-4 rounded-xl border bg-white/[.01] ${s.b}`}><span className={`text-sm font-mono font-bold ${s.c}`}>{s.v}</span><span className="text-[9px] font-mono text-gray-600">{s.l}</span></div>))}</div></div>
       <div className="max-w-[1600px] mx-auto px-4 lg:px-6 pb-12 space-y-4">
         <ClientPortfolioPanel />
         <RiskLanesPanel />

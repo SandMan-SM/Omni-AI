@@ -92,7 +92,7 @@ export function ClientPortfolioPanel() {
           <span className="text-gray-500">MRR <span className="text-emerald-400">{fmtMoney(totals.mrr)}</span></span>
         </span>
       </div>
-      <div className="p-3 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+      <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-2">
         {loading && clients.length === 0 ? (
           <p className="col-span-full text-xs font-mono text-gray-600 text-center py-6">Loading portfolio…</p>
         ) : (
