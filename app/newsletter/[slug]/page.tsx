@@ -112,11 +112,17 @@ export default async function NewsletterPostPage({ params }: Props) {
 
         {/* Quote */}
         {post.quote && (
-          <blockquote className={`border-l-2 ${isPremium ? "border-yellow-500" : "border-purple-500"} pl-4 mt-8 mb-12`}>
-            <p className="text-lg text-gray-300 italic leading-relaxed">
-              {post.quote}
-            </p>
-          </blockquote>
+          <div
+            className={`mt-8 mb-12 rounded-xl bg-white/[0.03] border border-white/[0.08] border-l-2 p-6 sm:p-8 ${
+              isPremium ? "border-l-yellow-500" : "border-l-purple-500"
+            }`}
+          >
+            <blockquote>
+              <p className="text-lg text-gray-300 italic leading-relaxed">
+                &ldquo;{post.quote}&rdquo;
+              </p>
+            </blockquote>
+          </div>
         )}
 
         {/* Intro */}
