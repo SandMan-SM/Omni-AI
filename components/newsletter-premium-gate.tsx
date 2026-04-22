@@ -133,28 +133,31 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
                       {post.subject}
                     </h3>
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.intro}</p>
-                    {post.keywords && post.keywords.length > 0 && (
-                      <details className="mt-2 group/tags">
-                        <summary className="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
-                          <svg
-                            className="w-3 h-3 transition-transform group-open/tags:rotate-180"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                          {Math.min(post.keywords.length, 11)} tags
-                        </summary>
-                        <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5">
-                          {post.keywords.slice(0, 11).map((kw: string) => (
-                            <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500 whitespace-nowrap">
-                              {kw}
-                            </span>
-                          ))}
-                        </div>
-                      </details>
-                    )}
+                    {(() => {
+                      const tagsToShow = (post.keywords || []).slice(0, 11);
+                      return tagsToShow.length > 0 && (
+                        <details className="mt-2 group/tags">
+                          <summary className="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
+                            <svg
+                              className="w-3 h-3 transition-transform group-open/tags:rotate-180"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                            </svg>
+                            {tagsToShow.length} tags
+                          </summary>
+                          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5">
+                            {tagsToShow.map((kw: string) => (
+                              <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500 whitespace-nowrap">
+                                {kw}
+                              </span>
+                            ))}
+                          </div>
+                        </details>
+                      );
+                    })()}
                   </div>
                   <p className="text-xs text-gray-600 flex-shrink-0">{date}</p>
                 </div>

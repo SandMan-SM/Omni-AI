@@ -2,12 +2,17 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { RedSparks } from "@/components/red-sparks";
+import Image from "next/image";
+import { unstable_noStore as noStore } from "next/cache";
+import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 
-// Always SSR fresh — keyword counts and copy should never serve stale cached
-// markup. Older builds cached this page and kept showing "7 tags" after we
-// padded rows to 11 in the DB.
+// HARD RESET — every layer of Next's caching is turned off on this route so
+// the "N tags" counter and the post body always read live Supabase. Without
+// all three of these + noStore() inside the query, Vercel kept serving the
+// old 7-tag markup even after we padded rows to 11 in the DB.
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -15,6 +20,7 @@ interface Props {
 
 // Use admin client so shared links always work — no auth/RLS gating on individual posts
 async function getPost(slug: string) {
+  noStore();
   const supabase = createAdminClient();
   const { data } = await supabase
     .from("newsletter_posts")
@@ -52,6 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function NewsletterPostPage({ params }: Props) {
+  noStore();
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
@@ -64,17 +71,28 @@ export default async function NewsletterPostPage({ params }: Props) {
   });
 
   const isPremium = post.tier === "premium";
+  // Ensure the counter reflects what actually renders in the list below.
+  const tagsToShow = (post.keywords || []).slice(0, 11);
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white relative overflow-hidden">
-      {/* Ambient red sparks canvas — drifts behind all content (zIndex:0) */}
-      <RedSparks />
+    // No opaque bg — FireSparksBackdrop (and its dark radial wash) paints
+    // through. This is the same backdrop used on /arena.
+    <div className="min-h-screen text-white relative">
+      <FireSparksBackdrop />
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-white/5 backdrop-blur-sm bg-[#050505]/60">
+      {/* Header — logo + wordmark, sits above the sparks. */}
+      <header className="relative z-10 border-b border-white/5 backdrop-blur-md bg-black/40">
         <div className="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold text-gradient">
-            Omni AI
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <Image
+              src="/omni-logo.svg"
+              alt="Omni AI"
+              width={28}
+              height={28}
+              priority
+              className="transition-transform group-hover:scale-105"
+            />
+            <span className="text-xl font-bold text-gradient">Omni AI</span>
           </Link>
           <Link
             href="/newsletter"
@@ -99,14 +117,14 @@ export default async function NewsletterPostPage({ params }: Props) {
           <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">
             {post.subject}
           </h1>
-          {post.keywords?.length > 0 && (
+          {tagsToShow.length > 0 && (
             <details className="mb-6 group/tags">
               <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition-colors list-none flex items-center gap-1.5">
                 <svg className="w-3.5 h-3.5 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                {Math.min(post.keywords.length, 11)} tags
+                {tagsToShow.length} tags
               </summary>
               <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
-                {post.keywords.slice(0, 11).map((kw: string) => (
+                {tagsToShow.map((kw: string) => (
                   <span
                     key={kw}
                     className="text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-gray-400 whitespace-nowrap"
@@ -119,34 +137,24 @@ export default async function NewsletterPostPage({ params }: Props) {
           )}
         </div>
 
-        {/* Quote — accent-soft card with a decorative quote mark in the
-            top-left. Subtle gradient and larger radius to feel premium. */}
+        {/* Quote — clean card. No decorative glyph (was blocking the text),
+            no left-edge stripe. Uniform rounded-3xl corners, soft accent
+            border + subtle tinted bg, generous padding so the quote
+            breathes from the edges. */}
         {post.quote && (
-          <div
-            className={`relative mt-8 mb-12 rounded-2xl border border-white/[0.08] border-l-2 p-7 sm:p-10 overflow-hidden ${
-              isPremium ? "border-l-amber-500" : "border-l-purple-500"
+          <figure
+            className={`mt-8 mb-12 rounded-3xl border px-8 py-9 sm:px-12 sm:py-12 ${
+              isPremium
+                ? "border-amber-500/25 bg-amber-500/[0.04]"
+                : "border-purple-500/25 bg-purple-500/[0.04]"
             }`}
-            style={{
-              background: isPremium
-                ? "linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02) 50%, rgba(255,255,255,0.02))"
-                : "linear-gradient(135deg, rgba(168,85,247,0.08), rgba(168,85,247,0.02) 50%, rgba(255,255,255,0.02))",
-            }}
           >
-            <span
-              aria-hidden
-              className={`absolute top-3 left-5 select-none leading-none font-serif ${
-                isPremium ? "text-amber-500/20" : "text-purple-500/20"
-              }`}
-              style={{ fontSize: "5rem" }}
-            >
-              &ldquo;
-            </span>
-            <blockquote className="relative">
-              <p className="text-lg md:text-xl text-gray-200 italic leading-relaxed">
+            <blockquote>
+              <p className="text-lg md:text-xl text-gray-100 italic leading-[1.75] text-center">
                 &ldquo;{post.quote}&rdquo;
               </p>
             </blockquote>
-          </div>
+          </figure>
         )}
 
         {/* Intro */}
@@ -168,7 +176,6 @@ export default async function NewsletterPostPage({ params }: Props) {
           </div>
         </div>
 
-        {/* Premium exclusive sections */}
         {/* Power Move */}
         <div className="mb-10">
           <p className={`text-xs font-bold uppercase tracking-widest mb-4 ${isPremium ? "text-amber-400" : "text-purple-400"}`}>
@@ -179,11 +186,9 @@ export default async function NewsletterPostPage({ params }: Props) {
           </p>
         </div>
 
-        {/* CTA — recap + simple offer + scheduler link. The recap uses the
-            post's own intro so each issue's CTA is specific to what the
-            reader just read, not generic filler. */}
+        {/* CTA — recap + simple offer + scheduler link */}
         <div
-          className={`mb-10 rounded-2xl border p-7 sm:p-9 text-center ${
+          className={`mb-10 rounded-2xl border p-7 sm:p-9 text-center backdrop-blur-sm ${
             isPremium ? "border-amber-500/30 bg-amber-500/[0.04]" : "border-purple-500/30 bg-purple-500/[0.04]"
           }`}
         >

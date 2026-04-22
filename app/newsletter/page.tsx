@@ -1,6 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 
 export const metadata: Metadata = {
@@ -25,6 +26,8 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // Manual floors so the page never under-represents reach when a signup
 // source hasn't been wired into Supabase yet. Update these as real counts
@@ -39,6 +42,7 @@ function fmtCompact(n: number): string {
 }
 
 export default async function NewsletterIndexPage() {
+  noStore();
   const supabase = createAdminClient();
 
   // Pull posts + live counts in parallel. The three stat queries are cheap
@@ -128,20 +132,21 @@ export default async function NewsletterIndexPage() {
           <div className="space-y-4">
             {freePosts.map((post) => {
               const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+              const tagsToShow = (post.keywords || []).slice(0, 11);
               return (
                 <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-4 sm:p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all backdrop-blur-sm">
                   <div className="flex items-start justify-between gap-4">
                     <div className="min-w-0 flex-1">
                       <h3 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors truncate">{post.subject}</h3>
                       <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.intro}</p>
-                      {post.keywords?.length > 0 && (
+                      {tagsToShow.length > 0 && (
                         <details className="mt-2 group/tags">
                           <summary className="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
                             <svg className="w-3 h-3 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                            {Math.min(post.keywords.length, 11)} tags
+                            {tagsToShow.length} tags
                           </summary>
                           <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5">
-                            {post.keywords.slice(0, 11).map((kw: string) => (
+                            {tagsToShow.map((kw: string) => (
                               <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500 whitespace-nowrap">{kw}</span>
                             ))}
                           </div>
