@@ -1,28 +1,57 @@
 # Interlinked Newsletter — Structure & Pipeline
 
-## Template structure (both free and premium)
+## Three sources of truth (keep in sync)
 
-Implemented in `lib/newsletter-sender.ts` → `buildNewsletterEmailHtml(content, tier)`.
+| Layer | File |
+|---|---|
+| Email render | `lib/newsletter-sender.ts` → `buildNewsletterEmailHtml(content, tier)` |
+| Web "read on the web" page | `app/newsletter/[slug]/page.tsx` |
+| This spec | `docs/newsletter-structure.md` |
 
-1. **Title**
-   - Free: `Interlinked`
-   - Premium: `Interlinked Premium` (amber accent)
-2. **Subtitle line** — `by Omni AI · Daily Intelligence Brief · <date>` (premium: `Daily Premium Intelligence Brief`)
-3. **Quote** — bubble with soft accent background + border, italic, centered (only if the post has a quote)
-4. **Intro / hook** — plain paragraph, no bubble
-5. **Today's Key Insights** — heading in cyan; each insight is a standalone paragraph (no bullets)
-6. **Power Move** — soft accent card with left border
-7. **CTA card** — accent-bordered card containing:
-   - Tagline on top: "Schedule a free consultation anytime — and remember, you can share this with a friend."
-   - `Book Now` button → `/book-now`
-   - `Share` button (mailto with prefilled subject/body + link to post)
-8. **Fine-print restatement** of the power move (centered, italic, muted)
-9. **Read on the web** link → `/newsletter/[slug]`
-10. **$50,000 certification callout** — `Join the community` link → `https://t.me/+HxMnLSV1FYs0YmIx`
-11. **Today's Trends** — left-aligned keyword list (tags)
-12. **Footer**
+**Rule:** a change to any one of the above requires a matching change to the
+other two in the **same commit**. Drift between the three is the bug this
+section exists to prevent.
+
+## Template structure (both free and premium) — email + web mirror each other
+
+Accent pairing is tier-based: free → purple (`#a855f7`), premium → amber (`#f59e0b`).
+One accent per render. Never mixed.
+
+1. **Header eyebrow + title** — mono uppercase eyebrow in accent color
+   ("Interlinked" / "Interlinked Premium"), then subtitle line
+   `Daily Intelligence Brief · <date>` (or `Daily Premium Intelligence Brief · <date>`).
+2. **Subject heading** — H1/H2 bold headline.
+3. **Quote** — optional. Accent-soft bg + left accent border, italic,
+   centered. Only if the post has a `quote` field.
+4. **Intro / hook** — plain paragraph, 15–17px prose. No bubble.
+5. **Today's insights** — mono uppercase label in accent color; each
+   insight is a standalone paragraph (never bullets — locked rule).
+6. **Premium · exclusive insight** — premium only, if `exclusive_insight` is set.
+   Same card shape as insights.
+7. **AI tool of the week** — premium only, if `ai_recommendation` is set.
+   Accent-soft bg + left border callout.
+8. **Power move** — accent-soft bg + left border callout. Required field.
+9. **CTA block** — centered tagline + two buttons side by side:
+   - Tagline (locked copy): `Book a free 30-minute strategy session — or share this with someone who needs it.`
+   - **Book Now** (primary, accent bg) → `/book-now`
+   - **Share** (secondary, outlined) → `mailto:` prefilled with subject = `Interlinked: <subject>` and body containing the post URL + book-now URL.
+10. **$50K certification callout** — accent-soft bg + accent border.
+    `Get a $50,000 certification — free` · `Sponsored by Omni AI · Join the community` (→ `https://t.me/+HxMnLSV1FYs0YmIx`).
+11. **Today's trends** — mono uppercase label + keyword pills (max 12).
+    Left-aligned. Same pills on web; inline list on email.
+12. **Footer** — mono tagline + 2 links:
     - Free: `Manage subscription` (→ `/dashboard`) · `Upgrade to Premium` (→ `/interlinked/premium`)
     - Premium: `Manage account` (→ `/dashboard`) · `Affiliate program` (→ `/affiliate/info`)
+
+The web page additionally has: a sticky top bar (Omni AI · All issues),
+single top-left accent wash background, and the footer reads as
+`Omni AI · Interlinked [Premium]` + `All issues · Book a session · <tier-swap link>`.
+
+**Dropped / deprecated fields** (exist in DB for older drafts, do NOT render):
+- `offer` — no longer rendered. CTA tagline is hard-coded.
+- `closing` — no longer rendered. Power move is the closer.
+- `read on the web` link — email-only (there's nowhere else for the email
+  to link to). Web obviously omits it.
 
 ## Content model
 
