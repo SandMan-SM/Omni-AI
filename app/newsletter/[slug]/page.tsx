@@ -8,7 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { WEB } from "@/components/ui/web-primitives";
+import { WEB } from "@/components/ui/web-tokens";
 
 interface Props {
   params: Promise<{ slug: string }>;

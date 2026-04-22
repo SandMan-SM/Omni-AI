@@ -13,42 +13,13 @@
 
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
+import { WEB, accentHex, fmtMoney, type Accent } from "./web-tokens";
 
-export type Accent = "green" | "cyan" | "purple" | "amber" | "red";
-
-/** Locked web token palette. Matches `docs/web-design-system.md`. */
-export const WEB = {
-  canvas: "#05050a",
-  surface: "#0d0d14",
-  surfaceRaised: "#13131c",
-  borderDefault: "#1f1f2c",
-  borderStrong: "#2a2a3a",
-  textPrimary: "#f4f6fb",
-  textBody: "#d9dde5",
-  textMuted: "#9aa0ad",
-  textSubtle: "#6a6f7c",
-  green: "#10b981",
-  cyan: "#06b6d4",
-  purple: "#a855f7",
-  amber: "#f59e0b",
-  red: "#ef4444",
-} as const;
-
-export const accentHex: Record<Accent, string> = {
-  green: WEB.green,
-  cyan: WEB.cyan,
-  purple: WEB.purple,
-  amber: WEB.amber,
-  red: WEB.red,
-};
-
-/** fmtMoney mirrors the email helper — same output on both sides. */
-export const fmtMoney = (n: number): string =>
-  n >= 1_000_000
-    ? `$${(n / 1_000_000).toFixed(2)}M`
-    : n >= 1_000
-      ? `$${(n / 1_000).toFixed(1)}K`
-      : `$${Math.round(n).toLocaleString()}`;
+// Re-export so existing client-side imports from this module keep working.
+// Server components should import from `./web-tokens` directly — see the
+// note in that file for why (TDZ on client-reference proxies).
+export { WEB, accentHex, fmtMoney };
+export type { Accent };
 
 /** Outer canvas shell. Every linked-from-email page wraps its children here. */
 export function PageShell({
