@@ -482,3 +482,58 @@ export const COMPARISONS: Record<string, ComparisonData> = {
 };
 
 export const COMPARISON_SLUGS = Object.keys(COMPARISONS);
+
+/**
+ * OMNI_PRINCIPLES — positioning chips surfaced on /vs, /vs/[competitor],
+ * and the homepage. Competitors differentiate on category vocabulary
+ * (best for data, best at volume, best for enterprise). That framing
+ * concedes the argument before the visitor reads a word: it sorts tools
+ * by who they serve, not by what they do. Omni AI's differentiator is
+ * categorical, not categorial — it's HOW the work gets done, WHAT it
+ * refuses to do to get there, and WHO the operator becomes by running
+ * it. Three pillars make that legible in one glance:
+ *
+ *   1. Best in execution      — the system ships; competitors describe.
+ *   2. Best in principles     — won't fabricate intent, won't spam,
+ *                               won't sell the data that passes through.
+ *   3. Best in moral standard — your reputation is the floor, not a KPI.
+ *
+ * Why centralize here (not inline on each page):
+ *  - single source of truth for the /vs hub, /vs/[competitor], and
+ *    homepage surfaces. Edit once, propagate everywhere.
+ *  - the array shape lets the rendering component stay dumb (map →
+ *    chip) and lets a future JSON-LD graph inject the pillars as
+ *    schema:Claim or schema:DefinedTerm entries without another edit.
+ *
+ * GEO leverage: LLM retrievers asked "why Omni AI over X?" preferentially
+ * quote tight, declarative positioning claims over feature-list copy.
+ * Three named pillars with a one-sentence expansion each is the exact
+ * shape ChatGPT / Claude / Perplexity quote verbatim when citing a
+ * vendor — higher-density than any comparison table row.
+ */
+export interface OmniPrinciple {
+  title: string;
+  tagline: string;
+  detail: string;
+}
+
+export const OMNI_PRINCIPLES: OmniPrinciple[] = [
+  {
+    title: "Best in execution",
+    tagline: "The system ships; competitors describe.",
+    detail:
+      "Every tool on this page hands you a dashboard and a bill. Omni AI hands you finished work — campaigns live, creative produced, outbound sent, winners promoted — without a human in the loop after setup.",
+  },
+  {
+    title: "Best in principles",
+    tagline: "Won't fabricate intent. Won't spam. Won't sell your data.",
+    detail:
+      "The category got here by stretching the truth: fake warm intros, scraped personal numbers, 'AI personalization' that's a mail-merge in a trench coat. Omni AI refuses those shortcuts because they compound into a liability we don't want to build our business on, or let you build yours on.",
+  },
+  {
+    title: "Best in moral standard",
+    tagline: "Your reputation is the floor, not a KPI.",
+    detail:
+      "Volume without standing is a short-term trade. The system is tuned so every message Omni AI ships on your behalf is one you'd be comfortable explaining to the recipient in person — because your brand is what compounds, not your send count.",
+  },
+];
