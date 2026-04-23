@@ -27,6 +27,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/newsletter`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/newsletter/premium/info`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/website/development`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // Core conversion surface — consultation booking page with written reviews
+    // and value content. Weekly refresh since availability/pricing can change.
+    { url: `${baseUrl}/book-now`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    // Premium newsletter sales landing — distinct from /newsletter/premium/info
+    // (feature list) and a direct conversion target for paid traffic.
+    { url: `${baseUrl}/interlinked/premium`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // Affiliate program surfaces. /info is the program overview, sign-up and
+    // book-consultation are modal-opening landers that still deserve a URL
+    // because they're the canonical entry points from email/ad creative.
+    { url: `${baseUrl}/affiliate/info`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/affiliate/consultation/info`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/affiliate/sign-up`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${baseUrl}/affiliate/book-consultation`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     // Legal — low crawl priority, rarely changes. Included so the URL is
     // discoverable by search engines and LLM indexers (required signal for
     // E-E-A-T / trust rating on commercial sites).
