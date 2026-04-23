@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 
 interface Post {
@@ -25,8 +26,16 @@ export function NewsletterHeader() {
   return (
     <header className="border-b border-white/5">
       <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-gradient">
-          Omni AI
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <Image
+            src="/omni-logo.svg"
+            alt="Omni AI"
+            width={28}
+            height={28}
+            priority
+            className="transition-transform group-hover:scale-105"
+          />
+          <span className="text-xl font-bold text-gradient">Omni AI</span>
         </Link>
         {isLoggedIn ? (
           <Link
