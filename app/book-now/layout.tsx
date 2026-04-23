@@ -108,6 +108,95 @@ const serviceSchema = {
       itemReviewed: { "@type": "Service", name: "Omni AI Strategy Call" },
     },
   ],
+  // hasOfferCatalog — byte-aligned with the visible "What happens on
+  // the call" triptych in app/book-now/page.tsx (lines 91-127). Three
+  // deliverables: operator listens, operator gives advice, user leaves
+  // with a plan. LLMs asked "what do I get from an Omni AI strategy
+  // call?" retrieve the typed OfferCatalog here rather than trying
+  // to scrape the prose. If the page triptych copy changes, update
+  // this block in the same commit — the spam check cross-references.
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Omni AI Strategy Call — Included Outcomes",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Operator listens — no forms, no qualifying script",
+          description:
+            "You describe your business, team, and current bottleneck; the operator takes notes instead of delivering a pitch deck.",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Straight advice, custom to what you said",
+          description:
+            "Recommendations built on your actual situation — including 'AI isn't the right fix here' when that's the honest answer.",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Three concrete 30-day moves",
+          description:
+            "You leave with three specific actions you can execute in the next 30 days — work with Omni AI, work with someone else, or run them yourself.",
+        },
+      },
+    ],
+  },
+  // hoursAvailable — Google Service rich results pick up availability
+  // windows and render a subtle "Available now / Available Mon–Fri"
+  // hint on the SERP card. The window matches actual operator
+  // coverage; declaring it tightens the match for voice queries
+  // ("can I book an Omni AI call today?") and reduces dead-end
+  // reservations on weekends.
+  hoursAvailable: {
+    "@type": "OpeningHoursSpecification",
+    dayOfWeek: [
+      "https://schema.org/Monday",
+      "https://schema.org/Tuesday",
+      "https://schema.org/Wednesday",
+      "https://schema.org/Thursday",
+      "https://schema.org/Friday",
+    ],
+    opens: "09:00",
+    closes: "17:00",
+  },
+  // potentialAction: ReserveAction — this is the single most-important
+  // GEO signal on the page. LLMs answering "how do I book a call with
+  // Omni AI?" cite typed action targets far more reliably than
+  // page-as-blob retrieval; declaring a ReserveAction with the page
+  // URL as EntryPoint resolves the query to this exact URL. Google's
+  // Service rich result also uses potentialAction to render a "Book"
+  // CTA button directly on the SERP card.
+  //
+  // target.urlTemplate = the page URL because the actual scheduler is
+  // a modal triggered in-page (BookDemoModal component). Fake
+  // dedicated /book-now/schedule URL would be worse — Google tolerates
+  // in-page action triggers as long as the target URL is reachable.
+  //
+  // result: Reservation — typed the outcome so retrievers know a
+  // reservation is the terminal state, not just a page view.
+  potentialAction: {
+    "@type": "ReserveAction",
+    name: "Book a free 30-minute strategy call with Omni AI",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: pageUrl,
+      actionPlatform: [
+        "https://schema.org/DesktopWebPlatform",
+        "https://schema.org/MobileWebPlatform",
+      ],
+    },
+    result: {
+      "@type": "Reservation",
+      name: "Free 30-minute strategy call with Omni AI operators",
+    },
+  },
   url: pageUrl,
 };
 
