@@ -10,6 +10,11 @@ import {
   isBotSubmission,
   sanitizeText,
 } from '@/lib/validation';
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from '@/lib/rate-limit';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
@@ -74,6 +79,15 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Rate-limit FIRST. Demo-booking fires two Resend emails + an .ics
+    // attachment per successful POST — the single most expensive public
+    // endpoint we have. 2 per 10 min per IP: users don't double-book,
+    // and the "meant to click once but clicked twice" race is inside
+    // that budget.
+    const ip = getClientIp(request.headers);
+    const rl = rateLimit(`demo-booking:${ip}`, 2, 10 * 60 * 1000);
+    if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
     const body = await request.json();
 
     // Bot check — honeypot field. Spambots auto-fill every input; real

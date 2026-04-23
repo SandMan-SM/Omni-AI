@@ -6,6 +6,11 @@ import {
   isBotSubmission,
   sanitizeText,
 } from '@/lib/validation';
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from '@/lib/rate-limit';
 
 const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -30,6 +35,11 @@ const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 //   - sanitizeText + length caps
 //   - escapeHtml on every email interpolation site
 export async function POST(request: Request) {
+  // Rate-limit FIRST, before JSON parse. 3 per 10 min per IP.
+  const ip = getClientIp(request.headers);
+  const rl = rateLimit(`affiliate-signup:${ip}`, 3, 10 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();

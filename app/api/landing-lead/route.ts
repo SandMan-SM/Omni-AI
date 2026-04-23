@@ -6,6 +6,11 @@ import {
   isBotSubmission,
   sanitizeText,
 } from "@/lib/validation";
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const OWNER_EMAIL = "sitanim8@gmail.com";
@@ -26,6 +31,14 @@ async function sendEmail(to: string, subject: string, html: string) {
 
 export async function POST(request: Request) {
   try {
+    // Rate-limit FIRST, before we even parse the body. A flood of 10KB
+    // junk payloads shouldn't get to cost us JSON-parse CPU, let alone
+    // a Supabase round-trip. 3 submissions per 10 min per IP is wildly
+    // generous for a lead form (legit users submit once).
+    const ip = getClientIp(request.headers);
+    const rl = rateLimit(`landing-lead:${ip}`, 3, 10 * 60 * 1000);
+    if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
     const body = await request.json();
 
     // Bot check — honeypot field comes first so spambots get a clean

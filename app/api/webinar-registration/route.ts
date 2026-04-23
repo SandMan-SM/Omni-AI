@@ -9,6 +9,11 @@ import {
   isBotSubmission,
   sanitizeText,
 } from '@/lib/validation';
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from '@/lib/rate-limit';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
@@ -32,6 +37,12 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    // Rate-limit FIRST. Like demo-booking, this route sends two Resend
+    // emails + an .ics per successful POST. 2 per 10 min per IP.
+    const ip = getClientIp(request.headers);
+    const rl = rateLimit(`webinar-registration:${ip}`, 2, 10 * 60 * 1000);
+    if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
     const body = await request.json();
 
     // Bot check — silent 200 so the bot doesn't retry with a different
