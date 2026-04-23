@@ -1,7 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
-import { unstable_noStore as noStore } from "next/cache";
 import { Mail, Users, Eye } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 
@@ -26,9 +25,15 @@ export const metadata: Metadata = {
   },
 };
 
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+// ISR every 5 minutes. The listing needs to reflect new daily posts (dropped
+// at 8am ET) and growing subscriber counts, but doesn't need to be real-time.
+// Previously this was `force-dynamic` + `revalidate = 0` + `noStore()` — every
+// visit hit Supabase for 4 parallel queries. At 5-min ISR the page is cached
+// at the edge and one regeneration amortizes across every visitor in that
+// window. The per-slug page `app/newsletter/[slug]/page.tsx` stays
+// force-dynamic — it had a historical stale-tags bug that a separate fix
+// should resolve before it gets ISR'd too.
+export const revalidate = 300;
 
 // Manual floors so the page never under-represents reach when a signup
 // source hasn't been wired into Supabase yet. Update these as real counts
@@ -43,7 +48,6 @@ function fmtCompact(n: number): string {
 }
 
 export default async function NewsletterIndexPage() {
-  noStore();
   const supabase = createAdminClient();
 
   // Pull posts + live counts in parallel. The three stat queries are cheap
