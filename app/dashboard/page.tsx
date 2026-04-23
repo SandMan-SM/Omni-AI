@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import dynamicImport from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -22,8 +23,33 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
-import { SponsorTab } from "@/components/sponsor-tab";
-import { CommandCenter } from "@/components/command-center";
+
+// Code-split the two heaviest tabs so non-admin / non-sponsor users don't
+// download them. CommandCenter is ~673 LOC + its own admin query stack;
+// SponsorTab is ~282 LOC + analytics charts. Neither needs to SSR — the
+// page is force-dynamic and the parent check already gates rendering.
+const SponsorTab = dynamicImport(
+  () => import("@/components/sponsor-tab").then((m) => ({ default: m.SponsorTab })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[240px] flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  },
+);
+const CommandCenter = dynamicImport(
+  () => import("@/components/command-center").then((m) => ({ default: m.CommandCenter })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[320px] flex items-center justify-center">
+        <div className="w-10 h-10 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  },
+);
 
 const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: string; accent: string; level: number }> = {
   apprentice: { name: "Apprentice", icon: Zap, gradient: "from-slate-500 to-slate-600", accent: "text-slate-400", level: 0 },
