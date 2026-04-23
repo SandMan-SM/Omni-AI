@@ -36,6 +36,26 @@ async function getPost(slug: string) {
   return data;
 }
 
+// Cross-cluster handoff. /newsletter/[slug] readers are deep-reader
+// subscribers; linking to the most recent /[slug] daily trending topic
+// gives them a quick-read adjacent next-read and closes the loop on
+// cross-cluster internal-link density. Previously the newsletter and
+// daily clusters had zero mutual links; combined with the reverse
+// direction (daily → newsletter), this lets Google treat the two
+// clusters as a coherent topic hub.
+async function getLatestTrend() {
+  noStore();
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("landing_pages")
+    .select("slug, topic, title, date")
+    .not("slug", "is", null)
+    .order("date", { ascending: false })
+    .limit(1)
+    .single();
+  return data;
+}
+
 // Pick 3 related posts for the "Related issues" section. Logic:
 //   1. Pull the 50 most recent posts (excluding the current one).
 //   2. Score each by keyword-intersection count with the current post.
@@ -144,10 +164,13 @@ export default async function NewsletterPostPage({ params }: Props) {
   const post = await getPost(slug);
   if (!post) notFound();
 
-  // Related issues run in parallel with the rest of the render — pulled
-  // once here so the card grid can be inlined into the server-rendered
-  // HTML instead of a client-side hydration fetch.
-  const relatedPosts = await getRelatedPosts(slug, post.keywords);
+  // Related issues + latest daily trend — both run in parallel so the
+  // card grid and cross-cluster handoff can be inlined into the
+  // server-rendered HTML instead of a client-side hydration fetch.
+  const [relatedPosts, latestTrend] = await Promise.all([
+    getRelatedPosts(slug, post.keywords),
+    getLatestTrend(),
+  ]);
 
   const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
     weekday: "long",
@@ -422,6 +445,35 @@ export default async function NewsletterPostPage({ params }: Props) {
               </Link>
               .
             </p>
+          </section>
+        )}
+
+        {/* Cross-cluster handoff to today's trending daily landing page.
+            Single editorial card (not a grid) so it reads as "one more
+            thing" rather than a second shelf of related content. Pairs
+            with the reverse-direction card on /[slug] pages shipped last
+            cycle to close the cluster loop in both directions. */}
+        {latestTrend && latestTrend.slug && (
+          <section className="mt-10">
+            <Link
+              href={`/${latestTrend.slug}`}
+              className="group block rounded-2xl border border-white/10 bg-gradient-to-br from-amber-500/[0.05] to-purple-500/[0.04] p-6 sm:p-7 hover:border-amber-500/30 transition-colors"
+            >
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-400 mb-3">
+                Today&apos;s trending · Omni AI
+              </p>
+              <h3 className="text-lg sm:text-xl font-bold text-white leading-snug mb-2 group-hover:text-amber-100 transition-colors">
+                {latestTrend.title || latestTrend.topic}
+              </h3>
+              {latestTrend.topic && latestTrend.title && latestTrend.topic !== latestTrend.title && (
+                <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
+                  {latestTrend.topic}
+                </p>
+              )}
+              <p className="text-xs font-semibold text-amber-400 group-hover:text-amber-300 transition-colors">
+                See the trending brief →
+              </p>
+            </Link>
           </section>
         )}
 
