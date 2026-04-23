@@ -10,6 +10,10 @@ import { useToast } from "@/hooks/use-toast";
 export function ContactSection() {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
+  // Honeypot — real users never see this field. Bots auto-fill it
+  // (most common-name-sniffing spambots fill anything with name="website").
+  // Server returns silent 200 on non-empty so the bot moves on.
+  const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const subtitleRef = useRef<HTMLSpanElement>(null);
   const measureRef = useRef<HTMLSpanElement>(null);
@@ -50,7 +54,7 @@ export function ContactSection() {
       const res = await fetch("/api/newsletter", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, website }),
       });
 
       const payload = await res.json().catch(() => ({}));
@@ -125,6 +129,24 @@ export function ContactSection() {
           </div>
 
           <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
+            {/* Honeypot — positioned off-screen instead of type=hidden so
+                dumb spambots that skip hidden fields still fill this. Real
+                users never see or tab to it (aria-hidden, tabIndex=-1). */}
+            <div
+              aria-hidden="true"
+              style={{ position: "absolute", left: "-9999px", top: "-9999px" }}
+            >
+              <label htmlFor="website-newsletter">Website (leave blank)</label>
+              <input
+                id="website-newsletter"
+                name="website"
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+              />
+            </div>
             <div className="flex items-center h-12 rounded-lg border border-white/10 bg-white/5 overflow-hidden">
               <div className="flex items-center pl-4 flex-1">
                 <Mail className="w-4 h-4 text-gray-500 mr-2 flex-shrink-0" />

@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { logEvent } from "@/lib/events";
+import { isValidEmail, isBotSubmission, sanitizeText } from "@/lib/validation";
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from "@/lib/rate-limit";
 
 // POST /api/newsletter — public newsletter subscribe endpoint.
 //
@@ -19,20 +25,38 @@ import { logEvent } from "@/lib/events";
 //   reactivated instead of rejected. Anonymous visitors can finally
 //   actually subscribe.
 export async function POST(request: Request) {
-  let body: { email?: unknown };
+  // Rate-limit FIRST. Newsletter is the highest-volume public endpoint
+  // on the site (footer + contact section + newsletter page hero all
+  // call it). 5 per 10 min per IP — generous for a legit "oops, typo,
+  // resubmit" sequence, tight enough to stop a script enumerating
+  // disposable-email domains into the table.
+  const ip = getClientIp(request.headers);
+  const rl = rateLimit(`newsletter:${ip}`, 5, 10 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
+  let body: Record<string, unknown>;
   try {
-    body = await request.json();
+    body = (await request.json()) as Record<string, unknown>;
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const rawEmail = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-  if (!rawEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rawEmail)) {
+  // Honeypot — silent 200 so bots don't retry with different field names.
+  if (isBotSubmission(body)) {
+    return NextResponse.json({ success: true });
+  }
+
+  // Sanitize + length-cap before validation. sanitizeText returns ""
+  // for non-strings, which drops through to the isValidEmail check
+  // below and returns a 400 like any other empty input.
+  const emailInput = sanitizeText(body.email, 254);
+  if (!isValidEmail(emailInput)) {
     return NextResponse.json(
       { error: "Please enter a valid email address." },
       { status: 400 },
     );
   }
+  const rawEmail = emailInput.toLowerCase();
 
   const admin = createAdminClient();
 

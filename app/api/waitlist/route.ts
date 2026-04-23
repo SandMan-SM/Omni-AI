@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isValidEmail, isBotSubmission, sanitizeText } from '@/lib/validation';
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from '@/lib/rate-limit';
 
 // POST /api/waitlist — generic lead capture endpoint.
 //
@@ -25,6 +31,12 @@ import { createAdminClient } from '@/lib/supabase/admin';
 //   source         → source  (e.g., "sponsor_application")
 //   role           → folded into notes
 export async function POST(request: Request) {
+  // Rate-limit FIRST. Writes directly to `leads` table — unbounded,
+  // row-level flooding if left open. 3 per 10 min per IP.
+  const ip = getClientIp(request.headers);
+  const rl = rateLimit(`waitlist:${ip}`, 3, 10 * 60 * 1000);
+  if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
   let body: Record<string, unknown>;
   try {
     body = await request.json();
@@ -32,26 +44,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const name = typeof body.name === 'string' ? body.name.trim() : '';
-  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-  const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-  const message = typeof body.message === 'string' ? body.message.trim() : '';
-  const availableDate = typeof body.available_date === 'string' ? body.available_date : null;
-  const source = typeof body.source === 'string' ? body.source : 'waitlist';
-  const role = typeof body.role === 'string' ? body.role : null;
+  // Honeypot — silent 200 so bots don't retry.
+  if (isBotSubmission(body)) {
+    return NextResponse.json({ success: true });
+  }
 
-  if (!name || !email || !phone) {
+  // sanitizeText + per-field caps. Previously `message` was unbounded;
+  // a malicious POST could jam 1MB of garbage into `notes` every time.
+  const name = sanitizeText(body.name, 200);
+  const emailInput = sanitizeText(body.email, 254);
+  const phone = sanitizeText(body.phone, 50);
+  const message = sanitizeText(body.message, 2000);
+  const availableDate = typeof body.available_date === 'string' ? body.available_date : null;
+  const source = sanitizeText(body.source, 100) || 'waitlist';
+  const role = sanitizeText(body.role, 100) || null;
+
+  if (!name || !emailInput || !phone) {
     return NextResponse.json(
       { error: 'name, email, and phone are required.' },
       { status: 400 },
     );
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(emailInput)) {
     return NextResponse.json(
       { error: 'Please enter a valid email address.' },
       { status: 400 },
     );
   }
+  const email = emailInput.toLowerCase();
 
   // Compose a single notes blob so we don't lose the role + message
   // context. The `leads` table doesn't have dedicated columns for those

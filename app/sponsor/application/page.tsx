@@ -38,6 +38,10 @@ export default function SponsorApplication() {
     availableDate: "",
     message: ""
   });
+  // Honeypot — off-screen input that real users never see but dumb
+  // spambots auto-fill. Server silent-200s on non-empty so bots don't
+  // rotate field names.
+  const [website, setWebsite] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
@@ -60,6 +64,7 @@ export default function SponsorApplication() {
           available_date: formData.availableDate,
           source: "sponsor_application",
           role: "sponsor",
+          website, // honeypot — must be empty
         }),
       });
       if (!res.ok) {
@@ -240,6 +245,24 @@ export default function SponsorApplication() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Honeypot — off-screen, aria-hidden, non-tabbable. Real
+                  users never see or interact with this; bots that auto-fill
+                  anything named "website" trigger a silent 200 server-side. */}
+              <div
+                aria-hidden="true"
+                style={{ position: "absolute", left: "-9999px", top: "-9999px" }}
+              >
+                <label htmlFor="website-sponsor">Website (leave blank)</label>
+                <input
+                  id="website-sponsor"
+                  name="website"
+                  type="text"
+                  tabIndex={-1}
+                  autoComplete="off"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                />
+              </div>
               <div>
                 <label className="block text-sm font-medium mb-2">Full Name</label>
                 <Input
