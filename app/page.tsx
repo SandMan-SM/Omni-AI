@@ -1,11 +1,19 @@
 "use client";
-export const dynamic = 'force-dynamic';
+
+// Previously `export const dynamic = 'force-dynamic'` sat here, which
+// forced SSR on every request and disabled CDN caching of the shell. The
+// page is a pure client component — no cookies(), no headers(), no
+// server-side data fetching — so there's no reason to opt out of
+// Next.js's default static prerender. Removing it lets Vercel serve the
+// HTML shell from the edge cache. `window.location.search` reads in the
+// useEffect below are client-only and don't affect rendering mode. The
+// <SiteTracker /> in app/layout.tsx uses useSearchParams() but is wrapped
+// in a Suspense boundary, so static prerender still works for the layout.
 
 import { useState, useEffect } from "react";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Navbar } from "@/components/navbar";
 import { HeroSection } from "@/components/hero-section";
-import { ServicesSection } from "@/components/services-section";
 import { LegacySection } from "@/components/legacy-section";
 import { CampaignsSection } from "@/components/campaigns-section";
 import { EcosystemSection } from "@/components/ecosystem-section";
