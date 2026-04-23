@@ -86,10 +86,16 @@ function computeElo(profile: any): { elo: number; wins: number; losses: number; 
 export async function GET() {
   const sb = createAdminClient();
 
-  // Fetch profiles with business names (include admins with agent_name set)
+  // Fetch profiles with business names (include admins with agent_name set).
+  //
+  // Deliberately NOT selecting `email` — this is a public leaderboard
+  // endpoint and the response doesn't render emails. Keeping `email` out of
+  // the underlying query is defense-in-depth: if a future edit to the
+  // response shape accidentally spreads the raw profile row, emails don't
+  // leak.
   const { data: profiles, error } = await sb
     .from('profiles')
-    .select('id, name, business_name, email, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at')
+    .select('id, name, business_name, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at')
     .not('business_name', 'is', null)
     .or('role.neq.admin,agent_name.not.is.null')
     .order('elo_rating', { ascending: false });
