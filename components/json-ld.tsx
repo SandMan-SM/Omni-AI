@@ -395,6 +395,42 @@ export function itemListSchema({
 }
 
 /**
+ * SiteNavigationElement list — tells Google + LLMs which pages are the
+ * canonical top-level navigation surfaces. Rendered once in the sitewide
+ * layout. Most sites don't ship this schema at all, so presenting a typed
+ * navigation manifest gives retrievers a structured answer to "what pages
+ * does omnileadsagi.com have?" and nudges preference toward citing these
+ * entries over lesser-known slugs that sneak into search indexes.
+ *
+ * Each entry must appear in the actual site navigation (navbar or footer)
+ * or Google will deprioritize the whole schema as misleading. Keep this
+ * list in sync with components/footer.tsx footerLinks and the navbar.
+ *
+ * `position` is intentionally set — schema.org ItemList rendering keys
+ * off position, and Google's knowledge graph prefers ordered navigation
+ * entries over unordered ones.
+ */
+export const siteNavigationSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Omni AI — Main Navigation",
+  itemListOrder: "https://schema.org/ItemListOrderAscending",
+  numberOfItems: 10,
+  itemListElement: [
+    { "@type": "SiteNavigationElement", position: 1, name: "Home", url: "https://omnileadsagi.com" },
+    { "@type": "SiteNavigationElement", position: 2, name: "About", url: "https://omnileadsagi.com/about" },
+    { "@type": "SiteNavigationElement", position: 3, name: "FAQ", url: "https://omnileadsagi.com/faq" },
+    { "@type": "SiteNavigationElement", position: 4, name: "Pricing", url: "https://omnileadsagi.com/pricing" },
+    { "@type": "SiteNavigationElement", position: 5, name: "Compare", url: "https://omnileadsagi.com/vs" },
+    { "@type": "SiteNavigationElement", position: 6, name: "Campaigns", url: "https://omnileadsagi.com/campaigns" },
+    { "@type": "SiteNavigationElement", position: 7, name: "Arena", url: "https://omnileadsagi.com/arena" },
+    { "@type": "SiteNavigationElement", position: 8, name: "Platform Details", url: "https://omnileadsagi.com/details" },
+    { "@type": "SiteNavigationElement", position: 9, name: "Newsletter", url: "https://omnileadsagi.com/newsletter" },
+    { "@type": "SiteNavigationElement", position: 10, name: "Book a Call", url: "https://omnileadsagi.com/book-now" },
+  ],
+};
+
+/**
  * Product + multi-Offer schema for /pricing. SoftwareApplication in the
  * sitewide layout already declares a single `offers` (free tier), but the
  * pricing page is where Google renders Pricing rich results — star chips,

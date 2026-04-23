@@ -3,7 +3,13 @@ import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
 import { Providers } from "./providers";
-import { JsonLd, organizationSchema, websiteSchema, softwareSchema } from "@/components/json-ld";
+import {
+  JsonLd,
+  organizationSchema,
+  websiteSchema,
+  softwareSchema,
+  siteNavigationSchema,
+} from "@/components/json-ld";
 import { SpaceBackdrop } from "@/components/space-backdrop";
 import { SiteTracker } from "@/components/analytics/site-tracker";
 
@@ -70,6 +76,12 @@ export default function RootLayout({
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <JsonLd data={softwareSchema} />
+        {/* Site-wide navigation manifest — tells Google + LLMs which
+            pages are the canonical top-level surfaces. Keeps this list
+            in sync with footer.tsx + navbar so the schema doesn't lie.
+            See components/json-ld.tsx for why most sites skip this and
+            why shipping it is a cheap retrieval-rank lift. */}
+        <JsonLd data={siteNavigationSchema} />
       </head>
       <body className={`${inter.className} overflow-x-hidden`}>
         <SpaceBackdrop />
