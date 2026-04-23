@@ -115,14 +115,18 @@ export default function Dashboard() {
   const frayTierName = 'VIP Sponsor';
   const cpsTierName = 'Master';
 
-  // Fetch campaigns from DB
+  // Fetch campaigns from DB.
+  //
+  // The server no longer trusts a `?is_admin=true` query param or a
+  // client-supplied `profile_id` — it derives admin status from the
+  // omni_token bearer and scopes non-admin callers to their own profile.
+  // So we just pass the token and let the server decide.
   const { data: campaignsData, isLoading: campaignsLoading } = useQuery({
     queryKey: ["campaigns", profile?.id, isAdmin],
     queryFn: async () => {
-      const params = new URLSearchParams();
-      if (profile?.id) params.set("profile_id", profile.id);
-      if (isAdmin) params.set("is_admin", "true");
-      const res = await fetch(`/api/campaigns?${params}`);
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch(`/api/campaigns`, { headers: authHeaders });
       return res.json();
     },
     enabled: !!profile,

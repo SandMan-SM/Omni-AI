@@ -1,9 +1,26 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * Admin command-center metrics — revenue, pipeline, lead scores, client
+ * health, newsletter counts.
+ *
+ * Previously: no auth at all. Service-role `createAdminClient()` read every
+ * row in `profiles` + `campaigns` + `newsletter_*` and returned aggregates
+ * on an anon GET. That leaks business-critical numbers (MRR proxy, hot-lead
+ * count, conversion rate, total revenue/spent) to anyone who curls the URL.
+ *
+ * Now: `requireAdmin()`. The only caller (`components/command-center.tsx`)
+ * already forwards the omni_token bearer, so no client-side change is
+ * required for admins; unauthenticated callers just get 401.
+ */
 export async function GET() {
+  const auth = await requireAdmin();
+  if ('error' in auth && auth.error) return auth.error;
+
   const supabase = createAdminClient();
 
   const [
