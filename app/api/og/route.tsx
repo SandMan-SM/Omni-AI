@@ -185,6 +185,18 @@ export async function GET(req: NextRequest) {
     {
       width: 1200,
       height: 630,
+      headers: {
+        // The OG URL is content-addressable — every unique title /
+        // topic / eyebrow combo produces a distinct URL via the
+        // encoded query params. When a post's subject or intro
+        // changes in Supabase, the newsletter page's metadata will
+        // emit a *new* URL, so the old URL's response is effectively
+        // immutable. Cache it for a year at the edge + in the browser
+        // so Twitter / LinkedIn / Slack / Facebook don't re-render the
+        // same 1200x630 on every scrape.
+        "Cache-Control":
+          "public, max-age=31536000, s-maxage=31536000, immutable",
+      },
     }
   );
 }
