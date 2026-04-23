@@ -154,6 +154,55 @@ const sponsorInfoServiceSchema = {
   },
 };
 
+// WebPage schema paired with the Service above. speakable is only
+// valid on WebPage / CreativeWork — not on Service (per schema.org
+// inheritance). Splitting into two typed blocks keeps each schema
+// clean and gives retrievers two independent surfaces to bind to:
+//
+//  - Service with OfferCatalog → Google Service rich result
+//  - WebPage with speakable + about: Service → voice assistants
+//    read the hero aloud on "what does an Omni AI sponsorship
+//    fund?" / "how do I sponsor Omni AI?" queries
+//
+// The about: { Service } reference is the edge retrievers follow to
+// resolve "tell me about Omni AI sponsorship" → read WebPage hero
+// aloud + walk to Service for the investment-area catalog. Without
+// this edge the two blocks would be orphaned and the speakable
+// reply couldn't cite the offer lineup.
+const sponsorInfoWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Become a Sponsor — Omni AI Sponsorship Overview",
+  description:
+    "Overview of Omni AI's sponsorship program: what sponsors fund, what they receive, and how to apply. AI-managed marketing and operations infrastructure for local businesses.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Service",
+    name: "Omni AI Sponsorship Program",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: `${siteUrl}/og-image.png`,
+  },
+  // SpeakableSpecification — when a voice assistant is asked "what
+  // does an Omni AI sponsorship include?" / "how do I sponsor Omni
+  // AI?" / "what is the Omni AI sponsor program?", Google Assistant
+  // / Siri read-aloud / Alexa need declared selectors to read
+  // verbatim. The h1 ("Sponsorship Overview") plus the subtitle
+  // tagged with data-speakable="intro" in app/sponsor/info/page.tsx
+  // ("Your sponsorship funds AI systems that generate qualified
+  // leads, automate operations, and deliver measurable growth.")
+  // compose the natural ~8-second voice reply — a briefing-length
+  // overview that sets up the six-item OfferCatalog as the body of
+  // the answer.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function SponsorInfoLayout({
   children,
 }: {
@@ -161,6 +210,14 @@ export default function SponsorInfoLayout({
 }) {
   return (
     <>
+      {/* WebPage schema with speakable — see the constant above for why
+          speakable lives on WebPage rather than the Service below
+          (schema.org inheritance: speakable is only valid on WebPage /
+          CreativeWork). The about: { Service } edge links this WebPage
+          to the Service declaration so retrievers can walk from
+          "tell me about Omni AI sponsorship" → hero speakable reply →
+          Service.hasOfferCatalog for the investment-area detail. */}
+      <JsonLd data={sponsorInfoWebPageSchema} />
       {/* Service schema — unlocks Google's Service rich result and gives
           LLMs a typed entity to cite for "Omni AI sponsorship" /
           "sponsor Omni AI" queries. See the constant above for why the

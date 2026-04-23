@@ -136,7 +136,19 @@ export default function SponsorInfo() {
             <span className="text-gradient">Sponsorship Overview</span>
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-300 max-w-xl mx-auto mb-6 md:mb-8 leading-relaxed">
+          {/* data-speakable="intro" activates the SpeakableSpecification
+              declared on the sponsorInfoWebPageSchema in
+              app/sponsor/info/layout.tsx. Voice assistants (Google
+              Assistant, Siri read-aloud, Alexa) concatenate h1
+              ("Sponsorship Overview") + this subtitle as the natural
+              ~8-second reply to "what does an Omni AI sponsorship
+              include?" / "how do I sponsor Omni AI?" voice queries,
+              with the six-item OfferCatalog from the Service schema
+              available as the body of the answer. */}
+          <p
+            className="text-lg md:text-xl text-gray-300 max-w-xl mx-auto mb-6 md:mb-8 leading-relaxed"
+            data-speakable="intro"
+          >
             Your sponsorship funds AI systems that generate qualified leads, automate operations, and deliver measurable growth.
           </p>
 
