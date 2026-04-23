@@ -41,6 +41,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Core conversion surface — consultation booking page with written reviews
     // and value content. Weekly refresh since availability/pricing can change.
     { url: `${baseUrl}/book-now`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    // Commercial-intent head query target — catches "Omni AI pricing" /
+    // "Omni AI cost" searches that previously had no landing page. FAQPage
+    // schema inline + tier cards feed the rich result.
+    { url: `${baseUrl}/pricing`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     // Premium newsletter sales landing — distinct from /newsletter/premium/info
     // (feature list) and a direct conversion target for paid traffic.
     { url: `${baseUrl}/interlinked/premium`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
