@@ -45,8 +45,13 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
+      // Log raw Supabase error (schema, constraint, hint) server-side only.
+      // Returning error.message leaks DB structure.
       console.error('Supabase error:', error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: "We couldn't save your registration. Please try again." },
+        { status: 400 },
+      );
     }
 
     // Parse session date/time for calendar

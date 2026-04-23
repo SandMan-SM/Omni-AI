@@ -52,27 +52,36 @@ export async function POST(req: Request) {
 
     if (error) throw error;
 
-    // Also send to Telegram so the agent gets pinged
-    try {
-      const tgMsg = `🎯 <b>LIVE COMMAND</b>\n\n${body.target_project ? `📦 Project: ${body.target_project}\n` : ""}💬 ${body.command}\n\n⏳ Status: Queued`;
-      await fetch(
-        `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN || "8552859161:AAFDZaowgtStb-8tRuBaVshLe379bDL6k1s"}/sendMessage`,
-        {
+    // Also send to Telegram so the agent gets pinged. Credentials come from
+    // env only — no hardcoded fallbacks (they'd ship to the repo and leak
+    // the real bot token to anyone with source access).
+    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
+    const tgChatId = process.env.TELEGRAM_CHAT_ID;
+    if (tgToken && tgChatId) {
+      try {
+        const tgMsg = `🎯 <b>LIVE COMMAND</b>\n\n${body.target_project ? `📦 Project: ${body.target_project}\n` : ""}💬 ${body.command}\n\n⏳ Status: Queued`;
+        await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            chat_id: process.env.TELEGRAM_CHAT_ID || "8459911167",
+            chat_id: tgChatId,
             text: tgMsg,
             parse_mode: "HTML",
           }),
-        }
-      );
-    } catch {
-      // Telegram notification is best-effort
+        });
+      } catch {
+        // Telegram notification is best-effort
+      }
     }
 
     return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    // Never leak raw error messages — they can contain Supabase schema
+    // details or internal paths. Log server-side, return generic to client.
+    console.error("agent commands POST error:", err);
+    return NextResponse.json(
+      { error: "We couldn't send that command. Please try again." },
+      { status: 500 },
+    );
   }
 }

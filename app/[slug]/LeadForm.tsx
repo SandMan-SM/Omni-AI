@@ -68,6 +68,9 @@ export default function LeadForm({ slug }: LeadFormProps) {
     >
       <input
         type="text"
+        name="name"
+        autoComplete="name"
+        aria-label="Your name"
         placeholder="Your name"
         value={fields.name}
         onChange={(e) => setFields((f) => ({ ...f, name: e.target.value }))}
@@ -76,6 +79,9 @@ export default function LeadForm({ slug }: LeadFormProps) {
       />
       <input
         type="tel"
+        name="phone"
+        autoComplete="tel"
+        aria-label="Phone number"
         placeholder="Phone number"
         value={fields.phone}
         onChange={(e) => setFields((f) => ({ ...f, phone: e.target.value }))}
@@ -84,6 +90,9 @@ export default function LeadForm({ slug }: LeadFormProps) {
       />
       <input
         type="email"
+        name="email"
+        autoComplete="email"
+        aria-label="Email address"
         placeholder="Email address"
         value={fields.email}
         onChange={(e) => setFields((f) => ({ ...f, email: e.target.value }))}

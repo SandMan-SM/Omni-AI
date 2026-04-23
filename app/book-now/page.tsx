@@ -48,6 +48,7 @@ export default function BookNowPage() {
             <button
               type="button"
               onClick={() => setOpen(true)}
+              aria-label="Open booking scheduler"
               style={{
                 background:
                   "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.55)) padding-box, " +
@@ -191,6 +192,7 @@ export default function BookNowPage() {
             <button
               type="button"
               onClick={() => setOpen(true)}
+              aria-label="Open booking scheduler"
               style={{
                 background:
                   "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.55)) padding-box, " +

@@ -30,8 +30,14 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
+      // Log the raw Supabase error (schema, constraint, hint) server-side
+      // only. Returning error.message leaks DB structure to attackers who
+      // can probe edge-cases.
       console.error('Supabase error:', error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: "We couldn't add you to the waitlist. Please try again." },
+        { status: 400 },
+      );
     }
 
     return NextResponse.json(data, { status: 201 });

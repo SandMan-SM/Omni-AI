@@ -91,8 +91,12 @@ export async function POST(request: Request) {
       .single();
 
     if (error) {
+      // Log raw Supabase error server-side only; don't leak schema details.
       console.error('Supabase insert error:', error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json(
+        { error: "We couldn't book your demo. Please try again." },
+        { status: 400 },
+      );
     }
 
     // 2. Parse meeting times
