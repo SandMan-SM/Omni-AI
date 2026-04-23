@@ -249,8 +249,34 @@ export default async function TrendingLandingPage({ params }: Props) {
           ))}
         </div>
 
+        {/* Author byline + publish date. Visible E-E-A-T signal that
+            matches the articleSchema author/datePublished fields. Newsletter
+            posts carry the same byline under their H1; daily landing pages
+            tuck it down here so the hero CTA flow stays uninterrupted.
+            The <time> element with a machine-readable dateTime pairs with
+            the JSON-LD datePublished for redundant freshness signals. */}
+        {page.date && (
+          <p className="mt-16 text-xs text-gray-400">
+            Published{" "}
+            <time dateTime={page.date} className="text-gray-300">
+              {new Date(page.date).toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric",
+              })}
+            </time>
+            {" · By "}
+            <Link
+              href="/about"
+              className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60 transition-colors"
+            >
+              Sitani Mafi
+            </Link>
+          </p>
+        )}
+
         {/* Topic pill */}
-        <p className="mt-16 text-xs text-white uppercase tracking-widest">
+        <p className="mt-3 text-xs text-white uppercase tracking-widest">
           Today&apos;s trend: {page.topic}
         </p>
       </main>
