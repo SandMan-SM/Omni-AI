@@ -12,6 +12,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Sparkles, CheckCircle2, ArrowLeft } from "lucide-react";
 import { BookDemoModal } from "@/components/modals/lazy";
+import { Breadcrumb } from "@/components/breadcrumb";
 import {
   PageShell,
   PageTopBar,
@@ -66,6 +67,25 @@ export default function InterlinkedBookNowPage() {
           </Link>
         }
       />
+
+      {/* Visible breadcrumb — paired with the breadcrumbSchema in
+          app/interlinked/book-now/layout.tsx. The PageTopBar "back to
+          Interlinked" link is a single-parent shortcut; the breadcrumb
+          surfaces the full Home → Interlinked → Book a session
+          hierarchy for users landing from SERPs / LLM citations, and
+          satisfies Google's visible-UI requirement for the breadcrumb
+          SERP chip. `max-w-6xl mx-auto px-5 md:px-8` matches the
+          PageHero container so horizontal rhythm stays clean. */}
+      <div className="max-w-6xl mx-auto px-5 md:px-8 pt-6">
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Interlinked", href: "/interlinked" },
+            { name: "Book a session", href: "/interlinked/book-now" },
+          ]}
+          className="text-xs"
+        />
+      </div>
 
       <PageHero
         eyebrow="Free · 30-minute working session"
