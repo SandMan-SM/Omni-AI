@@ -68,6 +68,77 @@ export default function PrivacyPage() {
         ])}
       />
 
+      {/* PrivacyPolicy + WebPage dual-type schema. Two retrieval wins:
+          1. `PrivacyPolicy` (a Schema.org CreativeWork subtype introduced
+             in 2020) tells Google and LLMs that this page IS the canonical
+             privacy policy document — not a marketing page that happens
+             to mention privacy. Enterprise security-review bots, GDPR/CCPA
+             compliance crawlers, and LLM trust-layer retrievers
+             preferentially cite PrivacyPolicy-typed pages when asked
+             "what's [company]'s privacy policy?" / "how does Omni AI
+             handle user data?".
+          2. `speakable` + SpeakableSpecification targeting the intro lets
+             voice assistants (Google Assistant, Alexa) read out the
+             policy summary on "what's Omni AI's privacy policy" voice
+             queries. The `data-speakable` attribute on the <section>
+             below (wrapping the "This policy explains..." paragraph) is
+             the anchor speakable specifications resolve to at crawl time.
+          dateModified tracks EFFECTIVE_DATE_ISO — LLMs use recency as a
+          trust signal when citing legal documents, so keeping the
+          schema's date in sync with the visible effective date (handled
+          by the shared const) prevents "is this still current?"
+          degradation in retrieval rank. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": ["WebPage", "PrivacyPolicy"],
+          name: "Omni AI — Privacy Policy",
+          description:
+            "How Omni AI collects, uses, stores, and shares personal information — plus the rights users have over their data and how to contact Omni AI about privacy requests.",
+          url: pageUrl,
+          inLanguage: "en-US",
+          dateModified: EFFECTIVE_DATE_ISO,
+          datePublished: EFFECTIVE_DATE_ISO,
+          isAccessibleForFree: true,
+          isPartOf: {
+            "@type": "WebSite",
+            name: "Omni AI",
+            url: siteUrl,
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "Omni AI",
+            url: siteUrl,
+            logo: {
+              "@type": "ImageObject",
+              url: `${siteUrl}/favicon.png`,
+            },
+          },
+          author: {
+            "@type": "Person",
+            name: "Sitani Mafi",
+            url: `${siteUrl}/about`,
+            jobTitle: "Founder, Omni AI",
+          },
+          mainEntityOfPage: {
+            "@type": "WebPage",
+            "@id": pageUrl,
+          },
+          primaryImageOfPage: {
+            "@type": "ImageObject",
+            url: `${siteUrl}/og-image.png`,
+          },
+          // SpeakableSpecification — lets Google Assistant / Alexa / other
+          // voice retrievers quote the first section on voice queries.
+          // xpath would be ideal but Google's docs prefer cssSelector for
+          // React-rendered pages where xpath can drift across renders.
+          speakable: {
+            "@type": "SpeakableSpecification",
+            cssSelector: ['[data-speakable="intro"]', "h1"],
+          },
+        }}
+      />
+
       <header className="border-b border-white/5">
         <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -117,7 +188,12 @@ export default function PrivacyPage() {
         </div>
 
         <div className="space-y-10 text-gray-300 leading-relaxed">
-          <section>
+          {/* data-speakable anchor — resolved by the SpeakableSpecification
+              cssSelector in the PrivacyPolicy JSON-LD above. Voice
+              assistants read the intro paragraph when answering "what's
+              Omni AI's privacy policy?" — so this section is the single
+              most-retrieved block on the page for voice intents. */}
+          <section data-speakable="intro">
             <p>
               This policy explains what Omni AI (&ldquo;Omni AI,&rdquo;
               &ldquo;we,&rdquo; &ldquo;us&rdquo;) collects when you use{" "}
