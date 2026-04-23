@@ -312,3 +312,44 @@ export function breadcrumbSchema(
     })),
   };
 }
+
+/**
+ * ItemList factory for archive / index pages. Consumed on /newsletter
+ * (the Interlinked archive) so Google and LLM retrievers see the page
+ * as a structured list of articles rather than an undifferentiated blob
+ * of post links. "Latest Omni AI newsletter", "recent Interlinked issues"
+ * queries get a typed answer to retrieve.
+ *
+ * Each item is a positioned ListItem with a nested `url` so retrievers
+ * can walk the list and cite individual issues. Keep the item count
+ * modest (the caller slices to 20) — longer lists dilute per-item rank
+ * without helping discovery.
+ */
+export function itemListSchema({
+  name,
+  description,
+  url,
+  items,
+}: {
+  name: string;
+  description?: string;
+  url: string;
+  items: { name: string; url: string; description?: string }[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name,
+    ...(description ? { description } : {}),
+    url,
+    numberOfItems: items.length,
+    itemListOrder: "https://schema.org/ItemListOrderDescending",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      url: item.url,
+      name: item.name,
+      ...(item.description ? { description: item.description } : {}),
+    })),
+  };
+}

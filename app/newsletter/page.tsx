@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { Mail, Users, Eye } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
-import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 // The newsletter archive was rendering with no footer at all — readers who
 // scrolled past the post list had nowhere to go. Add the shared Footer so
 // /about, /faq, /campaigns, /interlinked are one hop away from the content
@@ -123,9 +124,43 @@ export default async function NewsletterIndexPage() {
           { name: "Newsletter", url: "https://omnileadsagi.com/newsletter" },
         ])}
       />
+      {/* ItemList — tells Google and LLM retrievers that the archive is
+          a structured list of articles (not an undifferentiated blob of
+          links), so queries like "latest Omni AI newsletter" or "recent
+          Interlinked issues" get a typed answer with walkable per-issue
+          URLs. Cap at 20 so the schema stays focused on the most-relevant
+          recent items instead of diluting rank across 50+. */}
+      {freePosts.length > 0 && (
+        <JsonLd
+          data={itemListSchema({
+            name: "Interlinked — Daily AI Intelligence by Omni AI",
+            description:
+              "Daily newsletter issues published every morning at 8 AM ET covering AI, automation, and business strategy signals.",
+            url: "https://omnileadsagi.com/newsletter",
+            items: freePosts.slice(0, 20).map((p) => ({
+              name: p.subject,
+              url: `https://omnileadsagi.com/newsletter/${p.slug}`,
+              description: (p.intro || "").slice(0, 160) || undefined,
+            })),
+          })}
+        />
+      )}
       <NewsletterHeader />
 
       <main className="relative z-10 max-w-4xl mx-auto px-5 py-12 md:py-20">
+        {/* Visible breadcrumb — pairs with breadcrumbSchema above so the
+            SERP breadcrumb chip renders reliably on the archive (which
+            receives heavy LLM-citation-driven deep landings), and gives
+            feed-discovery visitors a one-click path back to the home
+            page without having to scroll to the footer. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Newsletter", href: "/newsletter" },
+          ]}
+          className="mb-6"
+        />
+
         <div className="text-center mb-10">
           <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">
             Omni AI Newsletter
