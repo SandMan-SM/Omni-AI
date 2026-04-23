@@ -267,10 +267,10 @@ export function BookDemoModal({
                   </div>
                 </div>
                 <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-1" data-testid="text-demo-heading">
-                  Book a Demo
+                  {heading}
                 </h2>
                 <p className="text-gray-400 text-sm text-center mb-6">
-                  Let&apos;s explore how Omni AI can transform your business
+                  {subheading}
                 </p>
 
                 <form onSubmit={handleFormSubmit} className="space-y-4">

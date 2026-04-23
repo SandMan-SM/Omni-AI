@@ -192,13 +192,15 @@ export default async function NewsletterPostPage({ params }: Props) {
 
         {/* CTA — recap + scheduler link + share. Gold styling on every
             post (not just premium) so the button reads as the headline
-            action. Share icon sits to the right of the primary button
-            and opens the user's mail client with the post URL prefilled. */}
-        <div className="mb-10 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] p-7 sm:p-9 text-center backdrop-blur-sm">
-          <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 leading-snug">
+            action. Share icon sits to the right of the primary button.
+            Left-aligned with generous, symmetric padding (40px top/bottom,
+            32–40px left/right) so the copy breathes and the buttons have
+            room on every side. */}
+        <div className="mb-10 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] px-8 py-10 sm:px-10 sm:py-12 backdrop-blur-sm">
+          <h3 className="text-xl md:text-2xl font-semibold text-white mb-4 leading-snug">
             {post.subject}
           </h3>
-          <p className="text-gray-300 leading-relaxed max-w-xl mx-auto mb-3">
+          <p className="text-gray-300 leading-relaxed mb-3 max-w-2xl">
             That&rsquo;s the signal — here&rsquo;s the move. Book a free
             30-minute strategy session and we&rsquo;ll walk through exactly
             how to apply today&rsquo;s insight to your revenue, your team,
@@ -208,7 +210,7 @@ export default async function NewsletterPostPage({ params }: Props) {
           {post.offer && (
             <p className="text-gray-400 text-sm italic mb-5">{post.offer}</p>
           )}
-          <div className="flex items-center justify-center gap-2 mt-2">
+          <div className="flex items-center gap-2 mt-6">
             <Link
               href="/book-now"
               style={{
@@ -230,7 +232,7 @@ export default async function NewsletterPostPage({ params }: Props) {
               url={postUrl}
             />
           </div>
-          <p className="text-xs text-gray-500 mt-4">
+          <p className="text-xs text-gray-500 mt-5">
             30 minutes · free · no obligation
           </p>
         </div>

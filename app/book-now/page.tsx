@@ -208,7 +208,12 @@ export default function BookNowPage() {
         </div>
       </div>
 
-      <BookDemoModal isOpen={open} onClose={() => setOpen(false)} />
+      <BookDemoModal
+        isOpen={open}
+        onClose={() => setOpen(false)}
+        heading="Book Now"
+        subheading="Free 30-minute consultation — no pitch, just a conversation."
+      />
 
       <Footer />
     </div>
