@@ -40,6 +40,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // is the public apply form. Sponsor funnel: /sponsor/info → /sponsor/
     // application → /sponsor (portal, unlisted).
     { url: `${baseUrl}/sponsor/info`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    // Public sponsor apply form — ships Service + OfferCatalog + RegisterAction
+    // schema (app/sponsor/application/layout.tsx) and a full conversion flow.
+    // The funnel comment above calls this page out as public, but the sitemap
+    // was missing it entirely, so Google / LLM crawlers had no direct path
+    // from a head-intent "sponsor Omni AI" search into the apply form —
+    // they could only land on /sponsor/info first and then follow the CTA.
+    // Priority 0.5 matches /sponsor/info (both are the same conversion
+    // surface at different stages of the funnel).
+    { url: `${baseUrl}/sponsor/application`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     // /fray is intentionally omitted — it's a personalized VIP sponsor
     // dashboard ("Hey Fray 👋" header; live-build status / MRR / leads /
     // newsletter activity for 3 sponsored businesses). Not a public
