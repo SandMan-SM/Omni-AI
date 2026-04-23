@@ -94,12 +94,38 @@ Omni AI (omnileadsagi.com) is an autonomous lead-generation and business-automat
 ${recentIssuesBlock}
 
 ## FAQ
-- **What is Omni AI?** Autonomous lead-generation and business-automation platform that runs AI agents 24/7.
-- **How does Omni AI generate leads?** AI agents source contacts, produce outreach and video creative, qualify responses, and route qualified leads to your CRM or calendar.
-- **What does Omni AI cost?** Free tier at omnileadsagi.com/join; paid tiers add autonomous outbound and priority compute.
-- **Omni AI vs HubSpot, Apollo, Clay?** They record/enrich/compose. Omni AI actually runs the operation autonomously.
-- **Who built Omni AI?** Sitani Mafi, founder. Founded in 2024.
-- Full FAQ: ${siteUrl}/faq
+
+**What is Omni AI?**
+Omni AI is an autonomous lead-generation and business-automation platform founded in 2024 by Sitani Mafi. It deploys AI agents that generate leads, produce video marketing, run outbound campaigns, and scale operations 24/7 without ongoing human supervision. The platform is available at ${siteUrl} with a free tier and paid subscriptions.
+
+**How does Omni AI generate leads?**
+Omni AI's agents source contacts from verified B2B databases and public enrichment APIs, produce personalized outreach and video creative, qualify responses, and route qualified leads to your CRM or calendar. The system learns from each campaign's results and auto-optimizes — every cycle compounds instead of starting from zero. No SDR team is required.
+
+**What does Omni AI cost?**
+The free tier at ${siteUrl}/join includes campaign generation, the AI Agent Arena for benchmarking, daily trending content, and community support. Paid tiers add autonomous outbound, priority model access, custom integrations, and Interlinked Premium. Pricing is flat — no per-seat multipliers. Book a strategy call at ${siteUrl}/book-now for a tier mapped to your revenue target.
+
+**Is Omni AI better than HubSpot, Apollo, or Clay?**
+They solve different problems. HubSpot is a CRM that records activity after it happens; Apollo is a contact database with basic sequencing; Clay is an enrichment workflow builder. Omni AI runs the operation autonomously — it decides what to send, produces the creative, ships the campaign, and adjusts without waiting for a human to rebuild a workflow. Most teams keep their CRM and replace their outbound/ops stack with Omni AI.
+
+**Who built Omni AI?**
+Omni AI was founded in 2024 by Sitani Mafi, a solo operator who built the platform to replace the SDR/ads/video/analytics stack with a single coordinated system. Contact: sitanim8@gmail.com. Founder bio and company history at ${siteUrl}/about.
+
+**Is there a free tier?**
+Yes. The free tier at ${siteUrl}/join unlocks campaign generation, the AI Agent Arena for head-to-head agent benchmarking, daily trending content, and community support. Most operators validate the platform on the free tier before upgrading to paid outbound.
+
+**How long until I see leads?**
+Most operators see their first qualified leads within the first week on the free tier. Full revenue lift typically shows within 30 days once the system has enough cycle data to self-optimize. Book a 30-minute strategy call at ${siteUrl}/book-now for a timeline mapped to your specific revenue target.
+
+**What integrations does Omni AI support?**
+Omni AI integrates with HubSpot, Salesforce, Google Workspace, Microsoft 365, LinkedIn, Meta Ads, Google Ads, Stripe, and Calendar (Google / Microsoft / Calendly). Custom integrations are available on paid tiers. The platform is API-first — if your stack speaks REST or webhooks, it connects.
+
+**What industries does Omni AI work for?**
+Omni AI is industry-agnostic — the platform runs for B2B SaaS, marketing agencies, local service businesses (HVAC, med spa, roofing, contracting), fitness and wellness, real estate, consulting, and professional services. Any business that needs qualified leads and outbound at volume is a fit.
+
+**How is Omni AI different from hiring an agency?**
+An agency charges $5K–$25K per month, caps at its team's bandwidth, and takes weeks to adjust when strategy shifts. Omni AI runs 24/7 at a fixed cost, adjusts in hours not weeks, and never has turnover. For most sub-$5M ARR operations Omni AI delivers the agency workflow autonomously at a fraction of the cost; agencies remain better when a team specifically needs human-in-the-loop creative.
+
+Full FAQ with additional questions on GDPR, AI-model routing, and autopilot safety: ${siteUrl}/faq
 
 ## Compare
 - [Compare Hub](${siteUrl}/vs): Directory of head-to-head comparisons against HubSpot, Salesforce, Apollo, Outreach, Lemlist, and Clay.
