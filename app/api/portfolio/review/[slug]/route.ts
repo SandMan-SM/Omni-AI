@@ -24,8 +24,14 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
   const html = buildClientReviewHtml(data);
 
   if (doEmail && process.env.RESEND_API_KEY) {
+    // Previously `await fetch(...)` only caught network/parse errors — a
+    // Resend HTTP 4xx/5xx (rotated key, domain unverified, quota) resolved
+    // successfully and the caller saw the HTML response as if the email
+    // had been sent. Check res.ok and log the body slice so the same
+    // silent-failure pattern fixed across 5 other lead-form routes
+    // (Cycle 41) also applies here.
     try {
-      await fetch('https://api.resend.com/emails', {
+      const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
@@ -38,8 +44,14 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
           html,
         }),
       });
+      if (!res.ok) {
+        const bodyText = await res.text().catch(() => '');
+        console.error(
+          `[portfolio/review] resend ${res.status} slug=${slug}: ${bodyText.slice(0, 300)}`
+        );
+      }
     } catch (e) {
-      console.error('[review] email failed', e);
+      console.error('[portfolio/review] email failed', e);
     }
   }
 

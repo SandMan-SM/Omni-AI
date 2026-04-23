@@ -47,6 +47,17 @@ export async function GET(req: Request) {
           }),
         });
         emailed = res.ok;
+        // `emailed` already records success/failure in the response, but
+        // without the body slice on failure the operator only sees
+        // `emailed: false` with no signal *why* (quota, rotated key,
+        // unverified domain, etc.). Log the body so Vercel logs carry
+        // the actionable reason alongside the status code.
+        if (!res.ok) {
+          const bodyText = await res.text().catch(() => '');
+          console.error(
+            `[cron/weekly-review] resend ${res.status} slug=${c.slug}: ${bodyText.slice(0, 300)}`
+          );
+        }
       }
       results.push({ slug: c.slug, emailed });
     } catch (e: unknown) {
