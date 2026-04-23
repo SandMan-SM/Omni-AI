@@ -6,6 +6,7 @@ import { Crown, Star, Network, Zap, MessagesSquare, ArrowRight, CheckCircle2 } f
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 const benefits = [
   {
@@ -43,6 +44,21 @@ export default function PremiumPage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-3xl" />
 
         <div className="relative max-w-5xl mx-auto px-4 py-20">
+          {/* Visible breadcrumb — paired with the breadcrumbSchema in
+              app/interlinked/premium/layout.tsx. Centered above the hero
+              to match the centered hero composition without distorting
+              the vertical rhythm. Google only awards the SERP breadcrumb
+              chip when the schema and visible UI agree. */}
+          <div className="flex justify-center mb-8">
+            <Breadcrumb
+              items={[
+                { name: "Home", href: "/" },
+                { name: "Interlinked", href: "/interlinked" },
+                { name: "Premium", href: "/interlinked/premium" },
+              ]}
+              className="text-xs"
+            />
+          </div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
