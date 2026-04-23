@@ -61,6 +61,33 @@ export const websiteSchema = {
     url: "https://omnileadsagi.com",
   },
   inLanguage: "en-US",
+  // SearchAction unlocks Google's Sitelinks Searchbox rich result — a
+  // dedicated search input rendered directly in the SERP card for brand
+  // queries ("Omni AI"). Google only renders the Searchbox when the
+  // schema points at a live endpoint whose URL template includes
+  // {search_term_string}; a dangling schema gets suppressed by the Rich
+  // Results validator. The /search route this targets ships alongside
+  // this schema change so the endpoint is live the moment the schema
+  // hits production.
+  //
+  // EntryPoint is the schema.org-mandated wrapper for the target URL;
+  // `query-input: "required name=search_term_string"` is the literal
+  // incantation Google's parser requires — the property name matches
+  // the {search_term_string} placeholder in the URL template.
+  //
+  // This is the last field in the schema because potentialAction is
+  // conventionally placed after the descriptive fields — Google's
+  // structured-data tooling handles any order, but keeping the shape
+  // consistent with the reference doc minimizes friction during future
+  // Search Console audits.
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: "https://omnileadsagi.com/search?q={search_term_string}",
+    },
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export const softwareSchema = {

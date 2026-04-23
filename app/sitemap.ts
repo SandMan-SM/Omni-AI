@@ -63,6 +63,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // discoverable by search engines and LLM indexers (required signal for
     // E-E-A-T / trust rating on commercial sites).
     { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    // Sitewide search endpoint. Paired with the SearchAction potentialAction
+    // declared in websiteSchema — Google's Sitelinks Searchbox rich result
+    // only renders when the schema's target URL is a real, crawlable page.
+    // Low priority (not a destination surface) but indexable so the
+    // endpoint is discoverable to the search-engine parsers validating
+    // the Searchbox schema.
+    { url: `${baseUrl}/search`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
   ];
 
   // Pull dynamic rows in parallel. Fail-soft: if either query errors we still
