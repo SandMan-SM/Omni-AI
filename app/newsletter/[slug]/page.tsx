@@ -36,6 +36,48 @@ async function getPost(slug: string) {
   return data;
 }
 
+// Pick 3 related posts for the "Related issues" section. Logic:
+//   1. Pull the 50 most recent posts (excluding the current one).
+//   2. Score each by keyword-intersection count with the current post.
+//   3. Tie-break by recency.
+//   4. If the current post has no keywords (rare), fall back to the
+//      3 most recent posts.
+// Runs on every request — the page is force-dynamic so there's no ISR
+// cache to warm. A single Supabase query over 50 rows is <50ms so the
+// extra hit is fine on a page that already makes one query for the post.
+async function getRelatedPosts(
+  currentSlug: string,
+  currentKeywords: string[] | null | undefined
+) {
+  noStore();
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("newsletter_posts")
+    .select("slug, subject, intro, published_at, tier, keywords")
+    .neq("slug", currentSlug)
+    .not("slug", "is", null)
+    .not("published_at", "is", null)
+    .order("published_at", { ascending: false })
+    .limit(50);
+  if (!data || data.length === 0) return [] as NonNullable<typeof data>;
+
+  const kwSet = new Set((currentKeywords || []).map((k) => k.toLowerCase()));
+  if (kwSet.size === 0) return data.slice(0, 3);
+
+  // Score each candidate by keyword-intersection size with the current post.
+  // Higher score first; recency breaks ties via the upstream DESC order.
+  const scored = data.map((p) => {
+    const theirs = (p.keywords || []).map((k: string) => k.toLowerCase());
+    const overlap = theirs.reduce((n: number, k: string) => (kwSet.has(k) ? n + 1 : n), 0);
+    return { post: p, overlap };
+  });
+  scored.sort((a, b) => b.overlap - a.overlap);
+  // If the top-3 have zero overlap we still fall through to most-recent;
+  // the newsletter cluster has enough topical overlap that this branch
+  // is rare but still worth guarding.
+  return scored.slice(0, 3).map((s) => s.post);
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPost(slug);
@@ -93,6 +135,11 @@ export default async function NewsletterPostPage({ params }: Props) {
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
+
+  // Related issues run in parallel with the rest of the render — pulled
+  // once here so the card grid can be inlined into the server-rendered
+  // HTML instead of a client-side hydration fetch.
+  const relatedPosts = await getRelatedPosts(slug, post.keywords);
 
   const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
     weekday: "long",
@@ -300,6 +347,75 @@ export default async function NewsletterPostPage({ params }: Props) {
         <p className="text-center text-gray-400 italic text-lg my-10">
           Powered by Omni AI
         </p>
+
+        {/* Related issues — 3 cards below the closing line. Boosts
+            time-on-site on organic traffic and gives LLM retrieval a
+            cluster of linked issues to traverse when the current post
+            is cited. Scored by keyword overlap with the current post,
+            with recency as the tie-breaker. */}
+        {relatedPosts.length > 0 && (
+          <section className="mt-16 pt-10 border-t border-white/5">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5">
+              More from Interlinked
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {relatedPosts.map((r: {
+                slug: string;
+                subject: string;
+                intro: string | null;
+                published_at: string | null;
+                tier: string | null;
+              }) => {
+                const rDate = r.published_at
+                  ? new Date(r.published_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : "";
+                const rIsPremium = r.tier === "premium";
+                return (
+                  <Link
+                    key={r.slug}
+                    href={`/newsletter/${r.slug}`}
+                    className="group block rounded-xl border border-white/10 bg-white/[0.03] p-5 hover:border-white/20 hover:bg-white/[0.06] transition-colors"
+                  >
+                    <div className="flex items-center gap-3 mb-3">
+                      <span
+                        className={`text-[10px] font-semibold uppercase tracking-widest ${
+                          rIsPremium ? "text-amber-400" : "text-purple-400"
+                        }`}
+                      >
+                        {rIsPremium ? "Premium" : "Daily"}
+                      </span>
+                      <span className="text-[10px] text-gray-600">·</span>
+                      <span className="text-[10px] text-gray-500">{rDate}</span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-white leading-snug mb-2 group-hover:text-amber-100 transition-colors">
+                      {r.subject}
+                    </h3>
+                    {r.intro && (
+                      <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
+                        {r.intro.slice(0, 140)}
+                        {r.intro.length > 140 ? "…" : ""}
+                      </p>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+            <p className="mt-6 text-xs text-gray-500">
+              See{" "}
+              <Link
+                href="/newsletter"
+                className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60 transition-colors"
+              >
+                all Interlinked issues
+              </Link>
+              .
+            </p>
+          </section>
+        )}
 
       </article>
       <Footer />
