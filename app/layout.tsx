@@ -7,7 +7,12 @@ import { JsonLd, organizationSchema, websiteSchema, softwareSchema } from "@/com
 import { SpaceBackdrop } from "@/components/space-backdrop";
 import { SiteTracker } from "@/components/analytics/site-tracker";
 
-const inter = Inter({ subsets: ["latin"] });
+// display:swap — render fallback font immediately and swap to Inter
+// once it loads. Prevents FOIT (flash of invisible text) on slow
+// connections where the hero headline would otherwise sit blank for
+// 100–300ms. CLS stays in check because adjustFontFallback (Next 14
+// default) size-matches the metric fallback to Inter.
+const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://omnileadsagi.com"),

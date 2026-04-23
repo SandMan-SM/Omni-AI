@@ -57,7 +57,14 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
             <span className="text-xl md:text-2xl font-bold text-gradient">
               Omni AI
             </span>
-            <Image src="/omni-logo.svg" alt="Omni AI Logo" width={36} height={36} className="h-7 md:h-9 w-auto" />
+            {/* Navbar logo is above the fold on every page that renders
+                <Navbar /> (home + campaigns + details + arena + …).
+                Marking it priority so Next emits a preload link tag and
+                the browser can start the SVG fetch before hitting the
+                main bundle — shaves a few hundred ms off LCP on cold
+                visits where the logo is part of the largest-paint
+                element. */}
+            <Image src="/omni-logo.svg" alt="Omni AI Logo" width={36} height={36} className="h-7 md:h-9 w-auto" priority />
           </a>
 
           <div className="hidden md:flex items-center justify-center gap-8 flex-1 absolute md:relative left-0 right-0 md:left-auto md:right-auto pointer-events-none md:pointer-events-auto">
