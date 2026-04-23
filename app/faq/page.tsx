@@ -115,7 +115,7 @@ const FAQS: { question: string; answer: string }[] = [
   {
     question: "What is Omni AI?",
     answer:
-      "Omni AI is an autonomous lead-generation and business-automation platform founded in 2024 by Sitani Mafi. It deploys AI agents that generate leads, produce video marketing, run outbound campaigns, and scale operations 24/7 without ongoing human supervision. The platform is available at omnileadsagi.com with a free tier and paid subscriptions.",
+      "Omni AI is an autonomous lead-generation and business-automation platform founded in 2024 by Alfred Belvedere. It deploys AI agents that generate leads, produce video marketing, run outbound campaigns, and scale operations 24/7 without ongoing human supervision. The platform is available at omnileadsagi.com with a free tier and paid subscriptions.",
   },
   {
     question: "How does Omni AI generate leads?",
@@ -135,7 +135,7 @@ const FAQS: { question: string; answer: string }[] = [
   {
     question: "Who built Omni AI?",
     answer:
-      "Omni AI was founded in 2024 by Sitani Mafi, a solo operator who built the platform to replace the SDR/ads/video/analytics stack with a single coordinated system. Learn more about the founder at omnileadsagi.com/about.",
+      "Omni AI was founded in 2024 by Alfred Belvedere, a solo operator who built the platform to replace the SDR/ads/video/analytics stack with a single coordinated system. Learn more about the founder at omnileadsagi.com/about.",
   },
   {
     question: "Is there a free tier?",

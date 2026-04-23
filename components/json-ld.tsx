@@ -73,7 +73,7 @@ export const organizationSchema = {
   ],
   founder: {
     "@type": "Person",
-    name: "Sitani Mafi",
+    name: "Alfred Belvedere",
     url: "https://omnileadsagi.com/about",
     jobTitle: "Founder",
   },
@@ -385,7 +385,7 @@ export const softwareSchema = {
  * real human byline — critical for E-E-A-T and for LLMs that prefer to cite
  * content with a named author.
  *
- * sameAs lists verified off-site identities for the Sitani Mafi entity —
+ * sameAs lists verified off-site identities for the Alfred Belvedere entity —
  * each URL MUST be live (stale 404s hurt validation). X is verified via
  * the @SitaniMafi handle that's been declared as twitter.site on every
  * OG card shipped across the site for months. LinkedIn personal +
@@ -395,7 +395,7 @@ export const softwareSchema = {
 export const personSchema = {
   "@context": "https://schema.org",
   "@type": "Person",
-  name: "Sitani Mafi",
+  name: "Alfred Belvedere",
   jobTitle: "Founder",
   email: "sitanim8@gmail.com",
   url: "https://omnileadsagi.com/about",
@@ -464,7 +464,7 @@ export function articleSchema(page: {
     datePublished: page.date || new Date().toISOString(),
     author: {
       "@type": "Person",
-      name: "Sitani Mafi",
+      name: "Alfred Belvedere",
       url: `${siteUrl}/about`,
     },
     // publisher.sameAs echoes the sitewide organizationSchema.sameAs
@@ -695,7 +695,7 @@ export function newsArticleSchema(post: {
     ...(wordCount ? { wordCount } : {}),
     author: {
       "@type": "Person",
-      name: "Sitani Mafi",
+      name: "Alfred Belvedere",
       url: `${siteUrl}/about`,
     },
     // publisher.sameAs echoes the sitewide organizationSchema.sameAs
@@ -812,7 +812,7 @@ export function profilePageSchema(person: typeof personSchema, url: string) {
     // company does), and the [data-speakable='bio'] founder bio
     // paragraph (the long-form biographical context). These three
     // selectors reconstruct the ~60-second voice summary a user gets
-    // when they ask "who is Sitani Mafi?" — more complete than the
+    // when they ask "who is Alfred Belvedere?" — more complete than the
     // Person schema's structured fields alone.
     speakable: {
       "@type": "SpeakableSpecification",

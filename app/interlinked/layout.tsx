@@ -65,7 +65,7 @@ export default function InterlinkedLayout({
     "@type": "Event",
     name: "Omni AI: Build an AI CEO — Interlinked Live Training",
     description:
-      "Free 90-minute live training on building an autonomous AI CEO for your business. Covers AI lead generation, operations automation, and agent orchestration. Hosted by Sitani Mafi, founder of Omni AI.",
+      "Free 90-minute live training on building an autonomous AI CEO for your business. Covers AI lead generation, operations automation, and agent orchestration. Hosted by Alfred Belvedere, founder of Omni AI.",
     startDate: nextSession.toISOString(),
     endDate: endSession.toISOString(),
     eventStatus: "https://schema.org/EventScheduled",
@@ -81,7 +81,7 @@ export default function InterlinkedLayout({
     },
     performer: {
       "@type": "Person",
-      name: "Sitani Mafi",
+      name: "Alfred Belvedere",
       url: "https://omnileadsagi.com/about",
     },
     offers: {
@@ -94,7 +94,7 @@ export default function InterlinkedLayout({
       category: "Free",
     },
     image:
-      "https://omnileadsagi.com/api/og?title=Build+an+AI+CEO&topic=Free+live+training+with+Sitani+Mafi&eyebrow=Omni+AI+%C2%B7+Interlinked",
+      "https://omnileadsagi.com/api/og?title=Build+an+AI+CEO&topic=Free+live+training+with+Alfred+Belvedere&eyebrow=Omni+AI+%C2%B7+Interlinked",
     inLanguage: "en-US",
     isAccessibleForFree: true,
     // SpeakableSpecification — when a user asks Google Assistant / Siri
@@ -145,7 +145,7 @@ export default function InterlinkedLayout({
     "@type": "Course",
     name: "Build an AI CEO — Omni AI Interlinked Training",
     description:
-      "Free 90-minute live training on building an autonomous AI CEO for your business. Covers AI lead generation, multi-agent orchestration, operations automation, and integrating frontier LLMs into revenue workflows. Taught by Sitani Mafi, founder of Omni AI.",
+      "Free 90-minute live training on building an autonomous AI CEO for your business. Covers AI lead generation, multi-agent orchestration, operations automation, and integrating frontier LLMs into revenue workflows. Taught by Alfred Belvedere, founder of Omni AI.",
     url: pageUrl,
     provider: {
       "@type": "Organization",
@@ -203,7 +203,7 @@ export default function InterlinkedLayout({
       },
       instructor: {
         "@type": "Person",
-        name: "Sitani Mafi",
+        name: "Alfred Belvedere",
         url: `${siteUrl}/about`,
         jobTitle: "Founder, Omni AI",
       },

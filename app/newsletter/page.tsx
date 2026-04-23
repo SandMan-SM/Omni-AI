@@ -166,7 +166,7 @@ export default async function NewsletterIndexPage() {
           ],
           author: {
             "@type": "Person",
-            name: "Sitani Mafi",
+            name: "Alfred Belvedere",
             url: "https://omnileadsagi.com/about",
             jobTitle: "Founder, Omni AI",
           },

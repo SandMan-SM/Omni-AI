@@ -21,7 +21,7 @@ const FAQS = [
   {
     question: "What is Omni AI?",
     answer:
-      "Omni AI is an autonomous lead-generation and business-automation platform founded in 2024 by Sitani Mafi. It deploys AI agents that generate leads, produce video marketing, run outbound campaigns, and scale operations 24/7 without ongoing human supervision. The platform is available at omnileadsagi.com with a free tier and paid subscriptions.",
+      "Omni AI is an autonomous lead-generation and business-automation platform founded in 2024 by Alfred Belvedere. It deploys AI agents that generate leads, produce video marketing, run outbound campaigns, and scale operations 24/7 without ongoing human supervision. The platform is available at omnileadsagi.com with a free tier and paid subscriptions.",
   },
   {
     question: "How does Omni AI generate leads?",
@@ -46,7 +46,7 @@ const FAQS = [
   {
     question: "Who built Omni AI?",
     answer:
-      "Sitani Mafi, founder. Omni AI was founded in 2024 and is built for operators who refuse to scale by adding headcount. Learn more at omnileadsagi.com/about.",
+      "Alfred Belvedere, founder. Omni AI was founded in 2024 and is built for operators who refuse to scale by adding headcount. Learn more at omnileadsagi.com/about.",
   },
 ];
 
@@ -66,7 +66,7 @@ export function SeoContentSection() {
         <div className="space-y-4 text-gray-300 leading-relaxed mb-16">
           <p>
             Omni AI is an autonomous lead-generation and business-automation platform
-            founded in 2024 by <Link href="/about" className="text-white underline underline-offset-2 decoration-white/30 hover:decoration-white/80">Sitani Mafi</Link>.
+            founded in 2024 by <Link href="/about" className="text-white underline underline-offset-2 decoration-white/30 hover:decoration-white/80">Alfred Belvedere</Link>.
             Unlike traditional CRMs that manage leads after they arrive, Omni AI&rsquo;s
             agents generate the leads themselves — writing outbound, producing video
             ads, qualifying prospects, and routing them to closers without ongoing

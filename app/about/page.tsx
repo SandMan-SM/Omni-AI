@@ -34,18 +34,18 @@ const pageUrl = `${siteUrl}/about`;
 const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(
   "About Omni AI"
 )}&topic=${encodeURIComponent(
-  "Founded in 2024 by Sitani Mafi"
+  "Founded in 2024 by Alfred Belvedere"
 )}&eyebrow=${encodeURIComponent("Omni AI · About")}`;
 
 export const metadata: Metadata = {
   title: "About | Omni AI — Founder, Story, Mission",
   description:
-    "Omni AI was founded in 2024 by Sitani Mafi to replace the SDR/ads/video/analytics stack with a single autonomous AI system. Learn about the founder, the mission, and how to get in touch.",
+    "Omni AI was founded in 2024 by Alfred Belvedere to replace the SDR/ads/video/analytics stack with a single autonomous AI system. Learn about the founder, the mission, and how to get in touch.",
   alternates: { canonical: pageUrl },
   openGraph: {
     title: "About Omni AI — Founder & Mission",
     description:
-      "Omni AI was founded in 2024 by Sitani Mafi. Learn the founder's story, the mission, and how to get in touch.",
+      "Omni AI was founded in 2024 by Alfred Belvedere. Learn the founder's story, the mission, and how to get in touch.",
     url: pageUrl,
     siteName: "Omni AI",
     type: "profile",
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "About Omni AI — Founder & Mission",
     description:
-      "Founded in 2024 by Sitani Mafi. An autonomous AI system that replaces the SDR/ads/video/analytics stack.",
+      "Founded in 2024 by Alfred Belvedere. An autonomous AI system that replaces the SDR/ads/video/analytics stack.",
     images: [ogImage],
   },
 };
@@ -141,11 +141,11 @@ export default function AboutPage() {
           <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-8 md:p-10">
             <div className="flex flex-col sm:flex-row gap-6 items-start">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-amber-400 to-amber-700 flex items-center justify-center text-2xl font-bold text-black shrink-0">
-                SM
+                AB
               </div>
               <div className="flex-1">
                 <h3 className="text-xl font-semibold text-white mb-1">
-                  Sitani Mafi
+                  Alfred Belvedere
                 </h3>
                 <p className="text-sm text-amber-400 uppercase tracking-widest mb-4">
                   Founder
@@ -154,7 +154,7 @@ export default function AboutPage() {
                   className="text-gray-300 leading-relaxed mb-4"
                   data-speakable="bio"
                 >
-                  Sitani founded Omni AI after years of running marketing and
+                  Alfred founded Omni AI after years of running marketing and
                   automation for local and SaaS businesses — watching the same
                   pattern every time: operators paying five separate tools plus
                   a team to coordinate them, and still losing leads through the

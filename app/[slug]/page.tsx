@@ -131,7 +131,7 @@ export default async function TrendingLandingPage({ params }: Props) {
     // cluster stops visually forking off from the rest of the site.
     <div className="min-h-screen text-white overflow-x-hidden relative">
       {/* Article JSON-LD — stronger retrieval signal than bare WebPage. The
-          factory pairs author=Person(Sitani Mafi) + publisher=Organization
+          factory pairs author=Person(Alfred Belvedere) + publisher=Organization
           + datePublished + OG image, which is what Google rich results and
           LLM citation engines both look for. */}
       <JsonLd
@@ -287,7 +287,7 @@ export default async function TrendingLandingPage({ params }: Props) {
               href="/about"
               className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60 transition-colors"
             >
-              Sitani Mafi
+              Alfred Belvedere
             </Link>
           </p>
         )}

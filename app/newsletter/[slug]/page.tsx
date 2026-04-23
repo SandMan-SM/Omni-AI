@@ -274,7 +274,7 @@ export default async function NewsletterPostPage({ params }: Props) {
               href="/about"
               className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60 transition-colors"
             >
-              Sitani Mafi
+              Alfred Belvedere
             </Link>{" "}
             — Founder, Omni AI
           </p>

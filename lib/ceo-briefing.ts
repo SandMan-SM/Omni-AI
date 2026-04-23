@@ -179,7 +179,7 @@ export async function generateCEOBriefing(
 
   if (!ANTHROPIC_API_KEY) return fallback;
 
-  const prompt = `You are the AI CEO of Omni AI, an AI automation agency. Your founder, Sitani, just woke up. Give him today's executive briefing based on the real business metrics below. Be direct, specific, and confident — like a chief of staff, not a dashboard.
+  const prompt = `You are the AI CEO of Omni AI, an AI automation agency. Your founder, Alfred, just woke up. Give him today's executive briefing based on the real business metrics below. Be direct, specific, and confident — like a chief of staff, not a dashboard.
 
 METRICS (last 24h + current state):
 - Active subscribers: ${metrics.totalActiveSubscribers} (${metrics.premiumSubscribers} premium)

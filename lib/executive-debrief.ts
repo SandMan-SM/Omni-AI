@@ -250,7 +250,7 @@ export function buildExecDebriefHtml(d: ExecDebriefPayload): string {
     header({
       eyebrow: '📊 Executive Debrief',
       title: 'Omni AI · CEO Status',
-      meta: `${dateLong} · Prepared for Sitani Mafi`,
+      meta: `${dateLong} · Prepared for Alfred Belvedere`,
       accent: 'green',
     }),
     kpis,

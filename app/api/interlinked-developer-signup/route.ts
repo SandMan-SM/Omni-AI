@@ -215,7 +215,7 @@ export async function POST(request: Request) {
       // a secondary-write failure. Log loudly and continue so the
       // welcome email still fires (critical for trust — user just
       // saw a success animation). The owner notification email below
-      // doubles as the lead-capture backstop so Sitani still knows
+      // doubles as the lead-capture backstop so Alfred still knows
       // the signup happened even if the landing_page_leads row
       // didn't land.
       console.error(
@@ -408,7 +408,7 @@ function buildRegistrantEmail(p: { firstName: string }): string {
 </body></html>`;
 }
 
-// Owner notification — same dark-brand template so Sitani's inbox
+// Owner notification — same dark-brand template so Alfred's inbox
 // renders the notification visually consistent with every other
 // Omni AI system email. Contact card + segment tag so the lead is
 // triageable at a glance. Reply-To is set to the lead's email in

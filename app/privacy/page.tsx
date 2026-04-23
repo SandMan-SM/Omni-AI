@@ -126,7 +126,7 @@ export default function PrivacyPage() {
           },
           author: {
             "@type": "Person",
-            name: "Sitani Mafi",
+            name: "Alfred Belvedere",
             url: `${siteUrl}/about`,
             jobTitle: "Founder, Omni AI",
           },
@@ -211,7 +211,7 @@ export default function PrivacyPage() {
               product or service we operate under the Omni AI brand
               (collectively, the &ldquo;Service&rdquo;), how we use it, who we
               share it with, and the rights you have over it. Omni AI is
-              operated by Sitani Mafi. You can reach us at{" "}
+              operated by Alfred Belvedere. You can reach us at{" "}
               <a
                 href="mailto:sitanim8@gmail.com"
                 className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
@@ -567,7 +567,7 @@ export default function PrivacyPage() {
               Contact
             </h2>
             <p>
-              Questions, requests, or complaints? Email Sitani Mafi,
+              Questions, requests, or complaints? Email Alfred Belvedere,
               founder, at{" "}
               <a
                 href="mailto:sitanim8@gmail.com"

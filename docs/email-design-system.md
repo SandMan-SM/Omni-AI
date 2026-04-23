@@ -158,7 +158,7 @@ document. The primitive that was bypassed is the correct solution; extend
 `lib/email-template.ts` instead.
 
 The failure mode we are protecting against: "it looked fine in my browser"
-followed by Sitani opening Gmail on iOS the next morning and seeing the email
+followed by Alfred opening Gmail on iOS the next morning and seeing the email
 render as a white-bg collapsed stack with rainbow text. Every rule here exists
 because that specific failure already happened at least once.
 

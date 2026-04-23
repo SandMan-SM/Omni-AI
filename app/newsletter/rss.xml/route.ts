@@ -70,8 +70,8 @@ export async function GET() {
       <guid isPermaLink="true">${siteUrl}/newsletter/${p.slug}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(p.intro || "")}</description>
-      <author>sitanim8@gmail.com (Sitani Mafi)</author>
-      <dc:creator>Sitani Mafi</dc:creator>
+      <author>sitanim8@gmail.com (Alfred Belvedere)</author>
+      <dc:creator>Alfred Belvedere</dc:creator>
       <category>${tierCategory}</category>
     </item>`;
     })
@@ -115,8 +115,8 @@ export async function GET() {
     <description>Daily AI strategy, intelligence, and signals from Omni AI. Built for operators running autonomous lead-gen systems.</description>
     <language>en-us</language>
     <copyright>© ${copyrightYear} Omni AI LLC. All rights reserved.</copyright>
-    <managingEditor>sitanim8@gmail.com (Sitani Mafi)</managingEditor>
-    <webMaster>sitanim8@gmail.com (Sitani Mafi)</webMaster>
+    <managingEditor>sitanim8@gmail.com (Alfred Belvedere)</managingEditor>
+    <webMaster>sitanim8@gmail.com (Alfred Belvedere)</webMaster>
     <generator>Next.js RSS (Omni AI)</generator>
     <docs>https://www.rssboard.org/rss-specification</docs>
     <ttl>60</ttl>

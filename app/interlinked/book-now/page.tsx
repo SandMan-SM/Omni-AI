@@ -90,7 +90,7 @@ export default function InterlinkedBookNowPage() {
       <PageHero
         eyebrow="Free · 30-minute working session"
         title="Book a call with Omni AI"
-        meta="Sitani Mafi · typically responds within 12 hours · Zoom or in-person (SLC)"
+        meta="Alfred Belvedere · typically responds within 12 hours · Zoom or in-person (SLC)"
         lede="Thirty minutes is enough to map one agent from idea to deployed. We open the Command Center, pick the automation that pays for itself fastest, and leave with a 90-day plan. No pitch deck, no slides — the build is the demo."
         accent="purple"
         /* ledeSpeakable activates the data-speakable="intro" marker on
