@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { logShip, type ShipKind, type ShippedBy } from '@/lib/ship-log';
+import { constantTimeEqual } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -17,8 +18,8 @@ export const dynamic = 'force-dynamic';
  */
 export async function POST(req: Request) {
   const auth = req.headers.get('authorization') || '';
-  const token = auth.replace(/^Bearer\s+/i, '');
-  if (!process.env.CRON_SECRET || token !== process.env.CRON_SECRET) {
+  const token = auth.replace(/^Bearer\s+/i, '').trim();
+  if (!process.env.CRON_SECRET || !constantTimeEqual(token, process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 

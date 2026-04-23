@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { gatherClientReview, buildClientReviewHtml } from '@/lib/client-review';
 import { logShip } from '@/lib/ship-log';
+import { constantTimeEqual } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -10,8 +11,8 @@ export const maxDuration = 120;
 /** Sunday 14:00 UTC — generate & email an investor review for every active client. */
 export async function GET(req: Request) {
   const auth = req.headers.get('authorization') || '';
-  const token = auth.replace(/^Bearer\s+/i, '');
-  if (!process.env.CRON_SECRET || token !== process.env.CRON_SECRET) {
+  const token = auth.replace(/^Bearer\s+/i, '').trim();
+  if (!process.env.CRON_SECRET || !constantTimeEqual(token, process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 

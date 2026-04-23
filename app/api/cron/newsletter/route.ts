@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { runDailyNewsletter, runPremiumNewsletter, generateDrafts, sendMorningDebrief } from '@/lib/newsletter-sender';
 import { runCEOBriefing } from '@/lib/ceo-briefing';
 import { logEvent } from '@/lib/events';
+import { constantTimeEqual } from '@/lib/api-auth';
 
 /**
  * Newsletter Cron — Called by Vercel Cron
@@ -16,8 +17,10 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const action = searchParams.get('action');
 
-  // ALL cron actions require CRON_SECRET
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  // ALL cron actions require CRON_SECRET. Constant-time compare to
+  // avoid leaking the secret through response-time timing.
+  const token = (authHeader || '').replace(/^Bearer\s+/i, '').trim();
+  if (!cronSecret || !constantTimeEqual(token, cronSecret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

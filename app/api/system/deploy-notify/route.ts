@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
 import { notifyDeploy } from "@/lib/telegram";
+import { constantTimeEqual } from "@/lib/api-auth";
 
 // Called by Vercel Deploy Hook to announce new deployments
 export async function POST(req: Request) {
-  const secret = req.headers.get("x-deploy-secret");
-  if (secret !== process.env.DEPLOY_NOTIFY_SECRET) {
+  const secret = req.headers.get("x-deploy-secret") || "";
+  const expected = process.env.DEPLOY_NOTIFY_SECRET;
+  if (!expected || !constantTimeEqual(secret, expected)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

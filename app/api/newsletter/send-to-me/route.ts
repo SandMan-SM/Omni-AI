@@ -4,6 +4,7 @@ import {
   generatePremiumContent,
   sendEmail,
 } from '@/lib/newsletter-sender';
+import { constantTimeEqual } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,11 @@ export async function GET(request: Request) {
   const secret = searchParams.get('secret');
   const to = searchParams.get('to') || process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 
-  if (!process.env.CRON_SECRET || secret !== process.env.CRON_SECRET) {
+  if (
+    !process.env.CRON_SECRET ||
+    !secret ||
+    !constantTimeEqual(secret, process.env.CRON_SECRET)
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

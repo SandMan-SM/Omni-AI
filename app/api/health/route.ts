@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { alertCritical } from "@/lib/telegram";
+import { constantTimeEqual } from "@/lib/api-auth";
 
 export interface HealthStatus {
   status: "ok" | "degraded" | "down";
@@ -16,8 +17,10 @@ export async function GET(req: Request) {
   const token = url.searchParams.get("token");
   const expectedToken = process.env.CRON_SECRET;
 
-  // Public health check — only returns status, no internals
-  if (!token || token !== expectedToken) {
+  // Public health check — only returns status, no internals.
+  // Constant-time compare so the token-validation fast path doesn't
+  // leak the real CRON_SECRET byte-by-byte via response timing.
+  if (!token || !expectedToken || !constantTimeEqual(token, expectedToken)) {
     return NextResponse.json(
       { status: "ok", timestamp: new Date().toISOString() },
       { headers: { "Cache-Control": "no-store" } }

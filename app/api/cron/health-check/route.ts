@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { alertCritical, alertFix, sendOmniUpdate } from "@/lib/telegram";
+import { constantTimeEqual } from "@/lib/api-auth";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,9 +12,11 @@ const sb = createClient(
 let lastStatus: "ok" | "degraded" | "down" | null = null;
 
 export async function GET(req: Request) {
-  // Verify cron secret to prevent unauthorized calls
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Verify cron secret to prevent unauthorized calls. Constant-time
+  // compare — see lib/api-auth.ts constantTimeEqual for rationale.
+  const authHeader = req.headers.get("authorization") || "";
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!process.env.CRON_SECRET || !constantTimeEqual(token, process.env.CRON_SECRET)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

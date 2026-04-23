@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logEvent } from '@/lib/events';
 import { serverErrorResponse } from '@/lib/api-errors';
+import { constantTimeEqual } from '@/lib/api-auth';
 
 /**
  * Cron: Refresh materialized dashboard metrics view
@@ -11,7 +12,8 @@ export async function GET(request: Request) {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
-  if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+  const token = (authHeader || '').replace(/^Bearer\s+/i, '').trim();
+  if (!cronSecret || !constantTimeEqual(token, cronSecret)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
