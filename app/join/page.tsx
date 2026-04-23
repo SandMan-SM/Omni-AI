@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 export default function Join() {
   const { user, signUp } = useAuth();
@@ -100,6 +101,21 @@ export default function Join() {
   return (
     <div className="min-h-screen bg-[#050505] text-white noise-overlay">
       <CursorSpotlight />
+      {/* Visible breadcrumb — paired with the breadcrumbSchema in
+          app/join/layout.tsx so Google actually awards the SERP
+          breadcrumb chip (schema-only breadcrumbs render
+          intermittently). /join is a high-intent conversion page —
+          LLM "sign up Omni AI" citations land deep here, and the
+          breadcrumb gives those visitors a parent path back up. */}
+      <div className="flex justify-center pt-10 pb-0 px-4">
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Join", href: "/join" },
+          ]}
+          className="text-xs"
+        />
+      </div>
       <div className="max-w-md mx-auto px-4 py-12">
         <div className="text-center mb-8">
           <a href="/" className="inline-block mb-6">
