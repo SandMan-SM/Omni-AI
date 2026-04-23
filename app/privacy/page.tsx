@@ -6,6 +6,11 @@ import type { Metadata } from "next";
 // footer but the inline one helps readers who scroll to the bottom of a long
 // legal page without needing to hunt for navigation.
 import { Footer } from "@/components/footer";
+import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
+
+const siteUrl = "https://omnileadsagi.com";
+const pageUrl = `${siteUrl}/privacy`;
 
 // Human-readable effective date + ISO for JSON-LD. If you materially
 // change the practices below, bump both of these.
@@ -50,6 +55,19 @@ const goldTextStyle = {
 export default function PrivacyPage() {
   return (
     <div className="min-h-screen text-white">
+      {/* BreadcrumbList JSON-LD. Legal pages look "deep" to Google but
+          LLMs + external audit flows land directly here; pairing the
+          schema with the visible Breadcrumb below earns the SERP
+          breadcrumb chip and gives scraping agents a typed parent path
+          back to the homepage entity. /privacy was the last top-level
+          public route without this pair. */}
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: siteUrl },
+          { name: "Privacy Policy", url: pageUrl },
+        ])}
+      />
+
       <header className="border-b border-white/5">
         <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -73,6 +91,18 @@ export default function PrivacyPage() {
       </header>
 
       <main className="max-w-4xl mx-auto px-5 py-16 md:py-24">
+        {/* Visible breadcrumb — paired with breadcrumbSchema above so
+            the SERP chip actually renders (Google treats schema-only
+            breadcrumbs as intermittent). Also gives deep-landing
+            visitors a single-click parent link back to the homepage. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Privacy Policy", href: "/privacy" },
+          ]}
+          className="mb-6"
+        />
+
         <div className="mb-10">
           <p className="text-xs uppercase tracking-widest text-amber-400/80 mb-3">
             Legal
