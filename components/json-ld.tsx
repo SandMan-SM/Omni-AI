@@ -254,7 +254,10 @@ export function articleSchema(page: {
  * NewsArticle schema for /newsletter/[slug] posts. NewsArticle is a stricter
  * subtype of Article — Google Top Stories eligibility + LLM "latest news"
  * retrieval both key off it. keywords + dateModified are the two fields
- * that most influence retrieval freshness.
+ * that most influence retrieval freshness. wordCount is a content-quality
+ * signal Google uses to rank news articles (higher word counts weighted
+ * positively up to ~1500, diminishing returns after). articleSection
+ * helps retrievers cluster posts by tier (Free vs Premium in our case).
  */
 export function newsArticleSchema(post: {
   slug: string;
@@ -264,12 +267,44 @@ export function newsArticleSchema(post: {
   published_at?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
+  tier?: string | null;
+  quote?: string | null;
+  insights?: string[] | null;
+  power_move?: string | null;
+  offer?: string | null;
 }) {
   const siteUrl = "https://omnileadsagi.com";
   const url = `${siteUrl}/newsletter/${post.slug}`;
   const datePublished =
     post.published_at || post.created_at || new Date().toISOString();
   const dateModified = post.updated_at || datePublished;
+
+  // wordCount estimate across the structured newsletter sections. We
+  // don't have a single body field — posts are built from intro, quote,
+  // N insight bullets, power_move, and offer — so we concatenate them
+  // and count whitespace-delimited tokens. Google's content-quality
+  // signal caps influence around 1500 words, so the estimate doesn't
+  // need to be pixel-perfect; directionally correct is fine.
+  const bodyText = [
+    post.intro || "",
+    post.quote || "",
+    ...(post.insights || []),
+    post.power_move || "",
+    post.offer || "",
+  ]
+    .join(" ")
+    .trim();
+  const wordCount = bodyText
+    ? bodyText.split(/\s+/).filter(Boolean).length
+    : undefined;
+
+  // articleSection — Premium posts are Interlinked Premium (paid tier);
+  // everything else is Daily Intelligence (free). Google Top Stories
+  // retrieval uses this to cluster content and users' "show me the
+  // premium analysis" / "what's in the free tier?" intents get cleaner
+  // answers when the section is explicit.
+  const articleSection =
+    post.tier === "premium" ? "Interlinked Premium" : "Daily Intelligence";
 
   return {
     "@context": "https://schema.org",
@@ -281,6 +316,8 @@ export function newsArticleSchema(post: {
     datePublished,
     dateModified,
     keywords: (post.keywords || []).join(", "),
+    articleSection,
+    ...(wordCount ? { wordCount } : {}),
     author: {
       "@type": "Person",
       name: "Sitani Mafi",
