@@ -45,6 +45,80 @@ export const organizationSchema = {
     url: "https://omnileadsagi.com/about",
     jobTitle: "Founder",
   },
+  // hasOfferCatalog enumerates Omni AI's public offerings so LLMs asked
+  // "what does Omni AI offer?" / "what are Omni AI's products?" / "how
+  // can I work with Omni AI?" retrieve a typed list rather than
+  // scraping prose from the homepage or nav bar. This also strengthens
+  // Google's Knowledge Panel — when the org entity resolves for brand
+  // queries, the panel can render an "Offerings" block walked from
+  // this catalog.
+  //
+  // The five items mirror the real public offerings shipped on their
+  // canonical URLs. Each itemOffered references the live page so the
+  // knowledge graph edges stay walkable:
+  //   1. Platform (free tier) → /join       (SoftwareApplication)
+  //   2. AI Video Campaigns   → /campaigns  (Service — layout ships Service schema)
+  //   3. Premium Newsletter   → /newsletter/premium/info (Product — page ships dual-Offer)
+  //   4. Interlinked Training → /interlinked (Course — layout ships Course+Event)
+  //   5. Affiliate Program    → /affiliate/info (Service — layout ships Service+Offer)
+  //
+  // Paid/free mix reflects the real funnel. Price declaration is
+  // intentionally omitted at the catalog level — each downstream
+  // page carries its own Offer/priceSpecification, so declaring a
+  // single price here would force lossy abstraction. Offer.url on
+  // each entry is the canonical page where the concrete Offer lives.
+  //
+  // If a sixth offering ever ships (e.g. /services/ai-transformation),
+  // add it here AND update the sitewide navbar/footer AND update
+  // siteNavigationSchema — the three are the source-of-truth triangle
+  // for "what's on this site". Factory-level edits here ripple across
+  // every page's <head> via the sitewide JsonLd in app/layout.tsx.
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Omni AI — Public Offerings",
+    itemListElement: [
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "SoftwareApplication",
+          name: "Omni AI Platform — Free Tier",
+          url: "https://omnileadsagi.com/join",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "AI Video Marketing Campaigns",
+          url: "https://omnileadsagi.com/campaigns",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Product",
+          name: "Interlinked Premium Newsletter",
+          url: "https://omnileadsagi.com/newsletter/premium/info",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Course",
+          name: "Interlinked — Build an AI CEO Training",
+          url: "https://omnileadsagi.com/interlinked",
+        },
+      },
+      {
+        "@type": "Offer",
+        itemOffered: {
+          "@type": "Service",
+          name: "Omni AI Affiliate Program",
+          url: "https://omnileadsagi.com/affiliate/info",
+        },
+      },
+    ],
+  },
 };
 
 export const websiteSchema = {
