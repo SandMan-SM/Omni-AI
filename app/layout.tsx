@@ -21,6 +21,17 @@ export const metadata: Metadata = {
   keywords: ["AI lead generation", "autonomous AI", "AI business automation", "marketing automation", "AI agents", "lead qualification", "AI campaigns"],
   alternates: {
     canonical: "https://omnileadsagi.com",
+    // Sitewide RSS auto-discovery. Before this the <link rel="alternate"
+    // type="application/rss+xml"> tag only rendered on /newsletter and
+    // /newsletter/[slug], so feed readers (Feedly, Inoreader, Reeder)
+    // couldn't pick up the feed when a user pasted the homepage or any
+    // other URL. Promoting the alternate to the root metadata propagates
+    // it to every page's <head> — every URL on the site now hands the
+    // feed reader a subscribe target without the user hunting for the
+    // newsletter page first.
+    types: {
+      "application/rss+xml": "https://omnileadsagi.com/newsletter/rss.xml",
+    },
   },
   openGraph: {
     title: "Omni AI — Autonomous Lead Generation & Agentic Infrastructure",
