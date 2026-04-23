@@ -1,5 +1,8 @@
 "use client";
-export const dynamic = 'force-dynamic';
+
+// Arena marketing page. Agent rankings are fetched client-side via
+// `fetch('/api/agents/rankings')` inside a useEffect, so the shell can
+// be statically prerendered and edge-cached.
 
 import { motion, useReducedMotion } from "framer-motion";
 import {

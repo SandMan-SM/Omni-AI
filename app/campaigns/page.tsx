@@ -1,5 +1,8 @@
 "use client";
-export const dynamic = 'force-dynamic';
+
+// Marketing page — pure client component with no server data. Removing
+// `force-dynamic` lets Next.js statically prerender the shell and the
+// edge cache it. See the equivalent comment on `app/page.tsx`.
 
 import { motion } from "framer-motion";
 import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight, MessageSquare, Users, Globe, Check, Mail, DollarSign } from "lucide-react";

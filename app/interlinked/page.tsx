@@ -1,5 +1,8 @@
 "use client";
-export const dynamic = 'force-dynamic';
+
+// Marketing page — pure client component. Countdown state lives in
+// useEffect on the client, so the shell can be statically prerendered
+// and edge-cached. No server data.
 
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";

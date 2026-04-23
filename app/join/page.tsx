@@ -1,5 +1,7 @@
 "use client";
-export const dynamic = 'force-dynamic';
+
+// Signup page — pure client component. Auth hooks run on the client, so
+// the shell can be statically prerendered and edge-cached.
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";

@@ -1,5 +1,7 @@
 "use client";
-export const dynamic = 'force-dynamic';
+
+// Sponsor info page — pure client component. Auth/profile hooks run on
+// the client, so the shell can be statically prerendered and edge-cached.
 
 import { useState } from "react";
 import Link from "next/link";
