@@ -276,7 +276,20 @@ export function articleSchema(page: {
     description: page.description || "",
     url,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
-    image: ogImage,
+    // ImageObject with explicit width/height rather than a bare URL
+    // string. Google's structured-data validator skips the fetch-and-
+    // measure step when dimensions are declared inline, which shaves
+    // time off the indexing window on publish day — and the daily
+    // trending-post cadence means every hour of faster indexing
+    // compounds. Byte-aligned with newsArticleSchema's image shape in
+    // this same file so both Article and NewsArticle consumers get
+    // the same treatment from Google's parser.
+    image: {
+      "@type": "ImageObject",
+      url: ogImage,
+      width: 1200,
+      height: 630,
+    },
     datePublished: page.date || new Date().toISOString(),
     author: {
       "@type": "Person",
