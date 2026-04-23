@@ -160,24 +160,51 @@ export const softwareSchema = {
     "Multi-Channel Outreach",
     "Analytics Dashboard",
   ],
+  // Review entries below are byte-aligned with the visible testimonial
+  // cards in components/testimonials-section.tsx — each author's
+  // jobTitle + worksFor mirrors the "CEO, Velocity Growth" / "Freelance
+  // Consultant" / "Founder, Apex Agency" lines under the name. Splitting
+  // the title into (jobTitle, worksFor.name) rather than cramming it
+  // into the Person.name field is what upgrades these from flat
+  // testimonials into typed Person→Organization edges — LLMs answering
+  // "who uses Omni AI?" / "what kind of operators run Omni AI?"
+  // preferentially cite reviews where the author has a resolvable role
+  // and affiliation over reviews that give just a name. Schema.org's
+  // validator treats this as the canonical Review→Person→Organization
+  // triple, which is what Google's review rich-result pipeline looks
+  // for before promoting a testimonial block to a SERP card.
   review: [
     {
       "@type": "Review",
-      author: { "@type": "Person", name: "Marcus Chen" },
+      author: {
+        "@type": "Person",
+        name: "Marcus Chen",
+        jobTitle: "CEO",
+        worksFor: { "@type": "Organization", name: "Velocity Growth" },
+      },
       reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
       reviewBody:
         "Omni AI completely transformed how we handle lead generation. What used to take my team 40 hours a week now runs autonomously.",
     },
     {
       "@type": "Review",
-      author: { "@type": "Person", name: "Sarah Mitchell" },
+      author: {
+        "@type": "Person",
+        name: "Sarah Mitchell",
+        jobTitle: "Freelance Consultant",
+      },
       reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
       reviewBody:
         "The Master tier paid for itself in the first week. I went from drowning in DMs to having conversations that actually convert.",
     },
     {
       "@type": "Review",
-      author: { "@type": "Person", name: "David Park" },
+      author: {
+        "@type": "Person",
+        name: "David Park",
+        jobTitle: "Founder",
+        worksFor: { "@type": "Organization", name: "Apex Agency" },
+      },
       reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
       reviewBody:
         "We scaled from $50k to $200k monthly revenue in 6 months. The system doesn't just work — it learns and improves constantly.",
