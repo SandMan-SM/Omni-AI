@@ -45,6 +45,26 @@ async function getRecentTrends(excludeSlug: string) {
   return data || [];
 }
 
+// Cross-cluster handoff. /[slug] daily pages target quick-read visitors
+// from Twitter; the newsletter targets deeper-read subscribers. A single
+// card linking to the most recent newsletter post gives any /[slug]
+// visitor a natural next-read into longer-form content — same
+// retention mechanic as Recent Trends but across the second cluster, so
+// Google reads the two clusters as one topical hub.
+async function getLatestNewsletterPost() {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("newsletter_posts")
+    .select("slug, subject, intro, published_at, tier")
+    .not("slug", "is", null)
+    .not("published_at", "is", null)
+    .lte("published_at", new Date().toISOString())
+    .order("published_at", { ascending: false })
+    .limit(1)
+    .single();
+  return data;
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const page = await getLandingPage(slug);
@@ -84,12 +104,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TrendingLandingPage({ params }: Props) {
   const { slug } = await params;
-  // Fetch the landing page + the 3 most recent siblings in parallel.
-  // Round-trip savings matter here — /[slug] is the single highest-traffic
-  // route on the site and every extra 50ms hurts tweet-landing conversion.
-  const [page, recentTrends] = await Promise.all([
+  // Fetch the landing page + related content in parallel. Three Supabase
+  // calls fan-out at once — round-trip savings matter here because
+  // /[slug] is the single highest-traffic route on the site and every
+  // extra 50ms hurts tweet-landing conversion.
+  const [page, recentTrends, latestNewsletter] = await Promise.all([
     getLandingPage(slug),
     getRecentTrends(slug),
+    getLatestNewsletterPost(),
   ]);
   if (!page) notFound();
 
@@ -271,6 +293,43 @@ export default async function TrendingLandingPage({ params }: Props) {
               ))}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Cross-cluster handoff to the Interlinked newsletter. A quick-read
+          visitor from Twitter who wants the longer analysis has nowhere to
+          go otherwise — the newsletter archive is two footer clicks away
+          and most users never scroll that far. Single card (not a grid)
+          so it reads as an editorial "next" rather than a second grid of
+          content to scan. */}
+      {latestNewsletter && latestNewsletter.slug && (
+        <section className="relative z-10 max-w-3xl mx-auto px-5 pb-24">
+          <Link
+            href={`/newsletter/${latestNewsletter.slug}`}
+            className="group block rounded-2xl border border-white/10 bg-gradient-to-br from-purple-500/[0.06] to-pink-500/[0.04] p-7 sm:p-8 hover:border-purple-500/40 transition-colors"
+          >
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-[10px] font-semibold uppercase tracking-widest text-purple-300">
+                From the Interlinked Newsletter
+              </span>
+              {latestNewsletter.tier === "premium" && (
+                <span className="text-[10px] font-semibold uppercase tracking-widest text-amber-400 border border-amber-500/30 rounded-full px-2 py-0.5">
+                  Premium
+                </span>
+              )}
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-3 leading-snug group-hover:text-purple-100 transition-colors">
+              {latestNewsletter.subject}
+            </h2>
+            {latestNewsletter.intro && (
+              <p className="text-sm text-gray-300 leading-relaxed line-clamp-3 mb-4">
+                {latestNewsletter.intro}
+              </p>
+            )}
+            <p className="text-xs font-semibold text-purple-300 group-hover:text-purple-200 transition-colors">
+              Read the full analysis →
+            </p>
+          </Link>
         </section>
       )}
 
