@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { COMPARISON_SLUGS } from "@/lib/comparison-data";
 
 // ISR the sitemap hourly. The content pages themselves are `force-dynamic`,
 // but the sitemap is a discovery manifest — per-request DB hits are wasteful
@@ -10,6 +11,16 @@ const baseUrl = "https://omnileadsagi.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date().toISOString();
+
+  // /vs/[competitor] pages — programmatic comparison cluster driven by
+  // lib/comparison-data.ts. Adding a new competitor there auto-appends
+  // to the sitemap without a second edit here.
+  const comparisonPages: MetadataRoute.Sitemap = COMPARISON_SLUGS.map((slug) => ({
+    url: `${baseUrl}/vs/${slug}`,
+    lastModified: now,
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: baseUrl, lastModified: now, changeFrequency: "weekly", priority: 1.0 },
@@ -100,5 +111,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-  return [...staticPages, ...landingPages, ...newsletterPages];
+  return [...staticPages, ...comparisonPages, ...landingPages, ...newsletterPages];
 }

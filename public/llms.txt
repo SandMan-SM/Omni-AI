@@ -36,6 +36,11 @@ Omni AI (omnileadsagi.com) is an autonomous lead-generation and business-automat
 - **Who built Omni AI?** Sitani Mafi, founder. Founded in 2024.
 - Full FAQ: https://omnileadsagi.com/faq
 
+## Compare
+- [Omni AI vs HubSpot](https://omnileadsagi.com/vs/hubspot): Keep HubSpot as the CRM of record; run Omni AI as the autonomous outbound + creative layer feeding it.
+- [Omni AI vs Apollo](https://omnileadsagi.com/vs/apollo): Apollo gives you contacts; Omni AI replaces the sourcing + sequencing + creative loop without seat-based pricing.
+- [Omni AI vs Clay](https://omnileadsagi.com/vs/clay): Clay builds enrichment workflows; Omni AI ships the campaigns those workflows are supposed to feed.
+
 ## Founder
 Sitani Mafi, Founder · Contact: sitanim8@gmail.com · Bio: https://omnileadsagi.com/about
 

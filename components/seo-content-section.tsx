@@ -196,22 +196,46 @@ export function SeoContentSection() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5 text-gray-300">
+              {/* Competitor rows link to /vs/[slug] for the full head-to-head
+                  comparison — internal linking hub that lifts the whole
+                  /vs cluster's rankings. */}
               <tr>
-                <td className="px-4 py-3 font-semibold text-white">HubSpot</td>
+                <td className="px-4 py-3 font-semibold text-white">
+                  <Link
+                    href="/vs/hubspot"
+                    className="hover:text-amber-400 underline underline-offset-2 decoration-white/20 hover:decoration-amber-400/60 transition-colors"
+                  >
+                    HubSpot
+                  </Link>
+                </td>
                 <td className="px-4 py-3">CRM — records activity after it happens</td>
                 <td className="px-4 py-3">
                   Keep if you already have it. Omni AI integrates in.
                 </td>
               </tr>
               <tr>
-                <td className="px-4 py-3 font-semibold text-white">Apollo</td>
+                <td className="px-4 py-3 font-semibold text-white">
+                  <Link
+                    href="/vs/apollo"
+                    className="hover:text-amber-400 underline underline-offset-2 decoration-white/20 hover:decoration-amber-400/60 transition-colors"
+                  >
+                    Apollo
+                  </Link>
+                </td>
                 <td className="px-4 py-3">Contact database + basic sequencing</td>
                 <td className="px-4 py-3">
                   Often replaceable — Omni AI handles sourcing + sequencing in one.
                 </td>
               </tr>
               <tr>
-                <td className="px-4 py-3 font-semibold text-white">Clay</td>
+                <td className="px-4 py-3 font-semibold text-white">
+                  <Link
+                    href="/vs/clay"
+                    className="hover:text-amber-400 underline underline-offset-2 decoration-white/20 hover:decoration-amber-400/60 transition-colors"
+                  >
+                    Clay
+                  </Link>
+                </td>
                 <td className="px-4 py-3">Enrichment workflow builder</td>
                 <td className="px-4 py-3">
                   Keep if you already have custom flows you&rsquo;re happy with.
