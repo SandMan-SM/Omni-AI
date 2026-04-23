@@ -62,11 +62,17 @@ const arenaDatasetSchema = {
     name: "Omni AI",
     url: siteUrl,
   },
+  // publisher.sameAs parity with sitewide organizationSchema. Same
+  // rationale as the matching additions on articleSchema +
+  // newsArticleSchema factories and /arena/info's Article publisher:
+  // unifies Organization identity resolution across every schema on
+  // the site so Google / LLM retrievers don't infer a second Omni AI.
   publisher: {
     "@type": "Organization",
     name: "Omni AI",
     url: siteUrl,
     logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
+    sameAs: ["https://www.linkedin.com/company/omni-ai"],
   },
   license: "https://creativecommons.org/publicdomain/zero/1.0/",
   isAccessibleForFree: true,

@@ -89,11 +89,19 @@ const arenaArticleSchema = {
     name: "Omni AI",
     url: siteUrl,
   },
+  // publisher.sameAs echoes the sitewide organizationSchema.sameAs
+  // so Google's cross-page consistency checker resolves this article's
+  // publisher to the same Organization entity declared in app/layout.tsx.
+  // Matches the parity pattern applied to articleSchema +
+  // newsArticleSchema factories — keep this literal in lock-step with
+  // the factory publisher blocks when the organization sameAs list
+  // grows (plan T2.5/T2.6).
   publisher: {
     "@type": "Organization",
     name: "Omni AI",
     url: siteUrl,
     logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
+    sameAs: ["https://www.linkedin.com/company/omni-ai"],
   },
   image: `${siteUrl}/og-image.png`,
   inLanguage: "en-US",

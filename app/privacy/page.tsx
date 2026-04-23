@@ -105,6 +105,12 @@ export default function PrivacyPage() {
             name: "Omni AI",
             url: siteUrl,
           },
+          // publisher.sameAs parity with sitewide organizationSchema.
+          // Ensures the privacy-policy publisher resolves to the same
+          // Organization entity as the rest of the site's schemas.
+          // Low-traffic page but required for the cross-site parity
+          // sweep — a single inconsistent publisher block is enough for
+          // Search Console to flag entity ambiguity.
           publisher: {
             "@type": "Organization",
             name: "Omni AI",
@@ -113,6 +119,7 @@ export default function PrivacyPage() {
               "@type": "ImageObject",
               url: `${siteUrl}/favicon.png`,
             },
+            sameAs: ["https://www.linkedin.com/company/omni-ai"],
           },
           author: {
             "@type": "Person",

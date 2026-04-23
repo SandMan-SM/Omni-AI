@@ -170,6 +170,11 @@ export default async function NewsletterIndexPage() {
             url: "https://omnileadsagi.com/about",
             jobTitle: "Founder, Omni AI",
           },
+          // publisher.sameAs echoes the sitewide organizationSchema
+          // so the Periodical's publisher resolves to the same
+          // Organization entity declared in app/layout.tsx. Matches the
+          // parity pattern applied across the Article / NewsArticle
+          // factories and the Arena layouts — keep in lock-step.
           publisher: {
             "@type": "Organization",
             name: "Omni AI",
@@ -178,6 +183,7 @@ export default async function NewsletterIndexPage() {
               "@type": "ImageObject",
               url: "https://omnileadsagi.com/favicon.png",
             },
+            sameAs: ["https://www.linkedin.com/company/omni-ai"],
           },
           // The RSS feed is the machine-readable distribution endpoint
           // for the Periodical — explicitly declaring it lets feed
