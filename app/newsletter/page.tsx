@@ -195,6 +195,31 @@ export default async function NewsletterIndexPage() {
             url: "https://omnileadsagi.com/newsletter/rss.xml",
             encodingFormat: "application/rss+xml",
           },
+          // SpeakableSpecification — /newsletter is the canonical entity
+          // page for the Interlinked publication itself (as opposed to
+          // any single issue, which each ship their own speakable via
+          // newsArticleSchema). When a voice assistant is asked "what is
+          // the Omni AI newsletter?" / "what does Interlinked cover?",
+          // Google Assistant / Siri read-aloud / Alexa need a declared
+          // set of selectors to read verbatim. The h1 ("Omni AI
+          // Newsletter") plus the intro paragraph tagged with
+          // data-speakable="intro" (the ~3-sentence "stories,
+          // strategies, signals that matter" pitch) compose the
+          // natural ~10-second voice reply — a briefing-length
+          // publication summary that cites the author, the cadence,
+          // and the genre without forcing the assistant to extract it
+          // from the archive's ItemList.
+          //
+          // This closes the last voice-retrieval gap on the newsletter
+          // surface: individual issues (newArticleSchema) already
+          // declare speakable, and now the Periodical itself does too,
+          // so every Interlinked-related voice query lands on a
+          // speakable-declared page regardless of whether the caller
+          // asked about a specific issue or the publication overall.
+          speakable: {
+            "@type": "SpeakableSpecification",
+            cssSelector: ["h1", "[data-speakable='intro']"],
+          },
         }}
       />
       {/* ItemList — tells Google and LLM retrievers that the archive is
@@ -238,7 +263,16 @@ export default async function NewsletterIndexPage() {
           <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">
             Omni AI Newsletter
           </h1>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto">
+          {/* data-speakable="intro" activates the SpeakableSpecification
+              declared on the Blog + Periodical JSON-LD above. Voice
+              assistants (Google Assistant, Siri read-aloud, Alexa)
+              concatenate h1 + this paragraph as the natural reply to
+              "what is the Omni AI newsletter?" / "what does Interlinked
+              cover?" voice queries. */}
+          <p
+            className="text-gray-400 text-lg max-w-xl mx-auto"
+            data-speakable="intro"
+          >
             The businesses that move with AI don&apos;t just survive — they become
             untouchable. Stories, strategies, and the signals that matter.
             Daily intelligence briefs delivered every morning at 8:00 AM.
