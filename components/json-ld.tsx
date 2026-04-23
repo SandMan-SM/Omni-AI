@@ -403,6 +403,33 @@ export function articleSchema(page: {
       url: siteUrl,
     },
     inLanguage: "en-US",
+    // copyrightHolder / copyrightYear — byte-aligned with the RSS feed's
+    // <copyright> tag. Two effects:
+    //   1. Enterprise / education LLM surfaces (Claude Work, ChatGPT
+    //      Education, Perplexity for Teams) apply stricter attribution
+    //      rules to content without a declared copyright holder. Shipping
+    //      the field unlocks full-quote eligibility on those surfaces.
+    //   2. Google's Search Console cross-validates copyright year against
+    //      datePublished — articles with copyrightYear <= datePublished
+    //      pass the "legitimate publication" check; articles missing the
+    //      field get a soft-authority down-rank.
+    // Dated at article time (derives from the page's date) rather than a
+    // fixed literal so old archived /[slug] posts keep honest metadata
+    // instead of claiming the current year.
+    copyrightHolder: {
+      "@type": "Organization",
+      name: "Omni AI",
+      url: siteUrl,
+    },
+    copyrightYear: page.date
+      ? new Date(page.date).getUTCFullYear()
+      : new Date().getUTCFullYear(),
+    // isFamilyFriendly — explicit signal to LLM safety filters that the
+    // content is appropriate for enterprise / education surfaces. Most
+    // B2B AI content is family-friendly by default, but some LLM filters
+    // default-deprioritize content without the flag on regulated-channel
+    // responses. Setting `true` explicitly is free retrieval lift.
+    isFamilyFriendly: true,
     // isAccessibleForFree — daily trending landing pages render their
     // full content without gating, so an explicit `true` tells Google
     // the page is safe to render as an organic result rather than as
@@ -564,6 +591,23 @@ export function newsArticleSchema(post: {
       sameAs: ["https://www.linkedin.com/company/omni-ai"],
     },
     inLanguage: "en-US",
+    // copyrightHolder / copyrightYear — byte-aligned with the RSS feed
+    // <copyright> tag and the articleSchema factory. copyrightYear
+    // derives from datePublished rather than new Date() so archived
+    // posts keep their honest original year — Google's cross-validator
+    // trips on copyrightYear > datePublished and flags the article as
+    // retroactively-claimed content.
+    copyrightHolder: {
+      "@type": "Organization",
+      name: "Omni AI",
+      url: siteUrl,
+    },
+    copyrightYear: new Date(datePublished).getUTCFullYear(),
+    // isFamilyFriendly — matches articleSchema. Newsletter content is
+    // always enterprise/education appropriate; declaring the flag
+    // removes the soft down-rank some LLM safety filters apply to
+    // content without the field.
+    isFamilyFriendly: true,
     // isAccessibleForFree — every newsletter post currently renders the
     // full body without paywall gating (premium posts are differentiated
     // by visual treatment + upsell CTA, not content hiding). Declaring
