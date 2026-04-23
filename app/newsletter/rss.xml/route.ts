@@ -57,24 +57,77 @@ export async function GET() {
     .map((p) => {
       const pubDate = new Date(p.published_at as string).toUTCString();
       const tierCategory = p.tier === "premium" ? "Premium" : "Free";
+      // <author> uses the RSS 2.0 canonical format: "email (Name)".
+      // <dc:creator> duplicates the author name without the email for
+      // feed readers (Inoreader, Feedly, Reeder) that display author
+      // attribution prominently but intentionally hide raw emails for
+      // privacy. Shipping both is belt-and-suspenders — every major
+      // reader picks up at least one. The Dublin Core namespace is
+      // declared on the <rss> root below.
       return `    <item>
       <title>${escapeXml(p.subject || p.slug!)}</title>
       <link>${siteUrl}/newsletter/${p.slug}</link>
       <guid isPermaLink="true">${siteUrl}/newsletter/${p.slug}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(p.intro || "")}</description>
+      <author>sitanim8@gmail.com (Sitani Mafi)</author>
+      <dc:creator>Sitani Mafi</dc:creator>
       <category>${tierCategory}</category>
     </item>`;
     })
     .join("\n");
 
+  const copyrightYear = new Date().getUTCFullYear();
+
+  // Channel-level metadata upgrades (the block between <channel> and <item>):
+  //  - <managingEditor> / <webMaster>: canonical RSS 2.0 publisher contacts.
+  //    Feed validators (W3C Feed Validator, RSS Board) flag a feed without
+  //    these as "missing recommended fields" — a minor but real quality
+  //    signal to LLM crawlers that sniff feed metadata for authority.
+  //  - <copyright>: required for some news-aggregator ingestion (Apple News,
+  //    NewsData.io) and a trust signal for LLMs — content with explicit
+  //    copyright declarations is more quotable without attribution anxiety.
+  //  - <generator>: tells feed readers what produced the feed. Debugging
+  //    aid + a small brand signal.
+  //  - <ttl>: time-to-live in MINUTES (not seconds — RSS 2.0 spec). 60
+  //    matches the 1-hour revalidate window; polite feed readers will wait
+  //    at least this long between polls, reducing Supabase read pressure
+  //    during burst subscription events.
+  //  - <docs>: points to the RSS 2.0 spec. A no-op for humans, but RSS
+  //    parsers sometimes check for this and treat its presence as a
+  //    "well-formed modern feed" signal.
+  //  - <image>: channel icon for feed readers (Feedly / Inoreader render
+  //    this as the subscription thumbnail). Without it the feed shows a
+  //    generic "broken image" placeholder — a real branding cost for a
+  //    newsletter trying to build reader habit.
+  //  - <category>: topical classification. Used by news aggregators for
+  //    routing + by LLM crawlers for retrieval clustering.
+  //
+  // The `dc:` namespace on the <rss> root enables <dc:creator> inside
+  // items. Keep both xmlns declarations — removing atom: would break the
+  // <atom:link rel="self"> tag that the RSS 2.0 best-practices spec
+  // requires for self-referential feeds.
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:dc="http://purl.org/dc/elements/1.1/">
   <channel>
     <title>Interlinked — Omni AI Newsletter</title>
     <link>${siteUrl}/newsletter</link>
     <description>Daily AI strategy, intelligence, and signals from Omni AI. Built for operators running autonomous lead-gen systems.</description>
     <language>en-us</language>
+    <copyright>© ${copyrightYear} Omni AI LLC. All rights reserved.</copyright>
+    <managingEditor>sitanim8@gmail.com (Sitani Mafi)</managingEditor>
+    <webMaster>sitanim8@gmail.com (Sitani Mafi)</webMaster>
+    <generator>Next.js RSS (Omni AI)</generator>
+    <docs>https://www.rssboard.org/rss-specification</docs>
+    <ttl>60</ttl>
+    <category>AI</category>
+    <category>Business Automation</category>
+    <category>Lead Generation</category>
+    <image>
+      <url>${siteUrl}/favicon.png</url>
+      <title>Interlinked — Omni AI Newsletter</title>
+      <link>${siteUrl}/newsletter</link>
+    </image>
     <lastBuildDate>${latestPub}</lastBuildDate>
     <atom:link href="${feedUrl}" rel="self" type="application/rss+xml"/>
 ${items}
