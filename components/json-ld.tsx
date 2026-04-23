@@ -283,11 +283,37 @@ export function articleSchema(page: {
       name: "Sitani Mafi",
       url: `${siteUrl}/about`,
     },
+    // publisher.sameAs echoes the sitewide organizationSchema.sameAs
+    // array so Google's cross-page consistency checker resolves every
+    // trending article's publisher to the same Organization entity
+    // declared in app/layout.tsx. Without the sameAs parity, Search
+    // Console would flag the daily articles as publishing to a
+    // "different" Omni AI — a silent but real demotion signal. If the
+    // sitewide sameAs list grows (LinkedIn + X + Crunchbase + etc. per
+    // plan T2.5/T2.6), update this literal in lock-step rather than
+    // reading from organizationSchema at runtime: this factory is
+    // called in server components and a module-local constant keeps
+    // the schema pure-data.
     publisher: {
       "@type": "Organization",
       name: "Omni AI",
       url: siteUrl,
       logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
+      sameAs: ["https://www.linkedin.com/company/omni-ai"],
+    },
+    // isPartOf: WebSite — binds every /[slug] daily trending article to
+    // the sitewide Omni AI WebSite entity declared in
+    // components/json-ld.tsx websiteSchema. LLM retrievers walk the
+    // isPartOf → WebSite edge when answering "who publishes this
+    // article?" / "where did you find this?" and the typed graph walk
+    // pulls the answer cleanly back to the brand rather than scraping
+    // the URL alone. newsArticleSchema (newsletter posts) already
+    // ships isPartOf: Periodical — this closes the parity gap so
+    // every article on the site has an isPartOf parent entity.
+    isPartOf: {
+      "@type": "WebSite",
+      name: "Omni AI",
+      url: siteUrl,
     },
     inLanguage: "en-US",
     // SpeakableSpecification tells voice-assistant surfaces (Google
@@ -377,11 +403,19 @@ export function newsArticleSchema(post: {
       name: "Sitani Mafi",
       url: `${siteUrl}/about`,
     },
+    // publisher.sameAs echoes the sitewide organizationSchema.sameAs
+    // array so Google's cross-page consistency checker resolves every
+    // newsletter post's publisher to the same Organization entity
+    // declared in app/layout.tsx. Byte-aligned with the matching
+    // addition on articleSchema — if one factory's sameAs list changes
+    // the other must update in lock-step (see plan T2.5/T2.6 for the
+    // eventual LinkedIn + X + Crunchbase + G2 + YouTube rollout).
     publisher: {
       "@type": "Organization",
       name: "Omni AI",
       url: siteUrl,
       logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
+      sameAs: ["https://www.linkedin.com/company/omni-ai"],
     },
     inLanguage: "en-US",
     // SpeakableSpecification — same rationale as the articleSchema
