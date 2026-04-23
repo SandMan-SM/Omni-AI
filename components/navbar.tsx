@@ -38,6 +38,11 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
     // magnet — surfacing it in the main nav (not just the footer) feeds
     // both UX and internal-linking SEO.
     { href: "/newsletter", label: "Newsletter" },
+    // Pricing is the primary commercial-intent landing page. "[brand]
+    // pricing" is typically a top-5 branded search term; surfacing it in
+    // the main nav gives direct-to-pricing visitors a one-click path and
+    // feeds Google crawl weight to the /pricing route.
+    { href: "/pricing", label: "Pricing" },
   ];
 
   return (

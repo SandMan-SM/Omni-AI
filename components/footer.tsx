@@ -9,6 +9,11 @@ const footerLinks = [
   { href: "/campaigns", label: "Campaigns" },
   { href: "/details", label: "Infographic" },
   { href: "/newsletter", label: "Newsletter" },
+  // /pricing was crawl-orphaned on ship — only the sitemap referenced it.
+  // Surfacing it in the footer links it from every page on the site, which
+  // is the discoverability floor Google expects for a commercial-intent
+  // page to rank for "[brand] pricing" queries.
+  { href: "/pricing", label: "Pricing" },
   { href: "/about", label: "About" },
   { href: "/faq", label: "FAQ" },
 ];
