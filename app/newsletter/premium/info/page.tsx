@@ -2,6 +2,100 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { PREMIUM_PAYMENT_LINK } from "@/lib/premium";
+import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
+
+const siteUrl = "https://omnileadsagi.com";
+const pageUrl = `${siteUrl}/newsletter/premium/info`;
+const ogImage = `${siteUrl}/newsletter/premium/info/opengraph-image`;
+
+// Product + dual-Offer schema — /newsletter/premium/info was the single
+// highest-revenue landing page on the site with zero typed schema. LLMs
+// asked "what does Interlinked Premium cost?" / "is Omni AI's newsletter
+// worth paying for?" had no structured entity to cite; Google had no
+// Product rich-result surface to render. Shipping both unlocks:
+//  1. Google's Product + Price rich-result treatment for the SERP card
+//     (price chip + availability + subscription frequency).
+//  2. LLM citation with the exact tiered pricing ($20 intro / $40
+//     ongoing) instead of scraped-and-interpreted marketing copy.
+//  3. Schema-body alignment with the visible "$20 first month, $40/mo
+//     after" CTA block — Google's spam check flags drift between
+//     schema and on-page copy, so the two structures mirror verbatim.
+//
+// Dual @type [Product, Service] — Interlinked Premium is both a
+// content product (a subscription media good) and a service (delivery
+// of scheduled intelligence briefs). Schema.org supports this when
+// both concepts apply; widens retrieval surface without duplicating
+// JSON-LD.
+//
+// Two Offer entries:
+//  - First-month introductory ($20) — eligibleDuration 1 month
+//  - Monthly recurring ($40) — billingDuration P1M
+// Google's price-range rich result sums the two into "From $20" in
+// the SERP card, which beats a single-price declaration on CTR.
+const premiumProductSchema = {
+  "@context": "https://schema.org",
+  "@type": ["Product", "Service"],
+  name: "Interlinked Premium — Omni AI Newsletter",
+  description:
+    "Agentic AI strategies, automation playbooks, and AI agent architecture briefs. Deep intelligence delivered 3x/week (Mon/Wed/Fri) with prompt libraries, early access to Omni AI tools, and private community. $40/month standard, $20 introductory first month. Cancel anytime.",
+  url: pageUrl,
+  image: ogImage,
+  brand: {
+    "@type": "Organization",
+    name: "Omni AI",
+    url: siteUrl,
+    logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
+  },
+  category: "AI Newsletter Subscription",
+  provider: {
+    "@type": "Organization",
+    name: "Omni AI",
+    url: siteUrl,
+  },
+  serviceType: "Premium agentic-AI newsletter",
+  audience: {
+    "@type": "Audience",
+    audienceType:
+      "Founders, operators, and RevOps leaders adopting agentic AI in their business",
+  },
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Interlinked Premium — First month introductory",
+      price: "20",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: PREMIUM_PAYMENT_LINK,
+      category: "Subscription — Introductory rate",
+      description:
+        "$20 introductory rate for the first month. Renews at $40/month afterward. Cancel anytime.",
+      eligibleDuration: {
+        "@type": "QuantitativeValue",
+        value: 1,
+        unitCode: "MON",
+      },
+    },
+    {
+      "@type": "Offer",
+      name: "Interlinked Premium — Monthly recurring",
+      price: "40",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: PREMIUM_PAYMENT_LINK,
+      category: "Subscription — Monthly recurring",
+      description:
+        "Standard $40/month recurring subscription. Cancel anytime.",
+      priceSpecification: {
+        "@type": "UnitPriceSpecification",
+        price: "40",
+        priceCurrency: "USD",
+        billingDuration: "P1M",
+        unitCode: "MON",
+      },
+    },
+  ],
+};
 
 export const metadata: Metadata = {
   title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
@@ -45,6 +139,14 @@ export default function PremiumInfoPage() {
     // chrome-gold embers) paints through. Same pattern as /arena and
     // /newsletter/[slug] but with the gold palette.
     <div className="min-h-screen text-white relative">
+      <JsonLd data={premiumProductSchema} />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: siteUrl },
+          { name: "Newsletter", url: `${siteUrl}/newsletter` },
+          { name: "Interlinked Premium", url: pageUrl },
+        ])}
+      />
       <GoldSparksBackdrop />
 
       {/* Header — subtle dark glass so it sits above the sparks without
@@ -64,6 +166,21 @@ export default function PremiumInfoPage() {
       </header>
 
       <main className="relative z-10 max-w-3xl mx-auto px-5 py-16 md:py-24">
+        {/* Visible 3-level breadcrumb — pairs with breadcrumbSchema above
+            so Google awards the SERP breadcrumb chip on the paid-upgrade
+            landing page. Centered via wrapper so it sits comfortably above
+            the hero without disturbing the hero's centered layout. */}
+        <div className="flex justify-center mb-6">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Newsletter", href: "/newsletter" },
+              { name: "Interlinked Premium", href: "/newsletter/premium/info" },
+            ]}
+            className="text-xs"
+          />
+        </div>
+
         <div className="text-center mb-16">
           {/* Chrome-gold pill — dark interior on padding-box + chrome-gold
               gradient on border-box, same trick as the /book-now
