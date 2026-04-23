@@ -66,10 +66,18 @@ export function EcosystemSection() {
                     whileHover={{ scale: 1.05 }}
                     className="relative"
                   >
+                    {/* Tile sizing previously ballooned from w-14 (56px)
+                        on mobile to w-80 (320px) at xl — 5 tiles × 320px
+                        + gaps overflowed every desktop viewport, so AI
+                        and Repeat got clipped off the edges. Scaled the
+                        ramp back to a sane 56 → 112px range so the
+                        whole flow fits the container at every
+                        breakpoint. Icons + labels shrunk proportionally
+                        so the visual weight stays balanced. */}
                     <div
-                      className={`w-14 h-14 sm:w-16 sm:h-16 md:w-56 md:h-56 lg:w-72 lg:h-72 xl:w-80 xl:h-80 rounded-xl md:rounded-3xl bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
+                      className={`w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 xl:w-28 xl:h-28 rounded-xl md:rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center relative z-10`}
                     >
-                      <Icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-28 md:h-28 lg:w-36 lg:h-36 xl:w-40 xl:h-40 text-white" />
+                      <Icon className="w-7 h-7 sm:w-8 sm:h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 xl:w-14 xl:h-14 text-white" />
                     </div>
                     <motion.div
                       animate={{ opacity: [0.2, 0.45, 0.2] }}
@@ -77,7 +85,7 @@ export function EcosystemSection() {
                       className={`absolute inset-0 rounded-xl bg-gradient-to-br ${step.color} blur-xl`}
                     />
                   </motion.div>
-                  <p className="text-center text-gray-300 mt-3 md:mt-5 lg:mt-6 font-medium text-sm sm:text-base md:text-2xl lg:text-3xl xl:text-4xl">
+                  <p className="text-center text-gray-300 mt-3 md:mt-4 font-medium text-sm sm:text-base md:text-base lg:text-lg">
                     {step.label}
                   </p>
                 </motion.div>
