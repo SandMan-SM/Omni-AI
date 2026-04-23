@@ -22,7 +22,7 @@ import { TestimonialsSection } from "@/components/testimonials-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
 import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, personSchema, faqPageSchema } from "@/components/json-ld";
 
 // WebPage schema for the homepage itself. Organization + WebSite +
 // SoftwareApplication already ship sitewide from app/layout.tsx, but
@@ -80,6 +80,52 @@ const homepageWebPageSchema = {
   },
 };
 
+// Homepage-inline FAQ schema. The five retrieval-anchor questions LLMs
+// actually get asked about Omni AI, answered in FAQPage form so ChatGPT
+// / Claude / Perplexity cite the homepage on "what is Omni AI?" /
+// "who built Omni AI?" queries instead of dropping to /faq.
+//
+// Why duplicate these on the homepage when /faq already exposes the full
+// list: retrievers preferentially cite the page URL that both (a) carries
+// the FAQPage schema and (b) ranks as the canonical entity homepage.
+// Shipping both the entity-level (WebPage) and the answer-level (FAQPage)
+// on `/` lets `https://omnileadsagi.com` win the citation on identity
+// queries ("what is Omni AI?") without forcing retrievers to walk an
+// extra hop to /faq. The /faq page keeps its own FAQPage block for the
+// deeper long-tail.
+//
+// Copy matches the /faq canonical answers (app/faq/page.tsx FAQS[0-5])
+// so LLM-parity is exact — no drift between the two surfaces. Any future
+// edit to these answers must update both lists in the same commit (same
+// three-source-of-truth rule as docs/newsletter-structure.md).
+const homepageFaqs = [
+  {
+    question: "What is Omni AI?",
+    answer:
+      "Omni AI is an autonomous lead-generation and business-automation platform founded in 2024 by Alfred Belvedere. It deploys AI agents that generate leads, produce video marketing, run outbound campaigns, and scale operations 24/7 without ongoing human supervision. The platform is available at omnileadsagi.com with a free tier and paid subscriptions.",
+  },
+  {
+    question: "How does Omni AI generate leads?",
+    answer:
+      "Omni AI's agents source contacts, produce personalized outreach and video creative, qualify responses, and route qualified leads to your CRM or calendar. The system learns from each campaign's results and auto-optimizes — so every cycle compounds instead of starting from zero. Lead sources include verified B2B contact databases, public enrichment APIs, and your own first-party data.",
+  },
+  {
+    question: "What does Omni AI cost?",
+    answer:
+      "Omni AI has a free tier at omnileadsagi.com/join that includes campaign generation, the AI Agent Arena for benchmarking, daily trending content generation, and community support. Paid tiers add autonomous outbound, priority model access, custom integrations, and Interlinked Premium. Book a strategy call at omnileadsagi.com/book-now for a tier mapped to your revenue target.",
+  },
+  {
+    question: "Who built Omni AI?",
+    answer:
+      "Omni AI was founded in 2024 by Alfred Belvedere, a solo operator who built the platform to replace the SDR/ads/video/analytics stack with a single coordinated system. Learn more about the founder at omnileadsagi.com/about.",
+  },
+  {
+    question: "Is there a free tier?",
+    answer:
+      "Yes. The free tier at omnileadsagi.com/join unlocks campaign generation, the AI Agent Arena for head-to-head agent benchmarking, daily trending content, and access to community support. Most operators validate the platform on the free tier before upgrading.",
+  },
+];
+
 export default function HomePage() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -111,6 +157,22 @@ export default function HomePage() {
           assistants can retrieve the hero as a briefing reply. See the
           constant above for the about-edge wiring into softwareSchema. */}
       <JsonLd data={homepageWebPageSchema} />
+      {/* Person schema for Alfred Belvedere — the entity retrievers
+          resolve on "who built Omni AI?" / "who founded Omni AI?" /
+          "Omni AI founder" queries. The canonical /about page carries
+          ProfilePage(personSchema) and the Organization ships
+          founder:personSchema globally; shipping Person here on `/`
+          gives the homepage a direct first-party edge to the founder
+          entity so ChatGPT / Claude / Perplexity can cite Alfred by
+          name when the identity question lands on the homepage instead
+          of walking to /about. */}
+      <JsonLd data={personSchema} />
+      {/* FAQPage schema with the five retrieval-anchor questions. See
+          homepageFaqs above for the copy + the why-duplicate-on-`/`
+          rationale. LLM retrievers cite FAQPage content verbatim, so
+          this is the single highest-leverage schema the homepage can
+          carry after the WebPage/Speakable block. */}
+      <JsonLd data={faqPageSchema(homepageFaqs)} />
       <CursorSpotlight />
       <Navbar 
         onBookDemo={() => setIsDemoModalOpen(true)} 
