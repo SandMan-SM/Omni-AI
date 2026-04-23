@@ -14,7 +14,7 @@ const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const BRIEFING_FROM = process.env.NEWSLETTER_FROM_EMAIL || 'Omni AI <newsletter@omnileadsagi.com>';
-const BRIEFING_TO = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
+const BRIEFING_TO = process.env.NEWSLETTER_TO_EMAIL || 'alfred@omnileadsagi.com';
 
 export interface BusinessMetrics {
   newSubscribers24h: number;

@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
  * GET /api/portfolio/review/[slug]
  *   - Default: returns the rendered HTML (opens in a browser tab)
  *   - ?format=json → returns the raw data
- *   - ?email=1 → also emails the review to sitanim8@gmail.com via Resend
+ *   - ?email=1 → also emails the review to alfred@omnileadsagi.com via Resend
  *
  * Authorization: CRON_SECRET bearer OR admin session (cookie or
  * omni_token). See lib/api-auth.ts for details.
@@ -20,7 +20,7 @@ export const dynamic = 'force-dynamic';
  * "omni-leads", "leifson", "youngs" are all visible in the bundled
  * /command page source) could read full MRR/ARR/ships/risks data for
  * every portfolio client. `?email=1` could also be called anonymously
- * to fire unlimited emails to sitanim8@gmail.com. Both gaps close here.
+ * to fire unlimited emails to alfred@omnileadsagi.com. Both gaps close here.
  *
  * Cycle 48 introduced an inline authorize() helper here; Cycle 49
  * extracted the CRON-or-admin pattern into the shared authorizeCronOrAdmin
@@ -59,7 +59,7 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
         },
         body: JSON.stringify({
           from: 'Omni AI <bookings@omnileadsagi.com>',
-          to: 'sitanim8@gmail.com',
+          to: 'alfred@omnileadsagi.com',
           subject: `Investor Review · ${data.client.name} · ${new Date().toISOString().slice(0, 10)}`,
           html,
         }),

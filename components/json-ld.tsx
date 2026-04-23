@@ -58,7 +58,7 @@ export const organizationSchema = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer support",
-    email: "sitanim8@gmail.com",
+    email: "alfred@omnileadsagi.com",
     url: "https://omnileadsagi.com/join",
     availableLanguage: "English",
   },
@@ -397,7 +397,7 @@ export const personSchema = {
   "@type": "Person",
   name: "Alfred Belvedere",
   jobTitle: "Founder",
-  email: "sitanim8@gmail.com",
+  email: "alfred@omnileadsagi.com",
   url: "https://omnileadsagi.com/about",
   worksFor: {
     "@type": "Organization",

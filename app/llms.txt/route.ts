@@ -108,7 +108,7 @@ The free tier at ${siteUrl}/join includes campaign generation, the AI Agent Aren
 They solve different problems. HubSpot is a CRM that records activity after it happens; Apollo is a contact database with basic sequencing; Clay is an enrichment workflow builder. Omni AI runs the operation autonomously — it decides what to send, produces the creative, ships the campaign, and adjusts without waiting for a human to rebuild a workflow. Most teams keep their CRM and replace their outbound/ops stack with Omni AI.
 
 **Who built Omni AI?**
-Omni AI was founded in 2024 by Alfred Belvedere, a solo operator who built the platform to replace the SDR/ads/video/analytics stack with a single coordinated system. Contact: sitanim8@gmail.com. Founder bio and company history at ${siteUrl}/about.
+Omni AI was founded in 2024 by Alfred Belvedere, a solo operator who built the platform to replace the SDR/ads/video/analytics stack with a single coordinated system. Contact: alfred@omnileadsagi.com. Founder bio and company history at ${siteUrl}/about.
 
 **Is there a free tier?**
 Yes. The free tier at ${siteUrl}/join unlocks campaign generation, the AI Agent Arena for head-to-head agent benchmarking, daily trending content, and community support. Most operators validate the platform on the free tier before upgrading to paid outbound.
@@ -137,7 +137,7 @@ Full FAQ with additional questions on GDPR, AI-model routing, and autopilot safe
 - [Omni AI vs Clay](${siteUrl}/vs/clay): Clay builds enrichment workflows; Omni AI ships the campaigns those workflows are supposed to feed.
 
 ## Founder
-Alfred Belvedere, Founder · Contact: sitanim8@gmail.com · Bio: ${siteUrl}/about
+Alfred Belvedere, Founder · Contact: alfred@omnileadsagi.com · Bio: ${siteUrl}/about
 
 ## Getting Started
 - [Join / Sign Up](${siteUrl}/join): Create an account to access the Omni AI dashboard and tools.

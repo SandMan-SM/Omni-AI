@@ -59,7 +59,7 @@ export default function GlobalError({
           </h1>
           <p style={{ color: "#9ca3af", fontSize: 14, lineHeight: 1.6, margin: "0 0 24px" }}>
             Something in the layout failed. Refresh to retry. If it keeps
-            happening, email sitanim8@gmail.com with this code:{" "}
+            happening, email alfred@omnileadsagi.com with this code:{" "}
             <code
               style={{
                 display: "inline-block",

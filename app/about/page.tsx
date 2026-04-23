@@ -165,10 +165,10 @@ export default function AboutPage() {
                 <p className="text-sm text-gray-400">
                   Email:{" "}
                   <a
-                    href="mailto:sitanim8@gmail.com"
+                    href="mailto:alfred@omnileadsagi.com"
                     className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60"
                   >
-                    sitanim8@gmail.com
+                    alfred@omnileadsagi.com
                   </a>
                 </p>
               </div>

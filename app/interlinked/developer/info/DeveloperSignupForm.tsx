@@ -15,7 +15,7 @@
  *      Interlinked Developer newsletter list.
  *   4. Sends a branded welcome email to the registrant with a
  *      community CTA + newsletter confirmation.
- *   5. Sends an owner-notification email to sitanim8@gmail.com with
+ *   5. Sends an owner-notification email to alfred@omnileadsagi.com with
  *      the full contact info (the newsletter_subscriptions row only
  *      persists email, so the owner email is the only surface the
  *      name + phone land on).

@@ -213,10 +213,10 @@ export default function PrivacyPage() {
               share it with, and the rights you have over it. Omni AI is
               operated by Alfred Belvedere. You can reach us at{" "}
               <a
-                href="mailto:sitanim8@gmail.com"
+                href="mailto:alfred@omnileadsagi.com"
                 className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
               >
-                sitanim8@gmail.com
+                alfred@omnileadsagi.com
               </a>
               .
             </p>
@@ -485,10 +485,10 @@ export default function PrivacyPage() {
             <p className="mt-4">
               To exercise any of these rights, email{" "}
               <a
-                href="mailto:sitanim8@gmail.com"
+                href="mailto:alfred@omnileadsagi.com"
                 className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
               >
-                sitanim8@gmail.com
+                alfred@omnileadsagi.com
               </a>{" "}
               from the email address associated with your account. We will
               respond within 30 days.
@@ -570,10 +570,10 @@ export default function PrivacyPage() {
               Questions, requests, or complaints? Email Alfred Belvedere,
               founder, at{" "}
               <a
-                href="mailto:sitanim8@gmail.com"
+                href="mailto:alfred@omnileadsagi.com"
                 className="text-amber-400 hover:text-amber-300 underline underline-offset-2"
               >
-                sitanim8@gmail.com
+                alfred@omnileadsagi.com
               </a>
               . Include &ldquo;Privacy&rdquo; in the subject so we can route
               it correctly.

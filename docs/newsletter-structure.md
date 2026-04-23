@@ -108,7 +108,7 @@ Both cron calls require `Authorization: Bearer ${CRON_SECRET}` — Vercel sends 
 ### Sending
 
 - **Email** — `sendEmail(content, toAddress)` posts to Resend (`from: bookings@omnileadsagi.com`). Rendered via `buildNewsletterEmailHtml`.
-- **Dev-mode allowlist** — if `NEWSLETTER_DEV_MODE !== 'false'`, only `NEWSLETTER_TO_EMAIL` (default `sitanim8@gmail.com`) actually receives emails. Everyone else is silently skipped in logs. Flip `NEWSLETTER_DEV_MODE=false` in Vercel env to go live to all subscribers.
+- **Dev-mode allowlist** — if `NEWSLETTER_DEV_MODE !== 'false'`, only `NEWSLETTER_TO_EMAIL` (default `alfred@omnileadsagi.com`) actually receives emails. Everyone else is silently skipped in logs. Flip `NEWSLETTER_DEV_MODE=false` in Vercel env to go live to all subscribers.
 - **Telegram** — `sendMorningDebrief` posts one clean message to the configured chat with inline buttons linking to both newsletters.
 
 ### Database
@@ -120,7 +120,7 @@ Both cron calls require `Authorization: Bearer ${CRON_SECRET}` — Vercel sends 
 
 ## On-demand preview
 
-`GET /api/newsletter/send-to-me?secret=$CRON_SECRET&to=sitanim8@gmail.com` — generates fresh free + premium content and emails both to the target address. Used to preview the current template without waiting for the 9 AM cron.
+`GET /api/newsletter/send-to-me?secret=$CRON_SECRET&to=alfred@omnileadsagi.com` — generates fresh free + premium content and emails both to the target address. Used to preview the current template without waiting for the 9 AM cron.
 
 ## Linked destinations
 

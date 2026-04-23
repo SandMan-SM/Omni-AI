@@ -42,7 +42,7 @@ export async function GET(req: Request) {
           },
           body: JSON.stringify({
             from: 'Omni AI <bookings@omnileadsagi.com>',
-            to: 'sitanim8@gmail.com',
+            to: 'alfred@omnileadsagi.com',
             subject: `Weekly Review · ${c.name} · ${new Date().toISOString().slice(0, 10)}`,
             html,
           }),

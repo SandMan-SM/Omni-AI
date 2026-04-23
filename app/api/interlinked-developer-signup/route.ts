@@ -66,7 +66,7 @@ import { logEvent } from "@/lib/events";
  * ------
  * Two Resend sends per successful POST:
  *   1. Registrant email — branded welcome with community CTA link
- *   2. Owner email — notification to sitanim8@gmail.com with full
+ *   2. Owner email — notification to alfred@omnileadsagi.com with full
  *      contact info so the owner can personally follow up (the
  *      owner notification is the only surface carrying the full
  *      name + phone + email triple; newsletter_subscriptions only
@@ -83,7 +83,7 @@ import { logEvent } from "@/lib/events";
  */
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-const OWNER_EMAIL = "sitanim8@gmail.com";
+const OWNER_EMAIL = "alfred@omnileadsagi.com";
 const FROM_EMAIL = "Omni AI <bookings@omnileadsagi.com>";
 const SITE_URL = "https://omnileadsagi.com";
 

@@ -13,12 +13,12 @@ export const dynamic = 'force-dynamic';
  * and emails both to the requested address. Secret-gated.
  *
  * Usage:
- *   GET /api/newsletter/send-to-me?secret=XXX&to=sitanim8@gmail.com
+ *   GET /api/newsletter/send-to-me?secret=XXX&to=alfred@omnileadsagi.com
  */
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
-  const to = searchParams.get('to') || process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
+  const to = searchParams.get('to') || process.env.NEWSLETTER_TO_EMAIL || 'alfred@omnileadsagi.com';
 
   if (
     !process.env.CRON_SECRET ||

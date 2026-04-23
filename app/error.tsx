@@ -36,10 +36,10 @@ export default function RootError({
           The page hit an unexpected error. Retrying usually fixes it. If it
           keeps happening, drop us a note at
           <a
-            href="mailto:sitanim8@gmail.com"
+            href="mailto:alfred@omnileadsagi.com"
             className="mx-1 text-amber-300 hover:text-amber-200 underline underline-offset-2"
           >
-            sitanim8@gmail.com
+            alfred@omnileadsagi.com
           </a>
           and include this code:
           <code className="mx-1 px-1.5 py-0.5 rounded bg-white/[0.06] text-amber-300 text-xs">

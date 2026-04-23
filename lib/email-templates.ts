@@ -92,7 +92,7 @@ export function bookerConfirmationEmail(booking: BookingDetails): string {
 }
 
 /**
- * Notification email sent to the owner (sitanim8@gmail.com) when someone books a demo
+ * Notification email sent to the owner (alfred@omnileadsagi.com) when someone books a demo
  */
 export function ownerNotificationEmail(booking: BookingDetails): string {
   return `

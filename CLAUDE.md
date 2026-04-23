@@ -49,7 +49,7 @@ This site serves daily AI/business trending topic landing pages at `omnileadsagi
 - **`app/[slug]/page.tsx`** — Dynamic route. Fetches `title`, `description`, `topic` from the `landing_pages` Supabase table and renders a branded landing page with full SEO metadata (OG, Twitter card, JSON-LD).
 - **`app/[slug]/CTAButtons.tsx`** — Client component. Two buttons on the page: primary gradient "See How Omni AI Does It →" and secondary grey "Learn More". Primary opens a modal overlay containing the lead form.
 - **`app/[slug]/LeadForm.tsx`** — Client component. Name/Phone/Email form rendered inside the modal. POSTs to `/api/landing-lead`.
-- **`app/api/landing-lead/route.ts`** — Inserts lead into `landing_page_leads`, sends owner notification to `sitanim8@gmail.com`, sends thank-you email to the lead via Resend.
+- **`app/api/landing-lead/route.ts`** — Inserts lead into `landing_page_leads`, sends owner notification to `alfred@omnileadsagi.com`, sends thank-you email to the lead via Resend.
 - **`app/api/og/route.tsx`** — Edge route. Generates 1200×630 branded OG image for Twitter/LinkedIn rich cards via `next/og`.
 
 ### Landing page styling rules (DO NOT violate)
@@ -76,7 +76,7 @@ This site serves daily AI/business trending topic landing pages at `omnileadsagi
 
 ### Email (Resend)
 - From: `Omni AI <bookings@omnileadsagi.com>`
-- Owner notifications → `sitanim8@gmail.com`
+- Owner notifications → `alfred@omnileadsagi.com`
 - User emails: warm thank-you with gradient HTML template
 
 ## Do NOT Touch
