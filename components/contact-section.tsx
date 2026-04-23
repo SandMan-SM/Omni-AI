@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { getSupabase } from "@/lib/supabase";
 
 export function ContactSection() {
   const { toast } = useToast();
@@ -46,30 +45,38 @@ export function ContactSection() {
     if (!email) return;
 
     setIsSubmitting(true);
-    
+
     try {
-      const supabase = await getSupabase();
-      
-      const { error } = await supabase
-        .from('newsletter_subscriptions')
-        .insert([{ email }]);
-      
-      if (error) {
-        if (error.code === '23505') {
-          toast({
-            title: "Already subscribed!",
-            description: "You're already on our newsletter list.",
-          });
-        } else {
-          throw error;
-        }
+      const res = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        toast({
+          title: "We couldn't subscribe you",
+          description:
+            payload?.error ?? "Please check your email and try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (payload?.reactivated) {
+        toast({
+          title: "Welcome back!",
+          description: "We've reactivated your subscription.",
+        });
       } else {
         toast({
           title: "You're subscribed!",
           description: "Get ready for exclusive updates and insights.",
         });
-        setEmail("");
       }
+      setEmail("");
     } catch {
       toast({
         title: "Something went wrong",
