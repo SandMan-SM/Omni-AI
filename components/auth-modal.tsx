@@ -112,21 +112,27 @@ export function AuthModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3 }}
-            // p-8 md:p-10 keeps the submit button's shadow inside the
-            // .neon-border gradient on every viewport. max-h + overflow
-            // guarantee the Sign In button never gets hidden behind the
-            // browser toolbar on short screens.
-            className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10 max-h-[85dvh] overflow-y-auto"
+            // Structural split — outer shell owns .neon-border + the
+            // height cap; inner div owns the scroll. Combining
+            // .neon-border + overflow-y-auto on the same element made
+            // webkit clip the border's -webkit-mask pseudo-element
+            // mid-content when the form overflowed (same bug that
+            // sliced the book-demo-modal's third checkbox in half).
+            // flex-col + overflow-hidden on the shell lets the inner
+            // scroller flex-1 cleanly and keeps the close button
+            // pinned to the corner outside the scroll area.
+            className="relative w-full max-w-md glass-card neon-border rounded-2xl max-h-[90dvh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+              className="absolute top-4 right-4 z-20 text-gray-500 hover:text-white transition-colors"
               data-testid="button-close-auth"
             >
               <X className="w-5 h-5" />
             </button>
 
+            <div className="overflow-y-auto p-8 md:p-10 flex-1">
             {showCompleteBanner && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -210,6 +216,7 @@ export function AuthModal({
                 Sign up
               </button>
             </p>
+            </div>
           </motion.div>
         </motion.div>
       )}

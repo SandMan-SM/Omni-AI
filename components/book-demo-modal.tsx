@@ -252,22 +252,35 @@ export function BookDemoModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3 }}
-          // p-8 md:p-10 keeps submit buttons fully inside the .neon-border
-          // gradient. max-h-[85dvh] (not 90vh) so on iOS the modal is
-          // always shorter than the DYNAMIC viewport — even with the
-          // Safari toolbar visible and the home indicator eating space,
-          // the Submit Request button stays on-screen on every phone.
-          className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10 max-h-[85dvh] overflow-y-auto"
+          // Structural split — outer shell owns the .neon-border gradient
+          // + overflow-hidden; inner wrapper owns the scroll. Previously
+          // the shell had BOTH overflow-y-auto and .neon-border on the
+          // same element, and webkit clipped the neon-border's
+          // -webkit-mask pseudo-element mid-content when the form was
+          // taller than max-h-[85dvh] — the gradient would end partway
+          // down the scroll area (famously slicing through the third
+          // "Purpose" checkbox with a horizontal cyan line and leaving
+          // the Submit button outside the border entirely). Moving the
+          // scroll to an inner div keeps the border stable at all
+          // scroll positions and on every viewport. flex-col +
+          // overflow-hidden on the shell makes the inner scroller
+          // flex-1 and the close button pinned to a non-scrolling
+          // corner so it's always reachable. Bumped cap to 90dvh — the
+          // old 85dvh floor was added before the structural fix to
+          // hide the border clip; with the clip gone we can use the
+          // extra height to keep the form on one screen on most phones.
+          className="relative w-full max-w-md glass-card neon-border rounded-2xl max-h-[90dvh] flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+            className="absolute top-4 right-4 z-20 text-gray-500 hover:text-white transition-colors"
             data-testid="button-close-modal"
           >
             <X className="w-5 h-5" />
           </button>
 
+          <div className="overflow-y-auto p-8 md:p-10 flex-1">
           <AnimatePresence mode="wait">
             {modalStep === "form" && (
               <motion.div
@@ -569,6 +582,7 @@ export function BookDemoModal({
               </motion.div>
             )}
           </AnimatePresence>
+          </div>
         </motion.div>
       </motion.div>
     </AnimatePresence>

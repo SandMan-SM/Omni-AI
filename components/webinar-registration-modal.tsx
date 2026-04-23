@@ -184,20 +184,30 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3 }}
-            // max-h-[85dvh] (tighter than 90vh) guarantees the Reserve My
-            // Seat button never sits behind the browser toolbar on any
-            // phone — dvh excludes the toolbar area from the calculation.
-            className="relative w-full max-w-lg max-h-[85dvh] overflow-y-auto glass-card rounded-md neon-border"
+            // Structural split — outer shell owns .neon-border + the
+            // height cap; inner wrapper owns the scroll. Previously
+            // both .neon-border and overflow-y-auto sat on this same
+            // element, and webkit clipped the border's -webkit-mask
+            // pseudo-element partway down the scroll area when the
+            // form was taller than max-h (the same bug that sliced
+            // the book-demo-modal's third Purpose checkbox in half).
+            // flex-col + overflow-hidden keeps the border intact;
+            // the inner scroller takes flex-1 and the close button
+            // sits pinned to a non-scrolling corner. Each branch below
+            // brings its own padding (p-10 for success, p-6 md:p-10
+            // for the form) so we don't apply padding on the wrapper.
+            className="relative w-full max-w-lg max-h-[90dvh] flex flex-col overflow-hidden glass-card rounded-md neon-border"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               onClick={handleClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-10"
+              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-20"
               data-testid="button-close-registration"
             >
               <X className="w-5 h-5" />
             </button>
 
+            <div className="overflow-y-auto flex-1">
             {isConfirmed ? (
               // p-10 (was p-8) — the Reserve button below uses neon-glow
               // (20–40px shadow). With only 32px of inner padding the glow
@@ -430,6 +440,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                 </Form>
               </div>
             )}
+            </div>
           </motion.div>
         </motion.div>
       )}
