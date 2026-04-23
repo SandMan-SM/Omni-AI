@@ -375,6 +375,25 @@ export function profilePageSchema(person: typeof personSchema, url: string) {
     dateCreated: "2024-01-01",
     dateModified: "2024-01-01",
     inLanguage: "en-US",
+    // SpeakableSpecification — same rationale as on articleSchema /
+    // newsArticleSchema: voice-assistant surfaces (Google Assistant,
+    // Siri read-aloud, Alexa briefings) preferentially read pages that
+    // declare which selectors are safe to speak. For a ProfilePage the
+    // natural read-aloud targets are the H1 (the subject's name), the
+    // [data-speakable='intro'] hero paragraph (who they are + what the
+    // company does), and the [data-speakable='bio'] founder bio
+    // paragraph (the long-form biographical context). These three
+    // selectors reconstruct the ~60-second voice summary a user gets
+    // when they ask "who is Sitani Mafi?" — more complete than the
+    // Person schema's structured fields alone.
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: [
+        "h1",
+        "[data-speakable='intro']",
+        "[data-speakable='bio']",
+      ],
+    },
   };
 }
 

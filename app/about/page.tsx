@@ -124,7 +124,10 @@ export default function AboutPage() {
         <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
           The operator-built AI platform
         </h1>
-        <p className="text-lg text-gray-300 leading-relaxed mb-12">
+        <p
+          className="text-lg text-gray-300 leading-relaxed mb-12"
+          data-speakable="intro"
+        >
           Omni AI is an autonomous lead-generation and business-automation
           platform founded in 2024. It replaces the SDR team, the video editor,
           the performance marketer, and the analytics contractor you&rsquo;d
@@ -147,7 +150,10 @@ export default function AboutPage() {
                 <p className="text-sm text-amber-400 uppercase tracking-widest mb-4">
                   Founder
                 </p>
-                <p className="text-gray-300 leading-relaxed mb-4">
+                <p
+                  className="text-gray-300 leading-relaxed mb-4"
+                  data-speakable="bio"
+                >
                   Sitani founded Omni AI after years of running marketing and
                   automation for local and SaaS businesses — watching the same
                   pattern every time: operators paying five separate tools plus
