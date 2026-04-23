@@ -77,6 +77,20 @@ const detailsWebPageSchema = {
     { "@type": "WebPageElement", name: "Marketing Flow Optimization" },
     { "@type": "WebPageElement", name: "Business Scaling" },
   ],
+  // SpeakableSpecification — tells voice assistants (Google Assistant,
+  // Siri read-aloud, Alexa briefings) which selectors are safe to read
+  // aloud as a concise answer to "what is the Omni AI platform?" /
+  // "tell me about Omni AI's platform details". The H1 plus the hero
+  // subtitle tagged with data-speakable="intro" (see
+  // app/details/page.tsx) compose the natural ~8-second briefing reply.
+  // /details is the canonical feature-breakdown URL — activating
+  // speakable here closes the voice-retrieval gap that was already
+  // filled on /about, /privacy, /newsletter/[slug], /[slug], and the
+  // FAQ / pricing / vs-competitor FAQ blocks.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
 };
 
 // ItemList for the 6-tier Ascension Model rendered in the page body.

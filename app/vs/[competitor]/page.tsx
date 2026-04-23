@@ -161,7 +161,23 @@ export default async function ComparisonPage({ params }: Props) {
           <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
             Omni AI vs {data.name}
           </h1>
-          <p className="text-lg text-gray-300 leading-relaxed">{data.summary}</p>
+          {/* data-speakable="intro" activates the articleSchema
+              SpeakableSpecification (cssSelector: h1 +
+              [data-speakable='intro']) declared in
+              components/json-ld.tsx. Voice assistants (Google
+              Assistant, Siri, Alexa) preferentially read the H1 + this
+              summary paragraph together as a ~15-second answer to
+              voice queries like "hey Google, is Omni AI better than
+              HubSpot?". The summary is already the single most-quoted
+              sentence on each comparison page — marking it explicitly
+              lifts voice retrieval across every /vs/[competitor]
+              variant without any schema change. */}
+          <p
+            className="text-lg text-gray-300 leading-relaxed"
+            data-speakable="intro"
+          >
+            {data.summary}
+          </p>
         </div>
 
         {/* Positioning */}
