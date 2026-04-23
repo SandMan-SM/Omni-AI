@@ -28,15 +28,22 @@ export async function GET(req: Request) {
   const sb = createAdminClient();
   const notify = url.searchParams.get("notify") === "true";
 
-  const checks: Record<string, { ok: boolean; latency: number; error?: string }> = {};
+  // Checks returned in the JSON body only carry ok/latency. The raw
+  // supabase error goes to console.error (Vercel logs) so we can triage,
+  // but the response never surfaces the Postgres text — a CRON_SECRET
+  // compromise would otherwise map the entire table set via forced
+  // errors.
+  const checks: Record<string, { ok: boolean; latency: number }> = {};
 
   for (const table of ["profiles", "user_credentials", "newsletter_sends"]) {
     const start = Date.now();
     try {
       const { error } = await sb.from(table).select("id").limit(1);
-      checks[table] = { ok: !error, latency: Date.now() - start, error: error?.message };
-    } catch (e: any) {
-      checks[table] = { ok: false, latency: Date.now() - start, error: e.message };
+      if (error) console.error("[health] probe failed", table, error);
+      checks[table] = { ok: !error, latency: Date.now() - start };
+    } catch (e: unknown) {
+      console.error("[health] probe threw", table, e);
+      checks[table] = { ok: false, latency: Date.now() - start };
     }
   }
 
@@ -44,7 +51,10 @@ export async function GET(req: Request) {
   const status = failedChecks.length === 0 ? "ok" : failedChecks.length <= 1 ? "degraded" : "down";
 
   if (notify && status !== "ok") {
-    const failedNames = failedChecks.map(([name, c]) => `${name} (${c.error})`).join(", ");
+    // Operator alert lists the failing table names only — the raw
+    // Postgres error lives in Vercel logs, not in the telegram payload
+    // (which could end up in screenshots or shared threads).
+    const failedNames = failedChecks.map(([name]) => name).join(", ");
     await alertCritical(`System health: ${status.toUpperCase()}`, `Failed: ${failedNames}`);
   }
 

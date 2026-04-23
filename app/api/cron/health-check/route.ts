@@ -72,6 +72,14 @@ interface Check {
   error?:  string;
 }
 
+// Best-effort message extraction from `unknown` — used below so catch
+// blocks can stay typed without `: any` (which lets `e.message` through
+// without narrowing and was the source of the `any` lint that used to
+// be implicit here).
+function errMsg(e: unknown): string {
+  return e instanceof Error ? e.message : typeof e === "string" ? e : "unknown error";
+}
+
 async function runHealthChecks(): Promise<Check[]> {
   const results: Check[] = [];
 
@@ -80,8 +88,8 @@ async function runHealthChecks(): Promise<Check[]> {
   try {
     const { error } = await sb.from("profiles").select("id").limit(1);
     results.push({ name: "database", ok: !error, latency: Date.now() - t1, error: error?.message });
-  } catch (e: any) {
-    results.push({ name: "database", ok: false, latency: Date.now() - t1, error: e.message });
+  } catch (e: unknown) {
+    results.push({ name: "database", ok: false, latency: Date.now() - t1, error: errMsg(e) });
   }
 
   // Auth — user_credentials
@@ -89,8 +97,8 @@ async function runHealthChecks(): Promise<Check[]> {
   try {
     const { error } = await sb.from("user_credentials").select("id").limit(1);
     results.push({ name: "auth", ok: !error, latency: Date.now() - t2, error: error?.message });
-  } catch (e: any) {
-    results.push({ name: "auth", ok: false, latency: Date.now() - t2, error: e.message });
+  } catch (e: unknown) {
+    results.push({ name: "auth", ok: false, latency: Date.now() - t2, error: errMsg(e) });
   }
 
   // Newsletter sends table
@@ -98,8 +106,8 @@ async function runHealthChecks(): Promise<Check[]> {
   try {
     const { error } = await sb.from("newsletter_sends").select("id").limit(1);
     results.push({ name: "newsletter", ok: !error, latency: Date.now() - t3, error: error?.message });
-  } catch (e: any) {
-    results.push({ name: "newsletter", ok: false, latency: Date.now() - t3, error: e.message });
+  } catch (e: unknown) {
+    results.push({ name: "newsletter", ok: false, latency: Date.now() - t3, error: errMsg(e) });
   }
 
   // Telegram bot reachability
@@ -110,8 +118,8 @@ async function runHealthChecks(): Promise<Check[]> {
       { signal: AbortSignal.timeout(5000) }
     );
     results.push({ name: "telegram", ok: res.ok, latency: Date.now() - t4 });
-  } catch (e: any) {
-    results.push({ name: "telegram", ok: false, latency: Date.now() - t4, error: e.message });
+  } catch (e: unknown) {
+    results.push({ name: "telegram", ok: false, latency: Date.now() - t4, error: errMsg(e) });
   }
 
   return results;

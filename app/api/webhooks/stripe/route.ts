@@ -20,8 +20,12 @@ export async function POST(request: Request) {
 
   try {
     event = stripe.webhooks.constructEvent(body, sig, webhookSecret);
-  } catch (err: any) {
-    console.error('[Stripe Webhook] Signature verification failed:', err.message);
+  } catch (err: unknown) {
+    // Narrow `unknown` for type-safe .message access. The response
+    // already returns a generic 'Invalid signature' — only the server
+    // log keeps the raw Stripe text for triage.
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('[Stripe Webhook] Signature verification failed:', msg);
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 

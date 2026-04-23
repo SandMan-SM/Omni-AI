@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logEvent } from '@/lib/events';
+import { serverErrorResponse } from '@/lib/api-errors';
 
 /**
  * Cron: Refresh materialized dashboard metrics view
@@ -20,8 +21,11 @@ export async function GET(request: Request) {
     const { error } = await sb.rpc('refresh_dashboard_metrics');
 
     if (error) {
-      console.error('[Refresh Metrics] Failed:', error.message);
-      return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      // Scrub raw postgres error text — the rpc failure surfaces the
+      // function signature / role / privilege detail, which isn't useful
+      // to the cron runner but leaks schema shape if logs are ever
+      // exposed (CRON_SECRET compromise → DB map for free).
+      return serverErrorResponse('cron/refresh-metrics.rpc', error);
     }
 
     // Log the refresh event
@@ -36,8 +40,7 @@ export async function GET(request: Request) {
 
     console.log('[Refresh Metrics] Dashboard metrics refreshed');
     return NextResponse.json({ success: true, timestamp: new Date().toISOString() });
-  } catch (err: any) {
-    console.error('[Refresh Metrics] Error:', err.message);
-    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse('cron/refresh-metrics', err);
   }
 }

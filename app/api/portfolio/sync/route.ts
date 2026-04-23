@@ -74,8 +74,14 @@ export async function GET(req: Request) {
     });
 
     summary['omni-ai'] = { mrr: mrrOmni, arr: arrOmni, leads: newsletterCount };
-  } catch (e: any) {
-    summary['omni-ai'] = { error: e.message };
+  } catch (e: unknown) {
+    // Full supabase error server-side so sync failures can be triaged in
+    // Vercel logs; scrubbed tag in the response so raw postgres text
+    // doesn't reach the cron endpoint's body (CRON_SECRET exposure
+    // would otherwise map the paypal_transactions / client_portfolio
+    // schema shape for free).
+    console.error('[portfolio/sync] omni-ai', e);
+    summary['omni-ai'] = { error: 'sync failed' };
   }
 
   // ---- All other clients: carry forward existing values so sparklines grow ----

@@ -49,8 +49,12 @@ export async function GET(req: Request) {
         emailed = res.ok;
       }
       results.push({ slug: c.slug, emailed });
-    } catch (e: any) {
-      results.push({ slug: c.slug, emailed: false, error: e.message });
+    } catch (e: unknown) {
+      // Full supabase/resend error server-side; scrubbed tag in the
+      // response. Previously `e.message` leaked raw postgres /
+      // fetch-layer text to whoever calls the cron endpoint.
+      console.error('[cron/weekly-review]', c.slug, e);
+      results.push({ slug: c.slug, emailed: false, error: 'review failed' });
     }
   }
 
