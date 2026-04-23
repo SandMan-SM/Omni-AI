@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { Mail, Users, Eye } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
+import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
 // The newsletter archive was rendering with no footer at all — readers who
 // scrolled past the post list had nowhere to go. Add the shared Footer so
 // /about, /faq, /campaigns, /interlinked are one hop away from the content
@@ -97,6 +98,16 @@ export default async function NewsletterIndexPage() {
   return (
     // No opaque bg here — root layout's <SpaceBackdrop /> drifts behind.
     <div className="min-h-screen text-white relative">
+      {/* BreadcrumbList — Home → Newsletter. Small but earns the
+          breadcrumb chip in Google SERPs and gives /newsletter a
+          parent-child path so LLM retrievers don't treat the archive
+          index as an orphan. */}
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: "https://omnileadsagi.com/" },
+          { name: "Newsletter", url: "https://omnileadsagi.com/newsletter" },
+        ])}
+      />
       <NewsletterHeader />
 
       <main className="relative z-10 max-w-4xl mx-auto px-5 py-12 md:py-20">

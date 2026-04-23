@@ -6,7 +6,7 @@ import Image from "next/image";
 import { unstable_noStore as noStore } from "next/cache";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { ShareButton } from "@/components/share-button";
-import { JsonLd, newsArticleSchema } from "@/components/json-ld";
+import { JsonLd, newsArticleSchema, breadcrumbSchema } from "@/components/json-ld";
 // Per-issue archive pages had no site footer — a reader who finished a post
 // could only share or click the CTA. Adding the shared Footer gives them a
 // path back into the site (FAQ, About, Campaigns, Newsletter index).
@@ -93,6 +93,18 @@ export default async function NewsletterPostPage({ params }: Props) {
           this is a dated authored article, not a bare WebPage. The factory
           reuses the same author/publisher pair used on /about + /[slug]. */}
       <JsonLd data={newsArticleSchema(post)} />
+      {/* BreadcrumbList — Home → Newsletter → [post subject]. Gives every
+          per-issue page an earned breadcrumb chip in Google SERPs and
+          carries the same parent-child hierarchy into LLM retrieval
+          contexts, which helps models disambiguate which Omni AI issue a
+          citation came from. */}
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: siteUrl },
+          { name: "Newsletter", url: `${siteUrl}/newsletter` },
+          { name: post.subject, url: postUrl },
+        ])}
+      />
       <FireSparksBackdrop />
 
       {/* Header — logo + wordmark, sits above the sparks. */}

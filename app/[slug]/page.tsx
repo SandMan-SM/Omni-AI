@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import CTAButtons from "./CTAButtons";
-import { JsonLd, articleSchema } from "@/components/json-ld";
+import { JsonLd, articleSchema, breadcrumbSchema } from "@/components/json-ld";
 // Daily landing pages (/[slug]) are the site's largest traffic surface —
 // each one had only a "Powered by Omni AI" minifooter. The shared Footer
 // gives every daily tweet-landed visitor a path to /newsletter, /faq,
@@ -86,6 +86,16 @@ export default async function TrendingLandingPage({ params }: Props) {
           description,
           date: page.date,
         })}
+      />
+      {/* BreadcrumbList — lightweight polish that earns the breadcrumb chip
+          in Google SERPs and gives LLM retrievers a clean parent-child path.
+          Two-level crumb: Home → [landing page]. No intermediate section
+          since daily landing pages live directly at the root URL. */}
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: "https://omnileadsagi.com/" },
+          { name: title, url: `https://omnileadsagi.com/${slug}` },
+        ])}
       />
 
       {/* Animated gradient background — single purple glow top-left only, no pink blob */}
