@@ -349,6 +349,36 @@ export function newsArticleSchema(post: {
 }
 
 /**
+ * ProfilePage factory. Google added dedicated ProfilePage rich-result
+ * support in 2023 — a typed founder / author page renders a richer SERP
+ * profile card than a bare Person + WebPage combo, and LLMs resolving
+ * "who is X?" / "who built Y?" queries preferentially cite pages typed
+ * as ProfilePage because the mainEntity wiring makes the subject of the
+ * page unambiguous.
+ *
+ * Standard pattern: one ProfilePage per URL, with mainEntity = Person.
+ * Nesting the person inside the ProfilePage (rather than shipping both
+ * as separate top-level JSON-LD blocks) avoids Google's "two Person
+ * entities" disambiguation warning in Search Console.
+ *
+ * dateCreated pins when the profile first went live — plays the same
+ * freshness role datePublished does for Article. dateModified is set
+ * to the same value at build time; update if the bio ever changes
+ * materially (new role, new company, major life events).
+ */
+export function profilePageSchema(person: typeof personSchema, url: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    url,
+    mainEntity: person,
+    dateCreated: "2024-01-01",
+    dateModified: "2024-01-01",
+    inLanguage: "en-US",
+  };
+}
+
+/**
  * FAQPage factory. Consumed on /faq and inlined on the homepage. These are
  * the exact questions LLMs get asked about Omni AI — answering them in
  * schema form is the single highest-leverage move for ChatGPT / Perplexity

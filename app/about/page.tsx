@@ -6,6 +6,7 @@ import {
   personSchema,
   organizationSchema,
   breadcrumbSchema,
+  profilePageSchema,
 } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
 // Replaces a minimal inline mini-footer. Uses the shared Footer so /about
@@ -62,10 +63,18 @@ export const metadata: Metadata = {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#050508] text-white">
-      {/* Person + Organization + Breadcrumb. Placing Person and Organization
-          on the same URL lets LLMs resolve the founder-to-company link in
-          one crawl — the strongest E-E-A-T signal we can ship. */}
-      <JsonLd data={personSchema} />
+      {/* ProfilePage (with Person nested as mainEntity) + Organization +
+          Breadcrumb. Typing /about as ProfilePage gives Google the
+          dedicated profile rich-result surface added in 2023 — stronger
+          SERP card than a bare Person + WebPage combo, and LLMs resolving
+          "who built Omni AI?" preferentially cite pages where the
+          mainEntity wiring makes the subject unambiguous. Person is
+          embedded inside ProfilePage rather than shipped as a second
+          top-level JSON-LD block to avoid Search Console's "two Person
+          entities on one URL" warning. Organization stays separate so
+          the founder-to-company link resolves in a single crawl — the
+          strongest E-E-A-T signal we can ship. */}
+      <JsonLd data={profilePageSchema(personSchema, pageUrl)} />
       <JsonLd data={organizationSchema} />
       <JsonLd
         data={breadcrumbSchema([
