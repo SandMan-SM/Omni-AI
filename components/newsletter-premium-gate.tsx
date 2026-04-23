@@ -115,9 +115,13 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
           <p className="text-sm text-gray-600 mb-6">
             {posts.length} exclusive issue{posts.length !== 1 ? "s" : ""} available
           </p>
+          {/* Was a solid amber gradient with text-black — on this dark
+              surface the black text rendered nearly invisible. Switched
+              to a gold underlined text link so it reads clearly and
+              matches the Interlinked heading color. */}
           <Link
             href="/newsletter/premium/info"
-            className="inline-block bg-gradient-to-r from-amber-600 to-amber-500 text-black px-6 py-2.5 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
+            className="inline-block text-amber-400 hover:text-amber-300 font-semibold text-sm underline underline-offset-4 decoration-amber-400/60 hover:decoration-amber-300 transition-colors"
           >
             Learn More
           </Link>
