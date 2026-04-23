@@ -101,7 +101,10 @@ const arenaArticleSchema = {
     name: "Omni AI",
     url: siteUrl,
     logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
-    sameAs: ["https://www.linkedin.com/company/omni-ai"],
+    sameAs: [
+      "https://www.linkedin.com/company/omni-ai",
+      "https://x.com/SitaniMafi",
+    ],
   },
   image: `${siteUrl}/og-image.png`,
   inLanguage: "en-US",

@@ -119,7 +119,10 @@ export default function PrivacyPage() {
               "@type": "ImageObject",
               url: `${siteUrl}/favicon.png`,
             },
-            sameAs: ["https://www.linkedin.com/company/omni-ai"],
+            sameAs: [
+              "https://www.linkedin.com/company/omni-ai",
+              "https://x.com/SitaniMafi",
+            ],
           },
           author: {
             "@type": "Person",

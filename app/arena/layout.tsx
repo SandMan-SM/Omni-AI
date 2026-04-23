@@ -72,7 +72,10 @@ const arenaDatasetSchema = {
     name: "Omni AI",
     url: siteUrl,
     logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
-    sameAs: ["https://www.linkedin.com/company/omni-ai"],
+    sameAs: [
+      "https://www.linkedin.com/company/omni-ai",
+      "https://x.com/SitaniMafi",
+    ],
   },
   license: "https://creativecommons.org/publicdomain/zero/1.0/",
   isAccessibleForFree: true,

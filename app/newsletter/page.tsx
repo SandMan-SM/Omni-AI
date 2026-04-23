@@ -183,7 +183,10 @@ export default async function NewsletterIndexPage() {
               "@type": "ImageObject",
               url: "https://omnileadsagi.com/favicon.png",
             },
-            sameAs: ["https://www.linkedin.com/company/omni-ai"],
+            sameAs: [
+              "https://www.linkedin.com/company/omni-ai",
+              "https://x.com/SitaniMafi",
+            ],
           },
           // The RSS feed is the machine-readable distribution endpoint
           // for the Periodical — explicitly declaring it lets feed
