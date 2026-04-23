@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { JsonLd, breadcrumbSchema, howToSchema } from "@/components/json-ld";
 
 const siteUrl = "https://omnileadsagi.com";
 const pageUrl = `${siteUrl}/campaigns`;
@@ -82,6 +82,43 @@ const serviceSchema = {
   },
 };
 
+// HowTo schema — the /campaigns page body renders a visible 4-step
+// process diagram (AI Creates → Deploy & Test → Rank & Learn → Scale
+// Winners). HowTo maps that process to a retrievable schema entity
+// that LLMs preferentially cite for "how does Omni AI generate video
+// ads?" / "how does AI auto-optimize marketing campaigns?" queries.
+//
+// Each `step.name` + `step.text` is byte-aligned with the visible
+// `steps` array in app/campaigns/page.tsx. Google's HowTo spam check
+// flags drift between the schema and visible page content, so these
+// two must stay in sync — if the visible steps change, update this
+// block in the same commit.
+const campaignsHowToSchema = howToSchema({
+  name: "How Omni AI Automates Your Video Marketing",
+  description:
+    "The 4-step autonomous workflow: AI generates video ads from your brand data, deploys them across channels, tracks performance, and scales winning creative automatically.",
+  url: pageUrl,
+  image: `${siteUrl}/og-image.png`,
+  steps: [
+    {
+      name: "AI Creates",
+      text: "Videos generated from your brand data. Omni AI scripts, produces, and edits marketing videos tailored to your brand voice and audience.",
+    },
+    {
+      name: "Deploy & Test",
+      text: "Published across your channels. Variants are launched simultaneously across social media, paid ads, email, and SMS for real-world performance testing.",
+    },
+    {
+      name: "Rank & Learn",
+      text: "Performance tracked automatically. Every video is measured, and the AI identifies top performers while surfacing underperformers in real-time.",
+    },
+    {
+      name: "Scale Winners",
+      text: "Top videos amplified, losers replaced. Underperforming content is swapped out automatically — your campaigns evolve without manual intervention.",
+    },
+  ],
+});
+
 export default function CampaignsLayout({
   children,
 }: {
@@ -90,6 +127,7 @@ export default function CampaignsLayout({
   return (
     <>
       <JsonLd data={serviceSchema} />
+      <JsonLd data={campaignsHowToSchema} />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", url: siteUrl },

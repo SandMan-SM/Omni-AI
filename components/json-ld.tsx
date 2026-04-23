@@ -421,6 +421,51 @@ export function breadcrumbSchema(
 }
 
 /**
+ * HowTo factory for step-by-step process pages. Consumed on /campaigns
+ * for the 4-step video marketing workflow (AI Creates → Deploy & Test →
+ * Rank & Learn → Scale Winners). Google shrank HowTo rich-result surface
+ * in 2023 but the schema is still actively consumed by ChatGPT / Claude /
+ * Perplexity for "how does X work?" queries — pages with typed HowTo
+ * schema get cited at a higher rate than pages with equivalent prose.
+ *
+ * totalTime is optional — ship it only when the duration is meaningful
+ * and verifiable. For autonomous-AI workflows ("it runs 24/7") leaving
+ * it out is more honest than inventing a number.
+ *
+ * Each step must map to actual on-page content (the `step` array should
+ * match the visible `steps` list on /campaigns). Google's HowTo spam
+ * check flags drift between schema and visible content.
+ */
+export function howToSchema({
+  name,
+  description,
+  url,
+  steps,
+  image,
+}: {
+  name: string;
+  description: string;
+  url: string;
+  steps: { name: string; text: string }[];
+  image?: string;
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    name,
+    description,
+    url,
+    ...(image ? { image } : {}),
+    step: steps.map((s, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      name: s.name,
+      text: s.text,
+    })),
+  };
+}
+
+/**
  * ItemList factory for archive / index pages. Consumed on /newsletter
  * (the Interlinked archive) so Google and LLM retrievers see the page
  * as a structured list of articles rather than an undifferentiated blob
