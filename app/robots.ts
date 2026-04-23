@@ -19,6 +19,12 @@ export default function robots(): MetadataRoute.Robots {
         //   /auth/         — SSO callback + magic-link handlers
         //   /command/      — synthetic intelligence command center
         //   /void-preview/ — internal hero component preview
+        //   /fray          — personalized VIP sponsor dashboard, not a
+        //                    public marketing page. Layout already sets
+        //                    noindex,nofollow; this disallow blocks the
+        //                    request before the crawler fetches the HTML
+        //                    at all. Exact-match (no trailing slash)
+        //                    because /fray has no sub-routes.
         disallow: [
           "/api/",
           "/admin/",
@@ -26,6 +32,7 @@ export default function robots(): MetadataRoute.Robots {
           "/auth/",
           "/command/",
           "/void-preview/",
+          "/fray",
         ],
       },
       {
