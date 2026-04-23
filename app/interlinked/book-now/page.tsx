@@ -93,6 +93,16 @@ export default function InterlinkedBookNowPage() {
         meta="Sitani Mafi · typically responds within 12 hours · Zoom or in-person (SLC)"
         lede="Thirty minutes is enough to map one agent from idea to deployed. We open the Command Center, pick the automation that pays for itself fastest, and leave with a 90-day plan. No pitch deck, no slides — the build is the demo."
         accent="purple"
+        /* ledeSpeakable activates the data-speakable="intro" marker on
+           the lede paragraph. Pairs with the SpeakableSpecification on
+           the WebPage schema in app/interlinked/book-now/layout.tsx.
+           Voice assistants concatenate h1 ("Book a call with Omni AI") +
+           lede as the natural ~14-second reply to "how do I book a call
+           with Omni AI?" / "what is the free Omni AI consultation?"
+           voice queries, with the Service hasOfferCatalog (portfolio
+           audit / live build preview / concrete 90-day plan) available
+           as the body of the answer. */
+        ledeSpeakable
         right={
           <CtaRow
             primary={{ label: "Open scheduler", onClick: () => setOpen(true) }}

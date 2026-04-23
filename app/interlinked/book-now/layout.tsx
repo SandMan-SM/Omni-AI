@@ -173,9 +173,79 @@ const consultServiceSchema = {
   },
 };
 
+// WebPage schema paired with the Service above. speakable is only
+// valid on WebPage / CreativeWork — Service does not inherit from
+// CreativeWork. Splitting into a dedicated WebPage block keeps the
+// Service schema clean for Google's Service rich result (the "Free"
+// price chip + availability signal) while adding a second typed
+// surface for voice retrievers:
+//
+//  - consultServiceSchema with Offer + ReserveAction → Google Service
+//    rich result ("Free" badge, Zoom/in-person channel, 30-min
+//    duration) + LLM-citable entity for "book a consult with Omni AI"
+//    queries
+//  - bookNowWebPageSchema with speakable + about: Service → Google
+//    Assistant / Siri read-aloud / Alexa read the h1 + lede aloud on
+//    "how do I book a call with Omni AI?" / "what's the free Omni AI
+//    consultation?" voice queries
+//
+// The about: { Service } edge binds the two blocks so retrievers can
+// walk from "tell me about the Omni AI consult" → WebPage hero
+// speakable reply → consultServiceSchema.offers for the zero-price
+// Offer + hasOfferCatalog for the three-outcome lineup.
+//
+// Matches the split-schema pattern already shipped on /arena
+// (Dataset), /sponsor/info (Service), /book-now (Service),
+// /affiliate/info (Service), /interlinked/premium (Product).
+const bookNowWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Book a working session · Omni AI · Interlinked",
+  description:
+    "Landing for the free 30-minute Omni AI working session. We map one AI agent from idea to deployed — portfolio audit, live Command Center walkthrough, and a concrete 90-day plan. Zoom or in-person in Salt Lake City.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Service",
+    name: "Omni AI — Free 30-Minute Working Session (Interlinked)",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: `${siteUrl}/og-image.png`,
+  },
+  // SpeakableSpecification — when a user asks Google Assistant / Siri
+  // read-aloud / Alexa "how do I book a call with Omni AI?" / "what
+  // is the free Omni AI consultation?" / "how long is the Omni AI
+  // working session?", voice assistants need declared CSS selectors
+  // to read verbatim. The h1 ("Book a call with Omni AI") plus the
+  // lede tagged with data-speakable="intro" in
+  // app/interlinked/book-now/page.tsx (via ledeSpeakable prop on the
+  // PageHero primitive — see components/ui/web-primitives.tsx) —
+  // "Thirty minutes is enough to map one agent from idea to deployed.
+  // We open the Command Center, pick the automation that pays for
+  // itself fastest, and leave with a 90-day plan. No pitch deck, no
+  // slides — the build is the demo." — compose the natural
+  // ~14-second voice reply. Briefing-length positioning that sets up
+  // the three-outcome hasOfferCatalog on consultServiceSchema as the
+  // body of the answer.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      {/* WebPage schema with speakable — speakable is only valid on
+          WebPage / CreativeWork (not Service). See the constant above
+          for how the about: { Service } edge binds this to
+          consultServiceSchema so voice retrievers can walk from the
+          hero speakable reply to the Offer + hasOfferCatalog body.
+          Matches the split-schema pattern used on /arena, /sponsor/info,
+          /book-now, /affiliate/info, /interlinked/premium. */}
+      <JsonLd data={bookNowWebPageSchema} />
       {/* Service schema — unlocks Google's Service rich result (with
           "Free" price chip + availability), and gives LLM retrievers a
           typed entity to cite for "book a consult with Omni AI" /

@@ -81,7 +81,17 @@ export function PageTopBar({
   );
 }
 
-/** Hero block — eyebrow, title, meta, optional lede. */
+/** Hero block — eyebrow, title, meta, optional lede.
+ *
+ * `ledeSpeakable` is an opt-in flag for Generative Engine Optimization:
+ * when true, the lede paragraph receives `data-speakable="intro"`, which
+ * is the selector every route-level SpeakableSpecification in this
+ * codebase targets ("h1" + "[data-speakable='intro']"). This lets voice
+ * assistants (Google Assistant, Siri read-aloud, Alexa briefings) read
+ * the h1 + lede pair as the natural ~10-second reply to "what is
+ * [page topic]?" voice queries. Additive — existing PageHero callers
+ * without the flag render identically to before.
+ */
 export function PageHero({
   eyebrow,
   title,
@@ -89,6 +99,7 @@ export function PageHero({
   lede,
   accent = "green",
   right,
+  ledeSpeakable = false,
 }: {
   eyebrow: string;
   title: string;
@@ -96,6 +107,7 @@ export function PageHero({
   lede?: string;
   accent?: Accent;
   right?: ReactNode;
+  ledeSpeakable?: boolean;
 }) {
   const acc = accentHex[accent];
   return (
@@ -128,6 +140,7 @@ export function PageHero({
             <p
               className="mt-5 text-base md:text-[17px] leading-[1.7] max-w-2xl"
               style={{ color: WEB.textBody }}
+              data-speakable={ledeSpeakable ? "intro" : undefined}
             >
               {lede}
             </p>
