@@ -79,6 +79,85 @@ const detailsWebPageSchema = {
   ],
 };
 
+// ItemList for the 6-tier Ascension Model rendered in the page body.
+// The tier constants here are byte-aligned with the `tiers` array in
+// app/details/page.tsx (Apprentice → Master → Royal → Empire → Holy
+// Grail → Diamond) — Google's ItemList spam check flags drift between
+// the schema and visible page content, so these two must stay in sync.
+//
+// Why this schema shape:
+//  1. itemListOrder "Ascending" tells retrievers the tiers are a
+//     progression, not a flat catalog. LLMs answering "what are the
+//     stages of AI adoption?" / "how does Omni AI's Ascension Model
+//     work?" preferentially cite typed ordered ItemLists.
+//  2. Each ListItem carries name + description (the tier's tagline)
+//     so the retrieval surface can quote a single tier without
+//     needing to scrape the whole page. ListItems with nested named
+//     entities rank higher than bare position-only lists.
+//  3. numberOfItems lets Google render the "list-size" chip in the
+//     SERP overview for long lists — 6 is comfortably above the
+//     rich-result threshold (typically 3+).
+//  4. The SERP carousel treatment Google added for ItemList in 2022
+//     specifically rewards lists where each ListItem links to a named
+//     subtopic. We don't have per-tier anchors yet, so name +
+//     description is the best we can do today; adding `url` fields
+//     becomes a future cycle once the page gets #apprentice /
+//     #master etc. anchor targets.
+const ascensionItemListSchema = {
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: "Omni AI Ascension Model",
+  description:
+    "The six tiers of AI adoption Omni AI maps a business through — from Apprentice (education) to Diamond (ultimate autonomy). Each tier is a measurable progression in how much of the business the AI owns end-to-end.",
+  url: pageUrl,
+  numberOfItems: 6,
+  itemListOrder: "https://schema.org/ItemListOrderAscending",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Tier 0 — Apprentice",
+      description:
+        "Sponsored program. Educational content, weekly insights, community access, and AI awareness training. This is where people wake up to what AI can do.",
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Tier 1 — Master",
+      description:
+        "Traditional marketing augmented with AI. Lead scraper, automated DMs, comment-to-DM flows, simple CRM, and message templates. The robot helps you do work faster.",
+    },
+    {
+      "@type": "ListItem",
+      position: 3,
+      name: "Tier 2 — Royal",
+      description:
+        "Agentic marketing. Booking automation, follow-up logic, multiple AI agents, SOPs and analytics on top of everything in Master. The robot runs the system, not just tasks.",
+    },
+    {
+      "@type": "ListItem",
+      position: 4,
+      name: "Tier 3 — Empire (Gold)",
+      description:
+        "Full autonomy. Strategic decision-making, business AI, and complete system control on top of everything in Royal. The robot makes decisions for the business.",
+    },
+    {
+      "@type": "ListItem",
+      position: 5,
+      name: "Tier 4 — Holy Grail (Silver)",
+      description:
+        "Unlocked exclusively for Tier 3 graduates. Multiple autonomous agents, KPI tracking, a decision-rules engine, self-optimizing systems, and weekly performance reports.",
+    },
+    {
+      "@type": "ListItem",
+      position: 6,
+      name: "Tier 5 — Diamond",
+      description:
+        "Ultimate power. The final tier in the Ascension Model — the details of which remain intentionally private to Diamond-class operators.",
+    },
+  ],
+};
+
 export default function DetailsLayout({
   children,
 }: {
@@ -87,6 +166,7 @@ export default function DetailsLayout({
   return (
     <>
       <JsonLd data={detailsWebPageSchema} />
+      <JsonLd data={ascensionItemListSchema} />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", url: siteUrl },
