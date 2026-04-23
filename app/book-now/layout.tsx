@@ -231,6 +231,57 @@ export const metadata: Metadata = {
   },
 };
 
+// WebPage schema paired with the Service above. speakable is only
+// valid on WebPage / CreativeWork (not on Service, per schema.org
+// inheritance). Splitting into two typed blocks keeps each schema
+// clean and gives retrievers two independent surfaces:
+//
+//  - Service with offers/price:0/ReserveAction/hoursAvailable →
+//    Google Service rich result + reservation chip
+//  - WebPage with speakable + about: Service → voice assistants
+//    read the hero aloud on "how do I book a call with Omni AI?" /
+//    "is there a free strategy call?" queries
+//
+// The about: { Service } edge binds the two blocks so retrievers can
+// walk from "tell me about Omni AI's strategy call" → WebPage hero
+// speakable reply → Service.offers for the price chip + the three-
+// deliverable hasOfferCatalog added in Cycle 117.
+const bookNowWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Book a Strategy Call — Omni AI",
+  description:
+    "Book a free 30-minute strategy call with Omni AI operators. No pitch, no credit card, no obligation — just a conversation about what would actually work best for your business.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Service",
+    name: "Omni AI Strategy Call",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: ogImage,
+  },
+  // SpeakableSpecification — /book-now is the highest-commercial-intent
+  // page on the site (every paid-ad click lands here). When a user asks
+  // Google Assistant / Siri read-aloud / Alexa "how do I book a call
+  // with Omni AI?" / "is there a free Omni AI consultation?" /
+  // "schedule a strategy call with Omni AI", the assistant needs
+  // declared selectors to read verbatim — otherwise it falls back to
+  // best-guess extraction of the countdown timer or the footer copy.
+  // The h1 ("Book Now") plus the reassurance tagline tagged with
+  // data-speakable="intro" in app/book-now/page.tsx ("It's free.
+  // Genuinely free. No credit card, no contract, no 'and then here's
+  // the upsell.'") compose the natural ~8-second voice reply — a
+  // tight reply that closes the commercial objection voice queries
+  // actually raise about free consultations.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function BookNowLayout({
   children,
 }: {
@@ -238,6 +289,13 @@ export default function BookNowLayout({
 }) {
   return (
     <>
+      {/* WebPage schema with speakable — see the constant above for why
+          speakable lives on WebPage rather than the Service below
+          (schema.org inheritance: speakable is only valid on WebPage /
+          CreativeWork). Matches the split-schema pattern shipped on
+          /arena (WebPage + about-Dataset) and /sponsor/info (WebPage +
+          about-Service). */}
+      <JsonLd data={bookNowWebPageSchema} />
       {/* Service schema — unlocks Google Service rich result and gives LLMs
           a typed entity to cite for "free AI strategy call" queries. See
           the constant above for why `price: "0"` is the lever that matters

@@ -42,7 +42,18 @@ export default function BookNowPage() {
             <span className="text-sm text-amber-200 font-medium">100% Free · No pitch · 30 minutes</span>
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-5">Book Now</h1>
-          <p className="text-gray-300 text-lg md:text-xl mb-3 max-w-2xl leading-relaxed">
+          {/* data-speakable="intro" activates the SpeakableSpecification
+              declared on the bookNowWebPageSchema in
+              app/book-now/layout.tsx. Voice assistants concatenate h1
+              ("Book Now") + this reassurance tagline as the natural
+              ~8-second reply to "how do I book a call with Omni AI?" /
+              "is there a free Omni AI consultation?" voice queries,
+              closing the commercial objection these queries actually
+              raise ("is it really free?"). */}
+          <p
+            className="text-gray-300 text-lg md:text-xl mb-3 max-w-2xl leading-relaxed"
+            data-speakable="intro"
+          >
             It&apos;s free. Genuinely free. No credit card, no contract, no
             &ldquo;and then here&apos;s the upsell.&rdquo;
           </p>
