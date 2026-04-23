@@ -131,10 +131,16 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
     onSuccess: () => {
       setIsConfirmed(true);
     },
-    onError: () => {
+    onError: (e) => {
+      // apiRequest unpacks the server's `error` field and throws as
+      // `<status>: <msg>`. Strip the status prefix so the toast shows
+      // the server's actionable signal (rate-limit, validation) when
+      // available, else fall back to the generic network copy.
+      const raw = e instanceof Error ? e.message : "";
+      const stripped = raw.replace(/^\d{3}:\s*/, "");
       toast({
-        title: "Something went wrong",
-        description: "Please try again later.",
+        title: "We couldn't register you",
+        description: stripped || "Please try again later.",
         variant: "destructive",
       });
     },

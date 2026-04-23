@@ -37,7 +37,16 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
       if (res.ok) {
         setDone(true);
       } else {
-        toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
+        // Surface the server's error message when available — rate
+        // limiter and validator both return a JSON `error` string.
+        // Previously a "Please enter a valid email address" signal
+        // was masked as the generic "Something went wrong".
+        const payload = await res.json().catch(() => ({} as { error?: string }));
+        toast({
+          title: "We couldn't sign you up",
+          description: payload?.error || "Please try again.",
+          variant: "destructive",
+        });
       }
     } catch {
       toast({ title: "Network error", description: "Please try again.", variant: "destructive" });

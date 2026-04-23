@@ -2,8 +2,24 @@ import { QueryClient, QueryFunction } from "@tanstack/react-query";
 
 async function throwIfResNotOk(res: Response) {
   if (!res.ok) {
-    const text = (await res.text()) || res.statusText;
-    throw new Error(`${res.status}: ${text}`);
+    // Prefer the server's structured `{ error: "..." }` message over
+    // the raw body. Every first-party API route returns a JSON error
+    // envelope, and throwing `400: {"error":"Invalid email"}` at the
+    // UI leaves callers either showing the raw JSON or falling back
+    // to generic "Something went wrong". Pull the `error` field out
+    // when present so .catch handlers can display the actionable
+    // signal directly.
+    const raw = (await res.text()) || res.statusText;
+    let message = raw;
+    try {
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed.error === "string") {
+        message = parsed.error;
+      }
+    } catch {
+      /* non-JSON body — keep raw text */
+    }
+    throw new Error(`${res.status}: ${message}`);
   }
 }
 

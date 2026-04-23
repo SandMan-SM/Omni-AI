@@ -37,7 +37,14 @@ export function AffiliateConsultationModal({ isOpen, onClose }: Props) {
       if (res.ok) {
         setDone(true);
       } else {
-        toast({ title: "Something went wrong", description: "Please try again.", variant: "destructive" });
+        // Surface the server's validation / rate-limit message so the
+        // user sees an actionable signal instead of a generic wall.
+        const payload = await res.json().catch(() => ({} as { error?: string }));
+        toast({
+          title: "We couldn't submit your request",
+          description: payload?.error || "Please try again.",
+          variant: "destructive",
+        });
       }
     } catch {
       toast({ title: "Network error", description: "Please try again.", variant: "destructive" });

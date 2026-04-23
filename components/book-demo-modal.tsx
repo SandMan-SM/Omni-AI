@@ -183,10 +183,18 @@ export function BookDemoModal({
         setGoogleCalendarUrl(data.googleCalendarUrl);
       }
       setModalStep("success");
-    } catch {
+    } catch (e) {
+      // apiRequest (via throwIfResNotOk) now unpacks the server's
+      // `error` field and throws `<status>: <error>`. Strip the
+      // leading status prefix so the toast reads cleanly when the
+      // server gave us an actionable message (rate-limit, bad email,
+      // bad phone, etc.), and fall back to the generic line when the
+      // thrown value isn't an Error or the network layer failed.
+      const raw = e instanceof Error ? e.message : "";
+      const stripped = raw.replace(/^\d{3}:\s*/, "");
       toast({
-        title: "Something went wrong",
-        description: "Please try again.",
+        title: "We couldn't book your demo",
+        description: stripped || "Please try again.",
         variant: "destructive",
       });
     } finally {

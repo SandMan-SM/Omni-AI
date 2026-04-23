@@ -39,10 +39,33 @@ export default function LeadForm({ slug }: LeadFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...fields, slug, website }),
       });
-      if (!res.ok) throw new Error("Submission failed");
+      if (!res.ok) {
+        // Surface the server's error message when it gave us one.
+        // Previously we threw a generic "Submission failed" and caught
+        // it into "Something went wrong. Please try again." — which
+        // hides useful signals like "Please enter a valid email
+        // address." or "Too many requests, try again in 9 minutes."
+        // Both the rate-limiter and the server-side email validator
+        // return a JSON `error` field; read it when present.
+        let serverMsg = "";
+        try {
+          const payload = await res.json();
+          if (payload && typeof payload.error === "string") {
+            serverMsg = payload.error;
+          }
+        } catch {
+          /* non-JSON body (Vercel 504, 502, etc.) — fall through to generic */
+        }
+        throw new Error(serverMsg || "Submission failed");
+      }
       setSubmitted(true);
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "";
+      setError(
+        msg && msg !== "Submission failed"
+          ? msg
+          : "Something went wrong. Please try again.",
+      );
     } finally {
       setLoading(false);
     }

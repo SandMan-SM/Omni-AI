@@ -44,12 +44,17 @@ export default function SponsorApplication() {
   const [website, setWebsite] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  // Previously the catch branch only logged to console — a real
+  // server error (rate-limit, bad email) left the user staring at
+  // the form with no feedback. Surface the message in the UI.
+  const [error, setError] = useState("");
 
   const isSponsor = profile?.role === "sponsor";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setError("");
 
     try {
       // Save application data via waitlist/lead capture API
@@ -68,7 +73,7 @@ export default function SponsorApplication() {
         }),
       });
       if (!res.ok) {
-        const err = await res.json();
+        const err = await res.json().catch(() => ({}));
         // Ignore duplicate entry error — just mark as submitted
         if (err?.error && !err.error.includes("duplicate")) {
           throw new Error(err.error);
@@ -81,6 +86,8 @@ export default function SponsorApplication() {
       setSubmitted(true);
     } catch (err) {
       console.error("Failed to submit application:", err);
+      const msg = err instanceof Error ? err.message : "";
+      setError(msg || "Something went wrong. Please try again.");
     }
     setSubmitting(false);
   };
@@ -326,7 +333,15 @@ export default function SponsorApplication() {
                 />
               </div>
 
-              <Button 
+              {/* Inline error — wired up so rate-limit, validation, and
+                  schema errors from /api/waitlist show the user why the
+                  submit failed instead of leaving them staring at the
+                  form with no feedback. */}
+              {error && (
+                <p className="text-sm text-red-400 -mt-2">{error}</p>
+              )}
+
+              <Button
                 type="submit"
                 disabled={submitting}
                 className="w-full bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500"
