@@ -215,8 +215,14 @@ export default async function TrendingLandingPage({ params }: Props) {
           </span>
         </h1>
 
-        {/* Subheadline */}
-        <p className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10">
+        {/* Subheadline — data-speakable="intro" wires up the
+            SpeakableSpecification in articleSchema so voice-assistant
+            surfaces (Google Assistant News, Siri read-aloud, Alexa) read
+            this paragraph verbatim together with the H1. */}
+        <p
+          data-speakable="intro"
+          className="text-lg sm:text-xl md:text-2xl text-gray-300 max-w-2xl mx-auto leading-relaxed mb-10"
+        >
           {description}
         </p>
 

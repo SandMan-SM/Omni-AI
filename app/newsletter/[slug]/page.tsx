@@ -298,9 +298,19 @@ export default async function NewsletterPostPage({ params }: Props) {
           </figure>
         )}
 
-        {/* Intro */}
+        {/* Intro — data-speakable="intro" wires up the
+            SpeakableSpecification on newsArticleSchema so Google
+            Assistant news briefings, Siri read-aloud, and Alexa
+            flash briefings read this lede verbatim together with
+            the H1. Most newsrooms don't ship speakable — cheap
+            competitive edge for voice-surface retrieval. */}
         <div className="mb-12">
-          <p className="text-lg text-gray-200 leading-relaxed">{post.intro}</p>
+          <p
+            data-speakable="intro"
+            className="text-lg text-gray-200 leading-relaxed"
+          >
+            {post.intro}
+          </p>
         </div>
 
         {/* Insights */}

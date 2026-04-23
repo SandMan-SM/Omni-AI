@@ -196,6 +196,16 @@ export function articleSchema(page: {
       logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
     },
     inLanguage: "en-US",
+    // SpeakableSpecification tells voice-assistant surfaces (Google
+    // Assistant "News" briefings, Siri read-aloud, Alexa Flash Briefings)
+    // which CSS selectors to read verbatim. Marking only the H1 + the
+    // intro paragraph keeps the briefing tight and quotable. Most sites
+    // don't ship this field at all, so shipping it is cheap competitive
+    // edge for voice-surface retrieval of daily trending posts.
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "[data-speakable='intro']"],
+    },
     ...(topic ? { about: { "@type": "Thing", name: topic } } : {}),
   };
 }
@@ -243,6 +253,16 @@ export function newsArticleSchema(post: {
       logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
     },
     inLanguage: "en-US",
+    // SpeakableSpecification — same rationale as the articleSchema
+    // field: voice-assistant news briefings (Google Assistant, Siri
+    // read-aloud) preferentially surface articles that declare which
+    // selectors are safe to read aloud. The H1 + the lede paragraph
+    // are what a reader would naturally hear first, so marking those
+    // two keeps the briefing concise and on-brand.
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "[data-speakable='intro']"],
+    },
     isPartOf: {
       "@type": "Periodical",
       name: "Interlinked by Omni AI",
