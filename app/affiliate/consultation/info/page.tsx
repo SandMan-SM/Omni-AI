@@ -3,8 +3,14 @@
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { ArrowRight, Clock, Target, Calendar } from "lucide-react";
 
+// `faq` is byte-aligned with the FAQPage mainEntity in
+// app/affiliate/consultation/info/layout.tsx. If either a Q or an A
+// changes, update BOTH in the same commit — the layout's schema is
+// what Google and LLMs quote verbatim, the page array is what the
+// user reads. A drift between them invalidates the rich result.
 const faq = [
   {
     q: "Who is the affiliate consultation for?",
@@ -25,21 +31,29 @@ const faq = [
 ];
 
 export default function AffiliateConsultationInfoPage() {
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faq.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
-  };
-
+  // FAQPage JSON-LD and BreadcrumbList JSON-LD both live in
+  // app/affiliate/consultation/info/layout.tsx now — consolidated out
+  // of an inline dangerouslySetInnerHTML <script> block so this
+  // route's schema payload lives in one predictable place (matches
+  // the pattern used on every other page with a breadcrumb + FAQ).
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
 
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+      {/* Visible breadcrumb — paired with the breadcrumbSchema in
+          app/affiliate/consultation/info/layout.tsx. Google only
+          awards the SERP breadcrumb chip when schema + visible UI
+          agree. */}
+      <div className="flex justify-center pt-10 pb-0 px-4">
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Affiliate Program", href: "/affiliate/info" },
+            { name: "Consultation explainer", href: "/affiliate/consultation/info" },
+          ]}
+          className="text-xs"
+        />
+      </div>
 
       <section className="relative max-w-3xl mx-auto px-4 py-20">
         <h1 className="text-4xl md:text-5xl font-bold mb-5 leading-tight">
