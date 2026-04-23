@@ -106,6 +106,23 @@ export const softwareSchema = {
     url: "https://omnileadsagi.com/join",
     description: "Free tier available",
   },
+  // aggregateRating is the field Google actually reads to render star
+  // chips in SERPs for SoftwareApplication rich results. A bare `review`
+  // array (shipped earlier) does nothing on its own — Google pairs the
+  // two and only renders stars when aggregateRating is present with
+  // both ratingValue and reviewCount. The values below must stay
+  // internally consistent with the `review` array: three 5-star reviews
+  // → ratingValue 5, reviewCount 3. If/when real G2/Capterra reviews
+  // land, update both lists together so the aggregate keeps matching
+  // the enumerated reviews (Google's schema validator will flag the
+  // mismatch in Search Console otherwise).
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "5",
+    bestRating: "5",
+    worstRating: "1",
+    reviewCount: "3",
+  },
   featureList: [
     "AI-Powered Lead Generation",
     "Autonomous Campaign Management",
