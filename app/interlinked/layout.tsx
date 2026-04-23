@@ -99,9 +99,89 @@ export default function InterlinkedLayout({
     isAccessibleForFree: true,
   };
 
+  // Course schema — complements the Event schema above. Event describes
+  // the specific scheduled session (date, time, virtual location); Course
+  // describes the underlying curriculum that the session teaches. Running
+  // both on the same URL gives retrievers two independent rich-result
+  // surfaces:
+  //  1. Google's Events panel (from Event) for "when's the next Omni AI
+  //     training?"
+  //  2. Course / education retrieval (from Course) for "how do I learn
+  //     to build an autonomous AI system?" — an education-intent query
+  //     Event alone doesn't match.
+  //
+  // hasCourseInstance links the Course to a CourseInstance (a subclass
+  // of Event per Schema.org's hierarchy) carrying the same date/time
+  // metadata. Mirroring instead of referencing the top-level Event
+  // because cross-block @id references validate inconsistently across
+  // Google's parser and LLM crawlers; the redundancy costs a few hundred
+  // bytes of JSON-LD for rock-solid retrieval.
+  //
+  // teaches is the single highest-leverage field for LLM citation:
+  // when someone asks "what does Omni AI teach in its training?" /
+  // "is there a course on building an AI CEO?", retrievers preferentially
+  // quote the `teaches` array verbatim because it's the most direct
+  // structured answer Schema.org offers.
+  const courseSchema = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: "Build an AI CEO — Omni AI Interlinked Training",
+    description:
+      "Free 90-minute live training on building an autonomous AI CEO for your business. Covers AI lead generation, multi-agent orchestration, operations automation, and integrating frontier LLMs into revenue workflows. Taught by Sitani Mafi, founder of Omni AI.",
+    url: pageUrl,
+    provider: {
+      "@type": "Organization",
+      name: "Omni AI",
+      url: siteUrl,
+      sameAs: siteUrl,
+    },
+    educationalLevel: "Beginner",
+    educationalCredentialAwarded: "Certificate of completion",
+    teaches: [
+      "How to architect an autonomous AI CEO for a small-to-mid-sized business",
+      "AI lead generation workflows and multi-channel outbound orchestration",
+      "Multi-agent coordination across sales, marketing, and operations",
+      "Integrating frontier LLMs (Claude, GPT, Gemini) into revenue workflows",
+      "Replacing the SDR / ads / video / analytics stack with a single AI system",
+    ],
+    isAccessibleForFree: true,
+    inLanguage: "en-US",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: pageUrl,
+      category: "Free",
+    },
+    audience: {
+      "@type": "EducationalAudience",
+      educationalRole: "Founder, operator, or RevOps leader building an autonomous AI business",
+    },
+    hasCourseInstance: {
+      "@type": "CourseInstance",
+      name: "Omni AI: Build an AI CEO — Interlinked Live Training",
+      courseMode: "Online",
+      courseWorkload: "PT90M",
+      startDate: nextSession.toISOString(),
+      endDate: endSession.toISOString(),
+      location: {
+        "@type": "VirtualLocation",
+        url: pageUrl,
+      },
+      instructor: {
+        "@type": "Person",
+        name: "Sitani Mafi",
+        url: `${siteUrl}/about`,
+        jobTitle: "Founder, Omni AI",
+      },
+    },
+  };
+
   return (
     <>
       <JsonLd data={eventSchema} />
+      <JsonLd data={courseSchema} />
       {/* BreadcrumbList schema — pairs with the visible Breadcrumb added
           at the top of app/interlinked/page.tsx. /interlinked was missing
           both the schema and the visible UI, which left the page without
