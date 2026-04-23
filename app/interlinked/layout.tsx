@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "AI automation platform",
     "Omni AI Interlinked",
   ],
+  alternates: { canonical: "https://omnileadsagi.com/interlinked" },
   openGraph: {
     title: "Interlinked — Autonomous Lead Generation, Operations & Scaling",
     description:

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "business automation",
     "get started AI",
   ],
+  alternates: { canonical: "https://omnileadsagi.com/join" },
   openGraph: {
     title: "Join Omni AI — Start Automating Your Business for Free",
     description:

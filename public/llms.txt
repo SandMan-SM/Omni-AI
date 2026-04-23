@@ -2,8 +2,14 @@
 
 > Autonomous AI systems that generate leads, run operations, and scale businesses 24/7. Built for entrepreneurs and agencies who want AI-powered growth without micromanagement.
 
+## What is Omni AI?
+
+Omni AI (omnileadsagi.com) is an autonomous lead-generation and business-automation platform founded in 2024 by Sitani Mafi. It deploys AI agents that generate leads, produce video marketing, run outbound campaigns, and scale operations 24/7 without ongoing human supervision. The platform offers a free tier and paid subscriptions. Book a strategy call at omnileadsagi.com/book-now.
+
 ## Main Pages
 - [Homepage](https://omnileadsagi.com): Overview of Omni AI's autonomous lead generation and business automation platform.
+- [About](https://omnileadsagi.com/about): Founder story, company mission, and contact information.
+- [FAQ](https://omnileadsagi.com/faq): Answers to common questions about Omni AI — what it is, how it works, pricing, and comparisons.
 - [Campaigns](https://omnileadsagi.com/campaigns): AI-generated video marketing with automated testing, ranking, and optimization.
 - [Infographic](https://omnileadsagi.com/details): Visual breakdown of Omni AI's features and capabilities.
 - [AI Arena](https://omnileadsagi.com/arena): Competitive AI agent arena for testing and benchmarking AI performance.
@@ -17,8 +23,25 @@
 ## Newsletter
 - [Interlinked Newsletter](https://omnileadsagi.com/newsletter): Free and premium AI strategy newsletters covering lead generation, automation, and business scaling.
 
+### Recent Issues
+- [Anthropic hit $30B — your stack is on the wrong model](https://omnileadsagi.com/newsletter/anthropic-30b-repricing-insider-premium-2026-04-22)
+- [96% ship AI agents — only 21% can control them](https://omnileadsagi.com/newsletter/agent-sprawl-governance-gap-2026-04-22)
+- [The $2.5T Gulf AI pipe US founders aren't tapping](https://omnileadsagi.com/newsletter/gulf-ai-capital-pipeline-insider-premium-2026-04-21)
+
+## FAQ
+- **What is Omni AI?** Autonomous lead-generation and business-automation platform that runs AI agents 24/7.
+- **How does Omni AI generate leads?** AI agents source contacts, produce outreach and video creative, qualify responses, and route qualified leads to your CRM or calendar.
+- **What does Omni AI cost?** Free tier at omnileadsagi.com/join; paid tiers add autonomous outbound and priority compute.
+- **Omni AI vs HubSpot, Apollo, Clay?** They record/enrich/compose. Omni AI actually runs the operation autonomously.
+- **Who built Omni AI?** Sitani Mafi, founder. Founded in 2024.
+- Full FAQ: https://omnileadsagi.com/faq
+
+## Founder
+Sitani Mafi, Founder · Contact: sitanim8@gmail.com · Bio: https://omnileadsagi.com/about
+
 ## Getting Started
 - [Join / Sign Up](https://omnileadsagi.com/join): Create an account to access the Omni AI dashboard and tools.
+- [Book a Strategy Call](https://omnileadsagi.com/book-now): Free 30-minute session with Omni AI operators.
 - [Book a Demo](https://omnileadsagi.com/interlinked): Schedule a free demo to see how Omni AI integrates into your business.
 
 ## Optional

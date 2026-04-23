@@ -26,7 +26,7 @@ export const organizationSchema = {
   contactPoint: {
     "@type": "ContactPoint",
     contactType: "customer support",
-    email: "support@omni.ai",
+    email: "sitanim8@gmail.com",
     url: "https://omnileadsagi.com/join",
     availableLanguage: "English",
   },
@@ -39,6 +39,12 @@ export const organizationSchema = {
     "Campaign Management",
     "Business Automation",
   ],
+  founder: {
+    "@type": "Person",
+    name: "Sitani Mafi",
+    url: "https://omnileadsagi.com/about",
+    jobTitle: "Founder",
+  },
 };
 
 export const websiteSchema = {
@@ -116,3 +122,173 @@ export const softwareSchema = {
     url: "https://omnileadsagi.com",
   },
 };
+
+/**
+ * Founder / author entity. Consumed on the homepage, /about, and as the
+ * `author` field inside newsArticleSchema() so every newsletter post has a
+ * real human byline — critical for E-E-A-T and for LLMs that prefer to cite
+ * content with a named author.
+ *
+ * sameAs is intentionally sparse today — see plan T2.6: once X / Crunchbase /
+ * G2 / YouTube / Product Hunt profiles exist, append them here. Stale 404s
+ * in sameAs hurt validation, so keep this list truthful.
+ */
+export const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Sitani Mafi",
+  jobTitle: "Founder",
+  email: "sitanim8@gmail.com",
+  url: "https://omnileadsagi.com/about",
+  worksFor: {
+    "@type": "Organization",
+    name: "Omni AI",
+    url: "https://omnileadsagi.com",
+  },
+  knowsAbout: [
+    "AI Lead Generation",
+    "Marketing Automation",
+    "Business Automation",
+    "AI Agents",
+    "Autonomous Operations",
+  ],
+  sameAs: [] as string[],
+};
+
+/**
+ * Article schema for /[slug] trending landing pages. Stronger than bare
+ * WebPage — Google rich results and LLM retrieval both prefer typed Article
+ * with named author + publisher + image + datePublished.
+ */
+export function articleSchema(page: {
+  slug: string;
+  title?: string | null;
+  topic?: string | null;
+  description?: string | null;
+  date?: string | null;
+}) {
+  const siteUrl = "https://omnileadsagi.com";
+  const url = `${siteUrl}/${page.slug}`;
+  const headline = page.title || page.topic || "";
+  const topic = page.topic || "";
+  const ogImage = `${siteUrl}/api/og?slug=${page.slug}&title=${encodeURIComponent(
+    headline
+  )}&topic=${encodeURIComponent(topic)}`;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline,
+    description: page.description || "",
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    image: ogImage,
+    datePublished: page.date || new Date().toISOString(),
+    author: {
+      "@type": "Person",
+      name: "Sitani Mafi",
+      url: `${siteUrl}/about`,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Omni AI",
+      url: siteUrl,
+      logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
+    },
+    inLanguage: "en-US",
+    ...(topic ? { about: { "@type": "Thing", name: topic } } : {}),
+  };
+}
+
+/**
+ * NewsArticle schema for /newsletter/[slug] posts. NewsArticle is a stricter
+ * subtype of Article — Google Top Stories eligibility + LLM "latest news"
+ * retrieval both key off it. keywords + dateModified are the two fields
+ * that most influence retrieval freshness.
+ */
+export function newsArticleSchema(post: {
+  slug: string;
+  subject?: string | null;
+  intro?: string | null;
+  keywords?: string[] | null;
+  published_at?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+}) {
+  const siteUrl = "https://omnileadsagi.com";
+  const url = `${siteUrl}/newsletter/${post.slug}`;
+  const datePublished =
+    post.published_at || post.created_at || new Date().toISOString();
+  const dateModified = post.updated_at || datePublished;
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: post.subject || "Interlinked by Omni AI",
+    description: (post.intro || "").slice(0, 200),
+    url,
+    mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    datePublished,
+    dateModified,
+    keywords: (post.keywords || []).join(", "),
+    author: {
+      "@type": "Person",
+      name: "Sitani Mafi",
+      url: `${siteUrl}/about`,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "Omni AI",
+      url: siteUrl,
+      logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
+    },
+    inLanguage: "en-US",
+    isPartOf: {
+      "@type": "Periodical",
+      name: "Interlinked by Omni AI",
+      url: `${siteUrl}/newsletter`,
+    },
+  };
+}
+
+/**
+ * FAQPage factory. Consumed on /faq and inlined on the homepage. These are
+ * the exact questions LLMs get asked about Omni AI — answering them in
+ * schema form is the single highest-leverage move for ChatGPT / Perplexity
+ * citations.
+ */
+export function faqPageSchema(
+  qas: { question: string; answer: string }[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: qas.map((qa) => ({
+      "@type": "Question",
+      name: qa.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: qa.answer,
+      },
+    })),
+  };
+}
+
+/**
+ * BreadcrumbList factory — small polish that tells Google and LLMs the site
+ * hierarchy. Used on content pages that live more than one level deep.
+ */
+export function breadcrumbSchema(
+  items: { name: string; url: string }[]
+) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items.map((item, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: item.name,
+      item: item.url,
+    })),
+  };
+}

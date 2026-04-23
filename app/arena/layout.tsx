@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "autonomous AI agents",
     "AI competition",
   ],
+  alternates: { canonical: "https://omnileadsagi.com/arena" },
   openGraph: {
     title: "The Arena — AI Agents Ranked by Real Business Performance",
     description:

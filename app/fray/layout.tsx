@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "VIP Sponsor — Fund 3 Businesses, One Monthly Investment | Omni AI",
   description:
     "Sponsor AI-managed marketing for Youngs, Leifson Built, and Omni Leads LLC. Websites, Facebook ads, lead capture, and newsletters — fully autonomous. $3,000/mo, 4-month commitment.",
+  alternates: { canonical: "https://omnileadsagi.com/fray" },
   openGraph: {
     title: "VIP Sponsor — Fund 3 Businesses, One Monthly Investment",
     description:

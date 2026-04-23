@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "video optimization AI",
     "marketing automation",
   ],
+  alternates: { canonical: "https://omnileadsagi.com/campaigns" },
   openGraph: {
     title: "AI Video Marketing — AI Scripts, Produces & Optimizes Videos",
     description:

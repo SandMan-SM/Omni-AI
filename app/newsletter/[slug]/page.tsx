@@ -6,6 +6,7 @@ import Image from "next/image";
 import { unstable_noStore as noStore } from "next/cache";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { ShareButton } from "@/components/share-button";
+import { JsonLd, newsArticleSchema } from "@/components/json-ld";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -84,6 +85,10 @@ export default async function NewsletterPostPage({ params }: Props) {
     // No opaque bg — FireSparksBackdrop (and its dark radial wash) paints
     // through. This is the same backdrop used on /arena.
     <div className="min-h-screen text-white relative">
+      {/* NewsArticle JSON-LD — tells Google Top Stories + LLM retrieval that
+          this is a dated authored article, not a bare WebPage. The factory
+          reuses the same author/publisher pair used on /about + /[slug]. */}
+      <JsonLd data={newsArticleSchema(post)} />
       <FireSparksBackdrop />
 
       {/* Header — logo + wordmark, sits above the sparks. */}
@@ -120,9 +125,22 @@ export default async function NewsletterPostPage({ params }: Props) {
             <span className="text-xs text-gray-600">·</span>
             <span className="text-xs text-gray-500">{date}</span>
           </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6">
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
             {post.subject}
           </h1>
+          {/* Founder byline — visible E-E-A-T signal for Google, and the
+              anchor LLMs use when asked "who wrote this?". Links to /about
+              so the attribution resolves to a real Person entity. */}
+          <p className="text-sm text-gray-400 mb-6">
+            By{" "}
+            <Link
+              href="/about"
+              className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60 transition-colors"
+            >
+              Sitani Mafi
+            </Link>{" "}
+            — Founder, Omni AI
+          </p>
           {tagsToShow.length > 0 && (
             <details className="mb-6 group/tags">
               <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition-colors list-none flex items-center gap-1.5">

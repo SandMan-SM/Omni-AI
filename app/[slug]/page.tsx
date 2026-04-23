@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import CTAButtons from "./CTAButtons";
+import { JsonLd, articleSchema } from "@/components/json-ld";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -64,34 +65,21 @@ export default async function TrendingLandingPage({ params }: Props) {
   const description =
     page.description ||
     `${page.topic} — See how Omni AI helps businesses automate marketing and win with AI.`;
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "WebPage",
-    name: title,
-    description,
-    url: `${siteUrl}/${slug}`,
-    publisher: {
-      "@type": "Organization",
-      name: "Omni AI",
-      url: siteUrl,
-      logo: { "@type": "ImageObject", url: `${siteUrl}/logo.png` },
-    },
-    datePublished: page.date,
-    inLanguage: "en-US",
-    about: {
-      "@type": "Thing",
-      name: page.topic,
-    },
-  };
 
   return (
     <div className="min-h-screen bg-[#050508] text-white overflow-x-hidden">
-      {/* JSON-LD */}
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      {/* Article JSON-LD — stronger retrieval signal than bare WebPage. The
+          factory pairs author=Person(Sitani Mafi) + publisher=Organization
+          + datePublished + OG image, which is what Google rich results and
+          LLM citation engines both look for. */}
+      <JsonLd
+        data={articleSchema({
+          slug,
+          title: page.title,
+          topic: page.topic,
+          description,
+          date: page.date,
+        })}
       />
 
       {/* Animated gradient background — single purple glow top-left only, no pink blob */}

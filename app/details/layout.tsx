@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "Omni AI events",
     "AI Q&A sessions",
   ],
+  alternates: { canonical: "https://omnileadsagi.com/details" },
   openGraph: {
     title: "Upcoming Sessions — Live AI Strategy Webinars & Demos",
     description:

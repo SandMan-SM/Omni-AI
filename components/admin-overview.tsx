@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useState } from "react";
 import {
   Users, Crown, Target, Flame, Thermometer, Snowflake,
   DollarSign, TrendingUp, AlertTriangle, Clock, ArrowRight,
   UserPlus, Activity, Zap, BarChart3, ChevronRight,
-  Mail, Building2, Award,
+  Mail, Building2, Award, Eye, MousePointerClick, Globe,
+  Smartphone, Monitor, Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,229 @@ function daysSince(d: string | null): number {
 
 function formatCurrency(n: number): string {
   return n >= 1000 ? `$${(n / 1000).toFixed(1)}k` : `$${n.toLocaleString()}`;
+}
+
+/* ─── Traffic Panel ───────────────────────────────────────────────────────── */
+
+interface AnalyticsData {
+  traffic: {
+    pageViews24h: number; pageViews7d: number; pageViews30d: number;
+    sessions24h: number; sessions7d: number;
+    visitors24h: number; visitors7d: number;
+    clicks24h: number; clicks7d: number;
+    formSubmits7d: number;
+  };
+  daily: { day: string; page_views: number; sessions: number; clicks: number }[];
+  topPages: { page_url: string; views: number; visitors: number }[];
+  topClicks: { label: string; clicks: number; pages: string[]; href: string | null }[];
+  topReferrers: { referrer: string; sessions: number }[];
+  devices: { mobile: number; desktop: number };
+}
+
+function TrafficPanel() {
+  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    // Include the admin bearer token if present — /admin auth is cookie-based
+    // for most flows but some installs use the custom omni_token.
+    let token: string | null = null;
+    try { token = localStorage.getItem("omni_token"); } catch {}
+    fetch("/api/admin/analytics", {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      cache: "no-store",
+    })
+      .then(async r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then(d => { if (active) { setData(d); setLoading(false); } })
+      .catch(err => { if (active) { setError(String(err)); setLoading(false); } });
+    return () => { active = false; };
+  }, []);
+
+  if (loading) {
+    return (
+      <Card className="bg-white/[0.03] border-white/[0.06]">
+        <CardContent className="p-10 flex justify-center">
+          <Loader2 className="w-5 h-5 animate-spin text-purple-400" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <Card className="bg-white/[0.03] border-white/[0.06]">
+        <CardContent className="p-6 text-center">
+          <p className="text-sm text-gray-500">Traffic data unavailable{error ? `: ${error}` : ""}</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const { traffic, daily, topPages, topClicks, topReferrers, devices } = data;
+  const maxDaily = Math.max(1, ...daily.map(d => d.page_views));
+  const deviceTotal = devices.mobile + devices.desktop;
+  const mobilePct = deviceTotal ? Math.round((devices.mobile / deviceTotal) * 100) : 0;
+
+  const headline = [
+    { label: "Visitors · 7d",   value: traffic.visitors7d,   sub: `${traffic.visitors24h} today`,   icon: Users,              color: "text-purple-400",  bg: "bg-purple-500/10" },
+    { label: "Page Views · 7d", value: traffic.pageViews7d,  sub: `${traffic.pageViews24h} today`,  icon: Eye,                color: "text-cyan-400",    bg: "bg-cyan-500/10" },
+    { label: "Sessions · 7d",   value: traffic.sessions7d,   sub: `${traffic.sessions24h} today`,   icon: Activity,           color: "text-emerald-400", bg: "bg-emerald-500/10" },
+    { label: "Clicks · 7d",     value: traffic.clicks7d,     sub: `${traffic.clicks24h} today`,     icon: MousePointerClick,  color: "text-amber-400",   bg: "bg-amber-500/10" },
+  ];
+
+  return (
+    <div className="space-y-4">
+      {/* Section heading */}
+      <div className="flex items-center gap-2">
+        <BarChart3 className="w-4 h-4 text-purple-400" />
+        <h2 className="text-sm font-semibold text-white">Traffic &amp; Clicks</h2>
+        <span className="text-[10px] text-gray-600 ml-auto">Live · past 7 days</span>
+      </div>
+
+      {/* Headline 4-up */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {headline.map(m => {
+          const Icon = m.icon;
+          return (
+            <Card key={m.label} className="bg-white/[0.03] border-white/[0.06]">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`p-1.5 rounded-lg ${m.bg}`}><Icon className={`w-3.5 h-3.5 ${m.color}`} /></div>
+                </div>
+                <p className="text-xl sm:text-2xl font-bold text-white leading-tight">{m.value.toLocaleString()}</p>
+                <p className="text-[10px] sm:text-xs text-gray-500 mt-0.5">{m.label}</p>
+                <p className="text-[10px] text-gray-600 mt-1">{m.sub}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Timeseries + referrers/devices */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {/* 14-day bar chart — page views per day */}
+        <Card className="lg:col-span-3 bg-white/[0.03] border-white/[0.06]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xs font-semibold text-white uppercase tracking-wider">Page Views · 14 days</h3>
+              <span className="text-[10px] text-gray-600">{traffic.pageViews30d.toLocaleString()} all · 30d</span>
+            </div>
+            <div className="flex items-end gap-1 h-28">
+              {daily.map(d => {
+                const h = Math.max(2, (d.page_views / maxDaily) * 100);
+                return (
+                  <div key={d.day} className="flex-1 flex flex-col items-center gap-1 group">
+                    <div className="flex-1 flex items-end w-full">
+                      <div
+                        className="w-full rounded-t bg-gradient-to-t from-purple-600/50 to-purple-400/80 hover:from-purple-500/70 hover:to-purple-300 transition-colors"
+                        style={{ height: `${h}%` }}
+                        title={`${d.day}: ${d.page_views} views · ${d.sessions} sessions · ${d.clicks} clicks`}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex justify-between mt-2">
+              <span className="text-[9px] text-gray-600">{daily[0]?.day.slice(5)}</span>
+              <span className="text-[9px] text-gray-600">today</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Referrers + devices */}
+        <Card className="lg:col-span-2 bg-white/[0.03] border-white/[0.06]">
+          <CardContent className="p-6 space-y-5">
+            <div>
+              <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Globe className="w-3.5 h-3.5 text-blue-400" /> Top Referrers
+              </h3>
+              {topReferrers.length === 0 ? (
+                <p className="text-[11px] text-gray-600">No traffic yet — publish or share a link.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {topReferrers.map(r => (
+                    <div key={r.referrer} className="flex items-center justify-between text-xs">
+                      <span className="text-gray-400 truncate max-w-[70%]">{r.referrer}</span>
+                      <span className="text-white font-semibold">{r.sessions}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 border-t border-white/5">
+              <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-3">Devices · 7d</h3>
+              <div className="flex items-center gap-2">
+                <Smartphone className="w-3.5 h-3.5 text-pink-400" />
+                <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-pink-500 to-purple-500" style={{ width: `${mobilePct}%` }} />
+                </div>
+                <span className="text-[10px] text-gray-500 w-20 text-right">{mobilePct}% mobile</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <Monitor className="w-3.5 h-3.5 text-cyan-400" />
+                <div className="flex-1 h-2 rounded-full bg-white/5 overflow-hidden">
+                  <div className="h-full bg-gradient-to-r from-cyan-500 to-blue-500" style={{ width: `${100 - mobilePct}%` }} />
+                </div>
+                <span className="text-[10px] text-gray-500 w-20 text-right">{100 - mobilePct}% desktop</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Top pages + top clicks */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <Card className="bg-white/[0.03] border-white/[0.06]">
+          <CardContent className="p-6">
+            <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Eye className="w-3.5 h-3.5 text-cyan-400" /> Top Pages · 7d
+            </h3>
+            {topPages.length === 0 ? (
+              <p className="text-[11px] text-gray-600">No page views tracked yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {topPages.map(p => (
+                  <div key={p.page_url} className="flex items-center gap-4 text-xs">
+                    <span className="text-gray-300 truncate flex-1">{p.page_url}</span>
+                    <span className="text-[10px] text-gray-600">{p.visitors} v</span>
+                    <span className="text-white font-semibold tabular-nums w-10 text-right">{p.views}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white/[0.03] border-white/[0.06]">
+          <CardContent className="p-6">
+            <h3 className="text-xs font-semibold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+              <MousePointerClick className="w-3.5 h-3.5 text-amber-400" /> Top Clicks · 7d
+            </h3>
+            {topClicks.length === 0 ? (
+              <p className="text-[11px] text-gray-600">No clicks tracked yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {topClicks.map(c => (
+                  <div key={c.label} className="flex items-center gap-4 text-xs">
+                    <span className="text-gray-300 truncate flex-1" title={c.href || undefined}>{c.label}</span>
+                    <span className="text-white font-semibold tabular-nums w-10 text-right">{c.clicks}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
 }
 
 /* ─── Types ───────────────────────────────────────────────────────────────── */
@@ -145,6 +369,11 @@ export function AdminOverview({ users, onEditUser }: Props) {
 
   return (
     <div className="space-y-6">
+
+      {/* ── TRAFFIC & CLICKS ───────────────────────────────────────── */}
+      {/* Self-fetches from /api/admin/analytics. Renders its own loading
+          state so the rest of the overview doesn't block on it. */}
+      <TrafficPanel />
 
       {/* ── KEY METRICS ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
