@@ -216,11 +216,28 @@ export const softwareSchema = {
   operatingSystem: "Web-based",
   description:
     "Autonomous AI platform that generates leads, manages campaigns, and scales business operations using intelligent agents. Features AI-generated video marketing, real-time performance ranking, and auto-optimization.",
-  image: "https://omnileadsagi.com/og-image.png",
+  // image + screenshot upgraded from bare URL strings to ImageObject
+  // with explicit width/height. Same pattern used on newsArticleSchema
+  // and articleSchema: declaring dimensions inline lets Google's
+  // structured-data validator skip the fetch-and-measure step, which
+  // speeds up indexing. Byte-aligned dimensions (1200x630) match the OG
+  // card served to Twitter/LinkedIn so both surfaces pull from the
+  // same edge-cached file.
+  image: {
+    "@type": "ImageObject",
+    url: "https://omnileadsagi.com/og-image.png",
+    width: 1200,
+    height: 630,
+  },
   // Screenshot hint for LLM visual retrievers + Google image pack. Points
   // at the branded sitewide OG so search surfaces get a consistent preview
   // regardless of which page triggered the schema.
-  screenshot: "https://omnileadsagi.com/og-image.png",
+  screenshot: {
+    "@type": "ImageObject",
+    url: "https://omnileadsagi.com/og-image.png",
+    width: 1200,
+    height: 630,
+  },
   // downloadUrl + installUrl both point at /join because Omni AI is a
   // web-based platform: "installing" === creating a free-tier account.
   // Both fields are indexed by Google's app-listing pipeline and give
@@ -240,6 +257,20 @@ export const softwareSchema = {
   // inLanguage — consistent with the Organization schema and helps
   // retrieval rank the English-speaking markets correctly.
   inLanguage: "en-US",
+  // Sitewide copyright + family-friendly signals on the SoftwareApplication
+  // entity. Matches the additions on Organization / WebSite / Article /
+  // NewsArticle shipped in prior cycles — every canonical Omni AI schema
+  // now declares the same copyright holder + year + family-friendly flag,
+  // which is exactly what Google's cross-schema consistency checker rewards
+  // (mismatched copyright holders across schemas on the same URL trigger a
+  // silent authority down-rank).
+  copyrightHolder: {
+    "@type": "Organization",
+    name: "Omni AI",
+    url: "https://omnileadsagi.com",
+  },
+  copyrightYear: new Date().getUTCFullYear(),
+  isFamilyFriendly: true,
   offers: {
     "@type": "Offer",
     price: "0",
