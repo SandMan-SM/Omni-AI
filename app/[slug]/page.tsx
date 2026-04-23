@@ -25,6 +25,26 @@ async function getLandingPage(slug: string) {
   return data;
 }
 
+// Pull the 3 most recent daily landing pages (excluding the current
+// slug) for the "Recent Trends" hand-off below the hero. Serves two
+// purposes:
+//   1. Keeps tweet-landed visitors on site after they skip the CTA —
+//      a related card is the cheapest retention lever on this surface.
+//   2. Creates internal-link density across the daily cluster, which
+//      is otherwise orphaned (every /[slug] is a direct Twitter landing
+//      with no internal parent page today).
+async function getRecentTrends(excludeSlug: string) {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("landing_pages")
+    .select("slug, topic, title, date")
+    .neq("slug", excludeSlug)
+    .not("slug", "is", null)
+    .order("date", { ascending: false })
+    .limit(3);
+  return data || [];
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const page = await getLandingPage(slug);
@@ -64,7 +84,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TrendingLandingPage({ params }: Props) {
   const { slug } = await params;
-  const page = await getLandingPage(slug);
+  // Fetch the landing page + the 3 most recent siblings in parallel.
+  // Round-trip savings matter here — /[slug] is the single highest-traffic
+  // route on the site and every extra 50ms hurts tweet-landing conversion.
+  const [page, recentTrends] = await Promise.all([
+    getLandingPage(slug),
+    getRecentTrends(slug),
+  ]);
   if (!page) notFound();
 
   const title = page.title || page.topic;
@@ -206,6 +232,47 @@ export default async function TrendingLandingPage({ params }: Props) {
           Today&apos;s trend: {page.topic}
         </p>
       </main>
+
+      {/* Recent Trends — renders only if siblings exist. Gives the
+          tweet-landed visitor somewhere to go if the primary CTA
+          doesn't land, and feeds Google a dense internal-link graph
+          across the daily cluster (previously orphaned). Cards mirror
+          the purple hero palette rather than the amber /vs cluster
+          palette, so the brand feels consistent across the hand-off. */}
+      {recentTrends.length > 0 && (
+        <section className="relative z-10 max-w-6xl mx-auto px-5 pb-24">
+          <div className="border-t border-white/5 pt-14">
+            <p className="text-xs font-semibold uppercase tracking-widest text-purple-300 mb-6 text-center">
+              More trending now
+            </p>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentTrends.map((trend) => (
+                <Link
+                  key={trend.slug}
+                  href={`/${trend.slug}`}
+                  className="group block rounded-2xl border border-white/10 bg-white/[0.03] p-6 hover:border-purple-500/40 hover:bg-white/[0.06] transition-colors"
+                >
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-purple-300/70 mb-3">
+                    Trending
+                  </p>
+                  <h3 className="text-lg font-bold text-white mb-3 leading-snug line-clamp-3 group-hover:text-purple-100 transition-colors">
+                    {trend.title || trend.topic}
+                  </h3>
+                  {trend.date && (
+                    <p className="text-xs text-gray-500">
+                      {new Date(trend.date).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </p>
+                  )}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Footer — shared site footer. Carries the full internal-linking set
           (Interlinked, Campaigns, Newsletter, About, FAQ, Infographic) so
