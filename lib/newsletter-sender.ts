@@ -742,6 +742,11 @@ import {
   accentColor as emailAccent,
   accentBg as emailAccentBg,
 } from '@/lib/email-template';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  getNewsletterAudience,
+  audienceSendList,
+} from '@/lib/newsletter-audience';
 
 function buildNewsletterEmailHtml(content: NewsletterContent, tier: 'free' | 'premium'): string {
   const isPremium = tier === 'premium';
@@ -1211,64 +1216,19 @@ export async function runDailyNewsletter(supabase: any = null) {
 
   const telegramOk = await sendToTelegram(content);
 
-  // Send to subscribed profiles (newsletter_subscribed=true) — respects dev allowlist
+  // Send to subscribed audience — resolved via the canonical audience
+  // helper so the admin panel view == the send set. The helper uses an
+  // admin (service-role) Supabase client so RLS never silently drops
+  // subscribers, and enforces the opt-out rule (profiles.newsletter_subscribed
+  // = false ALWAYS wins).
   let freeSent = 0;
   let emailOk = false;
   if (supabase) {
     try {
-      // Get all active newsletter subscribers from profiles
-      const { data: activeProfiles } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('newsletter_subscribed', true);
-
-      // Also check newsletter_subscriptions table if it exists
-      // BUT cross-reference with profiles to exclude deactivated users
-      let extraEmails: string[] = [];
-      try {
-        const { data: freeSubs } = await supabase
-          .from('newsletter_subscriptions')
-          .select('email')
-          .eq('subscribed', true);
-        if (freeSubs?.length) {
-          extraEmails = freeSubs.map((s: { email: string }) => s.email);
-        }
-      } catch {
-        // Table may not exist yet — that's fine
-      }
-
-      // Build set of deactivated emails (explicitly unsubscribed in profiles)
-      const deactivatedEmails = new Set<string>();
-      try {
-        const { data: deactivated } = await supabase
-          .from('profiles')
-          .select('email')
-          .eq('newsletter_subscribed', false);
-        if (deactivated?.length) {
-          for (const p of deactivated) {
-            if (p.email) deactivatedEmails.add(p.email.toLowerCase());
-          }
-        }
-      } catch {
-        // If query fails, continue without deactivation filter
-      }
-
-      // Dedupe all recipient emails — only active subscribers
-      const allEmails = new Set<string>();
-      if (activeProfiles?.length) {
-        for (const p of activeProfiles) {
-          if (p.email) allEmails.add(p.email.toLowerCase());
-        }
-      }
-      // Add newsletter_subscriptions emails ONLY if not deactivated in profiles
-      for (const e of extraEmails) {
-        if (!deactivatedEmails.has(e.toLowerCase())) {
-          allEmails.add(e.toLowerCase());
-        }
-      }
-
-      // NEWSLETTER_TO is only included if they are actually subscribed — no force-add
-      // (DEV_MODE allowlist handles dev-only sends at the sendEmail level)
+      const admin = createAdminClient();
+      const audience = await getNewsletterAudience(admin);
+      const { freeRecipients } = audienceSendList(audience);
+      const allEmails = new Set<string>(freeRecipients);
 
       if (allEmails.size > 0) {
         const results = await Promise.allSettled(
@@ -1402,20 +1362,15 @@ export async function runPremiumNewsletter(supabase: any = null) {
 
   if (supabase) {
     try {
-      // Get premium subscribers (is_premium=true AND newsletter_subscribed=true)
-      // Deactivated users (newsletter_subscribed=false) are excluded
-      const { data: premiumProfiles } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('is_premium', true)
-        .eq('newsletter_subscribed', true);
-
-      const premiumEmails = new Set<string>();
-      if (premiumProfiles?.length) {
-        for (const p of premiumProfiles) {
-          if (p.email) premiumEmails.add(p.email.toLowerCase());
-        }
-      }
+      // Premium recipients come from the canonical audience helper too —
+      // same source of truth as the admin panel and the free send. An
+      // audience member is premium if profiles.is_premium/subscription_status
+      // says so OR newsletter_subscriptions.subscription_tier='premium'.
+      // Either qualifies for the premium send.
+      const admin = createAdminClient();
+      const audience = await getNewsletterAudience(admin);
+      const { premiumRecipients } = audienceSendList(audience);
+      const premiumEmails = new Set<string>(premiumRecipients);
 
       if (premiumEmails.size > 0) {
         const results = await Promise.allSettled(
