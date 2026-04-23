@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import dynamicImport from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Shield, Users, Crown, Loader2, ArrowLeft, Check,
@@ -22,13 +23,51 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile, type Profile } from "@/hooks/use-profile";
 import { useToast } from "@/hooks/use-toast";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
-import { NewsletterHistory } from "@/components/newsletter-history";
-import { AdminCRM } from "@/components/admin-crm";
-import { SystemMonitor } from "@/components/system-monitor";
-import { AdminCampaigns } from "@/components/admin-campaigns";
+
+// Heavy tab bodies — lazy so the initial admin bundle stays small and
+// only the tab the admin actually opens ships its JS. AdminOverview
+// stays eager because it's the default tab every admin lands on.
 import { AdminOverview } from "@/components/admin-overview";
-import { PayPalFinance } from "@/components/paypal-finance";
-import { NewsletterStudioPanel } from "@/components/newsletter-studio-panel";
+
+// Static Tailwind class map — JIT can't pick up template-literal classes,
+// so enumerate each color explicitly.
+const TAB_SPINNER_COLOR: Record<string, string> = {
+  purple: "border-purple-500",
+  blue: "border-blue-500",
+  green: "border-green-500",
+  orange: "border-orange-500",
+  yellow: "border-yellow-500",
+};
+const TabSpinner = ({ color = "purple" }: { color?: keyof typeof TAB_SPINNER_COLOR }) => (
+  <div className="min-h-[320px] flex items-center justify-center">
+    <div className={`w-10 h-10 border-2 ${TAB_SPINNER_COLOR[color] || TAB_SPINNER_COLOR.purple} border-t-transparent rounded-full animate-spin`} />
+  </div>
+);
+
+const NewsletterHistory = dynamicImport(
+  () => import("@/components/newsletter-history").then((m) => ({ default: m.NewsletterHistory })),
+  { ssr: false, loading: () => <TabSpinner color="purple" /> },
+);
+const AdminCRM = dynamicImport(
+  () => import("@/components/admin-crm").then((m) => ({ default: m.AdminCRM })),
+  { ssr: false, loading: () => <TabSpinner color="blue" /> },
+);
+const SystemMonitor = dynamicImport(
+  () => import("@/components/system-monitor").then((m) => ({ default: m.SystemMonitor })),
+  { ssr: false, loading: () => <TabSpinner color="green" /> },
+);
+const AdminCampaigns = dynamicImport(
+  () => import("@/components/admin-campaigns").then((m) => ({ default: m.AdminCampaigns })),
+  { ssr: false, loading: () => <TabSpinner color="orange" /> },
+);
+const PayPalFinance = dynamicImport(
+  () => import("@/components/paypal-finance").then((m) => ({ default: m.PayPalFinance })),
+  { ssr: false, loading: () => <TabSpinner color="yellow" /> },
+);
+const NewsletterStudioPanel = dynamicImport(
+  () => import("@/components/newsletter-studio-panel").then((m) => ({ default: m.NewsletterStudioPanel })),
+  { ssr: false, loading: () => <TabSpinner color="purple" /> },
+);
 
 const FINANCE_ADMIN_EMAILS = ["sitanim8@gmail.com", "benjones@omnileadsllc.com"];
 
