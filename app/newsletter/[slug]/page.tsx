@@ -43,17 +43,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const keywords = post.keywords?.join(", ") || "AI, business, automation";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
+  const postUrl = `${siteUrl}/newsletter/${slug}`;
   return {
     title: `${post.subject} | Interlinked by Omni AI`,
     description: post.intro?.slice(0, 160),
     keywords,
+    // Canonical URL — consolidates any UTM/referrer variations back to
+    // the clean issue URL so duplicate-content signals don't split. Per
+    // per-issue page is the most-indexed surface on the site after the
+    // daily landing pages, so the canonical matters most here.
+    alternates: { canonical: postUrl },
     openGraph: {
       title: post.subject,
       description: post.intro?.slice(0, 160),
       type: "article",
       publishedTime: post.published_at,
       siteName: "Interlinked by Omni AI",
-      url: `${siteUrl}/newsletter/${slug}`,
+      url: postUrl,
     },
     twitter: {
       card: "summary_large_image",

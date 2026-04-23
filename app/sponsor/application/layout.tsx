@@ -4,6 +4,7 @@ export const metadata: Metadata = {
   title: "Sponsor Application — Apply to Fund AI Marketing | Omni AI",
   description:
     "Apply to become an Omni AI sponsor. Fund AI-managed marketing campaigns for local businesses and gain premium brand exposure across our platform.",
+  alternates: { canonical: "https://omnileadsagi.com/sponsor/application" },
   openGraph: {
     title: "Sponsor Application — Apply to Fund AI Marketing",
     description:

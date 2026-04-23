@@ -16,6 +16,10 @@ export const metadata: Metadata = {
     "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium AI intelligence from Omni AI.",
   keywords:
     "AI newsletter, business intelligence, AI automation, Omni AI, Interlinked, daily AI briefs, AI strategy",
+  // Canonical URL so UTM / ref / share-parameter variants resolve to a
+  // single indexable page. /newsletter is the archive hub — every daily
+  // post links back up here, so a split canonical would fracture PageRank.
+  alternates: { canonical: "https://omnileadsagi.com/newsletter" },
   openGraph: {
     title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
     description:

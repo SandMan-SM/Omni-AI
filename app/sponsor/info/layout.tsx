@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "AI engagement",
     "sponsor AI agents",
   ],
+  alternates: { canonical: "https://omnileadsagi.com/sponsor/info" },
   openGraph: {
     title: "Become a Sponsor — AI-Powered Lead Generation & Automation",
     description:

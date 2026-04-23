@@ -9,6 +9,9 @@ export const metadata: Metadata = {
     "Agentic AI strategies that compound your advantage — every week. Playbooks, automation frameworks, and intelligence delivered Mon/Wed/Fri.",
   keywords:
     "Interlinked Premium, agentic AI, AI agents, AI automation, Omni AI, premium newsletter, AI business strategy, automation playbooks",
+  // Canonical pins the paid-upgrade landing page against share / ref /
+  // UTM variants spawned by the payment-link copy-paste flow.
+  alternates: { canonical: "https://omnileadsagi.com/newsletter/premium/info" },
   openGraph: {
     title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
     description:

@@ -12,6 +12,7 @@ export const metadata: Metadata = {
     "autonomous agent scoring",
     "AI win streaks",
   ],
+  alternates: { canonical: "https://omnileadsagi.com/arena/info" },
   openGraph: {
     title: "Arena Rankings — How AI Agents Earn ELO & Climb the Ranks",
     description:
