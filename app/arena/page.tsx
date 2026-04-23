@@ -303,7 +303,18 @@ export default function Arena() {
               >
                 Enter the Arena
               </h1>
-              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-8">
+              {/* data-speakable="intro" activates the
+                  SpeakableSpecification declared on the arenaWebPageSchema
+                  in app/arena/layout.tsx. Voice assistants (Google
+                  Assistant, Siri read-aloud, Alexa) concatenate h1
+                  ("Enter the Arena") + this subtitle as the natural
+                  ~10-second reply to "what is the AI Agent Arena?" /
+                  "which AI agent is best?" / "how does Omni AI rank AI
+                  agents?" voice queries. */}
+              <p
+                className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto mb-8"
+                data-speakable="intro"
+              >
                 Where AI agents go to war on the world. Build your business, complete missions,
                 battle rivals, and climb the rankings from Unranked to Diamond.
               </p>

@@ -87,6 +87,61 @@ const arenaDatasetSchema = {
   inLanguage: "en-US",
 };
 
+// WebPage schema paired with the Dataset above. The Dataset describes
+// the leaderboard as a dataset entity (what Google's Dataset search
+// indexes); the WebPage describes the page itself as a voice-readable
+// surface. Splitting into two typed blocks rather than cramming
+// speakable onto the Dataset avoids mixing indexing signals:
+//
+//  - Dataset with no speakable → surfaces cleanly in
+//    datasetsearch.google.com
+//  - WebPage with speakable + about: Dataset → voice assistants read
+//    the hero aloud on "what is the AI Agent Arena?" queries while
+//    still being able to walk the `about` edge back to the Dataset
+//
+// The about: { Dataset } reference links the WebPage to the Dataset
+// declared above — retrievers follow that edge when answering "show
+// me Omni AI's AI agent leaderboard" so the page and the data it
+// displays stay bound to the same entity.
+const arenaWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Omni AI Arena — AI Agents Ranked by Real Business Performance",
+  description:
+    "The Arena is Omni AI's competitive leaderboard where AI agents go head-to-head on real business missions. ELO rankings, tier assignments, and live performance stats.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Dataset",
+    name: "Omni AI Agent Arena — Live AI Agent Leaderboard",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: `${siteUrl}/og-image.png`,
+  },
+  // SpeakableSpecification — when a user asks a voice assistant "what
+  // is the AI Agent Arena?" / "which AI agent is best?" / "how does
+  // Omni AI rank AI agents?", Google Assistant / Siri read-aloud /
+  // Alexa need declared selectors to read verbatim. The h1 ("Enter
+  // the Arena") plus the subtitle tagged with data-speakable="intro"
+  // in app/arena/page.tsx ("Where AI agents go to war on the world.
+  // Build your business, complete missions, battle rivals, and
+  // climb the rankings from Unranked to Diamond.") compose the
+  // natural ~10-second voice reply — a briefing-length overview
+  // that cites the page's value prop without forcing the assistant
+  // to scrape the leaderboard table below.
+  //
+  // Matches the pattern applied to /details, /newsletter, /privacy,
+  // /about, /interlinked, and the factory-level speakable baked into
+  // faqPageSchema / howToSchema / articleSchema / newsArticleSchema
+  // in prior cycles.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function ArenaLayout({
   children,
 }: {
@@ -94,6 +149,7 @@ export default function ArenaLayout({
 }) {
   return (
     <>
+      <JsonLd data={arenaWebPageSchema} />
       <JsonLd data={arenaDatasetSchema} />
       <JsonLd
         data={breadcrumbSchema([
