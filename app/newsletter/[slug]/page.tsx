@@ -340,17 +340,18 @@ export default async function NewsletterPostPage({ params }: Props) {
                  launch through 2026-04-22. Rendered as a single paragraph.
               2. { heading, body } object — the richer structured shape
                  first shipped on the 2026-04-23 vertical-SaaS premium
-                 issue (and newer Premium issues going forward). Rendered
-                 as a bold heading above the body paragraph.
+                 issue (and newer Premium issues going forward).
 
-            Before this branch, the naive renderer typed `insight` as
-            `string` and inlined `<p>{insight}</p>`. That crashed with
-            "Objects are not valid as a React child" on the 4/23 post
-            because the object literal landed where React expected a
-            string. The shape check below restores rendering for the
-            object posts while leaving the plain-string path
-            byte-identical for every archived post. Casts are local so
-            the Supabase row type stays untouched. */}
+            Design call (per owner, 2026-04-23): only the section heading
+            ("Premium Insights" / "Today's Key Insights") is styled. The
+            per-insight `heading` field is deliberately NOT rendered — the
+            founder prefers a clean, uninterrupted flow from section title
+            → paragraphs → Power Move callout. For object-shaped insights
+            we render only the `body` text; for plain-string insights the
+            string itself is the body. Both shapes collapse to the same
+            visual output: an evenly-spaced stack of paragraphs. The
+            `heading` field stays in the DB for schema/metadata use (e.g.
+            future RSS titles) but stays invisible on the page. */}
         <div className="mb-10">
           <h2 className={`text-xl font-semibold mb-6 ${isPremium ? "text-amber-400" : "text-gradient"}`}>
             {isPremium ? "Premium Insights" : "Today\u2019s Key Insights"}
@@ -361,31 +362,18 @@ export default async function NewsletterPostPage({ params }: Props) {
                 insight: string | { heading?: string | null; body?: string | null },
                 i: number,
               ) => {
-                if (insight && typeof insight === "object") {
-                  const heading = insight.heading?.trim();
-                  const body = insight.body?.trim();
-                  return (
-                    <div key={i} className="py-4">
-                      {heading && (
-                        <h3
-                          className={`text-base font-semibold mb-2 ${
-                            isPremium ? "text-amber-300" : "text-white"
-                          }`}
-                        >
-                          {heading}
-                        </h3>
-                      )}
-                      {body && (
-                        <p className="text-gray-300 leading-relaxed">{body}</p>
-                      )}
-                    </div>
-                  );
-                }
+                // Collapse both shapes to a single body string. Object
+                // insights contribute only their `body`; strings pass
+                // through. Falsy/empty entries are skipped so an
+                // accidentally-empty row never renders a blank <p>.
+                const body =
+                  insight && typeof insight === "object"
+                    ? insight.body?.trim() || ""
+                    : (insight as string) || "";
+                if (!body) return null;
                 return (
                   <div key={i} className="py-4">
-                    <p className="text-gray-300 leading-relaxed">
-                      {insight as string}
-                    </p>
+                    <p className="text-gray-300 leading-relaxed">{body}</p>
                   </div>
                 );
               },
