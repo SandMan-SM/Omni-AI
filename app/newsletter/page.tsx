@@ -124,6 +124,79 @@ export default async function NewsletterIndexPage() {
           { name: "Newsletter", url: "https://omnileadsagi.com/newsletter" },
         ])}
       />
+      {/* Blog + Periodical dual-type — closes the entity loop that
+          newsArticleSchema opens on each post. Every individual
+          newsletter issue declares isPartOf a Periodical named
+          "Interlinked by Omni AI"; this schema is that Periodical,
+          rendered on the archive page itself so retrievers have a
+          canonical URL to anchor the publication entity to.
+
+          Dual-typing as both Blog and Periodical widens retrieval
+          surfaces: Blog pulls in Google's Blog rich-result surface
+          (most competitive newsletter sites type as Blog), while
+          Periodical matches the isPartOf references on the child
+          posts and plays nicer with LLM "what publication does X
+          work for?" queries. Schema.org supports dual @type values
+          when the concepts overlap semantically — which Blog and
+          Periodical clearly do.
+
+          ItemList (shipped below) and this Blog are complementary
+          not duplicative: ItemList enumerates specific posts (a
+          discovery manifest); Blog describes the publication as an
+          entity (author, publisher, language, genre). Both surfaces
+          get fed; Google's parser handles the dual declaration cleanly. */}
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": ["Blog", "Periodical"],
+          name: "Interlinked — Daily AI Intelligence by Omni AI",
+          alternateName: ["Interlinked", "Omni AI Newsletter", "Interlinked by Omni AI"],
+          description:
+            "Daily AI intelligence newsletter published every morning at 8 AM ET by Omni AI. Covers AI, automation, business strategy signals, and the operators-playbook stories that matter. Free daily tier plus an Interlinked Premium paid tier.",
+          url: "https://omnileadsagi.com/newsletter",
+          inLanguage: "en-US",
+          genre: ["AI", "Business Intelligence", "Marketing Automation", "Business Strategy"],
+          keywords: [
+            "AI newsletter",
+            "daily AI intelligence",
+            "Interlinked",
+            "Omni AI",
+            "AI automation",
+            "business AI",
+          ],
+          author: {
+            "@type": "Person",
+            name: "Sitani Mafi",
+            url: "https://omnileadsagi.com/about",
+            jobTitle: "Founder, Omni AI",
+          },
+          publisher: {
+            "@type": "Organization",
+            name: "Omni AI",
+            url: "https://omnileadsagi.com",
+            logo: {
+              "@type": "ImageObject",
+              url: "https://omnileadsagi.com/favicon.png",
+            },
+          },
+          // The RSS feed is the machine-readable distribution endpoint
+          // for the Periodical — explicitly declaring it lets feed
+          // aggregators (and LLMs that ingest feeds) discover the
+          // canonical source without scraping the archive. Matches the
+          // <link rel="alternate" type="application/rss+xml"> tag that
+          // already ships in the route metadata above.
+          mainEntityOfPage: {
+            "@type": "WebPage",
+            "@id": "https://omnileadsagi.com/newsletter",
+          },
+          workExample: {
+            "@type": "DataFeed",
+            name: "Interlinked RSS Feed",
+            url: "https://omnileadsagi.com/newsletter/rss.xml",
+            encodingFormat: "application/rss+xml",
+          },
+        }}
+      />
       {/* ItemList — tells Google and LLM retrievers that the archive is
           a structured list of articles (not an undifferentiated blob of
           links), so queries like "latest Omni AI newsletter" or "recent
