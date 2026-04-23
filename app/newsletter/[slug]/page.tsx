@@ -7,6 +7,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { ShareButton } from "@/components/share-button";
 import { JsonLd, newsArticleSchema, breadcrumbSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 // Per-issue archive pages had no site footer — a reader who finished a post
 // could only share or click the CTA. Adding the shared Footer gives them a
 // path back into the site (FAQ, About, Campaigns, Newsletter index).
@@ -233,8 +234,25 @@ export default async function NewsletterPostPage({ params }: Props) {
         </div>
       </header>
 
+      {/* Visible breadcrumb — paired with breadcrumbSchema above. Google
+          requires both the schema AND visible breadcrumbs for the SERP
+          breadcrumb chip to render. Three-level path makes issue pages
+          obviously navigable (Home → Newsletter → post). Positioned in
+          the seam between the header and the article meta so it doesn't
+          crowd the hero date/tier line. */}
+      <div className="relative z-10 max-w-3xl mx-auto px-5 pt-6">
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Newsletter", href: "/newsletter" },
+            { name: post.subject, href: `/newsletter/${post.slug}` },
+          ]}
+          className="text-xs"
+        />
+      </div>
+
       {/* Article */}
-      <article className="relative z-10 max-w-3xl mx-auto px-5 py-12 md:py-20">
+      <article className="relative z-10 max-w-3xl mx-auto px-5 pt-6 pb-12 md:pb-20">
         {/* Meta */}
         <div className="mb-8">
           <div className="flex items-center gap-4 mb-4">
