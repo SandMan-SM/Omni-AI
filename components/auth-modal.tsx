@@ -144,7 +144,7 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg shadow-[0_0_18px_rgba(139,92,246,0.35)] mt-2"
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg mt-2"
                 data-testid="button-auth-submit"
               >
                 {isLoading ? (

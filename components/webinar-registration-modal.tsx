@@ -372,7 +372,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                     <Button
                       type="submit"
                       disabled={mutation.isPending}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 rounded-md shadow-[0_0_18px_rgba(139,92,246,0.35)] mt-2"
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 rounded-md mt-2"
                       data-testid="button-reserve-seat"
                     >
                       {mutation.isPending ? (
