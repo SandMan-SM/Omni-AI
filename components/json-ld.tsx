@@ -403,6 +403,17 @@ export function articleSchema(page: {
       url: siteUrl,
     },
     inLanguage: "en-US",
+    // isAccessibleForFree — daily trending landing pages render their
+    // full content without gating, so an explicit `true` tells Google
+    // the page is safe to render as an organic result rather than as
+    // a subscription snippet. LLMs also use this field to decide
+    // whether to quote the page at length (paywalled content gets
+    // abbreviated). Without it, Google silently treats the article as
+    // "possibly paywalled" and truncates the SERP snippet — a free
+    // drop-in lift for every /[slug] page. Byte-aligned with the same
+    // field on newsArticleSchema so both Article and NewsArticle
+    // entities carry the same free/paid signal.
+    isAccessibleForFree: true,
     // SpeakableSpecification tells voice-assistant surfaces (Google
     // Assistant "News" briefings, Siri read-aloud, Alexa Flash Briefings)
     // which CSS selectors to read verbatim. Marking only the H1 + the
@@ -533,6 +544,18 @@ export function newsArticleSchema(post: {
       sameAs: ["https://www.linkedin.com/company/omni-ai"],
     },
     inLanguage: "en-US",
+    // isAccessibleForFree — every newsletter post currently renders the
+    // full body without paywall gating (premium posts are differentiated
+    // by visual treatment + upsell CTA, not content hiding). Declaring
+    // `true` explicitly prevents Google from flagging the page as
+    // subscription-only content (which would trigger abbreviated SERP
+    // snippets and exclude the post from Top Stories free-crawl). Must
+    // stay byte-aligned with the matching flag on articleSchema above.
+    // If premium posts ever start hard-paywalling body content, flip
+    // this to conditional (tier === "premium" ? false : true) AND ship
+    // a hasPart with cssSelector pointing at the paywalled region per
+    // Google's paywalled-content schema guidance.
+    isAccessibleForFree: true,
     // SpeakableSpecification — same rationale as the articleSchema
     // field: voice-assistant news briefings (Google Assistant, Siri
     // read-aloud) preferentially surface articles that declare which
