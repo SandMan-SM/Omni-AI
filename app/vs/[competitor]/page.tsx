@@ -108,6 +108,7 @@ export default async function ComparisonPage({ params }: Props) {
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", url: siteUrl },
+          { name: "Compare", url: `${siteUrl}/vs` },
           { name: `Omni AI vs ${data.name}`, url: pageUrl },
         ])}
       />

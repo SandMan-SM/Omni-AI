@@ -51,6 +51,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/affiliate/consultation/info`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/affiliate/sign-up`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
     { url: `${baseUrl}/affiliate/book-consultation`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    // Comparison hub — parent page for the /vs/[competitor] cluster.
+    // Catches "Omni AI alternatives" / "Omni AI comparison" head-intent
+    // queries that don't name a specific competitor.
+    { url: `${baseUrl}/vs`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     // Legal — low crawl priority, rarely changes. Included so the URL is
     // discoverable by search engines and LLM indexers (required signal for
     // E-E-A-T / trust rating on commercial sites).
