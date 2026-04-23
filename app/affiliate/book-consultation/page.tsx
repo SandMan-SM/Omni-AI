@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { AffiliateConsultationModal } from "@/components/affiliate/affiliate-consultation-modal";
+import { AffiliateConsultationModal } from "@/components/modals/lazy";
 
 export default function AffiliateBookConsultationPage() {
   const [open, setOpen] = useState(true);

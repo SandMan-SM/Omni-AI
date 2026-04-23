@@ -6,8 +6,7 @@ import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight, 
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
-import { BookDemoModal } from "@/components/book-demo-modal";
-import { AuthModal } from "@/components/auth-modal";
+import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 import { useState } from "react";
 
 const features = [

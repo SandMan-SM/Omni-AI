@@ -11,8 +11,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
-import { BookDemoModal } from "@/components/book-demo-modal";
-import { AuthModal } from "@/components/auth-modal";
+import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 
 // ── Types ──────────────────────────────────────────────────────────────────

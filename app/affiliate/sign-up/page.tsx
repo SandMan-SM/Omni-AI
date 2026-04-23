@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { AffiliateSignupModal } from "@/components/affiliate/affiliate-signup-modal";
+import { AffiliateSignupModal } from "@/components/modals/lazy";
 
 export default function AffiliateSignUpPage() {
   const [open, setOpen] = useState(true);

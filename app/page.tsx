@@ -13,8 +13,7 @@ import { SeoContentSection } from "@/components/seo-content-section";
 import { TestimonialsSection } from "@/components/testimonials-section";
 import { ContactSection } from "@/components/contact-section";
 import { Footer } from "@/components/footer";
-import { BookDemoModal } from "@/components/book-demo-modal";
-import { AuthModal } from "@/components/auth-modal";
+import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 
 export default function HomePage() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);

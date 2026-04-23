@@ -11,8 +11,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
-import { BookDemoModal } from "@/components/book-demo-modal";
-import { AuthModal } from "@/components/auth-modal";
+import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 

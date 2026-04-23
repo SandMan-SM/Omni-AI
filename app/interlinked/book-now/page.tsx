@@ -11,7 +11,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Calendar, Clock, Sparkles, CheckCircle2, ArrowLeft } from "lucide-react";
-import { BookDemoModal } from "@/components/book-demo-modal";
+import { BookDemoModal } from "@/components/modals/lazy";
 import {
   PageShell,
   PageTopBar,

@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { useAuth } from "@/hooks/use-auth";
-import { AffiliateSignupModal } from "@/components/affiliate/affiliate-signup-modal";
-import { AffiliateConsultationModal } from "@/components/affiliate/affiliate-consultation-modal";
+import { AffiliateSignupModal, AffiliateConsultationModal } from "@/components/modals/lazy";
 
 const steps = [
   {

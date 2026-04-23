@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Calendar, ArrowLeft, Star, MessageCircle, Lightbulb, Map } from "lucide-react";
-import { BookDemoModal } from "@/components/book-demo-modal";
+import { BookDemoModal } from "@/components/modals/lazy";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
