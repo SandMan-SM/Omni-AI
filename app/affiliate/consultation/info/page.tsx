@@ -59,7 +59,18 @@ export default function AffiliateConsultationInfoPage() {
         <h1 className="text-4xl md:text-5xl font-bold mb-5 leading-tight">
           The Omni AI affiliate consultation, explained.
         </h1>
-        <p className="text-lg text-gray-400 mb-10">
+        {/* data-speakable="intro" activates the first CSS selector in the
+            FAQPage SpeakableSpecification declared in
+            app/affiliate/consultation/info/layout.tsx. Voice assistants
+            concatenate h1 ("The Omni AI affiliate consultation,
+            explained.") + this subtitle as the natural ~9-second reply
+            to "what is the Omni AI affiliate consultation?" voice
+            queries. The faq-intro marker below handles the specific-
+            question voice intents. */}
+        <p
+          className="text-lg text-gray-400 mb-10"
+          data-speakable="intro"
+        >
           Thirty minutes on Zoom with an Omni AI strategist. Built for affiliates who want a
           written game plan, not a pitch deck.
         </p>
@@ -83,8 +94,23 @@ export default function AffiliateConsultationInfoPage() {
 
         <h2 className="text-2xl font-bold mb-6">Frequently asked questions</h2>
         <div className="space-y-4 mb-12">
-          {faq.map((f) => (
-            <div key={f.q} className="rounded-xl p-6 border border-white/10 bg-white/[0.02]">
+          {/* data-speakable="faq-intro" on the first Q&A block activates
+              the third CSS selector in the FAQPage SpeakableSpecification
+              declared in app/affiliate/consultation/info/layout.tsx.
+              Voice assistants read the first Q ("Who is the affiliate
+              consultation for?") + its A as a single-exchange reply to
+              question-intent voice queries like "who is the Omni AI
+              affiliate consultation for?" / "how long is the Omni AI
+              affiliate consultation?" / "is the Omni AI affiliate
+              consultation free?". Only the first item gets the marker —
+              reading all four Q&A blocks would overrun the ~10-second
+              voice budget. */}
+          {faq.map((f, i) => (
+            <div
+              key={f.q}
+              className="rounded-xl p-6 border border-white/10 bg-white/[0.02]"
+              data-speakable={i === 0 ? "faq-intro" : undefined}
+            >
               <h3 className="font-bold text-lg mb-2">{f.q}</h3>
               <p className="text-gray-400 text-sm leading-relaxed">{f.a}</p>
             </div>

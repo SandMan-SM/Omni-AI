@@ -112,9 +112,35 @@ const affiliateConsultInfoServiceSchema = {
 // app/affiliate/consultation/info/page.tsx. Consolidated here (instead
 // of the inline dangerouslySetInnerHTML previously in page.tsx) so the
 // site's schema payload lives in one predictable place per route.
+//
+// SpeakableSpecification declared on this FAQPage (valid because
+// FAQPage is a WebPage subclass, which is CreativeWork-compatible).
+// Two opt-in markers cover both the explainer-intent and the
+// specific-question-intent voice queries:
+//
+//  - h1 + data-speakable='intro' → "what is the Omni AI affiliate
+//    consultation?" gets h1 + hero subtitle read aloud (a tight
+//    ~8-second positioning reply)
+//  - data-speakable='faq-intro' → "how long is the Omni AI
+//    affiliate consultation?" / "is the Omni AI affiliate
+//    consultation free?" gets the first Q&A block read aloud
+//    (a single-exchange answer to the specific question)
+//
+// This page is the only consultation-specific landing with a typed
+// FAQ + Service pair, so closing the voice-retrieval gap here picks
+// up every affiliate-consultation-intent voice query the rest of
+// the affiliate funnel can't answer as specifically.
 const affiliateConsultFaqSchema = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: [
+      "h1",
+      "[data-speakable='intro']",
+      "[data-speakable='faq-intro']",
+    ],
+  },
   mainEntity: [
     {
       "@type": "Question",
