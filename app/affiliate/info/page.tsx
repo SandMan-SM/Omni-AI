@@ -7,6 +7,7 @@ import { ArrowRight, LayoutDashboard, UserPlus, Calendar, DollarSign, Users, Tre
 import { Button } from "@/components/ui/button";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { useAuth } from "@/hooks/use-auth";
 import { AffiliateSignupModal, AffiliateConsultationModal } from "@/components/modals/lazy";
 
@@ -76,6 +77,21 @@ export default function AffiliateInfoPage() {
       <section className="relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[700px] bg-purple-500/10 rounded-full blur-3xl" />
         <div className="relative max-w-4xl mx-auto px-4 py-20 text-center">
+          {/* Visible breadcrumb — paired with the breadcrumbSchema in
+              app/affiliate/info/layout.tsx. Centered via a flex wrapper
+              so it sits above the hero without disturbing the centered
+              hero composition. Google only awards the SERP breadcrumb
+              chip when the schema and visible UI agree, so shipping both
+              in the same change keeps the rich-result eligibility clean. */}
+          <div className="flex justify-center mb-8">
+            <Breadcrumb
+              items={[
+                { name: "Home", href: "/" },
+                { name: "Affiliate Program", href: "/affiliate/info" },
+              ]}
+              className="text-xs"
+            />
+          </div>
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/30 mb-6">
               <Sparkles className="w-4 h-4 text-purple-400" />
