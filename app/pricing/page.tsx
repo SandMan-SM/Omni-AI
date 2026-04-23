@@ -319,8 +319,19 @@ export default function PricingPage() {
             Pricing FAQ
           </h2>
           <div className="space-y-8">
-            {PRICING_FAQS.map((qa) => (
-              <div key={qa.question} className="border-b border-white/5 pb-6 last:border-0">
+            {PRICING_FAQS.map((qa, i) => (
+              // data-speakable="faq-intro" on the first Q&A ("How much
+              // does Omni AI cost?") is the opt-in marker for the
+              // SpeakableSpecification in faqPageSchema. Voice assistants
+              // disproportionately get asked price questions ("Hey
+              // Google, how much does Omni AI cost?") — the first Q&A
+              // on /pricing is the literal canonical answer, so it's
+              // the right block to mark as speakable.
+              <div
+                key={qa.question}
+                className="border-b border-white/5 pb-6 last:border-0"
+                data-speakable={i === 0 ? "faq-intro" : undefined}
+              >
                 <h3 className="text-lg font-semibold text-white mb-3 leading-snug">
                   {qa.question}
                 </h3>

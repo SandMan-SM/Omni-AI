@@ -204,8 +204,19 @@ export default function FAQPage() {
         </div>
 
         <div className="space-y-10">
-          {FAQS.map((qa) => (
-            <div key={qa.question} className="border-b border-white/5 pb-10 last:border-0">
+          {FAQS.map((qa, i) => (
+            // data-speakable="faq-intro" on the first Q&A is the opt-in
+            // marker paired with faqPageSchema's SpeakableSpecification
+            // cssSelector. Voice assistants (Google Assistant, Alexa,
+            // Siri) preferentially quote the marked block + page h1 on
+            // voice queries like "hey Google, what is Omni AI?". Only
+            // the first Q&A gets the marker — speakable retrieval works
+            // best when it's unambiguous which block to read.
+            <div
+              key={qa.question}
+              className="border-b border-white/5 pb-10 last:border-0"
+              data-speakable={i === 0 ? "faq-intro" : undefined}
+            >
               <h2 className="text-xl md:text-2xl font-semibold text-white mb-4 leading-snug">
                 {qa.question}
               </h2>

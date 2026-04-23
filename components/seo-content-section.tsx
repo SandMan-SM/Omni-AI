@@ -264,8 +264,18 @@ export function SeoContentSection() {
         {/* FAQ */}
         <h2 className="text-3xl md:text-4xl font-bold mb-6">Frequently asked questions</h2>
         <div className="space-y-8">
-          {FAQS.map((qa) => (
-            <div key={qa.question}>
+          {FAQS.map((qa, i) => (
+            // data-speakable="faq-intro" on the first Q&A ("What is
+            // Omni AI?") is the opt-in marker paired with the
+            // SpeakableSpecification in faqPageSchema. This is THE
+            // most-asked voice query ("Hey Siri, what is Omni AI?")
+            // and the homepage is the canonical destination, so the
+            // first block here is the highest-value speakable target
+            // on the entire site.
+            <div
+              key={qa.question}
+              data-speakable={i === 0 ? "faq-intro" : undefined}
+            >
               <h3 className="text-xl font-semibold text-white mb-3">{qa.question}</h3>
               <p className="text-gray-300 leading-relaxed">{qa.answer}</p>
             </div>

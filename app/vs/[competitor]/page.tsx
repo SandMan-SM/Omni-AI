@@ -259,8 +259,18 @@ export default async function ComparisonPage({ params }: Props) {
             Frequently asked
           </h2>
           <div className="space-y-8">
-            {data.faqs.map((qa) => (
-              <div key={qa.question} className="border-b border-white/5 pb-6 last:border-0">
+            {data.faqs.map((qa, i) => (
+              // data-speakable="faq-intro" on the first Q&A is the
+              // opt-in marker paired with faqPageSchema's
+              // SpeakableSpecification. "vs" queries are high-intent
+              // voice targets ("hey Siri, Omni AI vs HubSpot") — the
+              // first Q&A on each comparison page gets marked so the
+              // voice answer pulls the most-asked differentiator block.
+              <div
+                key={qa.question}
+                className="border-b border-white/5 pb-6 last:border-0"
+                data-speakable={i === 0 ? "faq-intro" : undefined}
+              >
                 <h3 className="text-lg font-semibold text-white mb-3 leading-snug">
                   {qa.question}
                 </h3>

@@ -444,6 +444,25 @@ export function faqPageSchema(
         text: qa.answer,
       },
     })),
+    // SpeakableSpecification lets Google Assistant / Alexa / Siri read
+    // out the headline + primary Q&A on voice queries. Voice retrieval
+    // disproportionately quotes FAQPage-typed content (it's literally
+    // the surface voice assistants were trained to read), so shipping
+    // speakable on the factory lifts every consumer at once — /faq,
+    // /pricing, /vs/[competitor], and the homepage FAQ section all
+    // inherit the wiring.
+    //
+    // cssSelector over xpath because React-hydration + Tailwind class
+    // rewriting break xpath stability across renders. The `h1` target
+    // universally matches; [data-speakable='faq-intro'] is an opt-in
+    // marker consumers add to the single most-important Q&A block on
+    // their page (usually the "what is X?" or "how much does X cost?"
+    // question — the voice-quote-worthy one). Consumers who don't add
+    // the attribute still get the h1 speakable — safe no-op fallback.
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "[data-speakable='faq-intro']"],
+    },
   };
 }
 
