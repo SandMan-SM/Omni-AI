@@ -1,9 +1,23 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+/**
+ * Deployment-history telemetry. Previously unauthenticated — anonymous
+ * callers could (a) read the full deployment history (includes project
+ * names, commit SHAs, deploy URLs — useful recon for attackers mapping
+ * the agency's client roster) and (b) insert fabricated deployment rows
+ * to confuse the admin SystemMonitor dashboard.
+ *
+ * Now admin-gated via authorizeCronOrAdmin. Same auth pattern as
+ * commands + visual-errors siblings.
+ */
+
+export async function GET(req: Request) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -20,6 +34,8 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const supabase = await createClient();
     const body = await req.json();

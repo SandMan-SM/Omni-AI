@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { gatherClientReview, buildClientReviewHtml } from '@/lib/client-review';
-import { requireAdmin } from '@/lib/admin-auth';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -11,11 +11,8 @@ export const dynamic = 'force-dynamic';
  *   - ?format=json → returns the raw data
  *   - ?email=1 → also emails the review to sitanim8@gmail.com via Resend
  *
- * Authorization: requires EITHER
- *   - Authorization: Bearer $CRON_SECRET — for CLI/cron usage (curl, CI,
- *     one-liner ops scripts)
- *   - Admin session (Supabase cookie OR localStorage omni_token) — for
- *     browser-based access from /admin or /command
+ * Authorization: CRON_SECRET bearer OR admin session (cookie or
+ * omni_token). See lib/api-auth.ts for details.
  *
  * Was previously unauthenticated. gatherClientReview() uses the
  * service-role admin Supabase client (bypasses RLS), so anyone who
@@ -24,30 +21,14 @@ export const dynamic = 'force-dynamic';
  * /command page source) could read full MRR/ARR/ships/risks data for
  * every portfolio client. `?email=1` could also be called anonymously
  * to fire unlimited emails to sitanim8@gmail.com. Both gaps close here.
+ *
+ * Cycle 48 introduced an inline authorize() helper here; Cycle 49
+ * extracted the CRON-or-admin pattern into the shared authorizeCronOrAdmin
+ * helper so agents/* routes could reuse it without copy-paste.
  */
-async function authorize(req: Request): Promise<NextResponse | null> {
-  const authz = req.headers.get('authorization') || '';
-  const bearer = authz.replace(/^Bearer\s+/i, '').trim();
-  // CRON_SECRET bearer — fast path for CLI / ops automation. Matches
-  // the same constant used by portfolio/ship + cron/weekly-review so
-  // any existing ops script that hits those already has the right
-  // secret in hand.
-  if (
-    bearer &&
-    process.env.CRON_SECRET &&
-    bearer === process.env.CRON_SECRET
-  ) {
-    return null;
-  }
-  // Fall through to the shared admin auth (cookie session or
-  // omni_token base64 bearer).
-  const auth = await requireAdmin();
-  if ('error' in auth && auth.error) return auth.error;
-  return null;
-}
 
 export async function GET(req: Request, { params }: { params: { slug: string } }) {
-  const authErr = await authorize(req);
+  const authErr = await authorizeCronOrAdmin(req);
   if (authErr) return authErr;
 
   const slug = params.slug;
