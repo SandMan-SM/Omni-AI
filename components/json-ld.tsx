@@ -662,9 +662,24 @@ export function itemListSchema({
  * or Google will deprioritize the whole schema as misleading. Keep this
  * list in sync with components/footer.tsx footerLinks and the navbar.
  *
- * `position` is intentionally set — schema.org ItemList rendering keys
- * off position, and Google's knowledge graph prefers ordered navigation
- * entries over unordered ones.
+ * Byte-alignment with the visible nav (updated in Cycle 145):
+ *  - Labels match the visible link text verbatim. Previously the schema
+ *    shipped "Platform Details" while the navbar rendered "Infographic"
+ *    for the same /details URL — exactly the kind of name/href drift
+ *    that Google's SiteNavigation parser flags as a misleading manifest.
+ *    Now the schema says "Infographic" to match what the user actually
+ *    clicks.
+ *  - /book-now was removed. It's a CTA button in the navbar (onClick
+ *    opens a modal), not a SiteNavigationElement. Schema.org's
+ *    SiteNavigationElement is for page-to-page navigation — CTA buttons
+ *    that trigger modals don't qualify, and Google's crawler would
+ *    deprioritize the whole list for mis-typing one entry.
+ *  - /interlinked was added. The footer links to it (position 1 in
+ *    footerLinks) but the schema didn't list it — a genuine omission.
+ *
+ * `position` reflects surface priority: navbar items first (higher
+ * visibility), then footer-only items. Google's knowledge graph prefers
+ * ordered nav lists.
  */
 export const siteNavigationSchema = {
   "@context": "https://schema.org",
@@ -673,16 +688,24 @@ export const siteNavigationSchema = {
   itemListOrder: "https://schema.org/ItemListOrderAscending",
   numberOfItems: 10,
   itemListElement: [
+    // Navbar items (positions 1–6) — logo home + the 5 visible nav links
+    // in components/navbar.tsx. Labels are byte-aligned with the navLinks
+    // array in that file. If a navLink is added/removed/renamed, update
+    // this block in the same commit.
     { "@type": "SiteNavigationElement", position: 1, name: "Home", url: "https://omnileadsagi.com" },
-    { "@type": "SiteNavigationElement", position: 2, name: "About", url: "https://omnileadsagi.com/about" },
-    { "@type": "SiteNavigationElement", position: 3, name: "FAQ", url: "https://omnileadsagi.com/faq" },
-    { "@type": "SiteNavigationElement", position: 4, name: "Pricing", url: "https://omnileadsagi.com/pricing" },
-    { "@type": "SiteNavigationElement", position: 5, name: "Compare", url: "https://omnileadsagi.com/vs" },
-    { "@type": "SiteNavigationElement", position: 6, name: "Campaigns", url: "https://omnileadsagi.com/campaigns" },
-    { "@type": "SiteNavigationElement", position: 7, name: "Arena", url: "https://omnileadsagi.com/arena" },
-    { "@type": "SiteNavigationElement", position: 8, name: "Platform Details", url: "https://omnileadsagi.com/details" },
-    { "@type": "SiteNavigationElement", position: 9, name: "Newsletter", url: "https://omnileadsagi.com/newsletter" },
-    { "@type": "SiteNavigationElement", position: 10, name: "Book a Call", url: "https://omnileadsagi.com/book-now" },
+    { "@type": "SiteNavigationElement", position: 2, name: "Campaigns", url: "https://omnileadsagi.com/campaigns" },
+    { "@type": "SiteNavigationElement", position: 3, name: "Infographic", url: "https://omnileadsagi.com/details" },
+    { "@type": "SiteNavigationElement", position: 4, name: "Arena", url: "https://omnileadsagi.com/arena" },
+    { "@type": "SiteNavigationElement", position: 5, name: "Newsletter", url: "https://omnileadsagi.com/newsletter" },
+    { "@type": "SiteNavigationElement", position: 6, name: "Pricing", url: "https://omnileadsagi.com/pricing" },
+    // Footer-only items (positions 7–10) — appear in components/footer.tsx
+    // footerLinks. /privacy is excluded because it renders in the
+    // copyright line, not the main footer nav (conventional legal
+    // placement — including it here would over-promote legal boilerplate).
+    { "@type": "SiteNavigationElement", position: 7, name: "Interlinked", url: "https://omnileadsagi.com/interlinked" },
+    { "@type": "SiteNavigationElement", position: 8, name: "Compare", url: "https://omnileadsagi.com/vs" },
+    { "@type": "SiteNavigationElement", position: 9, name: "About", url: "https://omnileadsagi.com/about" },
+    { "@type": "SiteNavigationElement", position: 10, name: "FAQ", url: "https://omnileadsagi.com/faq" },
   ],
 };
 
