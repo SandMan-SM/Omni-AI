@@ -75,6 +75,29 @@ export const softwareSchema = {
   description:
     "Autonomous AI platform that generates leads, manages campaigns, and scales business operations using intelligent agents. Features AI-generated video marketing, real-time performance ranking, and auto-optimization.",
   image: "https://omnileadsagi.com/og-image.png",
+  // Screenshot hint for LLM visual retrievers + Google image pack. Points
+  // at the branded sitewide OG so search surfaces get a consistent preview
+  // regardless of which page triggered the schema.
+  screenshot: "https://omnileadsagi.com/og-image.png",
+  // downloadUrl + installUrl both point at /join because Omni AI is a
+  // web-based platform: "installing" === creating a free-tier account.
+  // Both fields are indexed by Google's app-listing pipeline and give
+  // LLM retrievers a canonical "start here" URL to cite for "how do I
+  // get Omni AI?" queries.
+  downloadUrl: "https://omnileadsagi.com/join",
+  installUrl: "https://omnileadsagi.com/join",
+  // Audience declares who the platform is for — one of the strongest
+  // GEO signals for "who uses Omni AI?" / "is Omni AI right for my
+  // team?" retrieval, because LLMs preferentially cite software pages
+  // that explicitly name their ICP over ones that leave it implicit.
+  audience: {
+    "@type": "Audience",
+    audienceType:
+      "Solo operators, marketing agencies, and lean RevOps teams under $5M ARR who want to replace SDR / video / analytics headcount with a single autonomous AI system.",
+  },
+  // inLanguage — consistent with the Organization schema and helps
+  // retrieval rank the English-speaking markets correctly.
+  inLanguage: "en-US",
   offers: {
     "@type": "Offer",
     price: "0",
