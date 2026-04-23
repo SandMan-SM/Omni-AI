@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logEvent } from '@/lib/events';
 import { headers } from 'next/headers';
+import { sanitizeText } from '@/lib/validation';
+import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 /**
  * Lightweight event tracking endpoint.
@@ -17,11 +19,9 @@ import { headers } from 'next/headers';
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-
-    // Pull referrer + forwarded IP from headers so the client payload can't
-    // spoof them. IP is optional (not every edge has a reliable value) — we
-    // store it for abuse detection but don't depend on it.
+    // Pull forwarded IP from headers — same extraction the rate limiter
+    // does, but we already need it here for the properties.ip enrichment
+    // below so we pass it through instead of importing getClientIp twice.
     const hdrs = await headers();
     const referer = hdrs.get('referer') || hdrs.get('referrer') || null;
     const forwarded =
@@ -30,32 +30,88 @@ export async function POST(request: Request) {
       null;
     const ip = forwarded ? forwarded.split(',')[0].trim() : null;
 
+    // Rate-limit FIRST. This endpoint is called on every route change
+    // + every click via <SiteTracker />, so the ceiling has to be much
+    // looser than the 3-per-10-min on lead forms. 120 events/min per IP
+    // = 2/sec average with burst headroom for a busy user clicking
+    // through a gallery. Anything above that is a loop / scraper and
+    // we'd rather lose a few events than let the events table grow
+    // unbounded from one malicious source.
+    const rl = rateLimit(`events-track:${ip || 'unknown'}`, 120, 60 * 1000);
+    if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
+    const body = await request.json();
+
     const sb = createAdminClient();
 
-    // Merge server-trusted context into the client payload's `properties`.
+    // Cap every string field before it hits the DB. Previously each of
+    // value_text, page_url, user_agent, and every nested `properties.*`
+    // was unbounded — a malicious POST could stuff megabytes into one
+    // events row and, over many hits, bloat the table past whatever
+    // budget we've planned for. Caps are generous (longer than any
+    // legitimate value) but finite.
     const clientProps =
       body.properties && typeof body.properties === 'object' ? body.properties : {};
+
+    // Cap total properties JSON to 4KB by truncating the serialized form
+    // if it's oversized. We keep the keys but replace the payload with
+    // a marker so downstream consumers can tell a truncation happened.
+    let safeClientProps: Record<string, unknown> = clientProps;
+    try {
+      const serialized = JSON.stringify(clientProps);
+      if (serialized.length > 4096) {
+        safeClientProps = { _truncated: true, _size: serialized.length };
+      }
+    } catch {
+      safeClientProps = { _truncated: true, _reason: 'unserializable' };
+    }
+
     const properties = {
-      ...clientProps,
+      ...safeClientProps,
       // Only set referer from the header if the client didn't provide one.
-      referrer: clientProps.referrer ?? referer,
+      referrer:
+        typeof (clientProps as { referrer?: unknown }).referrer === 'string'
+          ? sanitizeText((clientProps as { referrer?: unknown }).referrer, 2048)
+          : referer,
       ip: ip || undefined,
     };
 
+    // Whitelist actor_type against the DB's CHECK constraint. The
+    // events table (supabase/migrations/016_events_table.sql line 9)
+    // only allows 'user' | 'system' | 'ai_agent' | 'cron' | 'webhook'.
+    // The previous code defaulted to 'visitor' here, which was silently
+    // being rejected by Postgres on every visitor pageview and swallowed
+    // by logEvent's try/catch. Every anonymous pageview tracked ZERO.
+    // Fall back to 'user' (the semantically-closest allowed value) so
+    // the row actually persists.
+    const ALLOWED_ACTOR_TYPES = ['user', 'system', 'ai_agent', 'cron', 'webhook'] as const;
+    type ActorType = (typeof ALLOWED_ACTOR_TYPES)[number];
+    const rawActorType = sanitizeText(body.actor_type, 50);
+    const actorType: ActorType = (ALLOWED_ACTOR_TYPES as readonly string[]).includes(
+      rawActorType,
+    )
+      ? (rawActorType as ActorType)
+      : 'user';
+
     await logEvent(sb, {
-      actor_type: body.actor_type || 'visitor',
-      actor_id: body.actor_id,
-      event_type: body.event_type || 'page_view',
-      event_category: body.event_category || 'navigation',
-      action: body.action || 'view',
-      target_type: body.target_type,
-      target_id: body.target_id,
-      page_url: body.page_url,
-      session_id: body.session_id,
-      user_agent: body.user_agent || hdrs.get('user-agent') || undefined,
-      value_numeric: body.value_numeric,
-      value_text: body.value_text,
-      duration_ms: body.duration_ms,
+      actor_type: actorType,
+      actor_id: sanitizeText(body.actor_id, 100),
+      event_type: sanitizeText(body.event_type, 100) || 'page_view',
+      event_category: sanitizeText(body.event_category, 50) || 'navigation',
+      action: sanitizeText(body.action, 50) || 'view',
+      target_type: sanitizeText(body.target_type, 100) || undefined,
+      target_id: sanitizeText(body.target_id, 100) || undefined,
+      page_url: sanitizeText(body.page_url, 2048) || undefined,
+      session_id: sanitizeText(body.session_id, 100) || undefined,
+      user_agent:
+        sanitizeText(body.user_agent, 500) ||
+        hdrs.get('user-agent')?.slice(0, 500) ||
+        undefined,
+      // Leave numeric and duration as-is — Supabase will reject non-numbers
+      // with a constraint error rather than silently accept garbage.
+      value_numeric: typeof body.value_numeric === 'number' ? body.value_numeric : undefined,
+      value_text: sanitizeText(body.value_text, 500) || undefined,
+      duration_ms: typeof body.duration_ms === 'number' ? body.duration_ms : undefined,
       properties,
     });
 
