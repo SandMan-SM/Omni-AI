@@ -393,3 +393,70 @@ export function itemListSchema({
     })),
   };
 }
+
+/**
+ * Product + multi-Offer schema for /pricing. SoftwareApplication in the
+ * sitewide layout already declares a single `offers` (free tier), but the
+ * pricing page is where Google renders Pricing rich results — star chips,
+ * "From $0" price chips, and the CTA label — for high-intent queries like
+ * "Omni AI pricing" / "Omni AI cost". Google's Pricing rich result
+ * specifically keys off Product + `offers` array, not SoftwareApplication
+ * alone. Shipping this on /pricing makes the SERP card richer than a plain
+ * blue-link result and gives LLM retrievers a typed answer for the "how
+ * much does Omni AI cost?" question they get in every comparison thread.
+ *
+ * reviewCount / ratingValue mirror softwareSchema.aggregateRating so
+ * cross-page consistency checks in Search Console stay clean. If the
+ * testimonial count in softwareSchema.review changes, update both.
+ *
+ * The paid offer deliberately omits `price` — per-contract pricing means
+ * publishing a specific number would be stale within weeks. Offer still
+ * works without `price` as long as `priceCurrency` + `availability` are
+ * present. Google renders the free-tier price as the headline chip and
+ * treats the paid tier as an additional option.
+ */
+export const pricingProductSchema = {
+  "@context": "https://schema.org",
+  "@type": "Product",
+  name: "Omni AI",
+  description:
+    "Autonomous AI lead generation and business automation platform. Free tier with campaign generation and the AI Agent Arena, paid tiers with autonomous outbound, priority model access, and custom integrations.",
+  brand: { "@type": "Brand", name: "Omni AI" },
+  image: "https://omnileadsagi.com/og-image.png",
+  url: "https://omnileadsagi.com/pricing",
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "5",
+    bestRating: "5",
+    worstRating: "1",
+    reviewCount: "3",
+  },
+  offers: [
+    {
+      "@type": "Offer",
+      name: "Free Tier",
+      price: "0",
+      priceCurrency: "USD",
+      url: "https://omnileadsagi.com/join",
+      availability: "https://schema.org/InStock",
+      category: "Free",
+      description:
+        "Campaign generation, AI Agent Arena for benchmarking, daily trending topic pages, community support. Permanent free tier — not a trial.",
+    },
+    {
+      "@type": "Offer",
+      name: "Paid Tier",
+      url: "https://omnileadsagi.com/book-now",
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      category: "Subscription",
+      description:
+        "Autonomous outbound, priority model access, custom integrations, Interlinked Premium, dedicated support. Custom pricing mapped to revenue target via a free 30-minute strategy call.",
+      priceSpecification: {
+        "@type": "PriceSpecification",
+        priceCurrency: "USD",
+        valueAddedTaxIncluded: false,
+      },
+    },
+  ],
+};

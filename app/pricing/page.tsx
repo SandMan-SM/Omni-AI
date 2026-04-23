@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { JsonLd, faqPageSchema, breadcrumbSchema } from "@/components/json-ld";
+import {
+  JsonLd,
+  faqPageSchema,
+  breadcrumbSchema,
+  pricingProductSchema,
+} from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 
@@ -111,6 +116,15 @@ export default function PricingPage() {
           { name: "Pricing", url: pageUrl },
         ])}
       />
+      {/* Product + multi-Offer schema — unlocks Google Pricing rich
+          results for "Omni AI pricing" / "Omni AI cost" queries. Pairs
+          with the faqPageSchema above so a single SERP card can render
+          the price chip AND the FAQ accordion — the highest-density
+          result format for commercial-intent queries. See the factory
+          in components/json-ld.tsx for why the paid Offer omits an
+          explicit price and how the aggregateRating stays synced with
+          softwareSchema. */}
+      <JsonLd data={pricingProductSchema} />
 
       {/* Header */}
       <header className="border-b border-white/5 backdrop-blur-md bg-black/40">
