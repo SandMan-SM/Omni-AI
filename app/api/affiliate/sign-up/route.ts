@@ -88,20 +88,36 @@ export async function POST(request: Request) {
     const phoneEsc = escapeHtml(phone);
     const audienceEsc = escapeHtml(audience) || '&mdash;';
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [OWNER_EMAIL],
-        subject: `New affiliate signup: ${name}`,
-        html: `<h2>New affiliate signup</h2>
+    // reply_to = the affiliate's email so the owner can hit Reply on
+    // the notification and respond to the signup directly. Previously
+    // the .catch was our only error surface — a Resend 4xx/5xx body
+    // silently succeeded and the reported `[affiliate/sign-up] Email
+    // error` log only fired on network-level fetch failures. Check
+    // res.ok so API-level errors (bad domain / quota / key rotation)
+    // also get logged with their status code.
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [OWNER_EMAIL],
+          reply_to: email,
+          subject: `New affiliate signup: ${name}`,
+          html: `<h2>New affiliate signup</h2>
 <p><strong>Name:</strong> ${nameEsc}</p>
 <p><strong>Email:</strong> ${emailEsc}</p>
 <p><strong>Phone:</strong> ${phoneEsc}</p>
 <p><strong>Audience:</strong> ${audienceEsc}</p>`,
-      }),
-    }).catch((e) => console.error('[affiliate/sign-up] Email error:', e));
+        }),
+      });
+      if (!res.ok) {
+        const bodyText = await res.text().catch(() => '<no body>');
+        console.error(`[affiliate/sign-up] resend ${res.status}: ${bodyText.slice(0, 300)}`);
+      }
+    } catch (e) {
+      console.error('[affiliate/sign-up] Email error:', e);
+    }
   }
 
   return NextResponse.json({ success: true });

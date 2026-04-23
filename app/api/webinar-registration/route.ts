@@ -147,11 +147,14 @@ export async function POST(request: Request) {
         }).catch(err => console.error('Failed to send registrant email:', err))
       );
 
-      // Notification to owner
+      // Notification to owner — replyTo is the registrant's email so
+      // the owner can hit Reply and respond directly to the registrant
+      // instead of the bookings@ sender address.
       emailPromises.push(
         sendEmail({
           from: FROM_EMAIL,
           to: OWNER_EMAIL,
+          replyTo: row.email,
           subject: `New Training Registration: ${fullName} — ${dateFormatted} at ${row.session_time}`,
           html: buildOwnerEmail({ name: fullNameEsc, email: emailEsc, phone: phoneEsc, dateFormatted, time: row.session_time }),
           attachments: [{
@@ -190,23 +193,26 @@ export async function POST(request: Request) {
 async function sendEmail(params: {
   from: string;
   to: string;
+  replyTo?: string;
   subject: string;
   html: string;
   attachments?: { filename: string; content: string; content_type: string }[];
 }) {
+  const body: Record<string, unknown> = {
+    from: params.from,
+    to: [params.to],
+    subject: params.subject,
+    html: params.html,
+    attachments: params.attachments,
+  };
+  if (params.replyTo) body.reply_to = params.replyTo;
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      from: params.from,
-      to: [params.to],
-      subject: params.subject,
-      html: params.html,
-      attachments: params.attachments,
-    }),
+    body: JSON.stringify(body),
   });
 
   if (!res.ok) {

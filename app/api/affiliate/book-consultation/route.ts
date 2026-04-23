@@ -90,20 +90,33 @@ export async function POST(request: Request) {
     const phoneEsc = escapeHtml(phone);
     const goalEsc = escapeHtml(goal) || '&mdash;';
 
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [OWNER_EMAIL],
-        subject: `Affiliate consultation request: ${name}`,
-        html: `<h2>New affiliate consultation request</h2>
+    // reply_to = requester's email so Reply responds to them directly.
+    // Also check res.ok so Resend API-level errors (bad domain / quota
+    // / key rotation) surface in logs — the prior .catch-only path
+    // masked everything except network-level fetch failures.
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [OWNER_EMAIL],
+          reply_to: email,
+          subject: `Affiliate consultation request: ${name}`,
+          html: `<h2>New affiliate consultation request</h2>
 <p><strong>Name:</strong> ${nameEsc}</p>
 <p><strong>Email:</strong> ${emailEsc}</p>
 <p><strong>Phone:</strong> ${phoneEsc}</p>
 <p><strong>Goal:</strong> ${goalEsc}</p>`,
-      }),
-    }).catch((e) => console.error('[affiliate/book-consultation] Email error:', e));
+        }),
+      });
+      if (!res.ok) {
+        const bodyText = await res.text().catch(() => '<no body>');
+        console.error(`[affiliate/book-consultation] resend ${res.status}: ${bodyText.slice(0, 300)}`);
+      }
+    } catch (e) {
+      console.error('[affiliate/book-consultation] Email error:', e);
+    }
   }
 
   return NextResponse.json({ success: true });

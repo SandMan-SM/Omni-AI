@@ -17,16 +17,48 @@ const OWNER_EMAIL = "sitanim8@gmail.com";
 const FROM_EMAIL = "Omni AI <bookings@omnileadsagi.com>";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
 
-async function sendEmail(to: string, subject: string, html: string) {
+async function sendEmail(
+  to: string,
+  subject: string,
+  html: string,
+  opts: { replyTo?: string } = {},
+) {
   if (!RESEND_API_KEY) return;
-  await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ from: FROM_EMAIL, to: [to], subject, html }),
-  });
+  const payload: Record<string, unknown> = {
+    from: FROM_EMAIL,
+    to: [to],
+    subject,
+    html,
+  };
+  // Resend accepts `reply_to` as either a string or an array. A string
+  // is simpler and matches the 1:1 "reply to this lead" semantic — the
+  // owner hits Reply on the notification email and lands in a compose
+  // addressed to the lead, not to the bookings inbox.
+  if (opts.replyTo) payload.reply_to = opts.replyTo;
+
+  // Previously this was fire-and-forget: if Resend 4xx'd or 5xx'd the
+  // call just resolved silently and the route still returned success.
+  // That made triage for "I never got the email" reports impossible.
+  // Capture the response so a broken API key / blocked domain / quota
+  // overrun shows up in Vercel logs with enough context to act on.
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const bodyText = await res.text().catch(() => "<no body>");
+      console.error(
+        `[landing-lead] resend ${res.status} to=${to}: ${bodyText.slice(0, 300)}`,
+      );
+    }
+  } catch (err) {
+    console.error("[landing-lead] resend fetch failed", to, err);
+  }
 }
 
 export async function POST(request: Request) {
@@ -123,7 +155,9 @@ export async function POST(request: Request) {
     const tierEsc = escapeHtml(tier);
     const firstNameEsc = escapeHtml(name.split(" ")[0] || name);
 
-    // 3. Notify owner
+    // 3. Notify owner — Reply-To is the lead's email so the owner can
+    // hit Reply in any mail client and respond to the lead directly,
+    // instead of the reply going to bookings@omnileadsagi.com.
     await sendEmail(
       OWNER_EMAIL,
       `New Lead from omnileadsagi.com/${slugEsc}`,
@@ -139,7 +173,8 @@ export async function POST(request: Request) {
           <tr><td style="padding:10px 0;font-weight:600;">Landing Page</td><td style="padding:10px 0;"><a href="${pageUrlEsc}" style="color:#6366f1;">${pageUrlEsc}</a></td></tr>
         </table>
       </div>
-      `
+      `,
+      { replyTo: email },
     );
 
     // 4. Thank-you email to lead
