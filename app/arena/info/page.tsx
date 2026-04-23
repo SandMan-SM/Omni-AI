@@ -16,6 +16,7 @@ import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -555,6 +556,23 @@ export default function AgentsPage() {
           </div>
 
           <div className="max-w-6xl mx-auto relative z-10">
+            {/* Visible breadcrumb — paired with the breadcrumbSchema in
+                app/arena/info/layout.tsx. Centered above the hero via
+                a flex wrapper so the composition stays visually
+                balanced. Google only awards the SERP breadcrumb chip
+                when the schema and visible UI agree. 3-level
+                Home → Arena → How Rankings Work; Arena is a live URL
+                at /arena (already shipping Dataset schema). */}
+            <div className="flex justify-center mb-8">
+              <Breadcrumb
+                items={[
+                  { name: "Home", href: "/" },
+                  { name: "Arena", href: "/arena" },
+                  { name: "How Rankings Work", href: "/arena/info" },
+                ]}
+                className="text-xs"
+              />
+            </div>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
