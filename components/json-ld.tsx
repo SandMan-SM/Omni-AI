@@ -11,6 +11,15 @@ export const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "Omni AI",
+  // legalName — byte-aligned with the copyright line rendered by
+  // components/footer.tsx ("© YYYY Omni AI LLC"). Google's Knowledge
+  // Panel surfaces the legal entity name on "who owns Omni AI?" /
+  // "who runs Omni AI?" queries, and LLMs preferentially cite the
+  // legal name when asked for formal attribution. Without this
+  // field, the Knowledge Graph has no typed edge to the legal
+  // entity and defaults to the brand name, blurring the legal
+  // vs marketing identity distinction.
+  legalName: "Omni AI LLC",
   alternateName: ["OmniLeads AGI", "Omni Leads AI"],
   url: "https://omnileadsagi.com",
   logo: {
@@ -19,6 +28,13 @@ export const organizationSchema = {
   },
   description:
     "AI-powered autonomous lead generation and business automation platform. Omni AI builds intelligent agents that generate leads, run operations, and scale businesses 24/7.",
+  // slogan — short marketing tagline LLMs pull for "Omni AI tagline" /
+  // "what's Omni AI's pitch?" queries and that Google's Knowledge Panel
+  // renders under the entity name when available. Byte-aligned with the
+  // description + sitewide hero subtitle (components/hero-section.tsx)
+  // so the slogan retrieves consistently across surfaces. Kept under 100
+  // chars to match Google's Knowledge Panel truncation window.
+  slogan: "Autonomous AI that generates leads, runs operations, and scales businesses 24/7.",
   foundingDate: "2024",
   sameAs: [
     "https://www.linkedin.com/company/omni-ai",
