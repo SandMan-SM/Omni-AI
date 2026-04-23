@@ -31,7 +31,11 @@ export async function POST(req: Request) {
 
     if (error) throw error;
     return NextResponse.json(data);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    console.error('[agents/visual-errors] POST error:', err);
+    return NextResponse.json(
+      { error: "We couldn't record that visual error. Please try again." },
+      { status: 500 },
+    );
   }
 }

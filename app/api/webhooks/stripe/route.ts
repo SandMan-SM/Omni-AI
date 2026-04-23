@@ -56,9 +56,13 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ received: true });
-  } catch (err: any) {
-    console.error(`[Stripe Webhook] Error handling ${event.type}:`, err.message);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    // Log the raw error server-side only; the webhook response goes back
+    // to Stripe (not an end user), but there's still no reason to return
+    // the raw Postgres/JS error text. Stripe only needs a non-2xx to
+    // schedule a retry.
+    console.error(`[Stripe Webhook] Error handling ${event.type}:`, err);
+    return NextResponse.json({ error: 'Webhook handler failed' }, { status: 500 });
   }
 }
 

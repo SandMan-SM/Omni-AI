@@ -46,13 +46,30 @@ export async function POST(request: Request) {
     const tier = sub?.subscription_tier || "none";
 
     // 2. Insert lead into Supabase
-    await supabase.from("landing_page_leads").insert({
-      slug,
-      name: name.trim(),
-      phone: phone.trim(),
-      email: email.toLowerCase().trim(),
-      is_newsletter_subscriber: isSubscriber,
-    });
+    //
+    // Previously this was a fire-and-forget insert — if the DB write failed
+    // (RLS change, schema drift, connection error) the route still returned
+    // `{ success: true }` and the user saw the "You're in" confirmation
+    // screen while the lead silently dropped. Capture the error, log it
+    // server-side, and surface a generic 500 so the client-side catch in
+    // LeadForm re-shows the "something went wrong" message and the user
+    // can retry.
+    const { error: insertError } = await supabase
+      .from("landing_page_leads")
+      .insert({
+        slug,
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.toLowerCase().trim(),
+        is_newsletter_subscriber: isSubscriber,
+      });
+    if (insertError) {
+      console.error("[landing-lead] insert error:", insertError);
+      return NextResponse.json(
+        { error: "We couldn't save your submission. Please try again." },
+        { status: 500 },
+      );
+    }
 
     // 3. Notify owner
     await sendEmail(

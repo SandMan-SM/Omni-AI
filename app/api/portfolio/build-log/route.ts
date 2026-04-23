@@ -19,6 +19,12 @@ export async function GET(req: Request) {
   if (client) q = q.eq('client_slug', client);
 
   const { data, error } = await q;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[portfolio/build-log] query error:', error);
+    return NextResponse.json(
+      { error: "We couldn't load the build log. Please try again." },
+      { status: 500 },
+    );
+  }
   return NextResponse.json({ entries: data || [] });
 }

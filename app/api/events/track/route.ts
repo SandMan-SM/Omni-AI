@@ -60,7 +60,11 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ ok: true });
-  } catch {
+  } catch (e) {
+    // Log the raw error server-side so silent tracking failures are
+    // visible in the logs. The response stays generic — the client
+    // fire-and-forgets this call and doesn't need the details.
+    console.error("[events/track] failed:", e);
     return NextResponse.json({ ok: false }, { status: 500 });
   }
 }

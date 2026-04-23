@@ -95,7 +95,11 @@ export async function GET() {
     .order('elo_rating', { ascending: false });
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[agents/rankings] profiles query error:', error);
+    return NextResponse.json(
+      { error: "We couldn't load the rankings. Please try again." },
+      { status: 500 },
+    );
   }
 
   // Get activity counts per profile
