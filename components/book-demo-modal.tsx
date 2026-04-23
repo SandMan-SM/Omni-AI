@@ -11,6 +11,12 @@ import { apiRequest } from "@/lib/queryClient";
 interface BookDemoModalProps {
   isOpen: boolean;
   onClose: () => void;
+  // Per-page heading override. Defaults to "Book a Demo" so every
+  // existing caller keeps its current wording; /book-now passes
+  // "Book a Consultation" because that page is framed around a
+  // no-pitch free conversation, not a product demo.
+  heading?: string;
+  subheading?: string;
 }
 
 const purposeOptions = [
@@ -75,7 +81,12 @@ const generateCalendarMonth = (year: number, month: number) => {
   return days;
 };
 
-export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
+export function BookDemoModal({
+  isOpen,
+  onClose,
+  heading = "Book a Demo",
+  subheading = "Let's explore how Omni AI can transform your business",
+}: BookDemoModalProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user } = useAuth();
@@ -224,7 +235,13 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3 }}
-          className="relative w-full max-w-md glass-card neon-border rounded-2xl p-6 md:p-8 max-h-[90vh] overflow-y-auto"
+          // p-8 md:p-10 (was p-6 md:p-8) — the submit buttons inside this
+          // modal carry `neon-glow` (a 20–40px box-shadow). With only 24–32px
+          // of padding the glow bled past the padded area and overlapped the
+          // .neon-border gradient pseudo-element. 32–40px of padding keeps
+          // every CTA — including its glow — fully inside the border on
+          // every viewport.
+          className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -340,7 +357,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                   <Button
                     type="submit"
                     disabled={!isFormValid}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg neon-glow"
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg shadow-[0_0_18px_rgba(139,92,246,0.35)] mt-2"
                     data-testid="button-submit-demo"
                   >
                     Submit Request
@@ -455,7 +472,7 @@ export function BookDemoModal({ isOpen, onClose }: BookDemoModalProps) {
                 <Button
                   onClick={handleComplete}
                   disabled={!selectedDate || !selectedTime || isSubmitting}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg neon-glow"
+                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg shadow-[0_0_18px_rgba(139,92,246,0.35)] mt-2"
                   data-testid="button-complete-booking"
                 >
                   {isSubmitting ? (

@@ -2,6 +2,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
 import { unstable_noStore as noStore } from "next/cache";
+import { Mail, Users, Eye } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 
 export const metadata: Metadata = {
@@ -79,9 +80,9 @@ export default async function NewsletterIndexPage() {
   const viewersCount = Math.max(viewersEstimate, IMPRESSIONS_FLOOR);
 
   const stats = [
-    { value: String(postsSent), label: "Issues Sent" },
-    { value: String(subscribersCount), label: "Subscribers" },
-    { value: fmtCompact(viewersCount), label: "Viewers" },
+    { icon: Mail, value: String(postsSent), label: "Issues Sent" },
+    { icon: Users, value: String(subscribersCount), label: "Subscribers" },
+    { icon: Eye, value: fmtCompact(viewersCount), label: "Viewers" },
   ];
 
   return (
@@ -101,19 +102,32 @@ export default async function NewsletterIndexPage() {
           </p>
         </div>
 
-        {/* Stats row — live counts from Supabase with floors for reach. */}
-        <div className="mb-12 grid grid-cols-3 gap-px rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.08] backdrop-blur-sm">
+        {/* Stats row — same visual pattern as the home page hero metrics:
+            purple icon, white→purple→cyan gradient number, small label.
+            No card frame; the space backdrop shows through behind it. */}
+        <div className="mb-12 grid grid-cols-3 gap-4 sm:gap-14 md:gap-20 w-full max-w-xl mx-auto px-2">
           {stats.map((s) => (
             <div
               key={s.label}
-              className="bg-[#0a0a12]/80 px-4 py-5 sm:px-6 sm:py-7 flex flex-col items-center text-center gap-1.5"
+              className="flex flex-col items-center text-center gap-2"
+              data-testid={`metric-${s.label.toLowerCase().replace(/\s+/g, "-")}`}
             >
-              <div className="text-2xl sm:text-4xl font-bold tracking-tight tabular-nums text-gradient leading-none">
+              <s.icon className="w-5 h-5 text-purple-400" />
+              <span
+                className="text-2xl md:text-3xl font-bold tabular-nums"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #67e8f9 100%)",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
                 {s.value}
-              </div>
-              <div className="text-[10px] sm:text-[11px] font-mono uppercase tracking-[0.16em] text-gray-500">
+              </span>
+              <span className="text-[11px] sm:text-xs text-gray-500 tracking-wide">
                 {s.label}
-              </div>
+              </span>
             </div>
           ))}
         </div>

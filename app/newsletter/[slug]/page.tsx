@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { unstable_noStore as noStore } from "next/cache";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { ShareButton } from "@/components/share-button";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -74,6 +75,11 @@ export default async function NewsletterPostPage({ params }: Props) {
   // Ensure the counter reflects what actually renders in the list below.
   const tagsToShow = (post.keywords || []).slice(0, 11);
 
+  // Share metadata for the Web Share API (native share sheet on mobile +
+  // modern desktop). Clipboard-copy fallback lives in the ShareButton.
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
+  const postUrl = `${siteUrl}/newsletter/${slug}`;
+
   return (
     // No opaque bg — FireSparksBackdrop (and its dark radial wash) paints
     // through. This is the same backdrop used on /arena.
@@ -137,20 +143,18 @@ export default async function NewsletterPostPage({ params }: Props) {
           )}
         </div>
 
-        {/* Quote — clean card. No decorative glyph (was blocking the text),
-            no left-edge stripe. Uniform rounded-3xl corners, soft accent
-            border + subtle tinted bg, generous padding so the quote
-            breathes from the edges. */}
+        {/* Quote — left-aligned blockquote indented past the paragraph
+            edge. Neutral lighter card bg so the quote reads clearly against
+            the fire-spark backdrop; accent border stays subtle. Generous
+            top/bottom padding so the quote has room to breathe. */}
         {post.quote && (
           <figure
-            className={`mt-8 mb-12 rounded-3xl border px-8 py-9 sm:px-12 sm:py-12 ${
-              isPremium
-                ? "border-amber-500/25 bg-amber-500/[0.04]"
-                : "border-purple-500/25 bg-purple-500/[0.04]"
+            className={`mt-8 mb-12 ml-4 sm:ml-10 rounded-3xl border bg-white/[0.06] px-8 py-12 sm:px-12 sm:py-14 backdrop-blur-sm ${
+              isPremium ? "border-amber-500/30" : "border-purple-500/30"
             }`}
           >
             <blockquote>
-              <p className="text-lg md:text-xl text-gray-100 italic leading-[1.75] text-center">
+              <p className="text-lg md:text-xl text-gray-100 italic leading-[1.75] text-left">
                 &ldquo;{post.quote}&rdquo;
               </p>
             </blockquote>
@@ -186,15 +190,11 @@ export default async function NewsletterPostPage({ params }: Props) {
           </p>
         </div>
 
-        {/* CTA — recap + simple offer + scheduler link */}
-        <div
-          className={`mb-10 rounded-2xl border p-7 sm:p-9 text-center backdrop-blur-sm ${
-            isPremium ? "border-amber-500/30 bg-amber-500/[0.04]" : "border-purple-500/30 bg-purple-500/[0.04]"
-          }`}
-        >
-          <p className={`text-[11px] font-mono uppercase tracking-[0.2em] mb-3 ${isPremium ? "text-amber-400" : "text-purple-400"}`}>
-            Want this applied to your business?
-          </p>
+        {/* CTA — recap + scheduler link + share. Gold styling on every
+            post (not just premium) so the button reads as the headline
+            action. Share icon sits to the right of the primary button
+            and opens the user's mail client with the post URL prefilled. */}
+        <div className="mb-10 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] p-7 sm:p-9 text-center backdrop-blur-sm">
           <h3 className="text-xl md:text-2xl font-semibold text-white mb-3 leading-snug">
             {post.subject}
           </h3>
@@ -208,17 +208,28 @@ export default async function NewsletterPostPage({ params }: Props) {
           {post.offer && (
             <p className="text-gray-400 text-sm italic mb-5">{post.offer}</p>
           )}
-          <Link
-            href="/book-now"
-            className={`inline-flex items-center gap-2 px-8 py-3 rounded-xl font-semibold text-sm transition-opacity hover:opacity-90 ${
-              isPremium
-                ? "bg-gradient-to-r from-amber-500 to-amber-400 text-black"
-                : "bg-gradient-to-r from-purple-600 to-blue-600 text-white"
-            }`}
-          >
-            Schedule a Meeting
-            <span aria-hidden>&rarr;</span>
-          </Link>
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <Link
+              href="/book-now"
+              style={{
+                // Same chrome-gold gradient border trick as the share
+                // button — dark interior on padding-box + chrome-gold
+                // gradient on border-box + transparent 2px border.
+                background:
+                  "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.55)) padding-box, " +
+                  "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%) border-box",
+                border: "2px solid transparent",
+              }}
+              className="inline-flex items-center justify-center px-8 h-11 rounded-xl font-semibold text-sm text-[#ffd700] shadow-[0_0_12px_rgba(255,215,0,0.35)] transition-all hover:brightness-125 active:scale-[0.98]"
+            >
+              Schedule a Meeting
+            </Link>
+            <ShareButton
+              title={`Interlinked: ${post.subject}`}
+              text={post.intro || undefined}
+              url={postUrl}
+            />
+          </div>
           <p className="text-xs text-gray-500 mt-4">
             30 minutes · free · no obligation
           </p>

@@ -72,7 +72,10 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="relative w-full max-w-md glass-card neon-border rounded-2xl p-6 md:p-8"
+            // p-8 md:p-10 (was p-6 md:p-8) — keeps the submit button's
+            // shadow fully contained inside the .neon-border gradient on
+            // every viewport. See the matching comment in book-demo-modal.
+            className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -141,7 +144,7 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg neon-glow"
+                className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg shadow-[0_0_18px_rgba(139,92,246,0.35)] mt-2"
                 data-testid="button-auth-submit"
               >
                 {isLoading ? (

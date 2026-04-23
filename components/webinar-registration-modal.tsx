@@ -182,7 +182,11 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
             </button>
 
             {isConfirmed ? (
-              <div className="p-8 text-center">
+              // p-10 (was p-8) — the Reserve button below uses neon-glow
+              // (20–40px shadow). With only 32px of inner padding the glow
+              // was overlapping the outer .neon-border. 40px keeps every
+              // CTA fully contained on every viewport.
+              <div className="p-10 text-center">
                 <motion.div
                   initial={{ scale: 0 }}
                   animate={{ scale: 1 }}
@@ -235,7 +239,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                 </div>
               </div>
             ) : (
-              <div className="p-8">
+              <div className="p-10">
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-2 pr-8">
                   Your Own Private AI CEO Will Run Your Business While You Sleep!
                 </h3>
@@ -368,7 +372,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
                     <Button
                       type="submit"
                       disabled={mutation.isPending}
-                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 rounded-md neon-glow mt-2"
+                      className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-6 rounded-md shadow-[0_0_18px_rgba(139,92,246,0.35)] mt-2"
                       data-testid="button-reserve-seat"
                     >
                       {mutation.isPending ? (
