@@ -4,63 +4,39 @@ import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
 const siteUrl = "https://omnileadsagi.com";
 const pageUrl = `${siteUrl}/sponsor`;
 
-export const metadata: Metadata = {
-  title: "Sponsor Omni AI — Partner with an AI-Powered Marketing Agency",
-  description:
-    "Become a sponsor of Omni AI. Partner with us to fund AI-managed marketing campaigns for local businesses and gain brand visibility across our ecosystem.",
-  keywords: [
-    "Omni AI sponsor",
-    "AI marketing sponsor",
-    "business sponsorship",
-    "AI agency partner",
-    "marketing partnership",
-    "sponsor Interlinked newsletter",
-    "newsletter sponsorship",
-  ],
-  alternates: { canonical: pageUrl },
-  openGraph: {
-    title: "Sponsor Omni AI — Partner with an AI-Powered Marketing Agency",
-    description:
-      "Partner with Omni AI to fund AI-managed marketing for local businesses and gain brand visibility.",
-    url: pageUrl,
-    siteName: "Omni AI",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Sponsor Omni AI — Partner with an AI-Powered Marketing Agency",
-    description:
-      "Partner with Omni AI to fund AI-managed marketing for local businesses and gain brand visibility.",
-  },
-};
-
-// WebPage + ContactPage (union type via additionalType) — /sponsor is
-// both a marketing page about partnership AND a contact surface for
-// prospective sponsors to reach out. Dual-typing it gives Google +
-// LLMs the widest retrieval surface: "sponsor Omni AI", "Omni AI
-// partnership", "sponsor Interlinked newsletter", and "contact Omni
-// AI for partnership" all resolve to this page with the correct intent.
+// /sponsor is a logged-in sponsor portal, not a public marketing page.
+// The page body (app/sponsor/page.tsx) shows live sponsored-client
+// activity (ships, MRR, leads) for authenticated sponsors; unauthenticated
+// visitors get a "Sign in" view that routes them to /sponsor/info for
+// public marketing content.
 //
-// mainEntity explicitly declares the Organization being sponsored —
-// Google's partnership / sponsorship retrieval patterns look for this
-// field to disambiguate the sponsoree from the sponsor.
-const sponsorWebPageSchema = {
-  "@context": "https://schema.org",
-  "@type": "WebPage",
-  additionalType: "https://schema.org/ContactPage",
-  name: "Sponsor Omni AI — Partnership & Sponsorship Opportunities",
+// Previously this layout shipped public-marketing metadata + a WebPage
+// schema claiming it was "Sponsor Omni AI — Partner with an AI-Powered
+// Marketing Agency", which was a content-schema mismatch Google and
+// LLM retrievers flag as a thin-content / doorway-page signal. The fix:
+//
+//   1. robots: noindex, nofollow — don't index a portal page
+//   2. Drop the false public-marketing WebPage schema entirely
+//   3. Keep the breadcrumbSchema (navigation affordance for /sponsor/info
+//      and /sponsor/application breadcrumbs that use /sponsor as the
+//      middle crumb — Google accepts noindex middles in breadcrumb chains)
+//   4. Honest portal-intent metadata title/description
+//   5. /sponsor removed from app/sitemap.ts in the same commit
+//
+// /sponsor/info remains the canonical public marketing page and the
+// one in the sitemap. The sponsor-journey funnel is now:
+//   /sponsor/info  (public — "what is the Omni AI sponsor program?")
+//     → /sponsor/application  (public — apply form)
+//       → /sponsor  (portal — logged-in sponsor dashboard, noindex)
+export const metadata: Metadata = {
+  title: "Sponsor Portal · Omni AI",
   description:
-    "Sponsor Omni AI to fund AI-managed marketing campaigns for local businesses and gain brand visibility across the Omni AI ecosystem (platform, Interlinked newsletter, AI Agent Arena, and daily trending content).",
-  url: pageUrl,
-  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
-  mainEntity: {
-    "@type": "Organization",
-    name: "Omni AI",
-    url: siteUrl,
-    logo: `${siteUrl}/favicon.png`,
-  },
-  primaryImageOfPage: {
-    "@type": "ImageObject",
-    url: `${siteUrl}/og-image.png`,
+    "Logged-in portal for Omni AI sponsors. Live build-log activity, sponsored-client metrics, and ship history for active sponsorships. Public sponsor-program info lives at /sponsor/info.",
+  alternates: { canonical: pageUrl },
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: { index: false, follow: false },
   },
 };
 
@@ -71,7 +47,13 @@ export default function SponsorLayout({
 }) {
   return (
     <>
-      <JsonLd data={sponsorWebPageSchema} />
+      {/* Breadcrumb schema — kept for the navigation affordance. Even
+          though /sponsor is noindex, /sponsor/info and /sponsor/application
+          both use "Sponsor" (→ /sponsor) as their middle crumb. Google
+          accepts noindex middle items in breadcrumb chains — they render
+          in the SERP breadcrumb chip for the child pages, and the link
+          still resolves for logged-in users who land on /sponsor/info
+          via search. */}
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", url: siteUrl },

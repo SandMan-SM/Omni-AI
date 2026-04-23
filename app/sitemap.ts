@@ -32,7 +32,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/arena/info`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/interlinked`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
     { url: `${baseUrl}/join`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${baseUrl}/sponsor`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    // /sponsor is intentionally omitted — it's a logged-in sponsor portal
+    // (live build-log / MRR / ship history for authenticated sponsors), not
+    // a public marketing page. app/sponsor/layout.tsx sets robots:
+    // noindex,nofollow. /sponsor/info below is the canonical public
+    // marketing surface for the sponsor program; /sponsor/application
+    // is the public apply form. Sponsor funnel: /sponsor/info → /sponsor/
+    // application → /sponsor (portal, unlisted).
     { url: `${baseUrl}/sponsor/info`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
     { url: `${baseUrl}/fray`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/newsletter`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
