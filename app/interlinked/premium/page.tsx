@@ -72,7 +72,19 @@ export default function PremiumPage() {
             <h1 className="text-4xl md:text-6xl font-bold mb-6">
               The inside track on AI,<br />business, and leverage.
             </h1>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto">
+            {/* data-speakable="intro" activates the
+                SpeakableSpecification declared on premiumWebPageSchema
+                in app/interlinked/premium/layout.tsx. Voice assistants
+                concatenate h1 ("The inside track on AI, business, and
+                leverage.") + this subtitle as the natural ~12-second
+                reply to "what is Interlinked Premium?" / "how much is
+                Omni AI premium membership?" voice queries, with the
+                four-benefit hasOfferCatalog from the Product/Service
+                schema available as the body of the answer. */}
+            <p
+              className="text-lg text-gray-400 max-w-2xl mx-auto"
+              data-speakable="intro"
+            >
               Interlinked Premium is the private edition of our daily intelligence brief — paired with direct access,
               priority, and the people actually building with AI.
             </p>

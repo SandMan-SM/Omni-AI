@@ -164,6 +164,57 @@ const premiumMembershipSchema = {
   },
 };
 
+// WebPage schema paired with the Product + Service above. speakable
+// is only valid on WebPage / CreativeWork — neither Product nor
+// Service inherit from CreativeWork. Splitting into a dedicated
+// WebPage block keeps each schema clean and gives retrievers two
+// independent surfaces:
+//
+//  - Product + Service with $100/mo Offer → Google Product rich
+//    result (price chip, availability, subscription cadence)
+//  - WebPage with speakable + about: Product → voice assistants
+//    read the hero aloud on "what is Interlinked Premium?" / "how
+//    much is Omni AI premium membership?" queries
+//
+// The about: { Product } edge binds the two blocks so retrievers can
+// walk from "tell me about Interlinked Premium" → WebPage hero
+// speakable reply → premiumMembershipSchema.offers for the $100/mo
+// price chip + hasOfferCatalog for the four-benefit lineup.
+const premiumWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Interlinked Premium — Omni AI Private-Tier Membership",
+  description:
+    "The private-tier membership that pairs our daily AI intelligence brief with direct access, priority, and the operators actually building with AI. $100/month, cancel anytime.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Product",
+    name: "Interlinked Premium — Omni AI Membership",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: `${siteUrl}/og-image.png`,
+  },
+  // SpeakableSpecification — when a user asks Google Assistant / Siri
+  // read-aloud / Alexa "what is Interlinked Premium?" / "how much is
+  // Omni AI premium membership?" / "what do I get with Omni AI
+  // premium?", voice assistants need declared selectors to read
+  // verbatim. The h1 ("The inside track on AI, business, and
+  // leverage.") plus the subtitle tagged with data-speakable="intro"
+  // in app/interlinked/premium/page.tsx ("Interlinked Premium is the
+  // private edition of our daily intelligence brief — paired with
+  // direct access, priority, and the people actually building with
+  // AI.") compose the natural ~12-second voice reply — briefing-
+  // length positioning that sets up the four-benefit OfferCatalog
+  // as the body of the answer.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function InterlinkedPremiumLayout({
   children,
 }: {
@@ -171,6 +222,14 @@ export default function InterlinkedPremiumLayout({
 }) {
   return (
     <>
+      {/* WebPage schema with speakable — see the constant above for why
+          speakable lives on WebPage rather than the Product/Service
+          below (schema.org inheritance: speakable is only valid on
+          WebPage / CreativeWork, and neither Product nor Service
+          inherit from CreativeWork). Matches the split-schema pattern
+          shipped on /arena, /sponsor/info, /book-now, and
+          /affiliate/info. */}
+      <JsonLd data={premiumWebPageSchema} />
       {/* Product + Service dual-type schema — unlocks Google's Product
           rich result (price chip, availability, subscription cadence)
           AND gives LLMs a typed entity to cite for "Omni AI premium
