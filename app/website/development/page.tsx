@@ -13,6 +13,7 @@ import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 import { Button } from "@/components/ui/button";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { useState } from "react";
 
 const coreServices = [
@@ -125,6 +126,22 @@ export default function WebsiteDevelopment() {
           </div>
 
           <div className="relative z-10 max-w-5xl mx-auto px-4">
+            {/* Visible breadcrumb — paired with the breadcrumbSchema in
+                app/website/development/layout.tsx. Centered via a flex
+                wrapper so it sits above the hero without disturbing the
+                centered hero composition. Google only awards the SERP
+                breadcrumb chip when the schema and visible UI agree,
+                so shipping both in the same change keeps the
+                rich-result eligibility clean. */}
+            <div className="flex justify-center mb-8">
+              <Breadcrumb
+                items={[
+                  { name: "Home", href: "/" },
+                  { name: "Website Development", href: "/website/development" },
+                ]}
+                className="text-xs"
+              />
+            </div>
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
