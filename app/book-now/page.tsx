@@ -7,6 +7,7 @@ import { BookDemoModal } from "@/components/modals/lazy";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 export default function BookNowPage() {
   const [open, setOpen] = useState(true);
@@ -20,6 +21,18 @@ export default function BookNowPage() {
       <Navbar />
 
       <div className="relative z-10 max-w-4xl mx-auto px-4 py-24">
+        {/* Visible breadcrumb — paired with the breadcrumbSchema declared
+            in app/book-now/layout.tsx. Google requires both the JSON-LD
+            and on-page UI for the SERP breadcrumb chip. Small, left-aligned
+            above the hero so it reads as a location cue, not part of the
+            hero composition. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Book Now", href: "/book-now" },
+          ]}
+          className="text-xs mb-6"
+        />
         {/* Hero — reframed around the conversation, not the sale. "Free"
             leads, "no pitch" reassures, and the subhead literally spells
             out that we just talk and figure out what you need. */}

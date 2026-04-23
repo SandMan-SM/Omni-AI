@@ -14,6 +14,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { useState } from "react";
 
 const keyFeatures = [
@@ -152,6 +153,21 @@ export default function Details() {
       />
 
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
+        {/* Visible breadcrumb — paired with the breadcrumbSchema declared
+            in app/details/layout.tsx. Google requires both the JSON-LD and
+            the on-page UI for the SERP breadcrumb chip; shipping schema
+            without the visible crumb fails the rich-result eligibility
+            check. Sits just under the Navbar so it doesn't disrupt the
+            hero's vertical centering. */}
+        <div className="max-w-5xl mx-auto px-5 sm:px-6 pt-2">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Platform Details", href: "/details" },
+            ]}
+            className="text-xs mb-4"
+          />
+        </div>
         <section className="relative px-5 sm:px-6 py-12 md:py-20">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
