@@ -1,11 +1,21 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { isValidEmail, isBotSubmission, sanitizeText } from '@/lib/validation';
+import {
+  isValidEmail,
+  isBotSubmission,
+  sanitizeText,
+  escapeHtml,
+} from '@/lib/validation';
 import {
   rateLimit,
   getClientIp,
   rateLimitResponse,
 } from '@/lib/rate-limit';
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const OWNER_EMAIL = 'sitanim8@gmail.com';
+const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://omnileadsagi.com';
 
 // POST /api/waitlist — generic lead capture endpoint.
 //
@@ -107,6 +117,56 @@ export async function POST(request: Request) {
       { error: "We couldn't save your submission. Please try again." },
       { status: 500 },
     );
+  }
+
+  // Owner notification — previously every /sponsor/application submit
+  // only wrote to the leads table with no email, so the owner had to
+  // poll the CRM to know anything happened. Mirroring the landing-lead
+  // pattern: one instant notification with reply_to=applicant so Reply
+  // in any mail client responds directly to them. Fire-and-forget so
+  // a Resend outage doesn't block the 201 to the browser.
+  if (RESEND_API_KEY) {
+    const nameEsc = escapeHtml(name);
+    const emailEsc = escapeHtml(email);
+    const phoneEsc = escapeHtml(phone);
+    const roleEsc = role ? escapeHtml(role) : '&mdash;';
+    const sourceEsc = escapeHtml(source);
+    const messageEsc = message ? escapeHtml(message) : '&mdash;';
+    const dateEsc = selectedDate ? escapeHtml(selectedDate) : '&mdash;';
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [OWNER_EMAIL],
+          reply_to: email,
+          subject: `New ${source} submission: ${name}`,
+          html: `
+<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#111;">
+  <h2 style="margin-bottom:4px;">New ${sourceEsc} submission</h2>
+  <p style="color:#555;margin-top:0;">Submitted via <a href="${SITE_URL}" style="color:#6366f1;">omnileadsagi.com</a>.</p>
+  <table style="width:100%;border-collapse:collapse;margin-top:20px;">
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;width:140px;">Name</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${nameEsc}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Email</td><td style="padding:10px 0;border-bottom:1px solid #eee;"><a href="mailto:${emailEsc}" style="color:#6366f1;">${emailEsc}</a></td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Phone</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${phoneEsc}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Role</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${roleEsc}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Available Date</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${dateEsc}</td></tr>
+    <tr><td style="padding:10px 0;font-weight:600;vertical-align:top;">Message</td><td style="padding:10px 0;white-space:pre-wrap;">${messageEsc}</td></tr>
+  </table>
+</div>`,
+        }),
+      });
+      if (!res.ok) {
+        const bodyText = await res.text().catch(() => '<no body>');
+        console.error(`[waitlist] resend ${res.status}: ${bodyText.slice(0, 300)}`);
+      }
+    } catch (err) {
+      console.error('[waitlist] email send failed', err);
+    }
   }
 
   return NextResponse.json(
