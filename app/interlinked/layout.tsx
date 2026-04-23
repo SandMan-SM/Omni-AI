@@ -151,7 +151,21 @@ export default function InterlinkedLayout({
       "@type": "Organization",
       name: "Omni AI",
       url: siteUrl,
-      sameAs: siteUrl,
+      // sameAs must reference EXTERNAL identity URLs for the Organization
+      // entity — not the org's own homepage. Previously shipped as
+      // `sameAs: siteUrl` which is a circular self-reference: it told
+      // Google "this Omni AI entity is the same as https://omnileadsagi.com"
+      // (itself). Validators silently strip self-referential sameAs edges
+      // but the consistency-checker flags the page as having inconsistent
+      // Organization identity vs every other publisher.sameAs on the site
+      // (which all resolve to LinkedIn + X). Byte-aligned with the rest
+      // of the site's Organization sameAs arrays — any future additions
+      // (Crunchbase / G2 / YouTube / Product Hunt per plan T2.6) should
+      // update this literal and every other publisher.sameAs in lock-step.
+      sameAs: [
+        "https://www.linkedin.com/company/omni-ai",
+        "https://x.com/SitaniMafi",
+      ],
     },
     educationalLevel: "Beginner",
     educationalCredentialAwarded: "Certificate of completion",
