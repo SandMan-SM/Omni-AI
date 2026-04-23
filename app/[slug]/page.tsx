@@ -4,6 +4,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import CTAButtons from "./CTAButtons";
 import { JsonLd, articleSchema, breadcrumbSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 // Daily landing pages (/[slug]) are the site's largest traffic surface —
 // each one had only a "Powered by Omni AI" minifooter. The shared Footer
 // gives every daily tweet-landed visitor a path to /newsletter, /faq,
@@ -189,8 +190,26 @@ export default async function TrendingLandingPage({ params }: Props) {
         </div>
       </header>
 
+      {/* Visible breadcrumb — paired with the breadcrumbSchema above so
+          Google renders the breadcrumb chip in SERPs (rich result requires
+          BOTH the schema AND visible breadcrumbs; shipping schema without
+          the UI fails the rich-result eligibility check). Positioned in
+          the top-bar seam between the nav and the hero so it doesn't
+          disrupt the hero's vertical centering. Tiny text + left-aligned
+          to stay unobtrusive — daily-landing visitors arrive via Twitter
+          for the headline, not the site structure. */}
+      <div className="relative z-10 max-w-6xl mx-auto px-5 pt-4">
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: title, href: `/${slug}` },
+          ]}
+          className="text-xs"
+        />
+      </div>
+
       {/* Hero */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-[90vh] text-center px-5 py-20">
+      <main className="relative z-10 flex flex-col items-center justify-center min-h-[85vh] text-center px-5 py-20">
         {/* Eyebrow */}
         <div
           className="inline-flex items-center gap-2 mb-8 px-4 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest text-purple-300 border border-purple-500/30"
