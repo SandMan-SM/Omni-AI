@@ -124,7 +124,16 @@ export default function Join() {
           <h1 className="text-3xl md:text-4xl font-bold text-gradient mb-2">
             Request Access
           </h1>
-          <p className="text-gray-400">
+          {/* data-speakable="intro" activates the second CSS selector in
+              the SpeakableSpecification declared on joinWebPageSchema in
+              app/join/layout.tsx. Voice assistants (Google Assistant,
+              Siri, Alexa) concatenate h1 ("Request Access") + this
+              subtitle as the ~5-second orientation reply for "how do I
+              sign up for Omni AI?" / "how do I create an Omni AI
+              account?" voice queries. Deeper "is it free?" / "what does
+              the free tier include?" queries walk the about-edge into
+              the Service schema's Offer + hasOfferCatalog body. */}
+          <p className="text-gray-400" data-speakable="intro">
             Enter your details and we&apos;ll create your account
           </p>
         </div>

@@ -89,6 +89,31 @@ const joinWebPageSchema = {
     "@type": "ImageObject",
     url: `${siteUrl}/og-image.png`,
   },
+  // SpeakableSpecification — /join is the canonical voice-retrieval
+  // target for "how do I sign up for Omni AI?" / "how do I create an
+  // Omni AI account?" queries. Unlike Service-backed conversion pages
+  // that need a WebPage split-schema wrapper, /join's primary type is
+  // already WebPage (a CreativeWork descendant), so speakable attaches
+  // here directly — no sibling schema needed.
+  //
+  // Voice assistants (Google Assistant, Siri read-aloud, Alexa) read
+  // h1 ("Request Access") + the subtitle tagged data-speakable="intro"
+  // in app/join/page.tsx ("Enter your details and we'll create your
+  // account") as the ~5-second orientation reply. The subtitle is
+  // intentionally brief; deeper "is it free?" / "what does the free
+  // tier include?" voice queries walk the about-edge into the sibling
+  // joinFreeTierServiceSchema's Offer.description + hasOfferCatalog
+  // (autonomous campaign generation + Arena + daily trending + free
+  // newsletter tier + community support).
+  //
+  // No competing selector on joinFreeTierServiceSchema (Service is not
+  // a CreativeWork descendant) — WebPage owns voice retrieval, Service
+  // owns the offering body. Same single-host pattern used on /details
+  // and /faq's supplementary WebPage.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
 };
 
 // Service schema — narrowly types the *free-tier access offering* so
