@@ -97,6 +97,24 @@ export default function InterlinkedLayout({
       "https://omnileadsagi.com/api/og?title=Build+an+AI+CEO&topic=Free+live+training+with+Sitani+Mafi&eyebrow=Omni+AI+%C2%B7+Interlinked",
     inLanguage: "en-US",
     isAccessibleForFree: true,
+    // SpeakableSpecification — when a user asks Google Assistant / Siri
+    // read-aloud / Alexa "when's the next Omni AI training?" or "what is
+    // Interlinked?", voice assistants need declared selectors to read
+    // verbatim. The h1 ("INTERLINKED") plus the tagline tagged with
+    // data-speakable="intro" in app/interlinked/page.tsx ("Your Own
+    // Private AI CEO Will Run Your Business While You Sleep") compose
+    // the natural ~8-second voice reply.
+    //
+    // Declaring this on the Event (not just the Course below) matters
+    // because Events are the rich-result surface that actually fires on
+    // voice-schedule queries ("when is the next…?"). Assistants reading
+    // the Event panel aloud preferentially quote the selectors listed
+    // here over scraping the countdown widget or the subsequent body
+    // copy.
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "[data-speakable='intro']"],
+    },
   };
 
   // Course schema — complements the Event schema above. Event describes

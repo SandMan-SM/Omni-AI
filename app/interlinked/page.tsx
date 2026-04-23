@@ -169,7 +169,17 @@ export default function Interlinked() {
         >
           <p className="text-gray-400 text-sm uppercase tracking-widest mb-4">Online Training Starts In</p>
           <CountdownTimer />
-          <p className="text-xl md:text-2xl font-bold mt-4 text-white leading-tight">
+          {/* data-speakable="intro" activates the SpeakableSpecification
+              declared on the Event + Course JSON-LD in
+              app/interlinked/layout.tsx. Voice assistants concatenate
+              h1 ("INTERLINKED") + this tagline as the natural ~8-second
+              reply to "what is Interlinked?" / "when's the next Omni AI
+              training?" voice queries, quoting the tagline verbatim as
+              the primary hook. */}
+          <p
+            className="text-xl md:text-2xl font-bold mt-4 text-white leading-tight"
+            data-speakable="intro"
+          >
             Your Own Private AI CEO Will Run Your Business While You Sleep
           </p>
         </motion.div>
