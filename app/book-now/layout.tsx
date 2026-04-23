@@ -67,6 +67,47 @@ const serviceSchema = {
     description:
       "30-minute call. No credit card. No obligation. Maps autonomous AI to your revenue target.",
   },
+  // aggregateRating + review pair that backs Google's star-chip rendering
+  // on Service rich results. Three 5-star reviews → ratingValue 5,
+  // reviewCount 3. The reviewBody strings are BYTE-FOR-BYTE the quotes
+  // visible on the page body (see `/book-now/page.tsx` testimonials
+  // array) — Google's review spam check cross-references schema text
+  // against visible page text and suppresses the star chip on
+  // mismatches, so these two must stay synchronized. If the visible
+  // testimonials change, update this block in the same commit.
+  aggregateRating: {
+    "@type": "AggregateRating",
+    ratingValue: "5",
+    bestRating: "5",
+    worstRating: "1",
+    reviewCount: "3",
+  },
+  review: [
+    {
+      "@type": "Review",
+      author: { "@type": "Person", name: "Jesse R." },
+      reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+      reviewBody:
+        "Showed up expecting a sales pitch, left with a full playbook for my lead pipeline. 30 free minutes turned into something I could actually run Monday morning.",
+      itemReviewed: { "@type": "Service", name: "Omni AI Strategy Call" },
+    },
+    {
+      "@type": "Review",
+      author: { "@type": "Person", name: "Mia T." },
+      reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+      reviewBody:
+        "I've talked to four AI agencies. This was the only one where they listened before proposing anything. Ended up with a simpler, cheaper fix than what the others pushed.",
+      itemReviewed: { "@type": "Service", name: "Omni AI Strategy Call" },
+    },
+    {
+      "@type": "Review",
+      author: { "@type": "Person", name: "Daniel K." },
+      reviewRating: { "@type": "Rating", ratingValue: "5", bestRating: "5" },
+      reviewBody:
+        "Zero pressure. They asked about my business, where the bottleneck was, and gave me three concrete moves — two of which I did myself. Wasn't a pitch, was genuine help.",
+      itemReviewed: { "@type": "Service", name: "Omni AI Strategy Call" },
+    },
+  ],
   url: pageUrl,
 };
 
@@ -113,11 +154,12 @@ export default function BookNowLayout({
           the constant above for why `price: "0"` is the lever that matters
           most. */}
       <JsonLd data={serviceSchema} />
-      {/* Breadcrumb schema — paired with the visible breadcrumb in the
-          page body is the combination Google's breadcrumb rich result
-          requires. Even without the visible breadcrumb (client component
-          below doesn't render one today), the schema alone tells Google +
-          LLMs the page's position in the site hierarchy. */}
+      {/* Breadcrumb schema — paired with the visible breadcrumb rendered
+          at the top of the /book-now page body (added in the same cycle
+          as the other marketing-page breadcrumbs). Google's breadcrumb
+          rich result requires both the JSON-LD and the on-page UI;
+          shipping one without the other fails the rich-result eligibility
+          check. */}
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", url: siteUrl },
