@@ -2,7 +2,24 @@ import type { Config } from "tailwindcss";
 
 export default {
   darkMode: ["class"],
-  content: ["./client/index.html", "./client/src/**/*.{js,jsx,ts,tsx}"],
+  // Tailwind's JIT only compiles classes it sees in files matched by `content`.
+  // Previously this glob only scanned ./client/** (a legacy Vite app that is
+  // no longer the deployed surface) — which meant any utility class used ONLY
+  // in the Next.js app/, components/, hooks/, or lib/ trees silently dropped
+  // from the compiled CSS. Real-world symptom: /pricing tier cards shipped
+  // `p-7 md:p-8`, but `p-7` was never generated (no usage in client/**), so
+  // mobile breakpoints rendered with 0px inner padding — content flush to
+  // the border. Extend the glob to every directory Next.js actually renders
+  // from. The `client/**` entries stay so the legacy bundle (if anything
+  // still references it) doesn't lose its styles.
+  content: [
+    "./app/**/*.{js,jsx,ts,tsx,mdx}",
+    "./components/**/*.{js,jsx,ts,tsx,mdx}",
+    "./hooks/**/*.{js,jsx,ts,tsx}",
+    "./lib/**/*.{js,jsx,ts,tsx}",
+    "./client/index.html",
+    "./client/src/**/*.{js,jsx,ts,tsx}",
+  ],
   theme: {
     extend: {
       borderRadius: {
