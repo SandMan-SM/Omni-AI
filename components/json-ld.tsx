@@ -36,8 +36,24 @@ export const organizationSchema = {
   // chars to match Google's Knowledge Panel truncation window.
   slogan: "Autonomous AI that generates leads, runs operations, and scales businesses 24/7.",
   foundingDate: "2024",
+  // sameAs — canonical off-site identity URLs for the Omni AI entity.
+  // Google's Knowledge Graph resolves the Organization → sameAs edge
+  // when deciding which external profiles to attach to the brand
+  // Knowledge Panel; LLMs walk the same edges when asked "is Omni AI
+  // on X/LinkedIn?" / "where can I follow Omni AI?". Each URL listed
+  // here MUST be live and pointed at the real brand — stale 404s
+  // trigger a silent authority down-rank in Search Console.
+  //   - LinkedIn: /company/omni-ai, verified brand page.
+  //   - X (Twitter): @SitaniMafi — same handle already declared as
+  //     twitter.site across every OG card on the site
+  //     (app/[slug]/page.tsx, app/newsletter/[slug]/page.tsx,
+  //     app/vs/[competitor]/page.tsx), which means it's the verified
+  //     canonical brand X account. Byte-aligned with publisher.sameAs
+  //     on articleSchema and newsArticleSchema below — if one list
+  //     changes, the others update in the same commit.
   sameAs: [
     "https://www.linkedin.com/company/omni-ai",
+    "https://x.com/SitaniMafi",
   ],
   contactPoint: {
     "@type": "ContactPoint",
@@ -369,9 +385,12 @@ export const softwareSchema = {
  * real human byline — critical for E-E-A-T and for LLMs that prefer to cite
  * content with a named author.
  *
- * sameAs is intentionally sparse today — see plan T2.6: once X / Crunchbase /
- * G2 / YouTube / Product Hunt profiles exist, append them here. Stale 404s
- * in sameAs hurt validation, so keep this list truthful.
+ * sameAs lists verified off-site identities for the Sitani Mafi entity —
+ * each URL MUST be live (stale 404s hurt validation). X is verified via
+ * the @SitaniMafi handle that's been declared as twitter.site on every
+ * OG card shipped across the site for months. LinkedIn personal +
+ * Crunchbase / G2 / YouTube / Product Hunt (plan T2.6) can be appended
+ * when those profiles exist — keep the list truthful.
  */
 export const personSchema = {
   "@context": "https://schema.org",
@@ -392,7 +411,13 @@ export const personSchema = {
     "AI Agents",
     "Autonomous Operations",
   ],
-  sameAs: [] as string[],
+  // Previously shipped as `sameAs: [] as string[]`, which is worse than
+  // omitting the field: Google's structured-data validator treats empty
+  // typed arrays as a soft error (the schema declares a field it can't
+  // populate, which is a quality signal of automation drift). Shipping
+  // the single verified X URL turns the field into a real entity-graph
+  // edge the way Google + LLM retrievers expect.
+  sameAs: ["https://x.com/SitaniMafi"],
 };
 
 /**
@@ -458,7 +483,10 @@ export function articleSchema(page: {
       name: "Omni AI",
       url: siteUrl,
       logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
-      sameAs: ["https://www.linkedin.com/company/omni-ai"],
+      sameAs: [
+        "https://www.linkedin.com/company/omni-ai",
+        "https://x.com/SitaniMafi",
+      ],
     },
     // isPartOf: WebSite — binds every /[slug] daily trending article to
     // the sitewide Omni AI WebSite entity declared in
@@ -660,7 +688,10 @@ export function newsArticleSchema(post: {
       name: "Omni AI",
       url: siteUrl,
       logo: { "@type": "ImageObject", url: `${siteUrl}/favicon.png` },
-      sameAs: ["https://www.linkedin.com/company/omni-ai"],
+      sameAs: [
+        "https://www.linkedin.com/company/omni-ai",
+        "https://x.com/SitaniMafi",
+      ],
     },
     inLanguage: "en-US",
     // copyrightHolder / copyrightYear — byte-aligned with the RSS feed
@@ -734,8 +765,21 @@ export function profilePageSchema(person: typeof personSchema, url: string) {
     "@type": "ProfilePage",
     url,
     mainEntity: person,
+    // dateCreated pins the founding of the profile — same anchor
+    // as organizationSchema.foundingDate ("2024"). Not an exact
+    // day, but the beginning of the founding year is the honest
+    // floor for "when this profile first existed".
     dateCreated: "2024-01-01",
-    dateModified: "2024-01-01",
+    // dateModified intentionally omitted. Previously shipped as the
+    // same literal "2024-01-01" as dateCreated, which is a silent lie:
+    // the bio + schema on /about have been updated many times since
+    // site launch. Google's cross-validator flags dateModified ==
+    // dateCreated on any page with visible authoring-updates as a
+    // "stale metadata" signal, and LLMs quoting the page hedge
+    // attribution when the modification date is suspiciously old.
+    // The ProfilePage spec treats dateModified as optional — omitting
+    // it is cleaner than lying. If a major bio rewrite ever lands,
+    // re-declare it with the real date at that time.
     inLanguage: "en-US",
     // SpeakableSpecification — same rationale as on articleSchema /
     // newsArticleSchema: voice-assistant surfaces (Google Assistant,
