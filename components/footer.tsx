@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import Image from "next/image";
 
 // Surface the pages that otherwise have zero internal links. /about and
@@ -14,15 +13,23 @@ const footerLinks = [
   { href: "/faq", label: "FAQ" },
 ];
 
+// Server-component footer (no framer-motion). Previously this rendered
+// `<motion.footer>` without a "use client" boundary, which produced a
+// React Server Components manifest error during SSG export:
+//
+//   Could not find the module "framer-motion/.../index.mjs#motion#footer"
+//   in the React Client Manifest.
+//
+// The four highest-trust content pages (/about, /faq, /newsletter,
+// /privacy) were falling back to SSR per request instead of prerendering
+// to static HTML — a measurable TTFB regression on exactly the pages
+// Google and LLM crawlers value most. Dropping the scroll-fade animation
+// restores SSG; the visual delta is imperceptible and the CSS
+// `animate-in` equivalent can be added inside a small client wrapper
+// later if we really want the fade back.
 export function Footer() {
   return (
-    <motion.footer
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true }}
-      className="relative py-12 px-4 border-t border-white/5"
-    >
+    <footer className="relative py-12 px-4 border-t border-white/5">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col items-center justify-center gap-6">
           <div className="flex items-center gap-2">
@@ -65,6 +72,6 @@ export function Footer() {
           </p>
         </div>
       </div>
-    </motion.footer>
+    </footer>
   );
 }
