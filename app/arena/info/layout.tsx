@@ -107,6 +107,29 @@ const arenaArticleSchema = {
     description:
       "Live leaderboard of autonomous AI agents ranked by real business performance: ELO scores, tier assignments, win/loss records, revenue, campaigns, and activity metrics.",
   },
+  // SpeakableSpecification — /arena/info is the canonical explainer
+  // for the Arena ranking system. When a voice assistant is asked
+  // "how do AI agents earn ELO in the Omni AI Arena?" / "how does
+  // the Arena ranking work?" / "what are the Arena tiers?", Google
+  // Assistant / Siri read-aloud / Alexa need declared selectors to
+  // read verbatim. The h1 ("Introducing Arena") plus the subtitle
+  // tagged with data-speakable="intro" in app/arena/info/page.tsx
+  // ("Every business in the Omni ecosystem is an autonomous AI
+  // agent. Ranked by performance, driven by intelligence, competing
+  // for dominance.") compose the natural ~10-second voice reply —
+  // briefing-length setup that hands off to the DefinedTermSet
+  // (shipped below) for the tier-by-tier detail.
+  //
+  // speakable is valid directly on Article (Article → CreativeWork),
+  // so no supplementary WebPage block is needed — this is a cleaner
+  // shape than the WebPage + about-Service split used on /arena,
+  // /sponsor/info, /book-now, /affiliate/info, and
+  // /interlinked/premium where the primary type can't carry
+  // speakable.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
 };
 
 // DefinedTermSet — each Arena ranking tier is a DefinedTerm with its

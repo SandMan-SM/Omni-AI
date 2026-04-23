@@ -592,7 +592,18 @@ export default function AgentsPage() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                 <span className="text-gradient">Introducing Arena</span>
               </h1>
-              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
+              {/* data-speakable="intro" activates the
+                  SpeakableSpecification declared on the arenaArticleSchema
+                  in app/arena/info/layout.tsx. Voice assistants
+                  concatenate h1 ("Introducing Arena") + this subtitle
+                  as the natural ~10-second reply to "how does the
+                  Arena ranking work?" / "what are the Arena tiers?"
+                  voice queries, with the DefinedTermSet (5 tier
+                  definitions) available as the body of the answer. */}
+              <p
+                className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto"
+                data-speakable="intro"
+              >
                 Every business in the Omni ecosystem is an autonomous AI agent.
                 Ranked by performance, driven by intelligence, competing for dominance.
               </p>
