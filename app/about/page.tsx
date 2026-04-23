@@ -25,6 +25,16 @@ import { Footer } from "@/components/footer";
 const siteUrl = "https://omnileadsagi.com";
 const pageUrl = `${siteUrl}/about`;
 
+// Per-page OG card — same rationale as /faq and /vs/[competitor]. The
+// /about page is the entity anchor LLMs crawl when someone asks
+// "who built Omni AI?" — a branded card reinforces the founder/company
+// pairing every time the URL is shared.
+const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(
+  "About Omni AI"
+)}&topic=${encodeURIComponent(
+  "Founded in 2024 by Sitani Mafi"
+)}&eyebrow=${encodeURIComponent("Omni AI · About")}`;
+
 export const metadata: Metadata = {
   title: "About | Omni AI — Founder, Story, Mission",
   description:
@@ -37,12 +47,14 @@ export const metadata: Metadata = {
     url: pageUrl,
     siteName: "Omni AI",
     type: "profile",
+    images: [{ url: ogImage, width: 1200, height: 630, alt: "Omni AI · About" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "About Omni AI — Founder & Mission",
     description:
       "Founded in 2024 by Sitani Mafi. An autonomous AI system that replaces the SDR/ads/video/analytics stack.",
+    images: [ogImage],
   },
 };
 

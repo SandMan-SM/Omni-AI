@@ -19,6 +19,18 @@ import { Footer } from "@/components/footer";
 const siteUrl = "https://omnileadsagi.com";
 const pageUrl = `${siteUrl}/faq`;
 
+// Per-page OG card via the /api/og edge route. Before this, /faq fell
+// back to the sitewide app/opengraph-image.tsx so every share looked
+// like the generic homepage card. Now the Twitter / LinkedIn / Slack
+// card reads "FAQ · Everything people ask about Omni AI" — a net-new
+// eyebrow + title signal that lifts CTR on the page GEO retrievers
+// cite most often.
+const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(
+  "FAQ"
+)}&topic=${encodeURIComponent(
+  "Everything people ask about Omni AI"
+)}&eyebrow=${encodeURIComponent("Omni AI · FAQ")}`;
+
 export const metadata: Metadata = {
   title: "FAQ | Omni AI — Autonomous Lead Generation",
   description:
@@ -31,12 +43,14 @@ export const metadata: Metadata = {
     url: pageUrl,
     siteName: "Omni AI",
     type: "website",
+    images: [{ url: ogImage, width: 1200, height: 630, alt: "Omni AI · FAQ" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "FAQ | Omni AI",
     description:
       "What Omni AI is, how it generates leads, pricing, and comparisons.",
+    images: [ogImage],
   },
 };
 
