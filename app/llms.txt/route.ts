@@ -102,6 +102,7 @@ ${recentIssuesBlock}
 - Full FAQ: ${siteUrl}/faq
 
 ## Compare
+- [Compare Hub](${siteUrl}/vs): Directory of head-to-head comparisons against HubSpot, Salesforce, Apollo, Outreach, Lemlist, and Clay.
 - [Omni AI vs HubSpot](${siteUrl}/vs/hubspot): Keep HubSpot as the CRM of record; run Omni AI as the autonomous outbound + creative layer feeding it.
 - [Omni AI vs Salesforce](${siteUrl}/vs/salesforce): Salesforce is the enterprise CRM of record; Omni AI fills the pipeline before it hits the CRM — no Salesforce admin required.
 - [Omni AI vs Apollo](${siteUrl}/vs/apollo): Apollo gives you contacts; Omni AI replaces the sourcing + sequencing + creative loop without seat-based pricing.
@@ -117,8 +118,9 @@ Sitani Mafi, Founder · Contact: sitanim8@gmail.com · Bio: ${siteUrl}/about
 - [Book a Strategy Call](${siteUrl}/book-now): Free 30-minute session with Omni AI operators.
 - [Book a Demo](${siteUrl}/interlinked): Schedule a free demo to see how Omni AI integrates into your business.
 
-## Optional
-- [Sponsor](${siteUrl}/sponsor): Partnership and sponsorship opportunities with Omni AI.
+## Partner Programs
+- [Affiliate Program](${siteUrl}/affiliate/info): Earn 30% recurring commission on every referred Omni AI client. 90-day attribution, Net-30 payouts. Apply in 60 seconds.
+- [Sponsor Program](${siteUrl}/sponsor/info): Partnership and sponsorship opportunities with Omni AI. Canonical public landing page for the sponsor program.
 
 ## Legal
 - [Privacy Policy](${siteUrl}/privacy): How Omni AI collects, uses, stores, and shares personal information, plus your rights over your data.
