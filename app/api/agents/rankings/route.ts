@@ -126,7 +126,7 @@ export async function GET() {
   try {
     const [{ data: txns }, { count: subCount }, { data: sends }] = await Promise.all([
       sb.from('paypal_transactions').select('transaction_amount,transaction_status'),
-      sb.from('newsletter_subscribers').select('id', { count: 'exact', head: true }).eq('status', 'active'),
+      sb.from('newsletter_subscriptions').select('id', { count: 'exact', head: true }).eq('subscribed', true),
       sb.from('newsletter_sends').select('recipients_total'),
     ]);
     omniRevenue = (txns || []).reduce((sum, t: any) => {
