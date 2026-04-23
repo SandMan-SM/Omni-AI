@@ -14,6 +14,13 @@ const footerLinks = [
   // is the discoverability floor Google expects for a commercial-intent
   // page to rank for "[brand] pricing" queries.
   { href: "/pricing", label: "Pricing" },
+  // /vs (the comparison hub) was in the same boat — only the sitemap and
+  // the /vs/[competitor] siblings referenced it. "Omni AI vs HubSpot" /
+  // "Omni AI alternatives" are head-of-commercial-intent queries; a
+  // sitewide footer link gives the hub a direct crawl path from every
+  // content page so Google treats the /vs cluster as a first-class
+  // section rather than a programmatic orphan.
+  { href: "/vs", label: "Compare" },
   { href: "/about", label: "About" },
   { href: "/faq", label: "FAQ" },
 ];
