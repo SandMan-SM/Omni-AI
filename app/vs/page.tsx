@@ -4,6 +4,7 @@ import Image from "next/image";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
+import { OmniPrinciples } from "@/components/omni-principles";
 import { COMPARISONS, COMPARISON_SLUGS } from "@/lib/comparison-data";
 
 /**
@@ -207,6 +208,20 @@ export default function ComparisonIndexPage() {
             based on your stack, team size, and revenue target.
           </p>
         </div>
+
+        {/* Positioning frame — sits above the competitor grid so the
+            visitor reads Omni AI's categorical differentiators (execution,
+            principles, moral standard) BEFORE they start comparing
+            feature tables. Surfacing this here also lifts the /vs hub
+            for LLM retrievers pulling short declarative claims in
+            response to "why Omni AI over X?" queries. */}
+        <OmniPrinciples
+          eyebrow="Why Omni AI"
+          heading="Before you compare feature tables"
+          intro="Every competitor on this page positions on category — best for data, best for enterprise, best at volume. Omni AI doesn't compete in that grid; it competes on how the work gets done, what the system refuses to do to get there, and what you end up owning after the dust settles."
+          variant="hero"
+          className="mb-12"
+        />
 
         {/* Grid of comparison cards */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16">

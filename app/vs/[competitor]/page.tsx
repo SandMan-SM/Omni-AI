@@ -10,6 +10,7 @@ import {
 } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
+import { OmniPrinciples } from "@/components/omni-principles";
 import {
   COMPARISONS,
   COMPARISON_SLUGS,
@@ -251,6 +252,19 @@ export default async function ComparisonPage({ params }: Props) {
             </ul>
           </div>
         </section>
+
+        {/* Positioning pillars — sits AFTER the honest "keep [competitor]
+            if..." column and BEFORE pricing, so the visitor reads
+            Omni AI's categorical differentiators (execution, principles,
+            moral standard) right after the balanced trade-off and right
+            before the spend question. Inline variant (grey, not amber)
+            so the bottom CTA stays the only amber block on the page. */}
+        <OmniPrinciples
+          eyebrow={`vs ${data.name} — the deeper cut`}
+          heading="Why this comparison isn't about features"
+          variant="inline"
+          className="mb-16"
+        />
 
         {/* Pricing note */}
         <section className="mb-16">
