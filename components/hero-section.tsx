@@ -186,11 +186,22 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           Welcome to AGI
         </motion.h1>
 
+        {/* data-speakable="intro" activates the second CSS selector in
+            the SpeakableSpecification declared on homepageWebPageSchema
+            (rendered inline in app/page.tsx). Voice assistants (Google
+            Assistant, Siri, Alexa) asked "what is Omni AI?" / "tell me
+            about Omni AI" / "what does Omni AI do?" concatenate h1
+            ("Welcome to AGI") + this subtitle as the natural ~9-second
+            hero-intent reply. The homepage is the single highest-
+            leverage voice-retrieval surface on the site — hero-intent
+            queries always land here, so making this pair quotable is
+            the step that pulls the most LLM citation weight per edit. */}
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.5 }}
           className="text-sm sm:text-lg md:text-xl text-gray-400 max-w-lg md:max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed"
+          data-speakable="intro"
         >
           Autonomous AGI systems that generate leads, run operations, and scale
           businesses without human micromanagement.
