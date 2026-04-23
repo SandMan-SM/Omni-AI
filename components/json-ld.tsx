@@ -574,7 +574,15 @@ export function newsArticleSchema(post: {
   updated_at?: string | null;
   tier?: string | null;
   quote?: string | null;
-  insights?: string[] | null;
+  // Two insight shapes are valid — plain string (legacy) or
+  // { heading, body } object (structured, introduced on the 2026-04-23
+  // vertical-SaaS premium issue). Mixed arrays are allowed so a post
+  // can ship either shape without a migration. Render code in
+  // app/newsletter/[slug]/page.tsx branches on `typeof insight` — the
+  // wordCount estimate below has to flatten both shapes or structured
+  // posts would silently under-count words by ~40% and lose the
+  // Google NewsArticle content-quality signal.
+  insights?: Array<string | { heading?: string | null; body?: string | null }> | null;
   power_move?: string | null;
   offer?: string | null;
 }) {
@@ -590,10 +598,24 @@ export function newsArticleSchema(post: {
   // and count whitespace-delimited tokens. Google's content-quality
   // signal caps influence around 1500 words, so the estimate doesn't
   // need to be pixel-perfect; directionally correct is fine.
+  //
+  // Insights are flattened here so both authoring shapes contribute to
+  // the token count: plain strings go in verbatim, object-shaped
+  // { heading, body } entries get their two text fields concatenated.
+  // Before this flatten, structured posts (e.g. 2026-04-23 vertical-SaaS)
+  // had their insights stringified to "[object Object]" by Array#join,
+  // which both under-counted wordCount and polluted the count with a
+  // literal "[object Object]" token.
+  const flattenedInsights = (post.insights || []).map((insight) => {
+    if (insight && typeof insight === "object") {
+      return `${insight.heading || ""} ${insight.body || ""}`.trim();
+    }
+    return insight || "";
+  });
   const bodyText = [
     post.intro || "",
     post.quote || "",
-    ...(post.insights || []),
+    ...flattenedInsights,
     post.power_move || "",
     post.offer || "",
   ]
