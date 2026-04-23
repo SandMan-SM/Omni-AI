@@ -1,7 +1,24 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/admin-auth';
 
+export const dynamic = 'force-dynamic';
+
+/**
+ * POST /api/newsletter/import
+ *
+ * Imports a CSV into newsletter_subscriptions. Previously unauthenticated
+ * — an attacker could upload arbitrary CSVs to pollute the subscriber
+ * table, inflate counts, or land their addresses in future sends.
+ *
+ * Now admin-gated via requireAdmin() (same auth surface as every other
+ * admin mutation route). Cookie session from /admin works by default;
+ * Bearer omni_token is supported for localStorage-based admin flows.
+ */
 export async function POST(request: Request) {
+  const auth = await requireAdmin();
+  if ('error' in auth && auth.error) return auth.error;
+
   try {
     const formData = await request.formData();
     const file = formData.get('file') as File | null;

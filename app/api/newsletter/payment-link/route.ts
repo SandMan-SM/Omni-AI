@@ -1,8 +1,26 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin-auth';
+
+export const dynamic = 'force-dynamic';
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 
+/**
+ * POST /api/newsletter/payment-link
+ *
+ * Creates a Stripe product + price + payment link for the premium
+ * newsletter tier. Previously unauthenticated — an attacker could
+ * spam-create unlimited Stripe products, polluting the catalog and
+ * consuming API quota. Each call also hits the Stripe API three times.
+ *
+ * Now admin-gated via requireAdmin(). Cookie session from /admin works
+ * by default; Bearer omni_token is supported for localStorage-based
+ * admin flows (matches newsletter/send + newsletter/import).
+ */
 export async function POST() {
+  const auth = await requireAdmin();
+  if ('error' in auth && auth.error) return auth.error;
+
   if (!STRIPE_SECRET_KEY) {
     return NextResponse.json(
       { error: 'Stripe not configured. Add STRIPE_SECRET_KEY to environment variables.' },
