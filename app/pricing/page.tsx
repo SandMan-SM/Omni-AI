@@ -73,6 +73,63 @@ export const metadata: Metadata = {
   },
 };
 
+// WebPage schema paired with the Product + FAQPage schemas below.
+// speakable is only valid on WebPage / CreativeWork — Product is not a
+// CreativeWork descendant, so it can't carry speakable directly. The
+// FAQPage factory already ships speakable (h1 + faq-intro), which
+// handles cost-intent voice queries ("how much does Omni AI cost?"
+// reads the first FAQ Q&A aloud). This WebPage adds a complementary
+// hero-intent speakable selector ("Omni AI pricing philosophy" /
+// "does Omni AI charge per seat?" reads the h1 + subtitle aloud).
+//
+// The two speakable selectors are intentionally non-overlapping:
+//  - FAQPage → [h1, data-speakable='faq-intro']  (cost disclosure)
+//  - WebPage → [h1, data-speakable='intro']      (pricing positioning)
+//
+// Voice assistants pick the selector that matches the query intent —
+// "how much?" hits the FAQ, "how does pricing work?" hits the hero.
+// Neither conflicts with the other; both share the h1 universal
+// fallback.
+//
+// about: { Product } edge binds this to pricingProductSchema so voice
+// retrievers can walk from the hero speakable reply ("pricing built
+// for autonomy, not seat count") into the tiered Offer body for
+// follow-up cost queries.
+const pricingWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Omni AI Pricing — Free Tier + Autonomous Paid Tiers",
+  description:
+    "Pricing page for Omni AI. Free tier with campaign generation and AI Agent Arena. Paid tiers add autonomous outbound, priority model access, and custom integrations — priced to revenue target, not seat count.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Product",
+    name: "Omni AI — Autonomous AI Platform",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: ogImage,
+  },
+  // SpeakableSpecification — hero-intent voice reply. Voice assistants
+  // asked "how does Omni AI pricing work?" / "does Omni AI charge per
+  // seat?" read h1 ("Pricing built for autonomy, not seat count") +
+  // the subtitle tagged with data-speakable="intro" below ("A permanent
+  // free tier for campaign generation and benchmarking. Paid tiers for
+  // teams running autonomous outbound and custom integrations. No
+  // per-seat multipliers — this system replaces headcount, it doesn't
+  // scale alongside it.") as the natural ~14-second positioning reply.
+  // Cost-intent queries ("how much?") are handled separately by the
+  // FAQPage speakable selector below (data-speakable='faq-intro' on
+  // the first Q&A), so this WebPage speakable stays focused on the
+  // pricing-philosophy reply.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 const PRICING_FAQS: { question: string; answer: string }[] = [
   {
     question: "How much does Omni AI cost?",
@@ -109,6 +166,12 @@ const PRICING_FAQS: { question: string; answer: string }[] = [
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-[#050508] text-white">
+      {/* WebPage schema with speakable — see the constant above for how
+          the hero-intent [intro] selector complements the FAQPage's
+          cost-intent [faq-intro] selector (both schemas share the h1
+          universal fallback). Paired with data-speakable="intro" on
+          the hero subtitle below. */}
+      <JsonLd data={pricingWebPageSchema} />
       <JsonLd data={faqPageSchema(PRICING_FAQS)} />
       <JsonLd
         data={breadcrumbSchema([
@@ -173,7 +236,17 @@ export default function PricingPage() {
             <br />
             not seat count
           </h1>
-          <p className="text-lg text-gray-300 leading-relaxed max-w-3xl">
+          {/* data-speakable="intro" activates the second CSS selector in
+              the SpeakableSpecification declared on pricingWebPageSchema
+              above. Pairs with the h1 to compose the ~14-second
+              pricing-philosophy voice reply for "how does Omni AI
+              pricing work?" / "does Omni AI charge per seat?" queries.
+              Cost-intent queries ("how much?") are handled separately
+              by the faq-intro marker on the first FAQ Q&A below. */}
+          <p
+            className="text-lg text-gray-300 leading-relaxed max-w-3xl"
+            data-speakable="intro"
+          >
             A permanent free tier for campaign generation and benchmarking.
             Paid tiers for teams running autonomous outbound and custom
             integrations. No per-seat multipliers — this system replaces
