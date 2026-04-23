@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  isValidEmail,
+  escapeHtml,
+  isBotSubmission,
+  sanitizeText,
+} from '@/lib/validation';
 
 const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -18,6 +24,11 @@ const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 //   Write to the real `leads` table with source='affiliate_signup' so
 //   entries are searchable from the admin CRM alongside other captures.
 //   Audience context goes into notes. Resend notification is preserved.
+//
+// Cycle 26 hardening (parallel to book-consultation):
+//   - Bot-honeypot silent 200
+//   - sanitizeText + length caps
+//   - escapeHtml on every email interpolation site
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
   try {
@@ -26,20 +37,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const name = typeof body.name === 'string' ? body.name.trim() : '';
-  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-  const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-  const audience = typeof body.audience === 'string' ? body.audience.trim() : '';
+  if (isBotSubmission(body)) {
+    return NextResponse.json({ success: true });
+  }
 
-  if (!name || !email || !phone) {
+  const name = sanitizeText(body.name, 200);
+  const emailRaw = sanitizeText(body.email, 254);
+  const phone = sanitizeText(body.phone, 50);
+  const audience = sanitizeText(body.audience, 1000);
+
+  if (!name || !emailRaw || !phone) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(emailRaw)) {
     return NextResponse.json(
       { error: 'Please enter a valid email address.' },
       { status: 400 },
     );
   }
+  const email = emailRaw.toLowerCase();
 
   const sb = createAdminClient();
   const { error } = await sb.from('leads').insert({
@@ -57,6 +73,11 @@ export async function POST(request: Request) {
   }
 
   if (RESEND_API_KEY) {
+    const nameEsc = escapeHtml(name);
+    const emailEsc = escapeHtml(email);
+    const phoneEsc = escapeHtml(phone);
+    const audienceEsc = escapeHtml(audience) || '&mdash;';
+
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -65,10 +86,10 @@ export async function POST(request: Request) {
         to: [OWNER_EMAIL],
         subject: `New affiliate signup: ${name}`,
         html: `<h2>New affiliate signup</h2>
-<p><strong>Name:</strong> ${name}</p>
-<p><strong>Email:</strong> ${email}</p>
-<p><strong>Phone:</strong> ${phone}</p>
-<p><strong>Audience:</strong> ${audience || '—'}</p>`,
+<p><strong>Name:</strong> ${nameEsc}</p>
+<p><strong>Email:</strong> ${emailEsc}</p>
+<p><strong>Phone:</strong> ${phoneEsc}</p>
+<p><strong>Audience:</strong> ${audienceEsc}</p>`,
       }),
     }).catch((e) => console.error('[affiliate/sign-up] Email error:', e));
   }

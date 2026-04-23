@@ -17,6 +17,8 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [audience, setAudience] = useState("");
+  // Honeypot — server silent-200s when this field has any value.
+  const [website, setWebsite] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const { toast } = useToast();
@@ -30,7 +32,7 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
       const res = await fetch("/api/affiliate/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, audience }),
+        body: JSON.stringify({ name, email, phone, audience, website }),
       });
       if (res.ok) {
         setDone(true);
@@ -78,6 +80,22 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
                 <h3 className="text-2xl font-bold mb-1">Join the Affiliate Program</h3>
                 <p className="text-gray-400 text-sm mb-6">Earn 30% recurring on every Omni AI client you refer.</p>
                 <div className="space-y-3">
+                  {/* Honeypot — off-screen, aria-hidden, non-tabbable. */}
+                  <div
+                    aria-hidden="true"
+                    style={{ position: "absolute", left: "-9999px", top: "auto", width: 1, height: 1, overflow: "hidden" }}
+                  >
+                    <label htmlFor="website-affiliate-signup">Website (leave blank)</label>
+                    <input
+                      type="text"
+                      id="website-affiliate-signup"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
                   <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
                   <Input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                   <Input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />

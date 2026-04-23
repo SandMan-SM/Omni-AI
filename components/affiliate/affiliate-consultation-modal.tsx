@@ -17,6 +17,8 @@ export function AffiliateConsultationModal({ isOpen, onClose }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [goal, setGoal] = useState("");
+  // Honeypot — server silent-200s when non-empty.
+  const [website, setWebsite] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
   const { toast } = useToast();
@@ -30,7 +32,7 @@ export function AffiliateConsultationModal({ isOpen, onClose }: Props) {
       const res = await fetch("/api/affiliate/book-consultation", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, goal }),
+        body: JSON.stringify({ name, email, phone, goal, website }),
       });
       if (res.ok) {
         setDone(true);
@@ -78,6 +80,22 @@ export function AffiliateConsultationModal({ isOpen, onClose }: Props) {
                 <h3 className="text-2xl font-bold mb-1">Book an Affiliate Consultation</h3>
                 <p className="text-gray-400 text-sm mb-6">A 30-minute call to map out how you&apos;ll earn with Omni AI.</p>
                 <div className="space-y-3">
+                  {/* Honeypot — off-screen, aria-hidden, non-tabbable. */}
+                  <div
+                    aria-hidden="true"
+                    style={{ position: "absolute", left: "-9999px", top: "auto", width: 1, height: 1, overflow: "hidden" }}
+                  >
+                    <label htmlFor="website-affiliate-consult">Website (leave blank)</label>
+                    <input
+                      type="text"
+                      id="website-affiliate-consult"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
                   <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
                   <Input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                   <Input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />

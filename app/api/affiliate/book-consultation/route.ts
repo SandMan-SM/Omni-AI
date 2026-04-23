@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  isValidEmail,
+  escapeHtml,
+  isBotSubmission,
+  sanitizeText,
+} from '@/lib/validation';
 
 const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
@@ -17,6 +23,13 @@ const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 // Fix:
 //   Write to `leads` with source='affiliate_consultation'. Goal goes into
 //   notes. Generic error copy. Resend notification preserved.
+//
+// Cycle 26 hardening:
+//   - Bot-honeypot check (silent 200 on non-empty)
+//   - sanitizeText + length caps on every free-text field
+//   - escapeHtml on every value interpolated into the notification email
+//     (name/email/phone/goal flowed raw into HTML before — XSS into our
+//     own inbox)
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
   try {
@@ -25,20 +38,25 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
 
-  const name = typeof body.name === 'string' ? body.name.trim() : '';
-  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
-  const phone = typeof body.phone === 'string' ? body.phone.trim() : '';
-  const goal = typeof body.goal === 'string' ? body.goal.trim() : '';
+  if (isBotSubmission(body)) {
+    return NextResponse.json({ success: true });
+  }
 
-  if (!name || !email || !phone) {
+  const name = sanitizeText(body.name, 200);
+  const emailRaw = sanitizeText(body.email, 254);
+  const phone = sanitizeText(body.phone, 50);
+  const goal = sanitizeText(body.goal, 1000);
+
+  if (!name || !emailRaw || !phone) {
     return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  if (!isValidEmail(emailRaw)) {
     return NextResponse.json(
       { error: 'Please enter a valid email address.' },
       { status: 400 },
     );
   }
+  const email = emailRaw.toLowerCase();
 
   const sb = createAdminClient();
   const { error } = await sb.from('leads').insert({
@@ -56,6 +74,11 @@ export async function POST(request: Request) {
   }
 
   if (RESEND_API_KEY) {
+    const nameEsc = escapeHtml(name);
+    const emailEsc = escapeHtml(email);
+    const phoneEsc = escapeHtml(phone);
+    const goalEsc = escapeHtml(goal) || '&mdash;';
+
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
@@ -64,10 +87,10 @@ export async function POST(request: Request) {
         to: [OWNER_EMAIL],
         subject: `Affiliate consultation request: ${name}`,
         html: `<h2>New affiliate consultation request</h2>
-<p><strong>Name:</strong> ${name}</p>
-<p><strong>Email:</strong> ${email}</p>
-<p><strong>Phone:</strong> ${phone}</p>
-<p><strong>Goal:</strong> ${goal || '—'}</p>`,
+<p><strong>Name:</strong> ${nameEsc}</p>
+<p><strong>Email:</strong> ${emailEsc}</p>
+<p><strong>Phone:</strong> ${phoneEsc}</p>
+<p><strong>Goal:</strong> ${goalEsc}</p>`,
       }),
     }).catch((e) => console.error('[affiliate/book-consultation] Email error:', e));
   }
