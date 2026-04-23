@@ -50,6 +50,58 @@ const ogImage = `${siteUrl}/api/og?title=${encodeURIComponent(
   "Find anything across Omni AI"
 )}&eyebrow=${encodeURIComponent("Omni AI · Search")}`;
 
+// WebPage schema for /search — closes the parity loop with websiteSchema's
+// potentialAction SearchAction in components/json-ld.tsx. The sitewide
+// schema declares a SearchAction pointing at /search?q={search_term_string};
+// declaring the same SearchAction ON /search reinforces the target and
+// gives LLM retrievers a typed anchor when answering "does Omni AI have a
+// search?" / "how do I search Omni AI?" queries.
+//
+// Why WebPage and not SearchResultsPage: this route renders BOTH the empty
+// search landing (no ?q=) and the results view (with ?q=). Google's
+// SearchResultsPage parser expects a results-only surface, so the safer
+// general type is WebPage. If the empty-state and results-state ever split
+// into two routes, the results view should become SearchResultsPage.
+//
+// The speakable block reuses the h1 ("Find anything across Omni AI") plus
+// the subtitle tagged with data-speakable="intro" below, mirroring the
+// pattern established on /arena, /about, /pricing, /book-now, /newsletter,
+// /privacy, /details, /interlinked, /arena/info, /sponsor/info,
+// /affiliate/info, and /interlinked/premium. ~10-second voice reply for
+// "how do I search Omni AI's content?" type queries.
+const searchWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Search — Omni AI",
+  description:
+    "Search every newsletter issue, trending post, and landing page on Omni AI. Results come back from the live archive in one shot.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: `${siteUrl}/og-image.png`,
+  },
+  // SearchAction — mirrors the sitewide websiteSchema SearchAction so the
+  // target URL is declared both at the website level (for Sitelinks
+  // Searchbox eligibility) and at the search-page level (for retrievers
+  // that walk from the page back to the action). query-input spec matches
+  // the GET form's ?q= param.
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${pageUrl}?q={search_term_string}`,
+    },
+    "query-input": "required name=search_term_string",
+  },
+  // SpeakableSpecification — voice assistants reading "how do I search
+  // Omni AI?" pull h1 + data-speakable="intro" subtitle.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export const metadata: Metadata = {
   title: "Search | Omni AI — Find Newsletter Issues, Posts & Pages",
   description:
@@ -203,6 +255,15 @@ export default async function SearchPage({
 
   return (
     <div className="min-h-screen bg-[#050508] text-white">
+      {/* WebPage schema with SearchAction + speakable — closes the parity
+          loop with the sitewide websiteSchema's SearchAction, which
+          declares /search?q={search_term_string} as the target. Having
+          the same SearchAction on the page itself strengthens the
+          retrieval signal for LLMs answering "how do I search Omni AI?"
+          queries. Speakable selectors mirror the pattern on /about,
+          /pricing, /arena, etc. */}
+      <JsonLd data={searchWebPageSchema} />
+
       {/* BreadcrumbList — Home → Search. Pairs with the visible breadcrumb
           below so Google awards the SERP breadcrumb chip on the search
           landing surface. */}
@@ -253,7 +314,10 @@ export default async function SearchPage({
           <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
             Find anything across Omni AI
           </h1>
-          <p className="text-lg text-gray-300 leading-relaxed mb-8">
+          <p
+            data-speakable="intro"
+            className="text-lg text-gray-300 leading-relaxed mb-8"
+          >
             Search every newsletter issue, trending post, and landing page.
             Results come back from the live archive in one shot.
           </p>
