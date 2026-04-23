@@ -29,7 +29,22 @@ export default function AffiliateSignUpPage() {
       </div>
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Sign up as an Omni AI Affiliate</h1>
-        <p className="text-gray-400 text-lg">Earn 30% recurring on every client you refer. The form is open below.</p>
+        {/* data-speakable="intro" activates the second CSS selector in
+            the SpeakableSpecification declared on
+            affiliateSignupWebPageSchema in
+            app/affiliate/sign-up/layout.tsx. Voice assistants
+            concatenate h1 + this subtitle as the ~8-second
+            hero-intent reply for "how do I sign up as an Omni AI
+            affiliate?" / "how much do Omni AI affiliates earn?"
+            queries. The modal that auto-opens on load is JS-driven
+            and invisible to voice scrapers — this server-rendered
+            pair is the only voice-retrieval surface on the page. */}
+        <p
+          className="text-gray-400 text-lg"
+          data-speakable="intro"
+        >
+          Earn 30% recurring on every client you refer. The form is open below.
+        </p>
       </div>
       <AffiliateSignupModal isOpen={open} onClose={() => { setOpen(false); router.push("/affiliate/info"); }} />
       <Footer />

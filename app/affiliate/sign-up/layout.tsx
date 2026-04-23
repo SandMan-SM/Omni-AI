@@ -104,9 +104,77 @@ const affiliateSignupServiceSchema = {
   },
 };
 
+// WebPage schema paired with the Service above. Speakable is only
+// valid on WebPage / CreativeWork descendants — Service is not a
+// CreativeWork subtype, so the Service schema can't carry speakable
+// directly. Split-schema pattern: WebPage owns the voice-retrieval
+// selectors, Service owns the offering / commission / action body.
+//
+// Voice-retrieval surface: /affiliate/sign-up auto-opens the
+// AffiliateSignupModal on load (useState(true) in page.tsx), which
+// means JS-disabled voice scrapers never see the modal content —
+// they read the server-rendered h1 + subtitle only. That makes
+// speakable especially valuable here: it's the ONLY voice-retrieval
+// surface on the page.
+//
+// Voice queries served: "how do I sign up as an Omni AI affiliate?"
+// / "how much do Omni AI affiliates earn?" / "how do I become an
+// Omni AI affiliate?" read h1 ("Sign up as an Omni AI Affiliate") +
+// the subtitle tagged data-speakable="intro" ("Earn 30% recurring
+// on every client you refer. The form is open below.") as the
+// natural ~8-second orientation reply. Deeper "what are the terms?"
+// / "do you pay monthly?" queries walk the about-edge into the
+// Service's Offer.description (commission percentage + Net-30 +
+// 90-day attribution).
+//
+// about: { Service, url } edge binds this WebPage to the Service
+// schema above so Google and LLM retrievers have a typed graph walk
+// from the voice surface into the commission-terms body.
+//
+// Matches the split-schema pattern shipped on /affiliate/book-consultation,
+// /interlinked/book-now, /sponsor/application, /sponsor/info,
+// /newsletter/premium/info, /book-now, /affiliate/info — every
+// Service-backed conversion page on the site carries a WebPage
+// speakable wrapper.
+const affiliateSignupWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Sign Up as an Omni AI Affiliate · Omni AI",
+  description:
+    "Modal-launch landing page for the Omni AI Affiliate Program signup form. 60-second onboarding for creators, consultants, and operators who want to earn 30% recurring commission on referred clients. The static h1 and subtitle are the voice-retrieval surface; the modal form handles conversion.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Service",
+    name: "Omni AI Affiliate Program — Signup",
+    url: pageUrl,
+  },
+  // SpeakableSpecification — hero-intent voice reply. The page body
+  // is brief by design (modal-launch conversion page), so the h1 +
+  // subtitle pair carry the entire orientation reply. Voice
+  // assistants asked "how do I sign up as an Omni AI affiliate?" /
+  // "how much do Omni AI affiliates earn?" read h1 ("Sign up as an
+  // Omni AI Affiliate") + the subtitle tagged data-speakable="intro"
+  // in app/affiliate/sign-up/page.tsx ("Earn 30% recurring on every
+  // client you refer. The form is open below.") as the natural
+  // ~8-second reply. The Service sibling's Offer.description carries
+  // the deeper "what are the payout terms?" body for voice queries
+  // that walk the about-edge.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      {/* WebPage schema with speakable — speakable is only valid on
+          WebPage / CreativeWork (not Service). See the constant above
+          for why this split-schema pattern matters on a modal-launch
+          page: voice scrapers never see the modal, they read the
+          server-rendered hero. */}
+      <JsonLd data={affiliateSignupWebPageSchema} />
       <JsonLd data={affiliateSignupServiceSchema} />
       {/* Breadcrumb schema — pairs with the visible Breadcrumb in
           the page body. 3-level Home → Affiliate Program → Sign Up,
