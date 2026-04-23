@@ -527,6 +527,24 @@ export function howToSchema({
       name: s.name,
       text: s.text,
     })),
+    // SpeakableSpecification — voice assistants (Google Assistant,
+    // Alexa, Siri) preferentially read HowTo-typed content for "how
+    // do I..." voice queries. Shipping speakable on the factory lifts
+    // every HowTo consumer at once (currently /campaigns and
+    // /website/development). The h1 target is a universal fallback;
+    // [data-speakable='intro'] is the opt-in marker consumers add to
+    // their hero subtitle so the voice reply concatenates h1 + intro
+    // paragraph as a natural ~10-second summary before enumerating
+    // the steps.
+    //
+    // This matches the same factory-level pattern applied in Cycle
+    // 116 to faqPageSchema — one speakable-opinionated factory edit
+    // propagates voice retrieval across every consumer without
+    // per-page schema changes.
+    speakable: {
+      "@type": "SpeakableSpecification",
+      cssSelector: ["h1", "[data-speakable='intro']"],
+    },
   };
 }
 

@@ -106,7 +106,17 @@ export default function Campaigns() {
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
                 <span className="text-gradient">AI Video Marketing</span>
               </h1>
-              <p className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto">
+              {/* data-speakable="intro" activates the
+                  SpeakableSpecification on campaignsHowToSchema
+                  (see app/campaigns/layout.tsx). Voice assistants
+                  read h1 + this paragraph together as the natural
+                  opening reply to "how does Omni AI do video
+                  marketing?" — then the enumerated HowTo steps
+                  follow as the body of the answer. */}
+              <p
+                className="text-gray-400 text-lg md:text-xl max-w-2xl mx-auto"
+                data-speakable="intro"
+              >
                 AI creates your video marketing, tests every piece of content,
                 and surfaces the winners — all inside your personal dashboard.
               </p>
