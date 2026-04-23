@@ -238,11 +238,15 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
 
   useEffect(() => { load(); }, [refreshKey]);
 
-  // Auto-refresh analytics every 60 seconds
+  // Auto-refresh analytics every 60 seconds.
+  // Admin-only endpoint — forward the omni_token bearer so requireAdmin()
+  // on the server side accepts the call.
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await fetch("/api/newsletter/analytics");
+        const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+        const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+        const res = await fetch("/api/newsletter/analytics", { headers: authHeaders });
         if (res.ok) setAnalytics(await res.json());
       } catch {}
     }, 60_000);

@@ -159,9 +159,13 @@ export default function FrayDashboard() {
   const load = async (showRefresh = false) => {
     if (showRefresh) setRefreshing(true);
     try {
+      // Both endpoints are admin-gated — forward the omni_token bearer
+      // that the auth-login edge function mints into localStorage.
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
       const [nlRes, analyticsRes] = await Promise.all([
-        fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store' }),
-        fetch(`/api/newsletter/analytics?_t=${Date.now()}`, { cache: 'no-store' }).catch(() => null),
+        fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store', headers: authHeaders }),
+        fetch(`/api/newsletter/analytics?_t=${Date.now()}`, { cache: 'no-store', headers: authHeaders }).catch(() => null),
       ]);
 
       if (nlRes.ok) {

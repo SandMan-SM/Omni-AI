@@ -1,4 +1,29 @@
 import { NextResponse } from 'next/server';
+import { requireAdmin } from '@/lib/admin-auth';
+
+/**
+ * GET /api/newsletter/analytics
+ *
+ * Fetches real-time email analytics from the Resend API:
+ * - Per-email delivery status (sent, delivered, opened, clicked, bounced, complained)
+ * - Aggregate stats (total, delivered, opened, clicked, bounced)
+ * - Open rate and click rate percentages
+ *
+ * Security notes:
+ *   - `force-dynamic`: without it, Next.js was statically prerendering this
+ *     route at build time. That meant the response (which includes raw
+ *     recipient email addresses in `emails[].to[]`) was cached into the
+ *     build output and served to anyone who hit the URL. Forcing dynamic
+ *     render makes each request go through the admin gate below.
+ *   - `requireAdmin()`: this endpoint exposes subscriber emails + per-send
+ *     delivery status. It was previously completely unauthed. Admin-only
+ *     now.
+ *
+ * This is called by the admin dashboard + Fray dashboard to show live
+ * newsletter performance. Both callers forward the omni_token bearer.
+ */
+
+export const dynamic = 'force-dynamic';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
@@ -12,17 +37,10 @@ interface ResendEmail {
   scheduled_at: string | null;
 }
 
-/**
- * GET /api/newsletter/analytics
- *
- * Fetches real-time email analytics from the Resend API:
- * - Per-email delivery status (sent, delivered, opened, clicked, bounced, complained)
- * - Aggregate stats (total, delivered, opened, clicked, bounced)
- * - Open rate and click rate percentages
- *
- * This is called by the admin dashboard to show live newsletter performance.
- */
 export async function GET() {
+  const auth = await requireAdmin();
+  if ('error' in auth && auth.error) return auth.error;
+
   if (!RESEND_API_KEY) {
     return NextResponse.json({ error: 'RESEND_API_KEY not configured' }, { status: 500 });
   }
