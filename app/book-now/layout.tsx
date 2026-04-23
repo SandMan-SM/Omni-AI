@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
 
 // /book-now is the core conversion surface — every paid-ad click lands
 // here, and social shares of the URL should carry a branded card, not
@@ -9,6 +10,65 @@ const ogImage =
   "title=" + encodeURIComponent("Book a Strategy Call") +
   "&topic=" + encodeURIComponent("Free 30-minute session with Omni AI operators") +
   "&eyebrow=" + encodeURIComponent("Omni AI · Book Now");
+
+const siteUrl = "https://omnileadsagi.com";
+const pageUrl = `${siteUrl}/book-now`;
+
+// Service JSON-LD for the free 30-min strategy call. Declaring this as a
+// typed Service (not a bare WebPage) unlocks two things:
+//  1. Google's Service rich result — the page can show up for "free AI
+//     strategy call", "Omni AI consultation", "book AI demo" with a
+//     provider/price/duration chip instead of a plain blue link.
+//  2. LLM retrieval — Claude / ChatGPT / Perplexity preferentially cite
+//     typed Service entities when answering "how do I talk to Omni AI?"
+//     or "is there a free consultation?". Without the type, the page
+//     looks like every other CTA landing page on the web.
+//
+// `offers.price: "0"` is the key field — the call is permanently free,
+// which is also the commercial differentiator. Google's reservation /
+// service rich results key off the price chip, so explicitly declaring
+// $0 unlocks the "Free" badge that outperforms priced competitors in
+// CTR for commercial-intent queries.
+//
+// provider intentionally repeats the Organization name + URL rather than
+// referencing the sitewide organizationSchema by @id. Search Console's
+// validator occasionally fails on cross-schema @id lookups across
+// separate JSON-LD blocks; inlining the minimal provider stub is more
+// resilient than relying on reference resolution.
+const serviceSchema = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  name: "Omni AI Strategy Call",
+  serviceType: "AI Strategy Consultation",
+  description:
+    "Free 30-minute strategy session with Omni AI operators. Walk through how autonomous AI lead generation, campaigns, and operations map to your revenue target. No pitch, no credit card, no obligation.",
+  provider: {
+    "@type": "Organization",
+    name: "Omni AI",
+    url: siteUrl,
+    logo: `${siteUrl}/favicon.png`,
+  },
+  areaServed: {
+    "@type": "Place",
+    name: "Worldwide",
+  },
+  audience: {
+    "@type": "Audience",
+    audienceType:
+      "Solo operators, marketing agencies, and lean RevOps teams evaluating autonomous AI lead generation.",
+  },
+  offers: {
+    "@type": "Offer",
+    name: "Free Strategy Call",
+    price: "0",
+    priceCurrency: "USD",
+    availability: "https://schema.org/InStock",
+    url: pageUrl,
+    description:
+      "30-minute call. No credit card. No obligation. Maps autonomous AI to your revenue target.",
+  },
+  url: pageUrl,
+};
 
 export const metadata: Metadata = {
   title: "Book a Strategy Call | Omni AI — Autonomous Lead Gen",
@@ -46,5 +106,25 @@ export default function BookNowLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return (
+    <>
+      {/* Service schema — unlocks Google Service rich result and gives LLMs
+          a typed entity to cite for "free AI strategy call" queries. See
+          the constant above for why `price: "0"` is the lever that matters
+          most. */}
+      <JsonLd data={serviceSchema} />
+      {/* Breadcrumb schema — paired with the visible breadcrumb in the
+          page body is the combination Google's breadcrumb rich result
+          requires. Even without the visible breadcrumb (client component
+          below doesn't render one today), the schema alone tells Google +
+          LLMs the page's position in the site hierarchy. */}
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: siteUrl },
+          { name: "Book Now", url: pageUrl },
+        ])}
+      />
+      {children}
+    </>
+  );
 }
