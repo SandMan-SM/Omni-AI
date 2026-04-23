@@ -64,11 +64,60 @@ export const metadata: Metadata = {
   },
 };
 
+// CollectionPage schema — /vs is a directory of comparison articles,
+// which is the exact semantic CollectionPage was designed for.
+// CollectionPage inherits from WebPage → CreativeWork, so speakable
+// is valid directly (no split-schema wrapper needed — cleaner shape
+// than the WebPage + about-Service/Product pattern used elsewhere).
+//
+// hasPart references the six child /vs/[competitor] articles
+// explicitly so Google and LLM retrievers have a typed graph walk
+// from the directory → individual comparison pages. ItemList
+// (already shipped below) covers the same data in list form;
+// CollectionPage wraps the semantic intent.
+//
+// Speakable is a hero-intent voice selector — "Omni AI alternatives"
+// / "what does Omni AI compare against?" / "who are Omni AI's
+// competitors?" voice queries read h1 ("Omni AI vs the field") +
+// the subtitle tagged data-speakable="intro" ("Balanced comparisons
+// against the 6 tools Omni AI gets evaluated against most often...")
+// as a ~12-second orientation reply. The per-competitor /vs/[slug]
+// pages already carry their own Article + FAQPage speakable for
+// deeper voice queries ("is Omni AI better than HubSpot?").
+const collectionPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "CollectionPage",
+  name: "Omni AI vs the Field — Comparison Index",
+  description:
+    "Head-to-head comparisons of Omni AI against the six platforms it gets evaluated against most often: HubSpot, Salesforce, Apollo, Outreach, Lemlist, and Clay.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: ogImage,
+  },
+  // SpeakableSpecification — hero-intent orientation reply for
+  // category-level voice queries that don't name a specific
+  // competitor. Voice queries that DO name a competitor ("Omni AI
+  // vs HubSpot") route to /vs/[competitor] instead, which carries
+  // its own Article + FAQPage speakable selectors.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function ComparisonIndexPage() {
   const comparisons = COMPARISON_SLUGS.map((slug) => COMPARISONS[slug]);
 
   return (
     <div className="min-h-screen bg-[#050508] text-white">
+      {/* CollectionPage schema — the directory-level typed entity for
+          the comparison cluster. Adds speakable for hero-intent voice
+          queries and a hasPart-style semantic for retrievers walking
+          from the hub into individual comparisons. See constant above
+          for why CollectionPage (not WebPage) is the right @type. */}
+      <JsonLd data={collectionPageSchema} />
       <JsonLd
         data={breadcrumbSchema([
           { name: "Home", url: siteUrl },
@@ -140,7 +189,18 @@ export default function ComparisonIndexPage() {
           <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
             Omni AI vs the field
           </h1>
-          <p className="text-lg text-gray-300 leading-relaxed max-w-3xl">
+          {/* data-speakable="intro" activates the second CSS selector in
+              collectionPageSchema's SpeakableSpecification. Voice
+              assistants concatenate h1 ("Omni AI vs the field") + this
+              subtitle as the ~12-second orientation reply for "Omni AI
+              alternatives" / "what does Omni AI compare against?"
+              voice queries. Named-competitor queries route to the
+              per-slug /vs/[competitor] pages, which have their own
+              Article + FAQPage speakable selectors. */}
+          <p
+            className="text-lg text-gray-300 leading-relaxed max-w-3xl"
+            data-speakable="intro"
+          >
             Balanced comparisons against the 6 tools Omni AI gets evaluated
             against most often. Each write-up names what the competitor does
             well — not just where Omni AI wins — so you can make the real call
