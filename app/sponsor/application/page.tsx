@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { Breadcrumb } from "@/components/breadcrumb";
 import {
   Dialog,
   DialogContent,
@@ -126,7 +127,25 @@ export default function SponsorApplication() {
       </header>
 
       <main className="relative z-10">
-        <motion.div 
+        {/* Visible breadcrumb — paired with the breadcrumbSchema in
+            app/sponsor/application/layout.tsx. Centered above the
+            hero so the composition stays visually balanced. Google
+            only awards the SERP breadcrumb chip when schema + visible
+            UI agree. 3-level Home → Sponsor → Application; both
+            parent URLs are live pages with their own schemas, so
+            every crumb points at a distinct canonical. */}
+        <div className="flex justify-center pt-10 pb-0 px-4">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Sponsor", href: "/sponsor" },
+              { name: "Application", href: "/sponsor/application" },
+            ]}
+            className="text-xs"
+          />
+        </div>
+
+        <motion.div
           initial="initial"
           animate="animate"
           variants={fadeUp}
@@ -136,7 +155,7 @@ export default function SponsorApplication() {
             <Shield className="w-4 h-4 text-purple-400" />
             <span className="text-sm text-gray-300">Exclusive Access</span>
           </div>
-          
+
           <h1 className="text-5xl md:text-6xl font-bold mb-4">
             <span className="text-gradient">Sponsor Debrief</span>
           </h1>
