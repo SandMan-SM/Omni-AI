@@ -4,6 +4,12 @@ import { Metadata } from "next";
 import Link from "next/link";
 import CTAButtons from "./CTAButtons";
 import { JsonLd, articleSchema } from "@/components/json-ld";
+// Daily landing pages (/[slug]) are the site's largest traffic surface —
+// each one had only a "Powered by Omni AI" minifooter. The shared Footer
+// gives every daily tweet-landed visitor a path to /newsletter, /faq,
+// /about, /campaigns, /interlinked. Doesn't violate the single-glow rule
+// in CLAUDE.md because Footer has no background decoration.
+import { Footer } from "@/components/footer";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -191,16 +197,12 @@ export default async function TrendingLandingPage({ params }: Props) {
         </p>
       </main>
 
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-white/5 py-8 text-center">
-        <p className="text-sm text-gray-600">
-          Powered by{" "}
-          <Link href="https://omnileadsagi.com" className="text-gray-400 hover:text-white transition-colors">
-            Omni AI
-          </Link>{" "}
-          — omnileadsagi.com
-        </p>
-      </footer>
+      {/* Footer — shared site footer. Carries the full internal-linking set
+          (Interlinked, Campaigns, Newsletter, About, FAQ, Infographic) so
+          daily landing pages don't terminate the session if the CTA misses. */}
+      <div className="relative z-10">
+        <Footer />
+      </div>
 
       <style>{`
         @keyframes drift1 {

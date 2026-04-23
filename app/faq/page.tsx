@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { JsonLd, faqPageSchema, breadcrumbSchema } from "@/components/json-ld";
+// Swapping in the full Footer so /faq — which is the single highest-leverage
+// GEO destination — carries the six-link internal-nav set. Same crawl-signal
+// + human-navigation rationale as the /about swap.
+import { Footer } from "@/components/footer";
 
 /**
  * Public FAQ page — the single highest-leverage page for GEO.
@@ -185,15 +189,7 @@ export default function FAQPage() {
         </div>
       </main>
 
-      <footer className="border-t border-white/5 py-8 text-center">
-        <p className="text-sm text-gray-600">
-          Powered by{" "}
-          <Link href="/" className="text-gray-400 hover:text-white transition-colors">
-            Omni AI
-          </Link>{" "}
-          — omnileadsagi.com
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

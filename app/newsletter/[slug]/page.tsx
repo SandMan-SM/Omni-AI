@@ -7,6 +7,10 @@ import { unstable_noStore as noStore } from "next/cache";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { ShareButton } from "@/components/share-button";
 import { JsonLd, newsArticleSchema } from "@/components/json-ld";
+// Per-issue archive pages had no site footer — a reader who finished a post
+// could only share or click the CTA. Adding the shared Footer gives them a
+// path back into the site (FAQ, About, Campaigns, Newsletter index).
+import { Footer } from "@/components/footer";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -261,6 +265,7 @@ export default async function NewsletterPostPage({ params }: Props) {
         </p>
 
       </article>
+      <Footer />
     </div>
   );
 }

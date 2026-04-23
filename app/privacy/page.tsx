@@ -1,6 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
+// Adds the full-site footer (logo, 6 nav links, tagline, copyright + privacy).
+// The in-body "See also: About · FAQ" block stays — it's redundant with the
+// footer but the inline one helps readers who scroll to the bottom of a long
+// legal page without needing to hunt for navigation.
+import { Footer } from "@/components/footer";
 
 // Human-readable effective date + ISO for JSON-LD. If you materially
 // change the practices below, bump both of these.
@@ -479,6 +484,7 @@ export default function PrivacyPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }

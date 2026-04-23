@@ -7,6 +7,11 @@ import {
   organizationSchema,
   breadcrumbSchema,
 } from "@/components/json-ld";
+// Replaces a minimal inline mini-footer. Uses the shared Footer so /about
+// carries the full internal-linking set (Interlinked, Campaigns, FAQ,
+// Newsletter, etc.) — a net-new path for both human navigation and LLM
+// crawl signal landing on the entity page.
+import { Footer } from "@/components/footer";
 
 /**
  * Founder / company anchor page.
@@ -217,15 +222,7 @@ export default function AboutPage() {
         </div>
       </main>
 
-      <footer className="border-t border-white/5 py-8 text-center">
-        <p className="text-sm text-gray-600">
-          Powered by{" "}
-          <Link href="/" className="text-gray-400 hover:text-white transition-colors">
-            Omni AI
-          </Link>{" "}
-          — omnileadsagi.com
-        </p>
-      </footer>
+      <Footer />
     </div>
   );
 }

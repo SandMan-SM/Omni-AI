@@ -3,6 +3,11 @@ import Link from "next/link";
 import { Metadata } from "next";
 import { Mail, Users, Eye } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
+// The newsletter archive was rendering with no footer at all — readers who
+// scrolled past the post list had nowhere to go. Add the shared Footer so
+// /about, /faq, /campaigns, /interlinked are one hop away from the content
+// hub. Matches the pattern added to /about and /faq in the same cycle.
+import { Footer } from "@/components/footer";
 
 export const metadata: Metadata = {
   title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
@@ -188,6 +193,7 @@ export default async function NewsletterIndexPage() {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
