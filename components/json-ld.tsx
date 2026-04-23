@@ -522,6 +522,26 @@ export function newsArticleSchema(post: {
     datePublished,
     dateModified,
     keywords: (post.keywords || []).join(", "),
+    // mentions: each keyword becomes its own Thing entity, giving the
+    // knowledge-graph a walkable edge per topic. `keywords` (comma-string)
+    // is what Google's legacy parser reads; `mentions` (typed entity array)
+    // is what LLM retrievers + modern Google structured-data indexing
+    // prefer — they resolve each Thing as a candidate entity and use the
+    // article as evidence that Omni AI is an authority on that topic.
+    // Shipping both is belt-and-suspenders: strictly additive, no
+    // down-rank risk, and the retrieval lift compounds per keyword.
+    //
+    // Empty-keywords-array guard: if `post.keywords` is null/empty we
+    // omit the `mentions` field entirely rather than ship `mentions: []`
+    // — Google's validator flags empty typed arrays as a soft error.
+    ...((post.keywords && post.keywords.length > 0)
+      ? {
+          mentions: post.keywords.map((kw) => ({
+            "@type": "Thing",
+            name: kw,
+          })),
+        }
+      : {}),
     articleSection,
     ...(wordCount ? { wordCount } : {}),
     author: {
