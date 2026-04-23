@@ -214,8 +214,21 @@ export async function getNewsletterAudience(
     m.active = !profileOptOut && (profileOptIn || subOptIn);
   }
 
+  // Profile-only rows that were never opted in are regular site users who
+  // never engaged with the newsletter — they don't belong in the audience
+  // view. This also makes DELETE on a profile-only row (which flips
+  // newsletter_subscribed=false on the profile) cause the row to disappear
+  // from the admin list on the next refresh, matching admin intent. Rows
+  // that exist in newsletter_subscriptions are always kept so an opt-out
+  // is still visible (and can be re-enabled) in the panel.
+  const filtered = materialized.filter((m) => {
+    if (m.source !== "profile") return true;
+    const p = profilesByEmail.get(m.email);
+    return p?.newsletter_subscribed === true;
+  });
+
   // Sort newest-first by created_at (null → end).
-  return materialized.sort((a, b) => {
+  return filtered.sort((a, b) => {
     if (!a.created_at && !b.created_at) return 0;
     if (!a.created_at) return 1;
     if (!b.created_at) return -1;
