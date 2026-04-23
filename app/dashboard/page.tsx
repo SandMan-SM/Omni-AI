@@ -158,11 +158,15 @@ export default function Dashboard() {
 
   const bookings = bookingsData?.bookings ?? [];
 
-  // Fetch real activity for admin
+  // Fetch real activity for admin. Forward the omni_token bearer so admins
+  // authed via the edge-function login path (not cookie/session) still
+  // pass the requireAdmin() gate on /api/admin/activity.
   const { data: activityData } = useQuery<{ activities: { id: string; type: string; subject: string | null; channel: string; created_at: string }[] }>({
     queryKey: ["admin-activity"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/activity?limit=6");
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch("/api/admin/activity?limit=6", { headers: authHeaders });
       return res.json();
     },
     enabled: !!isAdmin,
@@ -1057,9 +1061,14 @@ function OnboardingDialog({ open, onClose, profile, onSaved }: {
     if (!validate()) return;
     setSaving(true);
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
       const res = await fetch(`/api/admin/users/${profile.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({
           name: form.name,
           email: form.email,

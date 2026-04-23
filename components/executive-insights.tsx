@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import { type Profile } from "@/hooks/use-profile";
+import { authFetch } from "@/lib/auth";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -63,8 +64,8 @@ export function ExecutiveInsights() {
       try {
         // Fetch all profiles via supabase-js (reuse admin fetch)
         const [usersRes, actRes] = await Promise.all([
-          fetch("/api/admin/users-list"),
-          fetch("/api/admin/activity?limit=6"),
+          authFetch("/api/admin/users-list"),
+          authFetch("/api/admin/activity?limit=6"),
         ]);
         if (usersRes.ok) {
           const d = await usersRes.json();

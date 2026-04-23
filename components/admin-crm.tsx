@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Profile } from "@/hooks/use-profile";
 import { useToast } from "@/hooks/use-toast";
+import { authFetch } from "@/lib/auth";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -351,7 +352,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
 
   const handleMarkContact = async (id: string) => {
     try {
-      const res = await fetch(`/api/admin/users/${id}`, {
+      const res = await authFetch(`/api/admin/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ last_contacted: new Date().toISOString() }),
@@ -367,7 +368,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
 
   const handleUpdateScore = async (id: string, score: "hot" | "warm" | "cold") => {
     try {
-      const res = await fetch(`/api/admin/users/${id}`, {
+      const res = await authFetch(`/api/admin/users/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ lead_score: score }),

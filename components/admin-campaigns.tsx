@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import type { Profile } from "@/hooks/use-profile";
+import { authFetch } from "@/lib/auth";
 
 interface Campaign {
   id: string;
@@ -82,7 +83,7 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
   const load = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/admin/campaigns");
+      const res = await authFetch("/api/admin/campaigns");
       const data = await res.json();
       setCampaigns(data.campaigns || []);
     } finally {
@@ -366,7 +367,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
         profile_id: form.profile_id || null,
       };
       const url = isEdit ? `/api/admin/campaigns/${campaign!.id}` : "/api/admin/campaigns";
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         method: isEdit ? "PATCH" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -386,7 +387,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
     if (!campaign) return;
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/campaigns/${campaign.id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/admin/campaigns/${campaign.id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed");
       toast({ title: "Deleted" });
       onSaved();

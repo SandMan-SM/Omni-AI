@@ -60,11 +60,39 @@ export function getStoredUser(): OmniUser | null {
 }
 
 export function getToken(): string | null {
+  if (typeof window === 'undefined') return null;
   return localStorage.getItem('omni_token');
 }
 
 export function isAuthenticated(): boolean {
   return !!getToken() && !!getStoredUser();
+}
+
+/**
+ * Build headers that forward the omni_token bearer when the user is
+ * authed via the edge-function login path. Used by admin-only UI fetches
+ * so they pass `requireAdmin()` regardless of whether the user has a
+ * Supabase cookie session.
+ *
+ * Merges in any caller-supplied headers (e.g. "Content-Type" for JSON
+ * POST/PATCH bodies). Server-side (no window) returns a plain object so
+ * server components can still call this during SSR without crashing.
+ */
+export function authHeaders(extra: Record<string, string> = {}): HeadersInit {
+  const token = getToken();
+  return {
+    ...extra,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+}
+
+/**
+ * Convenience: fetch() with the bearer already forwarded. Use for admin
+ * endpoints. Callers can still override `headers` via the second arg.
+ */
+export function authFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
+  const extra = (init.headers as Record<string, string>) || {};
+  return fetch(input, { ...init, headers: authHeaders(extra) });
 }
 
 export async function createLead(name: string, email: string, phone: string): Promise<{ error: string | null }> {

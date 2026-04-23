@@ -23,6 +23,10 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile, type Profile } from "@/hooks/use-profile";
 import { useToast } from "@/hooks/use-toast";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+// authFetch forwards the omni_token bearer so admin-only endpoints pass
+// requireAdmin() regardless of whether the user is cookie-authed or
+// token-authed via the edge-function login path.
+import { authFetch } from "@/lib/auth";
 
 // Heavy tab bodies — lazy so the initial admin bundle stays small and
 // only the tab the admin actually opens ships its JS. AdminOverview
@@ -175,7 +179,7 @@ function ActivityFeed({ profileId }: { profileId: string }) {
 
   const load = useCallback(async () => {
     setLoading(true);
-    const res = await fetch(`/api/admin/activity?profile_id=${profileId}&limit=20`);
+    const res = await authFetch(`/api/admin/activity?profile_id=${profileId}&limit=20`);
     const data = await res.json();
     setActivities(data.activities || []);
     setLoading(false);
@@ -185,7 +189,7 @@ function ActivityFeed({ profileId }: { profileId: string }) {
 
   const handleLog = async () => {
     if (!form.body.trim()) return;
-    const res = await fetch("/api/admin/activity", {
+    const res = await authFetch("/api/admin/activity", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ profile_id: profileId, type: form.type, subject: form.subject, body: form.body, channel: form.channel }),
@@ -349,7 +353,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
       const ccMatch = existingPhone.match(/^(\+\d{1,3})\s?/);
       setPhoneCountry(ccMatch ? ccMatch[1] : "+1");
       // Fetch current password
-      fetch(`/api/admin/users/${u.id}`).then(r => r.json()).then(d => {
+      authFetch(`/api/admin/users/${u.id}`).then(r => r.json()).then(d => {
         if (d.password) setCurrentPassword(d.password);
       }).catch(() => {});
     }
@@ -394,7 +398,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
         payload.password = form.password.trim();
       }
 
-      const res = await fetch(`/api/admin/users/${u.id}`, {
+      const res = await authFetch(`/api/admin/users/${u.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -416,7 +420,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      const res = await fetch(`/api/admin/users/${u.id}`, { method: "DELETE" });
+      const res = await authFetch(`/api/admin/users/${u.id}`, { method: "DELETE" });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed");
       toast({ title: "Deleted", description: "Profile removed." });
@@ -697,7 +701,7 @@ function AddUserDialog({ open, onClose, onSaved }: { open: boolean; onClose: () 
     }
     setSaving(true);
     try {
-      const res = await fetch("/api/admin/users", {
+      const res = await authFetch("/api/admin/users", {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
       });
