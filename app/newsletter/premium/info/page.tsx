@@ -97,6 +97,64 @@ const premiumProductSchema = {
   ],
 };
 
+// WebPage schema paired with the Product/Service above. speakable is
+// only valid on WebPage / CreativeWork — neither Product nor Service
+// inherit from CreativeWork. Splitting into a dedicated WebPage block
+// keeps the Product/Service schema clean for Google's Product +
+// price-range rich result ("From $20" in SERP card) while adding a
+// second typed surface for voice retrievers:
+//
+//  - premiumProductSchema with dual Offers (intro + recurring) →
+//    Google Product rich result + LLM-citable price entity for
+//    "what does Omni AI premium cost?" queries
+//  - premiumInfoWebPageSchema with speakable + about: Product → voice
+//    assistants read the h1 + subtitle aloud on "what is Interlinked
+//    Premium?" / "what's Omni AI's paid newsletter?" voice queries
+//
+// The about: { Product } edge binds the two blocks so voice retrievers
+// can walk from "tell me about Interlinked Premium" → WebPage hero
+// speakable reply → premiumProductSchema.offers for the exact
+// $20-intro / $40-recurring price disclosure.
+//
+// Matches the split-schema pattern shipped on /arena, /sponsor/info,
+// /book-now, /affiliate/info, /interlinked/premium,
+// /interlinked/book-now, and /affiliate/consultation/info.
+const premiumInfoWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Interlinked Premium — Omni AI's paid newsletter for agentic AI operators",
+  description:
+    "The paid tier of the Interlinked newsletter: agentic AI strategies, automation playbooks, prompt libraries, early tool access, and a private community. $20 first month, $40/month after. Cancel anytime.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Product",
+    name: "Interlinked Premium — Omni AI Newsletter",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: ogImage,
+  },
+  // SpeakableSpecification — when a user asks Google Assistant / Siri
+  // read-aloud / Alexa "what is Interlinked Premium?" / "what does
+  // Omni AI's paid newsletter cost?" / "what do I get with Interlinked
+  // Premium?", voice assistants need declared CSS selectors to read
+  // verbatim. The h1 ("Interlinked Premium") plus the subtitle tagged
+  // with data-speakable="intro" below ("The free newsletter keeps you
+  // informed. Premium makes you dangerous. Agentic AI strategies,
+  // automation playbooks, and intelligence that compounds your
+  // advantage every single week.") compose the natural ~14-second
+  // voice reply — briefing-length positioning that sets up the 12-item
+  // "What You Get" list as the body of the answer, and the dual-Offer
+  // pricing as the cost disclosure for the follow-up "how much?"
+  // question.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export const metadata: Metadata = {
   title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
   description:
@@ -139,6 +197,15 @@ export default function PremiumInfoPage() {
     // chrome-gold embers) paints through. Same pattern as /arena and
     // /newsletter/[slug] but with the gold palette.
     <div className="min-h-screen text-white relative">
+      {/* WebPage schema with speakable — speakable is only valid on
+          WebPage / CreativeWork (neither Product nor Service inherit).
+          See the constant above for how the about: { Product } edge
+          binds this to premiumProductSchema so voice retrievers can
+          walk from the hero speakable reply into the dual-Offer
+          pricing body. Matches the split-schema pattern used on /arena,
+          /sponsor/info, /book-now, /affiliate/info, /interlinked/premium,
+          /interlinked/book-now, and /affiliate/consultation/info. */}
+      <JsonLd data={premiumInfoWebPageSchema} />
       <JsonLd data={premiumProductSchema} />
       <JsonLd
         data={breadcrumbSchema([
@@ -201,7 +268,18 @@ export default function PremiumInfoPage() {
           <h1 className="text-4xl md:text-5xl font-bold mt-5 mb-4">
             <span style={goldTextStyle}>Interlinked</span> Premium
           </h1>
-          <p className="text-gray-300 text-lg max-w-xl mx-auto leading-relaxed">
+          {/* data-speakable="intro" activates the second CSS selector in
+              the SpeakableSpecification declared on
+              premiumInfoWebPageSchema above. Voice assistants
+              concatenate h1 ("Interlinked Premium") + this subtitle as
+              the natural ~14-second reply to "what is Interlinked
+              Premium?" / "what's Omni AI's paid newsletter?" voice
+              queries, with the dual-Offer pricing + 12-item "What You
+              Get" list available as the body of the answer. */}
+          <p
+            className="text-gray-300 text-lg max-w-xl mx-auto leading-relaxed"
+            data-speakable="intro"
+          >
             The free newsletter keeps you informed. Premium makes you dangerous.
             Agentic AI strategies, automation playbooks, and intelligence that
             compounds your advantage every single week.
