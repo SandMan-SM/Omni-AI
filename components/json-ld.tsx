@@ -386,6 +386,28 @@ export function newsArticleSchema(post: {
   const articleSection =
     post.tier === "premium" ? "Interlinked Premium" : "Daily Intelligence";
 
+  // Per-post OG image from the dynamic opengraph-image route
+  // (app/newsletter/[slug]/opengraph-image.tsx). Every newsletter post
+  // gets a unique 1200x630 PNG at /newsletter/{slug}/opengraph-image,
+  // which is exactly the canonical image Google's NewsArticle rich-
+  // result surface wants for Top Stories inclusion.
+  //
+  // Why image matters specifically for NewsArticle: Google's Top Stories
+  // carousel + news-briefing voice surfaces ONLY render articles that
+  // declare an image. Without it, the post can still index but will be
+  // silently excluded from the most valuable retrieval surface for
+  // timely content. Declaring it as an ImageObject (not a bare URL
+  // string) and passing width/height lets Google's validator skip the
+  // fetch-and-measure step, which speeds up indexing on publish day
+  // — critical for daily-cadence newsletter posts where the TTL on
+  // "news freshness" is measured in hours.
+  //
+  // The 1200x630 dimension satisfies the minimum-1200px-wide
+  // requirement for Top Stories eligibility and keeps parity with the
+  // OG card served to Twitter/LinkedIn. Same image URL for both
+  // surfaces → single fetch at cold-cache, better Vercel edge hit rate.
+  const imageUrl = `${siteUrl}/newsletter/${post.slug}/opengraph-image`;
+
   return {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -393,6 +415,12 @@ export function newsArticleSchema(post: {
     description: (post.intro || "").slice(0, 200),
     url,
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    image: {
+      "@type": "ImageObject",
+      url: imageUrl,
+      width: 1200,
+      height: 630,
+    },
     datePublished,
     dateModified,
     keywords: (post.keywords || []).join(", "),
