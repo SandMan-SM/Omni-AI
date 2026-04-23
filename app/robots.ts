@@ -97,6 +97,15 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "ImagesiftBot", allow: "/" },        // Image enrichment for LLMs
       { userAgent: "Kagibot", allow: "/" },             // Kagi search
     ],
-    sitemap: "https://omnileadsagi.com/sitemap.xml",
+    // Dual sitemap declaration. /sitemap.xml is the full manifest (static
+    // pages + every landing page and newsletter post). /sitemap-news.xml
+    // is the Google News sitemap — 48h recency window, NewsArticle-tagged
+    // URLs only. Listing both lets Google News + LLM "latest news"
+    // retrieval hit the narrow file directly while general crawlers keep
+    // using the full sitemap.
+    sitemap: [
+      "https://omnileadsagi.com/sitemap.xml",
+      "https://omnileadsagi.com/sitemap-news.xml",
+    ],
   };
 }
