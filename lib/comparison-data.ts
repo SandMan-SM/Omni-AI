@@ -179,6 +179,231 @@ export const COMPARISONS: Record<string, ComparisonData> = {
     integrationNote:
       "Omni AI can import Apollo lists directly, or replace the sourcing layer entirely — most teams pick one approach after the first 30 days.",
   },
+  salesforce: {
+    slug: "salesforce",
+    name: "Salesforce",
+    category: "Enterprise CRM",
+    pricing: "$25–$500+ per user per month (Sales Cloud → Unlimited)",
+    summary:
+      "Salesforce is the enterprise CRM standard — deeply customizable, backed by a massive partner ecosystem. Omni AI is the autonomous execution layer above it that ships outbound, creative, and campaigns without needing a Salesforce admin to orchestrate each step.",
+    positioning:
+      "Salesforce excels as the record-of-truth once a deal is in motion. Omni AI excels at the stage before — finding, engaging, and qualifying prospects so they show up in your Salesforce pipeline already warm. The two are complementary, not competing.",
+    keyDifference:
+      "Salesforce is customizable infrastructure — powerful if you have a dedicated admin or SI partner running it. Omni AI is opinionated execution — it makes the autonomous calls a human operator would, without requiring the configuration tax.",
+    table: [
+      {
+        category: "Primary function",
+        them: "Enterprise CRM of record + custom workflow engine",
+        us: "Autonomous system that fills the pipeline before it hits the CRM",
+      },
+      {
+        category: "Admin burden",
+        them: "Typically requires a dedicated admin or certified partner",
+        us: "Zero config — free tier ships useful campaigns on sign-up",
+      },
+      {
+        category: "Creative + outbound",
+        them: "None — depends on Marketing Cloud or third-party tools",
+        us: "AI writes copy, produces video, ships multi-channel outbound",
+      },
+      {
+        category: "Pricing model",
+        them: "Per-seat, per-tier — can exceed $500/user/month",
+        us: "Flat platform tiers; free tier available",
+      },
+      {
+        category: "Time to value",
+        them: "Weeks to months (implementation + admin setup)",
+        us: "Minutes on the free tier; hours on paid tiers",
+      },
+    ],
+    pros: [
+      "Most mature CRM feature set in the market",
+      "Deep customization via Flow, Apex, and the AppExchange ecosystem",
+      "Gold-standard reporting and forecasting capabilities",
+      "Widely adopted — Salesforce skills are easy to hire for",
+    ],
+    cons: [
+      "Requires admin expertise to run effectively — hidden ops cost",
+      "No native autonomous outbound — still need sequencing/creative tools",
+      "Per-user pricing scales into six figures fast for mid-market teams",
+      "Implementation timelines measured in quarters, not weeks",
+    ],
+    faqs: [
+      {
+        question: "Is Omni AI a Salesforce replacement?",
+        answer:
+          "For most teams, no — Salesforce stays as the CRM of record and Omni AI feeds it warmer pipeline. A few smaller operations replace Salesforce with a lighter CRM (HubSpot free tier, Pipedrive) when Omni AI handles the top-of-funnel work that used to justify a Salesforce admin.",
+      },
+      {
+        question: "Does Omni AI integrate with Salesforce?",
+        answer:
+          "Yes. Omni AI pushes qualified leads, campaign events, and meeting-booked signals into Salesforce leads, contacts, and opportunities via the Salesforce REST API. Two-way sync is supported — updates in Salesforce reflect back into Omni AI campaign context.",
+      },
+      {
+        question: "How does Omni AI compare to Salesforce Marketing Cloud or Einstein?",
+        answer:
+          "Salesforce's marketing + Einstein AI products layer on top of Salesforce data. Omni AI works independently — it doesn't require a Salesforce admin to configure prompts or data connectors. For teams already paying for Marketing Cloud, Omni AI usually replaces the execution part of the stack while keeping the CRM record-keeping layer.",
+      },
+      {
+        question: "Can a small team run Omni AI without Salesforce?",
+        answer:
+          "Yes. Many operators under $5M ARR use Omni AI as their full revenue stack without a CRM at all, letting Omni AI track pipeline state natively. Add a lightweight CRM when you grow past the point where spreadsheet-grade pipeline becomes painful.",
+      },
+    ],
+    integrationNote:
+      "Omni AI syncs qualified leads and meeting-booked events into Salesforce via the REST API — two-way so CRM updates flow back into Omni AI context.",
+  },
+  outreach: {
+    slug: "outreach",
+    name: "Outreach",
+    category: "Sales engagement platform",
+    pricing: "$100–$200+ per user per month (custom quotes above)",
+    summary:
+      "Outreach is the category-leading sales engagement platform built for SDR teams running template-based sequences. Omni AI is for operators who want autonomous outbound — no SDR team, no seat costs, no template engineering.",
+    positioning:
+      "Outreach assumes you have SDRs executing sequences and a team lead tuning the templates. Omni AI assumes you don't — the system writes the outbound, tests variants, and promotes winners on its own, so the SDR-team layer isn't required to get results.",
+    keyDifference:
+      "Outreach is a force multiplier for SDR teams. Omni AI is a replacement for the SDR team entirely, for operators under $5M ARR who can't justify the headcount in the first place.",
+    table: [
+      {
+        category: "Team model",
+        them: "Built for SDR teams running coordinated sequences",
+        us: "Built for solo + lean teams running autonomous sequences",
+      },
+      {
+        category: "Creative production",
+        them: "None — template library + human writers",
+        us: "AI writes per-contact copy, generates video, tests variants",
+      },
+      {
+        category: "Pricing model",
+        them: "Per-seat enterprise pricing; $100–$200/user/mo typical",
+        us: "Flat platform tiers; no per-seat multiplier",
+      },
+      {
+        category: "Learning loop",
+        them: "Analytics dashboards — humans interpret and adjust",
+        us: "Auto-promotes winning variants, retires losers without ops input",
+      },
+      {
+        category: "Best fit",
+        them: "Series B+ SaaS with 10+ SDRs",
+        us: "Solo founders through Series A SaaS (1–5 RevOps seats)",
+      },
+    ],
+    pros: [
+      "Mature sequencing + cadence engine built for SDR teams",
+      "Strong Salesforce native integration",
+      "Battle-tested analytics and forecasting dashboards",
+      "Established training + enablement resources",
+    ],
+    cons: [
+      "No autonomous creative — template engineering is a constant job",
+      "Per-seat pricing assumes you already have an SDR team",
+      "Manual variant testing — no auto-promotion of winners",
+      "Minimum seat counts and enterprise contracts common",
+    ],
+    faqs: [
+      {
+        question: "Is Omni AI an Outreach alternative?",
+        answer:
+          "For teams without an existing SDR team, Omni AI is the better fit — it's designed to run outbound autonomously rather than coordinate sequences across human sellers. For teams with 10+ SDRs who want a sequencing engine, Outreach is still the category leader.",
+      },
+      {
+        question: "Can I replace Outreach with Omni AI?",
+        answer:
+          "Most operations under $5M ARR can — Omni AI covers sequencing, creative production, video outreach, and qualification in one system without seat costs. Above that, teams often keep Outreach for their existing SDR organization and use Omni AI on top-of-funnel prospecting that would otherwise need more SDR hiring.",
+      },
+      {
+        question: "How does Omni AI's pricing compare to Outreach?",
+        answer:
+          "Outreach typically runs $100–$200 per seat per month and often requires minimum seat counts. Omni AI uses flat platform tiers with no per-seat charge — so a solo operator on the free tier pays $0 while a 10-seat Outreach deployment runs $12,000–$24,000 per year. Book a call at omnileadsagi.com/book-now for a direct mapping.",
+      },
+      {
+        question: "Does Omni AI do video outreach like Outreach with Vidyard?",
+        answer:
+          "Yes — Omni AI generates personalized video variants natively via its video pipeline. No third-party Vidyard plug-in needed. Variants are auto-tested and the winning format gets promoted across the campaign without manual intervention.",
+      },
+    ],
+    integrationNote:
+      "Omni AI can import Outreach sequences as a starting point or replace the sequencing layer entirely — most teams migrate fully within 60 days once autopilot is trusted.",
+  },
+  lemlist: {
+    slug: "lemlist",
+    name: "Lemlist",
+    category: "Cold email + personalized video",
+    pricing: "$39–$199 per user per month",
+    summary:
+      "Lemlist is a cold email tool with built-in personalized video and landing pages — a go-to for solo SDRs and small outbound teams. Omni AI covers everything Lemlist does plus autonomous creative production, multi-channel orchestration, and self-optimizing campaigns.",
+    positioning:
+      "Lemlist is a great tool if you already know what to write and just need a fast way to ship it. Omni AI is a better fit if you want the system to decide what to write, produce the video, ship it, measure it, and iterate — without a human typing each sequence.",
+    keyDifference:
+      "Lemlist saves time on execution. Omni AI saves time on execution AND decision-making — the system picks the next move from operational memory, so you don't have to.",
+    table: [
+      {
+        category: "Primary function",
+        them: "Cold email + personalized video with templates",
+        us: "End-to-end autonomous revenue system",
+      },
+      {
+        category: "Creative origination",
+        them: "Human-written templates; AI assist for variations",
+        us: "AI writes per-contact copy + produces video from scratch",
+      },
+      {
+        category: "Channel coverage",
+        them: "Email + personalized video + basic landing pages",
+        us: "Email, LinkedIn, video, landing pages, retargeting ads",
+      },
+      {
+        category: "Optimization",
+        them: "Manual A/B testing in the dashboard",
+        us: "Auto-promotes winners, retires losers, no human input",
+      },
+      {
+        category: "Pricing model",
+        them: "Per-seat ($39–$199/user/mo)",
+        us: "Flat platform tiers; no per-seat tax",
+      },
+    ],
+    pros: [
+      "Fastest path to personalized video-in-email at scale",
+      "Affordable entry tier for solo outbound operators",
+      "Strong deliverability tooling + warm-up built in",
+      "Clean UI — easy for non-technical sellers to ship sequences",
+    ],
+    cons: [
+      "Template-driven — you still write the copy",
+      "Manual A/B testing; no autonomous promotion of winning variants",
+      "Per-seat pricing multiplies as team grows",
+      "Focused on cold email specifically — limited multi-channel native",
+    ],
+    faqs: [
+      {
+        question: "Is Omni AI a Lemlist alternative?",
+        answer:
+          "Yes — Omni AI covers cold email, personalized video, and landing pages natively, plus AI-generated copy, LinkedIn outreach, retargeting ads, and autonomous optimization. Teams typically switch from Lemlist when they hit the ceiling of 'I still have to write every template myself.'",
+      },
+      {
+        question: "Does Omni AI do personalized video like Lemlist?",
+        answer:
+          "Yes. Omni AI generates personalized video variants for each prospect and auto-tests which opening, framing, and voiceover performs best. The winning variant gets promoted across the campaign automatically — no human QA loop.",
+      },
+      {
+        question: "How does Omni AI's cold email deliverability compare?",
+        answer:
+          "Omni AI follows the same cold email hygiene Lemlist does — inbox warm-up, rotating sending domains, reply-rate-based pacing. Deliverability is a technical hygiene issue more than a platform issue; both work if configured correctly.",
+      },
+      {
+        question: "Can I import my Lemlist campaigns?",
+        answer:
+          "Yes. Export your Lemlist sequence as a starting point and Omni AI will use it to seed its autonomous copy generation for the campaign. The system then writes variants and tests them against your original — usually beating the human-written baseline within 2 weeks.",
+      },
+    ],
+    integrationNote:
+      "Omni AI can import Lemlist sequences as a seed or replace the cold-email layer entirely — most teams migrate fully once autopilot consistently beats their original templates.",
+  },
   clay: {
     slug: "clay",
     name: "Clay",
