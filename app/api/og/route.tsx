@@ -7,10 +7,18 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const title = searchParams.get("title") || "AI Is Changing Everything";
   const topic = searchParams.get("topic") || "AI & Business Automation";
+  // Optional eyebrow override so /newsletter/[slug] cards can read
+  // "Omni AI · Interlinked" instead of the default "Trending Now" used
+  // by the daily landing pages. Both paths share the same OG generator
+  // so the brand art stays identical; only the eyebrow copy varies.
+  const eyebrow =
+    searchParams.get("eyebrow") || "Omni AI · Trending Now";
 
   // Truncate title for display
   const displayTitle = title.length > 60 ? title.slice(0, 57) + "..." : title;
   const displayTopic = topic.length > 80 ? topic.slice(0, 77) + "..." : topic;
+  const displayEyebrow =
+    eyebrow.length > 40 ? eyebrow.slice(0, 37) + "..." : eyebrow;
 
   return new ImageResponse(
     (
@@ -106,7 +114,7 @@ export async function GET(req: NextRequest) {
                 textTransform: "uppercase",
               }}
             >
-              Omni AI · Trending Now
+              {displayEyebrow}
             </span>
           </div>
 

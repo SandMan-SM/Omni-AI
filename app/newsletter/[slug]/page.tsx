@@ -44,6 +44,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const keywords = post.keywords?.join(", ") || "AI, business, automation";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
+  // Dynamic 1200x630 OG image for the social auto-render card (Twitter /
+  // LinkedIn / Slack). Before this, newsletter posts fell back to the
+  // site-wide opengraph-image.tsx — every issue shared the same generic
+  // "Omni AI / Lead Generation on Autopilot" art regardless of subject.
+  // Now each shared link previews with the post's own headline and intro
+  // using the same /api/og edge route the daily landing pages use, with
+  // an Interlinked eyebrow so readers can tell newsletter cards from
+  // trending-topic cards at a glance.
+  const ogTopic = (post.intro || keywords).slice(0, 140);
+  const ogImage =
+    `${siteUrl}/api/og?slug=${slug}` +
+    `&title=${encodeURIComponent(post.subject)}` +
+    `&topic=${encodeURIComponent(ogTopic)}` +
+    `&eyebrow=${encodeURIComponent("Omni AI · Interlinked")}`;
   return {
     title: `${post.subject} | Interlinked by Omni AI`,
     description: post.intro?.slice(0, 160),
@@ -60,11 +74,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       publishedTime: post.published_at,
       siteName: "Interlinked by Omni AI",
       url: postUrl,
+      images: [
+        { url: ogImage, width: 1200, height: 630, alt: post.subject },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: post.subject,
       description: post.intro?.slice(0, 160),
+      images: [ogImage],
+      site: "@SitaniMafi",
     },
   };
 }
