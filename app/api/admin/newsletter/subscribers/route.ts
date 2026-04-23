@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -54,7 +55,13 @@ export async function POST(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 400 });
+    // Scrub raw supabase text — upserts here commonly return verbose
+    // constraint-violation detail that leaks the column layout.
+    return serverErrorResponse(
+      "admin/newsletter/subscribers.POST",
+      error,
+      400,
+    );
   }
   return NextResponse.json({ subscriber: data }, { status: 201 });
 }

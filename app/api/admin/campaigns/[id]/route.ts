@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 // PATCH /api/admin/campaigns/[id] — update a campaign (admin only)
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
@@ -24,10 +25,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    // Swap raw .message for a tagged server-logged error. Previously these
+    // responses leaked Postgres constraint / column detail on bad PATCH
+    // payloads; now the schema stays opaque to an admin-session holder.
+    if (error) return serverErrorResponse("admin/campaigns/[id].PATCH", error);
     return NextResponse.json({ campaign: data });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/campaigns/[id].PATCH", err);
   }
 }
 
@@ -39,6 +43,6 @@ export async function DELETE(_req: NextRequest, { params }: { params: { id: stri
   const sb = createAdminClient();
 
   const { error } = await sb.from("campaigns").delete().eq("id", params.id);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverErrorResponse("admin/campaigns/[id].DELETE", error);
   return NextResponse.json({ success: true });
 }

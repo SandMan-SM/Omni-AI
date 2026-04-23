@@ -33,7 +33,15 @@ export async function POST() {
     const { error: addErr } = await sb.rpc("exec", {
       sql: "ALTER TABLE public.newsletter_posts ADD COLUMN IF NOT EXISTS send_feedback TEXT;",
     });
-    if (addErr) errors.push(`send_feedback: ${addErr.message}`);
+    if (addErr) {
+      // Log full supabase error server-side, push a scrubbed tag into the
+      // response. The original `addErr.message` text surfaces the raw
+      // ALTER TABLE rejection (function / role / constraint name), which
+      // isn't useful to the admin but is a schema-mapping gift to anyone
+      // who hijacks an admin session.
+      console.error("[admin/db-setup] send_feedback alter failed", addErr);
+      errors.push("send_feedback: alter failed");
+    }
   }
 
   void e1; // suppress unused variable warning

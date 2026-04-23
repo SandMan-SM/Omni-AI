@@ -65,6 +65,10 @@ export async function PATCH(request: Request, { params }: Params) {
   ]);
 
   // Tier change → newsletter_subscriptions is the authoritative source for tier.
+  // Every `errors.push(...)` below is the scrubbed form: step tag only in the
+  // response body, full supabase error logged server-side so the admin can
+  // still triage via Vercel logs. Earlier versions concatenated
+  // `error.message` into the response which leaked constraint detail.
   if (typeof body.subscription_tier === "string") {
     const tier = body.subscription_tier;
     if (sub) {
@@ -72,7 +76,10 @@ export async function PATCH(request: Request, { params }: Params) {
         .from("newsletter_subscriptions")
         .update({ subscription_tier: tier, subscribed: true })
         .eq("id", sub.id);
-      if (error) errors.push(`subscriptions.update: ${error.message}`);
+      if (error) {
+        console.error("[admin/newsletter/subscribers] subscriptions.update", error);
+        errors.push("subscriptions.update failed");
+      }
     } else {
       // No subscriptions row yet — create one so the tier choice persists.
       const { error } = await admin.from("newsletter_subscriptions").insert({
@@ -81,7 +88,10 @@ export async function PATCH(request: Request, { params }: Params) {
         subscription_tier: tier,
         subscribed: true,
       });
-      if (error) errors.push(`subscriptions.insert: ${error.message}`);
+      if (error) {
+        console.error("[admin/newsletter/subscribers] subscriptions.insert", error);
+        errors.push("subscriptions.insert failed");
+      }
     }
     // Make sure the profile isn't flagged unsubscribed (explicit opt-out
     // would override the subscription row otherwise).
@@ -90,7 +100,10 @@ export async function PATCH(request: Request, { params }: Params) {
         .from("profiles")
         .update({ newsletter_subscribed: true })
         .eq("id", profile.id);
-      if (error) errors.push(`profiles.update: ${error.message}`);
+      if (error) {
+        console.error("[admin/newsletter/subscribers] profiles.update", error);
+        errors.push("profiles.update failed");
+      }
     }
   }
 
@@ -104,14 +117,20 @@ export async function PATCH(request: Request, { params }: Params) {
           subscription_tier: body.subscribed ? sub.subscription_tier || "subscribed" : "unsubscribed",
         })
         .eq("id", sub.id);
-      if (error) errors.push(`subscriptions.update: ${error.message}`);
+      if (error) {
+        console.error("[admin/newsletter/subscribers] subscriptions.update", error);
+        errors.push("subscriptions.update failed");
+      }
     }
     if (profile) {
       const { error } = await admin
         .from("profiles")
         .update({ newsletter_subscribed: body.subscribed })
         .eq("id", profile.id);
-      if (error) errors.push(`profiles.update: ${error.message}`);
+      if (error) {
+        console.error("[admin/newsletter/subscribers] profiles.update", error);
+        errors.push("profiles.update failed");
+      }
     }
   }
 
@@ -143,14 +162,20 @@ export async function DELETE(_request: Request, { params }: Params) {
     admin.from("newsletter_subscriptions").delete().ilike("email", email),
     admin.from("profiles").select("id, newsletter_subscribed").ilike("email", email).maybeSingle(),
   ]);
-  if (subErr) errors.push(`subscriptions.delete: ${subErr.message}`);
+  if (subErr) {
+    console.error("[admin/newsletter/subscribers] subscriptions.delete", subErr);
+    errors.push("subscriptions.delete failed");
+  }
 
   if (profile) {
     const { error } = await admin
       .from("profiles")
       .update({ newsletter_subscribed: false })
       .eq("id", profile.id);
-    if (error) errors.push(`profiles.update: ${error.message}`);
+    if (error) {
+      console.error("[admin/newsletter/subscribers] profiles.update", error);
+      errors.push("profiles.update failed");
+    }
   }
 
   if (errors.length) {

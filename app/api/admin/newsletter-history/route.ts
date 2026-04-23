@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { generateFreeContent, generatePremiumContent } from "@/lib/newsletter-sender";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 /*
  * SQL needed to enable full newsletter tracking (run once in Supabase SQL editor):
@@ -223,7 +224,7 @@ export async function POST(request: Request) {
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return serverErrorResponse("admin/newsletter-history.update-email-log", error);
     return NextResponse.json({ success: true, log: data });
   }
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { logEvent } from "@/lib/events";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function GET(req: NextRequest) {
   if (profileId) query = query.eq("profile_id", profileId);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverErrorResponse("admin/activity.GET", error);
   return NextResponse.json({ activities: data || [] });
 }
 
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return serverErrorResponse("admin/activity.POST", error);
 
     // Also update last_contacted on the profile
     await sb.from("profiles").update({ last_contacted: new Date().toISOString() }).eq("id", profile_id);
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ success: true, activity: data });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/activity.POST", err);
   }
 }

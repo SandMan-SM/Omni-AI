@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -84,7 +85,7 @@ export async function GET(request: Request) {
     .order("category", { ascending: true })
     .order("amount_usd", { ascending: false });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverErrorResponse("admin/business-expenses.GET", error);
 
   const rows = (data || []) as Expense[];
 
@@ -151,6 +152,6 @@ export async function POST(request: Request) {
     .select()
     .single();
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  if (error) return serverErrorResponse("admin/business-expenses.POST", error, 400);
   return NextResponse.json({ expense: data }, { status: 201 });
 }

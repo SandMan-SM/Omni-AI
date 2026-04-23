@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { logEvent } from "@/lib/events";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 // POST + PATCH /api/admin/newsletter-toggle (admin only)
 // Toggle newsletter_subscribed on a profile and sync to newsletter_subscriptions
@@ -45,7 +46,10 @@ async function handleToggle(req: Request) {
       .single();
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      // Scrub — a 400 from Supabase here typically carries constraint
+      // detail (e.g., "subscription_status_check violated"). Admin can
+      // still read the root cause in the server logs.
+      return serverErrorResponse("admin/newsletter-toggle", error, 400);
     }
 
     // 2. Sync to newsletter_subscriptions table
@@ -96,7 +100,7 @@ async function handleToggle(req: Request) {
     });
 
     return NextResponse.json({ profile: { id: data.id, newsletter_subscribed: data.newsletter_subscribed, is_premium: data.is_premium } });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Failed" }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/newsletter-toggle", err);
   }
 }

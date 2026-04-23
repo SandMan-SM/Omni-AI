@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { logEvent } from "@/lib/events";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 // GET /api/admin/campaigns — fetch all campaigns (admin only)
 export async function GET(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
   if (profileId) query = query.eq("profile_id", profileId);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return serverErrorResponse("admin/campaigns.GET", error);
   return NextResponse.json({ campaigns: data || [] });
 }
 
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return serverErrorResponse("admin/campaigns.POST", error);
 
     // Log event (fire-and-forget)
     logEvent(sb, {
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({ campaign: data }, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/campaigns.POST", err);
   }
 }

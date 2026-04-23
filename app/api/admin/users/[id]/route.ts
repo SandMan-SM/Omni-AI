@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { hashPassword } from "@/lib/password";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 // GET /api/admin/users/[id] — fetch profile credentials (admin only)
 // NEVER returns the actual password hash
@@ -20,8 +21,8 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
       .single();
     // Return username only — never expose password hash
     return NextResponse.json({ username: creds?.username || null });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/users/[id].GET", err);
   }
 }
 
@@ -77,7 +78,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       .select()
       .single();
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return serverErrorResponse("admin/users/[id].PATCH", error);
 
     // Update password if provided — hash before storing
     if (body.password && typeof body.password === "string" && body.password.trim()) {
@@ -87,13 +88,21 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         .update({ password_hash: hashedPassword })
         .eq("profile_id", id);
       if (pwError) {
-        return NextResponse.json({ error: `Profile saved but password update failed: ${pwError.message}` }, { status: 500 });
+        // Keep the user-facing line specific — the caller needs to know the
+        // profile persisted even though the password didn't — but scrub
+        // pwError.message so the underlying constraint isn't exposed.
+        return serverErrorResponse(
+          "admin/users/[id].PATCH.password",
+          pwError,
+          500,
+          "Profile saved but password update failed",
+        );
       }
     }
 
     return NextResponse.json({ success: true, profile: data });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/users/[id].PATCH", err);
   }
 }
 
@@ -115,10 +124,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     // Delete profile
     const { error } = await sb.from("profiles").delete().eq("id", id);
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return serverErrorResponse("admin/users/[id].DELETE", error);
 
     return NextResponse.json({ success: true });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/users/[id].DELETE", err);
   }
 }

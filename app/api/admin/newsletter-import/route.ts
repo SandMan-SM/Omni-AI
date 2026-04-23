@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 // POST /api/admin/newsletter-import — import subscribers from CSV (admin only)
 export async function POST(req: Request) {
@@ -62,7 +63,12 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ added, skipped, total: lines.length - start });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message || "Import failed" }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse(
+      "admin/newsletter-import",
+      err,
+      500,
+      "Import failed",
+    );
   }
 }

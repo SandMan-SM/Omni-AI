@@ -79,7 +79,12 @@ export async function POST(request: Request) {
       );
     if (error) {
       skipped++;
-      errors.push(`${email}: ${error.message}`);
+      // Log full error server-side (row + code + message) so admins can
+      // triage in Vercel logs. Surface only the email to the UI so a
+      // malformed CSV can't be used to extract constraint / column detail
+      // from thousands of forced supabase errors.
+      console.error("[admin/newsletter/import] upsert failed", { email, error });
+      errors.push(`${email}: upsert failed`);
     } else {
       added++;
     }

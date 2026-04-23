@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { hashPassword } from "@/lib/password";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 // POST /api/admin/users — create a new user (admin only)
 export async function POST(req: NextRequest) {
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
       .single();
 
     if (profileError) {
-      return NextResponse.json({ error: profileError.message }, { status: 500 });
+      return serverErrorResponse("admin/users.POST", profileError);
     }
 
     // Hash password before storing
@@ -70,11 +71,11 @@ export async function POST(req: NextRequest) {
     if (credError) {
       // Rollback profile
       await supabase.from("profiles").delete().eq("id", profile.id);
-      return NextResponse.json({ error: credError.message }, { status: 500 });
+      return serverErrorResponse("admin/users.POST", credError);
     }
 
     return NextResponse.json({ success: true, profile });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    return serverErrorResponse("admin/users.POST", err);
   }
 }

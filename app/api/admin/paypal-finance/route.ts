@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { serverErrorResponse } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
 
@@ -128,7 +129,7 @@ export async function GET(request: Request) {
   ]);
 
   if (txnRes.error) {
-    return NextResponse.json({ error: txnRes.error.message }, { status: 500 });
+    return serverErrorResponse("admin/paypal-finance.GET", txnRes.error);
   }
 
   const txns = (txnRes.data || []) as Txn[];
