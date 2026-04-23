@@ -34,6 +34,10 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
     { href: "/campaigns", label: "Campaigns" },
     { href: "/details", label: "Infographic" },
     { href: "/arena", label: "Arena" },
+    // Newsletter is the flagship content hub and a strong top-of-funnel
+    // magnet — surfacing it in the main nav (not just the footer) feeds
+    // both UX and internal-linking SEO.
+    { href: "/newsletter", label: "Newsletter" },
   ];
 
   return (

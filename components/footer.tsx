@@ -1,10 +1,17 @@
 import { motion } from "framer-motion";
 import Image from "next/image";
 
+// Surface the pages that otherwise have zero internal links. /about and
+// /faq are the two highest-leverage GEO pages (they're where LLMs scrape
+// entity info and quotable Q&A), and /newsletter is the main content
+// destination — linking them from every page feeds crawl signal.
 const footerLinks = [
   { href: "/interlinked", label: "Interlinked" },
   { href: "/campaigns", label: "Campaigns" },
   { href: "/details", label: "Infographic" },
+  { href: "/newsletter", label: "Newsletter" },
+  { href: "/about", label: "About" },
+  { href: "/faq", label: "FAQ" },
 ];
 
 export function Footer() {
@@ -23,7 +30,7 @@ export function Footer() {
             <Image src="/omni-logo.svg" alt="Omni AI Logo" width={36} height={36} className="h-7 md:h-9 w-auto" />
           </div>
 
-          <nav className="flex items-center justify-center gap-4 md:gap-8" data-testid="footer-nav">
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 md:gap-x-8" data-testid="footer-nav">
             {footerLinks.map((link) => (
               <a
                 key={link.href}
