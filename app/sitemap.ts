@@ -36,7 +36,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let newsletterRows: {
     slug: string;
     published_at: string | null;
-    updated_at: string | null;
   }[] = [];
 
   try {
@@ -47,9 +46,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .select("slug, date")
         .order("date", { ascending: false })
         .limit(5000),
+      // newsletter_posts has no updated_at column — only published_at. If we
+      // select updated_at Supabase returns an error and the table drops out
+      // of the sitemap entirely.
       supabase
         .from("newsletter_posts")
-        .select("slug, published_at, updated_at")
+        .select("slug, published_at")
+        .not("slug", "is", null)
+        .not("published_at", "is", null)
         .order("published_at", { ascending: false })
         .limit(5000),
     ]);
@@ -72,11 +76,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .filter((r) => r.slug)
     .map((r) => ({
       url: `${baseUrl}/newsletter/${r.slug}`,
-      lastModified: r.updated_at
-        ? new Date(r.updated_at).toISOString()
-        : r.published_at
-          ? new Date(r.published_at).toISOString()
-          : now,
+      lastModified: r.published_at
+        ? new Date(r.published_at).toISOString()
+        : now,
       changeFrequency: "weekly",
       priority: 0.8,
     }));
