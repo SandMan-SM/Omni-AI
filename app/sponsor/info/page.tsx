@@ -20,6 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 const investmentAreas = [
   { icon: Bot, title: "AI-powered lead generation", desc: "Systems that identify and capture qualified leads automatically" },
@@ -106,7 +107,21 @@ export default function SponsorInfo() {
       </header>
 
       <main className="relative z-10">
-        <motion.div 
+        {/* Visible breadcrumb — paired with the breadcrumbSchema in
+            app/sponsor/info/layout.tsx. Google only awards the SERP
+            breadcrumb chip when both the schema and visible UI agree.
+            Centered to match the centered hero composition below. */}
+        <div className="flex justify-center pt-10 pb-0 px-4">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Sponsor", href: "/sponsor" },
+              { name: "Information", href: "/sponsor/info" },
+            ]}
+            className="text-xs"
+          />
+        </div>
+        <motion.div
           initial="initial"
           animate="animate"
           variants={fadeUp}
