@@ -164,7 +164,21 @@ export default function SponsorApplication() {
         <section className="py-8 px-4">
           <div className="max-w-3xl mx-auto">
             <motion.div variants={fadeUp}>
-              <p className="text-lg text-gray-300 leading-relaxed mb-6">
+              {/* data-speakable="intro" activates the second CSS selector
+                  in the SpeakableSpecification declared on
+                  sponsorApplicationWebPageSchema in
+                  app/sponsor/application/layout.tsx. Voice assistants
+                  concatenate h1 ("Sponsor Debrief") + this lede as the
+                  ~7-second orientation reply for "how do I apply to
+                  sponsor Omni AI?" / "what is the Omni AI Sponsor
+                  Debrief?" voice queries. Deeper "what do approved
+                  sponsors receive?" queries walk the about → Service →
+                  hasOfferCatalog edge on the sibling Service schema
+                  rather than reading the full body aloud. */}
+              <p
+                className="text-lg text-gray-300 leading-relaxed mb-6"
+                data-speakable="intro"
+              >
                 Here at Omni AI, we are extremely selective about who we partner with.
               </p>
               <p className="text-lg text-gray-300 leading-relaxed mb-6">

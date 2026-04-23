@@ -155,6 +155,58 @@ const sponsorApplicationServiceSchema = {
   },
 };
 
+// WebPage schema paired with the Service above. Speakable is only
+// valid on WebPage / CreativeWork descendants — Service is not a
+// CreativeWork subtype, so the Service schema can't carry speakable
+// directly. Split-schema pattern: WebPage owns the voice-retrieval
+// selectors, Service owns the offering/offer-catalog/action body.
+//
+// Voice-retrieval surface: /sponsor/application is a gated conversion
+// page ("we are extremely selective about who we partner with") with
+// an inline eligibility screen before the modal form opens. Voice
+// queries like "how do I apply to sponsor Omni AI?" / "what do Omni
+// AI sponsors get?" read h1 ("Sponsor Debrief") + the subtitle tagged
+// data-speakable="intro" ("Here at Omni AI, we are extremely selective
+// about who we partner with.") as the natural ~7-second orientation
+// reply. Deeper queries ("what do approved sponsors receive?") walk
+// the about → Service → hasOfferCatalog edge into the benefit list.
+//
+// about: { Service, url } edge binds this WebPage to the Service
+// schema above so Google and LLM retrievers have a typed graph walk
+// from the voice surface into the offering body.
+//
+// Matches the split-schema pattern shipped on /interlinked/book-now,
+// /book-now, /affiliate/info, /sponsor/info, /newsletter/premium/info,
+// /affiliate/book-consultation — Service sibling + WebPage speakable
+// wrapper.
+const sponsorApplicationWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Sponsor Application · Omni AI",
+  description:
+    "Gated application page for the Omni AI Sponsor Program. Capital-deployment conversion surface — hero plus eligibility screen plus Apply Today modal. The static h1 and sub-copy are the voice-retrieval surface for 'how do I apply to sponsor Omni AI?' queries.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Service",
+    name: "Omni AI Sponsor Program — Application",
+    url: pageUrl,
+  },
+  // SpeakableSpecification — hero-intent voice reply. Voice assistants
+  // asked "how do I apply to sponsor Omni AI?" / "what is the Omni AI
+  // Sponsor Debrief?" / "how do I become an Omni AI sponsor?" read h1
+  // ("Sponsor Debrief") + the subtitle tagged data-speakable="intro"
+  // in app/sponsor/application/page.tsx ("Here at Omni AI, we are
+  // extremely selective about who we partner with.") as the natural
+  // ~7-second orientation reply. Deeper "what do sponsors receive?"
+  // voice queries get served by the Service's hasOfferCatalog body
+  // (four benefits) via the about-edge walk.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function SponsorApplicationLayout({
   children,
 }: {
@@ -162,6 +214,13 @@ export default function SponsorApplicationLayout({
 }) {
   return (
     <>
+      {/* WebPage schema with speakable — speakable is only valid on
+          WebPage / CreativeWork (not Service). See the constant above
+          for why this split-schema pattern matters: voice assistants
+          asked "how do I apply to sponsor Omni AI?" read the hero h1 +
+          subtitle aloud; deeper "what do sponsors receive?" queries
+          walk the about → Service → hasOfferCatalog edge. */}
+      <JsonLd data={sponsorApplicationWebPageSchema} />
       {/* Service schema — unlocks Google's Service rich result and gives
           LLM retrievers a typed entity to cite for "apply to sponsor
           Omni AI" / "how do I become an Omni AI sponsor?" queries.
