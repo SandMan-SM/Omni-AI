@@ -10,6 +10,7 @@ import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { useState } from "react";
 
 const features = [
@@ -66,6 +67,19 @@ export default function Campaigns() {
       />
 
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
+        {/* Visible breadcrumb — paired with the breadcrumbSchema declared
+            in app/campaigns/layout.tsx. Google requires both for the SERP
+            breadcrumb chip; shipping schema without the UI fails the
+            rich-result eligibility check. */}
+        <div className="max-w-7xl mx-auto px-4 pt-2">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Campaigns", href: "/campaigns" },
+            ]}
+            className="text-xs mb-4"
+          />
+        </div>
         <section className="relative px-4 py-12 md:py-20">
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute top-0 left-1/4 w-[600px] h-[600px] rounded-full bg-purple-500/8 blur-[150px]" />
