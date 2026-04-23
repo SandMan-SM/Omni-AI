@@ -58,9 +58,15 @@ export function NewsletterStudio() {
   const fetchAll = async () => {
     setLoading(true);
     try {
+      // Admin-only endpoints — `requireAdmin()` accepts either a Supabase
+      // cookie session OR the `omni_token` bearer minted by the auth-login
+      // edge function. Admin panel visitors hit the latter path, so always
+      // forward the token when it's in localStorage.
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
       const [subRes, statRes] = await Promise.all([
-        fetch('/api/newsletter/subscribers'),
-        fetch('/api/newsletter/stats'),
+        fetch('/api/newsletter/subscribers', { headers: authHeaders }),
+        fetch('/api/newsletter/stats', { headers: authHeaders }),
       ]);
       if (subRes.ok) {
         const d = await subRes.json();
@@ -158,9 +164,13 @@ export function NewsletterStudio() {
     setUpdatingId(sub.id);
     const newTier = sub.subscription_tier === 'premium' ? 'subscribed' : 'premium';
     try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
       const res = await fetch(`/api/newsletter/subscribers/${sub.id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
         body: JSON.stringify({ subscription_tier: newTier }),
       });
       if (res.ok) {
@@ -183,7 +193,12 @@ export function NewsletterStudio() {
     if (!confirm(`Remove ${sub.email}?`)) return;
     setUpdatingId(sub.id);
     try {
-      const res = await fetch(`/api/newsletter/subscribers/${sub.id}`, { method: 'DELETE' });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch(`/api/newsletter/subscribers/${sub.id}`, {
+        method: 'DELETE',
+        headers: authHeaders,
+      });
       if (res.ok) {
         setSubscribers(prev => prev.filter(s => s.id !== sub.id));
         toast({ title: 'Removed', description: sub.email });

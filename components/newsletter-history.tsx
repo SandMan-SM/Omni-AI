@@ -324,7 +324,12 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   // Delete website subscriber
   const handleDeleteSub = async (id: string) => {
     try {
-      const res = await fetch(`/api/newsletter/subscribers/${id}`, { method: "DELETE" });
+      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const res = await fetch(`/api/newsletter/subscribers/${id}`, {
+        method: "DELETE",
+        headers: authHeaders,
+      });
       if (res.ok) {
         setWebsiteSubs(prev => prev.filter(s => s.id !== id));
       }
@@ -363,10 +368,15 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           body: JSON.stringify({ profileId: editingSub.id, subscribed: tierToSave !== 'deactivated', tier: tierToSave }),
         });
       } else {
-        // Website subscriber — update newsletter_subscriptions directly
+        // Website subscriber — update newsletter_subscriptions directly.
+        // Admin-only route: forward the omni_token bearer if present.
+        const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
         await fetch(`/api/newsletter/subscribers/${editingSub.id}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
           body: JSON.stringify({ first_name: editName, email: editEmail, subscription_tier: subTier, subscribed: tierToSave !== 'deactivated' }),
         });
       }
