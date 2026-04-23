@@ -104,6 +104,9 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
   const [isConfirmed, setIsConfirmed] = useState(false);
   const [selectedSession, setSelectedSession] = useState<string>("");
   const [sessionError, setSessionError] = useState(false);
+  // Honeypot field. Kept out of the zod schema so it stays invisible to
+  // validation + the typed form API; server silent-200s when non-empty.
+  const [website, setWebsite] = useState("");
 
   const sessions = useMemo(() => getUpcomingSessions(), []);
 
@@ -120,7 +123,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: WebinarRegistrationFormData) => {
+    mutationFn: async (data: WebinarRegistrationFormData & { website: string }) => {
       await new Promise((resolve) => setTimeout(resolve, 2000 + Math.random() * 1000));
       const response = await apiRequest("POST", "/api/webinar-registration", data);
       return response.json();
@@ -142,13 +145,15 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
       setSessionError(true);
       return;
     }
-    mutation.mutate(data);
+    // Forward honeypot with the payload; server drops silently if non-empty.
+    mutation.mutate({ ...data, website });
   };
 
   const handleClose = () => {
     setIsConfirmed(false);
     setSelectedSession("");
     setSessionError(false);
+    setWebsite("");
     form.reset();
     onClose();
   };
@@ -296,6 +301,31 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
 
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                    {/* Honeypot — off-screen, aria-hidden, non-tabbable.
+                        Real users never see or focus this; spambots that
+                        auto-fill every input land in our silent-200 path. */}
+                    <div
+                      aria-hidden="true"
+                      style={{
+                        position: "absolute",
+                        left: "-9999px",
+                        top: "auto",
+                        width: 1,
+                        height: 1,
+                        overflow: "hidden",
+                      }}
+                    >
+                      <label htmlFor="website-webinar">Website (leave blank)</label>
+                      <input
+                        type="text"
+                        id="website-webinar"
+                        name="website"
+                        tabIndex={-1}
+                        autoComplete="off"
+                        value={website}
+                        onChange={(e) => setWebsite(e.target.value)}
+                      />
+                    </div>
                     <div className="grid grid-cols-2 gap-4">
                       <FormField
                         control={form.control}

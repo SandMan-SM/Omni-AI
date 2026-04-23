@@ -8,6 +8,13 @@ interface LeadFormProps {
 
 export default function LeadForm({ slug }: LeadFormProps) {
   const [fields, setFields] = useState({ name: "", phone: "", email: "" });
+  // Honeypot field — rendered off-screen with CSS + aria-hidden + tabIndex=-1.
+  // Real users never see or focus it; most spambots fill every field they
+  // find. Any non-empty value on submit = bot → the server silently 200s.
+  // Intentionally NOT `<input type="hidden">` because bots specifically
+  // skip hidden inputs now; a visible-to-the-DOM-but-hidden-from-humans
+  // input is what still catches them.
+  const [website, setWebsite] = useState("");
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState("");
@@ -30,7 +37,7 @@ export default function LeadForm({ slug }: LeadFormProps) {
       const res = await fetch("/api/landing-lead", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...fields, slug }),
+        body: JSON.stringify({ ...fields, slug, website }),
       });
       if (!res.ok) throw new Error("Submission failed");
       setSubmitted(true);
@@ -66,6 +73,32 @@ export default function LeadForm({ slug }: LeadFormProps) {
       className="w-full max-w-md mx-auto flex flex-col gap-4"
       noValidate
     >
+      {/* Honeypot — visually off-screen, aria-hidden, non-tabbable.
+          Real users never see it; spambots that auto-fill every input
+          get silently 200'd by the server. Positioned absolute with
+          clip so it contributes zero space in the flex column. */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: "absolute",
+          left: "-9999px",
+          top: "auto",
+          width: 1,
+          height: 1,
+          overflow: "hidden",
+        }}
+      >
+        <label htmlFor="website">Website (leave blank)</label>
+        <input
+          type="text"
+          id="website"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          value={website}
+          onChange={(e) => setWebsite(e.target.value)}
+        />
+      </div>
       <input
         type="text"
         name="name"

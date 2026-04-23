@@ -3,6 +3,12 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { generateICS, parseBookingDateTime } from '@/lib/calendar-utils';
 import { logEvent } from '@/lib/events';
+import {
+  isValidEmail,
+  escapeHtml,
+  isBotSubmission,
+  sanitizeText,
+} from '@/lib/validation';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
@@ -27,16 +33,36 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // Bot check — silent 200 so the bot doesn't retry with a different
+    // field name. See `/api/landing-lead` for the full rationale.
+    if (isBotSubmission(body)) {
+      return NextResponse.json({ success: true });
+    }
+
     const supabase = createAdminClient();
 
+    // Sanitize + cap every free-text field. Previously these flowed raw
+    // into the owner + registrant emails, allowing HTML injection via
+    // name/phone/email into both our inbox and the registrant's.
     const row = {
-      first_name: body.firstName || body.first_name || '',
-      last_name: body.lastName || body.last_name || '',
-      email: body.email || '',
-      phone: body.phone || '',
-      session_date: body.sessionDate || body.session_date || '',
-      session_time: body.sessionTime || body.session_time || '',
+      first_name: sanitizeText(body.firstName || body.first_name, 100),
+      last_name: sanitizeText(body.lastName || body.last_name, 100),
+      email: sanitizeText(body.email, 254),
+      phone: sanitizeText(body.phone, 50),
+      session_date: sanitizeText(body.sessionDate || body.session_date, 20),
+      session_time: sanitizeText(body.sessionTime || body.session_time, 20),
     };
+
+    // Server-side email validation — blocks arbitrary-address abuse of
+    // our branded sender via direct POST.
+    if (row.email && !isValidEmail(row.email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address.' },
+        { status: 400 },
+      );
+    }
+    row.email = row.email.toLowerCase();
 
     const { data, error } = await supabase
       .from('webinar_registrations')
@@ -83,6 +109,14 @@ export async function POST(request: Request) {
 
     const icsBase64 = Buffer.from(icsContent).toString('base64');
 
+    // Escape every user-controlled value before it flows into the email
+    // HTML builders — those still use raw ${...} interpolation. Values
+    // we compute ourselves (dateFormatted, icsBase64, session_time which
+    // is "3:00 PM" format from a controlled picker) are safe as-is.
+    const fullNameEsc = escapeHtml(fullName);
+    const emailEsc = escapeHtml(row.email);
+    const phoneEsc = escapeHtml(row.phone);
+
     // Send emails
     if (RESEND_API_KEY) {
       const emailPromises = [];
@@ -93,7 +127,7 @@ export async function POST(request: Request) {
           from: FROM_EMAIL,
           to: row.email,
           subject: `You're In! Training Confirmed — ${dateFormatted} at ${row.session_time} CT`,
-          html: buildRegistrantEmail({ name: fullName, dateFormatted, time: row.session_time }),
+          html: buildRegistrantEmail({ name: fullNameEsc, dateFormatted, time: row.session_time }),
           attachments: [{
             filename: 'omni-ai-training.ics',
             content: icsBase64,
@@ -108,7 +142,7 @@ export async function POST(request: Request) {
           from: FROM_EMAIL,
           to: OWNER_EMAIL,
           subject: `New Training Registration: ${fullName} — ${dateFormatted} at ${row.session_time}`,
-          html: buildOwnerEmail({ name: fullName, email: row.email, phone: row.phone, dateFormatted, time: row.session_time }),
+          html: buildOwnerEmail({ name: fullNameEsc, email: emailEsc, phone: phoneEsc, dateFormatted, time: row.session_time }),
           attachments: [{
             filename: 'omni-ai-training.ics',
             content: icsBase64,

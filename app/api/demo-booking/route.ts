@@ -4,6 +4,12 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { generateICS, parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
 import { bookerConfirmationEmail, ownerNotificationEmail } from '@/lib/email-templates';
 import { logEvent } from '@/lib/events';
+import {
+  isValidEmail,
+  escapeHtml,
+  isBotSubmission,
+  sanitizeText,
+} from '@/lib/validation';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
@@ -70,18 +76,42 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
+    // Bot check — honeypot field. Spambots auto-fill every input; real
+    // users never see it. Silent 200 OK (not 4xx) so the bot thinks the
+    // submission succeeded and doesn't retry with a different field name.
+    if (isBotSubmission(body)) {
+      return NextResponse.json({ success: true });
+    }
+
     // Use admin client (service role) to bypass RLS
     const supabase = createAdminClient();
 
+    // Sanitize + length-cap every free-text field before it touches the
+    // DB or an email template. Previously these were passed raw all the
+    // way through to Resend, so a `name` of `<img src=x onerror=...>`
+    // would render live in the owner's inbox (our own eyeballs) and in
+    // the booker confirmation.
     const row = {
-      name: body.name || '',
-      phone: body.phone || '',
-      email: body.email || '',
-      business_name: body.businessName || body.business_name || '',
-      purpose: body.purpose || '',
-      date: body.date || '',
-      time: body.time || '',
+      name: sanitizeText(body.name, 200),
+      phone: sanitizeText(body.phone, 50),
+      email: sanitizeText(body.email, 254),
+      business_name: sanitizeText(body.businessName || body.business_name, 200),
+      purpose: sanitizeText(body.purpose, 1000),
+      date: sanitizeText(body.date, 20),
+      time: sanitizeText(body.time, 20),
     };
+
+    // Validate email format server-side. The form caller already checks
+    // client-side but a direct POST (curl, scripted abuse) would sail
+    // through presence-only validation and get an arbitrary email sent
+    // from our branded sender.
+    if (row.email && !isValidEmail(row.email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address.' },
+        { status: 400 },
+      );
+    }
+    row.email = row.email.toLowerCase();
 
     // 1. Save to database
     const { data, error } = await supabase
@@ -134,12 +164,17 @@ export async function POST(request: Request) {
       endDate,
     });
 
+    // Escape the values that flow into the email templates before we
+    // hand them off. `lib/email-templates.ts` uses raw ${...} interpolation
+    // — encoding here is what keeps `<script>` out of the rendered HTML.
+    // Values we generate ourselves (dateFormatted, googleCalendarUrl, time
+    // which is "3:00 PM" format) are safe as-is.
     const bookingDetails = {
-      name: row.name,
-      email: row.email,
-      phone: row.phone,
-      businessName: row.business_name,
-      purpose: row.purpose,
+      name: escapeHtml(row.name),
+      email: escapeHtml(row.email),
+      phone: escapeHtml(row.phone),
+      businessName: escapeHtml(row.business_name),
+      purpose: escapeHtml(row.purpose),
       dateFormatted,
       time: row.time,
       googleCalendarUrl: googleCalUrl,

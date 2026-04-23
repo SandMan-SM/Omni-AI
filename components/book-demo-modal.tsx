@@ -96,6 +96,9 @@ export function BookDemoModal({
   const [phone, setPhone] = useState("");
   const [businessName, setBusinessName] = useState("");
   const [purpose, setPurpose] = useState("");
+  // Honeypot — rendered off-screen, aria-hidden, non-tabbable. Server
+  // returns silent 200 when this is non-empty (bot signal).
+  const [website, setWebsite] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -116,6 +119,7 @@ export function BookDemoModal({
       setPhone("");
       setBusinessName("");
       setPurpose("");
+      setWebsite("");
       setSelectedDate("");
       setSelectedTime("");
       setGoogleCalendarUrl("");
@@ -172,6 +176,7 @@ export function BookDemoModal({
         purpose,
         date: selectedDate,
         time: selectedTime,
+        website, // honeypot
       });
       const data = await res.json();
       if (data.googleCalendarUrl) {
@@ -277,6 +282,31 @@ export function BookDemoModal({
                 </p>
 
                 <form onSubmit={handleFormSubmit} className="space-y-4">
+                  {/* Honeypot — real users never see this; bots auto-fill
+                      every input they find. Server 200s silently when it
+                      comes back with a value. */}
+                  <div
+                    aria-hidden="true"
+                    style={{
+                      position: "absolute",
+                      left: "-9999px",
+                      top: "auto",
+                      width: 1,
+                      height: 1,
+                      overflow: "hidden",
+                    }}
+                  >
+                    <label htmlFor="website-demo">Website (leave blank)</label>
+                    <input
+                      type="text"
+                      id="website-demo"
+                      name="website"
+                      tabIndex={-1}
+                      autoComplete="off"
+                      value={website}
+                      onChange={(e) => setWebsite(e.target.value)}
+                    />
+                  </div>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
                     <Input
