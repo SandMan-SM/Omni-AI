@@ -124,6 +124,56 @@ const affiliateServiceSchema = {
   },
 };
 
+// WebPage schema paired with the Service above. speakable is only
+// valid on WebPage / CreativeWork (not on Service, per schema.org
+// inheritance). Splitting into two typed blocks keeps each schema
+// clean and gives retrievers two independent surfaces:
+//
+//  - Service with Offer → Google Service rich result for "Omni AI
+//    affiliate program" commercial queries
+//  - WebPage with speakable + about: Service → voice assistants
+//    read the hero aloud on "how do I become an Omni AI affiliate?"
+//    / "does Omni AI have an affiliate program?" queries
+//
+// The about: { Service } edge lets retrievers walk from "tell me
+// about the Omni AI affiliate program" → WebPage hero speakable
+// reply → Service.description for the 30% commission + monthly
+// payout detail.
+const affiliateInfoWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Omni AI Affiliate Program — 30% Recurring Commission",
+  description:
+    "Overview of the Omni AI affiliate program: earn 30% recurring commission on every Omni AI client you refer, with live tracking and monthly payouts. Built for creators, consultants, and operators.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Service",
+    name: "Omni AI Affiliate Program",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: `${siteUrl}/og-image.png`,
+  },
+  // SpeakableSpecification — when a user asks Google Assistant / Siri
+  // read-aloud / Alexa "how do I become an Omni AI affiliate?" /
+  // "does Omni AI have an affiliate program?" / "what's the Omni AI
+  // referral commission?", voice assistants need declared selectors
+  // to read verbatim. The h1 ("Get paid to put AI in the hands of
+  // businesses that need it.") plus the subtitle tagged with
+  // data-speakable="intro" in app/affiliate/info/page.tsx ("Earn
+  // 30% recurring on every Omni AI client you refer. Track it live.
+  // Get paid monthly. Built for creators, consultants, and
+  // operators who already talk about this stuff.") compose the
+  // natural ~12-second voice reply — tight enough for a briefing
+  // slot, commercial enough to close the query's intent.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function AffiliateInfoLayout({
   children,
 }: {
@@ -131,6 +181,12 @@ export default function AffiliateInfoLayout({
 }) {
   return (
     <>
+      {/* WebPage schema with speakable — see the constant above for why
+          speakable lives on WebPage rather than the Service below
+          (schema.org inheritance: speakable is only valid on WebPage /
+          CreativeWork). Matches the split-schema pattern on /arena,
+          /sponsor/info, and /book-now. */}
+      <JsonLd data={affiliateInfoWebPageSchema} />
       {/* Service + Offer schema — unlocks Google Service rich result and
           gives LLMs a typed entity to cite for "Omni AI affiliate
           program" / "affiliate commission" queries. See the constant

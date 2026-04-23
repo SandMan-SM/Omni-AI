@@ -100,7 +100,18 @@ export default function AffiliateInfoPage() {
             <h1 className="text-4xl md:text-6xl font-bold mb-6 leading-tight">
               Get paid to put AI in the hands<br />of businesses that need it.
             </h1>
-            <p className="text-lg text-gray-400 max-w-2xl mx-auto mb-10">
+            {/* data-speakable="intro" activates the
+                SpeakableSpecification declared on
+                affiliateInfoWebPageSchema in app/affiliate/info/layout.tsx.
+                Voice assistants concatenate h1 ("Get paid to put AI in
+                the hands of businesses that need it.") + this subtitle
+                as the natural ~12-second reply to "how do I become an
+                Omni AI affiliate?" / "does Omni AI have an affiliate
+                program?" voice queries. */}
+            <p
+              className="text-lg text-gray-400 max-w-2xl mx-auto mb-10"
+              data-speakable="intro"
+            >
               Earn 30% recurring on every Omni AI client you refer. Track it live. Get paid monthly.
               Built for creators, consultants, and operators who already talk about this stuff.
             </p>
