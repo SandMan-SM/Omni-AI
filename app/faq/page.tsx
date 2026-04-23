@@ -106,6 +106,31 @@ const FAQS: { question: string; answer: string }[] = [
     answer:
       "Every action Omni AI takes is logged, explainable, and reversible. On first runs, outputs are reviewable before they go live; you flip individual actions to full autopilot once you trust them. There's no black-box risk — you can see exactly what each agent is doing and intervene at any level.",
   },
+  {
+    question: "What industries does Omni AI work for?",
+    answer:
+      "Omni AI is industry-agnostic — the platform runs for B2B SaaS, marketing agencies, local service businesses (HVAC, med spa, roofing, contracting), fitness and wellness, real estate, consulting, and professional services. Any business that needs qualified leads and outbound at volume is a fit. The free tier at omnileadsagi.com/join lets you validate the platform against your specific vertical in a week.",
+  },
+  {
+    question: "Does Omni AI work for local service businesses?",
+    answer:
+      "Yes — local service businesses (HVAC contractors, med spas, roofers, trades, dental and veterinary practices, gyms, and professional services) are Omni AI's most common customer profile. The platform handles geo-targeted lead sourcing, conversational outbound tuned to the service-business buying cycle, and booking hand-off to your calendar. No SDR team required.",
+  },
+  {
+    question: "How does Omni AI handle data privacy and GDPR?",
+    answer:
+      "Omni AI is GDPR and CCPA aligned. Your first-party data stays in your account and is never cross-used to train shared models. Contact enrichment uses only public and compliant B2B sources. Every outbound sequence carries opt-out handling, suppression lists, and per-contact consent tracking. Full privacy policy at omnileadsagi.com/privacy.",
+  },
+  {
+    question: "What AI models does Omni AI use?",
+    answer:
+      "Omni AI runs a multi-model stack across frontier LLMs (Claude, GPT, Gemini) with model selection routed per task — reasoning-heavy planning uses Claude, high-volume creative uses GPT, and multimodal/video generation uses Gemini and specialized vision models. Paid tiers unlock priority model access so your campaigns always hit the fastest available provider.",
+  },
+  {
+    question: "How is Omni AI different from hiring an agency?",
+    answer:
+      "An agency charges $5K-$25K per month, caps at its team's bandwidth, and takes weeks to adjust when your strategy shifts. Omni AI runs 24/7 at a fixed cost, adjusts in hours not weeks, and never has turnover. For most sub-$5M ARR operations, Omni AI delivers the agency workflow autonomously at a fraction of the cost. Agencies are better when your team specifically needs human-in-the-loop creative.",
+  },
 ];
 
 export default function FAQPage() {
