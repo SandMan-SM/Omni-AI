@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { COMPARISONS, COMPARISON_SLUGS } from "@/lib/comparison-data";
@@ -74,6 +74,25 @@ export default function ComparisonIndexPage() {
           { name: "Home", url: siteUrl },
           { name: "Compare", url: pageUrl },
         ])}
+      />
+      {/* ItemList — tells Google and LLM retrievers that /vs is a
+          structured directory of comparison articles, not a generic
+          landing page. Queries like "Omni AI alternatives" or "Omni AI
+          vs the field" now retrieve the full competitor lineup with
+          walkable per-comparison URLs — stronger than six orphaned
+          side-by-sides fighting for rank individually. */}
+      <JsonLd
+        data={itemListSchema({
+          name: "Omni AI vs the Field — Comparison Index",
+          description:
+            "Head-to-head comparisons of Omni AI against the six platforms it gets evaluated against most often: HubSpot, Salesforce, Apollo, Outreach, Lemlist, and Clay.",
+          url: pageUrl,
+          items: comparisons.map((c) => ({
+            name: `Omni AI vs ${c.name}`,
+            url: `${siteUrl}/vs/${c.slug}`,
+            description: c.summary.slice(0, 160),
+          })),
+        })}
       />
 
       {/* Header */}
