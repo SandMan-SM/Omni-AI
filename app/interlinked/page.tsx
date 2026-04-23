@@ -12,40 +12,10 @@ import { BookDemoModal, WebinarRegistrationModal } from "@/components/modals/laz
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
-
-function getSecondSaturday(year: number, month: number): Date {
-  const first = new Date(year, month, 1);
-  const firstDayOfWeek = first.getDay();
-  const firstSaturday = firstDayOfWeek <= 6 ? (6 - firstDayOfWeek + 1) : 1;
-  const secondSaturday = firstSaturday + 7;
-  return new Date(year, month, secondSaturday);
-}
-
-function getNextSessionDate(): Date {
-  const now = new Date();
-  const candidates: Date[] = [];
-
-  for (let offset = 0; offset < 6; offset++) {
-    const monthOffset = now.getMonth() + offset;
-    const month = monthOffset % 12;
-    const y = now.getFullYear() + Math.floor(monthOffset / 12);
-
-    const secondSat = getSecondSaturday(y, month);
-    secondSat.setHours(18, 0, 0, 0);
-    if (secondSat > now) candidates.push(secondSat);
-
-    const eleventh = new Date(y, month, 11, 12, 0, 0, 0);
-    if (eleventh > now) candidates.push(eleventh);
-
-    const twentyEighth = new Date(y, month, 28, 19, 0, 0, 0);
-    if (twentyEighth > now) candidates.push(twentyEighth);
-
-    if (candidates.length > 0) break;
-  }
-
-  candidates.sort((a, b) => a.getTime() - b.getTime());
-  return candidates[0] || new Date();
-}
+// Shared with layout.tsx so the countdown and the Event JSON-LD schema
+// always announce the same startDate — previously the function lived only
+// here on the client, so the server-side Event schema couldn't quote it.
+import { getNextSessionDate } from "./next-session";
 
 function CountdownTimer() {
   const nextSession = useMemo(() => getNextSessionDate(), []);
