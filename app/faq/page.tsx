@@ -55,6 +55,62 @@ export const metadata: Metadata = {
   },
 };
 
+// WebPage schema paired with the FAQPage schema below. FAQPage's
+// speakable (via factory) covers "what is Omni AI?" / "what does
+// Omni AI cost?" voice queries by reading the first Q&A (tagged
+// data-speakable="faq-intro"). This WebPage adds a complementary
+// hero-intent selector so voice queries that frame the whole page
+// ("does Omni AI have an FAQ?" / "what do people ask about Omni
+// AI?") read the h1 + subtitle aloud — briefing-length orientation
+// before the reader lands on a specific Q&A.
+//
+// Non-overlapping selectors:
+//   - FAQPage → [h1, data-speakable='faq-intro']   (first-question voice)
+//   - WebPage → [h1, data-speakable='intro']        (page-orientation voice)
+//
+// Both share the h1 fallback so conflict is impossible; voice
+// assistants pick the selector matching query intent.
+//
+// about: { FAQPage, url } edge binds WebPage → FAQPage for LLM
+// retrievers that walk the entity graph from page orientation into
+// the question list. This is the split-schema pattern also shipped
+// on /pricing (same constraint: FAQPage factory's speakable handles
+// the first-question case; a supplementary WebPage handles hero
+// orientation).
+const faqWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "FAQ — Everything People Ask About Omni AI",
+  description:
+    "Public FAQ for Omni AI: what it is, how it generates leads, what it costs, how it compares to HubSpot / Apollo / Clay, who built it, and how fast it delivers results.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "FAQPage",
+    name: "Omni AI FAQ",
+    url: pageUrl,
+  },
+  primaryImageOfPage: {
+    "@type": "ImageObject",
+    url: ogImage,
+  },
+  // SpeakableSpecification — hero-intent voice reply. Voice assistants
+  // asked "does Omni AI have an FAQ?" / "what do people ask about
+  // Omni AI?" read h1 ("Everything people ask about Omni AI") + the
+  // subtitle tagged with data-speakable="intro" below ("Straight
+  // answers to what Omni AI does, how it compares, what it costs,
+  // and how fast you'll see results...") as the natural ~12-second
+  // orientation reply. Voice queries for specific topics ("what is
+  // Omni AI?" / "what does Omni AI cost?") are served separately by
+  // the FAQPage factory's speakable selector (data-speakable='faq-intro'
+  // on the first Q&A), so this WebPage stays focused on the
+  // orientation reply.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 const FAQS: { question: string; answer: string }[] = [
   {
     question: "What is Omni AI?",
@@ -136,6 +192,12 @@ const FAQS: { question: string; answer: string }[] = [
 export default function FAQPage() {
   return (
     <div className="min-h-screen bg-[#050508] text-white">
+      {/* WebPage schema with hero-intent speakable — see the constant
+          above for how the [intro] selector complements the FAQPage's
+          [faq-intro] selector (both share the h1 universal fallback).
+          Paired with data-speakable="intro" on the hero subtitle
+          below. Same split-schema pattern as /pricing. */}
+      <JsonLd data={faqWebPageSchema} />
       {/* FAQPage + Breadcrumb JSON-LD. FAQPage is the single highest-leverage
           schema for LLM citation; breadcrumb tells Google the site hierarchy. */}
       <JsonLd data={faqPageSchema(FAQS)} />
@@ -189,7 +251,18 @@ export default function FAQPage() {
           <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-6">
             Everything people ask about Omni AI
           </h1>
-          <p className="text-lg text-gray-300 leading-relaxed">
+          {/* data-speakable="intro" activates the second CSS selector in
+              the SpeakableSpecification declared on faqWebPageSchema
+              above. Voice assistants concatenate h1 + this subtitle as
+              the ~12-second orientation reply for "does Omni AI have
+              an FAQ?" / "what do people ask about Omni AI?" queries.
+              First-question voice intent ("what is Omni AI?") is
+              served separately by the faq-intro marker on the first
+              Q&A below. */}
+          <p
+            className="text-lg text-gray-300 leading-relaxed"
+            data-speakable="intro"
+          >
             Straight answers to what Omni AI does, how it compares, what it costs,
             and how fast you&rsquo;ll see results. If a question isn&rsquo;t
             covered here,{" "}
