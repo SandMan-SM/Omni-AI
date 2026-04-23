@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
-import { Mail, Users, Eye } from "lucide-react";
+import { Mail, Users, Eye, Rss } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -170,6 +170,24 @@ export default async function NewsletterIndexPage() {
             untouchable. Stories, strategies, and the signals that matter.
             Daily intelligence briefs delivered every morning at 8:00 AM.
           </p>
+          {/* Visible RSS affordance — pairs with the sitewide
+              <link rel="alternate" type="application/rss+xml"> tag added in
+              an earlier cycle. The alternate tag handles feed-reader auto-
+              discovery, but auto-discovery only fires when the reader is
+              already on the page; a visible link lets a power user hand the
+              URL to a different reader, paste it into a bookmarklet, or
+              share it with a colleague without hunting through <head>. The
+              link is intentionally muted (gray-500, small, icon-led) so it
+              reads as a utility affordance, not a primary CTA competing with
+              the post list below. */}
+          <a
+            href="/newsletter/rss.xml"
+            className="mt-4 inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-orange-400 transition-colors"
+            aria-label="Subscribe to the Omni AI newsletter via RSS"
+          >
+            <Rss className="w-3.5 h-3.5" />
+            Subscribe via RSS
+          </a>
         </div>
 
         {/* Stats row — same visual pattern as the home page hero metrics:
