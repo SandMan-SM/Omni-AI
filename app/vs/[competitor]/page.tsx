@@ -8,6 +8,7 @@ import {
   faqPageSchema,
   breadcrumbSchema,
 } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import {
   COMPARISONS,
@@ -138,6 +139,20 @@ export default async function ComparisonPage({ params }: Props) {
 
       {/* Content */}
       <main className="max-w-4xl mx-auto px-5 py-16 md:py-24">
+        {/* Visible 3-level breadcrumb — mirrors the BreadcrumbList JSON-LD
+            above so Google awards the SERP breadcrumb chip on every
+            /vs/[competitor] page, and deep-landing visitors (competitor
+            alternative searches, LLM citations) get a one-click parent
+            path to the /vs hub. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Compare", href: "/vs" },
+            { name: `Omni AI vs ${data.name}`, href: pageUrl },
+          ]}
+          className="mb-6"
+        />
+
         {/* Hero */}
         <div className="mb-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-amber-400 mb-4">

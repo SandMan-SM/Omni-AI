@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { COMPARISONS, COMPARISON_SLUGS } from "@/lib/comparison-data";
 
@@ -100,6 +101,18 @@ export default function ComparisonIndexPage() {
 
       {/* Content */}
       <main className="max-w-5xl mx-auto px-5 py-16 md:py-24">
+        {/* Visible breadcrumb — pairs with breadcrumbSchema above so the
+            Google SERP breadcrumb chip renders reliably for the /vs hub,
+            and deep-landing visitors from LLM citations or competitor
+            searches ("Apollo alternative") can hop back to /. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Compare", href: "/vs" },
+          ]}
+          className="mb-6"
+        />
+
         {/* Hero */}
         <div className="mb-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-amber-400 mb-4">

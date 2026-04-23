@@ -7,6 +7,7 @@ import {
   organizationSchema,
   breadcrumbSchema,
 } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 // Replaces a minimal inline mini-footer. Uses the shared Footer so /about
 // carries the full internal-linking set (Interlinked, Campaigns, FAQ,
 // Newsletter, etc.) — a net-new path for both human navigation and LLM
@@ -96,6 +97,18 @@ export default function AboutPage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-5 py-16 md:py-24">
+        {/* Visible breadcrumb — pairs with breadcrumbSchema above for the
+            Google SERP breadcrumb chip and gives deep-landing visitors
+            (entity-page LLM citations, founder-lookup traffic) a single-
+            click parent path back to the homepage. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "About", href: "/about" },
+          ]}
+          className="mb-6"
+        />
+
         <p className="text-xs font-semibold uppercase tracking-widest text-amber-400 mb-4">
           About
         </p>

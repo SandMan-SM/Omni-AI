@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { JsonLd, faqPageSchema, breadcrumbSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 
 /**
@@ -136,6 +137,18 @@ export default function PricingPage() {
 
       {/* Content */}
       <main className="max-w-5xl mx-auto px-5 py-16 md:py-24">
+        {/* Visible breadcrumb — paired with breadcrumbSchema above. Google
+            awards the SERP breadcrumb chip most reliably when both schema
+            and visible markup agree, and deep-page landings get a parent
+            path back up. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "Pricing", href: "/pricing" },
+          ]}
+          className="mb-6"
+        />
+
         {/* Hero */}
         <div className="mb-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-amber-400 mb-4">

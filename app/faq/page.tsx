@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { JsonLd, faqPageSchema, breadcrumbSchema } from "@/components/json-ld";
+import { Breadcrumb } from "@/components/breadcrumb";
 // Swapping in the full Footer so /faq — which is the single highest-leverage
 // GEO destination — carries the six-link internal-nav set. Same crawl-signal
 // + human-navigation rationale as the /about swap.
@@ -145,6 +146,17 @@ export default function FAQPage() {
 
       {/* Content */}
       <main className="max-w-3xl mx-auto px-5 py-16 md:py-24">
+        {/* Visible breadcrumb — pairs with breadcrumbSchema for the
+            Google SERP breadcrumb chip and gives deep-landing visitors
+            a single-click parent path. */}
+        <Breadcrumb
+          items={[
+            { name: "Home", href: "/" },
+            { name: "FAQ", href: "/faq" },
+          ]}
+          className="mb-6"
+        />
+
         <div className="mb-10">
           <p className="text-xs font-semibold uppercase tracking-widest text-amber-400 mb-4">
             Frequently Asked Questions
