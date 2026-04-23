@@ -160,7 +160,10 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          // h-[100dvh] = dynamic viewport. Without it, on iOS Safari the
+          // overlay extends behind the bottom toolbar and flex-centering
+          // pushes the Reserve My Seat button off-screen.
+          className="fixed inset-0 h-[100dvh] z-[100] flex items-center justify-center p-4"
           onClick={handleClose}
         >
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
@@ -170,7 +173,10 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3 }}
-            className="relative w-full max-w-lg max-h-[90vh] overflow-y-auto glass-card rounded-md neon-border"
+            // max-h-[85dvh] (tighter than 90vh) guarantees the Reserve My
+            // Seat button never sits behind the browser toolbar on any
+            // phone — dvh excludes the toolbar area from the calculation.
+            className="relative w-full max-w-lg max-h-[85dvh] overflow-y-auto glass-card rounded-md neon-border"
             onClick={(e) => e.stopPropagation()}
           >
             <button

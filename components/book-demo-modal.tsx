@@ -227,7 +227,11 @@ export function BookDemoModal({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        // h-[100dvh] (dynamic viewport height) so the overlay stops at the
+        // top of Safari's bottom toolbar on iOS instead of extending behind
+        // it. Without this, flex centering is relative to the full 100vh
+        // and the modal's bottom edge ends up hidden behind the toolbar.
+        className="fixed inset-0 h-[100dvh] z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
         onClick={onClose}
       >
         <motion.div
@@ -235,13 +239,12 @@ export function BookDemoModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ duration: 0.3 }}
-          // p-8 md:p-10 (was p-6 md:p-8) — the submit buttons inside this
-          // modal carry `neon-glow` (a 20–40px box-shadow). With only 24–32px
-          // of padding the glow bled past the padded area and overlapped the
-          // .neon-border gradient pseudo-element. 32–40px of padding keeps
-          // every CTA — including its glow — fully inside the border on
-          // every viewport.
-          className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10 max-h-[90vh] overflow-y-auto"
+          // p-8 md:p-10 keeps submit buttons fully inside the .neon-border
+          // gradient. max-h-[85dvh] (not 90vh) so on iOS the modal is
+          // always shorter than the DYNAMIC viewport — even with the
+          // Safari toolbar visible and the home indicator eating space,
+          // the Submit Request button stays on-screen on every phone.
+          className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10 max-h-[85dvh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <button

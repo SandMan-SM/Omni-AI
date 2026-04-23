@@ -64,7 +64,11 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+          // h-[100dvh] = dynamic viewport height. On iOS Safari the
+          // regular 100vh includes the area behind the bottom toolbar, so
+          // flex centering pushes the modal's bottom under the toolbar.
+          // dvh stops exactly at the toolbar's top edge on every phone.
+          className="fixed inset-0 h-[100dvh] z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
           onClick={onClose}
         >
           <motion.div
@@ -72,10 +76,11 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ duration: 0.3 }}
-            // p-8 md:p-10 (was p-6 md:p-8) — keeps the submit button's
-            // shadow fully contained inside the .neon-border gradient on
-            // every viewport. See the matching comment in book-demo-modal.
-            className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10"
+            // p-8 md:p-10 keeps the submit button's shadow inside the
+            // .neon-border gradient on every viewport. max-h + overflow
+            // guarantee the Sign In button never gets hidden behind the
+            // browser toolbar on short screens.
+            className="relative w-full max-w-md glass-card neon-border rounded-2xl p-8 md:p-10 max-h-[85dvh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
