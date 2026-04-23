@@ -14,6 +14,7 @@ import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { Breadcrumb } from "@/components/breadcrumb";
 import { Leaderboard } from "@/components/arena/leaderboard";
 import { RankingTiers } from "@/components/arena/ranking-tiers";
 import { BadgeShowcase } from "@/components/arena/badge-showcase";
@@ -239,6 +240,21 @@ export default function Arena() {
       />
 
       <main className="pt-16 md:pt-20 pb-16 md:pb-20">
+        {/* Visible breadcrumb — pairs with breadcrumbSchema declared in
+            app/arena/layout.tsx. Sits above the interactive spark canvas
+            so the breadcrumb area doesn't trigger pointer-move effects,
+            and so deep-landing visitors from LLM citations or Google's
+            Dataset Search have a one-click parent path back to the
+            homepage. */}
+        <div className="max-w-6xl mx-auto px-4 pt-2 relative z-10">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Arena", href: "/arena" },
+            ]}
+            className="text-xs mb-4"
+          />
+        </div>
         <section
           onPointerMove={onPointerMove}
           onPointerLeave={onPointerLeave}
