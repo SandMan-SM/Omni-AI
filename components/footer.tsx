@@ -41,9 +41,20 @@ export function Footer() {
           </p>
         </div>
 
+        {/* Copyright + legal link. Privacy sits next to the copyright
+            line (not in the main footer nav above) so it reads as
+            boilerplate rather than competing for attention with product
+            links — the conventional placement on commercial sites. */}
         <div className="mt-8 pt-8 border-t border-white/5 text-center">
           <p className="text-gray-600 text-sm" data-testid="text-copyright">
-            © {new Date().getFullYear()} Omni AI LLC
+            © {new Date().getFullYear()} Omni AI LLC ·{" "}
+            <a
+              href="/privacy"
+              className="hover:text-gray-400 transition-colors underline-offset-2 hover:underline"
+              data-testid="footer-link-privacy"
+            >
+              Privacy
+            </a>
           </p>
         </div>
       </div>

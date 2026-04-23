@@ -27,6 +27,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/newsletter`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/newsletter/premium/info`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/website/development`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // Legal — low crawl priority, rarely changes. Included so the URL is
+    // discoverable by search engines and LLM indexers (required signal for
+    // E-E-A-T / trust rating on commercial sites).
+    { url: `${baseUrl}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   // Pull dynamic rows in parallel. Fail-soft: if either query errors we still
