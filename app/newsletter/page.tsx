@@ -19,7 +19,18 @@ export const metadata: Metadata = {
   // Canonical URL so UTM / ref / share-parameter variants resolve to a
   // single indexable page. /newsletter is the archive hub — every daily
   // post links back up here, so a split canonical would fracture PageRank.
-  alternates: { canonical: "https://omnileadsagi.com/newsletter" },
+  //
+  // `types` exposes the RSS feed via <link rel="alternate" type="application/rss+xml">.
+  // Feed readers (Feedly, Inoreader, Reeder) auto-discover the feed from
+  // this tag the moment a user pastes the /newsletter URL — no manual
+  // feed-URL paste required, which is the typical failure mode for B2B
+  // RSS subscribers.
+  alternates: {
+    canonical: "https://omnileadsagi.com/newsletter",
+    types: {
+      "application/rss+xml": "https://omnileadsagi.com/newsletter/rss.xml",
+    },
+  },
   openGraph: {
     title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
     description:

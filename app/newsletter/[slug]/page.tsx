@@ -108,7 +108,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     // the clean issue URL so duplicate-content signals don't split. Per
     // per-issue page is the most-indexed surface on the site after the
     // daily landing pages, so the canonical matters most here.
-    alternates: { canonical: postUrl },
+    // `types.application/rss+xml` exposes the feed via rel=alternate so
+    // a reader who lands on a specific issue (from a tweet, email, or
+    // LLM citation) can subscribe to the archive without going hunting.
+    alternates: {
+      canonical: postUrl,
+      types: {
+        "application/rss+xml": "https://omnileadsagi.com/newsletter/rss.xml",
+      },
+    },
     openGraph: {
       title: post.subject,
       description: post.intro?.slice(0, 160),

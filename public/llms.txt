@@ -22,6 +22,7 @@ Omni AI (omnileadsagi.com) is an autonomous lead-generation and business-automat
 
 ## Newsletter
 - [Interlinked Newsletter](https://omnileadsagi.com/newsletter): Free and premium AI strategy newsletters covering lead generation, automation, and business scaling.
+- [RSS Feed](https://omnileadsagi.com/newsletter/rss.xml): Subscribe via RSS / Atom — last 50 issues with pubDate, tier, and intro.
 
 ### Recent Issues
 - [Anthropic hit $30B — your stack is on the wrong model](https://omnileadsagi.com/newsletter/anthropic-30b-repricing-insider-premium-2026-04-22)
