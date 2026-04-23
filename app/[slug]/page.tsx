@@ -122,7 +122,14 @@ export default async function TrendingLandingPage({ params }: Props) {
     `${page.topic} — See how Omni AI helps businesses automate marketing and win with AI.`;
 
   return (
-    <div className="min-h-screen bg-[#050508] text-white overflow-x-hidden">
+    // No opaque bg — the root layout's <SpaceBackdrop /> (app/layout.tsx)
+    // drifts the particle field + twin purple/cyan radial wash behind the
+    // whole page. Previously we set bg-[#050508] here (solid near-black)
+    // which blanketed the backdrop and forced every daily landing to run
+    // the local single-glow div below. Letting the SpaceBackdrop through
+    // matches the /newsletter and /vs treatment so the daily landing
+    // cluster stops visually forking off from the rest of the site.
+    <div className="min-h-screen text-white overflow-x-hidden relative">
       {/* Article JSON-LD — stronger retrieval signal than bare WebPage. The
           factory pairs author=Person(Sitani Mafi) + publisher=Organization
           + datePublished + OG image, which is what Google rich results and
@@ -146,21 +153,6 @@ export default async function TrendingLandingPage({ params }: Props) {
           { name: title, url: `https://omnileadsagi.com/${slug}` },
         ])}
       />
-
-      {/* Animated gradient background — single purple glow top-left only, no pink blob */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <div
-          className="absolute rounded-full opacity-20 blur-3xl"
-          style={{
-            width: 700,
-            height: 700,
-            background: "radial-gradient(circle, #6366f1, transparent 70%)",
-            top: -200,
-            left: -200,
-            animation: "drift1 14s ease-in-out infinite alternate",
-          }}
-        />
-      </div>
 
       {/* Top shimmer bar */}
       <div
@@ -391,11 +383,11 @@ export default async function TrendingLandingPage({ params }: Props) {
         <Footer />
       </div>
 
+      {/* drift1 removed along with the local purple glow — SpaceBackdrop
+          owns the animated particle motion now. Shimmer + pulse stay
+          because they're still used by the top shimmer bar and the
+          "Trending Now" eyebrow dot respectively. */}
       <style>{`
-        @keyframes drift1 {
-          from { transform: translate(0, 0) scale(1); }
-          to { transform: translate(80px, 60px) scale(1.2); }
-        }
         @keyframes shimmer {
           from { background-position: 200% 0; }
           to { background-position: -200% 0; }
