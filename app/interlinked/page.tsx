@@ -12,6 +12,7 @@ import { BookDemoModal, WebinarRegistrationModal } from "@/components/modals/laz
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { Breadcrumb } from "@/components/breadcrumb";
 // Shared with layout.tsx so the countdown and the Event JSON-LD schema
 // always announce the same startDate — previously the function lived only
 // here on the client, so the server-side Event schema couldn't quote it.
@@ -125,6 +126,25 @@ export default function Interlinked() {
         onSignIn={() => {}}
       />
       <div className="max-w-3xl mx-auto px-4 py-12 md:py-20 pt-16 md:pt-20">
+
+        {/* Visible breadcrumb — pairs with breadcrumbSchema in the
+            layout so Google renders the SERP breadcrumb chip and deep-
+            landing visitors (email CTAs, social shares from the Event
+            rich result) get a one-click parent path back to the homepage.
+            Wrapped in a flex-justify-center shell because the Breadcrumb
+            component's className applies to its nav, not the inner ol —
+            centering the list requires the outer container. Tiny text +
+            centered so it fits the existing hero composition without
+            disrupting the countdown's vertical rhythm. */}
+        <div className="flex justify-center mb-6">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Interlinked", href: "/interlinked" },
+            ]}
+            className="text-xs"
+          />
+        </div>
 
         <motion.div
           initial={{ opacity: 0, y: -20 }}

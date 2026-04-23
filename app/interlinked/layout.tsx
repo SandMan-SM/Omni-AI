@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import { JsonLd } from "@/components/json-ld";
+import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
 import { getNextSessionDate, SESSION_DURATION_MINUTES } from "./next-session";
+
+const siteUrl = "https://omnileadsagi.com";
+const pageUrl = `${siteUrl}/interlinked`;
 
 // Revalidate the Event JSON-LD hourly. The startDate advances whenever a
 // session passes — without this, a prerendered HTML shell would announce
@@ -99,6 +102,18 @@ export default function InterlinkedLayout({
   return (
     <>
       <JsonLd data={eventSchema} />
+      {/* BreadcrumbList schema — pairs with the visible Breadcrumb added
+          at the top of app/interlinked/page.tsx. /interlinked was missing
+          both the schema and the visible UI, which left the page without
+          a SERP breadcrumb chip (Google requires both) and gave deep-
+          landing visitors (email CTAs, social shares) no parent link back
+          to the homepage. Two-level crumb: Home → Interlinked. */}
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", url: siteUrl },
+          { name: "Interlinked", url: pageUrl },
+        ])}
+      />
       {children}
     </>
   );
