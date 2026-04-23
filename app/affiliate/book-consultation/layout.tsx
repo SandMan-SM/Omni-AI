@@ -101,9 +101,62 @@ const affiliateConsultServiceSchema = {
   },
 };
 
+// WebPage schema paired with the Service above. speakable is only
+// valid on WebPage / CreativeWork — Service is not a CreativeWork
+// descendant. The page auto-opens an AffiliateConsultationModal on
+// load (useState(true) in page.tsx), which means JS-driven voice
+// scrapers never see the modal content — they read the server-
+// rendered h1 + subtitle. That makes speakable especially valuable
+// here: voice assistants answering "how do I book an Omni AI
+// affiliate consultation?" read h1 + subtitle aloud from the static
+// HTML, even though the visible funnel is behind a modal.
+//
+// about: { Service, url } edge binds this to
+// affiliateConsultServiceSchema so voice retrievers can walk from
+// the hero speakable reply into the Service's Offer + ReserveAction
+// body for the follow-up "what do I get?" / "is it free?" queries.
+//
+// Matches the split-schema pattern used on /interlinked/book-now,
+// /arena, /sponsor/info, /book-now, /affiliate/info,
+// /interlinked/premium, /newsletter/premium/info.
+const bookConsultationWebPageSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  name: "Book an Affiliate Consultation · Omni AI",
+  description:
+    "Landing page for the free 30-minute Omni AI affiliate strategy consultation. A modal-launch conversion page — the body auto-opens AffiliateConsultationModal so visitors can pick a time, but the static h1 + subtitle are the voice-retrieval surface.",
+  url: pageUrl,
+  isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
+  about: {
+    "@type": "Service",
+    name: "Omni AI — Free Affiliate Strategy Consultation",
+    url: pageUrl,
+  },
+  // SpeakableSpecification — voice assistants asked "how do I book an
+  // Omni AI affiliate consultation?" / "what is the Omni AI affiliate
+  // consultation?" read h1 ("Book your affiliate consultation") plus
+  // the subtitle tagged with data-speakable="intro" in
+  // app/affiliate/book-consultation/page.tsx ("A 30-minute working
+  // session to map out how you'll earn with the Omni AI affiliate
+  // program.") as the natural ~9-second hero-intent voice reply.
+  // Compact because the page body itself is brief (modal-launch
+  // conversion page); the Service + ReserveAction wiring on the
+  // sibling schema carries the deeper "what do I get?" body.
+  speakable: {
+    "@type": "SpeakableSpecification",
+    cssSelector: ["h1", "[data-speakable='intro']"],
+  },
+};
+
 export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      {/* WebPage schema with speakable — speakable is only valid on
+          WebPage / CreativeWork (not Service). See the constant above
+          for why this split-schema pattern matters on a modal-launch
+          page: voice scrapers never see the modal, they read the
+          server-rendered hero. */}
+      <JsonLd data={bookConsultationWebPageSchema} />
       <JsonLd data={affiliateConsultServiceSchema} />
       {/* Breadcrumb schema — pairs with the visible Breadcrumb added
           in the page body. 3-level Home → Affiliate Program → Book

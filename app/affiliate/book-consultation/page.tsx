@@ -29,7 +29,20 @@ export default function AffiliateBookConsultationPage() {
       </div>
       <div className="max-w-2xl mx-auto px-4 py-24 text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-4">Book your affiliate consultation</h1>
-        <p className="text-gray-400 text-lg">
+        {/* data-speakable="intro" activates the second CSS selector in
+            the SpeakableSpecification declared on
+            bookConsultationWebPageSchema in
+            app/affiliate/book-consultation/layout.tsx. Voice
+            assistants concatenate h1 + this subtitle as the ~9-second
+            hero-intent reply for "how do I book an Omni AI affiliate
+            consultation?" queries. The modal that auto-opens on load
+            is JS-driven and invisible to voice scrapers — this
+            server-rendered pair is the only voice-retrieval surface
+            on the page. */}
+        <p
+          className="text-gray-400 text-lg"
+          data-speakable="intro"
+        >
           A 30-minute working session to map out how you&apos;ll earn with the Omni AI affiliate program.
         </p>
       </div>
