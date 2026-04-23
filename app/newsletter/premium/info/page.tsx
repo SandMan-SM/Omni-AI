@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Metadata } from "next";
+import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 
 export const metadata: Metadata = {
   title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
@@ -22,10 +23,29 @@ export const metadata: Metadata = {
   },
 };
 
+// Chrome-gold stops used everywhere on this page (pill, headings,
+// titles, CTA). Same values as /book-now and /newsletter/[slug].
+const CHROME_GOLD =
+  "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)";
+
+const goldTextStyle = {
+  backgroundImage: CHROME_GOLD,
+  WebkitBackgroundClip: "text" as const,
+  backgroundClip: "text" as const,
+  WebkitTextFillColor: "transparent" as const,
+};
+
 export default function PremiumInfoPage() {
   return (
-    <div className="min-h-screen bg-[#050505] text-white">
-      <header className="border-b border-white/5">
+    // No opaque bg — GoldSparksBackdrop (warm gold radial wash + rising
+    // chrome-gold embers) paints through. Same pattern as /arena and
+    // /newsletter/[slug] but with the gold palette.
+    <div className="min-h-screen text-white relative">
+      <GoldSparksBackdrop />
+
+      {/* Header — subtle dark glass so it sits above the sparks without
+          competing with the gold glow. */}
+      <header className="relative z-10 border-b border-white/5 backdrop-blur-md bg-black/40">
         <div className="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
           <Link href="/" className="text-xl font-bold text-gradient">
             Omni AI
@@ -39,104 +59,108 @@ export default function PremiumInfoPage() {
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-5 py-16 md:py-24">
+      <main className="relative z-10 max-w-3xl mx-auto px-5 py-16 md:py-24">
         <div className="text-center mb-16">
-          <span className="text-[11px] px-3 py-1 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 font-semibold uppercase tracking-wider">
+          {/* Chrome-gold pill — dark interior on padding-box + chrome-gold
+              gradient on border-box, same trick as the /book-now
+              Schedule button. Gives the pill a metallic gold ring. */}
+          <span
+            className="inline-block text-[11px] px-3 py-1 rounded-full font-semibold uppercase tracking-wider"
+            style={{
+              background:
+                "linear-gradient(rgba(10,10,10,0.6), rgba(10,10,10,0.6)) padding-box, " +
+                `${CHROME_GOLD} border-box`,
+              border: "1px solid transparent",
+              color: "#ffd700",
+            }}
+          >
             Premium
           </span>
+
           <h1 className="text-4xl md:text-5xl font-bold mt-5 mb-4">
-            <span className="text-yellow-400">Interlinked</span> Premium
+            <span style={goldTextStyle}>Interlinked</span> Premium
           </h1>
-          <p className="text-gray-400 text-lg max-w-xl mx-auto leading-relaxed">
+          <p className="text-gray-300 text-lg max-w-xl mx-auto leading-relaxed">
             The free newsletter keeps you informed. Premium makes you dangerous.
             Agentic AI strategies, automation playbooks, and intelligence that
             compounds your advantage every single week.
           </p>
         </div>
 
-        {/* Agentic AI Benefits */}
+        {/* Agentic AI Benefits — emojis removed; each card is now a
+            title + description only, with the title in chrome-gold so
+            the gold identity stays even without the icon. */}
         <div className="mb-12">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-yellow-400/60 mb-6 text-center">
+          <h2
+            className="text-sm font-semibold uppercase tracking-widest mb-6 text-center"
+            style={goldTextStyle}
+          >
             What You Get
           </h2>
           <div className="grid gap-4 md:gap-6">
             {[
               {
-                icon: "\u2699\ufe0f",
                 title: "Agentic AI Playbooks",
                 desc: "Step-by-step breakdowns of autonomous AI agent workflows — how to build, deploy, and scale agents that handle sales, support, research, and operations without human babysitting.",
               },
               {
-                icon: "\ud83e\udde0",
                 title: "AI Agent Architecture Briefs",
                 desc: "Deep dives into multi-agent systems, tool-use chains, and orchestration patterns. Understand how leading companies are building AI that thinks, plans, and executes autonomously.",
               },
               {
-                icon: "\ud83d\udcc8",
                 title: "Automation ROI Breakdowns",
                 desc: "Real numbers behind AI automation — which processes to automate first, expected cost savings, and the compounding returns of deploying agents across your business.",
               },
               {
-                icon: "\ud83d\udd17",
                 title: "Tool & API Intelligence",
                 desc: "First-to-know coverage of new AI tools, APIs, and platforms. We test and review so you deploy what actually works — not what's trending on Twitter.",
               },
               {
-                icon: "\ud83c\udfaf",
                 title: "Monday: Strategic Frameworks",
                 desc: "Start the week with decision frameworks for AI adoption — when to build vs. buy, how to evaluate AI vendors, and mental models for agentic thinking.",
               },
               {
-                icon: "\ud83d\udd2c",
                 title: "Wednesday: Deep Intelligence",
                 desc: "Mid-week analysis connecting AI research to business impact. We translate papers, benchmarks, and breakthroughs into moves you can make this quarter.",
               },
               {
-                icon: "\ud83d\udcb0",
                 title: "Friday: Monetization Plays",
                 desc: "End the week with revenue strategies — how to package AI services, price automation, and build recurring revenue on top of agentic workflows.",
               },
               {
-                icon: "\ud83e\udd16",
                 title: "Agent Prompt Libraries",
                 desc: "Curated, tested prompts and system instructions for building high-performance AI agents. Copy, paste, deploy — production-ready from day one.",
               },
               {
-                icon: "\ud83d\udee1\ufe0f",
                 title: "AI Risk & Compliance Updates",
                 desc: "Stay ahead of regulation. Premium members get early analysis of AI policy changes, compliance requirements, and risk mitigation strategies before they hit mainstream news.",
               },
               {
-                icon: "\ud83d\ude80",
                 title: "Early Access to Omni AI Tools",
                 desc: "Premium members beta-test new Omni AI products, integrations, and agent templates before public release. Shape the tools you use.",
               },
               {
-                icon: "\ud83c\udf10",
                 title: "Private Community Access",
                 desc: "Connect with other premium members building with agentic AI. Share workflows, troubleshoot deployments, and collaborate on the frontier of autonomous business systems.",
               },
               {
-                icon: "\ud83d\udcca",
                 title: "Weekly AI Market Intelligence",
                 desc: "Curated data on AI adoption rates, funding rounds, talent movements, and market shifts — the signals that matter for strategic positioning.",
               },
-            ].map((item, i) => (
+            ].map((item) => (
               <div
-                key={i}
-                className="p-6 rounded-xl bg-yellow-500/[0.02] border border-yellow-500/[0.08] hover:border-yellow-500/15 transition-colors"
+                key={item.title}
+                className="p-6 rounded-xl bg-amber-500/[0.03] border border-amber-500/[0.12] hover:border-amber-500/30 transition-colors backdrop-blur-sm"
               >
-                <div className="flex items-start gap-4.5">
-                  <span className="text-lg flex-shrink-0 mt-0.5">{item.icon}</span>
-                  <div>
-                    <h3 className="text-sm font-semibold text-yellow-400 mb-1.5">
-                      {item.title}
-                    </h3>
-                    <p className="text-sm text-gray-400 leading-relaxed">
-                      {item.desc}
-                    </p>
-                  </div>
-                </div>
+                <h3
+                  className="text-base font-semibold mb-2"
+                  style={goldTextStyle}
+                >
+                  {item.title}
+                </h3>
+                <p className="text-sm text-gray-300 leading-relaxed">
+                  {item.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -144,13 +168,16 @@ export default function PremiumInfoPage() {
 
         {/* Comparison */}
         <div className="mb-16">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-yellow-400/60 mb-6 text-center">
+          <h2
+            className="text-sm font-semibold uppercase tracking-widest mb-6 text-center"
+            style={goldTextStyle}
+          >
             Free vs Premium
           </h2>
           <div className="grid grid-cols-2 gap-4">
-            <div className="p-6 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+            <div className="p-6 rounded-xl bg-white/[0.03] border border-white/[0.08] backdrop-blur-sm">
               <h3 className="text-sm font-semibold text-purple-400 mb-4">Daily Intelligence</h3>
-              <ul className="space-y-2 text-sm text-gray-500">
+              <ul className="space-y-2 text-sm text-gray-400">
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Daily AI briefing</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> 3 key insights</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Power move of the day</li>
@@ -159,9 +186,14 @@ export default function PremiumInfoPage() {
                 <li className="flex items-center gap-2"><span className="text-gray-700">&mdash;</span> <span className="text-gray-700">No community access</span></li>
               </ul>
             </div>
-            <div className="p-6 rounded-xl bg-yellow-500/[0.03] border border-yellow-500/[0.12]">
-              <h3 className="text-sm font-semibold text-yellow-400 mb-4">Interlinked Premium</h3>
-              <ul className="space-y-2 text-sm text-gray-400">
+            <div className="p-6 rounded-xl bg-amber-500/[0.04] border border-amber-500/25 backdrop-blur-sm">
+              <h3
+                className="text-sm font-semibold mb-4"
+                style={goldTextStyle}
+              >
+                Interlinked Premium
+              </h3>
+              <ul className="space-y-2 text-sm text-gray-300">
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Everything in Free</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> 3x/week deep dives</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Agentic AI playbooks</li>
@@ -173,17 +205,29 @@ export default function PremiumInfoPage() {
           </div>
         </div>
 
-        {/* CTA */}
+        {/* CTA — chrome-gold treatment identical to /book-now and
+            /newsletter/[slug]. Dark interior + gold gradient border +
+            gold text + subtle gold shadow. */}
         <div className="text-center">
           <Link
             href="/?signin=true"
-            className="inline-block bg-gradient-to-r from-yellow-600 to-yellow-500 text-black px-8 py-4 rounded-xl font-semibold text-sm hover:opacity-90 transition-opacity"
+            style={{
+              background:
+                "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.55)) padding-box, " +
+                `${CHROME_GOLD} border-box`,
+              border: "2px solid transparent",
+            }}
+            className="inline-flex items-center justify-center px-8 h-12 rounded-xl font-semibold text-sm text-[#ffd700] shadow-[0_0_14px_rgba(255,215,0,0.35)] transition-all hover:brightness-125 active:scale-[0.98]"
           >
             Get Premium Access
           </Link>
-          <p className="text-gray-600 text-xs mt-3">
+          <p className="text-gray-500 text-xs mt-4">
             Already have an account?{" "}
-            <Link href="/?signin=true" className="text-yellow-500 hover:text-yellow-400 underline underline-offset-2">
+            <Link
+              href="/?signin=true"
+              className="hover:brightness-125 underline underline-offset-2"
+              style={{ color: "#ffd700" }}
+            >
               Sign in
             </Link>
           </p>
