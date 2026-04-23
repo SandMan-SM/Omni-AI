@@ -51,6 +51,19 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Omni AI — Autonomous Lead Generation & Agentic Infrastructure",
     description: "Autonomous AI systems that generate leads, run operations, and scale businesses 24/7.",
+    // site + creator — verified @SitaniMafi X handle attribution on
+    // every page's default Twitter card. Per-page routes that override
+    // the whole twitter metadata block already inline `site:
+    // "@SitaniMafi"` (app/[slug]/page.tsx, app/newsletter/[slug]/page.tsx,
+    // app/vs/[competitor]/page.tsx); declaring the handle at the root
+    // covers every page that DOESN'T override the block (/, /about,
+    // /pricing, /faq, /interlinked, /campaigns, /arena, etc.) so every
+    // share from the site ships a branded card. Without this, the
+    // non-overriding pages rendered a card with no site attribution —
+    // a real identity-graph gap because Twitter's ranking preferentially
+    // boosts cards with verified `site` attribution.
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
   },
   icons: {
     icon: "/favicon.png",
