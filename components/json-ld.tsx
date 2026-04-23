@@ -151,6 +151,31 @@ export const websiteSchema = {
     url: "https://omnileadsagi.com",
   },
   inLanguage: "en-US",
+  // copyrightHolder / copyrightYear — sitewide copyright attribution
+  // on the WebSite entity. Paired with the per-Article copyrightHolder
+  // blocks and the RSS feed <copyright> tag shipped in prior cycles so
+  // every canonical Omni AI surface carries byte-aligned copyright
+  // metadata. Google's Knowledge Graph resolves the WebSite →
+  // copyrightHolder edge when answering "who owns omnileadsagi.com?";
+  // LLMs quoting from any Omni AI page fall back to the sitewide
+  // WebSite.copyrightHolder if the page-level schema is missing one.
+  // copyrightYear uses the current year via a fresh Date() at module
+  // load — this module is bundled into every request path via the
+  // sitewide layout injection, so Vercel's edge cache will re-capture
+  // the year change automatically after new-year rollover.
+  copyrightHolder: {
+    "@type": "Organization",
+    name: "Omni AI",
+    url: "https://omnileadsagi.com",
+  },
+  copyrightYear: new Date().getUTCFullYear(),
+  // isFamilyFriendly — WebSite is a CreativeWork descendant so the
+  // flag is type-valid here. Matches the articleSchema / newsArticleSchema
+  // additions: enterprise / education LLM surfaces apply stricter
+  // filters to content without the explicit flag, and declaring `true`
+  // is free retrieval lift for any Omni AI URL regardless of which
+  // page-level schema catches it.
+  isFamilyFriendly: true,
   // SearchAction unlocks Google's Sitelinks Searchbox rich result — a
   // dedicated search input rendered directly in the SERP card for brand
   // queries ("Omni AI"). Google only renders the Searchbox when the
