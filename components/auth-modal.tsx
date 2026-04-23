@@ -12,9 +12,33 @@ interface AuthModalProps {
   onClose: () => void;
   prompt?: string;
   showCompleteBanner?: boolean;
+  /**
+   * Where to send the user after a successful sign-in.
+   * - `undefined` (default) → redirect to `/dashboard` (legacy behavior).
+   * - a string path          → redirect to that path.
+   * - `null`                 → no redirect, stay on the current page.
+   *   Use this when the modal is rendered inline on a page that wants
+   *   to keep the user put (e.g. /newsletter — the Subscribe button
+   *   there should authenticate without throwing the user into the
+   *   dashboard).
+   */
+  redirectTo?: string | null;
+  /**
+   * Fires after a successful sign-in, right after the modal closes.
+   * Runs BEFORE any redirect. Useful for post-signin UX like opening
+   * a follow-up upsell modal.
+   */
+  onSuccess?: () => void;
 }
 
-export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthModalProps) {
+export function AuthModal({
+  isOpen,
+  onClose,
+  prompt,
+  showCompleteBanner,
+  redirectTo,
+  onSuccess,
+}: AuthModalProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -42,9 +66,21 @@ export function AuthModal({ isOpen, onClose, prompt, showCompleteBanner }: AuthM
           description: "You have successfully signed in.",
         });
         onClose();
-        router.push("/dashboard");
         setUsername("");
         setPassword("");
+        // Fire the optional callback first so the parent can queue up
+        // a follow-up UI (e.g. premium upsell on /newsletter) before we
+        // navigate away.
+        onSuccess?.();
+        // redirectTo semantics:
+        //   undefined → legacy /dashboard redirect
+        //   string    → redirect there
+        //   null      → stay put (no navigation)
+        if (redirectTo === undefined) {
+          router.push("/dashboard");
+        } else if (typeof redirectTo === "string") {
+          router.push(redirectTo);
+        }
       }
     } catch (err) {
       toast({

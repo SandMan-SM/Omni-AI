@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Metadata } from "next";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
+import { PREMIUM_PAYMENT_LINK } from "@/lib/premium";
 
 export const metadata: Metadata = {
   title: "Interlinked Premium — Agentic AI Strategies & Automation Playbooks",
@@ -195,7 +196,7 @@ export default function PremiumInfoPage() {
               </h3>
               <ul className="space-y-2 text-sm text-gray-300">
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Everything in Free</li>
-                <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> 3x/week deep dives</li>
+                <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Deep dives</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Agentic AI playbooks</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Prompt libraries</li>
                 <li className="flex items-center gap-2"><span className="text-green-500">&#10003;</span> Early tool access</li>
@@ -207,10 +208,13 @@ export default function PremiumInfoPage() {
 
         {/* CTA — chrome-gold treatment identical to /book-now and
             /newsletter/[slug]. Dark interior + gold gradient border +
-            gold text + subtle gold shadow. */}
+            gold text + subtle gold shadow. Links directly to the
+            Stripe-hosted checkout page with FIRST50 prefilled so the
+            user lands on a $20 first-month total. Plain <a> (not
+            next/link) because it's an external URL. */}
         <div className="text-center">
-          <Link
-            href="/?signin=true"
+          <a
+            href={PREMIUM_PAYMENT_LINK}
             style={{
               background:
                 "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.55)) padding-box, " +
@@ -220,8 +224,11 @@ export default function PremiumInfoPage() {
             className="inline-flex items-center justify-center px-8 h-12 rounded-xl font-semibold text-sm text-[#ffd700] shadow-[0_0_14px_rgba(255,215,0,0.35)] transition-all hover:brightness-125 active:scale-[0.98]"
           >
             Get Premium Access
-          </Link>
-          <p className="text-gray-500 text-xs mt-4">
+          </a>
+          <p className="text-gray-400 text-xs mt-4">
+            $20 first month, $40/mo after · cancel anytime
+          </p>
+          <p className="text-gray-500 text-xs mt-3">
             Already have an account?{" "}
             <Link
               href="/?signin=true"
