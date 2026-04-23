@@ -40,7 +40,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // is the public apply form. Sponsor funnel: /sponsor/info → /sponsor/
     // application → /sponsor (portal, unlisted).
     { url: `${baseUrl}/sponsor/info`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${baseUrl}/fray`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    // /fray is intentionally omitted — it's a personalized VIP sponsor
+    // dashboard ("Hey Fray 👋" header; live-build status / MRR / leads /
+    // newsletter activity for 3 sponsored businesses). Not a public
+    // marketing page; app/fray/layout.tsx sets robots: noindex,nofollow.
+    // Same pattern as /sponsor above.
     { url: `${baseUrl}/newsletter`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
     { url: `${baseUrl}/newsletter/premium/info`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${baseUrl}/website/development`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
