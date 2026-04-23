@@ -42,6 +42,23 @@ const nextConfig = {
             key: 'X-DNS-Prefetch-Control',
             value: 'on',
           },
+          // HSTS: force HTTPS for 2 years + include subdomains + allow
+          // submission to the Chrome preload list. Vercel already serves
+          // HTTPS + redirects HTTP — this header tells browsers to remember
+          // that and skip the redirect round-trip on subsequent visits,
+          // which also closes the window where a MITM can downgrade the
+          // first request. Submitting to hstspreload.org (once this header
+          // is live) bakes the policy into the browser binary so even a
+          // clean-install browser is protected on its first visit.
+          //
+          // Safe to ship: the site has no http:// surface to lose. If a
+          // future dev subdomain ever needs http:// we'd drop
+          // includeSubDomains + preload — remove both together or the
+          // preload submission becomes invalid.
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
         ],
       },
     ];
