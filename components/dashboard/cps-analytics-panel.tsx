@@ -156,31 +156,32 @@ export default function CpsAnalyticsPanel() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-white">CPS Live Analytics</h2>
-          <p className="text-xs text-gray-500 mt-1">
-            psychandcustodyevaluations.com · refreshes every 30s ·
-            <span className="text-gray-600"> last updated {fmtTime(data.fetchedAt)}</span>
+      <div className="flex items-start sm:items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-white">CPS Live Analytics</h2>
+          <p className="text-[10px] sm:text-xs text-gray-500 mt-1 leading-tight">
+            <span className="hidden sm:inline">psychandcustodyevaluations.com · </span>
+            refreshes every 30s
+            <span className="hidden sm:inline"> · last updated {fmtTime(data.fetchedAt)}</span>
           </p>
         </div>
-        <Activity className="w-5 h-5 text-emerald-400" />
+        <Activity className="w-5 h-5 text-emerald-400 flex-shrink-0" />
       </div>
 
       {/* Stat cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-4">
         {stats.map((s) => {
           const Icon = s.icon;
           return (
             <Card key={s.label} className="bg-white/[0.03] border-white/[0.06]">
-              <CardContent className="p-4">
-                <Icon className={`w-4 h-4 mb-3 ${s.accent}`} aria-hidden />
-                <div className="text-2xl font-bold text-white">
+              <CardContent className="p-3 sm:p-4">
+                <Icon className={`w-4 h-4 mb-2 sm:mb-3 ${s.accent}`} aria-hidden />
+                <div className="text-xl sm:text-2xl font-bold text-white leading-none">
                   {s.value.toLocaleString()}
                 </div>
-                <div className="text-[10px] text-gray-500 uppercase tracking-wider mt-1">
+                <div className="text-[9px] sm:text-[10px] text-gray-500 uppercase tracking-wider mt-1.5 leading-tight">
                   {s.label}
                 </div>
               </CardContent>
@@ -190,10 +191,10 @@ export default function CpsAnalyticsPanel() {
       </div>
 
       {/* Recent leads + Calls received */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         <Card className="bg-white/[0.03] border-white/[0.06] lg:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
-            <CardTitle className="text-lg text-white">Recent leads</CardTitle>
+            <CardTitle className="text-base sm:text-lg text-white">Recent leads</CardTitle>
             <span className="text-xs text-gray-500">{data.recentLeads.length} shown</span>
           </CardHeader>
           <CardContent>
@@ -204,46 +205,46 @@ export default function CpsAnalyticsPanel() {
             ) : (
               <ul className="space-y-3">
                 {data.recentLeads.map((l) => (
-                  <li key={l.id} className="bg-white/5 rounded-xl p-4 border border-white/5">
-                    <div className="flex items-start justify-between gap-4">
+                  <li key={l.id} className="bg-white/5 rounded-xl p-3 sm:p-4 border border-white/5">
+                    <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2 mb-1 flex-wrap">
-                          <span className="font-bold text-white truncate">{l.name}</span>
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 uppercase tracking-wider">
+                        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
+                          <span className="font-bold text-white text-sm sm:text-base truncate max-w-[180px] sm:max-w-none">{l.name}</span>
+                          <span className="text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 uppercase tracking-wider">
                             {l.status}
                           </span>
-                          <span className="text-[10px] text-gray-500">via {l.source}</span>
+                          <span className="text-[9px] sm:text-[10px] text-gray-500 hidden sm:inline">via {l.source}</span>
                         </div>
-                        <div className="flex flex-wrap gap-3 text-sm text-gray-300">
+                        <div className="flex flex-col sm:flex-row sm:flex-wrap gap-1.5 sm:gap-3 text-xs sm:text-sm text-gray-300">
                           {l.phone && (
                             <a
                               href={`tel:${l.phone}`}
                               className="inline-flex items-center gap-1 hover:text-white"
                             >
-                              <Phone className="w-3 h-3" aria-hidden /> {l.phone}
+                              <Phone className="w-3 h-3 flex-shrink-0" aria-hidden /> {l.phone}
                             </a>
                           )}
                           {l.email && (
                             <a
                               href={`mailto:${l.email}`}
-                              className="inline-flex items-center gap-1 hover:text-white"
+                              className="inline-flex items-center gap-1 hover:text-white truncate"
                             >
-                              <Mail className="w-3 h-3" aria-hidden /> {l.email}
+                              <Mail className="w-3 h-3 flex-shrink-0" aria-hidden /> <span className="truncate">{l.email}</span>
                             </a>
                           )}
                           {l.page_path && (
-                            <span className="inline-flex items-center gap-1 text-gray-500">
-                              <ExternalLink className="w-3 h-3" aria-hidden /> {l.page_path}
+                            <span className="inline-flex items-center gap-1 text-gray-500 truncate">
+                              <ExternalLink className="w-3 h-3 flex-shrink-0" aria-hidden /> <span className="truncate">{l.page_path}</span>
                             </span>
                           )}
                         </div>
                         {l.message && (
-                          <p className="mt-2 text-sm text-gray-400 whitespace-pre-wrap line-clamp-2">
+                          <p className="mt-2 text-xs sm:text-sm text-gray-400 whitespace-pre-wrap line-clamp-2">
                             {l.message}
                           </p>
                         )}
                       </div>
-                      <div className="text-[10px] text-gray-500 whitespace-nowrap">
+                      <div className="text-[10px] text-gray-500 whitespace-nowrap flex-shrink-0">
                         {fmtTime(l.created_at)}
                       </div>
                     </div>
@@ -256,8 +257,8 @@ export default function CpsAnalyticsPanel() {
 
         <Card className="bg-white/[0.03] border-white/[0.06]">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-white">Calls received</CardTitle>
-            <p className="text-xs text-gray-500 mt-1">
+            <CardTitle className="text-base sm:text-lg text-white">Calls received</CardTitle>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">
               tel: link clicks · last 7 days
             </p>
           </CardHeader>
@@ -287,11 +288,11 @@ export default function CpsAnalyticsPanel() {
       </div>
 
       {/* Top pages + Top buttons */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <Card className="bg-white/[0.03] border-white/[0.06]">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-white">Top pages</CardTitle>
-            <p className="text-xs text-gray-500 mt-1">By page views · last 7 days</p>
+            <CardTitle className="text-base sm:text-lg text-white">Top pages</CardTitle>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">By page views · last 7 days</p>
           </CardHeader>
           <CardContent>
             {data.topPages.length === 0 ? (
@@ -314,8 +315,8 @@ export default function CpsAnalyticsPanel() {
 
         <Card className="bg-white/[0.03] border-white/[0.06]">
           <CardHeader className="pb-4">
-            <CardTitle className="text-lg text-white">Top buttons clicked</CardTitle>
-            <p className="text-xs text-gray-500 mt-1">By click count · last 7 days</p>
+            <CardTitle className="text-base sm:text-lg text-white">Top buttons clicked</CardTitle>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">By click count · last 7 days</p>
           </CardHeader>
           <CardContent>
             {data.topClicks.length === 0 ? (
@@ -339,13 +340,13 @@ export default function CpsAnalyticsPanel() {
 
       {/* Live event feed */}
       <Card className="bg-white/[0.03] border-white/[0.06]">
-        <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 pb-4">
           <div>
-            <CardTitle className="text-lg text-white">Live event feed</CardTitle>
-            <p className="text-xs text-gray-500 mt-1">Most recent 50 events</p>
+            <CardTitle className="text-base sm:text-lg text-white">Live event feed</CardTitle>
+            <p className="text-[10px] sm:text-xs text-gray-500 mt-1">Most recent 50 events</p>
           </div>
-          <div className="text-xs text-gray-500">
-            {data.uniqueVisitorsSample} visitors · {data.uniqueSessionsSample} sessions in sample
+          <div className="text-[10px] sm:text-xs text-gray-500">
+            {data.uniqueVisitorsSample} visitors · {data.uniqueSessionsSample} sessions
           </div>
         </CardHeader>
         <CardContent className="overflow-x-auto">

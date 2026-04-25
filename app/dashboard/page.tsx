@@ -419,7 +419,11 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
               {metrics.map((metric, i) => {
                 const MetricIcon = metric.icon;
-                const isLocked = !isSponsor || (isSponsor && !profile?.sponsor_insights_paid);
+                // CPS sees the same unlocked view sponsors get post-payment —
+                // their analytics are wired in and they are paying for the
+                // dashboard experience, so the gate doesn't apply to them.
+                const isLocked =
+                  !isCPS && (!isSponsor || (isSponsor && !profile?.sponsor_insights_paid));
                 return (
                   <motion.div key={metric.label} transition={{ duration: 0.4, delay: i * 0.06 }}>
                     <Card className="bg-white/[0.03] border-white/[0.06]">
@@ -511,23 +515,20 @@ export default function Dashboard() {
                 <div className="mb-4">
                   <Card className="bg-gradient-to-br from-blue-900/40 via-cyan-950/60 to-blue-900/40 border-2 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.3)] overflow-hidden relative max-w-md mx-auto">
                     <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/10 via-transparent to-blue-400/10" />
-                    <CardContent className="p-6 relative">
-                      <h3 className="text-2xl font-bold text-center mb-2">
+                    <CardContent className="p-5 sm:p-6 relative">
+                      <h3 className="text-xl sm:text-2xl font-bold text-center mb-2">
                         <span className="bg-gradient-to-r from-blue-200 via-cyan-300 to-blue-200 bg-clip-text text-transparent animate-shine">
                           Traditional Marketing Handled by AI
                         </span>
                       </h3>
-                      <p className="text-sm text-blue-200/80 mb-4 text-center px-2 leading-relaxed">
-                        Activate Agent Development to get started
+                      <p className="text-xs sm:text-sm text-blue-200/80 mb-4 text-center px-2 leading-relaxed">
+                        Agentic agents in development for your site
                       </p>
                       <div className="flex justify-center">
-                        <Button
-                          className="bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-600 hover:from-blue-400 hover:to-cyan-500 text-white border-0 shadow-lg shadow-cyan-400/25 font-semibold text-sm"
-                          onClick={() => router.push('/sponsor/info')}
-                        >
-                          <Bot className="w-4 h-4 mr-2" />
-                          Activate Agent Development
-                        </Button>
+                        <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-sm font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden />
+                          Activated
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
@@ -845,18 +846,15 @@ export default function Dashboard() {
           {isCPS && (
             <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
               <div className="mx-[-1rem] bg-gradient-to-r from-blue-600/15 via-blue-500/20 to-cyan-500/15 border-y border-blue-500/20 backdrop-blur-sm">
-                <div className="max-w-[1440px] mx-auto px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="text-center sm:text-left">
-                    <p className="text-white font-bold text-lg">Activate Bot Development</p>
-                    <p className="text-blue-200/80 text-sm">Begin tracking live analytics</p>
+                <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                  <div className="text-left sm:text-left min-w-0">
+                    <p className="text-white font-bold text-base sm:text-lg leading-tight">Agentic Agents in Development</p>
+                    <p className="text-blue-200/80 text-xs sm:text-sm mt-0.5">Live analytics tracking your site in real time</p>
                   </div>
-                  <Button
-                    className="btn-chrome-blue text-white border-0 shadow-lg shadow-blue-400/25 font-semibold"
-                    onClick={() => window.open('https://www.paypal.com/ncp/payment/NLHHZJS3UC48L', '_blank')}
-                  >
-                    <Bot className="w-4 h-4 mr-2" />
-                    Activate Now
-                  </Button>
+                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-semibold whitespace-nowrap self-stretch sm:self-auto justify-center sm:justify-start">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden />
+                    Activated
+                  </span>
                 </div>
               </div>
             </motion.div>
