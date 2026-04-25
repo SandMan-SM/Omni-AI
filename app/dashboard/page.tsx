@@ -50,6 +50,18 @@ const CommandCenter = dynamicImport(
     ),
   },
 );
+// CPS-only analytics panel — code-split so non-CPS users never download it.
+const CpsAnalyticsPanel = dynamicImport(
+  () => import("@/components/dashboard/cps-analytics-panel"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="min-h-[200px] flex items-center justify-center">
+        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    ),
+  },
+);
 
 const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: string; accent: string; level: number }> = {
   apprentice: { name: "Apprentice", icon: Zap, gradient: "from-slate-500 to-slate-600", accent: "text-slate-400", level: 0 },
@@ -847,6 +859,15 @@ export default function Dashboard() {
                   </Button>
                 </div>
               </div>
+            </motion.div>
+          )}
+
+          {/* CPS analytics — leads, calls, top pages, button clicks.
+              Mounted only for the CPS account (and any admin via the API
+              gate). Auto-refreshes every 30s from /api/dashboard/cps-data. */}
+          {isCPS && (
+            <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.05 }}>
+              <CpsAnalyticsPanel />
             </motion.div>
           )}
 
