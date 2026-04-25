@@ -630,28 +630,29 @@ export default function Dashboard() {
                   </Button>
                 </div>
               ) : isCPS ? (
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 p-[1px] flex-shrink-0">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-400 p-[1px] flex-shrink-0">
                       <div className="w-full h-full rounded-xl bg-[#0a0a0a] flex items-center justify-center">
-                        <Shield className="w-7 h-7 text-blue-400" />
+                        <Shield className="w-6 h-6 sm:w-7 sm:h-7 text-blue-400" />
                       </div>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-xl font-bold text-blue-400" data-testid="text-current-tier-name">Master</h3>
+                        <h3 className="text-lg sm:text-xl font-bold text-blue-400" data-testid="text-current-tier-name">Master</h3>
                       </div>
-                      <p className="text-sm text-gray-500" data-testid="text-tier-status">
-                        Deactivated
+                      <p className="text-sm text-emerald-400 font-medium" data-testid="text-tier-status">
+                        Activated
                       </p>
                     </div>
                   </div>
                   <Button
-                    className="btn-chrome-blue text-white border-0 shadow-lg shadow-blue-400/25 font-semibold"
-                    onClick={() => window.open('https://www.paypal.com/ncp/payment/NLHHZJS3UC48L', '_blank')}
-                    data-testid="button-activate-vip"
+                    variant="outline"
+                    className="border-blue-500/50 bg-blue-500/10 text-blue-400 text-sm hover:bg-blue-500/20 flex-shrink-0"
+                    onClick={() => router.push('/master/info')}
+                    data-testid="button-master-info"
                   >
-                    Activate
+                    Info
                     <ArrowRight className="w-3 h-3 ml-1.5" />
                   </Button>
                 </div>
