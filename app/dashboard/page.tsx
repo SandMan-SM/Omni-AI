@@ -439,12 +439,14 @@ export default function Dashboard() {
           </motion.div>
         )}
 
-        {/* CommandCenter is hidden for admins — it pulls from legacy
-            profile/lead data and double-renders below the agentic AgiAdminPanel,
-            which causes 'wrong numbers' confusion (e.g. 'Cold Leads/Clients'
-            counts that don't match the agentic dashboard's actual lead
-            statuses). Non-admins still see the locked metrics grid. */}
-        {!isAdmin && (
+        {/* CommandCenter — now shows MERGED metrics (legacy profiles + agentic
+            omni_leads_generated). Numbers stay synced with the agentic
+            Pipeline/Leads tabs above so admins don't see conflicting totals. */}
+        {isAdmin ? (
+          <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
+            <CommandCenter />
+          </motion.div>
+        ) : (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {metrics.map((metric, i) => {

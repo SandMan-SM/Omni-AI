@@ -30,6 +30,8 @@ export async function GET() {
     { data: newsletterPosts },
     { data: activities },
     { data: newsletterSubs },
+    { data: agiLeads },
+    { data: agiBookings },
   ] = await Promise.all([
     supabase.from("profiles").select("id,name,email,crm_status,lead_score,total_spent,gross_revenue,newsletter_subscribed,is_premium,is_sponsor,sponsor_tier,last_contacted,satisfaction_score,created_at"),
     supabase.from("campaigns").select("id,profile_id,name,status,type,budget,platform,created_at"),
@@ -37,6 +39,10 @@ export async function GET() {
     supabase.from("newsletter_posts").select("id,slug,subject,tier,published_at,keywords").order("published_at", { ascending: false }),
     supabase.from("activity_log").select("id,profile_id,type,subject,channel,created_at").order("created_at", { ascending: false }).limit(20),
     supabase.from("newsletter_subscriptions").select("subscribed,subscription_tier"),
+    // Agentic dashboard: merge omni_leads_generated counts so CommandCenter
+    // numbers stay synced with the agentic Pipeline/Leads tabs.
+    supabase.from("omni_leads_generated").select("id,status,score,deal_value,created_at,updated_at"),
+    supabase.from("omni_meeting_bookings").select("id,status,created_at"),
   ]);
 
   const allProfiles = profiles || [];
@@ -45,16 +51,33 @@ export async function GET() {
   const allPosts = newsletterPosts || [];
   const allActivities = activities || [];
   const allSubs = newsletterSubs || [];
+  const allAgiLeads = agiLeads || [];
+  const allAgiBookings = agiBookings || [];
 
-  // --- Revenue Engine ---
-  const totalLeads = allProfiles.filter(p => p.crm_status === "lead" || p.crm_status === "prospect").length;
-  const totalClients = allProfiles.filter(p => p.crm_status === "client").length;
-  const hotLeads = allProfiles.filter(p => p.lead_score === "hot" && p.crm_status !== "client").length;
-  const warmLeads = allProfiles.filter(p => p.lead_score === "warm" && p.crm_status !== "client").length;
-  const totalRevenue = allProfiles.reduce((sum, p) => sum + (p.gross_revenue || 0), 0);
+  // --- Revenue Engine — MERGED legacy profiles + agentic omni_leads_generated ---
+  const legacyLeads = allProfiles.filter(p => p.crm_status === "lead" || p.crm_status === "prospect").length;
+  const legacyClients = allProfiles.filter(p => p.crm_status === "client").length;
+  const legacyHot = allProfiles.filter(p => p.lead_score === "hot" && p.crm_status !== "client").length;
+  const legacyWarm = allProfiles.filter(p => p.lead_score === "warm" && p.crm_status !== "client").length;
+
+  // Agentic mapping: status='converted' → client; everything else → lead.
+  // Score>=80 → hot, 60-79 → warm.
+  const agiConverted = allAgiLeads.filter(l => l.status === "converted").length;
+  const agiOpenLeads = allAgiLeads.filter(l => l.status !== "converted" && l.status !== "lost").length;
+  const agiHot = allAgiLeads.filter(l => (l.score ?? 0) >= 80 && l.status !== "converted").length;
+  const agiWarm = allAgiLeads.filter(l => (l.score ?? 0) >= 60 && (l.score ?? 0) < 80 && l.status !== "converted").length;
+
+  const totalLeads = legacyLeads + agiOpenLeads;
+  const totalClients = legacyClients + agiConverted;
+  const hotLeads = legacyHot + agiHot;
+  const warmLeads = legacyWarm + agiWarm;
+
+  const totalRevenue = allProfiles.reduce((sum, p) => sum + (p.gross_revenue || 0), 0)
+    + allAgiLeads.reduce((sum, l) => sum + (l.deal_value && l.status === "converted" ? Number(l.deal_value) / 100 : 0), 0);
   const totalSpent = allProfiles.reduce((sum, p) => sum + (p.total_spent || 0), 0);
-  const conversionRate = allProfiles.length > 0
-    ? Math.round((totalClients / allProfiles.length) * 100)
+  const universeSize = allProfiles.length + allAgiLeads.length;
+  const conversionRate = universeSize > 0
+    ? Math.round((totalClients / universeSize) * 100)
     : 0;
 
   // --- Operations ---
@@ -75,13 +98,23 @@ export async function GET() {
   const freeSubscribers = allSubs.filter(s => s.subscribed !== false).length;
 
   // --- Client Health ---
-  const needFollowUp = allProfiles.filter(p => {
+  const legacyNeedFollowUp = allProfiles.filter(p => {
     if (!p.last_contacted) return true;
     const days = Math.floor((Date.now() - new Date(p.last_contacted).getTime()) / 86400000);
     return days >= 7;
   }).length;
+  // Agentic needs-follow-up = open leads (qualified/contacted) older than 7 days
+  // since last update.
+  const agiNeedFollowUp = allAgiLeads.filter(l => {
+    if (l.status === "converted" || l.status === "lost") return false;
+    const ts = l.updated_at || l.created_at;
+    if (!ts) return true;
+    const days = Math.floor((Date.now() - new Date(ts).getTime()) / 86400000);
+    return days >= 7;
+  }).length;
+  const needFollowUp = legacyNeedFollowUp + agiNeedFollowUp;
 
-  const criticalClients = allProfiles.filter(p => {
+  const legacyCritical = allProfiles.filter(p => {
     if (p.crm_status !== "client") return false;
     let score = 0;
     if (p.last_contacted) {
@@ -94,6 +127,16 @@ export async function GET() {
     if (p.newsletter_subscribed) score += 20;
     return score < 40;
   }).length;
+  // Agentic critical = converted leads with no recent activity (>14 days since
+  // updated_at) — reuses the same definition: "client we haven't touched lately."
+  const agiCritical = allAgiLeads.filter(l => {
+    if (l.status !== "converted") return false;
+    const ts = l.updated_at || l.created_at;
+    if (!ts) return true;
+    const days = Math.floor((Date.now() - new Date(ts).getTime()) / 86400000);
+    return days >= 14;
+  }).length;
+  const criticalClients = legacyCritical + agiCritical;
 
   // --- Alerts ---
   const leadsNotContactedIn24h = allProfiles.filter(p => {
@@ -151,7 +194,7 @@ export async function GET() {
       freeSubscribers,
     },
     clientHealth: {
-      totalUsers: allProfiles.length,
+      totalUsers: allProfiles.length + allAgiLeads.length,
       totalClients,
       needFollowUp,
       criticalClients,

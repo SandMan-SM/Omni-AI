@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
-import { ArrowLeft, ChevronDown, Calendar, Clock, User, Mail, Phone, RefreshCw, Copy, ExternalLink } from 'lucide-react';
+import { ArrowLeft, ChevronDown, Calendar, Clock, Mail, Phone, RefreshCw, Copy, ExternalLink, X, Edit3, CalendarX, RotateCcw, CheckCircle2 } from 'lucide-react';
 
 type Booking = {
   id: string;
@@ -30,6 +30,7 @@ export default function MeetingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [bizOpen, setBizOpen] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Booking | null>(null);
 
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2000); };
 
@@ -163,16 +164,25 @@ export default function MeetingsPage() {
         <SectionTitle>Upcoming · {upcoming.length}</SectionTitle>
         {upcoming.length === 0 ? (
           <Empty msg="No upcoming meetings yet" />
-        ) : upcoming.map(b => <BookingCard key={b.id} booking={b} />)}
+        ) : upcoming.map(b => <BookingCard key={b.id} booking={b} onClick={() => setSelected(b)} />)}
 
         {/* Past */}
         {past.length > 0 && (
           <>
             <SectionTitle style={{ marginTop: 32 }}>Past · {past.length}</SectionTitle>
-            {past.slice(0, 10).map(b => <BookingCard key={b.id} booking={b} dim />)}
+            {past.slice(0, 10).map(b => <BookingCard key={b.id} booking={b} dim onClick={() => setSelected(b)} />)}
           </>
         )}
       </div>
+
+      {selected && (
+        <MeetingPanel
+          booking={selected}
+          onClose={() => setSelected(null)}
+          onChanged={() => { load(); setSelected(null); showToast('Meeting updated'); }}
+          onCancelled={() => { load(); setSelected(null); showToast('Meeting cancelled'); }}
+        />
+      )}
 
       {toast && (
         <div style={{
@@ -193,40 +203,57 @@ function SectionTitle({ children, style }: { children: React.ReactNode; style?: 
   );
 }
 
-function BookingCard({ booking, dim }: { booking: Booking; dim?: boolean }) {
+function BookingCard({ booking, dim, onClick }: { booking: Booking; dim?: boolean; onClick?: () => void }) {
   const start = new Date(booking.start_at);
+  const t = MEETING_TYPE[(booking.meeting_type ?? 'strategy_call') as keyof typeof MEETING_TYPE]
+    ?? MEETING_TYPE.strategy_call;
+  const cancelled = booking.status === 'cancelled';
+
   return (
-    <div style={{
-      background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
-      padding: 18, marginBottom: 10, opacity: dim ? 0.5 : 1,
-      display: 'flex', alignItems: 'center', gap: 16,
-    }}>
-      <div style={{
+    <button
+      onClick={onClick}
+      className="agi-booking-card"
+      style={{
+        width: '100%', textAlign: 'left',
+        background: cancelled ? '#0d0d0d' : '#111',
+        border: `1px solid ${cancelled ? '#3a1010' : '#1e1e1e'}`,
+        borderRadius: 12, padding: 18, marginBottom: 10,
+        opacity: dim ? 0.5 : 1, cursor: 'pointer', color: '#e8e8e8',
+        display: 'grid',
+        gridTemplateColumns: 'auto 1fr auto',
+        gridTemplateAreas: '"date body time"',
+        gap: 16, alignItems: 'center',
+        transition: 'border-color 0.15s, background 0.15s',
+      }}
+      onMouseEnter={e => { if (!cancelled) e.currentTarget.style.borderColor = '#2a2a2a'; }}
+      onMouseLeave={e => { e.currentTarget.style.borderColor = cancelled ? '#3a1010' : '#1e1e1e'; }}
+    >
+      {/* Date block */}
+      <div className="agi-booking-date" style={{
+        gridArea: 'date',
         width: 60, height: 60, background: '#0a0a0a', border: '1px solid #1e1e1e',
         borderRadius: 10, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
         flexShrink: 0,
       }}>
-        <div style={{ fontSize: 10, color: '#10b981', fontWeight: 700, textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 10, color: cancelled ? '#666' : '#10b981', fontWeight: 700, textTransform: 'uppercase' }}>
           {start.toLocaleString('en-US', { month: 'short' })}
         </div>
-        <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1 }}>{start.getDate()}</div>
+        <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, textDecoration: cancelled ? 'line-through' : undefined }}>{start.getDate()}</div>
       </div>
-      <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <div style={{ fontSize: 14, fontWeight: 600 }}>{booking.attendee_name}</div>
-          {(() => {
-            const t = MEETING_TYPE[(booking.meeting_type ?? 'strategy_call') as keyof typeof MEETING_TYPE]
-              ?? MEETING_TYPE.strategy_call;
-            return (
-              <span className="agi-tag agi-tag-meeting-type" style={{ fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '2px 8px', borderRadius: 4 }}>
-                {t.label}
-              </span>
-            );
-          })()}
+
+      {/* Body block — name + chip + email + phone + notes */}
+      <div className="agi-booking-body" style={{ gridArea: 'body', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, wordBreak: 'break-word' }}>{booking.attendee_name}</div>
+          <span className="agi-tag agi-tag-meeting-type" style={{ fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '2px 8px', borderRadius: 4 }}>
+            {cancelled ? 'Cancelled' : t.label}
+          </span>
         </div>
-        <div style={{ fontSize: 11, color: '#666', marginTop: 2, display: 'flex', gap: 12 }}>
-          <span><Mail size={10} style={{ marginRight: 4 }} />{booking.attendee_email}</span>
-          {booking.attendee_phone && <span><Phone size={10} style={{ marginRight: 4 }} />{booking.attendee_phone}</span>}
+        <div className="agi-booking-contact" style={{ fontSize: 11, color: '#666', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, wordBreak: 'break-all' }}><Mail size={10} />{booking.attendee_email}</span>
+          {booking.attendee_phone && (
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Phone size={10} />{booking.attendee_phone}</span>
+          )}
         </div>
         {booking.attendee_notes && (
           <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6, fontStyle: 'italic' }}>
@@ -234,16 +261,260 @@ function BookingCard({ booking, dim }: { booking: Booking; dim?: boolean }) {
           </div>
         )}
       </div>
-      <div style={{ textAlign: 'right' }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: '#10b981' }}>
-          <Clock size={11} style={{ marginRight: 4 }} />
+
+      {/* Time block */}
+      <div className="agi-booking-time" style={{ gridArea: 'time', textAlign: 'right', flexShrink: 0 }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: cancelled ? '#666' : '#10b981', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
+          <Clock size={11} />
           {start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
         </div>
-        <div style={{ fontSize: 10, color: '#555', marginTop: 2 }}>{booking.duration_minutes} min</div>
+        <div style={{ fontSize: 10, color: '#555', marginTop: 2, whiteSpace: 'nowrap' }}>{booking.duration_minutes} min</div>
+      </div>
+
+      <style jsx>{`
+        @media (max-width: 640px) {
+          .agi-booking-card {
+            grid-template-columns: auto 1fr !important;
+            grid-template-areas:
+              "date body"
+              "time time" !important;
+            gap: 12px !important;
+            padding: 14px !important;
+          }
+          .agi-booking-date {
+            width: 52px !important;
+            height: 52px !important;
+          }
+          .agi-booking-time {
+            text-align: left !important;
+            border-top: 1px solid #1a1a1a;
+            padding-top: 10px;
+            margin-top: 4px;
+            display: flex !important;
+            align-items: center;
+            gap: 10px;
+          }
+        }
+      `}</style>
+    </button>
+  );
+}
+
+function MeetingPanel({
+  booking, onClose, onChanged, onCancelled,
+}: {
+  booking: Booking;
+  onClose: () => void;
+  onChanged: () => void;
+  onCancelled: () => void;
+}) {
+  const [busy, setBusy] = useState(false);
+  const [editingNotes, setEditingNotes] = useState(false);
+  const [notes, setNotes] = useState(booking.attendee_notes ?? '');
+  const [editingTime, setEditingTime] = useState(false);
+  // Convert ISO start_at to "yyyy-MM-ddTHH:mm" for datetime-local input
+  const toLocal = (iso: string) => {
+    const d = new Date(iso);
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+  const [newStart, setNewStart] = useState(toLocal(booking.start_at));
+  const [duration, setDuration] = useState(booking.duration_minutes);
+
+  const start = new Date(booking.start_at);
+  const t = MEETING_TYPE[(booking.meeting_type ?? 'strategy_call') as keyof typeof MEETING_TYPE]
+    ?? MEETING_TYPE.strategy_call;
+
+  async function patch(body: Record<string, unknown>) {
+    setBusy(true);
+    try {
+      const r = await fetch('/api/agi/meetings/book', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: booking.id, ...body }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'Failed');
+      onChanged();
+    } catch (e) {
+      alert(`Failed: ${e instanceof Error ? e.message : 'unknown'}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function cancel() {
+    if (!confirm('Cancel this meeting? The attendee will need to be notified separately.')) return;
+    setBusy(true);
+    try {
+      const r = await fetch(`/api/agi/meetings/book?id=${booking.id}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error('Cancel failed');
+      onCancelled();
+    } catch (e) {
+      alert(`Failed: ${e instanceof Error ? e.message : 'unknown'}`);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function markCompleted() { await patch({ status: 'completed' }); }
+  async function markNoShow() { await patch({ status: 'no_show' }); }
+  async function reactivate() { await patch({ status: 'confirmed' }); }
+  async function saveNotes() { await patch({ attendee_notes: notes }); setEditingNotes(false); }
+  async function saveTime() {
+    const iso = new Date(newStart).toISOString();
+    await patch({ start_at: iso, duration_minutes: duration });
+    setEditingTime(false);
+  }
+
+  const cancelled = booking.status === 'cancelled';
+
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'flex-end' }}
+    >
+      <div
+        onClick={e => e.stopPropagation()}
+        className="agi-meeting-panel"
+        style={{
+          width: 480, maxWidth: '100%', height: '100%', overflowY: 'auto',
+          background: '#0f0f0f', borderLeft: '1px solid #1e1e1e',
+          padding: 28, display: 'flex', flexDirection: 'column', gap: 18,
+        }}
+      >
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div style={{ fontSize: 20, fontWeight: 700, wordBreak: 'break-word' }}>{booking.attendee_name}</div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
+              <span className="agi-tag" style={{ fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '3px 8px', borderRadius: 4 }}>
+                {cancelled ? 'Cancelled' : t.label}
+              </span>
+              <span className="agi-tag" style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', background: '#1a1a1a', padding: '3px 8px', borderRadius: 4, textTransform: 'uppercase' }}>
+                {booking.status}
+              </span>
+            </div>
+          </div>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 4 }}><X size={20} /></button>
+        </div>
+
+        {/* Time block — view or edit */}
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14 }}>
+          <div style={{ fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: 0.7, fontWeight: 700, marginBottom: 8 }}>When</div>
+          {!editingTime ? (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 600 }}>
+                  {start.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                </div>
+                <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 3 }}>
+                  {start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} · {booking.duration_minutes} min
+                </div>
+              </div>
+              <button onClick={() => setEditingTime(true)} disabled={busy || cancelled} style={smallBtn}><RotateCcw size={11} /> Reschedule</button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <input
+                type="datetime-local"
+                value={newStart}
+                onChange={e => setNewStart(e.target.value)}
+                style={{ background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '8px 10px', borderRadius: 6, fontSize: 13 }}
+              />
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <span style={{ fontSize: 12, color: '#94a3b8' }}>Duration</span>
+                <input
+                  type="number"
+                  value={duration}
+                  onChange={e => setDuration(Number(e.target.value))}
+                  min={5} max={240} step={5}
+                  style={{ background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '6px 10px', borderRadius: 6, fontSize: 13, width: 80 }}
+                /> min
+              </div>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={saveTime} disabled={busy} style={primaryBtn}>Save</button>
+                <button onClick={() => setEditingTime(false)} style={smallBtn}>Cancel</button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Contact */}
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14 }}>
+          <div style={{ fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: 0.7, fontWeight: 700, marginBottom: 8 }}>Contact</div>
+          <div style={{ fontSize: 13, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <a href={`mailto:${booking.attendee_email}`} style={{ color: '#818cf8', wordBreak: 'break-all', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+              <Mail size={12} /> {booking.attendee_email}
+            </a>
+            {booking.attendee_phone && (
+              <a href={`tel:${booking.attendee_phone}`} style={{ color: '#818cf8', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                <Phone size={12} /> {booking.attendee_phone}
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Notes — view or edit */}
+        <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <div style={{ fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: 0.7, fontWeight: 700 }}>Notes</div>
+            {!editingNotes && <button onClick={() => setEditingNotes(true)} disabled={busy} style={smallBtn}><Edit3 size={11} /> Edit</button>}
+          </div>
+          {editingNotes ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <textarea
+                value={notes}
+                onChange={e => setNotes(e.target.value)}
+                rows={5}
+                style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '8px 10px', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', resize: 'vertical' }}
+              />
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={saveNotes} disabled={busy} style={primaryBtn}>Save</button>
+                <button onClick={() => { setNotes(booking.attendee_notes ?? ''); setEditingNotes(false); }} style={smallBtn}>Cancel</button>
+              </div>
+            </div>
+          ) : (
+            <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.6, whiteSpace: 'pre-wrap' }}>
+              {booking.attendee_notes || <span style={{ color: '#444', fontStyle: 'italic' }}>No notes yet</span>}
+            </div>
+          )}
+        </div>
+
+        {/* Status actions */}
+        <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {!cancelled ? (
+            <>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <button onClick={markCompleted} disabled={busy} style={successBtn}><CheckCircle2 size={13} /> Mark completed</button>
+                <button onClick={markNoShow} disabled={busy} style={smallBtn}>No-show</button>
+              </div>
+              <button onClick={cancel} disabled={busy} style={dangerBtn}><CalendarX size={13} /> Cancel meeting</button>
+            </>
+          ) : (
+            <button onClick={reactivate} disabled={busy} style={primaryBtn}><RotateCcw size={13} /> Reactivate</button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
+
+const smallBtn: React.CSSProperties = {
+  background: '#191919', border: '1px solid #2a2a2a', color: '#cbd5e1',
+  padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600,
+  cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4,
+};
+const primaryBtn: React.CSSProperties = {
+  ...smallBtn,
+  background: '#10b981', borderColor: '#10b981', color: '#000', fontWeight: 700,
+};
+const successBtn: React.CSSProperties = {
+  ...smallBtn,
+  background: '#0d2a1e', borderColor: '#10b98140', color: '#10b981', justifyContent: 'center', padding: '10px 12px', fontSize: 12,
+};
+const dangerBtn: React.CSSProperties = {
+  ...smallBtn,
+  background: '#2a0d0d', borderColor: '#f8717140', color: '#f87171', justifyContent: 'center', padding: '10px 12px', fontSize: 12,
+};
 
 function Empty({ msg }: { msg: string }) {
   return (

@@ -71,7 +71,7 @@ export default function HeatmapPage() {
         </button>
       </header>
 
-      <div style={{ padding: 32, maxWidth: 1200, margin: '0 auto' }}>
+      <div className="agi-heatmap-content" style={{ padding: 32, maxWidth: 1200, margin: '0 auto' }}>
         {!heatmap ? (
           <div style={{ color: '#444', textAlign: 'center', padding: 60 }}>Loading…</div>
         ) : (

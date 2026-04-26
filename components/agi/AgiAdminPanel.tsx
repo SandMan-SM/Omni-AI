@@ -203,10 +203,35 @@ export function AgiAdminPanel() {
           }
           /* ── Mobile: cascade-shrink every inner sub-page when embedded ── */
           @media (max-width: 768px) {
+            /* Outer page wrappers — kill the 32px padding that pushes content
+               past viewport edge, and force inner max-width to 100% so cards
+               don't overflow horizontally. */
             .agi-embedded-view [style*="padding: 32"],
             .agi-embedded-view [style*="padding:32"],
-            .agi-embedded-view [style*="padding: '32px'"] {
+            .agi-embedded-view [style*="padding: '32px'"],
+            .agi-embedded-view [style*="padding:'32px'"] {
               padding: 16px !important;
+              max-width: 100% !important;
+              box-sizing: border-box;
+            }
+            /* Anything with maxWidth > viewport on mobile must yield. */
+            .agi-embedded-view [style*="maxWidth: 1400"],
+            .agi-embedded-view [style*="maxWidth: 1200"],
+            .agi-embedded-view [style*="maxWidth: 1100"],
+            .agi-embedded-view [style*="max-width: 1400"],
+            .agi-embedded-view [style*="max-width: 1200"],
+            .agi-embedded-view [style*="max-width: 1100"] {
+              max-width: 100% !important;
+            }
+            /* The embedded view itself: stop horizontal overflow at the panel
+               boundary so nothing inside can paint past it. */
+            .agi-embedded-view {
+              overflow-x: hidden;
+            }
+            .agi-embedded-view > div,
+            .agi-embedded-view > div > div {
+              max-width: 100% !important;
+              box-sizing: border-box;
             }
             .agi-embedded-view [style*="grid-template-columns: repeat(4"],
             .agi-embedded-view [style*="gridTemplateColumns: 'repeat(4"] {
