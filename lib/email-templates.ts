@@ -39,7 +39,7 @@ export function bookerConfirmationEmail(booking: BookingDetails): string {
     <div style="margin-bottom:28px;">
       <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">You're all set, ${booking.name}.</h1>
       <p style="color:#9ca3af;font-size:14px;line-height:1.6;margin:0;">
-        Your demo is locked in. We're excited to show you how autonomous AI can transform ${booking.businessName || 'your business'}.
+        Your strategy call is locked in. We're excited to show you how autonomous AI can transform ${booking.businessName || 'your business'}.
       </p>
     </div>
 
@@ -109,14 +109,14 @@ export function ownerNotificationEmail(booking: BookingDetails): string {
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
       <tr>
         <td style="color:#a855f7;font-size:14px;font-weight:700;letter-spacing:0.5px;">OMNI AI</td>
-        <td align="right" style="color:#22c55e;font-size:12px;font-weight:600;letter-spacing:1px;">NEW BOOKING</td>
+        <td align="right" style="color:#22c55e;font-size:12px;font-weight:600;letter-spacing:1px;">NEW STRATEGY CALL</td>
       </tr>
     </table>
 
     <!-- Header -->
     <div style="margin-bottom:28px;">
-      <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 6px;letter-spacing:-0.3px;">New Demo Booked</h1>
-      <p style="color:#6b7280;font-size:13px;margin:0;">A new lead just scheduled a demo on your platform.</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 6px;letter-spacing:-0.3px;">New Strategy Call Booked</h1>
+      <p style="color:#6b7280;font-size:13px;margin:0;">A new lead just scheduled a strategy call on your platform.</p>
     </div>
 
     <!-- Contact Card -->
@@ -203,9 +203,9 @@ export function reminderEmail(booking: BookingDetails): string {
 
     <!-- Content -->
     <div style="margin-bottom:28px;">
-      <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">Your demo is tomorrow</h1>
+      <h1 style="color:#ffffff;font-size:22px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">Your strategy call is tomorrow</h1>
       <p style="color:#9ca3af;font-size:14px;line-height:1.6;margin:0;">
-        Hey ${booking.name}, just a reminder that your Omni AI demo is coming up.
+        Hey ${booking.name}, just a reminder that your Omni AI strategy call is coming up.
       </p>
     </div>
 
