@@ -12,11 +12,33 @@ Omni AI is an AI marketing and automation agency. This is the main company websi
 
 ## Commands
 ```bash
-npm run dev       # Start dev server
-npm run build     # Build for production
-npm run lint      # Run linter
-npm run check     # TypeScript check
+npm run dev          # Start dev server (uses .next/)
+npm run dev:clean    # Wipe .next/ first, then start dev — use after a crash
+npm run build        # Production build (writes .next/ — DO NOT run while dev is up)
+npm run build:check  # Verify build locally without touching dev's .next/ (writes .next-prod/)
+npm run lint
+npm run check        # TypeScript check
 ```
+
+## Dev server hygiene (READ THIS BEFORE TROUBLESHOOTING)
+
+**Why the dev server keeps crashing**: `npm run build` writes to `.next/` while
+`npm run dev` is also reading from `.next/`. Race condition → stale chunks →
+`Cannot find module './XXXX.js'` → 500s on every page.
+
+**The rule**: never run `npm run build` while `npm run dev` is running in the
+same checkout. Either:
+- Push to git and let Vercel build (preferred — Vercel has its own clean infra)
+- Use `npm run build:check` locally (writes to `.next-prod/`, auto-cleaned, leaves
+  dev server's `.next/` alone)
+
+**If the dev server is misbehaving**: `npm run dev:clean` (one command — kills
+stale cache and reboots). If port is held by a zombie process:
+`lsof -iTCP:3001 -sTCP:LISTEN -t | xargs -r kill -9` then `dev:clean`.
+
+**Only one dev server per checkout**: Don't spawn a second one via `npm run dev`
+on a different port — they fight over `.next/` the same way build does. Use the
+single registered preview server instead.
 
 ## Agent Priorities (in order)
 1. **Fix TypeScript errors** — run `npm run check` first, fix every error

@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Local production builds use a separate dist directory so they never
+  // clobber the dev server's `.next/`. Set NEXT_DIST_DIR=.next-prod when
+  // running `npm run build:check` to avoid breaking the running dev server.
+  // Vercel ignores this env var and uses its own clean infra.
+  ...(process.env.NEXT_DIST_DIR ? { distDir: process.env.NEXT_DIST_DIR } : {}),
   images: {
     remotePatterns: [
       {

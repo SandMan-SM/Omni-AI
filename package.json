@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
+    "dev:clean": "rm -rf .next && next dev",
     "build": "next build",
+    "build:check": "NEXT_DIST_DIR=.next-prod next build && rm -rf .next-prod",
     "start": "next start",
     "lint": "next lint",
     "check": "tsc"
