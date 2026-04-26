@@ -161,6 +161,45 @@ export function AgiAdminPanel() {
             .agi-embedded-view table {
               font-size: 12px !important;
             }
+
+            /* Tags / badges / chips — universal cascade for embedded sub-pages */
+            .agi-embedded-view .agi-tag,
+            .agi-embedded-view [class*="agi-tag-"],
+            .agi-embedded-view [style*="border-radius: 4"][style*="background"][style*="padding: 3px"],
+            .agi-embedded-view [style*="border-radius:4"][style*="background"][style*="padding:3px"] {
+              font-size: 11px !important;
+              padding: 4px 10px !important;
+              border-radius: 6px !important;
+              line-height: 1.3 !important;
+              display: inline-flex !important;
+              align-items: center !important;
+              white-space: nowrap;
+            }
+            /* Score / status circles — touch-friendly */
+            .agi-embedded-view .agi-score-circle.agi-score-sm {
+              width: 36px !important;
+              height: 36px !important;
+              font-size: 12px !important;
+            }
+            .agi-embedded-view .agi-score-circle.agi-score-lg {
+              width: 60px !important;
+              height: 60px !important;
+              font-size: 20px !important;
+            }
+            /* Filter / status buttons — touch targets */
+            .agi-embedded-view .agi-filter-btn,
+            .agi-embedded-view .agi-status-btn {
+              padding: 8px 14px !important;
+              font-size: 12px !important;
+              min-height: 32px !important;
+            }
+            /* Generic small inline pill patterns inside embedded pages */
+            .agi-embedded-view button[style*="font-size: 11"][style*="padding"],
+            .agi-embedded-view span[style*="font-size: 10"][style*="padding"][style*="border-radius"] {
+              font-size: 11px !important;
+              padding: 4px 9px !important;
+              border-radius: 6px !important;
+            }
           }
         `}</style>
         {ActiveView && <ActiveView />}

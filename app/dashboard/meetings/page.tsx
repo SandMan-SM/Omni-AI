@@ -56,7 +56,41 @@ export default function MeetingsPage() {
   const bookingUrl = selectedBiz ? `${typeof window !== 'undefined' ? window.location.origin : ''}/book/${selectedBiz.id}` : '';
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
+    <div className="agi-meetings-root" style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
+      <style jsx global>{`
+        @media (max-width: 768px) {
+          .agi-meetings-root header {
+            height: auto !important;
+            padding: 12px 16px !important;
+            flex-wrap: wrap;
+            gap: 10px !important;
+          }
+          .agi-meetings-root [style*="padding: 32"] {
+            padding: 16px !important;
+          }
+          .agi-meetings-root .agi-tag {
+            font-size: 11px !important;
+            padding: 4px 10px !important;
+            border-radius: 6px !important;
+          }
+          .agi-meetings-root .agi-tag-meeting-type {
+            font-size: 10px !important;
+            padding: 3px 8px !important;
+          }
+          .agi-meetings-root [style*="height: 60"][style*="display: flex"] {
+            height: auto !important;
+          }
+        }
+        @media (max-width: 540px) {
+          .agi-meetings-root [style*="padding: 18"] {
+            padding: 14px !important;
+          }
+          .agi-meetings-root [style*="width: 60"][style*="height: 60"] {
+            width: 48px !important;
+            height: 48px !important;
+          }
+        }
+      `}</style>
       <header style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href="/dashboard/leads" style={{ color: '#666', display: 'flex', alignItems: 'center', gap: 6, textDecoration: 'none', fontSize: 13 }}>
@@ -184,7 +218,7 @@ function BookingCard({ booking, dim }: { booking: Booking; dim?: boolean }) {
             const t = MEETING_TYPE[(booking.meeting_type ?? 'strategy_call') as keyof typeof MEETING_TYPE]
               ?? MEETING_TYPE.strategy_call;
             return (
-              <span style={{ fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '2px 8px', borderRadius: 4 }}>
+              <span className="agi-tag agi-tag-meeting-type" style={{ fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '2px 8px', borderRadius: 4 }}>
                 {t.label}
               </span>
             );

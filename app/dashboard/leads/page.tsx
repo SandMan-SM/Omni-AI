@@ -99,13 +99,13 @@ function LeadRow({ lead, onClick }: { lead: Lead; onClick: () => void }) {
       <td style={{ padding: '14px 12px', fontSize: 13, color: '#94a3b8' }}>{lead.company ?? '—'}</td>
       <td style={{ padding: '14px 12px', fontSize: 13, color: '#64748b' }}>{lead.title ?? '—'}</td>
       <td style={{ padding: '14px 12px' }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: src.color, background: `${src.color}15`, padding: '3px 8px', borderRadius: 4 }}>{src.label}</span>
+        <span className="agi-tag agi-tag-source" style={{ fontSize: 11, fontWeight: 600, color: src.color, background: `${src.color}15`, padding: '3px 8px', borderRadius: 4 }}>{src.label}</span>
       </td>
       <td style={{ padding: '14px 12px' }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: st.color, background: st.bg, padding: '3px 8px', borderRadius: 4 }}>{st.label}</span>
+        <span className="agi-tag agi-tag-status" style={{ fontSize: 11, fontWeight: 600, color: st.color, background: st.bg, padding: '3px 8px', borderRadius: 4 }}>{st.label}</span>
       </td>
       <td style={{ padding: '14px 12px' }}>
-        <div style={{
+        <div className="agi-score-circle agi-score-sm" style={{
           width: 32, height: 32, borderRadius: '50%', background: `${scoreBg(lead.score)}22`,
           border: `2px solid ${scoreBg(lead.score)}`, display: 'flex', alignItems: 'center',
           justifyContent: 'center', fontSize: 11, fontWeight: 700, color: scoreBg(lead.score),
@@ -165,8 +165,8 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
         </div>
 
         {/* Score row */}
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-          <div style={{
+        <div className="agi-panel-score-row" style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+          <div className="agi-score-circle agi-score-lg" style={{
             width: 56, height: 56, borderRadius: '50%',
             background: `${scoreBg(lead.score)}18`, border: `3px solid ${scoreBg(lead.score)}`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -178,7 +178,7 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
               {lead.score >= 80 ? '🔥 Hot lead' : lead.score >= 60 ? '☀ Warm lead' : '❄ Cold lead'}
             </div>
           </div>
-          <span style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, color: src.color, background: `${src.color}15`, padding: '4px 10px', borderRadius: 4 }}>{src.label}</span>
+          <span className="agi-tag agi-tag-source" style={{ marginLeft: 'auto', fontSize: 11, fontWeight: 600, color: src.color, background: `${src.color}15`, padding: '4px 10px', borderRadius: 4 }}>{src.label}</span>
         </div>
 
         {/* Contact */}
@@ -286,7 +286,7 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
           <Section title="Tags">
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {lead.tags.map(t => (
-                <span key={t} style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: '#1a1a1a', color: '#94a3b8' }}>{t}</span>
+                <span key={t} className="agi-tag agi-tag-tag" style={{ fontSize: 10, padding: '3px 8px', borderRadius: 4, background: '#1a1a1a', color: '#94a3b8' }}>{t}</span>
               ))}
             </div>
           </Section>
@@ -303,12 +303,12 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
         {/* Update Status */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ fontSize: 11, color: '#444', textTransform: 'uppercase', letterSpacing: '0.7px' }}>Update Status</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+          <div className="agi-status-btn-row" style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {(Object.keys(STATUS_CONFIG) as Lead['status'][]).map(s => {
               const c = STATUS_CONFIG[s];
               const active = lead.status === s;
               return (
-                <button key={s} onClick={() => onStatusChange(lead.id, s)} style={{
+                <button key={s} className="agi-status-btn" onClick={() => onStatusChange(lead.id, s)} style={{
                   padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                   border: `1.5px solid ${active ? c.color : '#222'}`,
                   background: active ? c.bg : 'transparent',
@@ -522,6 +522,62 @@ export default function DashboardPage() {
             grid-template-columns: 1fr !important;
           }
         }
+
+        /* ── Mobile-friendly tags / badges / chips ── */
+        @media (max-width: 768px) {
+          .agi-leads-root .agi-tag {
+            font-size: 11px !important;
+            padding: 4px 10px !important;
+            border-radius: 6px !important;
+            line-height: 1.3 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            min-height: 22px;
+            white-space: nowrap;
+          }
+          .agi-leads-root .agi-tag-tag {
+            font-size: 11px !important;
+            padding: 5px 10px !important;
+          }
+          .agi-leads-root .agi-tag-plan {
+            font-size: 10px !important;
+            padding: 3px 8px !important;
+          }
+          .agi-leads-root .agi-score-circle.agi-score-sm {
+            width: 36px !important;
+            height: 36px !important;
+            font-size: 12px !important;
+          }
+          .agi-leads-root .agi-score-circle.agi-score-lg {
+            width: 60px !important;
+            height: 60px !important;
+            font-size: 20px !important;
+          }
+          .agi-leads-root .agi-panel-score-row {
+            flex-wrap: wrap;
+          }
+          .agi-leads-root .agi-filter-strip {
+            padding: 12px 14px !important;
+            gap: 8px !important;
+          }
+          .agi-leads-root .agi-filter-btn {
+            padding: 6px 12px !important;
+            font-size: 12px !important;
+            min-height: 30px;
+          }
+          .agi-leads-root .agi-filter-count {
+            width: 100%;
+            margin-left: 0 !important;
+            font-size: 11px !important;
+          }
+          .agi-leads-root .agi-status-btn {
+            padding: 8px 14px !important;
+            font-size: 12px !important;
+            min-height: 36px;
+            flex: 1 1 calc(50% - 4px);
+            text-align: center;
+          }
+        }
       `}</style>
 
       <header className="agi-leads-header" style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -536,7 +592,7 @@ export default function DashboardPage() {
           <div style={{ position: 'relative' }}>
             <button onClick={() => setBizOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#191919', border: '1px solid #222', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#e8e8e8' }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{selectedBiz?.name ?? 'Select Business'}</span>
-              {selectedBiz && <span style={{ fontSize: 10, fontWeight: 700, color: planColor, background: `${planColor}18`, padding: '2px 6px', borderRadius: 4 }}>{selectedBiz.plan.toUpperCase()}</span>}
+              {selectedBiz && <span className="agi-tag agi-tag-plan" style={{ fontSize: 10, fontWeight: 700, color: planColor, background: `${planColor}18`, padding: '2px 6px', borderRadius: 4 }}>{selectedBiz.plan.toUpperCase()}</span>}
               <ChevronDown size={13} color="#555" />
             </button>
             {bizOpen && (
@@ -611,14 +667,14 @@ export default function DashboardPage() {
         )}
 
         <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, overflow: 'hidden' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <div className="agi-filter-strip" style={{ padding: '16px 20px', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <Filter size={14} color="#555" />
             <span style={{ fontSize: 12, color: '#555', marginRight: 4 }}>Status:</span>
             {['all', ...Object.keys(STATUS_CONFIG)].map(s => {
               const active = statusFilter === s;
               const cfg = s !== 'all' ? STATUS_CONFIG[s as keyof typeof STATUS_CONFIG] : null;
               return (
-                <button key={s} onClick={() => setStatusFilter(s)} style={{
+                <button key={s} className="agi-filter-btn" onClick={() => setStatusFilter(s)} style={{
                   padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                   border: `1px solid ${active ? (cfg?.color ?? '#555') : '#222'}`,
                   background: active ? (cfg?.bg ?? 'rgba(255,255,255,0.06)') : 'transparent',
@@ -626,7 +682,7 @@ export default function DashboardPage() {
                 }}>{s === 'all' ? 'All' : cfg!.label}</button>
               );
             })}
-            <span style={{ marginLeft: 'auto', fontSize: 12, color: '#444' }}>{filtered.length} leads</span>
+            <span className="agi-filter-count" style={{ marginLeft: 'auto', fontSize: 12, color: '#444' }}>{filtered.length} leads</span>
           </div>
 
           <div style={{ overflowX: 'auto' }}>
