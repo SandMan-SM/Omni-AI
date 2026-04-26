@@ -249,10 +249,34 @@ function BookingCard({ booking, dim, onClick }: { booking: Booking; dim?: boolea
             {cancelled ? 'Cancelled' : t.label}
           </span>
         </div>
-        <div className="agi-booking-contact" style={{ fontSize: 11, color: '#666', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, wordBreak: 'break-all' }}><Mail size={10} />{booking.attendee_email}</span>
+        <div className="agi-booking-contact" style={{ marginTop: 8, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+          {booking.attendee_email && (
+            <a
+              href={`mailto:${booking.attendee_email}`}
+              onClick={e => e.stopPropagation()}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', borderRadius: 6,
+                background: '#0a0a0a', border: '1px solid #1e1e1e',
+                color: '#818cf8', fontSize: 11, fontWeight: 600, textDecoration: 'none',
+              }}
+            >
+              <Mail size={11} /> Email
+            </a>
+          )}
           {booking.attendee_phone && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Phone size={10} />{booking.attendee_phone}</span>
+            <a
+              href={`tel:${booking.attendee_phone}`}
+              onClick={e => e.stopPropagation()}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                padding: '5px 10px', borderRadius: 6,
+                background: '#0a0a0a', border: '1px solid #1e1e1e',
+                color: '#10b981', fontSize: 11, fontWeight: 600, textDecoration: 'none',
+              }}
+            >
+              <Phone size={11} /> Phone
+            </a>
           )}
         </div>
         {booking.attendee_notes && (

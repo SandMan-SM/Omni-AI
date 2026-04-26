@@ -280,7 +280,7 @@ function LeadSidebar({ leads, selectedId, onSelect, onEnrich }: {
   onEnrich: (id: string) => void;
 }) {
   return (
-    <div style={{
+    <div className="agi-outreach-sidebar" style={{
       width: 320, background: '#0d0d0d', borderRight: '1px solid #1e1e1e',
       height: 'calc(100vh - 60px)', overflowY: 'auto',
     }}>
@@ -458,7 +458,50 @@ export default function OutreachPage() {
   };
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
+    <div className="agi-outreach-root" style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
+      <style jsx global>{`
+        @media (max-width: 900px) {
+          /* Stack sidebar above main content on tablet and below */
+          .agi-outreach-root .agi-outreach-body {
+            flex-direction: column !important;
+          }
+          .agi-outreach-root .agi-outreach-sidebar {
+            width: 100% !important;
+            max-height: 240px;
+            overflow-y: auto;
+            border-right: none !important;
+            border-bottom: 1px solid #1e1e1e;
+          }
+          .agi-outreach-root .agi-outreach-main {
+            padding: 16px !important;
+            max-width: 100% !important;
+          }
+          .agi-outreach-root .agi-outreach-lead-card {
+            flex-wrap: wrap !important;
+            gap: 14px !important;
+            padding: 18px !important;
+          }
+          .agi-outreach-root .agi-outreach-lead-card > div:nth-child(2) {
+            min-width: 0;
+            flex: 1 1 calc(100% - 76px);
+          }
+          .agi-outreach-root .agi-outreach-generate-btn {
+            width: 100% !important;
+            justify-content: center !important;
+            order: 99;
+            flex: 1 1 100% !important;
+          }
+          .agi-outreach-root .agi-outreach-stats {
+            grid-template-columns: repeat(2, 1fr) !important;
+          }
+          .agi-outreach-root header {
+            height: auto !important;
+            padding: 12px 16px !important;
+            flex-wrap: wrap;
+            gap: 10px !important;
+          }
+        }
+      `}</style>
       {/* Header */}
       <header style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -505,7 +548,7 @@ export default function OutreachPage() {
         </div>
       </header>
 
-      <div style={{ display: 'flex' }}>
+      <div className="agi-outreach-body" style={{ display: 'flex' }}>
         {/* Sidebar */}
         <LeadSidebar
           leads={leads}
@@ -515,7 +558,7 @@ export default function OutreachPage() {
         />
 
         {/* Main */}
-        <div style={{ flex: 1, padding: 32, maxWidth: 800 }}>
+        <div className="agi-outreach-main" style={{ flex: 1, padding: 32, maxWidth: 800 }}>
           {!selectedLead ? (
             <div style={{ color: '#444', textAlign: 'center', marginTop: 80 }}>
               Pick a lead from the sidebar to start
@@ -523,43 +566,65 @@ export default function OutreachPage() {
           ) : (
             <>
               {/* Lead header */}
-              <div style={{
+              <div className="agi-outreach-lead-card" style={{
                 background: '#111', border: '1px solid #1e1e1e', borderRadius: 12,
                 padding: 24, marginBottom: 24, display: 'flex', alignItems: 'flex-start', gap: 20,
               }}>
-                <div style={{
+                <div className="agi-score-circle agi-score-lg" style={{
                   width: 56, height: 56, borderRadius: '50%',
                   background: selectedLead.score >= 80 ? '#10b98122' : '#facc1522',
                   border: `2px solid ${selectedLead.score >= 80 ? '#10b981' : '#facc15'}`,
                   color: selectedLead.score >= 80 ? '#10b981' : '#facc15',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: 18, fontWeight: 800,
+                  fontSize: 18, fontWeight: 800, flexShrink: 0,
                 }}>{selectedLead.score}</div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: 22, fontWeight: 700 }}>{fullName(selectedLead)}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 22, fontWeight: 700, wordBreak: 'break-word' }}>{fullName(selectedLead)}</div>
                   <div style={{ fontSize: 14, color: '#94a3b8', marginTop: 4 }}>
                     {selectedLead.title} · {selectedLead.company}
                   </div>
-                  <div style={{ fontSize: 12, color: '#555', marginTop: 6, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    {selectedLead.email && <span>📧 {selectedLead.email}</span>}
-                    {selectedLead.phone && <span>📱 {selectedLead.phone}</span>}
-                    {selectedLead.lead_location && <span>📍 {selectedLead.lead_location}</span>}
+                  <div style={{ marginTop: 10, display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                    {selectedLead.email && (
+                      <a href={`mailto:${selectedLead.email}`} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 6,
+                        background: '#0a0a0a', border: '1px solid #1e1e1e',
+                        color: '#818cf8', fontSize: 11, fontWeight: 600, textDecoration: 'none',
+                      }}>📧 Email</a>
+                    )}
+                    {selectedLead.phone && (
+                      <a href={`tel:${selectedLead.phone}`} style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 6,
+                        background: '#0a0a0a', border: '1px solid #1e1e1e',
+                        color: '#10b981', fontSize: 11, fontWeight: 600, textDecoration: 'none',
+                      }}>📱 Phone</a>
+                    )}
+                    {selectedLead.lead_location && (
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: 5,
+                        padding: '5px 10px', borderRadius: 6,
+                        background: '#0a0a0a', border: '1px solid #1e1e1e',
+                        color: '#94a3b8', fontSize: 11, fontWeight: 600,
+                      }}>📍 {selectedLead.lead_location}</span>
+                    )}
                   </div>
                 </div>
-                <button onClick={handleGenerate} disabled={generating} style={{
+                <button className="agi-outreach-generate-btn" onClick={handleGenerate} disabled={generating} style={{
                   background: generating ? '#0d2a1e' : 'linear-gradient(135deg, #10b981, #818cf8)',
                   color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 10,
                   cursor: generating ? 'not-allowed' : 'pointer',
                   fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8,
+                  flexShrink: 0, whiteSpace: 'nowrap',
                 }}>
                   <Sparkles size={14} />
-                  {generating ? 'Generating…' : assets.length > 0 ? 'Regenerate Assets' : 'Generate Outreach'}
+                  {generating ? 'Generating…' : assets.length > 0 ? 'Regenerate' : 'Generate Outreach'}
                 </button>
               </div>
 
               {/* Stats */}
               {assets.length > 0 && (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
+                <div className="agi-outreach-stats" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
                   <StatPill icon={Target} label="Assets" value={stats.total} color="#818cf8" />
                   <StatPill icon={Send} label="Sent" value={stats.sent} color="#38bdf8" />
                   <StatPill icon={Eye} label="Opened" value={stats.opened} color="#a78bfa" />
