@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   Target, Bot, Brain, Inbox as InboxIcon, Send, Building2, BookOpen,
@@ -71,6 +71,19 @@ const GROUP_COLORS: Record<string, string> = {
 export function AgiAdminPanel() {
   const [active, setActive] = useState("leads");
   const ActiveView = TABS.find(t => t.id === active)?.view;
+  const tabsScrollRef = useRef<HTMLDivElement | null>(null);
+  const activeTabRef = useRef<HTMLButtonElement | null>(null);
+
+  // Auto-scroll the active tab into view when the tab changes — the tab strip
+  // overflows on mobile, so without this users can lose track of which tab
+  // they're on after switching surfaces.
+  useEffect(() => {
+    activeTabRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [active]);
 
   return (
     <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.03] via-purple-500/[0.02] to-blue-500/[0.03] overflow-hidden">
@@ -101,27 +114,38 @@ export function AgiAdminPanel() {
       </div>
 
       {/* Tabs */}
-      <div className="px-3 py-2 border-b border-white/5 overflow-x-auto">
-        <div className="flex items-center gap-1 min-w-max">
-          {TABS.map(t => {
-            const Icon = t.icon;
-            const isActive = active === t.id;
-            const groupColor = GROUP_COLORS[t.group];
-            return (
-              <button
-                key={t.id}
-                onClick={() => setActive(t.id)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap
-                  ${isActive
-                    ? "bg-white/10 text-white border border-white/20"
-                    : `text-gray-400 hover:text-white hover:bg-white/5 border border-transparent`}`}
-              >
-                <Icon className={`w-3.5 h-3.5 ${isActive ? groupColor : ""}`} />
-                {t.label}
-              </button>
-            );
-          })}
+      <div className="agi-tabs-wrapper relative border-b border-white/5">
+        <div
+          ref={tabsScrollRef}
+          className="agi-tabs-scroll px-3 py-2 sm:py-2 overflow-x-auto overflow-y-hidden"
+          style={{ scrollSnapType: "x proximity", WebkitOverflowScrolling: "touch" }}
+        >
+          <div className="flex items-center gap-1 min-w-max">
+            {TABS.map(t => {
+              const Icon = t.icon;
+              const isActive = active === t.id;
+              const groupColor = GROUP_COLORS[t.group];
+              return (
+                <button
+                  key={t.id}
+                  ref={isActive ? activeTabRef : null}
+                  onClick={() => setActive(t.id)}
+                  className={`agi-tab-btn flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap
+                    ${isActive
+                      ? "bg-white/10 text-white border border-white/20"
+                      : `text-gray-400 hover:text-white hover:bg-white/5 border border-transparent`}`}
+                  style={{ scrollSnapAlign: "center" }}
+                >
+                  <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? groupColor : ""}`} />
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
+        {/* Edge-fade gradients tell mobile users the strip is scrollable */}
+        <div className="agi-tabs-fade agi-tabs-fade-left pointer-events-none absolute top-0 left-0 h-full w-6 bg-gradient-to-r from-black/60 to-transparent" />
+        <div className="agi-tabs-fade agi-tabs-fade-right pointer-events-none absolute top-0 right-0 h-full w-6 bg-gradient-to-l from-black/60 to-transparent" />
       </div>
 
       {/* Content - render the active view inline.
@@ -130,6 +154,44 @@ export function AgiAdminPanel() {
           and collapse the inner full-height background so it sits inside the panel cleanly. */}
       <div className="agi-embedded-view bg-black/20">
         <style jsx global>{`
+          /* ── Tab strip — slim scrollbar so the indicator doesn't push content ── */
+          .agi-tabs-scroll::-webkit-scrollbar {
+            height: 4px;
+          }
+          .agi-tabs-scroll::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+          }
+          .agi-tabs-scroll::-webkit-scrollbar-thumb:hover {
+            background: rgba(255,255,255,0.2);
+          }
+          .agi-tabs-scroll::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          /* Tap-friendly tabs on mobile */
+          @media (max-width: 768px) {
+            .agi-tab-btn {
+              padding: 8px 12px !important;
+              font-size: 12px !important;
+              min-height: 36px;
+            }
+            .agi-tab-btn svg {
+              width: 14px !important;
+              height: 14px !important;
+            }
+            .agi-tabs-scroll {
+              padding: 6px 8px !important;
+            }
+            .agi-tabs-fade {
+              width: 18px !important;
+            }
+          }
+          @media (max-width: 480px) {
+            .agi-tab-btn {
+              padding: 8px 10px !important;
+            }
+          }
+
           .agi-embedded-view > div {
             min-height: 0 !important;
             background: transparent !important;
