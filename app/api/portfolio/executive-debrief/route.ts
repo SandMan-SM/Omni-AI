@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
   const url = new URL(req.url);
-  const email = url.searchParams.get('email') || 'alfred@omnileadsagi.com';
+  const email = url.searchParams.get('email') || 'sitanim8@gmail.com';
   const commits = Number(url.searchParams.get('commits') || '340');
 
   const result = await sendExecDebrief(email, commits);

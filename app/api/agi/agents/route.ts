@@ -1,0 +1,106 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import Anthropic from '@anthropic-ai/sdk';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+// Custom AI agents: user-defined prompts that operate on pipeline data.
+// Examples: "Daily morning pipeline scanner", "Weekly outreach quality auditor", etc.
+export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const business_id = searchParams.get('business_id');
+  let query = supabase.from('omni_custom_agents').select('*').order('run_count', { ascending: false });
+  if (business_id) query = query.eq('business_id', business_id);
+  const { data, error } = await query;
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ agents: data });
+}
+
+export async function POST(req: NextRequest) {
+  const { business_id, name, description, system_prompt, capabilities, trigger_type, trigger_config } = await req.json();
+  if (!business_id || !name || !system_prompt) {
+    return NextResponse.json({ error: 'business_id, name, system_prompt required' }, { status: 400 });
+  }
+  const { data, error } = await supabase
+    .from('omni_custom_agents')
+    .insert({ business_id, name, description, system_prompt, capabilities: capabilities ?? [], trigger_type, trigger_config: trigger_config ?? {} })
+    .select().single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true, agent: data });
+}
+
+export async function PATCH(req: NextRequest) {
+  const { id, ...updates } = await req.json();
+  const { data, error } = await supabase
+    .from('omni_custom_agents').update(updates).eq('id', id).select().single();
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ ok: true, agent: data });
+}
+
+export async function DELETE(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const id = searchParams.get('id');
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  await supabase.from('omni_custom_agents').delete().eq('id', id);
+  return NextResponse.json({ ok: true });
+}
+
+// Run a custom agent with a user-provided message + pipeline context
+export async function PUT(req: NextRequest) {
+  try {
+    const { agent_id, user_input } = await req.json();
+    if (!agent_id) return NextResponse.json({ error: 'agent_id required' }, { status: 400 });
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 503 });
+    }
+
+    const { data: agent } = await supabase
+      .from('omni_custom_agents').select('*').eq('id', agent_id).single();
+    if (!agent) return NextResponse.json({ error: 'Agent not found' }, { status: 404 });
+
+    // Build context based on capabilities
+    const caps = (agent.capabilities ?? []) as string[];
+    let context = '';
+
+    if (caps.includes('lead_search') || caps.includes('all')) {
+      const { data: leads } = await supabase
+        .from('omni_leads_generated').select('first_name, last_name, company, title, score, deal_stage')
+        .eq('business_id', agent.business_id).limit(30);
+      context += `\n\nLEADS:\n${(leads ?? []).map(l => `- ${l.first_name} ${l.last_name} | ${l.title} @ ${l.company} | score=${l.score} | ${l.deal_stage}`).join('\n')}`;
+    }
+
+    if (caps.includes('replies') || caps.includes('all')) {
+      const { data: replies } = await supabase
+        .from('omni_outreach_assets').select('reply_text, reply_category')
+        .eq('business_id', agent.business_id).eq('status', 'replied').limit(20);
+      context += `\n\nRECENT REPLIES:\n${(replies ?? []).map(r => `[${r.reply_category}] ${r.reply_text?.slice(0, 100)}`).join('\n')}`;
+    }
+
+    const resp = await anthropic.messages.create({
+      model: 'claude-sonnet-4-5',
+      max_tokens: 1500,
+      system: agent.system_prompt + (context ? `\n\nCURRENT PIPELINE STATE:${context}` : ''),
+      messages: [{ role: 'user', content: user_input ?? 'Run your task and report findings.' }],
+    });
+
+    const tb = resp.content.find(b => b.type === 'text');
+    if (!tb || tb.type !== 'text') throw new Error('No Claude response');
+    const output = tb.text.trim();
+
+    await supabase
+      .from('omni_custom_agents')
+      .update({ run_count: (agent.run_count ?? 0) + 1 })
+      .eq('id', agent_id);
+
+    return NextResponse.json({ ok: true, output, agent: agent.name });
+  } catch (err) {
+    console.error('[agents PUT]', err);
+    return NextResponse.json({
+      error: err instanceof Error ? err.message : 'Internal server error',
+    }, { status: 500 });
+  }
+}

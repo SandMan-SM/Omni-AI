@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 
+// requireAdmin reads cookies — must be dynamic, never collected at build.
+export const dynamic = "force-dynamic";
+
 // POST /api/admin/db-setup — apply schema migrations (idempotent)
 export async function POST() {
   const auth = await requireAdmin();

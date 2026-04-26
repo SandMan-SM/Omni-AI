@@ -18,6 +18,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import type { Profile } from "@/hooks/use-profile";
 import { authFetch } from "@/lib/auth";
+import { AgiTemplateLauncher } from "@/components/agi/AgiTemplateLauncher";
 
 interface Campaign {
   id: string;
@@ -160,6 +161,7 @@ export function AdminCampaigns({ users, onRefresh }: { users: Profile[]; onRefre
             <Badge className={`text-xs ${statusColors.active}`}>
               {activeCampaigns} active
             </Badge>
+            <AgiTemplateLauncher onApplied={load} />
           </div>
           <div className="flex items-center gap-1 sm:gap-2 overflow-x-auto pb-1 -mb-1">
             {(["all", "active", "paused", "draft", "completed"] as const).map((filter) => (

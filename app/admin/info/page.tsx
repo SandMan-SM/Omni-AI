@@ -6,13 +6,65 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Shield, Lock, Users, Database, Key, AlertTriangle,
-  CheckCircle, Eye, Settings, ArrowLeft, Crown, Zap
+  CheckCircle, Eye, Settings, ArrowLeft, Crown, Zap,
+  Bot, Brain, Sparkles, Send, Inbox, Target, Calendar, Activity
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+
+const omniAiHow = [
+  {
+    icon: Target,
+    title: "1 · Find",
+    color: "text-emerald-400",
+    desc: "Drop a domain, paste a CSV, or describe your ideal customer. The system finds matching prospects from web sources, enriches them with company-level intelligence (size, tech, funding, growth signals), and adds them to your pipeline.",
+  },
+  {
+    icon: Brain,
+    title: "2 · Score",
+    color: "text-purple-400",
+    desc: "Each lead is scored 0-100 by an AI fit predictor that compares title authority, company stage, industry alignment, reachability, and buying signals against your closed-won history. Hot leads bubble to the top automatically.",
+  },
+  {
+    icon: Sparkles,
+    title: "3 · Personalize",
+    color: "text-blue-400",
+    desc: "For every lead, an AI writer drafts a 3-touch email sequence (day 0, +3, +7) plus a LinkedIn DM and a 15-second voicemail script. Personalization uses real signals — company keywords, tech stack, recent funding — never generic templates.",
+  },
+  {
+    icon: Send,
+    title: "4 · Send",
+    color: "text-cyan-400",
+    desc: "Sequences send automatically Mon–Fri 8am–6pm PT, capped at 25 per tick to protect deliverability. A built-in domain warmup curve grows daily volume from 20 → 200 over 30 days. Open / click / reply tracking is real-time.",
+  },
+  {
+    icon: Inbox,
+    title: "5 · Triage",
+    color: "text-yellow-400",
+    desc: "When prospects reply, an AI triager tags each message in 9 buckets (interested, meeting_booked, question, not_now, unsubscribe, wrong_person, referral, spam, other) and drafts a contextual response. Unsubscribes are auto-honored and added to the suppression list.",
+  },
+  {
+    icon: Calendar,
+    title: "6 · Book",
+    color: "text-orange-400",
+    desc: "Native scheduler — replaces external booking tools. Each prospect can pick a 15-min slot from your calendar via a public link. Booked leads are auto-promoted to ‘qualified’ and a confirmation email goes out instantly.",
+  },
+  {
+    icon: Bot,
+    title: "7 · Autopilot",
+    color: "text-red-400",
+    desc: "When you flip the switch, the agent runs the entire loop unattended every hour: scan new leads → generate outreach → schedule sequences → categorize replies → draft responses. Configurable thresholds (min score, max leads/run) keep you in control.",
+  },
+  {
+    icon: Activity,
+    title: "8 · Coach + Report",
+    color: "text-pink-400",
+    desc: "An AI sales coach surfaces the day’s highest-leverage actions every hour. Daily digests email at 6 PM PT. Monday mornings, a 4-paragraph weekly retro lands in your inbox grading lead volume / engagement / conversion / revenue.",
+  },
+];
 
 const sections = [
   {
@@ -170,6 +222,56 @@ export default function AdminInfo() {
             and the critical infrastructure details for the Omni AI platform.
           </p>
         </motion.div>
+
+        {/* ─── How Omni AI Works ─────────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/[0.04] via-purple-500/[0.04] to-blue-500/[0.04] p-6 sm:p-8"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-purple-600 flex items-center justify-center">
+              <Bot className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300">
+                Agentic
+              </span>
+              <h2 className="text-xl sm:text-2xl font-bold text-white mt-1">How Omni AI Works</h2>
+            </div>
+          </div>
+          <p className="text-sm text-gray-400 mb-6 max-w-2xl">
+            An eight-stage self-driving sales loop. Every prospect flows through Find → Score → Personalize → Send → Triage → Book → Autopilot → Coach. The agent runs unattended; you focus on the replies that matter.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {omniAiHow.map((step, i) => {
+              const Icon = step.icon;
+              return (
+                <div
+                  key={i}
+                  className="rounded-xl border border-white/5 bg-black/20 p-4 hover:border-white/10 transition-colors"
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Icon className={`w-4 h-4 ${step.color}`} />
+                    <h3 className={`text-sm font-bold ${step.color}`}>{step.title}</h3>
+                  </div>
+                  <p className="text-xs text-gray-400 leading-relaxed">
+                    {step.desc}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+          <div className="mt-6 p-4 rounded-xl bg-black/30 border border-white/5">
+            <div className="text-[10px] uppercase tracking-wider text-emerald-400 font-bold mb-2">
+              Under the hood
+            </div>
+            <p className="text-xs text-gray-400 leading-relaxed">
+              Omni AI runs on its own infrastructure — your data stays in our private database, sequences send through your own verified domain, and every AI decision is logged in an audit trail you can inspect at <span className="text-emerald-400">/dashboard</span> → Runs. The agent respects unsubscribes legally, paces sends to protect your sender reputation, and pauses sequences automatically the moment a prospect replies.
+            </p>
+          </div>
+        </motion.section>
 
         {/* Sections */}
         <div className="grid gap-6">

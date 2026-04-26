@@ -12,7 +12,7 @@ import {
   rateLimitResponse,
 } from '@/lib/rate-limit';
 
-const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || 'alfred@omnileadsagi.com';
+const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
 const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 

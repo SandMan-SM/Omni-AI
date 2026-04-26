@@ -15,7 +15,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
-  const result = await sendDailyBrief('alfred@omnileadsagi.com');
+  const result = await sendDailyBrief('sitanim8@gmail.com');
   await logShip({
     client: 'omni-ai',
     kind: 'infra',

@@ -14,6 +14,7 @@ import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
+import { AgiCoachAlerts } from "@/components/agi/AgiCoachAlerts";
 
 interface RecentPost {
   slug: string;
@@ -176,6 +177,9 @@ export function CommandCenter() {
       transition={{ duration: 0.5 }}
       className="space-y-4"
     >
+      {/* ── AGI · Claude-powered Coach Recommendations ──────── */}
+      <AgiCoachAlerts />
+
       {/* ── Alerts Banner ──────────────────────────────────────── */}
       {hasAlerts && (
         <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>

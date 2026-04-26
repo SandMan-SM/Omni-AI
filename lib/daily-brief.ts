@@ -217,7 +217,7 @@ export function buildTelegramBrief(b: DailyBriefPayload): string {
   return lines.join('\n');
 }
 
-export async function sendDailyBrief(toEmail = 'alfred@omnileadsagi.com'): Promise<{ emailed: boolean; telegrammed: boolean; payload: DailyBriefPayload }> {
+export async function sendDailyBrief(toEmail = 'sitanim8@gmail.com'): Promise<{ emailed: boolean; telegrammed: boolean; payload: DailyBriefPayload }> {
   const payload = await gatherDailyBrief();
   const html = buildDailyBriefHtml(payload);
   const telegram = buildTelegramBrief(payload);

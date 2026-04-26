@@ -31,10 +31,10 @@ export default function DashboardError({
           This is usually a transient issue — tapping retry fixes it most of
           the time. If it persists, email
           <a
-            href="mailto:alfred@omnileadsagi.com"
+            href="mailto:help@omnileadsagi.com"
             className="mx-1 text-amber-400 hover:text-amber-300 underline underline-offset-2 decoration-amber-400/40 hover:decoration-amber-300/80"
           >
-            alfred@omnileadsagi.com
+            help@omnileadsagi.com
           </a>
           and include the ref
           <code className="ml-1 px-1 rounded bg-white/[0.06] text-amber-300 text-xs">

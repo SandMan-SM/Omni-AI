@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { type Profile } from "@/hooks/use-profile";
 import { useToast } from "@/hooks/use-toast";
 import { authFetch } from "@/lib/auth";
+import { AgiCrmRescoreButton } from "@/components/agi/AgiCrmRescoreButton";
 
 // ─── Helpers ───────────────────────────────────────────────────────────────
 
@@ -399,6 +400,19 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
 
   return (
     <div className="space-y-6">
+
+      {/* AGI Header — bulk re-score with Claude */}
+      <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/[0.04] via-purple-500/[0.04] to-blue-500/[0.04]">
+        <div className="text-xs">
+          <div className="font-semibold text-emerald-300 uppercase tracking-wider text-[10px]">
+            AGI · CRM Upgrade
+          </div>
+          <div className="text-gray-400 mt-0.5">
+            Heuristic health scoring → Claude-powered fit prediction with Apollo intel
+          </div>
+        </div>
+        <AgiCrmRescoreButton onComplete={onRefresh} />
+      </div>
 
       {/* Stats row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-4">

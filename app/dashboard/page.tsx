@@ -23,6 +23,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { AgiAdminPanel } from "@/components/agi/AgiAdminPanel";
 
 // Code-split the two heaviest tabs so non-admin / non-sponsor users don't
 // download them. CommandCenter is ~673 LOC + its own admin query stack;
@@ -138,7 +139,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
       const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch(`/api/campaigns`, { headers: authHeaders });
+      const res = await fetch(`/api/agi/campaigns`, { headers: authHeaders });
       return res.json();
     },
     enabled: !!profile,
@@ -164,7 +165,7 @@ export default function Dashboard() {
     : allUserCampaigns.filter((c: any) => c.status === campaignFilter);
 
   const { data: bookingsData } = useQuery<{ bookings: DemoBooking[] }>({
-    queryKey: ["/api/demo-booking"],
+    queryKey: ["/api/agi/demo-booking"],
     enabled: !!user,
   });
 
@@ -178,7 +179,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
       const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch("/api/admin/activity?limit=6", { headers: authHeaders });
+      const res = await fetch("/api/agi/admin/activity?limit=6", { headers: authHeaders });
       return res.json();
     },
     enabled: !!isAdmin,
@@ -191,7 +192,7 @@ export default function Dashboard() {
   const { data: newsletterData } = useQuery<{ posts: { id: string; slug: string; subject: string; tier?: string; published_at?: string }[] }>({
     queryKey: ["newsletter-posts"],
     queryFn: async () => {
-      const res = await fetch(`/api/newsletter/posts?_t=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`/api/agi/newsletter/posts?_t=${Date.now()}`, { cache: 'no-store' });
       return res.json();
     },
   });
@@ -275,7 +276,7 @@ export default function Dashboard() {
       <CursorSpotlight />
 
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/5">
-        <div className="max-w-[1440px] mx-auto px-6 h-16 flex items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 h-14 sm:h-16 flex items-center justify-between gap-4">
           <Link href="/" className="text-xl font-bold text-gradient" data-testid="link-dashboard-home">
             Omni AI
           </Link>
@@ -358,7 +359,34 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-[1440px] mx-auto px-6 py-6 space-y-6">
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        {/* Omni AI banner — links to /admin/info explaining how it works */}
+        <Link
+          href="/admin/info"
+          className="block group"
+          data-testid="banner-omni-ai"
+        >
+          <div className="relative overflow-hidden rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 via-purple-500/10 to-blue-500/10 hover:border-emerald-400/60 transition-all p-5 sm:p-6">
+            <div className="flex items-center gap-4">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-500/20 border border-emerald-400/30 text-[10px] font-bold uppercase tracking-wider text-emerald-300">
+                    <Bot className="w-3 h-3" /> Agentic
+                  </span>
+                  <span className="text-[10px] uppercase tracking-wider text-gray-400">New</span>
+                </div>
+                <h2 className="text-xl sm:text-2xl font-bold text-white">
+                  View INTERLINKED Agentic Infrastructure
+                </h2>
+              </div>
+              <ArrowRight className="w-6 h-6 text-emerald-400 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+            </div>
+          </div>
+        </Link>
+
+        {/* Omni AI Admin Panel — full embedded AGI experience for admins */}
+        {isAdmin && <AgiAdminPanel />}
+
         {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
@@ -416,7 +444,7 @@ export default function Dashboard() {
           </motion.div>
         ) : (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               {metrics.map((metric, i) => {
                 const MetricIcon = metric.icon;
                 // CPS sees the same unlocked view sponsors get post-payment —
@@ -786,9 +814,31 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
-        <div className="grid lg:grid-cols-2 gap-6">
-          <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }}>
-            <Card className="bg-white/[0.03] border-white/[0.06]">
+        {/* CPS Banner — full-width, above the two-col grid so it doesn't
+            create a broken half-row inside the grid */}
+        {isCPS && (
+          <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
+            <div className="bg-gradient-to-r from-blue-600/15 via-blue-500/20 to-cyan-500/15 border border-blue-500/20 rounded-xl">
+              <div className="px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="min-w-0">
+                  <p className="text-white font-bold text-base sm:text-lg leading-tight">Agentic Agents in Development</p>
+                  <p className="text-blue-200/80 text-xs sm:text-sm mt-0.5">Live analytics tracking your site in real time</p>
+                </div>
+                <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-semibold whitespace-nowrap">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden />
+                  Activated
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {/* Two-col grid: always Meetings on the left, Newsletter or
+            Recent Activity on the right — never an odd number of items */}
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6">
+          {/* LEFT: Meetings & Events */}
+          <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }} className="flex flex-col">
+            <Card className="bg-white/[0.03] border-white/[0.06] flex-1">
               <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
                 <CardTitle className="text-lg text-white">Meetings & Events</CardTitle>
                 <Calendar className="w-4 h-4 text-gray-500" />
@@ -799,19 +849,19 @@ export default function Dashboard() {
                     <Link
                       key={i}
                       href="/interlinked"
-                      className="flex items-center gap-4 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors group"
+                      className="flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors group"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
                         <GraduationCap className="w-4 h-4 text-blue-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm text-white group-hover:text-blue-300 transition-colors">{session.label}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs sm:text-sm text-white group-hover:text-blue-300 transition-colors">{session.label}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500">
                           {session.date.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })} at{" "}
                           {session.date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                         </p>
                       </div>
-                      <span className="inline-flex items-center whitespace-nowrap rounded-md border bg-blue-500/15 text-blue-400 border-blue-500/20 px-2.5 py-1 font-medium flex-shrink-0" style={{ fontSize: '9px', lineHeight: '1' }}>
+                      <span className="inline-flex items-center whitespace-nowrap rounded-md border bg-blue-500/15 text-blue-400 border-blue-500/20 px-2 sm:px-2.5 py-1 font-medium flex-shrink-0" style={{ fontSize: '9px', lineHeight: '1' }}>
                         Training
                       </span>
                     </Link>
@@ -819,8 +869,8 @@ export default function Dashboard() {
                   {bookings.slice(0, 2).map((booking, i) => {
                     const isTraining = booking.type === 'training';
                     return (
-                      <div key={booking.id} className="flex items-center gap-4 px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors" data-testid={`booking-item-${i}`}>
-                        <div className={`w-10 h-10 rounded-lg ${isTraining ? "bg-blue-500/10 border border-blue-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
+                      <div key={booking.id} className="flex items-center gap-3 sm:gap-4 px-3 sm:px-4 py-3 rounded-lg border border-white/[0.04] hover:bg-white/[0.02] transition-colors" data-testid={`booking-item-${i}`}>
+                        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg ${isTraining ? "bg-blue-500/10 border border-blue-500/20" : "bg-purple-500/10 border border-purple-500/20"} flex items-center justify-center flex-shrink-0`}>
                           {isTraining ? (
                             <GraduationCap className="w-4 h-4 text-blue-400" />
                           ) : (
@@ -828,12 +878,12 @@ export default function Dashboard() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm text-white" data-testid={`text-booking-name-${i}`}>{booking.name}</p>
-                          <p className="text-xs text-gray-500" data-testid={`text-booking-date-${i}`}>
+                          <p className="text-xs sm:text-sm text-white" data-testid={`text-booking-name-${i}`}>{booking.name}</p>
+                          <p className="text-[10px] sm:text-xs text-gray-500" data-testid={`text-booking-date-${i}`}>
                             {booking.date} at {booking.time}
                           </p>
                         </div>
-                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2.5 py-1 font-medium flex-shrink-0 ${isTraining ? "bg-blue-500/15 text-blue-400 border-blue-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"}`} style={{ fontSize: '9px', lineHeight: '1' }}>
+                        <span className={`inline-flex items-center whitespace-nowrap rounded-md border px-2 sm:px-2.5 py-1 font-medium flex-shrink-0 ${isTraining ? "bg-blue-500/15 text-blue-400 border-blue-500/20" : "bg-purple-500/15 text-purple-400 border-purple-500/20"}`} style={{ fontSize: '9px', lineHeight: '1' }}>
                           {isTraining ? "Training" : "Demo"}
                         </span>
                       </div>
@@ -844,36 +894,45 @@ export default function Dashboard() {
             </Card>
           </motion.div>
 
-          {isCPS && (
-            <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-              <div className="mx-[-1rem] bg-gradient-to-r from-blue-600/15 via-blue-500/20 to-cyan-500/15 border-y border-blue-500/20 backdrop-blur-sm">
-                <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
-                  <div className="text-left sm:text-left min-w-0">
-                    <p className="text-white font-bold text-base sm:text-lg leading-tight">Agentic Agents in Development</p>
-                    <p className="text-blue-200/80 text-xs sm:text-sm mt-0.5">Live analytics tracking your site in real time</p>
-                  </div>
-                  <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs sm:text-sm font-semibold whitespace-nowrap self-stretch sm:self-auto justify-center sm:justify-start">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" aria-hidden />
-                    Activated
-                  </span>
-                </div>
-              </div>
+          {/* RIGHT: Newsletter Posts (non-admin) or Recent Activity (admin).
+              Admins see Recent Activity here since CommandCenter replaces the
+              newsletter section. Non-admins see Newsletter if posts exist,
+              otherwise fall through to the full-width Recent Activity below. */}
+          {isAdmin ? (
+            <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.4 }} className="flex flex-col">
+              <Card className="bg-white/[0.03] border-white/[0.06] flex-1">
+                <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
+                  <CardTitle className="text-lg text-white">Recent Activity</CardTitle>
+                  <Clock className="w-4 h-4 text-gray-500" />
+                </CardHeader>
+                <CardContent>
+                  {recentActivities.length > 0 ? (
+                    <div className="space-y-4">
+                      {recentActivities.map((item, i) => (
+                        <div key={item.id} className="flex items-start gap-4" data-testid={`activity-item-${i}`}>
+                          <div className="w-2 h-2 rounded-full bg-purple-500 mt-2 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm text-white" data-testid={`text-activity-action-${i}`}>{item.subject || item.type}</p>
+                            <p className="text-xs text-gray-500 truncate" data-testid={`text-activity-detail-${i}`}>{item.channel}</p>
+                          </div>
+                          <span className="text-xs text-gray-600 whitespace-nowrap flex-shrink-0" data-testid={`text-activity-time-${i}`}>
+                            {new Date(item.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-6" data-testid="text-no-activity">
+                      <Clock className="w-8 h-8 text-gray-700 mx-auto mb-4" />
+                      <p className="text-sm text-gray-500">No recent activity</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </motion.div>
-          )}
-
-          {/* CPS analytics — leads, calls, top pages, button clicks.
-              Mounted only for the CPS account (and any admin via the API
-              gate). Auto-refreshes every 30s from /api/dashboard/cps-data. */}
-          {isCPS && (
-            <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.05 }}>
-              <CpsAnalyticsPanel />
-            </motion.div>
-          )}
-
-          {/* Newsletter Posts — hidden for admins (CommandCenter already shows them) */}
-          {!isAdmin && (recentFreePosts.length > 0 || recentPremiumPosts.length > 0) && (
-            <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }}>
-              <Card className="bg-white/[0.03] border-white/[0.06]">
+          ) : (recentFreePosts.length > 0 || recentPremiumPosts.length > 0) ? (
+            <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.35 }} className="flex flex-col">
+              <Card className="bg-white/[0.03] border-white/[0.06] flex-1">
                 <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
                   <CardTitle className="text-lg text-white">Newsletter Posts</CardTitle>
                   <Mail className="w-4 h-4 text-gray-500" />
@@ -884,7 +943,7 @@ export default function Dashboard() {
                       <p className="text-[10px] text-purple-400 uppercase tracking-wider font-medium mb-2">Free</p>
                       <div className="space-y-2">
                         {recentFreePosts.map(p => (
-                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
+                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-3 sm:gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
                             <div className="w-7 h-7 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
                               <Mail className="w-3.5 h-3.5 text-purple-400" />
                             </div>
@@ -905,7 +964,7 @@ export default function Dashboard() {
                       <p className="text-[10px] text-yellow-400 uppercase tracking-wider font-medium mb-2">Premium</p>
                       <div className="space-y-2">
                         {recentPremiumPosts.map(p => (
-                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
+                          <Link key={p.id} href={`/newsletter/${p.slug}`} className="flex items-center gap-3 sm:gap-4 p-2.5 rounded-lg hover:bg-white/5 transition-colors group">
                             <div className="w-7 h-7 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center flex-shrink-0">
                               <Crown className="w-3.5 h-3.5 text-yellow-400" />
                             </div>
@@ -924,8 +983,12 @@ export default function Dashboard() {
                 </CardContent>
               </Card>
             </motion.div>
-          )}
+          ) : null}
+        </div>
 
+        {/* Recent Activity — full-width below the grid for non-admins.
+            Admins see this in the grid's right column above. */}
+        {!isAdmin && (
           <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.4 }}>
             <Card className="bg-white/[0.03] border-white/[0.06]">
               <CardHeader className="flex flex-row items-center justify-between gap-4 pb-4">
@@ -957,7 +1020,15 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </motion.div>
-        </div>
+        )}
+
+        {/* CPS analytics — full-width, outside the grid so it never creates
+            an orphaned half-row. Auto-refreshes every 30s. */}
+        {isCPS && (
+          <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.05 }}>
+            <CpsAnalyticsPanel />
+          </motion.div>
+        )}
 
         <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.45 }}>
           <Card className="bg-white/[0.03] border-white/[0.06]">
@@ -1009,7 +1080,7 @@ export default function Dashboard() {
       </main>
 
       <footer className="border-t border-white/5 mt-12">
-        <div className="max-w-[1440px] mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-sm text-gray-600" data-testid="text-copyright">&copy; {new Date().getFullYear()} Omni Leads LLC</span>
           <div className="flex items-center gap-4">
             <Link href="/" className="text-sm text-gray-500 transition-colors" data-testid="link-footer-home">Home</Link>
@@ -1086,7 +1157,7 @@ function OnboardingDialog({ open, onClose, profile, onSaved }: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
-      const res = await fetch(`/api/admin/users/${profile.id}`, {
+      const res = await fetch(`/api/agi/admin/users/${profile.id}`, {
         method: "PATCH",
         headers,
         body: JSON.stringify({

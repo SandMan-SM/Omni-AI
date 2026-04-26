@@ -83,7 +83,7 @@ import { logEvent } from "@/lib/events";
  */
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
-const OWNER_EMAIL = "alfred@omnileadsagi.com";
+const OWNER_EMAIL = "sitanim8@gmail.com";
 const FROM_EMAIL = "Omni AI <bookings@omnileadsagi.com>";
 const SITE_URL = "https://omnileadsagi.com";
 

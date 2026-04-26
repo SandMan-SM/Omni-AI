@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { generateICS, parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
 import { bookerConfirmationEmail, ownerNotificationEmail } from '@/lib/email-templates';
 import { logEvent } from '@/lib/events';
+import { notifyBooking } from '@/lib/agi/telegram';
 import {
   isValidEmail,
   escapeHtml,
@@ -17,7 +18,7 @@ import {
 } from '@/lib/rate-limit';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const OWNER_EMAIL = 'alfred@omnileadsagi.com';
+const OWNER_EMAIL = 'sitanim8@gmail.com';
 const OWNER_NAME = 'Omni AI';
 const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 
@@ -143,6 +144,21 @@ export async function POST(request: Request) {
       );
     }
 
+    // 1b. Telegram notification (fire-and-forget). The Postgres trigger
+    // omni_ai_trg_demo_to_meeting will mirror this row into omni_meeting_bookings
+    // for the agentic dashboard's Meetings tab — this fires the push to phone.
+    if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
+      const startISO = (() => {
+        try { return parseBookingDateTime(row.date, row.time).toISOString(); }
+        catch { return new Date().toISOString(); }
+      })();
+      notifyBooking({
+        attendeeName: row.name || 'Demo',
+        attendeeEmail: row.email,
+        start_at: startISO,
+      }).catch(err => console.error('Telegram booking notify failed:', err));
+    }
+
     // 2. Parse meeting times
     const startDate = parseBookingDateTime(row.date, row.time);
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour meeting
@@ -157,10 +173,13 @@ export async function POST(request: Request) {
     });
 
     // 3. Generate .ics calendar invite
-    const eventUid = `demo-${data.id}@omnileadsagi.com`;
+    // /book-now is a free Strategy Call (not a product demo). The legacy
+    // `demo_bookings` table name is kept intact per request — only the
+    // user-facing labels change.
+    const eventUid = `strategy-${data.id}@omnileadsagi.com`;
     const icsContent = generateICS({
-      summary: `Omni AI Demo — ${row.name}`,
-      description: `Demo with ${row.name} from ${row.business_name || 'N/A'}\\nPurpose: ${row.purpose}\\nEmail: ${row.email}\\nPhone: ${row.phone}`,
+      summary: `Omni AI Strategy Call — ${row.name}`,
+      description: `Strategy Call with ${row.name} from ${row.business_name || 'N/A'}\\nFocus: ${row.purpose}\\nEmail: ${row.email}\\nPhone: ${row.phone}`,
       startDate,
       endDate,
       organizerName: OWNER_NAME,
@@ -172,8 +191,8 @@ export async function POST(request: Request) {
 
     // 4. Build Google Calendar URL
     const googleCalUrl = buildGoogleCalendarUrl({
-      title: `Omni AI Demo — ${row.name}`,
-      description: `Demo with ${row.name}\nBusiness: ${row.business_name || 'N/A'}\nPurpose: ${row.purpose}\nEmail: ${row.email}\nPhone: ${row.phone}`,
+      title: `Omni AI Strategy Call — ${row.name}`,
+      description: `Strategy Call with ${row.name}\nBusiness: ${row.business_name || 'N/A'}\nFocus: ${row.purpose}\nEmail: ${row.email}\nPhone: ${row.phone}`,
       startDate,
       endDate,
     });
@@ -205,10 +224,10 @@ export async function POST(request: Request) {
         sendEmail({
           from: FROM_EMAIL,
           to: row.email,
-          subject: `Demo Confirmed — ${dateFormatted} at ${row.time} CT`,
+          subject: `Strategy Call Confirmed — ${dateFormatted} at ${row.time} CT`,
           html: bookerConfirmationEmail(bookingDetails),
           attachments: [{
-            filename: 'omni-ai-demo.ics',
+            filename: 'omni-ai-strategy-call.ics',
             content: icsBase64,
             content_type: 'text/calendar; method=REQUEST',
           }],
@@ -223,10 +242,10 @@ export async function POST(request: Request) {
           from: FROM_EMAIL,
           to: OWNER_EMAIL,
           replyTo: row.email,
-          subject: `New Demo Booked: ${row.name} — ${dateFormatted} at ${row.time}`,
+          subject: `New Strategy Call Booked: ${row.name} — ${dateFormatted} at ${row.time}`,
           html: ownerNotificationEmail(bookingDetails),
           attachments: [{
-            filename: 'omni-ai-demo.ics',
+            filename: 'omni-ai-strategy-call.ics',
             content: icsBase64,
             content_type: 'text/calendar; method=REQUEST',
           }],

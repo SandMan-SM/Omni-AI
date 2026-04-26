@@ -1,0 +1,35 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
+
+// Vercel cron at 6pm Pacific (1am UTC) — runs digest for every business with a sender_email.
+export async function GET(req: NextRequest) {
+  const auth = req.headers.get('authorization');
+  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  }
+
+  const { data: businesses } = await supabase
+    .from('omni_businesses')
+    .select('id, sender_email');
+
+  const baseUrl = req.url.replace(/\/api\/cron\/daily-digest.*/, '');
+  const results: Array<{ business_id: string; ok: boolean; emailed?: boolean }> = [];
+
+  for (const b of businesses ?? []) {
+    if (!(b as { sender_email?: string }).sender_email) continue;
+    const r = await fetch(`${baseUrl}/api/digest/run`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ business_id: b.id, send_email: true }),
+    });
+    const j = await r.json();
+    results.push({ business_id: b.id, ok: j.ok ?? false, emailed: j.emailed });
+  }
+
+  return NextResponse.json({ ok: true, sent_to: results.filter(r => r.emailed).length, results });
+}

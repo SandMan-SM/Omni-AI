@@ -18,7 +18,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const secret = searchParams.get('secret');
-  const to = searchParams.get('to') || process.env.NEWSLETTER_TO_EMAIL || 'alfred@omnileadsagi.com';
+  const to = searchParams.get('to') || process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 
   if (
     !process.env.CRON_SECRET ||
