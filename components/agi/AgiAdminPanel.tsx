@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import {
   Target, Bot, Brain, Inbox as InboxIcon, Send, Building2, BookOpen,
   BarChart3, Calendar, TrendingUp, Activity, Upload, Settings as SettingsIcon,
-  Zap, CreditCard, ChevronDown, Sparkles, Award,
+  Zap, CreditCard, ChevronDown, Sparkles, Award, Trophy, Mail,
 } from "lucide-react";
 
 // Dynamic imports of each AGI page — lazy-loaded so first paint is fast.
@@ -28,6 +28,27 @@ const ImportView     = dynamic(() => import("@/app/dashboard/import/page"),    {
 const SettingsView   = dynamic(() => import("@/app/dashboard/settings/page"),  { ssr: false, loading: () => <Skel /> });
 const BillingView    = dynamic(() => import("@/app/dashboard/billing/page"),   { ssr: false, loading: () => <Skel /> });
 
+// Arena + Newsletter are server components with `metadata` exports — they
+// can't be dynamic-imported into this client panel. Embed them in iframes
+// pointing at the public pages instead. Same content, no compile boundary.
+function IframeView({ src, title }: { src: string; title: string }) {
+  return (
+    <iframe
+      src={src}
+      title={title}
+      style={{
+        width: "100%",
+        height: "calc(100vh - 280px)",
+        minHeight: 600,
+        border: "none",
+        background: "transparent",
+      }}
+    />
+  );
+}
+const ArenaView      = () => <IframeView src="/arena" title="Arena" />;
+const NewsletterView = () => <IframeView src="/newsletter" title="Newsletter" />;
+
 function Skel() {
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-12 flex items-center justify-center">
@@ -49,6 +70,8 @@ const TABS: Array<{
   { id: "coach",      label: "Coach",       icon: Brain,          view: CoachView,      group: "intel" },
   { id: "pipeline",   label: "Pipeline",    icon: Award,          view: PipelineView,   group: "core" },
   { id: "meetings",   label: "Meetings",    icon: Calendar,       view: MeetingsView,   group: "engage" },
+  { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage" },
+  { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage" },
   { id: "companies",  label: "Companies",   icon: Building2,      view: CompaniesView,  group: "intel" },
   { id: "campaigns",  label: "Campaigns",   icon: TrendingUp,     view: CampaignsView,  group: "core" },
   { id: "templates",  label: "Templates",   icon: BookOpen,       view: TemplatesView,  group: "core" },

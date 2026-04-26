@@ -85,7 +85,7 @@ function KpiCard({ icon: Icon, label, value, sub, color }: { icon: React.Element
   );
 }
 
-function LeadRow({ lead, onClick }: { lead: Lead; onClick: () => void }) {
+function LeadRow({ lead, onClick, businessName }: { lead: Lead; onClick: () => void; businessName?: string }) {
   const st = STATUS_CONFIG[lead.status];
   const src = SOURCE_CONFIG[lead.source];
   return (
@@ -96,6 +96,13 @@ function LeadRow({ lead, onClick }: { lead: Lead; onClick: () => void }) {
         <div style={{ fontWeight: 600, color: '#e8e8e8', fontSize: 13 }}>{fullName(lead)}</div>
         {lead.email && <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{lead.email}</div>}
       </td>
+      {businessName !== undefined && (
+        <td style={{ padding: '14px 12px' }}>
+          <span className="agi-tag" style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: '#a78bfa18', padding: '3px 8px', borderRadius: 4 }}>
+            {businessName || '—'}
+          </span>
+        </td>
+      )}
       <td style={{ padding: '14px 12px', fontSize: 13, color: '#94a3b8' }}>{lead.company ?? '—'}</td>
       <td style={{ padding: '14px 12px', fontSize: 13, color: '#64748b' }}>{lead.title ?? '—'}</td>
       <td style={{ padding: '14px 12px' }}>
@@ -397,22 +404,28 @@ export default function DashboardPage() {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
-        setSelectedBiz(data[0]);
+        // Default to "All Businesses" so admins see leads across Omni AI,
+        // Prime IV, North Peak, etc. on first load.
+        setSelectedBiz(null);
       }
       setLoading(false);
     });
   }, []);
 
-  const loadData = useCallback(async (bizId: string) => {
+  const loadData = useCallback(async (bizId: string | null) => {
+    // bizId === null means "All Businesses" — drop the business_id filter
+    const leadsQuery = supabase.from('omni_leads_generated').select('*').order('created_at', { ascending: false });
+    const campsQuery = supabase.from('omni_lead_campaigns').select('*');
     const [{ data: leadsData }, { data: campData }] = await Promise.all([
-      supabase.from('omni_leads_generated').select('*').eq('business_id', bizId).order('created_at', { ascending: false }),
-      supabase.from('omni_lead_campaigns').select('*').eq('business_id', bizId),
+      bizId ? leadsQuery.eq('business_id', bizId) : leadsQuery,
+      bizId ? campsQuery.eq('business_id', bizId) : campsQuery,
     ]);
     setLeads(leadsData ?? []);
     setCampaigns(campData ?? []);
   }, []);
 
-  useEffect(() => { if (selectedBiz) loadData(selectedBiz.id); }, [selectedBiz, loadData]);
+  // selectedBiz === null is the "All Businesses" sentinel
+  useEffect(() => { loadData(selectedBiz ? selectedBiz.id : null); }, [selectedBiz, loadData]);
 
   const total = leads.length;
   const qualified = leads.filter(l => l.status === 'qualified' || l.status === 'converted').length;
@@ -591,12 +604,27 @@ export default function DashboardPage() {
           <div className="agi-leads-header-divider" style={{ width: 1, height: 20, background: '#222' }} />
           <div style={{ position: 'relative' }}>
             <button onClick={() => setBizOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#191919', border: '1px solid #222', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#e8e8e8' }}>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>{selectedBiz?.name ?? 'Select Business'}</span>
-              {selectedBiz && <span className="agi-tag agi-tag-plan" style={{ fontSize: 10, fontWeight: 700, color: planColor, background: `${planColor}18`, padding: '2px 6px', borderRadius: 4 }}>{selectedBiz.plan.toUpperCase()}</span>}
+              <span style={{ fontSize: 13, fontWeight: 600 }}>{selectedBiz?.name ?? 'All Businesses'}</span>
+              {selectedBiz ? (
+                <span className="agi-tag agi-tag-plan" style={{ fontSize: 10, fontWeight: 700, color: planColor, background: `${planColor}18`, padding: '2px 6px', borderRadius: 4 }}>{selectedBiz.plan.toUpperCase()}</span>
+              ) : (
+                <span className="agi-tag" style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: '#a78bfa18', padding: '2px 6px', borderRadius: 4 }}>{businesses.length}</span>
+              )}
               <ChevronDown size={13} color="#555" />
             </button>
             {bizOpen && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 220, zIndex: 10, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 240, zIndex: 10, overflow: 'hidden' }}>
+                <button
+                  onClick={() => { setSelectedBiz(null); setBizOpen(false); }}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px',
+                    background: selectedBiz === null ? '#191919' : 'transparent',
+                    border: 'none', borderBottom: '1px solid #1e1e1e', color: '#e8e8e8', cursor: 'pointer', fontSize: 13,
+                  }}
+                >
+                  <div style={{ fontWeight: 600, color: '#a78bfa' }}>All Businesses</div>
+                  <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>Combined view · {businesses.length} businesses</div>
+                </button>
                 {businesses.map(b => (
                   <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
                     <div style={{ fontWeight: 600 }}>{b.name}</div>
@@ -628,10 +656,10 @@ export default function DashboardPage() {
 
         <div className="agi-leads-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {selectedBiz && <div className="agi-credit-meter"><CreditMeter businessId={selectedBiz.id} /></div>}
-          <button className="agi-leads-action-refresh" onClick={() => selectedBiz && loadData(selectedBiz.id)} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <button className="agi-leads-action-refresh" onClick={() => loadData(selectedBiz ? selectedBiz.id : null)} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <RefreshCw size={12} /><span>Refresh</span>
           </button>
-          <button onClick={runAgent} disabled={generating || !campaigns.length} style={{ background: generating ? '#0d2a1e' : '#10b981', color: generating ? '#10b981' : '#fff', border: generating ? '1px solid #10b981' : 'none', padding: '7px 16px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <button onClick={runAgent} disabled={generating || !campaigns.length || !selectedBiz} title={!selectedBiz ? 'Select a specific business to run the agent' : ''} style={{ background: generating || !selectedBiz ? '#0d2a1e' : '#10b981', color: generating || !selectedBiz ? '#10b981' : '#fff', border: generating || !selectedBiz ? '1px solid #10b981' : 'none', padding: '7px 16px', borderRadius: 8, cursor: generating || !selectedBiz ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, opacity: !selectedBiz ? 0.6 : 1 }}>
             <Zap size={13} />
             {generating ? 'Generating…' : 'Run Agent'}
           </button>
@@ -689,18 +717,30 @@ export default function DashboardPage() {
             <table className="agi-leads-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
-                  {['Contact', 'Company', 'Title', 'Source', 'Status', 'Score'].map(h => (
+                  {(selectedBiz === null
+                    ? ['Contact', 'Business', 'Company', 'Title', 'Source', 'Status', 'Score']
+                    : ['Contact', 'Company', 'Title', 'Source', 'Status', 'Score']
+                  ).map(h => (
                     <th key={h} style={{ padding: '12px', textAlign: 'left', color: '#444', fontWeight: 500, fontSize: 12 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: '#333', fontSize: 13 }}>
+                  <tr><td colSpan={selectedBiz === null ? 7 : 6} style={{ padding: 40, textAlign: 'center', color: '#333', fontSize: 13 }}>
                     No leads found. {campaigns.length > 0 ? 'Click "Run Agent" to generate leads.' : 'Import leads via the Import tab.'}
                   </td></tr>
                 ) : (
-                  filtered.map(lead => <LeadRow key={lead.id} lead={lead} onClick={() => setSelectedLead(lead)} />)
+                  filtered.map(lead => (
+                    <LeadRow
+                      key={lead.id}
+                      lead={lead}
+                      onClick={() => setSelectedLead(lead)}
+                      businessName={selectedBiz === null
+                        ? (businesses.find(b => b.id === lead.business_id)?.name ?? '')
+                        : undefined}
+                    />
+                  ))
                 )}
               </tbody>
             </table>
