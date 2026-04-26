@@ -73,3 +73,70 @@ export async function POST(req: NextRequest) {
     }, { status: 500 });
   }
 }
+
+// PATCH — reschedule, edit notes, change status
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, ...patch } = body as {
+      id: string;
+      start_at?: string;
+      duration_minutes?: number;
+      attendee_notes?: string | null;
+      attendee_phone?: string | null;
+      status?: 'confirmed' | 'cancelled' | 'completed' | 'no_show';
+      meeting_url?: string | null;
+    };
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+    // Strip undefineds so we don't blank existing fields
+    const update: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(patch)) {
+      if (v !== undefined) update[k] = v;
+    }
+    update.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from('omni_meeting_bookings')
+      .update(update)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+
+    return NextResponse.json({ ok: true, booking: data });
+  } catch (err) {
+    console.error('[meetings/book PATCH]', err);
+    return NextResponse.json({
+      error: err instanceof Error ? err.message : 'Internal server error',
+    }, { status: 500 });
+  }
+}
+
+// DELETE — cancel a meeting (soft: status=cancelled, keeps audit trail)
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get('id');
+    const hard = searchParams.get('hard') === '1';
+    if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+    if (hard) {
+      const { error } = await supabase.from('omni_meeting_bookings').delete().eq('id', id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from('omni_meeting_bookings')
+        .update({ status: 'cancelled', updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error('[meetings/book DELETE]', err);
+    return NextResponse.json({
+      error: err instanceof Error ? err.message : 'Internal server error',
+    }, { status: 500 });
+  }
+}
