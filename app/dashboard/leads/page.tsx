@@ -74,12 +74,12 @@ function CreditMeter({ businessId }: { businessId: string }) {
 
 function KpiCard({ icon: Icon, label, value, sub, color }: { icon: React.ElementType; label: string; value: string | number; sub?: string; color: string }) {
   return (
-    <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
+    <div className="agi-kpi-card" style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, padding: 24, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
         <div style={{ background: `${color}18`, borderRadius: 8, padding: 8 }}><Icon size={18} color={color} /></div>
         <span style={{ fontSize: 12, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', fontWeight: 500 }}>{label}</span>
       </div>
-      <div style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-1.5px', color: '#e8e8e8' }}>{value}</div>
+      <div className="agi-kpi-value" style={{ fontSize: 36, fontWeight: 700, letterSpacing: '-1.5px', color: '#e8e8e8' }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: '#555' }}>{sub}</div>}
     </div>
   );
@@ -150,8 +150,8 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
   };
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.6)' }} onClick={onClose}>
-      <div style={{ width: 480, background: '#0f0f0f', borderLeft: '1px solid #1e1e1e', height: '100%', overflowY: 'auto', padding: 32, display: 'flex', flexDirection: 'column', gap: 18 }} onClick={e => e.stopPropagation()}>
+    <div className="agi-lead-panel-overlay" style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'flex-end', background: 'rgba(0,0,0,0.6)' }} onClick={onClose}>
+      <div className="agi-lead-panel-shell" style={{ width: 480, maxWidth: '100%', background: '#0f0f0f', borderLeft: '1px solid #1e1e1e', height: '100%', overflowY: 'auto', padding: 32, display: 'flex', flexDirection: 'column', gap: 18 }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -455,17 +455,84 @@ export default function DashboardPage() {
   const planColor = selectedBiz?.plan === 'enterprise' ? '#fb923c' : selectedBiz?.plan === 'pro' ? '#818cf8' : '#10b981';
 
   return (
-    <div style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
+    <div className="agi-leads-root" style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
+      <style jsx global>{`
+        /* ── Mobile-first overrides for agentic Leads dashboard ── */
+        @media (max-width: 900px) {
+          .agi-leads-root .agi-leads-header {
+            height: auto !important;
+            padding: 12px 16px !important;
+            flex-wrap: wrap !important;
+            gap: 10px !important;
+          }
+          .agi-leads-root .agi-leads-header-left {
+            width: 100%;
+            flex-wrap: wrap;
+            gap: 10px !important;
+          }
+          .agi-leads-root .agi-leads-nav {
+            width: 100%;
+            overflow-x: auto;
+            flex-wrap: nowrap !important;
+            padding-bottom: 4px;
+            scrollbar-width: thin;
+          }
+          .agi-leads-root .agi-leads-nav a {
+            white-space: nowrap;
+          }
+          .agi-leads-root .agi-leads-actions {
+            margin-left: auto;
+            gap: 8px !important;
+          }
+          .agi-leads-root .agi-leads-content {
+            padding: 16px !important;
+          }
+          .agi-leads-root .agi-kpi-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 10px !important;
+            margin-bottom: 20px !important;
+          }
+          .agi-leads-root .agi-kpi-card {
+            padding: 14px !important;
+          }
+          .agi-leads-root .agi-kpi-value {
+            font-size: 26px !important;
+          }
+          .agi-leads-root .agi-campaigns-row {
+            flex-direction: column !important;
+            gap: 10px !important;
+          }
+          .agi-leads-root .agi-lead-panel-shell {
+            width: 100vw !important;
+            padding: 20px !important;
+          }
+        }
+        @media (max-width: 640px) {
+          .agi-leads-root .agi-leads-header-divider { display: none !important; }
+          .agi-leads-root .agi-leads-brand-text { font-size: 14px !important; }
+          .agi-leads-root .agi-credit-meter { display: none !important; }
+          .agi-leads-root .agi-leads-action-refresh span { display: none !important; }
+          .agi-leads-root .agi-leads-table th:nth-child(3),
+          .agi-leads-root .agi-leads-table td:nth-child(3) { display: none !important; }
+          .agi-leads-root .agi-leads-table th:nth-child(4),
+          .agi-leads-root .agi-leads-table td:nth-child(4) { display: none !important; }
+        }
+        @media (max-width: 480px) {
+          .agi-leads-root .agi-kpi-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
 
-      <header style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+      <header className="agi-leads-header" style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div className="agi-leads-header-left" style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#e8e8e8' }}>
             <div style={{ width: 28, height: 28, background: 'linear-gradient(135deg, #10b981, #818cf8)', borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Zap size={14} color="#fff" />
             </div>
-            <span style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>OmniLeads<span style={{ color: '#10b981' }}>AGI</span></span>
+            <span className="agi-leads-brand-text" style={{ fontWeight: 700, fontSize: 15, letterSpacing: '-0.3px' }}>OmniLeads<span style={{ color: '#10b981' }}>AGI</span></span>
           </Link>
-          <div style={{ width: 1, height: 20, background: '#222' }} />
+          <div className="agi-leads-header-divider" style={{ width: 1, height: 20, background: '#222' }} />
           <div style={{ position: 'relative' }}>
             <button onClick={() => setBizOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#191919', border: '1px solid #222', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#e8e8e8' }}>
               <span style={{ fontSize: 13, fontWeight: 600 }}>{selectedBiz?.name ?? 'Select Business'}</span>
@@ -483,8 +550,8 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          <div style={{ width: 1, height: 20, background: '#222' }} />
-          <nav style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+          <div className="agi-leads-header-divider" style={{ width: 1, height: 20, background: '#222' }} />
+          <nav className="agi-leads-nav" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
             <Link href="/dashboard/leads" style={navStyle(true)}>Leads</Link>
             <Link href="/dashboard/autopilot" style={navStyle(false)}><Bot size={11} /> Autopilot</Link>
             <Link href="/dashboard/coach" style={navStyle(false)}><Brain size={11} /> Coach</Link>
@@ -503,10 +570,10 @@ export default function DashboardPage() {
           </nav>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {selectedBiz && <CreditMeter businessId={selectedBiz.id} />}
-          <button onClick={() => selectedBiz && loadData(selectedBiz.id)} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
-            <RefreshCw size={12} /> Refresh
+        <div className="agi-leads-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          {selectedBiz && <div className="agi-credit-meter"><CreditMeter businessId={selectedBiz.id} /></div>}
+          <button className="agi-leads-action-refresh" onClick={() => selectedBiz && loadData(selectedBiz.id)} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+            <RefreshCw size={12} /><span>Refresh</span>
           </button>
           <button onClick={runAgent} disabled={generating || !campaigns.length} style={{ background: generating ? '#0d2a1e' : '#10b981', color: generating ? '#10b981' : '#fff', border: generating ? '1px solid #10b981' : 'none', padding: '7px 16px', borderRadius: 8, cursor: generating ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Zap size={13} />
@@ -515,8 +582,8 @@ export default function DashboardPage() {
         </div>
       </header>
 
-      <div style={{ padding: '32px', maxWidth: 1400, margin: '0 auto' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
+      <div className="agi-leads-content" style={{ padding: '32px', maxWidth: 1400, margin: '0 auto' }}>
+        <div className="agi-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
           <KpiCard icon={Users} label="Total Leads" value={total} sub={`${filtered.length} shown`} color="#818cf8" />
           <KpiCard icon={Star} label="Qualified" value={qualified} sub={`${total > 0 ? Math.round((qualified/total)*100) : 0}% of total`} color="#10b981" />
           <KpiCard icon={Award} label="Conversion Rate" value={`${convRate}%`} sub={`${converted} converted`} color="#4ade80" />
@@ -524,7 +591,7 @@ export default function DashboardPage() {
         </div>
 
         {campaigns.length > 0 && (
-          <div style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
+          <div className="agi-campaigns-row" style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
             {campaigns.map(c => {
               const pct = Math.min(100, Math.round((c.leads_generated / c.leads_target) * 100));
               return (
@@ -563,7 +630,7 @@ export default function DashboardPage() {
           </div>
 
           <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+            <table className="agi-leads-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
               <thead>
                 <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
                   {['Contact', 'Company', 'Title', 'Source', 'Status', 'Score'].map(h => (

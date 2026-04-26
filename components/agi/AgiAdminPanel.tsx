@@ -139,6 +139,29 @@ export function AgiAdminPanel() {
           .agi-embedded-view header[style*="height: 60"] {
             display: none !important;
           }
+          /* ── Mobile: cascade-shrink every inner sub-page when embedded ── */
+          @media (max-width: 768px) {
+            .agi-embedded-view [style*="padding: 32"],
+            .agi-embedded-view [style*="padding:32"],
+            .agi-embedded-view [style*="padding: '32px'"] {
+              padding: 16px !important;
+            }
+            .agi-embedded-view [style*="grid-template-columns: repeat(4"],
+            .agi-embedded-view [style*="gridTemplateColumns: 'repeat(4"] {
+              grid-template-columns: repeat(2, 1fr) !important;
+            }
+            .agi-embedded-view [style*="grid-template-columns: repeat(3"],
+            .agi-embedded-view [style*="gridTemplateColumns: 'repeat(3"] {
+              grid-template-columns: 1fr !important;
+            }
+            .agi-embedded-view [style*="font-size: 36"],
+            .agi-embedded-view [style*="fontSize: 36"] {
+              font-size: 26px !important;
+            }
+            .agi-embedded-view table {
+              font-size: 12px !important;
+            }
+          }
         `}</style>
         {ActiveView && <ActiveView />}
       </div>

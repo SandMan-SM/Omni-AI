@@ -360,6 +360,29 @@ export default function Dashboard() {
       </header>
 
       <main className="max-w-[1440px] mx-auto px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        {/* Welcome / Command Center heading — back at the top */}
+        <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <p className="text-gray-500 text-sm mb-1" data-testid="text-welcome">Welcome back{displayName ? `, ${displayName}` : ''}</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-dashboard-heading">
+                Your Command Center
+              </h1>
+            </div>
+            {isAdmin && (
+              <Button
+                size="sm"
+                onClick={() => router.push("/admin")}
+                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white text-xs flex-shrink-0"
+                data-testid="button-admin-panel"
+              >
+                <Shield className="w-3.5 h-3.5 mr-1.5" />
+                Admin Panel
+              </Button>
+            )}
+          </div>
+        </motion.div>
+
         {/* Omni AI banner — links to /admin/info explaining how it works */}
         <Link
           href="/admin/info"
@@ -415,28 +438,6 @@ export default function Dashboard() {
             </div>
           </motion.div>
         )}
-
-        <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <p className="text-gray-500 text-sm mb-1" data-testid="text-welcome">Welcome back{displayName ? `, ${displayName}` : ''}</p>
-              <h1 className="text-2xl md:text-3xl font-bold text-white" data-testid="text-dashboard-heading">
-                Your Command Center
-              </h1>
-            </div>
-            {isAdmin && (
-              <Button
-                size="sm"
-                onClick={() => router.push("/admin")}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white text-xs flex-shrink-0"
-                data-testid="button-admin-panel"
-              >
-                <Shield className="w-3.5 h-3.5 mr-1.5" />
-                Admin Panel
-              </Button>
-            )}
-          </div>
-        </motion.div>
 
         {isAdmin ? (
           <motion.div {...fadeUp} transition={{ duration: 0.4 }}>
