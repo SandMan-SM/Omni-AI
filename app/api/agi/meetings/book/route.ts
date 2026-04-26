@@ -113,13 +113,24 @@ export async function PATCH(req: NextRequest) {
   }
 }
 
-// DELETE — cancel a meeting (soft: status=cancelled, keeps audit trail)
+// DELETE — cancel a meeting (soft: status=cancelled, keeps audit trail).
+// Also sends a cancellation email to the attendee with a reschedule link.
+// Pass ?notify=0 to skip the email (e.g. silent cancel from CLI).
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
     const hard = searchParams.get('hard') === '1';
+    const notify = searchParams.get('notify') !== '0';
     if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+
+    // Fetch the booking BEFORE we mutate so we have attendee details for the
+    // email even on hard-delete.
+    const { data: booking } = await supabase
+      .from('omni_meeting_bookings')
+      .select('id, attendee_name, attendee_email, start_at, duration_minutes, meeting_type')
+      .eq('id', id)
+      .single();
 
     if (hard) {
       const { error } = await supabase.from('omni_meeting_bookings').delete().eq('id', id);
@@ -132,11 +143,123 @@ export async function DELETE(req: NextRequest) {
       if (error) throw error;
     }
 
-    return NextResponse.json({ ok: true });
+    // Fire-and-forget cancellation email + Telegram ping. Failures don't roll
+    // back the cancellation — they get logged and the user retries notify if
+    // needed.
+    if (notify && booking?.attendee_email && process.env.RESEND_API_KEY) {
+      sendCancellationEmail(booking).catch(err =>
+        console.error('[meetings/book DELETE] cancellation email failed:', err)
+      );
+    }
+    if (notify && process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID && booking) {
+      const dt = new Date(booking.start_at).toLocaleString('en-US', {
+        weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      });
+      fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: process.env.TELEGRAM_CHAT_ID,
+          parse_mode: 'Markdown',
+          text: `❌ *Meeting cancelled*\n\n*${booking.attendee_name}*\n${booking.attendee_email}\n\n🕐 ${dt}`,
+        }),
+      }).catch(() => {});
+    }
+
+    return NextResponse.json({ ok: true, emailed: notify && !!booking?.attendee_email });
   } catch (err) {
     console.error('[meetings/book DELETE]', err);
     return NextResponse.json({
       error: err instanceof Error ? err.message : 'Internal server error',
     }, { status: 500 });
+  }
+}
+
+async function sendCancellationEmail(b: {
+  attendee_name: string;
+  attendee_email: string;
+  start_at: string;
+  duration_minutes: number;
+  meeting_type: string | null;
+}) {
+  const startDate = new Date(b.start_at);
+  const dateFormatted = startDate.toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  });
+  const timeFormatted = startDate.toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit',
+  });
+  const isStrategyCall = (b.meeting_type ?? 'strategy_call') === 'strategy_call';
+  const meetingLabel = isStrategyCall ? 'strategy call' : 'demo';
+  const rescheduleUrl = 'https://omnileadsagi.com/book-now';
+  const homeUrl = 'https://omnileadsagi.com';
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;background:#111111;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+  <div style="max-width:600px;margin:0 auto;padding:40px 20px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:32px;">
+      <tr>
+        <td style="color:#a855f7;font-size:14px;font-weight:700;letter-spacing:0.5px;">OMNI AI</td>
+        <td align="right" style="color:#f87171;font-size:12px;font-weight:600;letter-spacing:1px;">CANCELLED</td>
+      </tr>
+    </table>
+
+    <div style="margin-bottom:28px;">
+      <h1 style="color:#ffffff;font-size:24px;font-weight:700;margin:0 0 8px;letter-spacing:-0.3px;">
+        Your ${meetingLabel} has been cancelled.
+      </h1>
+      <p style="color:#9ca3af;font-size:14px;line-height:1.6;margin:0;">
+        Hi ${b.attendee_name.split(' ')[0] || 'there'} — we're cancelling the ${meetingLabel} we had on the books.
+        No worries; you can grab a new time below.
+      </p>
+    </div>
+
+    <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-left:3px solid #f87171;border-radius:8px;padding:20px;margin-bottom:28px;">
+      <p style="color:#9ca3af;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 12px;">Was scheduled for</p>
+      <p style="color:#ffffff;font-size:14px;font-weight:600;margin:0;">${dateFormatted}</p>
+      <p style="color:#d1d5db;font-size:13px;margin:4px 0 0;">${timeFormatted} CT &middot; ${b.duration_minutes} min</p>
+    </div>
+
+    <div style="text-align:center;margin:28px 0 16px;">
+      <a href="${rescheduleUrl}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#10b981,#7c3aed);color:#ffffff;text-decoration:none;padding:14px 36px;border-radius:8px;font-size:14px;font-weight:700;">
+        Reschedule your ${meetingLabel}
+      </a>
+    </div>
+    <p style="color:#6b7280;font-size:12px;text-align:center;margin:0 0 28px;">
+      Or visit <a href="${homeUrl}" style="color:#a855f7;text-decoration:none;">omnileadsagi.com</a> to learn more first.
+    </p>
+
+    <div style="text-align:center;padding-top:20px;border-top:1px solid #222222;">
+      <p style="color:#4b5563;font-size:11px;margin:0;">
+        Questions? Reply to this email — it goes straight to us.
+      </p>
+      <p style="color:#4b5563;font-size:11px;margin:6px 0 0;">
+        Omni AI &middot; <a href="${homeUrl}" style="color:#6b7280;text-decoration:none;">omnileadsagi.com</a>
+      </p>
+    </div>
+  </div>
+</body>
+</html>`.trim();
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      from: 'Omni AI <bookings@omnileadsagi.com>',
+      to: [b.attendee_email],
+      reply_to: 'sitanim8@gmail.com',
+      subject: `Your ${isStrategyCall ? 'Strategy Call' : 'Demo'} on ${dateFormatted} has been cancelled`,
+      html,
+    }),
+  });
+  if (!res.ok) {
+    const errText = await res.text();
+    throw new Error(`Resend ${res.status}: ${errText.slice(0, 200)}`);
   }
 }

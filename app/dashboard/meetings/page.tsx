@@ -203,11 +203,23 @@ function SectionTitle({ children, style }: { children: React.ReactNode; style?: 
   );
 }
 
+// Prefer the linked lead's first+last name (canonical, short — e.g. "Sitani
+// Mafi") over attendee_name (which is whatever the booking form captured —
+// e.g. "Sitani Aukusitino Mafi"). Falls back to attendee_name when no lead
+// is linked.
+function bookingDisplayName(b: Booking): string {
+  const f = b.lead?.first_name?.trim();
+  const l = b.lead?.last_name?.trim();
+  const joined = [f, l].filter(Boolean).join(' ');
+  return joined || b.attendee_name || 'Attendee';
+}
+
 function BookingCard({ booking, dim, onClick }: { booking: Booking; dim?: boolean; onClick?: () => void }) {
   const start = new Date(booking.start_at);
   const t = MEETING_TYPE[(booking.meeting_type ?? 'strategy_call') as keyof typeof MEETING_TYPE]
     ?? MEETING_TYPE.strategy_call;
   const cancelled = booking.status === 'cancelled';
+  const name = bookingDisplayName(booking);
 
   return (
     <button
@@ -243,9 +255,9 @@ function BookingCard({ booking, dim, onClick }: { booking: Booking; dim?: boolea
 
       {/* Body block — name + chip + email + phone + notes */}
       <div className="agi-booking-body" style={{ gridArea: 'body', minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <div style={{ fontSize: 14, fontWeight: 600, wordBreak: 'break-word' }}>{booking.attendee_name}</div>
-          <span className="agi-tag agi-tag-meeting-type" style={{ fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '2px 8px', borderRadius: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'nowrap' }}>
+          <div style={{ fontSize: 14, fontWeight: 600, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</div>
+          <span className="agi-tag agi-tag-meeting-type" style={{ flexShrink: 0, fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '2px 8px', borderRadius: 4 }}>
             {cancelled ? 'Cancelled' : t.label}
           </span>
         </div>
@@ -408,7 +420,7 @@ function MeetingPanel({
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div style={{ fontSize: 20, fontWeight: 700, wordBreak: 'break-word' }}>{booking.attendee_name}</div>
+            <div style={{ fontSize: 20, fontWeight: 700, wordBreak: 'break-word' }}>{bookingDisplayName(booking)}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
               <span className="agi-tag" style={{ fontSize: 10, fontWeight: 700, color: t.color, background: t.bg, padding: '3px 8px', borderRadius: 4 }}>
                 {cancelled ? 'Cancelled' : t.label}
