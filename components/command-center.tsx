@@ -568,7 +568,7 @@ export function CommandCenter() {
             ]}
           />
           <AgentCard
-            name="Voice Agent"
+            name="Sales Agent"
             icon={Mic}
             gradient="from-violet-600 to-purple-600"
             color={COLORS.purple}
