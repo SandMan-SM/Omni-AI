@@ -402,11 +402,8 @@ function AgentCard({ agent, onClick }: { agent: Agent; onClick?: () => void }) {
         }}>
           <span className="agi-arena-tier-num" style={{
             fontSize: 13, fontWeight: 700, letterSpacing: 1.5,
-            color: agent.rank.toLowerCase() === "diamond" ? "#22d3ee"
-                 : agent.rank.toLowerCase() === "gold" ? "#facc15"
-                 : agent.rank.toLowerCase() === "silver" ? "#cbd5e1"
-                 : agent.rank.toLowerCase() === "bronze" ? "#d97706"
-                 : "#6b7280",
+            textTransform: "uppercase",
+            ...config.chromeStyle,
           }}>
             TIER {agent.tier + 1}
           </span>
