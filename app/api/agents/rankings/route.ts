@@ -95,7 +95,7 @@ export async function GET() {
   // leak.
   const { data: profiles, error } = await sb
     .from('profiles')
-    .select('id, name, business_name, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at')
+    .select('id, name, business_name, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at, arena_value_override, arena_reach_override, arena_rating, website')
     .not('business_name', 'is', null)
     .or('role.neq.admin,agent_name.not.is.null')
     .order('elo_rating', { ascending: false });
@@ -193,8 +193,18 @@ export async function GET() {
       tier: (p.business_name && tierOverrides[p.business_name] !== undefined) ? tierOverrides[p.business_name] : (p.tier || 0),
       isPremium: p.is_premium,
       crmStatus: p.crm_status,
-      revenue: p.business_name === 'Omni AI' ? omniRevenue : (parseFloat(p.gross_revenue) || 0),
-      reach: p.business_name === 'Omni AI' ? omniReach : undefined,
+      // Per-business arena card overrides — admin-editable in the dashboard.
+      // Fall back to computed values when an override isn't set.
+      revenue: p.arena_value_override !== null && p.arena_value_override !== undefined
+        ? Number(p.arena_value_override)
+        : (p.business_name === 'Omni AI' ? omniRevenue : (parseFloat(p.gross_revenue) || 0)),
+      reach: p.arena_reach_override !== null && p.arena_reach_override !== undefined
+        ? Number(p.arena_reach_override)
+        : (p.business_name === 'Omni AI' ? omniReach : undefined),
+      rating: p.arena_rating !== null && p.arena_rating !== undefined
+        ? Number(p.arena_rating)
+        : (p.business_name === 'Omni AI' ? 5.0 : 0.0),
+      website: p.website ?? null,
       campaigns: campaignCounts[p.id] || 0,
       activities: activityCounts[p.id] || 0,
       agentStatus: p.agent_status || 'active',

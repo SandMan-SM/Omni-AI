@@ -22,8 +22,10 @@ interface Agent {
   tier: number;
   isPremium: boolean;
   crmStatus: string | null;
-  revenue: number;
-  reach?: number;
+  revenue: number;       // resolved by API (override or gross_revenue fallback)
+  reach?: number;        // resolved by API (override or activities+campaigns)
+  rating?: number;       // 0-5 stars, admin-editable per business
+  website?: string | null;
   campaigns: number;
   activities: number;
   agentStatus: string;
@@ -79,20 +81,15 @@ const RANK_CONFIG: Record<string, {
   },
 };
 
-// Tier names + value/reach overrides — lifted from the canonical arena
-// (components/arena/leaderboard.tsx) so the management card displays the
-// same numbers visitors see on the public modal.
+// 5 tiers ending at TIER 5 / Ultimate Power. tier column stored 0-4,
+// display label is `TIER {tier+1}`.
 const TIER_NAMES: Record<number, string> = {
   0: "Apprentice", 1: "Master", 2: "Royal", 3: "Empire", 4: "Ultimate Power",
 };
-const VALUE_OVERRIDES: Record<string, number> = {
-  "Omni AI": 28000, "Love Thy Barber": 0, "BLK Diamond": 0,
-  "CPS": 0, "Youngs Cabinet Refinishing": 0, "Leifson Built": 0,
-};
-const REACH_OVERRIDES: Record<string, number> = {
-  "Omni AI": 1111, "Love Thy Barber": 0, "BLK Diamond": 0,
-  "CPS": 0, "Youngs Cabinet Refinishing": 0, "Leifson Built": 0,
-};
+// Value / reach / rating are now stored in profiles.arena_value_override,
+// profiles.arena_reach_override, profiles.arena_rating — the rankings
+// endpoint resolves them and emits the final numbers on each agent. No
+// more hardcoded business-name lookups in the UI.
 
 function formatCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(n % 1_000_000 === 0 ? 0 : 1)}M`;
@@ -100,8 +97,8 @@ function formatCompact(n: number): string {
   return String(Math.round(n));
 }
 
-function getRating(businessName: string | null): string {
-  return businessName === "Omni AI" ? "5.0" : "0.0";
+function formatRating(rating: number | undefined): string {
+  return (rating ?? 0).toFixed(1);
 }
 
 export function AgiArenaManager() {
@@ -287,14 +284,11 @@ export function AgiArenaManager() {
 function AgentCard({ agent, onClick }: { agent: Agent; onClick?: () => void }) {
   const config = RANK_CONFIG[agent.rank.toLowerCase()] ?? RANK_CONFIG.unranked;
   const Icon = config.icon;
-  // Use the same value/reach overrides as the canonical public card so the
-  // numbers match visitor view ($28K / 1.1K for Omni AI etc.).
-  const value = (agent.businessName && VALUE_OVERRIDES[agent.businessName] !== undefined)
-    ? VALUE_OVERRIDES[agent.businessName]
-    : (agent.revenue ?? 0);
-  const reach = (agent.businessName && REACH_OVERRIDES[agent.businessName] !== undefined)
-    ? REACH_OVERRIDES[agent.businessName]
-    : (agent.reach ?? (agent.activities + agent.campaigns));
+  // Override resolution moved to the rankings API — agent.revenue/.reach
+  // already reflect the per-business arena_value_override / arena_reach_override
+  // (or fallback to computed). Same for agent.rating.
+  const value = agent.revenue ?? 0;
+  const reach = agent.reach ?? (agent.activities + agent.campaigns);
   const isActive = agent.agentStatus === "active";
   const tierName = TIER_NAMES[agent.tier] ?? `Tier ${agent.tier + 1}`;
 
@@ -389,7 +383,7 @@ function AgentCard({ agent, onClick }: { agent: Agent; onClick?: () => void }) {
           <Stat label="Value" value={`$${formatCompact(value)}`} />
           <Stat label="Rating" value={
             <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-              <span style={{ color: "#facc15" }}>&#9733;</span> {getRating(agent.businessName)}
+              <span style={{ color: "#facc15" }}>&#9733;</span> {formatRating(agent.rating)}
             </span>
           } />
           <Stat label="Reach" value={formatCompact(reach)} />
@@ -468,6 +462,11 @@ interface ProfileFull {
   elo_rating?: number;
   gross_revenue?: number;
   newsletter_subscribed?: boolean;
+  // Editable arena card overrides (admin-set per business)
+  arena_value_override?: number | null;
+  arena_reach_override?: number | null;
+  arena_rating?: number | null;
+  website?: string | null;
 }
 
 function AgentEditPanel({
@@ -485,6 +484,8 @@ function AgentEditPanel({
     role: "owner", tier: 0, crm_status: "lead", lead_score: "warm",
     is_premium: false, agent_status: "active",
     elo_rating: 1000, gross_revenue: 0, newsletter_subscribed: false,
+    arena_value_override: null, arena_reach_override: null, arena_rating: 0,
+    website: "",
   });
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
@@ -581,8 +582,18 @@ function AgentEditPanel({
                 <input value={form.agent_name ?? ""} onChange={e => set("agent_name", e.target.value)} style={inp} placeholder="e.g. Alfred Belvedere" />
               </Field>
               <Row>
-                <Field label="Tier (0–4)">
-                  <input type="number" min={0} max={4} value={form.tier ?? 0} onChange={e => set("tier", Number(e.target.value))} style={inp} />
+                <Field label="Tier">
+                  <select
+                    value={form.tier ?? 0}
+                    onChange={e => set("tier", Number(e.target.value))}
+                    style={inp}
+                  >
+                    <option value={0}>TIER 1 · Apprentice</option>
+                    <option value={1}>TIER 2 · Master</option>
+                    <option value={2}>TIER 3 · Royal</option>
+                    <option value={3}>TIER 4 · Empire</option>
+                    <option value={4}>TIER 5 · Ultimate Power</option>
+                  </select>
                 </Field>
                 <Field label="Status">
                   <select value={form.agent_status ?? "active"} onChange={e => set("agent_status", e.target.value)} style={inp}>
@@ -597,6 +608,50 @@ function AgentEditPanel({
                   <input type="checkbox" checked={!!form.is_premium} onChange={e => set("is_premium", e.target.checked)} />
                   Show PREMIUM crown badge on the public card
                 </label>
+              </Field>
+              <Field label="Website">
+                <input
+                  type="url"
+                  value={form.website ?? ""}
+                  onChange={e => set("website", e.target.value)}
+                  style={inp}
+                  placeholder="https://example.com"
+                />
+              </Field>
+
+              {/* Arena card stat overrides */}
+              <div style={{
+                marginTop: 6, paddingTop: 14, borderTop: "1px dashed #2a2a2a",
+                fontSize: 11, color: "#888", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5,
+              }}>Arena card stats</div>
+              <Row>
+                <Field label="Value ($)">
+                  <input
+                    type="number" step="0.01"
+                    value={form.arena_value_override ?? ""}
+                    onChange={e => set("arena_value_override", e.target.value === "" ? null : Number(e.target.value))}
+                    style={inp}
+                    placeholder="e.g. 28000"
+                  />
+                </Field>
+                <Field label="Rating (0–5)">
+                  <input
+                    type="number" step="0.1" min={0} max={5}
+                    value={form.arena_rating ?? ""}
+                    onChange={e => set("arena_rating", e.target.value === "" ? null : Number(e.target.value))}
+                    style={inp}
+                    placeholder="e.g. 5.0"
+                  />
+                </Field>
+              </Row>
+              <Field label="Reach">
+                <input
+                  type="number"
+                  value={form.arena_reach_override ?? ""}
+                  onChange={e => set("arena_reach_override", e.target.value === "" ? null : Number(e.target.value))}
+                  style={inp}
+                  placeholder="e.g. 1111 (subscribers + reach)"
+                />
               </Field>
             </Section>
 

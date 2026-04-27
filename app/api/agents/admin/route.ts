@@ -82,6 +82,14 @@ export async function PATCH(req: NextRequest) {
     gross_revenue: "gross_revenue",
     newsletterSubscribed: "newsletter_subscribed",
     newsletter_subscribed: "newsletter_subscribed",
+    // Editable arena card overrides
+    arenaValueOverride: "arena_value_override",
+    arena_value_override: "arena_value_override",
+    arenaReachOverride: "arena_reach_override",
+    arena_reach_override: "arena_reach_override",
+    arenaRating: "arena_rating",
+    arena_rating: "arena_rating",
+    website: "website",
   };
   const update: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {
