@@ -674,26 +674,6 @@ export default function DashboardPage() {
           <KpiCard icon={TrendingUp} label="Avg Score" value={avgScore} sub="out of 100" color="#facc15" />
         </div>
 
-        {campaigns.length > 0 && (
-          <div className="agi-campaigns-row" style={{ marginBottom: 24, display: 'flex', gap: 12 }}>
-            {campaigns.map(c => {
-              const pct = Math.min(100, Math.round((c.leads_generated / c.leads_target) * 100));
-              return (
-                <div key={c.id} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: '14px 18px', flex: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                    <span style={{ fontSize: 13, fontWeight: 600, color: '#e8e8e8' }}>{c.name}</span>
-                    <span style={{ fontSize: 11, color: '#555' }}>{c.leads_generated} / {c.leads_target} leads</span>
-                  </div>
-                  <div style={{ background: '#1a1a1a', borderRadius: 4, height: 6, overflow: 'hidden' }}>
-                    <div style={{ width: `${pct}%`, background: 'linear-gradient(90deg, #10b981, #818cf8)', height: '100%' }} />
-                  </div>
-                  <div style={{ fontSize: 11, color: '#555', marginTop: 6 }}>{pct}% to target</div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
         <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 12, overflow: 'hidden' }}>
           <div className="agi-filter-strip" style={{ padding: '16px 20px', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
             <Filter size={14} color="#555" />

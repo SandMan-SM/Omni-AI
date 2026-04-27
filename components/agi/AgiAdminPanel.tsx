@@ -121,12 +121,6 @@ export function AgiAdminPanel() {
             </p>
           </div>
         </div>
-        <a
-          href="/admin/info"
-          className="text-[10px] font-mono text-emerald-400 hover:text-emerald-300 px-2 py-1 rounded border border-emerald-500/20 hover:border-emerald-500/40 transition-colors"
-        >
-          How it works →
-        </a>
       </div>
 
       {/* Tabs */}
