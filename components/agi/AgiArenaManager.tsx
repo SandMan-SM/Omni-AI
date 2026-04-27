@@ -450,6 +450,7 @@ interface ProfileFull {
   id?: string;
   agent_name?: string | null;
   business_name?: string | null;
+  business_id?: string | null;  // FK to omni_businesses
   name?: string | null;       // owner / admin
   email?: string | null;
   phone?: string | null;
@@ -469,6 +470,11 @@ interface ProfileFull {
   website?: string | null;
 }
 
+interface BusinessOption {
+  id: string;
+  name: string;
+}
+
 function AgentEditPanel({
   agentId,
   onClose,
@@ -480,13 +486,14 @@ function AgentEditPanel({
 }) {
   const isNew = agentId === null;
   const [form, setForm] = useState<ProfileFull>({
-    agent_name: "", business_name: "", name: "", email: "", phone: "",
+    agent_name: "", business_name: "", business_id: null, name: "", email: "", phone: "",
     role: "owner", tier: 0, crm_status: "lead", lead_score: "warm",
     is_premium: false, agent_status: "active",
     elo_rating: 1000, gross_revenue: 0, newsletter_subscribed: false,
     arena_value_override: null, arena_reach_override: null, arena_rating: 0,
     website: "",
   });
+  const [businesses, setBusinesses] = useState<BusinessOption[]>([]);
   const [loading, setLoading] = useState(!isNew);
   const [saving, setSaving] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -515,6 +522,19 @@ function AgentEditPanel({
     })();
     return () => { cancelled = true; };
   }, [agentId, isNew]);
+
+  // Load business options for the FK dropdown
+  useEffect(() => {
+    fetch("/api/agi/businesses/advancement", { cache: "no-store" })
+      .then(r => r.ok ? r.json() : { businesses: [] })
+      .then(d => {
+        const opts: BusinessOption[] = (d.businesses ?? []).map((b: { business_id: string; business_name: string }) => ({
+          id: b.business_id, name: b.business_name,
+        }));
+        setBusinesses(opts);
+      })
+      .catch(() => {});
+  }, []);
 
   function set<K extends keyof ProfileFull>(key: K, value: ProfileFull[K]) {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -722,6 +742,18 @@ function AgentEditPanel({
               subtitle="Admin-only. Never displayed on the public arena page."
               confidential
             >
+              <Field label="Linked business (pipeline tenant)">
+                <select
+                  value={form.business_id ?? ""}
+                  onChange={e => set("business_id", e.target.value || null)}
+                  style={inp}
+                >
+                  <option value="">— Auto-link from business name —</option>
+                  {businesses.map(b => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+                </select>
+              </Field>
               <Field label="Business name">
                 <input value={form.business_name ?? ""} onChange={e => set("business_name", e.target.value)} style={inp} placeholder="e.g. Omni AI" />
               </Field>

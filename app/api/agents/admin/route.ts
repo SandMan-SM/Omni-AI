@@ -90,6 +90,8 @@ export async function PATCH(req: NextRequest) {
     arenaRating: "arena_rating",
     arena_rating: "arena_rating",
     website: "website",
+    businessId: "business_id",
+    business_id: "business_id",
   };
   const update: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {
