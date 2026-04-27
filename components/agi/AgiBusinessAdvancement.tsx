@@ -11,7 +11,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   Building2, TrendingUp, Target, Award, Calendar, RefreshCw, Loader2,
-  Crown, Mail, ArrowUpRight, Activity, ChevronDown, ChevronRight,
+  Crown, Mail, ArrowUpRight, Activity, ChevronDown, ChevronRight, Plus, X,
 } from "lucide-react";
 
 interface BusinessAdvancement {
@@ -74,6 +74,7 @@ export function AgiBusinessAdvancement() {
   const [list, setList] = useState<BusinessAdvancement[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [onboarding, setOnboarding] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true); setError(null);
@@ -120,16 +121,30 @@ export function AgiBusinessAdvancement() {
             </div>
           </div>
         </div>
-        <button onClick={load} disabled={loading} style={{
-          background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#cbd5e1",
-          padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600,
-          cursor: loading ? "wait" : "pointer",
-          display: "inline-flex", alignItems: "center", gap: 6,
-        }}>
-          {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
-          Refresh
-        </button>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <button onClick={() => setOnboarding(true)} style={{
+            background: "linear-gradient(135deg, #10b981, #818cf8)", border: "none", color: "#fff",
+            padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 700,
+            cursor: "pointer",
+            display: "inline-flex", alignItems: "center", gap: 6,
+          }}>
+            <Plus size={12} /> Onboard business
+          </button>
+          <button onClick={load} disabled={loading} style={{
+            background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#cbd5e1",
+            padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600,
+            cursor: loading ? "wait" : "pointer",
+            display: "inline-flex", alignItems: "center", gap: 6,
+          }}>
+            {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
+            Refresh
+          </button>
+        </div>
       </div>
+
+      {onboarding && (
+        <OnboardModal onClose={() => setOnboarding(false)} onCreated={() => { setOnboarding(false); load(); }} />
+      )}
 
       {error && (
         <div style={{ padding: 12, background: "#2a0d0d", border: "1px solid #f8717140", color: "#f87171", fontSize: 12, borderRadius: 8, marginBottom: 12 }}>
@@ -343,3 +358,122 @@ function Kpi({ icon: Icon, label, value, sub, color }: { icon: React.ElementType
     </div>
   );
 }
+
+// ── Onboard new business modal ────────────────────────────────────────────
+function OnboardModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [name, setName] = useState("");
+  const [plan, setPlan] = useState<"starter" | "pro" | "enterprise">("starter");
+  const [industry, setIndustry] = useState("");
+  const [location, setLocation] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [website, setWebsite] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+
+  const auth = (): HeadersInit => {
+    if (typeof window === "undefined") return {};
+    const t = localStorage.getItem("omni_token");
+    return t ? { Authorization: `Bearer ${t}` } : {};
+  };
+
+  async function submit() {
+    if (!name.trim()) { setErr("Business name required"); return; }
+    setBusy(true); setErr(null);
+    try {
+      const r = await fetch("/api/agi/businesses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...auth() },
+        body: JSON.stringify({ name: name.trim(), plan, industry, location, contact_email: contactEmail, website }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error || `HTTP ${r.status}`);
+      onCreated();
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Onboarding failed");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div onClick={onClose} style={{ position: "fixed", inset: 0, zIndex: 70, background: "rgba(0,0,0,0.65)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        width: 480, maxWidth: "100%",
+        background: "#0c0c0c", border: "1px solid #10b98140",
+        borderRadius: 14, padding: 22,
+        display: "flex", flexDirection: "column", gap: 14,
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <div style={{ fontSize: 16, fontWeight: 700 }}>Onboard new business</div>
+            <div style={{ fontSize: 11, color: "#666", marginTop: 3 }}>Creates a tenant in omni_businesses with its own pipeline.</div>
+          </div>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", cursor: "pointer" }}><X size={18} /></button>
+        </div>
+
+        {err && <div style={{ padding: 10, background: "#2a0d0d", border: "1px solid #f8717140", color: "#f87171", fontSize: 12, borderRadius: 8 }}>{err}</div>}
+
+        <Lbl label="Business name *">
+          <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Acme Corp" style={modalInp} autoFocus />
+        </Lbl>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Lbl label="Plan">
+            <select value={plan} onChange={e => setPlan(e.target.value as never)} style={modalInp}>
+              <option value="starter">Starter</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </Lbl>
+          <Lbl label="Industry">
+            <input value={industry} onChange={e => setIndustry(e.target.value)} placeholder="e.g. Roofing" style={modalInp} />
+          </Lbl>
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Lbl label="Location">
+            <input value={location} onChange={e => setLocation(e.target.value)} placeholder="e.g. Salt Lake City, UT" style={modalInp} />
+          </Lbl>
+          <Lbl label="Contact email">
+            <input type="email" value={contactEmail} onChange={e => setContactEmail(e.target.value)} placeholder="owner@example.com" style={modalInp} />
+          </Lbl>
+        </div>
+        <Lbl label="Website">
+          <input type="url" value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://example.com" style={modalInp} />
+        </Lbl>
+
+        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+          <button onClick={onClose} style={{
+            flex: 1, background: "#191919", border: "1px solid #2a2a2a", color: "#cbd5e1",
+            padding: "10px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+          }}>Cancel</button>
+          <button onClick={submit} disabled={busy || !name.trim()} style={{
+            flex: 2,
+            background: busy ? "#0d2a1e" : "linear-gradient(135deg, #10b981, #818cf8)",
+            border: "none", color: "#fff",
+            padding: "10px 14px", borderRadius: 8, fontSize: 13, fontWeight: 700,
+            cursor: busy || !name.trim() ? "not-allowed" : "pointer",
+            display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 6,
+            opacity: !name.trim() ? 0.5 : 1,
+          }}>
+            {busy ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
+            Create business
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Lbl({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label style={{ display: "flex", flexDirection: "column", gap: 5, flex: 1, minWidth: 140 }}>
+      <span style={{ fontSize: 11, color: "#888", fontWeight: 600 }}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const modalInp: React.CSSProperties = {
+  background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#e8e8e8",
+  padding: "9px 12px", borderRadius: 8, fontSize: 14, fontFamily: "inherit",
+  outline: "none", width: "100%",
+};
