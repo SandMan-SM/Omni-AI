@@ -123,6 +123,15 @@ export default function PipelinePage() {
 
   const wonRevenue = leads.filter(l => l.deal_stage === 'closed_won').reduce((s, l) => s + (l.deal_value ?? 0), 0);
 
+  // Stuck deals — open stage, idle 14+ days. Surfaces in a banner so the
+  // owner sees stalled pipeline at a glance.
+  const fourteenDaysAgo = Date.now() - 14 * 86_400_000;
+  const stuckLeads = leads.filter(l => {
+    if (['closed_won', 'closed_lost'].includes(l.deal_stage ?? '')) return false;
+    const ts = (l as DealLead & { updated_at?: string }).updated_at ?? l.created_at;
+    return ts && new Date(ts).getTime() <= fourteenDaysAgo;
+  });
+
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
       <header style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -178,6 +187,36 @@ export default function PipelinePage() {
           <Stat icon={Target} label="Active Deals" value={leads.filter(l => !['closed_won', 'closed_lost'].includes(l.deal_stage ?? 'lead')).length} sub={`${leads.length} total`} color="#38bdf8" />
           <Stat icon={ArrowRight} label="Win Rate" value={`${leads.length > 0 ? Math.round((byStage.closed_won.length / Math.max(byStage.closed_won.length + byStage.closed_lost.length, 1)) * 100) : 0}%`} sub="of closed" color="#facc15" />
         </div>
+
+        {/* Stuck-deals banner */}
+        {stuckLeads.length > 0 && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
+            background: "linear-gradient(135deg, #2a0d0d 0%, #1a0d0d 100%)",
+            border: "1px solid #f8717140",
+            borderRadius: 10, padding: "12px 16px", marginBottom: 18,
+          }}>
+            <div style={{ fontSize: 18 }}>⚠</div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#f87171" }}>
+                {stuckLeads.length} stuck {stuckLeads.length === 1 ? "deal" : "deals"}
+              </div>
+              <div style={{ fontSize: 11, color: "#cbd5e1", marginTop: 2 }}>
+                Open for 14+ days with no movement — total ${stuckLeads.reduce((s, l) => s + ((l.deal_value ?? 0) / 100), 0).toFixed(0)} sitting idle.
+              </div>
+            </div>
+            <button
+              onClick={() => setEditing(stuckLeads[0])}
+              style={{
+                background: "#f87171", border: "none", color: "#000",
+                padding: "7px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Open first
+            </button>
+          </div>
+        )}
 
         {/* Kanban */}
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${STAGES.length}, minmax(200px, 1fr))`, gap: 12, overflowX: 'auto' }}>

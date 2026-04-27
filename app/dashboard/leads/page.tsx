@@ -450,6 +450,17 @@ export default function DashboardPage() {
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
+
+  // Deep-link support: ?lead=<id> auto-opens the lead detail panel.
+  // Used by Today's Focus tiles + email links + share-this-lead URLs.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('lead');
+    if (!id || leads.length === 0) return;
+    const found = leads.find(l => l.id === id);
+    if (found) setSelectedLead(found);
+  }, [leads]);
   const [generating, setGenerating] = useState(false);
   const [scoringAll, setScoringAll] = useState(false);
   const [loading, setLoading] = useState(true);
