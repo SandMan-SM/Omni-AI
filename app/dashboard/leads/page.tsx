@@ -451,6 +451,7 @@ export default function DashboardPage() {
   const [sourceFilter, setSourceFilter] = useState<string>('all');
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [generating, setGenerating] = useState(false);
+  const [scoringAll, setScoringAll] = useState(false);
   const [loading, setLoading] = useState(true);
   const [bizOpen, setBizOpen] = useState(false);
 
@@ -502,6 +503,29 @@ export default function DashboardPage() {
     });
     await loadData(selectedBiz.id);
     setGenerating(false);
+  }
+
+  async function rescoreAll() {
+    if (!selectedBiz) return;
+    if (!confirm(`Re-score every lead in ${selectedBiz.name} with Claude? This may take a minute.`)) return;
+    setScoringAll(true);
+    try {
+      const r = await fetch('/api/agi/leads/bulk-score', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ business_id: selectedBiz.id }),
+      });
+      const d = await r.json();
+      if (d.error) {
+        alert(`Score failed: ${d.error}`);
+      } else {
+        // After re-score, fire hot-lead alerts for any newly hot leads
+        await fetch('/api/agi/leads/hot-lead-alerts', { method: 'POST' }).catch(() => {});
+        alert(`Re-scored ${d.scored ?? '?'} leads. ${d.errors ? `${d.errors} errors.` : 'Done.'}`);
+        await loadData(selectedBiz.id);
+      }
+    } finally {
+      setScoringAll(false);
+    }
   }
 
   async function handleStatusChange(id: string, status: Lead['status']) {
@@ -712,6 +736,24 @@ export default function DashboardPage() {
           {selectedBiz && <div className="agi-credit-meter"><CreditMeter businessId={selectedBiz.id} /></div>}
           <button className="agi-leads-action-refresh" onClick={() => loadData(selectedBiz ? selectedBiz.id : null)} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <RefreshCw size={12} /><span>Refresh</span>
+          </button>
+          <button
+            onClick={rescoreAll}
+            disabled={scoringAll || !selectedBiz || leads.length === 0}
+            title={!selectedBiz ? 'Select a specific business to re-score' : ''}
+            style={{
+              background: scoringAll ? '#1a1532' : 'transparent',
+              color: scoringAll ? '#a78bfa' : '#a78bfa',
+              border: '1px solid #a78bfa40',
+              padding: '7px 14px', borderRadius: 8,
+              cursor: scoringAll || !selectedBiz || leads.length === 0 ? 'not-allowed' : 'pointer',
+              fontSize: 12, fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 6,
+              opacity: !selectedBiz || leads.length === 0 ? 0.5 : 1,
+            }}
+          >
+            <Brain size={12} />
+            {scoringAll ? 'Re-scoring…' : 'Re-score all'}
           </button>
           <button onClick={runAgent} disabled={generating || !campaigns.length || !selectedBiz} title={!selectedBiz ? 'Select a specific business to run the agent' : ''} style={{ background: generating || !selectedBiz ? '#0d2a1e' : '#10b981', color: generating || !selectedBiz ? '#10b981' : '#fff', border: generating || !selectedBiz ? '1px solid #10b981' : 'none', padding: '7px 16px', borderRadius: 8, cursor: generating || !selectedBiz ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, opacity: !selectedBiz ? 0.6 : 1 }}>
             <Zap size={13} />
