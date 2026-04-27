@@ -45,13 +45,91 @@ export async function POST(req: NextRequest) {
     if (text.startsWith('/help')) {
       await sendTelegram(
         `*OmniLeads AGI Bot*\n\n` +
-        `/digest — today's stats\n` +
-        `/credits — Apollo credit usage\n` +
+        `/focus — today's focus across all businesses\n` +
+        `/digest — daily KPI digest\n` +
+        `/hot — fire pending hot-lead alerts\n` +
         `/pipeline — pipeline summary\n` +
+        `/businesses — advancement scores per tenant\n` +
+        `/score — bulk re-score the default business\n` +
+        `/credits — Apollo credit usage\n` +
         `/run — trigger autopilot\n` +
         `/help — this menu`,
         chatId
       );
+      return NextResponse.json({ ok: true });
+    }
+
+    const baseUrl = req.url.replace(/\/api\/agi\/telegram\/webhook.*/, '').replace(/\/api\/telegram\/webhook.*/, '');
+
+    if (text.startsWith('/focus')) {
+      const r = await fetch(`${baseUrl}/api/agi/focus`, { cache: 'no-store' });
+      const f = await r.json();
+      const lines: string[] = [`✨ *Today's Focus*\n`];
+      if ((f.hot_new_leads ?? []).length) {
+        lines.push(`🔥 *${f.hot_new_leads.length} hot new leads* — first contact needed`);
+        for (const l of f.hot_new_leads.slice(0, 3)) {
+          const name = [l.first_name, l.last_name].filter(Boolean).join(' ') || l.email;
+          lines.push(`  • ${name} (${l.score}) @ ${l.business_name ?? '?'}`);
+        }
+      }
+      if ((f.today_meetings ?? []).length) {
+        lines.push(`\n📅 *${f.today_meetings.length} meetings today*`);
+        for (const m of f.today_meetings.slice(0, 3)) {
+          const t = new Date(m.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+          lines.push(`  • ${t} · ${m.attendee_name}`);
+        }
+      }
+      if ((f.stuck_leads ?? []).length) {
+        lines.push(`\n⏰ *${f.stuck_leads.length} stuck leads* — idle 14+ days`);
+      }
+      if ((f.recent_conversions ?? []).length) {
+        lines.push(`\n🎉 *${f.recent_conversions.length} conversions* in last 24h`);
+      }
+      if (lines.length === 1) lines.push(`All caught up — no urgent items.`);
+      await sendTelegram(lines.join('\n'), chatId);
+      return NextResponse.json({ ok: true });
+    }
+
+    if (text.startsWith('/hot')) {
+      const r = await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, { method: 'POST' });
+      const j = await r.json();
+      await sendTelegram(
+        j.ok
+          ? `🔥 Scanned ${j.scanned ?? 0} · already alerted ${j.already_alerted ?? 0} · *${j.alerted ?? 0} new alerts fired*`
+          : `🚨 Hot-lead scan failed: ${j.error}`,
+        chatId
+      );
+      return NextResponse.json({ ok: true });
+    }
+
+    if (text.startsWith('/businesses')) {
+      const r = await fetch(`${baseUrl}/api/agi/businesses/advancement`, { cache: 'no-store' });
+      const j = await r.json();
+      const list = (j.businesses ?? []).slice(0, 8);
+      const lines: string[] = ['🏢 *Business Advancement*\n'];
+      for (const b of list) {
+        const arrow = b.advancement_score >= 70 ? '🟢' : b.advancement_score >= 30 ? '🟡' : '⚫️';
+        lines.push(`${arrow} *${b.business_name}* — score ${b.advancement_score}, ${b.leads_total} leads, ${b.leads_converted} won`);
+      }
+      await sendTelegram(lines.join('\n'), chatId);
+      return NextResponse.json({ ok: true });
+    }
+
+    if (text.startsWith('/score')) {
+      await sendTelegram(`🧠 Re-scoring all leads for ${business.name}…`, chatId);
+      const r = await fetch(`${baseUrl}/api/agi/leads/bulk-score`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ business_id: business.id }),
+      });
+      const j = await r.json();
+      await sendTelegram(
+        j.error
+          ? `🚨 Bulk score failed: ${j.error}`
+          : `✓ Scored ${j.scored ?? '?'} leads · ${j.errors ?? 0} errors`,
+        chatId
+      );
+      // Chain hot-lead alerts
+      await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, { method: 'POST' }).catch(() => {});
       return NextResponse.json({ ok: true });
     }
 
