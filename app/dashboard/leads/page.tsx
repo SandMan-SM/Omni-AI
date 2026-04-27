@@ -128,6 +128,7 @@ function LeadRow({ lead, onClick, businessName }: { lead: Lead; onClick: () => v
 function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () => void; onStatusChange: (id: string, status: Lead['status']) => void }) {
   const src = SOURCE_CONFIG[lead.source];
   const [aliases, setAliases] = useState<string[]>([]);
+  const [history, setHistory] = useState<Array<{ id: string; from_status: string | null; to_status: string; changed_at: string; note: string | null }>>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -144,6 +145,13 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
           .filter(e => e && e !== lead.email);
         setAliases(Array.from(new Set(others)));
       });
+
+    // Status history timeline — fire in parallel
+    fetch(`/api/agi/leads/history?lead_id=${lead.id}`, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : { history: [] })
+      .then(d => { if (!cancelled) setHistory(d.history ?? []); })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, [lead.id, lead.email]);
 
@@ -278,6 +286,49 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
           <Section title="Notes & Activity">
             <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
               {lead.notes}
+            </div>
+          </Section>
+        )}
+
+        {/* Status timeline — every transition this lead has gone through */}
+        {history.length > 0 && (
+          <Section title={`Status Timeline · ${history.length}`}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 0, position: 'relative' }}>
+              {/* Vertical line behind dots */}
+              <div style={{ position: 'absolute', left: 5, top: 6, bottom: 6, width: 2, background: '#1e1e1e', zIndex: 0 }} />
+              {history.map((h, i) => {
+                const cfg = STATUS_CONFIG[h.to_status as Lead['status']];
+                const color = cfg?.color ?? '#666';
+                const date = new Date(h.changed_at);
+                return (
+                  <div key={h.id} style={{ display: 'flex', gap: 12, padding: '8px 0', position: 'relative', zIndex: 1 }}>
+                    <div style={{
+                      width: 12, height: 12, borderRadius: '50%',
+                      background: color,
+                      boxShadow: `0 0 8px ${color}80`,
+                      flexShrink: 0, marginTop: 2,
+                    }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12, color: '#e8e8e8', fontWeight: 600 }}>
+                        {h.from_status
+                          ? <span><span style={{ color: '#666' }}>{h.from_status}</span> → <span style={{ color }}>{h.to_status}</span></span>
+                          : <span style={{ color }}>{h.to_status === 'new' ? 'Lead created' : `Started as ${h.to_status}`}</span>
+                        }
+                      </div>
+                      <div style={{ fontSize: 10, color: '#666', marginTop: 2 }}>
+                        {date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                        {i < history.length - 1 && (() => {
+                          const next = new Date(history[i + 1].changed_at);
+                          const days = Math.round((next.getTime() - date.getTime()) / 86_400_000);
+                          if (days < 1) return <span style={{ marginLeft: 8, color: '#444' }}> · {Math.round((next.getTime() - date.getTime()) / 3_600_000)}h to next</span>;
+                          return <span style={{ marginLeft: 8, color: '#444' }}> · {days}d to next</span>;
+                        })()}
+                      </div>
+                      {h.note && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4, fontStyle: 'italic' }}>{h.note}</div>}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </Section>
         )}
