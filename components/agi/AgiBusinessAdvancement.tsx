@@ -38,6 +38,8 @@ interface BusinessAdvancement {
   profiles_revenue: number;
   admin_name: string | null;
   admin_email: string | null;
+  avg_days_to_convert: number | null;
+  stuck_leads: number;
   advancement_score: number;
 }
 
@@ -268,6 +270,34 @@ function BizCard({ biz }: { biz: BusinessAdvancement }) {
           ${(biz.revenue_from_leads ?? 0).toLocaleString()}
         </span>
       </div>
+
+      {/* Pipeline velocity row */}
+      {(biz.avg_days_to_convert != null || biz.stuck_leads > 0) && (
+        <div style={{
+          display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8,
+          padding: "8px 12px",
+          background: biz.stuck_leads > 0 ? "rgba(248,113,113,0.06)" : "rgba(16,185,129,0.04)",
+          border: biz.stuck_leads > 0 ? "1px solid #f8717125" : "1px solid #10b98125",
+          borderRadius: 8,
+          fontSize: 11,
+        }}>
+          {biz.avg_days_to_convert != null && (
+            <span style={{ color: "#10b981", display: "inline-flex", alignItems: "center", gap: 5 }}>
+              <Activity size={11} />
+              <strong>{biz.avg_days_to_convert}</strong>d avg to convert
+            </span>
+          )}
+          {biz.stuck_leads > 0 ? (
+            <span style={{ color: "#f87171", fontWeight: 700 }}>
+              ⚠ {biz.stuck_leads} stuck {biz.stuck_leads === 1 ? "lead" : "leads"}
+            </span>
+          ) : biz.avg_days_to_convert == null ? (
+            <span style={{ color: "#666", fontStyle: "italic" }}>No conversions yet</span>
+          ) : (
+            <span style={{ color: "#10b981" }}>No stuck leads</span>
+          )}
+        </div>
+      )}
 
       {/* Footer: admin + last activity + expand toggle */}
       <div style={{
