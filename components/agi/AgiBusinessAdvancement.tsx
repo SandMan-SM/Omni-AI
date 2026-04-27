@@ -11,7 +11,7 @@
 import { useEffect, useState, useCallback } from "react";
 import {
   Building2, TrendingUp, Target, Award, Calendar, RefreshCw, Loader2,
-  Crown, Mail, ArrowUpRight, Activity,
+  Crown, Mail, ArrowUpRight, Activity, ChevronDown, ChevronRight,
 } from "lucide-react";
 
 interface BusinessAdvancement {
@@ -157,12 +157,39 @@ export function AgiBusinessAdvancement() {
   );
 }
 
+interface ActivityEvent {
+  business_id: string;
+  event_type: "lead_created" | "meeting_booked" | "profile_joined";
+  event_id: string;
+  event_subject: string;
+  event_summary: string;
+  event_at: string;
+}
+
+const EVENT_COLOR: Record<string, string> = {
+  lead_created:   "#818cf8",
+  meeting_booked: "#10b981",
+  profile_joined: "#facc15",
+};
+
 function BizCard({ biz }: { biz: BusinessAdvancement }) {
   const sc = scoreColor(biz.advancement_score);
   const planColor = PLAN_COLOR[biz.plan] ?? "#94a3b8";
   const conversionPct = biz.leads_total > 0
     ? Math.round((biz.leads_converted / biz.leads_total) * 100)
     : 0;
+  const [expanded, setExpanded] = useState(false);
+  const [events, setEvents] = useState<ActivityEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(false);
+
+  useEffect(() => {
+    if (!expanded || events.length > 0) return;
+    setLoadingEvents(true);
+    fetch(`/api/agi/businesses/activity?business_id=${biz.business_id}&limit=8`, { cache: "no-store" })
+      .then(r => r.ok ? r.json() : { events: [] })
+      .then(d => setEvents(d.events ?? []))
+      .finally(() => setLoadingEvents(false));
+  }, [expanded, events.length, biz.business_id]);
 
   return (
     <div className="agi-advancement-card" style={{
@@ -227,7 +254,7 @@ function BizCard({ biz }: { biz: BusinessAdvancement }) {
         </span>
       </div>
 
-      {/* Footer: admin + last activity */}
+      {/* Footer: admin + last activity + expand toggle */}
       <div style={{
         display: "flex", justifyContent: "space-between", alignItems: "center",
         fontSize: 10, color: "#666",
@@ -240,6 +267,63 @@ function BizCard({ biz }: { biz: BusinessAdvancement }) {
         ) : <span style={{ fontStyle: "italic" }}>No admin linked</span>}
         <span>Last activity: {fmtRelative(biz.last_lead_activity)}</span>
       </div>
+
+      {/* Activity expand */}
+      <button
+        onClick={() => setExpanded(e => !e)}
+        style={{
+          background: "transparent", border: "none", color: "#94a3b8",
+          cursor: "pointer", fontSize: 11, fontWeight: 600,
+          padding: "4px 0",
+          display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 4,
+        }}
+      >
+        {expanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+        {expanded ? "Hide activity" : "View recent activity"}
+      </button>
+
+      {expanded && (
+        <div style={{
+          background: "rgba(0,0,0,0.4)", border: "1px solid #1e1e1e",
+          borderRadius: 8, padding: 10,
+          display: "flex", flexDirection: "column", gap: 6,
+        }}>
+          {loadingEvents ? (
+            <div style={{ padding: 14, textAlign: "center", color: "#444", fontSize: 11 }}>
+              <Loader2 size={12} className="animate-spin" style={{ display: "inline-block" }} /> Loading…
+            </div>
+          ) : events.length === 0 ? (
+            <div style={{ padding: 14, textAlign: "center", color: "#444", fontSize: 11, fontStyle: "italic" }}>
+              No recent activity
+            </div>
+          ) : (
+            events.map(ev => {
+              const c = EVENT_COLOR[ev.event_type] ?? "#94a3b8";
+              return (
+                <div key={`${ev.event_type}-${ev.event_id}`} style={{
+                  display: "flex", alignItems: "center", gap: 8,
+                  fontSize: 11,
+                }}>
+                  <span style={{
+                    width: 6, height: 6, borderRadius: "50%",
+                    background: c, flexShrink: 0,
+                    boxShadow: `0 0 6px ${c}80`,
+                  }} />
+                  <span style={{ color: "#cbd5e1", fontWeight: 600, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", flex: 1 }}>
+                    {ev.event_subject}
+                  </span>
+                  <span style={{ color: "#666", flexShrink: 0 }}>
+                    {ev.event_summary}
+                  </span>
+                  <span style={{ color: "#444", flexShrink: 0, fontSize: 10 }}>
+                    {fmtRelative(ev.event_at)}
+                  </span>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
     </div>
   );
 }
