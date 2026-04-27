@@ -13,10 +13,8 @@ interface FullAgent {
   rank: number;
   rankTier: "diamond" | "gold" | "silver" | "bronze" | "unranked";
   elo: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-  streak: number;
+  // wins/losses/winRate/streak intentionally removed — not displayed on the
+  // public arena cards. The API no longer emits them either.
   avatar: string;
   tier: number;
   agentStatus: string;
@@ -290,10 +288,6 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
           rank: a.leaderboardPosition || i + 1,
           rankTier: a.rank,
           elo: a.elo,
-          wins: a.wins,
-          losses: a.losses,
-          winRate: a.winRate,
-          streak: a.streak,
           avatar: a.avatar,
           tier: a.tier || 0,
           agentStatus: a.agentStatus || 'active',

@@ -187,12 +187,8 @@ export async function GET() {
       ownerName: p.name,
       rank,
       elo: computed.elo,
-      wins: computed.wins,
-      losses: computed.losses,
-      winRate: computed.wins + computed.losses > 0
-        ? Math.round((computed.wins / (computed.wins + computed.losses)) * 1000) / 10
-        : 0,
-      streak: computed.streak,
+      // winRate + streak intentionally omitted — public arena cards don't show
+      // them, so the management dashboard mirrors the same surface.
       avatar: (p.agent_name || p.business_name || p.name || '??').substring(0, 2).toUpperCase(),
       tier: (p.business_name && tierOverrides[p.business_name] !== undefined) ? tierOverrides[p.business_name] : (p.tier || 0),
       isPremium: p.is_premium,
@@ -218,14 +214,12 @@ export async function GET() {
   });
   deduped.forEach((a, i) => { a.leaderboardPosition = i + 1; });
 
-  // Fire-and-forget: update ELO in database
+  // Fire-and-forget: update ELO in database. wins/losses/streak removed —
+  // not surfaced anywhere in the UI now, the DB columns are dormant.
   for (const agent of agents) {
     sb.from('profiles').update({
       elo_rating: agent.elo,
       elo_rank: agent.rank,
-      elo_wins: agent.wins,
-      elo_losses: agent.losses,
-      elo_streak: agent.streak,
       elo_peak: Math.max(agent.elo, 1000),
       last_elo_update: new Date().toISOString(),
     }).eq('id', agent.id).then(() => {});

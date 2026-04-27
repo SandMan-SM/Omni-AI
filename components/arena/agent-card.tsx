@@ -7,10 +7,7 @@ interface Agent {
   businessName: string;
   rank: "diamond" | "gold" | "silver" | "bronze" | "unranked";
   elo: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-  streak: number;
+  // wins/losses/winRate/streak removed — not on the canonical arena card.
   avatar: string;
   color: "cyan" | "amber" | "gray" | "bronze";
   badges: string[];
@@ -123,34 +120,8 @@ export function AgentCard({ agent, index, isDarkMode }: AgentCardProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2 md:gap-4 mb-4">
-          <div className="text-center">
-            <p className={`text-xl font-bold ${isDarkMode ? "text-green-400" : "text-green-600"}`}>
-              {agent.wins}
-            </p>
-            <p className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>Wins</p>
-          </div>
-          <div className="text-center">
-            <p className={`text-xl font-bold ${isDarkMode ? "text-red-400" : "text-red-600"}`}>
-              {agent.losses}
-            </p>
-            <p className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>Losses</p>
-          </div>
-          <div className="text-center">
-            <p className={`text-xl font-bold ${isDarkMode ? "text-cyan-400" : "text-cyan-600"}`}>
-              {agent.winRate}%
-            </p>
-            <p className={`text-xs ${isDarkMode ? "text-gray-500" : "text-gray-500"}`}>Win %</p>
-          </div>
-        </div>
-
         <div className={`flex items-center justify-between pt-4 border-t ${isDarkMode ? "border-white/5" : "border-gray-200"}`}>
-          <div className="flex items-center gap-2">
-            <Flame className={`w-4 h-4 ${agent.streak >= 5 ? "text-orange-500" : isDarkMode ? "text-gray-500" : "text-gray-400"}`} />
-            <span className={`text-sm font-medium ${agent.streak >= 5 ? "text-orange-500" : isDarkMode ? "text-gray-400" : "text-gray-600"}`}>
-              {agent.streak} streak
-            </span>
-          </div>
+          <div />
           <div className="flex items-center gap-1 flex-wrap">
             {agent.badges.slice(0, 3).map((badge, i) => (
               <div key={i} className={`w-6 h-6 rounded-full bg-gradient-to-br ${config.gradient} flex items-center justify-center -ml-1 first:ml-0 border-2 ${isDarkMode ? "border-gray-900" : "border-white"}`}>

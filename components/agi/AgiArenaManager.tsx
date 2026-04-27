@@ -1,31 +1,29 @@
 "use client";
 
-// Arena management surface for the agentic dashboard.
-// Plain list of agents in the arena — name, owner, tier rank, ELO, W/L
-// record + winrate + streak + revenue. No marketing chrome.
+// Arena management surface — list of agents using the SAME card layout
+// as the public /arena leaderboard cards. Same data only:
+//   avatar · name (business · owner) · rank chip · ELO · #position
+//   value · rating · reach · tier · premium · status
 //
-// Data source: /api/agents/rankings — same as the public /arena page.
+// No winrate, no streak, no W/L records — those aren't on the public
+// cards. Source: /api/agents/rankings.
 
 import { useEffect, useState, useCallback } from "react";
-import { Trophy, RefreshCw, Loader2, ExternalLink, Search, Crown, Flame, Activity } from "lucide-react";
+import { Trophy, RefreshCw, Loader2, ExternalLink, Search, Crown, Star } from "lucide-react";
 
 interface Agent {
   id: string;
   agentName: string;
   businessName: string | null;
   ownerName: string | null;
-  rank: string;          // "rookie" | "bronze" | "silver" | "gold" | "platinum" | "diamond" | "master"
+  rank: string;          // diamond | gold | silver | bronze | unranked
   elo: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-  streak: number;
   avatar: string | null;
   tier: number;
   isPremium: boolean;
   crmStatus: string | null;
   revenue: number;
-  reach: number;
+  reach?: number;
   campaigns: number;
   activities: number;
   agentStatus: string;
@@ -33,15 +31,28 @@ interface Agent {
   leaderboardPosition: number;
 }
 
-const RANK_COLOR: Record<string, string> = {
-  master: "#facc15",
-  diamond: "#38bdf8",
-  platinum: "#a78bfa",
-  gold: "#f59e0b",
-  silver: "#94a3b8",
-  bronze: "#b45309",
-  rookie: "#666",
+const RANK_CONFIG: Record<string, { color: string; bg: string; label: string }> = {
+  diamond:  { color: "#38bdf8", bg: "rgba(56,189,248,0.12)",  label: "DIAMOND" },
+  gold:     { color: "#facc15", bg: "rgba(250,204,21,0.12)",  label: "GOLD" },
+  silver:   { color: "#94a3b8", bg: "rgba(148,163,184,0.12)", label: "SILVER" },
+  bronze:   { color: "#b45309", bg: "rgba(180,83,9,0.18)",    label: "BRONZE" },
+  unranked: { color: "#666",    bg: "rgba(100,100,100,0.18)", label: "UNRANKED" },
 };
+
+const TIER_NAME: Record<number, string> = {
+  0: "TIER 1", 1: "TIER 2", 2: "TIER 3", 3: "TIER 4", 4: "TIER 5",
+};
+
+function formatCompact(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toFixed(0);
+}
+
+function getRating(businessName: string | null): string {
+  // Public arena hard-codes 5.0 for Omni AI, 0.0 elsewhere — mirror it here.
+  return businessName === "Omni AI" ? "5.0" : "0.0";
+}
 
 export function AgiArenaManager() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -133,7 +144,7 @@ export function AgiArenaManager() {
         </div>
       )}
 
-      {/* Agent list */}
+      {/* Cards grid */}
       <div style={{ padding: 16 }}>
         {loading ? (
           <div style={{ padding: 60, textAlign: "center", color: "#444", fontSize: 13 }}>
@@ -144,101 +155,143 @@ export function AgiArenaManager() {
             {search ? `No agents matching "${search}".` : "No agents in the arena yet."}
           </div>
         ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {filtered.map(a => {
-              const rankColor = RANK_COLOR[(a.rank ?? "rookie").toLowerCase()] ?? "#666";
-              const top3 = a.leaderboardPosition <= 3;
-              return (
-                <div key={a.id} style={{
-                  background: "#111", border: `1px solid ${top3 ? `${rankColor}40` : "#1e1e1e"}`, borderRadius: 10,
-                  padding: 14, display: "grid",
-                  gridTemplateColumns: "auto 1fr auto",
-                  gap: 14, alignItems: "center",
-                }}>
-                  {/* Position badge */}
-                  <div style={{
-                    width: 40, height: 40, borderRadius: 10,
-                    background: top3 ? `${rankColor}22` : "#0a0a0a",
-                    border: top3 ? `1.5px solid ${rankColor}` : "1px solid #222",
-                    display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                    flexShrink: 0,
-                  }}>
-                    {top3 && a.leaderboardPosition === 1 ? (
-                      <Crown size={14} color={rankColor} />
-                    ) : (
-                      <span style={{ fontSize: 13, fontWeight: 700, color: top3 ? rankColor : "#94a3b8" }}>
-                        #{a.leaderboardPosition}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Body — name, business, rank, ELO, W/L, streak */}
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                      <div style={{ fontSize: 14, fontWeight: 600, wordBreak: "break-word" }}>{a.agentName}</div>
-                      <span style={{
-                        fontSize: 10, fontWeight: 700, color: rankColor, background: `${rankColor}18`,
-                        padding: "3px 8px", borderRadius: 4, textTransform: "uppercase", letterSpacing: 0.5,
-                      }}>
-                        {a.rank}
-                      </span>
-                      {a.isPremium && (
-                        <span style={{
-                          fontSize: 10, fontWeight: 700, color: "#facc15", background: "#facc1518",
-                          padding: "3px 8px", borderRadius: 4,
-                          display: "inline-flex", alignItems: "center", gap: 4,
-                        }}>
-                          <Crown size={10} /> PREMIUM
-                        </span>
-                      )}
-                    </div>
-                    {(a.businessName || a.ownerName) && (
-                      <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 3 }}>
-                        {[a.businessName, a.ownerName].filter(Boolean).join(" · ")}
-                      </div>
-                    )}
-                    <div style={{ fontSize: 11, color: "#666", marginTop: 6, display: "flex", gap: 12, flexWrap: "wrap" }}>
-                      <span>ELO <strong style={{ color: "#cbd5e1" }}>{a.elo}</strong></span>
-                      <span>
-                        <span style={{ color: "#10b981" }}>{a.wins}W</span> ·{" "}
-                        <span style={{ color: "#f87171" }}>{a.losses}L</span>
-                      </span>
-                      <span>{a.winRate.toFixed(1)}% winrate</span>
-                      {a.streak > 0 && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 3, color: "#fb923c" }}>
-                          <Flame size={11} /> {a.streak} streak
-                        </span>
-                      )}
-                      {a.activities > 0 && (
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
-                          <Activity size={11} /> {a.activities}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Status indicator */}
-                  <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                    <span style={{
-                      fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.5,
-                      color: a.agentStatus === "active" ? "#10b981" : "#666",
-                      background: a.agentStatus === "active" ? "#0d2a1e" : "#1a1a1a",
-                      border: `1px solid ${a.agentStatus === "active" ? "#10b98140" : "#222"}`,
-                      padding: "3px 8px", borderRadius: 4,
-                    }}>
-                      {a.agentStatus}
-                    </span>
-                    {a.revenue > 0 && (
-                      <span style={{ fontSize: 11, color: "#10b981", fontWeight: 600 }}>
-                        ${a.revenue.toFixed(0)}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+            {filtered.map(a => <AgentCard key={a.id} agent={a} />)}
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function AgentCard({ agent }: { agent: Agent }) {
+  const config = RANK_CONFIG[agent.rank.toLowerCase()] ?? RANK_CONFIG.unranked;
+  const value = agent.revenue ?? 0;
+  const reach = agent.reach ?? (agent.activities + agent.campaigns);
+  const isActive = agent.agentStatus === "active";
+
+  return (
+    <div style={{
+      position: "relative",
+      background: "#0a0a0a",
+      border: `1px solid ${config.color}30`,
+      borderRadius: 14,
+      padding: 18,
+      display: "flex",
+      flexDirection: "column",
+      gap: 14,
+      transition: "border-color 0.15s",
+    }}>
+      {/* Header: avatar + name + active pill */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: 10,
+          background: `linear-gradient(135deg, ${config.color}, ${config.color}aa)`,
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 14, fontWeight: 700, color: "#fff",
+          flexShrink: 0,
+          boxShadow: `0 4px 12px ${config.color}40`,
+        }}>
+          {agent.avatar}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 700, lineHeight: 1.3, wordBreak: "break-word" }}>
+            {agent.agentName}
+          </div>
+          {(agent.businessName || agent.ownerName) && (
+            <div style={{ fontSize: 11, color: "#666", marginTop: 3 }}>
+              {[agent.businessName, agent.ownerName].filter(Boolean).join(" · ")}
+            </div>
+          )}
+        </div>
+        <span style={{
+          flexShrink: 0,
+          fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6,
+          color: isActive ? "#10b981" : "#666",
+          background: isActive ? "#0d2a1e" : "#1a1a1a",
+          border: `1px solid ${isActive ? "#10b98140" : "#222"}`,
+          padding: "4px 9px", borderRadius: 6,
+        }}>
+          {agent.agentStatus}
+        </span>
+      </div>
+
+      {/* Rank + ELO + position */}
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        <span style={{
+          fontSize: 10, fontWeight: 700, color: config.color, background: config.bg,
+          padding: "4px 10px", borderRadius: 999, letterSpacing: 0.7,
+          display: "inline-flex", alignItems: "center", gap: 4,
+        }}>
+          {config.label}
+        </span>
+        <span style={{
+          fontSize: 10, fontFamily: "ui-monospace, monospace", color: "#94a3b8",
+          background: "rgba(255,255,255,0.04)", border: "1px solid #1e1e1e",
+          padding: "4px 10px", borderRadius: 999,
+        }}>
+          ELO {agent.elo}
+        </span>
+        <span style={{
+          fontSize: 10, color: "#666",
+          background: "rgba(255,255,255,0.04)", border: "1px solid #1e1e1e",
+          padding: "4px 10px", borderRadius: 999,
+        }}>
+          #{agent.leaderboardPosition}
+        </span>
+        {agent.isPremium && (
+          <span style={{
+            fontSize: 10, fontWeight: 700, color: "#facc15",
+            background: "rgba(250,204,21,0.12)", border: "1px solid #facc1540",
+            padding: "4px 9px", borderRadius: 999,
+            display: "inline-flex", alignItems: "center", gap: 3,
+          }}>
+            <Crown size={10} /> PREMIUM
+          </span>
+        )}
+      </div>
+
+      {/* Stats Grid: Value / Rating / Reach */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
+        <Stat label="Value" value={`$${formatCompact(value)}`} />
+        <Stat
+          label="Rating"
+          value={
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 3 }}>
+              <Star size={12} color="#facc15" fill="#facc15" /> {getRating(agent.businessName)}
+            </span>
+          }
+        />
+        <Stat label="Reach" value={formatCompact(reach)} />
+      </div>
+
+      {/* Tier */}
+      <div style={{
+        paddingTop: 10, borderTop: "1px solid #1a1a1a",
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+      }}>
+        <span style={{ fontSize: 10, fontWeight: 700, color: config.color, letterSpacing: 0.7 }}>
+          {TIER_NAME[agent.tier] ?? `TIER ${agent.tier + 1}`}
+        </span>
+        {agent.crmStatus && (
+          <span style={{ fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: 0.5 }}>
+            {agent.crmStatus}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div style={{
+      textAlign: "center", padding: "8px 4px",
+      background: "rgba(255,255,255,0.03)", borderRadius: 8,
+    }}>
+      <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>{value}</div>
+      <div style={{ fontSize: 9, color: "#555", textTransform: "uppercase", letterSpacing: 0.7, marginTop: 2 }}>
+        {label}
       </div>
     </div>
   );
