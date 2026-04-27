@@ -96,14 +96,17 @@ function LeadRow({ lead, onClick, businessName }: { lead: Lead; onClick: () => v
         <div style={{ fontWeight: 600, color: '#e8e8e8', fontSize: 13 }}>{fullName(lead)}</div>
         {lead.email && <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{lead.email}</div>}
       </td>
-      {businessName !== undefined && (
+      {businessName !== undefined ? (
+        // All-businesses view: Business chip replaces the standalone Company
+        // column (they'd both show the lead's company anyway). Compact.
         <td style={{ padding: '14px 12px' }}>
           <span className="agi-tag" style={{ fontSize: 10, fontWeight: 700, color: '#a78bfa', background: '#a78bfa18', padding: '3px 8px', borderRadius: 4 }}>
             {businessName || '—'}
           </span>
         </td>
+      ) : (
+        <td style={{ padding: '14px 12px', fontSize: 13, color: '#94a3b8' }}>{lead.company ?? '—'}</td>
       )}
-      <td style={{ padding: '14px 12px', fontSize: 13, color: '#94a3b8' }}>{lead.company ?? '—'}</td>
       <td style={{ padding: '14px 12px', fontSize: 13, color: '#64748b' }}>{lead.title ?? '—'}</td>
       <td style={{ padding: '14px 12px' }}>
         <span className="agi-tag agi-tag-source" style={{ fontSize: 11, fontWeight: 600, color: src.color, background: `${src.color}15`, padding: '3px 8px', borderRadius: 4 }}>{src.label}</span>
@@ -698,7 +701,7 @@ export default function DashboardPage() {
               <thead>
                 <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
                   {(selectedBiz === null
-                    ? ['Contact', 'Business', 'Company', 'Title', 'Source', 'Status', 'Score']
+                    ? ['Contact', 'Business', 'Title', 'Source', 'Status', 'Score']
                     : ['Contact', 'Company', 'Title', 'Source', 'Status', 'Score']
                   ).map(h => (
                     <th key={h} style={{ padding: '12px', textAlign: 'left', color: '#444', fontWeight: 500, fontSize: 12 }}>{h}</th>
@@ -707,7 +710,7 @@ export default function DashboardPage() {
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={selectedBiz === null ? 7 : 6} style={{ padding: 40, textAlign: 'center', color: '#333', fontSize: 13 }}>
+                  <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: '#333', fontSize: 13 }}>
                     No leads found. {campaigns.length > 0 ? 'Click "Run Agent" to generate leads.' : 'Import leads via the Import tab.'}
                   </td></tr>
                 ) : (
@@ -716,8 +719,11 @@ export default function DashboardPage() {
                       key={lead.id}
                       lead={lead}
                       onClick={() => setSelectedLead(lead)}
+                      // In All view, show each lead's OWN company (Alira /
+                      // Leifson Built / BLK Diamond / etc.) — not the parent
+                      // dashboard business they're filed under.
                       businessName={selectedBiz === null
-                        ? (businesses.find(b => b.id === lead.business_id)?.name ?? '')
+                        ? (lead.company ?? '')
                         : undefined}
                     />
                   ))

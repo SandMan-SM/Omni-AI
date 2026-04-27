@@ -543,8 +543,41 @@ function AgentEditPanel({
       onClick={onClose}
       style={{ position: "fixed", inset: 0, zIndex: 60, background: "rgba(0,0,0,0.65)", display: "flex", justifyContent: "flex-end" }}
     >
+      <style jsx global>{`
+        @media (max-width: 640px) {
+          /* Edit agent panel — let the Row 2-up fields stack on phones so
+             inputs aren't cramped, shrink section + outer padding so content
+             actually fits a 360px viewport. */
+          .agi-edit-panel {
+            padding: 18px !important;
+            gap: 14px !important;
+          }
+          .agi-edit-panel .agi-edit-section {
+            padding: 14px !important;
+            gap: 10px !important;
+          }
+          .agi-edit-panel .agi-edit-row {
+            flex-direction: column !important;
+            gap: 10px !important;
+          }
+          .agi-edit-panel input,
+          .agi-edit-panel select,
+          .agi-edit-panel textarea {
+            font-size: 14px !important; /* >=14px stops iOS auto-zoom */
+            padding: 10px 12px !important;
+          }
+          .agi-edit-panel .agi-edit-footer {
+            flex-direction: column-reverse !important;
+            gap: 8px !important;
+          }
+          .agi-edit-panel .agi-edit-footer > button {
+            width: 100% !important;
+          }
+        }
+      `}</style>
       <div
         onClick={e => e.stopPropagation()}
+        className="agi-edit-panel"
         style={{
           width: 540, maxWidth: "100%", height: "100%", overflowY: "auto",
           background: "#0c0c0c", borderLeft: "1px solid #1e1e1e",
@@ -709,7 +742,7 @@ function AgentEditPanel({
             </Section>
 
             {/* Footer actions */}
-            <div style={{ display: "flex", gap: 10, marginTop: "auto", paddingTop: 16, borderTop: "1px solid #1e1e1e" }}>
+            <div className="agi-edit-footer" style={{ display: "flex", gap: 10, marginTop: "auto", paddingTop: 16, borderTop: "1px solid #1e1e1e" }}>
               <button onClick={onClose} style={{ ...iconBtn, flex: 1, justifyContent: "center", padding: "11px 14px", fontSize: 13 }}>
                 Cancel
               </button>
@@ -734,7 +767,7 @@ function AgentEditPanel({
 
 function Section({ title, subtitle, confidential, children }: { title: string; subtitle?: string; confidential?: boolean; children: React.ReactNode }) {
   return (
-    <div style={{
+    <div className="agi-edit-section" style={{
       background: confidential ? "linear-gradient(135deg, #1a0d0d 0%, #0d0d0d 100%)" : "#111",
       border: `1px solid ${confidential ? "#f8717130" : "#1e1e1e"}`,
       borderRadius: 12, padding: 18,
@@ -766,7 +799,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 function Row({ children }: { children: React.ReactNode }) {
-  return <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>{children}</div>;
+  return <div className="agi-edit-row" style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>{children}</div>;
 }
 
 const inp: React.CSSProperties = {
