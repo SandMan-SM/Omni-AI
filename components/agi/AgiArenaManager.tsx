@@ -79,9 +79,19 @@ const RANK_CONFIG: Record<string, {
   },
 };
 
-// Tier names match the canonical arena (components/arena/leaderboard.tsx).
+// Tier names + value/reach overrides — lifted from the canonical arena
+// (components/arena/leaderboard.tsx) so the management card displays the
+// same numbers visitors see on the public modal.
 const TIER_NAMES: Record<number, string> = {
   0: "Apprentice", 1: "Master", 2: "Royal", 3: "Empire", 4: "Ultimate Power",
+};
+const VALUE_OVERRIDES: Record<string, number> = {
+  "Omni AI": 28000, "Love Thy Barber": 0, "BLK Diamond": 0,
+  "CPS": 0, "Youngs Cabinet Refinishing": 0, "Leifson Built": 0,
+};
+const REACH_OVERRIDES: Record<string, number> = {
+  "Omni AI": 1111, "Love Thy Barber": 0, "BLK Diamond": 0,
+  "CPS": 0, "Youngs Cabinet Refinishing": 0, "Leifson Built": 0,
 };
 
 function formatCompact(n: number): string {
@@ -132,6 +142,61 @@ export function AgiArenaManager() {
           display: grid !important;
           grid-template-columns: 1fr 1fr 1fr !important;
           gap: 8px;
+        }
+
+        /* Mobile: card grid drops to single column, card itself shrinks
+           padding/avatar/text so nothing gets clipped past viewport. The
+           stats stay 3-up but with shrunk padding + value font so all three
+           fit on a 360px-wide phone. Tier footer chrome text shrinks too
+           so 'ULTIMATE POWER' doesn't run off the right edge. */
+        @media (max-width: 720px) {
+          .agi-arena-root .agi-arena-grid {
+            grid-template-columns: 1fr !important;
+            gap: 14px !important;
+          }
+          .agi-arena-root .agi-arena-card {
+            padding: 16px !important;
+            border-radius: 14px !important;
+          }
+          .agi-arena-root .agi-arena-avatar {
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 14px !important;
+            border-radius: 10px !important;
+          }
+          .agi-arena-root .agi-arena-name {
+            font-size: 15px !important;
+          }
+          .agi-arena-root .agi-arena-pill {
+            padding: 5px 10px !important;
+            font-size: 11px !important;
+          }
+          .agi-arena-root .agi-arena-stats {
+            gap: 6px;
+          }
+          .agi-arena-root .agi-arena-stat-cell {
+            padding: 10px 4px !important;
+          }
+          .agi-arena-root .agi-arena-stat-value {
+            font-size: 16px !important;
+          }
+          .agi-arena-root .agi-arena-stat-label {
+            font-size: 9px !important;
+          }
+          .agi-arena-root .agi-arena-tier-num,
+          .agi-arena-root .agi-arena-tier-name {
+            font-size: 11px !important;
+            letter-spacing: 1px !important;
+          }
+        }
+        @media (max-width: 400px) {
+          .agi-arena-root .agi-arena-stat-value {
+            font-size: 14px !important;
+          }
+          .agi-arena-root .agi-arena-tier-name {
+            font-size: 10px !important;
+            letter-spacing: 0.5px !important;
+          }
         }
       `}</style>
 
@@ -187,7 +252,7 @@ export function AgiArenaManager() {
             {search ? `No agents matching "${search}".` : "No agents in the arena yet."}
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
+          <div className="agi-arena-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(420px, 1fr))", gap: 18 }}>
             {filtered.map(a => <AgentCard key={a.id} agent={a} />)}
           </div>
         )}
@@ -199,8 +264,14 @@ export function AgiArenaManager() {
 function AgentCard({ agent }: { agent: Agent }) {
   const config = RANK_CONFIG[agent.rank.toLowerCase()] ?? RANK_CONFIG.unranked;
   const Icon = config.icon;
-  const value = agent.revenue ?? 0;
-  const reach = agent.reach ?? (agent.activities + agent.campaigns);
+  // Use the same value/reach overrides as the canonical public card so the
+  // numbers match visitor view ($28K / 1.1K for Omni AI etc.).
+  const value = (agent.businessName && VALUE_OVERRIDES[agent.businessName] !== undefined)
+    ? VALUE_OVERRIDES[agent.businessName]
+    : (agent.revenue ?? 0);
+  const reach = (agent.businessName && REACH_OVERRIDES[agent.businessName] !== undefined)
+    ? REACH_OVERRIDES[agent.businessName]
+    : (agent.reach ?? (agent.activities + agent.campaigns));
   const isActive = agent.agentStatus === "active";
   const tierName = TIER_NAMES[agent.tier] ?? `Tier ${agent.tier + 1}`;
 
@@ -216,83 +287,72 @@ function AgentCard({ agent }: { agent: Agent }) {
       />
 
       {/* Card */}
-      <div style={{
+      <div className="agi-arena-card" style={{
         position: "relative",
         background: "rgba(10,10,10,0.95)",
         backdropFilter: "blur(8px)",
         border: `1px solid ${config.cssBorder}`,
-        borderRadius: 16,
-        padding: 20,
-        display: "flex", flexDirection: "column", gap: 14,
+        borderRadius: 18,
+        padding: 24,
+        display: "flex", flexDirection: "column", gap: 18,
       }}>
-        {/* Header: avatar + name/business + status */}
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-          <div style={{
-            width: 52, height: 52, borderRadius: 12,
+        {/* Header: avatar + agent name + Anonymous subtitle + green-dot status */}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+          <div className="agi-arena-avatar" style={{
+            width: 56, height: 56, borderRadius: 14,
             background: config.cssGradient,
             display: "flex", alignItems: "center", justifyContent: "center",
-            fontSize: 16, fontWeight: 700, color: "#000",
+            fontSize: 18, fontWeight: 700, color: "#000",
             flexShrink: 0,
-            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.25), 0 0 12px ${config.glowColor}`,
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.25), 0 0 14px ${config.glowColor}`,
           }}>
             {agent.avatar}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 16, fontWeight: 700, lineHeight: 1.25, wordBreak: "break-word" }}>
+            <div className="agi-arena-name" style={{ fontSize: 18, fontWeight: 700, lineHeight: 1.2, color: "#fff", wordBreak: "break-word" }}>
               {agent.agentName}
             </div>
-            {(agent.businessName || agent.ownerName) && (
-              <div style={{ fontSize: 12, color: "#94a3b8", marginTop: 3 }}>
-                {[agent.businessName, agent.ownerName].filter(Boolean).join(" · ")}
-              </div>
-            )}
+            <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
+              Anonymous
+            </div>
           </div>
-          <span style={{
-            flexShrink: 0,
-            fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: 0.6,
-            color: isActive ? "#10b981" : "#666",
-            background: isActive ? "#0d2a1e" : "#1a1a1a",
-            border: `1px solid ${isActive ? "#10b98140" : "#222"}`,
-            padding: "4px 9px", borderRadius: 6,
-          }}>{agent.agentStatus}</span>
+          <div style={{ flexShrink: 0, display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: "50%",
+              background: isActive ? "#10b981" : "#666",
+              boxShadow: isActive ? "0 0 8px rgba(16,185,129,0.6)" : undefined,
+            }} />
+            <span style={{ fontSize: 12, color: "#9ca3af", textTransform: "capitalize" }}>
+              {agent.agentStatus}
+            </span>
+          </div>
         </div>
 
-        {/* Pills: Rank · ELO · #position · Premium */}
-        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 6 }}>
-          <span style={{
-            display: "inline-flex", alignItems: "center", gap: 5,
-            padding: "5px 12px", borderRadius: 999,
-            fontSize: 11, fontWeight: 700, color: "#000",
+        {/* Pills: Rank · ELO · #position (no premium — matches canonical) */}
+        <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+          <span className="agi-arena-pill" style={{
+            display: "inline-flex", alignItems: "center", gap: 6,
+            padding: "6px 14px", borderRadius: 999,
+            fontSize: 13, fontWeight: 700, color: "#000",
             background: config.cssGradient,
             boxShadow: `inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.2), 0 0 8px ${config.glowColor}`,
             whiteSpace: "nowrap",
           }}>
-            <Icon size={11} />
-            {config.label.toUpperCase()}
+            <Icon size={13} />
+            {config.label}
           </span>
-          <span style={{
-            padding: "5px 12px", borderRadius: 999,
-            fontSize: 11, fontFamily: "ui-monospace, monospace", color: "#cbd5e1",
+          <span className="agi-arena-pill" style={{
+            padding: "6px 14px", borderRadius: 999,
+            fontSize: 12, fontFamily: "ui-monospace, monospace", color: "#cbd5e1",
             background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
-            whiteSpace: "nowrap",
+            whiteSpace: "nowrap", letterSpacing: 0.5,
           }}>ELO {agent.elo}</span>
-          <span style={{
-            padding: "5px 12px", borderRadius: 999,
-            fontSize: 11, color: "#94a3b8",
+          <span className="agi-arena-pill" style={{
+            padding: "6px 14px", borderRadius: 999,
+            fontSize: 12, color: "#9ca3af",
             background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)",
             whiteSpace: "nowrap",
           }}>#{agent.leaderboardPosition}</span>
-          {agent.isPremium && (
-            <span style={{
-              display: "inline-flex", alignItems: "center", gap: 4,
-              padding: "5px 11px", borderRadius: 999,
-              fontSize: 11, fontWeight: 700, color: "#facc15",
-              background: "rgba(250,204,21,0.12)", border: "1px solid #facc1540",
-              whiteSpace: "nowrap",
-            }}>
-              <Crown size={10} /> PREMIUM
-            </span>
-          )}
         </div>
 
         {/* Stats — 3-col grid (literal 1fr 1fr 1fr to bypass cascade) */}
@@ -306,22 +366,27 @@ function AgentCard({ agent }: { agent: Agent }) {
           <Stat label="Reach" value={formatCompact(reach)} />
         </div>
 
-        {/* Tier footer with chrome text + crm status */}
+        {/* Tier footer: TIER N (flat rank color) on left, chrome name on right */}
         <div style={{
-          paddingTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)",
+          paddingTop: 14, borderTop: "1px solid rgba(255,255,255,0.05)",
           display: "flex", justifyContent: "space-between", alignItems: "center",
         }}>
-          <span style={{
-            fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1,
+          <span className="agi-arena-tier-num" style={{
+            fontSize: 13, fontWeight: 700, letterSpacing: 1.5,
+            color: agent.rank.toLowerCase() === "diamond" ? "#22d3ee"
+                 : agent.rank.toLowerCase() === "gold" ? "#facc15"
+                 : agent.rank.toLowerCase() === "silver" ? "#cbd5e1"
+                 : agent.rank.toLowerCase() === "bronze" ? "#d97706"
+                 : "#6b7280",
+          }}>
+            TIER {agent.tier + 1}
+          </span>
+          <span className="agi-arena-tier-name" style={{
+            fontSize: 13, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1.5,
             ...config.chromeStyle,
           }}>
             {tierName}
           </span>
-          {agent.crmStatus && (
-            <span style={{ fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: 0.5 }}>
-              {agent.crmStatus}
-            </span>
-          )}
         </div>
       </div>
     </div>
@@ -330,12 +395,12 @@ function AgentCard({ agent }: { agent: Agent }) {
 
 function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div style={{
-      textAlign: "center", padding: "10px 6px",
-      background: "rgba(255,255,255,0.03)", borderRadius: 10,
+    <div className="agi-arena-stat-cell" style={{
+      textAlign: "center", padding: "16px 8px",
+      background: "rgba(255,255,255,0.03)", borderRadius: 12,
     }}>
-      <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", lineHeight: 1.1 }}>{value}</div>
-      <div style={{ fontSize: 9, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.7, marginTop: 4 }}>
+      <div className="agi-arena-stat-value" style={{ fontSize: 22, fontWeight: 800, color: "#fff", lineHeight: 1.1, letterSpacing: -0.3 }}>{value}</div>
+      <div className="agi-arena-stat-label" style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase", letterSpacing: 1, marginTop: 6 }}>
         {label}
       </div>
     </div>
