@@ -19,11 +19,14 @@ export async function GET() {
 
   try {
     const supabase = createAdminClient();
-    const { data, error } = await supabase
-      .from('newsletter_subscriptions')
-      .select('subscribed, subscription_tier');
+    const [{ data, error }, { count: postsCount, error: postsErr }] = await Promise.all([
+      supabase.from('newsletter_subscriptions').select('subscribed, subscription_tier'),
+      // Published posts only — drafts/scheduled excluded.
+      supabase.from('newsletter_posts').select('id', { count: 'exact', head: true }).not('published_at', 'is', null),
+    ]);
 
     if (error) throw error;
+    if (postsErr) console.warn('[newsletter/stats] posts count failed:', postsErr.message);
 
     const all = data || [];
     return NextResponse.json({
@@ -32,6 +35,7 @@ export async function GET() {
       premium: all.filter(s => s.subscription_tier === 'premium').length,
       free: all.filter(s => s.subscription_tier !== 'premium').length,
       unsubscribed: all.filter(s => s.subscribed === false).length,
+      posts: postsCount ?? 0,
     });
   } catch (error) {
     console.error('[newsletter/stats] GET error:', error);

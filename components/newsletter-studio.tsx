@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import {
   Mail, Users, Crown, Zap, Download, Upload, Plus, Trash2,
   Send, DollarSign, RefreshCw, Loader2, TrendingUp, Star,
-  CheckCircle, XCircle
+  CheckCircle, XCircle, FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -34,6 +34,7 @@ interface Stats {
   premium: number;
   free: number;
   unsubscribed: number;
+  posts: number;
 }
 
 export function NewsletterStudio() {
@@ -41,7 +42,7 @@ export function NewsletterStudio() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [subscribers, setSubscribers] = useState<Subscriber[]>([]);
-  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, premium: 0, free: 0, unsubscribed: 0 });
+  const [stats, setStats] = useState<Stats>({ total: 0, active: 0, premium: 0, free: 0, unsubscribed: 0, posts: 0 });
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [creatingLink, setCreatingLink] = useState(false);
@@ -237,10 +238,10 @@ export function NewsletterStudio() {
   };
 
   const statCards = [
-    { label: 'Total', value: stats.total, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
-    { label: 'Active', value: stats.active, icon: CheckCircle, color: 'text-green-400', bg: 'bg-green-500/10' },
-    { label: 'Premium', value: stats.premium, icon: Crown, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-    { label: 'Free', value: stats.free, icon: Mail, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { label: 'Premium subscribers', value: stats.premium, icon: Crown, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
+    { label: 'Subscribers', value: stats.free, icon: Mail, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+    { label: 'Total subscribers', value: stats.total, icon: Users, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { label: 'Posts', value: stats.posts, icon: FileText, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
   ];
 
   return (
