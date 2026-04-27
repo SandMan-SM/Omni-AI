@@ -41,7 +41,7 @@ export async function GET() {
     supabase.from("newsletter_subscriptions").select("subscribed,subscription_tier"),
     // Agentic dashboard: merge omni_leads_generated counts so CommandCenter
     // numbers stay synced with the agentic Pipeline/Leads tabs.
-    supabase.from("omni_leads_generated").select("id,status,score,deal_value,created_at,updated_at"),
+    supabase.from("omni_leads_generated").select("id,email,status,score,deal_value,created_at,updated_at"),
     supabase.from("omni_meeting_bookings").select("id,status,created_at"),
   ]);
 
