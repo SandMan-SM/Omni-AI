@@ -7,6 +7,7 @@ import {
   ArrowLeft, ChevronDown, Building2, Sparkles, Users, MapPin, Calendar,
   TrendingUp, Briefcase, Cpu, RefreshCw, ExternalLink
 } from 'lucide-react';
+import { AgiBusinessAdvancement } from '@/components/agi/AgiBusinessAdvancement';
 
 type CompanyIntel = {
   id: string;
@@ -100,6 +101,12 @@ export default function CompaniesPage() {
           )}
         </div>
       </header>
+
+      {/* Per-business advancement panel — pipeline KPIs across every dashboard
+          tenant so admins see how each business is growing at a glance. */}
+      <div style={{ padding: '16px 20px 0' }}>
+        <AgiBusinessAdvancement />
+      </div>
 
       <div style={{ display: 'flex' }}>
         {/* Sidebar list */}
