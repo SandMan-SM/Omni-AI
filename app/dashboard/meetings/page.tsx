@@ -133,24 +133,37 @@ export default function MeetingsPage() {
       <div style={{ padding: 32, maxWidth: 1100, margin: '0 auto' }}>
         {/* Booking link card */}
         <div style={{ background: 'linear-gradient(135deg, #0d2a1e 0%, #111 100%)', border: '1px solid #10b98140', borderRadius: 14, padding: 24, marginBottom: 24 }}>
-          <div style={{ fontSize: 11, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.7px', fontWeight: 700, marginBottom: 8 }}>
-            🔗 Your Native Booking Page
+          <div style={{ fontSize: 11, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.7px', fontWeight: 700, marginBottom: 12 }}>
+            🔗 Your Personal Booking Page
           </div>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 8 }}>
-            <code style={{ background: '#0a0a0a', padding: '8px 14px', borderRadius: 8, fontSize: 13, color: '#10b981', flex: 1, fontFamily: 'ui-monospace,monospace', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {bookingUrl}
-            </code>
+          {/* URL on top — full width, single line with ellipsis */}
+          <code
+            style={{
+              display: 'block',
+              background: '#0a0a0a', padding: '10px 14px', borderRadius: 8,
+              fontSize: 13, color: '#10b981', fontFamily: 'ui-monospace,monospace',
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              marginBottom: 10,
+            }}
+            title={bookingUrl}
+          >
+            {bookingUrl}
+          </code>
+          {/* Buttons below — Copy + Preview side-by-side, full-width on mobile */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
             <button onClick={() => { navigator.clipboard.writeText(bookingUrl); showToast('Copied!'); }} style={{
               background: '#191919', border: '1px solid #222', color: '#94a3b8',
-              padding: '8px 12px', borderRadius: 8, cursor: 'pointer',
-              display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
+              padding: '9px 14px', borderRadius: 8, cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12,
+              flex: 1, fontWeight: 600,
             }}>
               <Copy size={12} /> Copy
             </button>
             <Link href={`/book/${selectedBiz?.id ?? ''}`} target="_blank" style={{
               background: '#191919', border: '1px solid #222', color: '#94a3b8',
-              padding: '8px 12px', borderRadius: 8, textDecoration: 'none',
-              display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
+              padding: '9px 14px', borderRadius: 8, textDecoration: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12,
+              flex: 1, fontWeight: 600,
             }}>
               <ExternalLink size={12} /> Preview
             </Link>

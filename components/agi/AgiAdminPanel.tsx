@@ -28,26 +28,19 @@ const ImportView     = dynamic(() => import("@/app/dashboard/import/page"),    {
 const SettingsView   = dynamic(() => import("@/app/dashboard/settings/page"),  { ssr: false, loading: () => <Skel /> });
 const BillingView    = dynamic(() => import("@/app/dashboard/billing/page"),   { ssr: false, loading: () => <Skel /> });
 
-// Arena + Newsletter are server components with `metadata` exports — they
-// can't be dynamic-imported into this client panel. Embed them in iframes
-// pointing at the public pages instead. Same content, no compile boundary.
-function IframeView({ src, title }: { src: string; title: string }) {
-  return (
-    <iframe
-      src={src}
-      title={title}
-      style={{
-        width: "100%",
-        height: "calc(100vh - 280px)",
-        minHeight: 600,
-        border: "none",
-        background: "transparent",
-      }}
-    />
-  );
-}
-const ArenaView      = () => <IframeView src="/arena" title="Arena" />;
-const NewsletterView = () => <IframeView src="/newsletter" title="Newsletter" />;
+// Newsletter management tab: existing admin studio component (subscriber
+// audience, premium tier, send job preview, CSV import/export).
+const NewsletterView = dynamic(
+  () => import("@/components/newsletter-studio").then(m => ({ default: m.NewsletterStudio })),
+  { ssr: false, loading: () => <Skel /> }
+);
+
+// Arena management tab: lightweight admin wrapper around the existing
+// arena components (Leaderboard, RankingTiers, BadgeShowcase) without the
+// public marketing page chrome (hero, footer, modals).
+const ArenaView = dynamic(() => import("./AgiArenaManager").then(m => ({ default: m.AgiArenaManager })), {
+  ssr: false, loading: () => <Skel />,
+});
 
 function Skel() {
   return (
@@ -175,8 +168,24 @@ export function AgiAdminPanel() {
           Each AGI page brings its own header + nav + 100vh background.
           When embedded, we hide the inner header (the panel's tabs ARE the nav)
           and collapse the inner full-height background so it sits inside the panel cleanly. */}
-      <div className="agi-embedded-view bg-black/20">
+      <div
+        className="agi-embedded-view bg-black/20"
+        // Tabs without their own page-level padding (Newsletter Studio,
+        // Arena Manager) need wrapper padding so content doesn't touch the
+        // panel border. Tabs with internal `padding: 32` (the legacy
+        // sub-pages) already handle their own spacing.
+        data-needs-pad={active === "newsletter" || active === "arena" ? "1" : "0"}
+      >
         <style jsx global>{`
+          .agi-embedded-view[data-needs-pad="1"] {
+            padding: 20px 24px;
+          }
+          @media (max-width: 640px) {
+            .agi-embedded-view[data-needs-pad="1"] {
+              padding: 14px 16px;
+            }
+          }
+
           /* ── Tab strip — slim scrollbar so the indicator doesn't push content ── */
           .agi-tabs-scroll::-webkit-scrollbar {
             height: 4px;
