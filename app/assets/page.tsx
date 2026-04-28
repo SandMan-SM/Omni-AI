@@ -13,8 +13,14 @@ import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/use-profile";
 import {
   Sparkles, ArrowLeft, Key, Bot, Zap, Calendar, Database,
-  ExternalLink, Lock, RefreshCw, Loader2,
+  ExternalLink, Lock, RefreshCw, Loader2, BarChart3,
 } from "lucide-react";
+import { AgiTodaysFocus } from "@/components/agi/AgiTodaysFocus";
+import { AgiCommandPalette } from "@/components/agi/AgiCommandPalette";
+import { AgiAdminPanel } from "@/components/agi/AgiAdminPanel";
+import { supabase as agiSb } from "@/lib/agi-supabase";
+
+const ACTIVE_BIZ_KEY = "omni_active_business_id";
 
 interface AuditEvent {
   id: string;
@@ -25,6 +31,26 @@ interface AuditEvent {
   metadata: Record<string, unknown>;
   created_at: string;
 }
+
+interface StatsRow {
+  name: string;
+  label: string;
+  group: string;
+  count: number | null;
+  error: string | null;
+}
+interface StatsPayload {
+  total_rows: number;
+  groups: Record<string, StatsRow[]>;
+  fetched_at: string;
+}
+
+const GROUP_LABEL: Record<string, string> = {
+  core:    "Agentic core",
+  history: "Audit + history",
+  ai:      "AI + automation",
+  legacy:  "Legacy / public-site tables",
+};
 
 const SCHEDULED_TASKS = [
   { id: "omni-ai-business-advancement-digest", label: "Daily advancement digest", schedule: "8:00 AM daily", endpoint: "/api/agi/businesses/digest" },
@@ -71,6 +97,10 @@ export default function AssetsPage() {
   const { profile, profileLoading, isAdmin } = useProfile();
   const [audit, setAudit] = useState<AuditEvent[]>([]);
   const [auditLoading, setAuditLoading] = useState(true);
+  const [stats, setStats] = useState<StatsPayload | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
+  const [businesses, setBusinesses] = useState<Array<{ id: string; name: string; plan: string }>>([]);
+  const [activeBizId, setActiveBizId] = useState<string | null>(null);
 
   const isMafi = !!profile && (
     (profile.name ?? "").trim() === "$Mafi" ||
@@ -90,7 +120,38 @@ export default function AssetsPage() {
       .then(r => r.ok ? r.json() : { events: [] })
       .then(d => setAudit(d.events ?? []))
       .finally(() => setAuditLoading(false));
+
+    fetch("/api/agi/stats", { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setStats(d))
+      .finally(() => setStatsLoading(false));
+
+    // Load businesses for the global switcher + restore last selection
+    agiSb.from("omni_businesses")
+      .select("id, name, plan")
+      .order("name")
+      .then(({ data }) => {
+        setBusinesses(data ?? []);
+        const stored = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_BIZ_KEY) : null;
+        // null = "All Businesses" (the default behavior across sub-pages)
+        if (stored === "all" || !stored) {
+          setActiveBizId(null);
+        } else if ((data ?? []).some(b => b.id === stored)) {
+          setActiveBizId(stored);
+        } else {
+          setActiveBizId(null);
+        }
+      });
   }, [isMafi]);
+
+  function setActiveBusiness(id: string | null) {
+    setActiveBizId(id);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(ACTIVE_BIZ_KEY, id ?? "all");
+      // Notify other tabs / mounted sub-pages via storage event
+      window.dispatchEvent(new StorageEvent("storage", { key: ACTIVE_BIZ_KEY, newValue: id ?? "all" }));
+    }
+  }
 
   if (profileLoading || !profile) {
     return (
@@ -135,6 +196,104 @@ export default function AssetsPage() {
             The plumbing behind the dashboard — scheduled tasks, API surfaces, audit log, and platform secrets.
           </p>
         </div>
+
+        {/* Global business switcher — sets localStorage('omni_active_business_id')
+            so every embedded sub-page (Leads / Pipeline / Meetings / Outreach)
+            defaults to this business. 'All Businesses' clears the filter. */}
+        <div style={{
+          background: "linear-gradient(135deg, rgba(167,139,250,0.10) 0%, rgba(56,189,248,0.06) 100%)",
+          border: "1px solid #a78bfa30",
+          borderRadius: 12, padding: "14px 18px",
+          display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{
+              width: 30, height: 30, borderRadius: 8,
+              background: "linear-gradient(135deg, #a78bfa, #38bdf8)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+            }}>
+              <Sparkles size={14} color="#fff" />
+            </div>
+            <div>
+              <div style={{ fontSize: 11, color: "#94a3b8", textTransform: "uppercase", letterSpacing: 0.7, fontWeight: 700 }}>
+                Active business
+              </div>
+              <div style={{ fontSize: 13, color: "#fff", fontWeight: 700, marginTop: 2 }}>
+                {activeBizId === null ? "All Businesses" : (businesses.find(b => b.id === activeBizId)?.name ?? "—")}
+              </div>
+            </div>
+          </div>
+          <select
+            value={activeBizId ?? ""}
+            onChange={e => setActiveBusiness(e.target.value || null)}
+            style={{
+              marginLeft: "auto",
+              background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#e8e8e8",
+              padding: "9px 12px", borderRadius: 8, fontSize: 13, fontFamily: "inherit",
+              outline: "none", minWidth: 220,
+            }}
+          >
+            <option value="">All Businesses ({businesses.length})</option>
+            {businesses.map(b => (
+              <option key={b.id} value={b.id}>{b.name} · {b.plan}</option>
+            ))}
+          </select>
+          <span style={{ fontSize: 10, color: "#666", flexBasis: "100%", textAlign: "right" }}>
+            Setting persists across page loads · applies to leads, pipeline, meetings, outreach.
+          </span>
+        </div>
+
+        {/* Today's Focus — moved here from /dashboard so the owner sees
+            cross-business priorities without cluttering the main panel. */}
+        <AgiTodaysFocus />
+
+        {/* Embedded agentic dashboard — same tabbed experience as /dashboard
+            but here the global switcher above feeds the active business.
+            Keyed by activeBizId so the panel remounts when business changes,
+            forcing every sub-page to re-load with the new business id. */}
+        <div key={activeBizId ?? "all"}>
+          <AgiAdminPanel />
+        </div>
+
+        {/* DB stats — row counts at a glance */}
+        <Section title="Platform stats" icon={BarChart3}>
+          {statsLoading || !stats ? (
+            <div style={{ padding: 20, textAlign: "center", color: "#444", fontSize: 12 }}>
+              <Loader2 size={14} className="animate-spin" style={{ display: "inline-block" }} /> Counting…
+            </div>
+          ) : (
+            <>
+              <div style={{ marginBottom: 14, display: "flex", alignItems: "baseline", gap: 8 }}>
+                <span style={{ fontSize: 28, fontWeight: 800, color: "#fff", letterSpacing: -0.5 }}>{stats.total_rows.toLocaleString()}</span>
+                <span style={{ fontSize: 11, color: "#666", textTransform: "uppercase", letterSpacing: 0.7 }}>total rows tracked</span>
+              </div>
+              {Object.entries(stats.groups).map(([groupKey, rows]) => (
+                <div key={groupKey} style={{ marginBottom: 14 }}>
+                  <div style={{ fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: 0.7, fontWeight: 700, marginBottom: 6 }}>
+                    {GROUP_LABEL[groupKey] ?? groupKey}
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 6 }}>
+                    {rows.map(r => (
+                      <div key={r.name} style={{
+                        background: "#0a0a0a", border: "1px solid #1e1e1e", borderRadius: 8,
+                        padding: "10px 12px",
+                      }}>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: r.error ? "#f87171" : "#fff", lineHeight: 1.1 }}>
+                          {r.error ? "—" : (r.count ?? 0).toLocaleString()}
+                        </div>
+                        <div style={{ fontSize: 10, color: "#666", marginTop: 4, fontWeight: 600 }}>{r.label}</div>
+                        {r.error && <div style={{ fontSize: 9, color: "#f87171", marginTop: 3 }}>{r.error.slice(0, 40)}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <div style={{ fontSize: 10, color: "#444", marginTop: 6, textAlign: "right" }}>
+                Snapshot taken {new Date(stats.fetched_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+              </div>
+            </>
+          )}
+        </Section>
 
         {/* Scheduled tasks */}
         <Section title="Scheduled tasks" icon={Calendar}>

@@ -550,13 +550,33 @@ export default function DashboardPage() {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
-        // Default to "All Businesses" so admins see leads across Omni AI,
-        // Prime IV, North Peak, etc. on first load.
-        setSelectedBiz(null);
+        // Honor the global business switcher (set on /assets via localStorage).
+        // Falls back to "All Businesses" when unset or 'all'.
+        const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
+        if (stored && stored !== 'all') {
+          const found = data.find(b => b.id === stored);
+          setSelectedBiz(found ?? null);
+        } else {
+          setSelectedBiz(null);
+        }
       }
       setLoading(false);
     });
   }, []);
+
+  // React to live changes from the /assets switcher (storage event)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    function onStorage(ev: StorageEvent) {
+      if (ev.key !== 'omni_active_business_id') return;
+      const v = ev.newValue;
+      if (!v || v === 'all') return setSelectedBiz(null);
+      const found = businesses.find(b => b.id === v);
+      if (found) setSelectedBiz(found);
+    }
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [businesses]);
 
   const loadData = useCallback(async (bizId: string | null) => {
     // bizId === null means "All Businesses" — drop the business_id filter

@@ -365,7 +365,9 @@ export default function OutreachPage() {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
-        setSelectedBiz(data[0]);
+        const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
+        const found = stored && stored !== 'all' ? data.find(b => b.id === stored) : null;
+        setSelectedBiz(found ?? data[0]);
       }
     });
   }, []);
