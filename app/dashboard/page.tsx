@@ -431,11 +431,13 @@ export default function Dashboard() {
             onMouseEnter={e => { e.currentTarget.style.borderColor = '#a78bfa'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
             onMouseLeave={e => { e.currentTarget.style.borderColor = '#a78bfa50'; e.currentTarget.style.transform = 'translateY(0)'; }}
           >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
               <div style={{
-                width: 36, height: 36, borderRadius: 10,
+                width: 40, height: 40, minWidth: 40, minHeight: 40,
+                aspectRatio: '1 / 1', borderRadius: 10,
                 background: 'linear-gradient(135deg, #a78bfa, #38bdf8)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0,
               }}>
                 <Sparkles size={18} color="#fff" />
               </div>
