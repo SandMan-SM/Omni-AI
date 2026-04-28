@@ -25,6 +25,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AgiAdminPanel } from "@/components/agi/AgiAdminPanel";
 import { AgiTodaysFocus } from "@/components/agi/AgiTodaysFocus";
+import { AgiCommandPalette } from "@/components/agi/AgiCommandPalette";
 
 // Code-split the two heaviest tabs so non-admin / non-sponsor users don't
 // download them. CommandCenter is ~673 LOC + its own admin query stack;
@@ -411,6 +412,7 @@ export default function Dashboard() {
         {/* Omni AI Admin Panel — full embedded AGI experience for admins */}
         {isAdmin && <AgiTodaysFocus />}
         {isAdmin && <AgiAdminPanel />}
+        {isAdmin && <AgiCommandPalette />}
 
         {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
