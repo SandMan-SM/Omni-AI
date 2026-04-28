@@ -126,22 +126,44 @@ export default function AssetsPage() {
       .then(d => setStats(d))
       .finally(() => setStatsLoading(false));
 
-    // Load businesses for the global switcher + restore last selection
-    agiSb.from("omni_businesses")
-      .select("id, name, plan")
-      .order("name")
-      .then(({ data }) => {
-        setBusinesses(data ?? []);
-        const stored = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_BIZ_KEY) : null;
-        // null = "All Businesses" (the default behavior across sub-pages)
-        if (stored === "all" || !stored) {
-          setActiveBizId(null);
-        } else if ((data ?? []).some(b => b.id === stored)) {
-          setActiveBizId(stored);
-        } else {
-          setActiveBizId(null);
-        }
-      });
+    let cancelled = false;
+
+    // Reusable fetcher — call to refresh the dropdown
+    const refreshBusinesses = async () => {
+      const { data } = await agiSb.from("omni_businesses").select("id, name, plan").order("name");
+      if (cancelled) return;
+      setBusinesses(data ?? []);
+      const stored = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_BIZ_KEY) : null;
+      if (stored === "all" || !stored) {
+        setActiveBizId(null);
+      } else if ((data ?? []).some(b => b.id === stored)) {
+        setActiveBizId(stored);
+      } else {
+        setActiveBizId(null);
+      }
+    };
+
+    refreshBusinesses();
+
+    // Refresh on tab focus — covers the case where another tab adds a business
+    function onFocus() { refreshBusinesses(); }
+    window.addEventListener("focus", onFocus);
+
+    // Realtime subscribe to omni_businesses INSERTs/UPDATEs/DELETEs so the
+    // dropdown auto-syncs the moment the auto-link trigger fires for a
+    // newly-inserted profile (creating its business node) — no manual refresh.
+    const channel = agiSb
+      .channel("omni-businesses-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "omni_businesses" }, () => {
+        refreshBusinesses();
+      })
+      .subscribe();
+
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      agiSb.removeChannel(channel);
+    };
   }, [isMafi]);
 
   function setActiveBusiness(id: string | null) {
