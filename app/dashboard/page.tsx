@@ -12,7 +12,7 @@ import {
   ArrowRight, User, Clock, Video, GraduationCap,
   TrendingUp, Target, Bot, BarChart3, Settings,
   CircleDollarSign, LogOut,
-  Menu, X, ChevronRight, Loader2, Eye, Send,
+  Menu, X, ChevronRight, Loader2, Eye, Send, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,8 +24,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AgiAdminPanel } from "@/components/agi/AgiAdminPanel";
-import { AgiTodaysFocus } from "@/components/agi/AgiTodaysFocus";
-import { AgiCommandPalette } from "@/components/agi/AgiCommandPalette";
 
 // Code-split the two heaviest tabs so non-admin / non-sponsor users don't
 // download them. CommandCenter is ~673 LOC + its own admin query stack;
@@ -106,6 +104,12 @@ interface DemoBooking {
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
   const { profile, profileLoading, isAdmin, isSponsor, tier, onboardingComplete, displayName, fetchProfile } = useProfile();
+  // Tighter gate than isAdmin — only the owner ($Mafi / sitanim8@gmail.com)
+  // sees the Agentic Assets button.
+  const isMafi = !!profile && (
+    (profile.name ?? '').trim() === '$Mafi' ||
+    (profile.email ?? '').toLowerCase() === 'sitanim8@gmail.com'
+  );
   const router = useRouter();
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
@@ -409,10 +413,44 @@ export default function Dashboard() {
           </div>
         </Link>
 
-        {/* Omni AI Admin Panel — full embedded AGI experience for admins */}
-        {isAdmin && <AgiTodaysFocus />}
+        {/* Agentic Assets shortcut — owner-only ($Mafi). Sits above the
+            agentic dashboard so it's the first thing the owner sees. */}
+        {isMafi && (
+          <Link
+            href="/assets"
+            data-testid="link-agentic-assets"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 16, padding: '14px 20px',
+              background: 'linear-gradient(135deg, rgba(167,139,250,0.12) 0%, rgba(56,189,248,0.08) 100%)',
+              border: '1px solid #a78bfa50',
+              borderRadius: 12,
+              color: '#e8e8e8', textDecoration: 'none',
+              transition: 'border-color 0.15s, transform 0.15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = '#a78bfa'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = '#a78bfa50'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 10,
+                background: 'linear-gradient(135deg, #a78bfa, #38bdf8)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Sparkles className="w-4 h-4" style={{ color: '#fff' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Agentic Assets</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Owner-only · prompts, models, automations, secrets</div>
+              </div>
+            </div>
+            <ArrowRight className="w-5 h-5" style={{ color: '#a78bfa' }} />
+          </Link>
+        )}
+
+        {/* Omni AI Admin Panel — tabbed dashboard. Each tab swaps content
+            in-place via dynamic import; no page navigation. */}
         {isAdmin && <AgiAdminPanel />}
-        {isAdmin && <AgiCommandPalette />}
 
         {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
