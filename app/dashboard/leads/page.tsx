@@ -915,7 +915,30 @@ export default function DashboardPage() {
               <tbody>
                 {filtered.length === 0 ? (
                   <tr><td colSpan={6} style={{ padding: 40, textAlign: 'center', color: '#333', fontSize: 13 }}>
-                    No leads found. {campaigns.length > 0 ? 'Click "Run Agent" to generate leads.' : 'Import leads via the Import tab.'}
+                    {selectedBiz ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                        <div>No leads under <strong style={{ color: '#94a3b8' }}>{selectedBiz.name}</strong> yet.</div>
+                        <button
+                          onClick={() => {
+                            if (typeof window !== 'undefined') {
+                              localStorage.setItem('omni_active_business_id', 'all');
+                              window.dispatchEvent(new StorageEvent('storage', { key: 'omni_active_business_id', newValue: 'all' }));
+                            }
+                            setSelectedBiz(null);
+                          }}
+                          style={{
+                            background: 'linear-gradient(135deg, #a78bfa, #38bdf8)',
+                            color: '#fff', border: 'none',
+                            padding: '8px 16px', borderRadius: 8,
+                            fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                          }}
+                        >
+                          Show all businesses
+                        </button>
+                      </div>
+                    ) : (
+                      <>No leads found. {campaigns.length > 0 ? 'Click "Run Agent" to generate leads.' : 'Import leads via the Import tab.'}</>
+                    )}
                   </td></tr>
                 ) : (
                   filtered.map(lead => (

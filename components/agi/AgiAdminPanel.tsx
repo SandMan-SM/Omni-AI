@@ -147,19 +147,42 @@ export function AgiAdminPanel() {
           </div>
         </div>
         {/* Active-business pill — shows which tenant filters the embedded
-            sub-pages. Clicking deep-links to /assets where the switcher lives. */}
-        <a
-          href="/assets"
-          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors"
-          style={{
-            background: activeBizName ? "rgba(167,139,250,0.12)" : "rgba(255,255,255,0.04)",
-            borderColor: activeBizName ? "rgba(167,139,250,0.35)" : "rgba(255,255,255,0.1)",
-            color: activeBizName ? "#cbb6ff" : "#94a3b8",
-          }}
-        >
-          <span style={{ width: 6, height: 6, borderRadius: "50%", background: activeBizName ? "#a78bfa" : "#666" }} />
-          {activeBizName ?? "All Businesses"}
-        </a>
+            sub-pages. When a business is filtered, includes an × to clear
+            back to All Businesses without leaving the page. */}
+        <div className="inline-flex items-center gap-1">
+          <a
+            href="/assets"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors"
+            style={{
+              background: activeBizName ? "rgba(167,139,250,0.12)" : "rgba(255,255,255,0.04)",
+              borderColor: activeBizName ? "rgba(167,139,250,0.35)" : "rgba(255,255,255,0.1)",
+              color: activeBizName ? "#cbb6ff" : "#94a3b8",
+            }}
+          >
+            <span style={{ width: 6, height: 6, borderRadius: "50%", background: activeBizName ? "#a78bfa" : "#666" }} />
+            {activeBizName ?? "All Businesses"}
+          </a>
+          {activeBizName && (
+            <button
+              onClick={() => {
+                if (typeof window === "undefined") return;
+                localStorage.setItem("omni_active_business_id", "all");
+                window.dispatchEvent(new StorageEvent("storage", { key: "omni_active_business_id", newValue: "all" }));
+                window.location.reload();
+              }}
+              title="Clear filter → All Businesses"
+              className="px-2 py-1.5 rounded-lg text-[12px] border"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                borderColor: "rgba(255,255,255,0.1)",
+                color: "#94a3b8",
+                cursor: "pointer",
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}
