@@ -243,10 +243,6 @@ export default function AssetsPage() {
           </span>
         </div>
 
-        {/* Today's Focus — moved here from /dashboard so the owner sees
-            cross-business priorities without cluttering the main panel. */}
-        <AgiTodaysFocus />
-
         {/* Embedded agentic dashboard — same tabbed experience as /dashboard
             but here the global switcher above feeds the active business.
             Keyed by activeBizId so the panel remounts when business changes,
@@ -254,6 +250,11 @@ export default function AssetsPage() {
         <div key={activeBizId ?? "all"}>
           <AgiAdminPanel />
         </div>
+
+        {/* Today's Focus — sits BELOW the agentic panel so the dashboard is
+            the first thing the owner interacts with; the focus list is a
+            'wrap up the day' summary at the bottom. */}
+        <AgiTodaysFocus />
 
         {/* DB stats — row counts at a glance */}
         <Section title="Platform stats" icon={BarChart3}>
