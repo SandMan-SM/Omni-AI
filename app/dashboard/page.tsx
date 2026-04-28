@@ -437,14 +437,14 @@ export default function Dashboard() {
                 background: 'linear-gradient(135deg, #a78bfa, #38bdf8)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <Sparkles className="w-4 h-4" style={{ color: '#fff' }} />
+                <Sparkles size={18} color="#fff" />
               </div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Agentic Assets</div>
                 <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Owner-only · prompts, models, automations, secrets</div>
               </div>
             </div>
-            <ArrowRight className="w-5 h-5" style={{ color: '#a78bfa' }} />
+            <ArrowRight size={18} color="#a78bfa" />
           </Link>
         )}
 
