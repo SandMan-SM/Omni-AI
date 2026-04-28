@@ -122,7 +122,11 @@ async function run(): Promise<NextResponse> {
 }
 
 function todayPretty(): string {
-  return new Date().toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+  // Render in Utah time so the digest header reads consistently for the owner
+  return new Date().toLocaleDateString("en-US", {
+    month: "short", day: "numeric", year: "numeric",
+    timeZone: "America/Denver",
+  });
 }
 
 function renderDigestEmail(p: {

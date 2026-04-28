@@ -89,6 +89,31 @@ export function AgiAdminPanel() {
   const ActiveView = TABS.find(t => t.id === active)?.view;
   const tabsScrollRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
+  const [activeBizName, setActiveBizName] = useState<string | null>(null);
+
+  // Read + listen to the global active-business localStorage key so the
+  // panel header shows which tenant is currently filtered.
+  useEffect(() => {
+    function refresh() {
+      if (typeof window === "undefined") return;
+      const id = localStorage.getItem("omni_active_business_id");
+      if (!id || id === "all") { setActiveBizName(null); return; }
+      // Defer name resolution to a fire-and-forget query
+      fetch(`/api/agi/businesses/advancement`, { cache: "no-store" })
+        .then(r => r.ok ? r.json() : { businesses: [] })
+        .then(d => {
+          const b = (d.businesses ?? []).find((b: { business_id: string; business_name: string }) => b.business_id === id);
+          setActiveBizName(b?.business_name ?? null);
+        })
+        .catch(() => {});
+    }
+    refresh();
+    function onStorage(ev: StorageEvent) {
+      if (ev.key === "omni_active_business_id") refresh();
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Auto-scroll the active tab into view when the tab changes — the tab strip
   // overflows on mobile, so without this users can lose track of which tab
@@ -121,6 +146,20 @@ export function AgiAdminPanel() {
             </p>
           </div>
         </div>
+        {/* Active-business pill — shows which tenant filters the embedded
+            sub-pages. Clicking deep-links to /assets where the switcher lives. */}
+        <a
+          href="/assets"
+          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition-colors"
+          style={{
+            background: activeBizName ? "rgba(167,139,250,0.12)" : "rgba(255,255,255,0.04)",
+            borderColor: activeBizName ? "rgba(167,139,250,0.35)" : "rgba(255,255,255,0.1)",
+            color: activeBizName ? "#cbb6ff" : "#94a3b8",
+          }}
+        >
+          <span style={{ width: 6, height: 6, borderRadius: "50%", background: activeBizName ? "#a78bfa" : "#666" }} />
+          {activeBizName ?? "All Businesses"}
+        </a>
       </div>
 
       {/* Tabs */}
