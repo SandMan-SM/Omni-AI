@@ -8,8 +8,9 @@ import {
   Mail, Phone, Link as LinkIcon, MapPin, Star, RefreshCw,
   CircleDot, CheckCircle2, XCircle, Clock, Award, Filter,
   Sparkles, Upload, Building2, BarChart3, Inbox, Settings as SettingsIcon,
-  Bot, BookOpen, Calendar, CreditCard, Activity, Brain
+  Bot, BookOpen, Calendar, CreditCard, Activity, Brain, Pencil
 } from 'lucide-react';
+import { AgentEditPanel } from '@/components/agi/AgentEditPanel';
 
 const STATUS_CONFIG = {
   new:       { label: 'New',       color: '#818cf8', bg: 'rgba(129,140,248,0.12)' },
@@ -125,12 +126,18 @@ function LeadRow({ lead, onClick, businessName }: { lead: Lead; onClick: () => v
   );
 }
 
-function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () => void; onStatusChange: (id: string, status: Lead['status']) => void }) {
+function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Lead; onClose: () => void; onStatusChange: (id: string, status: Lead['status']) => void; onProfileSaved?: () => void }) {
   const src = SOURCE_CONFIG[lead.source];
   const [aliases, setAliases] = useState<string[]>([]);
   const [history, setHistory] = useState<Array<{ id: string; from_status: string | null; to_status: string; changed_at: string; note: string | null }>>([]);
   const [activity, setActivity] = useState<Array<{ id: string; event_type: string; event_subtype: string | null; details: Record<string, unknown> | null; created_at: string }>>([]);
   const [logging, setLogging] = useState(false);
+  // Profile-backed leads can open the full agent editor (tier, arena card
+  // overrides, premium flag, business link, etc.). For non-profile leads
+  // (apollo/import/web), the button is hidden — there's no profile row to
+  // edit and the regular fields are already inline above.
+  const profileId = lead.source_table === 'profiles' ? lead.source_record_id : null;
+  const [agentEditOpen, setAgentEditOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -462,6 +469,21 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
 
         {/* Actions */}
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {profileId && (
+            <button
+              onClick={() => setAgentEditOpen(true)}
+              title="Open the full agent editor — edit tier, arena card stats (value/rating/reach), premium flag, linked business, and confidential contact info."
+              style={{
+                background: 'linear-gradient(135deg, #1a1532, #0d0d0d)',
+                border: '1px solid #a78bfa60', color: '#c4b5fd',
+                padding: '10px 20px', borderRadius: 10,
+                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              <Pencil size={12} /> Edit full profile · tier, card &amp; stats
+            </button>
+          )}
           <button
             onClick={async () => {
               const r = await fetch('/api/agi/leads/score-ai', {
@@ -494,6 +516,17 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
           </Link>
         </div>
       </div>
+
+      {/* Full agent / profile editor — only mounts when explicitly opened.
+          On save, refreshes the parent lead list so trigger-driven changes
+          (status, company, etc.) flow back into the visible row. */}
+      {agentEditOpen && profileId && (
+        <AgentEditPanel
+          agentId={profileId}
+          onClose={() => setAgentEditOpen(false)}
+          onSaved={() => { setAgentEditOpen(false); onProfileSaved?.(); }}
+        />
+      )}
     </div>
   );
 }
@@ -961,7 +994,23 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {selectedLead && <LeadPanel lead={selectedLead} onClose={() => setSelectedLead(null)} onStatusChange={handleStatusChange} />}
+      {selectedLead && (
+        <LeadPanel
+          lead={selectedLead}
+          onClose={() => setSelectedLead(null)}
+          onStatusChange={handleStatusChange}
+          onProfileSaved={async () => {
+            // The profile-sync trigger fires on UPDATE, so the lead row in
+            // omni_leads_generated reflects fresh company/title/status. Pull
+            // the updated row + refresh the side panel selection.
+            await loadData(selectedBiz ? selectedBiz.id : null);
+            if (selectedLead) {
+              const { data } = await supabase.from('omni_leads_generated').select('*').eq('id', selectedLead.id).maybeSingle();
+              if (data) setSelectedLead(data as Lead);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
