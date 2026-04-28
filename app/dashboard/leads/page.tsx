@@ -129,6 +129,8 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
   const src = SOURCE_CONFIG[lead.source];
   const [aliases, setAliases] = useState<string[]>([]);
   const [history, setHistory] = useState<Array<{ id: string; from_status: string | null; to_status: string; changed_at: string; note: string | null }>>([]);
+  const [activity, setActivity] = useState<Array<{ id: string; event_type: string; event_subtype: string | null; details: Record<string, unknown> | null; created_at: string }>>([]);
+  const [logging, setLogging] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,8 +154,37 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
       .then(d => { if (!cancelled) setHistory(d.history ?? []); })
       .catch(() => {});
 
+    // Activity log — calls, emails, notes
+    fetch(`/api/agi/leads/activity?lead_id=${lead.id}`, { cache: 'no-store' })
+      .then(r => r.ok ? r.json() : { activity: [] })
+      .then(d => { if (!cancelled) setActivity(d.activity ?? []); })
+      .catch(() => {});
+
     return () => { cancelled = true; };
   }, [lead.id, lead.email]);
+
+  async function logActivity(event_type: string, opts: { event_subtype?: string; note?: string } = {}) {
+    setLogging(true);
+    try {
+      const r = await fetch('/api/agi/leads/activity', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lead_id: lead.id, event_type,
+          event_subtype: opts.event_subtype,
+          details: opts.note ? { note: opts.note } : undefined,
+        }),
+      });
+      const j = await r.json();
+      if (j.ok) {
+        // Reload activity stream
+        const r2 = await fetch(`/api/agi/leads/activity?lead_id=${lead.id}`, { cache: 'no-store' });
+        const d = await r2.json();
+        setActivity(d.activity ?? []);
+      }
+    } finally {
+      setLogging(false);
+    }
+  }
 
   // Split combined company string ("Omni AI · AI Integrated Solutions · Omni Leads LLC")
   const companies = (lead.company ?? '').split(/\s*·\s*/).filter(Boolean);
@@ -289,6 +320,55 @@ function LeadPanel({ lead, onClose, onStatusChange }: { lead: Lead; onClose: () 
             </div>
           </Section>
         )}
+
+        {/* Quick log buttons + activity stream */}
+        <Section title={`Activity${activity.length > 0 ? ` · ${activity.length}` : ''}`}>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            <button onClick={() => logActivity('call', { event_subtype: 'made' })} disabled={logging}
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', color: '#10b981', padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: logging ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Phone size={11} /> Log call
+            </button>
+            <button onClick={() => logActivity('email', { event_subtype: 'sent' })} disabled={logging}
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', color: '#818cf8', padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: logging ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Mail size={11} /> Log email
+            </button>
+            <button onClick={() => {
+              const note = prompt('Add a note to this lead:');
+              if (note?.trim()) logActivity('note', { note });
+            }} disabled={logging}
+              style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', color: '#facc15', padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: logging ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+              <Star size={11} /> Add note
+            </button>
+          </div>
+
+          {activity.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 10 }}>
+              {activity.slice(0, 8).map(a => {
+                const c = a.event_type === 'call' ? '#10b981'
+                       : a.event_type === 'email' ? '#818cf8'
+                       : a.event_type === 'note' ? '#facc15'
+                       : a.event_type === 'meeting' ? '#a78bfa'
+                       : '#666';
+                const note = (a.details as { note?: string } | null)?.note;
+                return (
+                  <div key={a.id} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', padding: '6px 8px', background: '#0a0a0a', borderRadius: 6, border: '1px solid #1a1a1a' }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: c, marginTop: 5, flexShrink: 0, boxShadow: `0 0 4px ${c}80` }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 11, color: '#e8e8e8' }}>
+                        <span style={{ fontWeight: 700, textTransform: 'capitalize' }}>{a.event_type}</span>
+                        {a.event_subtype && <span style={{ color: '#666' }}> · {a.event_subtype}</span>}
+                      </div>
+                      {note && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{note}</div>}
+                      <div style={{ fontSize: 10, color: '#444', marginTop: 2 }}>
+                        {new Date(a.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Section>
 
         {/* Status timeline — every transition this lead has gone through */}
         {history.length > 0 && (
