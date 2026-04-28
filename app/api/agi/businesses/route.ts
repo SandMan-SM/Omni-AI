@@ -48,6 +48,16 @@ export async function POST(req: NextRequest) {
     console.error("[businesses POST]", error);
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
+
+  // Write to audit log (fire-and-forget)
+  sb.from("omni_admin_audit_log").insert({
+    actor: "admin",
+    action: "business_onboarded",
+    target_type: "business",
+    target_id: data.id,
+    metadata: { name: data.name, plan: data.plan },
+  }).then(() => {});
+
   return NextResponse.json({ ok: true, business: data, existed: false });
 }
 

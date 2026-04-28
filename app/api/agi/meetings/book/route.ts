@@ -166,6 +166,22 @@ export async function DELETE(req: NextRequest) {
       }).catch(() => {});
     }
 
+    // Audit log
+    if (booking) {
+      supabase.from("omni_admin_audit_log").insert({
+        actor: "admin",
+        action: hard ? "meeting_deleted" : "meeting_cancelled",
+        target_type: "meeting",
+        target_id: id,
+        metadata: {
+          attendee_name: booking.attendee_name,
+          attendee_email: booking.attendee_email,
+          start_at: booking.start_at,
+          notify,
+        },
+      }).then(() => {});
+    }
+
     return NextResponse.json({ ok: true, emailed: notify && !!booking?.attendee_email });
   } catch (err) {
     console.error('[meetings/book DELETE]', err);
