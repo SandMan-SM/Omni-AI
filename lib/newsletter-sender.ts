@@ -141,12 +141,99 @@ function cleanIntro(text: string): string {
   // Remove leading "- " or "* " bullet markers from each line
   const lines = text.split('\n').map(line => line.replace(/^[\s]*[-*•]\s+/, '').trim()).filter(Boolean);
   // If multiple short bullet fragments were joined, re-join as a sentence paragraph
-  return lines.join(' ');
+  return smartQuotes(lines.join(' '));
 }
 
+// ── Newsletter rubric (single source of truth) ──────────────────────────────
+// These constants are the canonical rubric — referenced in the model prompts
+// AND enforced post-hoc by the `cleanInsights` / `padKeywords` helpers so the
+// final DB row always matches even when the model freelances.
+export const NEWSLETTER_RUBRIC = {
+  insightsCount: 3,        // Premium AND free: exactly 3 insight paragraphs
+  keywordsCount: 11,       // Every post: exactly 11 keyword tags
+} as const;
+
+// Brand-safe keyword pool used to pad sparse keyword arrays up to the rubric.
+const KEYWORD_PAD_POOL = [
+  'Omni AI agentic playbook',
+  'Interlinked Premium 2026',
+  'agentic AI strategy',
+  'AI operator brief',
+  'NVIDIA partnership signal',
+  'enterprise AI 2026',
+  'AI moat thesis',
+  'agent stack blueprint',
+  'agentic engineering #1 nation',
+  'AI revenue intelligence',
+  'AI-native business 2026',
+];
+
+/**
+ * Convert ASCII straight quotes to typographic curly quotes. Walks the string
+ * left-to-right and alternates `"` between U+201C and U+201D; converts every
+ * `'` to U+2019. Idempotent (existing curly quotes pass through untouched).
+ */
+function smartQuotes(text: string | null | undefined): string {
+  if (!text) return text ?? '';
+  let out = '';
+  let openDouble = true;
+  for (const ch of text) {
+    if (ch === '"') {
+      out += openDouble ? '“' : '”';
+      openDouble = !openDouble;
+    } else if (ch === "'") {
+      out += '’';
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+/**
+ * Normalize generated insight strings against the rubric:
+ *   1. Strip leading bullet markers (- * •).
+ *   2. Strip leading **Bold header.** patterns (e.g. "**The number that
+ *      matters.** ...") — these have been explicitly disallowed.
+ *   3. Smart-quote conversion.
+ *   4. Trim to exactly NEWSLETTER_RUBRIC.insightsCount items.
+ */
 function cleanInsights(insights: string[]): string[] {
-  // Strip any leading bullet characters from insight text so HTML list items are clean
-  return insights.map(ins => ins.replace(/^[\s]*[-*•]\s+/, '').trim());
+  return (insights || [])
+    .map(ins =>
+      smartQuotes(
+        (ins ?? '')
+          // bullet markers
+          .replace(/^[\s]*[-*•]\s+/, '')
+          // **Bold header.** lead (any punctuation after the bold)
+          .replace(/^\s*\*\*[^*]+\*\*[\s]*/, '')
+          .trim()
+      )
+    )
+    .filter(s => s.length > 0)
+    .slice(0, NEWSLETTER_RUBRIC.insightsCount);
+}
+
+/**
+ * Pad/trim a keyword array to exactly NEWSLETTER_RUBRIC.keywordsCount items.
+ * Brand-safe defaults are appended only when the post is short — duplicates
+ * are skipped so a post that already includes a brand tag stays clean.
+ */
+function padKeywords(keywords: string[] | undefined | null): string[] {
+  const target = NEWSLETTER_RUBRIC.keywordsCount;
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const raw of keywords || []) {
+    const k = (raw ?? '').trim();
+    if (!k || seen.has(k)) continue;
+    seen.add(k);
+    out.push(k);
+  }
+  for (const fill of KEYWORD_PAD_POOL) {
+    if (out.length >= target) break;
+    if (!out.includes(fill)) out.push(fill);
+  }
+  return out.slice(0, target);
 }
 
 function getDayType(): 'value' | 'insight' | 'offer' {
@@ -206,7 +293,10 @@ export async function generateFreeContent(avoidSubjectsOrSnippets: string[] | Av
   const keywordStr = keywords.slice(0, 8).join(', ');
 
   if (!ANTHROPIC_API_KEY) {
-    return { ...fallbackContent(today), keywords, tier: 'free' };
+    const fb = fallbackContent(today);
+    fb.insights = cleanInsights(fb.insights);
+    fb.keywords = padKeywords(keywords);
+    return { ...fb, tier: 'free' };
   }
 
   const snippetAvoidBlock = [
@@ -226,7 +316,8 @@ export async function generateFreeContent(avoidSubjectsOrSnippets: string[] | Av
     console.log(`[generateFreeContent] Attempt ${attempt + 1}: snippet duplicate detected, retrying`);
   }
   const fb = fallbackContent(today);
-  fb.keywords = keywords;
+  fb.insights = cleanInsights(fb.insights);
+  fb.keywords = padKeywords(keywords);
   fb.tier = 'free';
   fb.slug = createSlug(fb.subject);
   fb.closing = subjectTailoredClosing(fb.subject, 'free');
@@ -282,13 +373,16 @@ WRITING STYLE — RIGHT-BRAIN FIRST:
 Include:
 1. A punchy, emotionally resonant subject line (NOT "Interlinked Daily — date" — use something that creates urgency or curiosity, like "The Businesses That Didn't Adapt Are Already Gone")
 2. Brief intro (2-3 sentences) that drops the reader into a moment — make them feel the stakes
-3. 3 key insights: each starts with a vivid image or story, then lands a fact that seals the conviction — at least one insight should organically reference the NVIDIA partnership, the $50K program, or the founders' blockchain legacy
+3. EXACTLY 3 key insights — no more, no less. Each insight is one focused paragraph of clean prose. DO NOT prefix any insight with a "**Bold header.**" pattern; DO NOT use markdown bold/italic anywhere inside the insight body. At least one insight should organically reference the NVIDIA partnership, the $50K program, or the founders' blockchain legacy
 4. One "Power Move" — a specific action that feels exciting, not like homework
 5. A closing line that lingers — poetic, bold, memorable
 6. A quote that hits emotionally (right-brain: intuition, creativity, vision — NOT dry logic)
 7. An offer/CTA related to Omni AI services — tie to the $50,000 sponsored program when relevant
 
-Brand tone: visionary, cinematic, empowering. Like a mentor who makes you feel the future before explaining it.
+FORMATTING RUBRIC (HARD CONSTRAINTS — non-negotiable):
+- insights: array of EXACTLY 3 plain-text strings. Never 4. Never 5. No bold/italic/markdown. No leading "**Header.**" patterns.
+- All prose uses curly typographic quotes — “double” and ’single’ — never straight ASCII quotes.
+- Brand tone: visionary, cinematic, empowering. Like a mentor who makes you feel the future before explaining it.
 
 Respond ONLY with valid JSON:
 {"subject":"...","intro":"...","insights":["...","...","..."],"power_move":"...","closing":"...","quote":"...","offer":"..."}`
@@ -304,7 +398,14 @@ Respond ONLY with valid JSON:
       if (start >= 0) {
         const parsed = JSON.parse(text.slice(start, end)) as NewsletterContent;
         parsed.intro = cleanIntro(parsed.intro);
-        parsed.keywords = keywords;
+        // RUBRIC ENFORCEMENT — strip bold leads, smart-quote, cap to 3.
+        parsed.insights = cleanInsights(parsed.insights);
+        // Smart-quote everything else
+        parsed.power_move = smartQuotes(parsed.power_move);
+        parsed.closing = smartQuotes(parsed.closing);
+        parsed.quote = smartQuotes(parsed.quote);
+        parsed.offer = smartQuotes(parsed.offer);
+        parsed.keywords = padKeywords(keywords);
         parsed.tier = 'free';
         parsed.slug = createSlug(parsed.subject);
         return parsed;
@@ -333,7 +434,8 @@ export async function generatePremiumContent(avoidSubjectsOrSnippets: string[] |
 
   if (!ANTHROPIC_API_KEY) {
     const fb = premiumFallbackContent(today, dayType);
-    fb.keywords = keywords;
+    fb.insights = cleanInsights(fb.insights);
+    fb.keywords = padKeywords(keywords);
     return { ...fb, tier: 'premium', day_type: dayType };
   }
 
@@ -411,13 +513,17 @@ WRITING STYLE — RIGHT-BRAIN FIRST:
 Include:
 1. A compelling, emotionally charged subject line (NO prefix — just pure intrigue or urgency)
 2. A personalized intro that drops the reader into a visceral moment — make them feel seen AND shaken — reference the founders' vision and where Omni AI stands today
-3. 3 deep insights: each opens with a story or image, then anchors with a fact that seals conviction — weave in NVIDIA, the $50K program, and the blockchain founder legacy naturally across the insights
+3. EXACTLY 3 deep insights — no more, no less. Each insight is one focused paragraph of clean prose. DO NOT prefix any insight with a "**Bold header.**" pattern (e.g. "**The number that matters.**"); DO NOT use markdown bold/italic anywhere inside the insight body. Weave in NVIDIA, the $50K program, and the blockchain founder legacy naturally across the insights
 4. A power move that feels like a revelation, not a task
 5. An exclusive insight only premium gets — tie to the $50K program or the NVIDIA partnership advantage
 6. An AI tool/workflow recommendation framed as a secret weapon — position it in the context of being backed by the #1 agentic engineering team in the nation
 7. A closing that lingers — poetic, haunting, unforgettable
 8. A quote that hits the soul (right-brain: intuition, vision, creativity — NOT dry strategy)
 9. An offer/CTA tied to the $50,000 sponsored program
+
+FORMATTING RUBRIC (HARD CONSTRAINTS — non-negotiable, will be auto-rejected if violated):
+- insights: array of EXACTLY 3 plain-text strings. Never 4. Never 5. No bold/italic/markdown. No leading "**Header.**" patterns.
+- All prose (intro, insights, power_move, closing, quote, offer, exclusive_insight, ai_recommendation) uses curly typographic quotes — “double” and ’single’ — never straight ASCII quotes.
 
 Respond ONLY with valid JSON:
 {"subject":"...","intro":"...","insights":["...","...","..."],"power_move":"...","closing":"...","quote":"...","offer":"...","exclusive_insight":"...","ai_recommendation":"..."}`
@@ -433,8 +539,16 @@ Respond ONLY with valid JSON:
       if (start >= 0) {
         const parsed = JSON.parse(text.slice(start, end)) as PremiumContent;
         parsed.intro = cleanIntro(parsed.intro);
+        // RUBRIC ENFORCEMENT — strip bold leads, smart-quote, cap to 3.
         parsed.insights = cleanInsights(parsed.insights);
-        parsed.keywords = keywords;
+        // Smart-quote every prose field so straight ASCII quotes never reach the page.
+        parsed.power_move = smartQuotes(parsed.power_move);
+        parsed.closing = smartQuotes(parsed.closing);
+        parsed.quote = smartQuotes(parsed.quote);
+        parsed.offer = smartQuotes(parsed.offer);
+        parsed.exclusive_insight = smartQuotes(parsed.exclusive_insight);
+        parsed.ai_recommendation = smartQuotes(parsed.ai_recommendation);
+        parsed.keywords = padKeywords(keywords);
         parsed.slug = createSlug(parsed.subject);
         parsed.tier = 'premium';
         parsed.day_type = dayType;
@@ -453,7 +567,8 @@ Respond ONLY with valid JSON:
   }
 
   const fb = premiumFallbackContent(today, dayType || 'value');
-  fb.keywords = keywords;
+  fb.insights = cleanInsights(fb.insights);
+  fb.keywords = padKeywords(keywords);
   fb.closing = subjectTailoredClosing(fb.subject, 'premium');
   return { ...fb, tier: 'premium', day_type: dayType || 'value' };
 }

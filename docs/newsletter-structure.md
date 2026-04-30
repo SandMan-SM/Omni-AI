@@ -26,6 +26,15 @@ One accent per render. Never mixed.
 4. **Intro / hook** — plain paragraph, 15–17px prose. No bubble.
 5. **Today's insights** — mono uppercase label in accent color; each
    insight is a standalone paragraph (never bullets — locked rule).
+   **HARD RUBRIC** (premium AND free):
+   - EXACTLY 3 insights — never 4, never 5. Enforced at write-time by
+     `cleanInsights()` in `lib/newsletter-sender.ts` and at the DB layer
+     by the `omni_normalize_insights()` SQL helper.
+   - No `**Bold header.**` lead patterns (e.g. `**The number that matters.**`).
+     Stripped automatically by both helpers.
+   - All prose uses curly typographic quotes (`“...”` and `’`), never
+     straight ASCII quotes. Conversion runs in `smartQuotes()` and the
+     `omni_smart_quotes()` SQL function.
 6. **Premium · exclusive insight** — premium only, if `exclusive_insight` is set.
    Same card shape as insights.
 7. **AI tool of the week** — premium only, if `ai_recommendation` is set.
@@ -37,8 +46,13 @@ One accent per render. Never mixed.
    - **Share** (secondary, outlined) → `mailto:` prefilled with subject = `Interlinked: <subject>` and body containing the post URL + book-now URL.
 10. **$50K certification callout** — accent-soft bg + accent border.
     `Get a $50,000 certification — free` · `Sponsored by Omni AI · Join the community` (→ `https://t.me/+HxMnLSV1FYs0YmIx`).
-11. **Today's trends** — mono uppercase label + keyword pills (max 12).
-    Left-aligned. Same pills on web; inline list on email.
+11. **Today's trends** — mono uppercase label + keyword pills.
+    **HARD RUBRIC**: EXACTLY 11 keyword tags per post — no more, no less.
+    Padded by `padKeywords()` (TS) / `omni_pad_keywords()` (SQL) when the
+    LLM returns fewer; trimmed when it returns more. Brand-safe fallbacks
+    (`Omni AI agentic playbook`, `Interlinked Premium 2026`, etc.) are
+    appended only when the post comes back short. Left-aligned on web;
+    inline list on email.
 12. **Footer** — mono tagline + 2 links:
     - Free: `Manage subscription` (→ `/dashboard`) · `Upgrade to Premium` (→ `/interlinked/premium`)
     - Premium: `Manage account` (→ `/dashboard`) · `Affiliate program` (→ `/affiliate/info`)
