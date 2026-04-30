@@ -309,8 +309,13 @@ export default async function NewsletterPostPage({ params }: Props) {
             }`}
           >
             <blockquote>
+              {/* Render the quote field VERBATIM. The DB stores the
+                  closing curly quote BEFORE the attribution (— Name, Title)
+                  so the punctuation reads naturally. We don't auto-wrap
+                  here because that puts the closing mark after the
+                  attribution, which is grammatically wrong. */}
               <p className="text-lg md:text-xl text-gray-100 italic leading-[1.75] text-left">
-                &ldquo;{post.quote}&rdquo;
+                {post.quote}
               </p>
             </blockquote>
           </figure>
