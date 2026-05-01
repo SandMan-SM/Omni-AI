@@ -49,7 +49,42 @@ export async function logout(): Promise<void> {
   localStorage.removeItem('omni_user');
 }
 
+/**
+ * Decode the base64(JSON) omni_token and return its payload, or null if the
+ * token is missing / malformed / expired. Side-effect: when the token is
+ * expired, the stored token + user are cleared so callers that previously
+ * thought they were "logged in" via getStoredUser() correctly see null.
+ *
+ * The server (`requireAdmin`) does the same exp check — we mirror it here so
+ * the client can detect the stale-token state proactively (instead of only
+ * after a 401 round-trip).
+ */
+function decodeStoredTokenPayload(): { sub?: string; exp?: number } | null {
+  if (typeof window === 'undefined') return null;
+  const raw = localStorage.getItem('omni_token');
+  if (!raw) return null;
+  try {
+    const json = atob(raw);
+    const payload = JSON.parse(json) as { sub?: string; exp?: number };
+    if (typeof payload.exp === 'number' && payload.exp < Date.now()) {
+      // Token expired — purge it so subsequent reads don't keep returning a
+      // user that the server has stopped accepting.
+      localStorage.removeItem('omni_token');
+      localStorage.removeItem('omni_user');
+      return null;
+    }
+    return payload;
+  } catch {
+    return null;
+  }
+}
+
 export function getStoredUser(): OmniUser | null {
+  if (typeof window === 'undefined') return null;
+  // First, validate the token. If it's expired/missing/malformed,
+  // decodeStoredTokenPayload() purges localStorage and returns null —
+  // we follow with null too so the app falls back to logged-out UX.
+  if (!decodeStoredTokenPayload()) return null;
   const userStr = localStorage.getItem('omni_user');
   if (!userStr) return null;
   try {
@@ -61,7 +96,8 @@ export function getStoredUser(): OmniUser | null {
 
 export function getToken(): string | null {
   if (typeof window === 'undefined') return null;
-  return localStorage.getItem('omni_token');
+  // Validate before returning so callers don't include a known-stale bearer.
+  return decodeStoredTokenPayload() ? localStorage.getItem('omni_token') : null;
 }
 
 export function isAuthenticated(): boolean {

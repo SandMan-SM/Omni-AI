@@ -116,14 +116,26 @@ export function CommandCenter() {
   const [nlSummary, setNlSummary] = useState<NewsletterSummary | null>(null);
   const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
   const [loading, setLoading] = useState(true);
+  // Detect stale-session state (omni_token expired/missing). When set, the
+  // dashboard renders a re-login prompt instead of empty cards — that's the
+  // visible symptom of "dashboard not working" the owner kept hitting.
+  const [authExpired, setAuthExpired] = useState(false);
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
     const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
     Promise.all([
-      fetch("/api/dashboard/metrics", { headers: authHeaders }).then(r => r.json()),
-      fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store', headers: authHeaders }).then(r => r.json()).catch(() => ({ posts: [], summary: null })),
-    ]).then(([metricsData, nlData]) => {
+      fetch("/api/dashboard/metrics", { headers: authHeaders }),
+      fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store', headers: authHeaders }).catch(() => null),
+    ]).then(async ([metricsRes, nlRes]) => {
+      // 401 from EITHER endpoint → session is stale. Show the prompt.
+      if (metricsRes.status === 401 || (nlRes && nlRes.status === 401)) {
+        setAuthExpired(true);
+        setLoading(false);
+        return;
+      }
+      const metricsData = await metricsRes.json().catch(() => null);
+      const nlData = nlRes ? await nlRes.json().catch(() => null) : null;
       setMetrics(metricsData);
       // Newest published per tier: one free + one premium
       const published = (nlData?.posts ?? [])
@@ -146,6 +158,27 @@ export function CommandCenter() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="h-32 rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse" />
         ))}
+      </div>
+    );
+  }
+
+  if (authExpired) {
+    return (
+      <div className="rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] p-8 text-center max-w-2xl mx-auto">
+        <div className="text-base font-semibold text-amber-200 mb-2">
+          Your admin session expired
+        </div>
+        <div className="text-sm text-gray-300 mb-6 leading-relaxed">
+          The dashboard token is good for 7 days; sign back in to refresh it
+          and the metrics, newsletter history, and command-center cards will
+          load again.
+        </div>
+        <a
+          href="/command"
+          className="inline-block px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-sm"
+        >
+          Sign back in
+        </a>
       </div>
     );
   }
