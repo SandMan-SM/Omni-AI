@@ -249,6 +249,13 @@ export interface AvoidSnippets {
   intros?: string[];
   power_moves?: string[];
   closings?: string[];
+  // Every individual insight body from recent posts. The generator must
+  // not produce a paragraph that's substantially similar to any of these.
+  insights?: string[];
+  // Optional: insights produced earlier in the SAME generation run (e.g.
+  // the free draft we just built, when generating the premium draft).
+  // Treated identically to `insights` but always wins recency.
+  same_run_insights?: string[];
 }
 
 function sharesLeadingChars(a: string, b: string, n = 50): boolean {
@@ -258,10 +265,82 @@ function sharesLeadingChars(a: string, b: string, n = 50): boolean {
   return na.length >= n && na === nb;
 }
 
+/**
+ * Token-set Jaccard similarity. 0 = no overlap, 1 = identical wordbags.
+ * Stop-words are stripped first so two paragraphs aren't called "similar"
+ * just because they both used "the / and / a / is / etc.".
+ */
+const STOPWORDS = new Set([
+  "the","a","an","and","or","but","if","then","of","in","on","at","to","for","with","is","are","was","were","be","been","being","it","its","that","this","these","those","i","you","we","they","he","she","my","your","our","their","just","not","no","do","does","did","have","has","had","by","as","from","so","up","out","into","about","over","under","than","such","one","two","three","also","because","while","what","when","where","who","why","how","all","any","each","more","most","very","yet","you'll","you're","they're","its","it's","there","there's","here","here's"
+]);
+
+function tokenSet(text: string): Set<string> {
+  return new Set(
+    (text || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\s']/g, " ")
+      .split(/\s+/)
+      .filter(t => t.length >= 3 && !STOPWORDS.has(t))
+  );
+}
+
+function jaccardSim(a: string, b: string): number {
+  const A = tokenSet(a);
+  const B = tokenSet(b);
+  if (A.size === 0 || B.size === 0) return 0;
+  let inter = 0;
+  A.forEach(t => { if (B.has(t)) inter++; });
+  const union = A.size + B.size - inter;
+  return union === 0 ? 0 : inter / union;
+}
+
+// Tunable threshold. Two prose blocks above this score are "too similar".
+// 0.45 catches obvious paraphrases without flagging unrelated text that
+// happens to share a few brand keywords.
+const SIM_THRESHOLD = 0.45;
+
+function isSimilarTo(candidate: string, pool: string[] | undefined): boolean {
+  if (!pool?.length || !candidate) return false;
+  for (const prev of pool) {
+    if (jaccardSim(candidate, prev) >= SIM_THRESHOLD) return true;
+  }
+  return false;
+}
+
 function hasDuplicateSnippet(c: NewsletterContent, avoid: AvoidSnippets): boolean {
+  // Leading-50-chars exact-prefix match (the original cheap check)
   if (avoid.intros?.some(x => sharesLeadingChars(c.intro, x))) return true;
   if (avoid.power_moves?.some(x => sharesLeadingChars(c.power_move, x))) return true;
   if (avoid.closings?.some(x => sharesLeadingChars(c.closing, x))) return true;
+  // Stronger semantic check — Jaccard token overlap. Catches paraphrases
+  // and reused themes (e.g. the "Blockchain wasn't built by people who
+  // played it safe…" insight that historically appeared in 6+ posts).
+  if (isSimilarTo(c.intro, avoid.intros)) return true;
+  if (isSimilarTo(c.power_move, avoid.power_moves)) return true;
+  if (isSimilarTo(c.closing, avoid.closings)) return true;
+  const pool = [...(avoid.insights ?? []), ...(avoid.same_run_insights ?? [])];
+  if (pool.length && Array.isArray(c.insights)) {
+    for (const ins of c.insights) {
+      const body = typeof ins === "string"
+        ? ins
+        : ((ins as { body?: string })?.body ?? "");
+      if (isSimilarTo(body, pool)) return true;
+    }
+    // Also reject when the new draft's OWN three insights overlap each
+    // other — three paragraphs saying the same thing is its own kind of
+    // repetition.
+    for (let i = 0; i < c.insights.length; i++) {
+      for (let j = i + 1; j < c.insights.length; j++) {
+        const a = typeof c.insights[i] === "string"
+          ? (c.insights[i] as string)
+          : ((c.insights[i] as { body?: string })?.body ?? "");
+        const b = typeof c.insights[j] === "string"
+          ? (c.insights[j] as string)
+          : ((c.insights[j] as { body?: string })?.body ?? "");
+        if (jaccardSim(a, b) >= SIM_THRESHOLD) return true;
+      }
+    }
+  }
   return false;
 }
 
@@ -299,10 +378,12 @@ export async function generateFreeContent(avoidSubjectsOrSnippets: string[] | Av
     return { ...fb, tier: 'free' };
   }
 
+  const recentInsights = [...(avoid.insights ?? []), ...(avoid.same_run_insights ?? [])];
   const snippetAvoidBlock = [
     avoid.intros?.length ? `Recently used INTRO openers (do NOT start similarly):\n${avoid.intros.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
     avoid.power_moves?.length ? `Recently used POWER MOVES (do NOT repeat):\n${avoid.power_moves.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
     avoid.closings?.length ? `Recently used CLOSINGS (do NOT repeat — generate a fresh one tailored to the subject):\n${avoid.closings.slice(0, 10).map(s => `- "${s.slice(0, 80)}"`).join('\n')}` : '',
+    recentInsights.length ? `Recently used INSIGHT THEMES (do NOT recycle these story beats, statistics, anecdotes, or framings — every insight must be a fresh idea):\n${recentInsights.slice(0, 18).map(s => `- "${s.slice(0, 120)}..."`).join('\n')}` : '',
   ].filter(Boolean).join('\n\n');
 
   const avoidBlock = (avoidSubjects.length > 0
@@ -439,10 +520,12 @@ export async function generatePremiumContent(avoidSubjectsOrSnippets: string[] |
     return { ...fb, tier: 'premium', day_type: dayType };
   }
 
+  const recentInsights = [...(avoid.insights ?? []), ...(avoid.same_run_insights ?? [])];
   const snippetAvoidBlock = [
     avoid.intros?.length ? `Recently used INTRO openers (do NOT start similarly):\n${avoid.intros.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
     avoid.power_moves?.length ? `Recently used POWER MOVES (do NOT repeat):\n${avoid.power_moves.slice(0, 10).map(s => `- "${s.slice(0, 80)}..."`).join('\n')}` : '',
     avoid.closings?.length ? `Recently used CLOSINGS (do NOT repeat — generate a fresh one tailored to the subject):\n${avoid.closings.slice(0, 10).map(s => `- "${s.slice(0, 80)}"`).join('\n')}` : '',
+    recentInsights.length ? `Recently used INSIGHT THEMES (do NOT recycle these story beats, statistics, anecdotes, or framings — every insight must be a fresh idea):\n${recentInsights.slice(0, 18).map(s => `- "${s.slice(0, 120)}..."`).join('\n')}` : '',
   ].filter(Boolean).join('\n\n');
 
   const avoidBlock = (avoidSubjects.length > 0
@@ -1190,13 +1273,17 @@ export async function generateDrafts(supabase: any) {
     console.log(`[generateDrafts] Cleaned up ${deleted?.length || 0} old drafts`);
   }
 
-  // Fetch recent subjects + snippets to avoid duplicates (last 30 days)
-  const avoid: AvoidSnippets = { subjects: [], intros: [], power_moves: [], closings: [] };
+  // Fetch recent subjects + snippets to avoid duplicates (last 30 days).
+  // We pull `insights` too so every individual paragraph from the last 30
+  // days becomes part of the avoid pool — that's the single biggest source
+  // of "drafts repeating information" complaints, since the previous
+  // version only deduped intros + power_moves + closings.
+  const avoid: AvoidSnippets = { subjects: [], intros: [], power_moves: [], closings: [], insights: [] };
   try {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const { data: recentPosts } = await supabase
       .from('newsletter_posts')
-      .select('subject, intro, power_move, closing')
+      .select('subject, intro, power_move, closing, insights')
       .gte('created_at', thirtyDaysAgo)
       .order('created_at', { ascending: false })
       .limit(30);
@@ -1205,8 +1292,21 @@ export async function generateDrafts(supabase: any) {
       avoid.intros = Array.from(new Set(recentPosts.map((p: any) => p.intro).filter(Boolean)));
       avoid.power_moves = Array.from(new Set(recentPosts.map((p: any) => p.power_move).filter(Boolean)));
       avoid.closings = Array.from(new Set(recentPosts.map((p: any) => p.closing).filter(Boolean)));
+      // Flatten every individual insight (string or {body} object) into
+      // one pool. Limited to most recent 60 paragraphs so the prompt
+      // stays bounded; the Jaccard similarity check still runs against
+      // the full set in TypeScript.
+      const allInsights: string[] = [];
+      for (const p of recentPosts) {
+        if (!Array.isArray(p.insights)) continue;
+        for (const ins of p.insights) {
+          const body = typeof ins === 'string' ? ins : (ins?.body ?? '');
+          if (body) allInsights.push(body);
+        }
+      }
+      avoid.insights = Array.from(new Set(allInsights)).slice(0, 60);
     }
-    console.log(`[generateDrafts] Avoiding ${avoid.subjects?.length} subjects, ${avoid.intros?.length} intros, ${avoid.power_moves?.length} power_moves, ${avoid.closings?.length} closings`);
+    console.log(`[generateDrafts] Avoiding ${avoid.subjects?.length} subjects, ${avoid.intros?.length} intros, ${avoid.power_moves?.length} power_moves, ${avoid.closings?.length} closings, ${avoid.insights?.length} insights`);
   } catch (e) {
     console.error('[generateDrafts] Failed to fetch recent content:', e);
   }
