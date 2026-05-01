@@ -225,7 +225,7 @@ export function CommandCenter() {
           color="text-cyan-400"
         />
         <BigMetric
-          label="Newsletter Sends"
+          label="Newsletter Posts"
           value={nlSummary?.totalPosts ?? operations.totalNewslettersSent}
           sub={`${nlSummary?.sentThisWeek ?? operations.newslettersSentThisWeek} this week · ${nlSummary?.drafts ?? 0} drafts`}
           icon={Mail}
