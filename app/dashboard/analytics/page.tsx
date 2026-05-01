@@ -7,6 +7,8 @@ import {
   ArrowLeft, ChevronDown, BarChart3, Users, Send, Eye, MousePointerClick,
   CheckCircle2, TrendingUp, Award, Target, Mail
 } from 'lucide-react';
+import InboundAnalytics from './InboundAnalytics';
+import { OmniSiteAnalytics } from './OmniSiteAnalytics';
 
 type LeadAgg = {
   status: string;
@@ -144,7 +146,63 @@ export default function AnalyticsPage() {
         </div>
       </header>
 
-      <div style={{ padding: 32, maxWidth: 1280, margin: '0 auto' }}>
+      <div className="agi-analytics-content" style={{ padding: 32, maxWidth: 1280, margin: '0 auto' }}>
+        <style jsx global>{`
+          /* Mobile-first overrides for the whole Analytics page. The legacy
+             InboundAnalytics + outbound grids hard-coded repeat(N,...) which
+             overflowed below ~720px (KPI card text wrapped behind itself).
+             These rules force the inner grids to wrap cleanly down to 360px. */
+          @media (max-width: 900px) {
+            .agi-analytics-content {
+              padding: 16px !important;
+            }
+          }
+          @media (max-width: 720px) {
+            .agi-analytics-content [style*="grid-template-columns: repeat(6"],
+            .agi-analytics-content [style*="grid-template-columns: repeat(4"] {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+              gap: 10px !important;
+            }
+            .agi-analytics-content [style*="grid-template-columns: 1fr 1fr"] {
+              grid-template-columns: 1fr !important;
+              gap: 16px !important;
+            }
+          }
+          @media (max-width: 480px) {
+            .agi-analytics-content [style*="grid-template-columns: repeat(6"] {
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+          }
+        `}</style>
+
+        {/* Omni AI website analytics — first-party event-stream view of
+            omnileadsagi.com. Lives at the top because this is the most-
+            asked-for view; the per-client InboundAnalytics + agency
+            outbound metrics stay below for drill-down. */}
+        <OmniSiteAnalytics />
+
+        {/* Per-brand inbound (client website) analytics */}
+        <InboundAnalytics />
+
+        {/* Agency outbound (omni_*) metrics — kept below the per-brand section */}
+        <div style={{ marginBottom: 16 }}>
+          <div
+            style={{
+              fontSize: 11,
+              color: '#facc15',
+              letterSpacing: '1.2px',
+              textTransform: 'uppercase',
+              fontWeight: 700,
+              marginBottom: 6,
+            }}
+          >
+            Agency Outbound
+          </div>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.6px' }}>
+            Outreach Performance — {selectedBiz?.name ?? 'Select a business'}
+          </h2>
+        </div>
+
         {/* Headline metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
           <BigStat icon={Users} label="Total Leads" value={stats.totalLeads} sub={`${qualRate}% qualified`} color="#818cf8" />
