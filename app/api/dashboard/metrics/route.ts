@@ -23,6 +23,18 @@ export async function GET() {
 
   const supabase = createAdminClient();
 
+  // Resolve Omni AI's business id once — every "client / lead" KPI on this
+  // dashboard is anchored to the rows visible in the agentic Clients tab,
+  // which is filtered by business_id = Omni AI. Anything else (admin
+  // profiles, sponsors, sub-tenant pipelines) is excluded from the count
+  // so the KPI cards match the Clients-tab numbers exactly.
+  const { data: omniBiz } = await supabase
+    .from("omni_businesses")
+    .select("id")
+    .eq("name", "Omni AI")
+    .maybeSingle();
+  const omniId: string | null = omniBiz?.id ?? null;
+
   const [
     { data: profiles },
     { data: campaigns },
@@ -33,15 +45,20 @@ export async function GET() {
     { data: agiLeads },
     { data: agiBookings },
   ] = await Promise.all([
-    supabase.from("profiles").select("id,name,email,crm_status,lead_score,total_spent,gross_revenue,newsletter_subscribed,is_premium,is_sponsor,sponsor_tier,last_contacted,satisfaction_score,created_at"),
+    // Profiles still pull `total_spent` for the lifetime-revenue card and
+    // `last_contacted` for follow-up health, but they NO LONGER drive the
+    // client / lead counts — those come straight from omni_leads_generated.
+    supabase.from("profiles").select("id,email,total_spent,last_contacted,satisfaction_score,newsletter_subscribed"),
     supabase.from("campaigns").select("id,profile_id,name,status,type,budget,platform,created_at"),
     supabase.from("newsletter_sends").select("id,subject,sent_at,recipients_total").order("sent_at", { ascending: false }),
     supabase.from("newsletter_posts").select("id,slug,subject,tier,published_at,keywords").order("published_at", { ascending: false }),
     supabase.from("activity_log").select("id,profile_id,type,subject,channel,created_at").order("created_at", { ascending: false }).limit(20),
     supabase.from("newsletter_subscriptions").select("subscribed,subscription_tier"),
-    // Agentic dashboard: merge omni_leads_generated counts so CommandCenter
-    // numbers stay synced with the agentic Pipeline/Leads tabs.
-    supabase.from("omni_leads_generated").select("id,email,status,score,deal_value,created_at,updated_at"),
+    // Pull the SAME rows the Clients tab reads — Omni AI's pipeline only.
+    // This is the single source of truth for total / clients / hot / warm.
+    omniId
+      ? supabase.from("omni_leads_generated").select("id,email,status,score,deal_value,created_at,updated_at").eq("business_id", omniId)
+      : supabase.from("omni_leads_generated").select("id,email,status,score,deal_value,created_at,updated_at"),
     supabase.from("omni_meeting_bookings").select("id,status,created_at"),
   ]);
 
@@ -54,11 +71,18 @@ export async function GET() {
   const allAgiLeads = agiLeads || [];
   const allAgiBookings = agiBookings || [];
 
-  // --- Revenue Engine — DEDUPLICATED merge of legacy profiles + agentic leads ---
-  // Same person can exist in both tables (the auto-sync trigger copies profiles
-  // into omni_leads_generated). Counting them naively double-counts. Build a
-  // single deduped universe keyed by lowercase email — agentic data wins where
-  // both exist (it's more recent + has lead-scoring metadata).
+  // --- Revenue Engine — Omni AI Clients-tab parity ---
+  // Source of truth: omni_leads_generated rows where business_id = Omni AI.
+  // That's exactly what /dashboard/leads (the Clients tab) renders, so
+  // "Total Users" and "X clients" on the command center now match what the
+  // owner sees in the tab. Profiles are ONLY used for derived health signals
+  // (satisfaction, follow-up cadence, lifetime revenue) keyed by email.
+  const profileByEmail = new Map<string, typeof allProfiles[number]>();
+  for (const p of allProfiles) {
+    const key = (p.email ?? "").toLowerCase().trim();
+    if (key) profileByEmail.set(key, p);
+  }
+
   type Person = {
     email: string | null;
     isClient: boolean;
@@ -69,68 +93,43 @@ export async function GET() {
     needsFollowUp: boolean;
     revenue: number;
   };
-  const universe = new Map<string, Person>();
-
-  // Seed from legacy profiles
-  for (const p of allProfiles) {
-    const key = (p.email ?? "").toLowerCase().trim() || `__profile_${p.id}`;
-    const isClient = p.crm_status === "client";
-    const isOpenLead = p.crm_status === "lead" || p.crm_status === "prospect";
-    let critical = false;
-    if (isClient) {
-      let score = 0;
-      if (p.last_contacted) {
-        const days = Math.floor((Date.now() - new Date(p.last_contacted).getTime()) / 86400000);
-        if (days <= 3) score += 40;
-        else if (days <= 7) score += 30;
-        else if (days <= 14) score += 15;
-      }
-      if (p.satisfaction_score) score += (p.satisfaction_score / 5) * 40;
-      if (p.newsletter_subscribed) score += 20;
-      critical = score < 40;
-    }
-    const followUp = (() => {
-      if (!p.last_contacted) return true;
-      const days = Math.floor((Date.now() - new Date(p.last_contacted).getTime()) / 86400000);
-      return days >= 7;
-    })();
-    universe.set(key, {
-      email: p.email,
-      isClient,
-      isOpenLead,
-      isHot: p.lead_score === "hot" && !isClient,
-      isWarm: p.lead_score === "warm" && !isClient,
-      isCritical: critical,
-      needsFollowUp: followUp,
-      revenue: p.gross_revenue || 0,
-    });
-  }
-
-  // Merge agentic leads — overwrite buckets if the same email exists
-  for (const l of allAgiLeads) {
-    const key = (l.email ?? "").toLowerCase().trim() || `__agi_${l.id}`;
+  const people: Person[] = allAgiLeads.map(l => {
     const isClient = l.status === "converted";
     const isOpenLead = l.status !== "converted" && l.status !== "lost";
     const ts = l.updated_at || l.created_at;
     const idleDays = ts
       ? Math.floor((Date.now() - new Date(ts).getTime()) / 86400000)
       : 9999;
-    const existing = universe.get(key);
-    const revenue = (existing?.revenue || 0)
+    // Pull soft signals from the matching profile if one exists.
+    const p = profileByEmail.get((l.email ?? "").toLowerCase().trim());
+    let critical = false;
+    if (isClient) {
+      let score = 0;
+      if (p?.last_contacted) {
+        const days = Math.floor((Date.now() - new Date(p.last_contacted).getTime()) / 86400000);
+        if (days <= 3) score += 40;
+        else if (days <= 7) score += 30;
+        else if (days <= 14) score += 15;
+      }
+      if (p?.satisfaction_score) score += (p.satisfaction_score / 5) * 40;
+      if (p?.newsletter_subscribed) score += 20;
+      critical = score < 40 || idleDays >= 14;
+    }
+    const followUp = !isClient && l.status !== "lost" && idleDays >= 7;
+    const revenue = (p?.total_spent ?? 0)
       + (l.deal_value && isClient ? Number(l.deal_value) / 100 : 0);
-    universe.set(key, {
+    return {
       email: l.email,
-      isClient: isClient || !!existing?.isClient,
-      isOpenLead: isOpenLead && !(isClient || !!existing?.isClient),
-      isHot: ((l.score ?? 0) >= 80 && !isClient) || !!existing?.isHot,
-      isWarm: ((l.score ?? 0) >= 60 && (l.score ?? 0) < 80 && !isClient) || !!existing?.isWarm,
-      isCritical: (isClient && idleDays >= 14) || !!existing?.isCritical,
-      needsFollowUp: (!isClient && l.status !== "lost" && idleDays >= 7) || !!existing?.needsFollowUp,
+      isClient,
+      isOpenLead,
+      isHot: (l.score ?? 0) >= 80 && !isClient,
+      isWarm: (l.score ?? 0) >= 60 && (l.score ?? 0) < 80 && !isClient,
+      isCritical: critical,
+      needsFollowUp: followUp,
       revenue,
-    });
-  }
+    };
+  });
 
-  const people = Array.from(universe.values());
   const totalLeads = people.filter(x => x.isOpenLead).length;
   const totalClients = people.filter(x => x.isClient).length;
   const hotLeads = people.filter(x => x.isHot).length;
@@ -167,21 +166,25 @@ export async function GET() {
   // doesn't get counted twice when they're both a profile + agentic lead.
   const criticalClients = people.filter(x => x.isCritical).length;
 
-  // --- Alerts ---
-  const leadsNotContactedIn24h = allProfiles.filter(p => {
-    if (p.crm_status !== "lead" && p.crm_status !== "prospect") return false;
-    if (!p.last_contacted) return true;
-    const hours = (Date.now() - new Date(p.last_contacted).getTime()) / 3600000;
+  // --- Alerts — open leads in Omni AI's pipeline that haven't been touched
+  // in 24h. Cross-references the matched profile's last_contacted when one
+  // exists; otherwise falls back to the lead's own updated_at timestamp. ---
+  const leadsNotContactedIn24h = allAgiLeads.filter(l => {
+    if (l.status === "converted" || l.status === "lost") return false;
+    const p = profileByEmail.get((l.email ?? "").toLowerCase().trim());
+    const tsStr = p?.last_contacted ?? l.updated_at ?? l.created_at;
+    if (!tsStr) return true;
+    const hours = (Date.now() - new Date(tsStr).getTime()) / 3600000;
     return hours >= 24;
   }).length;
 
-  // --- User growth over time (last 7 days) ---
+  // --- User growth over time (last 7 days) — Omni AI pipeline signups ---
   const now = new Date();
   const userGrowth = Array.from({ length: 7 }, (_, i) => {
     const date = new Date(now);
     date.setDate(date.getDate() - (6 - i));
     const dayStr = date.toISOString().split("T")[0];
-    const count = allProfiles.filter(p => p.created_at && p.created_at.startsWith(dayStr)).length;
+    const count = allAgiLeads.filter(l => l.created_at && l.created_at.startsWith(dayStr)).length;
     return { date: dayStr, signups: count };
   });
 
