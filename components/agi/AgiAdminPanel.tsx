@@ -57,7 +57,7 @@ const TABS: Array<{
   view: React.ComponentType;
   group: "core" | "engage" | "intel" | "ops";
 }> = [
-  { id: "leads",      label: "Leads",       icon: Target,         view: LeadsView,      group: "core" },
+  { id: "leads",      label: "Clients",     icon: Target,         view: LeadsView,      group: "core" },
   { id: "outreach",   label: "Outreach",    icon: Send,           view: OutreachView,   group: "engage" },
   { id: "inbox",      label: "Inbox",       icon: InboxIcon,      view: InboxView,      group: "engage" },
   { id: "coach",      label: "Coach",       icon: Brain,          view: CoachView,      group: "intel" },
