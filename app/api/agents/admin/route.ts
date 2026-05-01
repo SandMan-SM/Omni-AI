@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     agent_name: body.agentName ?? body.agent_name ?? null,
     business_name: body.businessName ?? body.business_name ?? null,
     name: body.ownerName ?? body.name ?? null,
+    username: body.username ?? null,
     email: body.email ?? null,
     phone: body.phone ?? null,
     role: body.role ?? "owner",
@@ -29,6 +30,8 @@ export async function POST(req: NextRequest) {
     lead_score: body.leadScore ?? body.lead_score ?? "warm",
     is_premium: !!body.isPremium,
     is_admin: false,
+    is_sponsor: !!body.isSponsor,
+    sponsor_tier: body.sponsorTier ?? body.sponsor_tier ?? null,
     agent_status: body.agentStatus ?? body.agent_status ?? "active",
     elo_rating: typeof body.elo === "number" ? body.elo : 1000,
     gross_revenue: typeof body.revenue === "number" ? body.revenue : 0,
@@ -92,6 +95,17 @@ export async function PATCH(req: NextRequest) {
     website: "website",
     businessId: "business_id",
     business_id: "business_id",
+    // Telegram-style handle (also surfaced as the public-facing alias)
+    username: "username",
+    // Sponsor flags — admin-editable so we can flip Fred / Sitani / etc.
+    isSponsor: "is_sponsor",
+    is_sponsor: "is_sponsor",
+    sponsorTier: "sponsor_tier",
+    sponsor_tier: "sponsor_tier",
+    sponsorActivated: "sponsor_activated",
+    sponsor_activated: "sponsor_activated",
+    sponsorInsightsPaid: "sponsor_insights_paid",
+    sponsor_insights_paid: "sponsor_insights_paid",
   };
   const update: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {

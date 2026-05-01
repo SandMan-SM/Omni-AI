@@ -57,12 +57,6 @@ export const metadata: Metadata = {
 // should resolve before it gets ISR'd too.
 export const revalidate = 300;
 
-// Manual floors so the page never under-represents reach when a signup
-// source hasn't been wired into Supabase yet. Update these as real counts
-// grow past them.
-const SUBSCRIBERS_FLOOR = 13;
-const IMPRESSIONS_FLOOR = 2000;
-
 function fmtCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M+`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}k+`;
@@ -72,8 +66,11 @@ function fmtCompact(n: number): string {
 export default async function NewsletterIndexPage() {
   const supabase = createAdminClient();
 
-  // Pull posts + live counts in parallel. The three stat queries are cheap
-  // COUNTs; failures fall back to 0 and the floor kicks in.
+  // Pull posts + live data in parallel. Subscriber count is computed from
+  // the actual list of email addresses (deduped across the two sources)
+  // rather than naive counts that double-count every overlap. Sends totals
+  // come straight from `newsletter_sends.recipients_total`. NO manual
+  // floors — the page shows the real number.
   const [postsRes, profileSubRes, newsletterSubRes, sendsRes] = await Promise.all([
     supabase
       .from("newsletter_posts")
@@ -82,9 +79,17 @@ export default async function NewsletterIndexPage() {
       .lte("published_at", new Date().toISOString())
       .order("published_at", { ascending: false })
       .limit(50),
-    supabase.from("profiles").select("id", { count: "exact", head: true }).eq("newsletter_subscribed", true),
-    supabase.from("newsletter_subscriptions").select("id", { count: "exact", head: true }),
-    supabase.from("newsletter_sends").select("recipients_count"),
+    supabase
+      .from("profiles")
+      .select("email")
+      .eq("newsletter_subscribed", true)
+      .not("email", "is", null),
+    supabase
+      .from("newsletter_subscriptions")
+      .select("email")
+      .eq("subscribed", true)
+      .not("email", "is", null),
+    supabase.from("newsletter_sends").select("recipients_total"),
   ]);
 
   const posts = postsRes.data || [];
@@ -92,18 +97,24 @@ export default async function NewsletterIndexPage() {
   const freePosts = posts.filter(p => p.tier !== "premium");
 
   const postsSent = posts.length;
-  const liveSubs = (profileSubRes.count || 0) + (newsletterSubRes.count || 0);
-  const subscribersCount = Math.max(liveSubs, SUBSCRIBERS_FLOOR);
 
-  // Rough viewer estimate: every send × avg 2 opens (open-rate proxy) until
-  // real tracking lands. Floor guarantees the number matches what we've
-  // already done manually/externally.
-  const sendsTotal = (sendsRes.data || []).reduce(
-    (sum, r: { recipients_count?: number | null }) => sum + (r.recipients_count || 0),
+  // Dedup subscribers by lowercased email. A user who's both a profile
+  // (logged-in) AND in newsletter_subscriptions (signed up via the form)
+  // counts once.
+  const subEmails = new Set<string>();
+  for (const row of (profileSubRes.data || []) as Array<{ email: string | null }>) {
+    if (row.email) subEmails.add(row.email.trim().toLowerCase());
+  }
+  for (const row of (newsletterSubRes.data || []) as Array<{ email: string | null }>) {
+    if (row.email) subEmails.add(row.email.trim().toLowerCase());
+  }
+  const subscribersCount = subEmails.size;
+
+  // Real recipient totals from logged sends (no inflation factors).
+  const viewersCount = (sendsRes.data || []).reduce(
+    (sum, r: { recipients_total?: number | null }) => sum + (r.recipients_total || 0),
     0
   );
-  const viewersEstimate = sendsTotal * 2 + postsSent * 20;
-  const viewersCount = Math.max(viewersEstimate, IMPRESSIONS_FLOOR);
 
   const stats = [
     { icon: Mail, value: String(postsSent), label: "Issues Sent" },

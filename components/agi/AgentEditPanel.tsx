@@ -16,9 +16,10 @@ import { Loader2, X, Save, Lock as LockIcon } from "lucide-react";
 export interface ProfileFull {
   id?: string;
   agent_name?: string | null;
+  username?: string | null;       // Telegram-style handle / public alias
   business_name?: string | null;
-  business_id?: string | null;  // FK to omni_businesses
-  name?: string | null;       // owner / admin
+  business_id?: string | null;    // FK to omni_businesses
+  name?: string | null;           // owner / admin
   email?: string | null;
   phone?: string | null;
   role?: string | null;
@@ -35,6 +36,11 @@ export interface ProfileFull {
   arena_reach_override?: number | null;
   arena_rating?: number | null;
   website?: string | null;
+  // Sponsor program flags
+  is_sponsor?: boolean;
+  sponsor_tier?: string | null;       // 'standard' | 'vip' | 'platinum' | null
+  sponsor_activated?: boolean;
+  sponsor_insights_paid?: boolean;
 }
 
 export interface BusinessOption {
@@ -53,12 +59,13 @@ export function AgentEditPanel({
 }) {
   const isNew = agentId === null;
   const [form, setForm] = useState<ProfileFull>({
-    agent_name: "", business_name: "", business_id: null, name: "", email: "", phone: "",
+    agent_name: "", username: "", business_name: "", business_id: null, name: "", email: "", phone: "",
     role: "owner", tier: 0, crm_status: "lead", lead_score: "warm",
     is_premium: false, agent_status: "active",
     elo_rating: 1000, gross_revenue: 0, newsletter_subscribed: false,
     arena_value_override: null, arena_reach_override: null, arena_rating: 0,
     website: "",
+    is_sponsor: false, sponsor_tier: null, sponsor_activated: false, sponsor_insights_paid: false,
   });
   const [businesses, setBusinesses] = useState<BusinessOption[]>([]);
   const [loading, setLoading] = useState(!isNew);
@@ -198,9 +205,19 @@ export function AgentEditPanel({
           <>
             {/* ── PUBLIC INFORMATION ── */}
             <Section title="Public information" subtitle="Visible on the public arena page">
-              <Field label="Agent name">
-                <input value={form.agent_name ?? ""} onChange={e => set("agent_name", e.target.value)} style={inp} placeholder="e.g. Alfred Belvedere" />
-              </Field>
+              <Row>
+                <Field label="Agent name">
+                  <input value={form.agent_name ?? ""} onChange={e => set("agent_name", e.target.value)} style={inp} placeholder="e.g. Alfred Belvedere" />
+                </Field>
+                <Field label="Username / handle">
+                  <input
+                    value={form.username ?? ""}
+                    onChange={e => set("username", e.target.value)}
+                    style={inp}
+                    placeholder="e.g. Fray, $Mafi, fred_omni"
+                  />
+                </Field>
+              </Row>
               <Row>
                 <Field label="Tier">
                   <select
@@ -299,6 +316,42 @@ export function AgentEditPanel({
                 </Field>
                 <Field label="Gross revenue ($)">
                   <input type="number" step="0.01" value={form.gross_revenue ?? 0} onChange={e => set("gross_revenue", Number(e.target.value))} style={inp} />
+                </Field>
+              </Row>
+            </Section>
+
+            {/* ── SPONSOR STATUS ── */}
+            <Section title="Sponsor status" subtitle="Sponsor flag drives the SPONSOR badge across the agentic dashboard.">
+              <Field label="Sponsor">
+                <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#cbd5e1" }}>
+                  <input type="checkbox" checked={!!form.is_sponsor} onChange={e => set("is_sponsor", e.target.checked)} />
+                  This person is a sponsor
+                </label>
+              </Field>
+              <Row>
+                <Field label="Sponsor tier">
+                  <select
+                    value={form.sponsor_tier ?? ""}
+                    onChange={e => set("sponsor_tier", e.target.value || null)}
+                    style={inp}
+                    disabled={!form.is_sponsor}
+                  >
+                    <option value="">— None —</option>
+                    <option value="standard">Standard</option>
+                    <option value="vip">VIP</option>
+                    <option value="platinum">Platinum</option>
+                  </select>
+                </Field>
+                <Field label="Activated">
+                  <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, color: "#cbd5e1", paddingTop: 10 }}>
+                    <input
+                      type="checkbox"
+                      checked={!!form.sponsor_activated}
+                      disabled={!form.is_sponsor}
+                      onChange={e => set("sponsor_activated", e.target.checked)}
+                    />
+                    Sponsorship activated
+                  </label>
                 </Field>
               </Row>
             </Section>
