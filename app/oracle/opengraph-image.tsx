@@ -1,68 +1,89 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "The Oracle — Omni AI";
+export const alt = "The Oracle — Omni AI · A society of minds that compounds";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+/**
+ * Satori notes (Next.js OG image renderer):
+ *   - Every element with multiple children OR a text node must declare
+ *     `display: 'flex'` (or 'none'). No implicit block layout.
+ *   - `radial-gradient` is supported but flaky on edge cold-starts;
+ *     `linear-gradient` is the safer choice for production.
+ *   - System fonts are limited; we lean on the default sans-serif and
+ *     a Georgia-style serif heading (Vercel's default serif fallback
+ *     handles it without a network fetch).
+ */
 export default async function Image() {
   return new ImageResponse(
     (
       <div
         style={{
-          height: "100%",
           width: "100%",
+          height: "100%",
           display: "flex",
           flexDirection: "column",
-          background:
-            "radial-gradient(ellipse at 30% 20%, rgba(251,191,36,0.18) 0%, rgba(0,0,0,1) 55%), #000",
-          padding: 80,
+          padding: "80px",
           color: "#ffffff",
           fontFamily: "Georgia, 'Times New Roman', serif",
+          background:
+            "linear-gradient(135deg, #0a0a0a 0%, #1c1917 35%, #0a0a0a 70%, #1a1208 100%)",
         }}
       >
+        {/* Eyebrow */}
         <div
           style={{
+            display: "flex",
             fontSize: 18,
             letterSpacing: 8,
-            textTransform: "uppercase",
-            color: "rgba(251,191,36,0.7)",
-            marginBottom: 40,
+            color: "rgba(251,191,36,0.75)",
+            fontFamily: "system-ui, -apple-system, sans-serif",
           }}
         >
           THE ORACLE · OMNI AI
         </div>
+
+        {/* Headline block */}
         <div
           style={{
-            fontSize: 76,
-            lineHeight: 1.05,
-            color: "#ffffff",
             display: "flex",
             flexDirection: "column",
+            marginTop: 60,
+            fontSize: 76,
+            lineHeight: 1.05,
           }}
         >
-          <span>You are not looking</span>
-          <span>at software.</span>
-          <span style={{ color: "#fde68a" }}>You are looking at a</span>
-          <span style={{ color: "#fde68a" }}>society of minds.</span>
+          <div style={{ display: "flex", color: "#ffffff" }}>
+            You are not looking
+          </div>
+          <div style={{ display: "flex", color: "#ffffff" }}>at software.</div>
+          <div style={{ display: "flex", color: "#fde68a", marginTop: 18 }}>
+            You are looking at a
+          </div>
+          <div style={{ display: "flex", color: "#fde68a" }}>
+            society of minds.
+          </div>
         </div>
+
+        {/* Spacer + footer */}
         <div
           style={{
-            marginTop: "auto",
             display: "flex",
+            marginTop: "auto",
             justifyContent: "space-between",
             alignItems: "flex-end",
-            color: "rgba(255,255,255,0.5)",
-            fontSize: 18,
+            color: "rgba(255,255,255,0.55)",
+            fontSize: 20,
             fontFamily: "system-ui, -apple-system, sans-serif",
-            letterSpacing: 2,
+            letterSpacing: 1.5,
           }}
         >
-          <div>omnileadsagi.com / oracle</div>
-          <div style={{ fontStyle: "italic" }}>read once.</div>
+          <div style={{ display: "flex" }}>omnileadsagi.com / oracle</div>
+          <div style={{ display: "flex", fontStyle: "italic" }}>read once.</div>
         </div>
       </div>
     ),
-    { ...size }
+    { ...size },
   );
 }
