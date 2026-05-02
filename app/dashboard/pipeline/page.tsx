@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
 import {
   ArrowLeft, ChevronDown, TrendingUp, DollarSign, RefreshCw,
-  Trophy, Target, ArrowRight, Sparkles, AlertCircle, CheckCircle2
+  Trophy, Target, ArrowRight, Sparkles, AlertCircle, CheckCircle2,
+  Mail, Phone, MapPin
 } from 'lucide-react';
 
 type DealLead = Lead & {
@@ -16,15 +17,15 @@ type DealLead = Lead & {
   ai_recommended_angle?: string | null;
 };
 
-const STAGES: Array<{ key: DealLead['deal_stage'] & string; label: string; color: string; emoji: string }> = [
-  { key: 'lead',          label: 'Lead',          color: '#94a3b8', emoji: '👋' },
-  { key: 'contacted',     label: 'Contacted',     color: '#38bdf8', emoji: '📩' },
-  { key: 'qualified',     label: 'Qualified',     color: '#a78bfa', emoji: '✓' },
-  { key: 'demo',          label: 'Demo',          color: '#facc15', emoji: '🎬' },
-  { key: 'proposal',      label: 'Proposal',      color: '#fb923c', emoji: '📄' },
-  { key: 'negotiation',   label: 'Negotiation',   color: '#f87171', emoji: '🤝' },
-  { key: 'closed_won',    label: 'Closed Won',    color: '#10b981', emoji: '🏆' },
-  { key: 'closed_lost',   label: 'Closed Lost',   color: '#475569', emoji: '✗' },
+const STAGES: Array<{ key: DealLead['deal_stage'] & string; label: string; color: string }> = [
+  { key: 'lead',          label: 'Lead',          color: '#94a3b8' },
+  { key: 'contacted',     label: 'Contacted',     color: '#38bdf8' },
+  { key: 'qualified',     label: 'Qualified',     color: '#a78bfa' },
+  { key: 'demo',          label: 'Demo',          color: '#facc15' },
+  { key: 'proposal',      label: 'Proposal',      color: '#fb923c' },
+  { key: 'negotiation',   label: 'Negotiation',   color: '#f87171' },
+  { key: 'closed_won',    label: 'Closed Won',    color: '#10b981' },
+  { key: 'closed_lost',   label: 'Closed Lost',   color: '#475569' },
 ];
 
 function fullName(l: DealLead) {
@@ -198,7 +199,6 @@ export default function PipelinePage() {
             border: "1px solid #f8717140",
             borderRadius: 10, padding: "12px 16px", marginBottom: 18,
           }}>
-            <div style={{ fontSize: 18 }}>⚠</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#f87171" }}>
                 {stuckLeads.length} stuck {stuckLeads.length === 1 ? "deal" : "deals"}
@@ -230,7 +230,7 @@ export default function PipelinePage() {
               <div style={{ marginBottom: 12, paddingBottom: 10, borderBottom: `2px solid ${stage.color}30` }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontSize: 12, fontWeight: 700, color: stage.color }}>
-                    {stage.emoji} {stage.label}
+                    {stage.label}
                   </span>
                   <span style={{ fontSize: 10, fontWeight: 700, color: stage.color, background: `${stage.color}18`, padding: '2px 8px', borderRadius: 4 }}>
                     {byStage[stage.key].length}
@@ -268,7 +268,7 @@ export default function PipelinePage() {
                     ) : null}
                     {l.ai_recommended_angle && (
                       <div style={{ fontSize: 9, color: '#666', marginTop: 6, fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        💡 {l.ai_recommended_angle}
+                        {l.ai_recommended_angle}
                       </div>
                     )}
                   </div>
@@ -297,13 +297,46 @@ export default function PipelinePage() {
               <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>{editing.title} @ {editing.company}</div>
             </div>
 
+            {/* Contact info */}
+            <div style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div style={{ fontSize: 11, color: '#444', textTransform: 'uppercase', letterSpacing: '0.7px' }}>Contact</div>
+              {editing.email ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Mail size={14} color="#555" />
+                  <a href={`mailto:${editing.email}`} style={{ fontSize: 13, color: '#818cf8', textDecoration: 'none' }}>{editing.email}</a>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Mail size={14} color="#333" />
+                  <span style={{ fontSize: 13, color: '#444' }}>No email on file</span>
+                </div>
+              )}
+              {editing.phone ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Phone size={14} color="#555" />
+                  <a href={`tel:${editing.phone}`} style={{ fontSize: 13, color: '#94a3b8', textDecoration: 'none' }}>{editing.phone}</a>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <Phone size={14} color="#333" />
+                  <span style={{ fontSize: 13, color: '#444' }}>No phone on file</span>
+                </div>
+              )}
+              {editing.lead_location && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <MapPin size={14} color="#555" />
+                  <span style={{ fontSize: 13, color: '#94a3b8' }}>{editing.lead_location}</span>
+                </div>
+              )}
+            </div>
+
             {editing.ai_score_reasoning && (
               <div style={{ background: '#0d2a1e', border: '1px solid #10b98140', borderRadius: 10, padding: 14, marginBottom: 16 }}>
                 <div style={{ fontSize: 11, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>AI Analysis · Score {editing.score}</div>
                 <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>{editing.ai_score_reasoning}</div>
                 {editing.ai_recommended_angle && (
                   <div style={{ marginTop: 8, fontSize: 12, color: '#facc15', fontStyle: 'italic' }}>
-                    💡 Angle: {editing.ai_recommended_angle}
+                    Angle: {editing.ai_recommended_angle}
                   </div>
                 )}
               </div>
@@ -319,7 +352,7 @@ export default function PipelinePage() {
                   background: editing.deal_stage === s.key ? `${s.color}18` : 'transparent',
                   color: editing.deal_stage === s.key ? s.color : '#666',
                 }}>
-                  {s.emoji} {s.label}
+                  {s.label}
                 </button>
               ))}
             </div>
