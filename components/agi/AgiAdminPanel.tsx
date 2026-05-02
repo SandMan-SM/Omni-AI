@@ -6,6 +6,7 @@ import {
   Target, Bot, Brain, Inbox as InboxIcon, Send, Building2, BookOpen,
   BarChart3, Calendar, TrendingUp, Activity, Upload, Settings as SettingsIcon,
   Zap, CreditCard, ChevronDown, Sparkles, Award, Trophy, Mail, Handshake, Users2,
+  Crown,
 } from "lucide-react";
 
 // Dynamic imports of each AGI page — lazy-loaded so first paint is fast.
@@ -44,6 +45,14 @@ const NewsletterView = dynamic(
 // no sends, no payment-link surface; clients edit via email request.
 const ClientNewsletterView = dynamic(
   () => import("@/components/newsletter-studio/ClientNewsletterStudio").then(m => ({ default: m.ClientNewsletterStudio })),
+  { ssr: false, loading: () => <Skel /> }
+);
+
+// Council tab — the Pantheon roster + active leadership stewards. Visible
+// to admins and per-tenant clients alike (read-only platform identity
+// surface; no per-tenant data exposed). Reads /api/council.
+const CouncilView = dynamic(
+  () => import("@/components/agi/CouncilPanel").then(m => ({ default: m.CouncilPanel })),
   { ssr: false, loading: () => <Skel /> }
 );
 
@@ -106,6 +115,7 @@ const TABS: Array<{
   { id: "meetings",   label: "Meetings",    icon: Calendar,       view: MeetingsView,   group: "engage" },
   { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage" },
   { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage" },
+  { id: "council",    label: "Council",     icon: Crown,          view: CouncilView,    group: "engage" },
   { id: "companies",  label: "Companies",   icon: Building2,      view: CompaniesView,  group: "intel",  adminOnly: true },
   { id: "campaigns",  label: "Campaigns",   icon: TrendingUp,     view: CampaignsView,  group: "core",   adminOnly: true },
   { id: "templates",  label: "Templates",   icon: BookOpen,       view: TemplatesView,  group: "core",   adminOnly: true },
