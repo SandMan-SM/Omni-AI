@@ -125,7 +125,7 @@ export default function MasterInfoPage() {
           </div>
 
           <p className="text-base sm:text-lg text-gray-300 max-w-2xl leading-relaxed mb-6">
-            The highest tier of the Omni AI dashboard. Live analytics, autonomous
+            A premium tier of the Omni AI dashboard. Live analytics, autonomous
             marketing agents, instant lead routing, and full call tracking — built
             around the digital assets we&apos;ve created for your business.
           </p>
