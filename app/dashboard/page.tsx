@@ -24,6 +24,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AgiAdminPanel } from "@/components/agi/AgiAdminPanel";
+import { supabase } from "@/lib/agi-supabase";
 
 // Code-split the two heaviest tabs so non-admin / non-sponsor users don't
 // download them. CommandCenter is ~673 LOC + its own admin query stack;
@@ -103,6 +104,10 @@ export default function Dashboard() {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
+  // Live CPS lead counts pulled from omni_leads_generated scoped to the
+  // CPS workspace. Replaces the hardcoded zeros in the metrics array
+  // when the signed-in user is CPS so "Leads This Week" reflects reality.
+  const [cpsLeadStats, setCpsLeadStats] = useState<{ total: number; thisWeek: number } | null>(null);
   const tierMap: Record<number, string> = { 0: "apprentice", 1: "knight", 2: "royal", 3: "ascended" };
   const currentTier = isAdmin ? "admin" : (tierMap[tier] || "apprentice");
   const currentTierData = tierInfo[currentTier] || tierInfo["apprentice"];
@@ -238,6 +243,27 @@ export default function Dashboard() {
       return () => clearTimeout(timer);
     }
   }, [user, loading, router]);
+
+  // Pull live CPS lead counts so the KPI cards stop showing static zeros.
+  useEffect(() => {
+    if (!isCPS) return;
+    let cancelled = false;
+    (async () => {
+      const { data: biz } = await supabase
+        .from("omni_businesses")
+        .select("id,name");
+      const cps = biz?.find(b => b.name?.toLowerCase() === "cps");
+      if (!cps || cancelled) return;
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const [{ count: total }, { count: thisWeek }] = await Promise.all([
+        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", cps.id),
+        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", cps.id).gte("created_at", sevenDaysAgo),
+      ]);
+      if (cancelled) return;
+      setCpsLeadStats({ total: total ?? 0, thisWeek: thisWeek ?? 0 });
+    })();
+    return () => { cancelled = true; };
+  }, [isCPS]);
 
   if (loading || profileLoading) {
     return (
@@ -490,6 +516,11 @@ export default function Dashboard() {
                 // dashboard experience, so the gate doesn't apply to them.
                 const isLocked =
                   !isCPS && (!isSponsor || (isSponsor && !profile?.sponsor_insights_paid));
+                // Substitute live CPS values for the static placeholders.
+                let displayValue: string = metric.value;
+                if (isCPS && cpsLeadStats) {
+                  if (metric.label === "Leads This Week") displayValue = String(cpsLeadStats.thisWeek);
+                }
                 return (
                   <motion.div key={metric.label} transition={{ duration: 0.4, delay: i * 0.06 }}>
                     <Card className="bg-white/[0.03] border-white/[0.06]">
@@ -498,7 +529,7 @@ export default function Dashboard() {
                           <MetricIcon className="w-5 h-5 text-gray-500" />
                           <span className={`text-xs font-medium ${isLocked ? 'blur-sm' : 'text-green-400'}`} data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
                         </div>
-                        <p className={`text-2xl font-bold text-white ${isLocked ? 'blur-sm' : ''}`} data-testid={`text-metric-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.value}</p>
+                        <p className={`text-2xl font-bold text-white ${isLocked ? 'blur-sm' : ''}`} data-testid={`text-metric-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{displayValue}</p>
                         <p className="text-xs text-gray-500 mt-1" data-testid={`text-label-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.label}</p>
                       </CardContent>
                     </Card>
