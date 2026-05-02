@@ -584,14 +584,16 @@ export default function DashboardPage() {
       if (data?.length) {
         setBusinesses(data);
         // Honor the global business switcher (set on /assets via localStorage).
-        // Defaults to Omni AI when unset or 'all' so the agency dashboard
-        // shows Omni AI's own leads/clients, not everyone's combined.
+        // First-ever load (nothing stored) defaults to Omni AI; if the user has
+        // explicitly chosen "All Businesses" or another workspace, respect it.
         const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
-        const omniAi = data.find(b => b.name === 'Omni AI');
-        if (stored && stored !== 'all') {
+        if (stored === 'all') {
+          setSelectedBiz(null);
+        } else if (stored) {
           const found = data.find(b => b.id === stored);
-          setSelectedBiz(found ?? omniAi ?? null);
+          setSelectedBiz(found ?? null);
         } else {
+          const omniAi = data.find(b => b.name === 'Omni AI');
           setSelectedBiz(omniAi ?? null);
         }
       }
@@ -605,8 +607,7 @@ export default function DashboardPage() {
     function onStorage(ev: StorageEvent) {
       if (ev.key !== 'omni_active_business_id') return;
       const v = ev.newValue;
-      const omniAi = businesses.find(b => b.name === 'Omni AI');
-      if (!v || v === 'all') return setSelectedBiz(omniAi ?? null);
+      if (!v || v === 'all') return setSelectedBiz(null);
       const found = businesses.find(b => b.id === v);
       if (found) setSelectedBiz(found);
     }

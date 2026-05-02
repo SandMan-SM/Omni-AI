@@ -56,12 +56,19 @@ export default function PipelinePage() {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
-        // Default to Omni AI workspace so the agency dashboard shows Omni AI's
-        // own pipeline, not the first business alphabetically.
+        // Default to Omni AI when nothing is stored; otherwise honor whatever
+        // the global business switcher chose ('all' or a specific id).
         const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
         const omniAi = data.find(b => b.name === 'Omni AI');
-        const found = stored && stored !== 'all' ? data.find(b => b.id === stored) : null;
-        setSelectedBiz(found ?? omniAi ?? data[0]);
+        if (stored && stored !== 'all') {
+          const found = data.find(b => b.id === stored);
+          setSelectedBiz(found ?? data[0]);
+        } else if (stored === 'all') {
+          // Pipeline doesn't have an "all" view, so fall back to Omni AI.
+          setSelectedBiz(omniAi ?? data[0]);
+        } else {
+          setSelectedBiz(omniAi ?? data[0]);
+        }
       }
     });
   }, []);
