@@ -1,9 +1,46 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+/**
+ * Lazy-init Supabase client.
+ *
+ * BEFORE: `export const supabase = createClient(url, key)` instantiated
+ * the client at module scope. Every Next.js build's "Collect page data"
+ * step imports this module for any route that uses it — which crashes
+ * with "supabaseUrl is required" if env vars aren't present at build
+ * time. That's the bug that broke every Preview deployment whose env
+ * scope didn't include NEXT_PUBLIC_SUPABASE_URL (Production-only by
+ * default).
+ *
+ * AFTER: a Proxy forwards every access to a singleton instantiated on
+ * first use. The build no longer touches Supabase config — only the
+ * runtime does. Env vars can stay missing during page-data collection
+ * without crashing the build, and runtime gets a clean error when a
+ * route actually tries to talk to Supabase without config.
+ */
+let _client: SupabaseClient | null = null;
 
-export const supabase = createClient(url, key);
+function getClient(): SupabaseClient {
+  if (_client) return _client;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) {
+    throw new Error(
+      'Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY. ' +
+      'In Vercel, set both to scope "All Environments" (Production / Preview / Development).'
+    );
+  }
+  _client = createClient(url, key);
+  return _client;
+}
+
+// Proxy lets `supabase.from(...)` / `supabase.auth.*` etc. work while
+// keeping client construction lazy. Every property access goes through
+// getClient(), which is cheap after the first call (cached singleton).
+export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
+  get(_target, prop) {
+    return Reflect.get(getClient(), prop);
+  },
+});
 
 export type Business = {
   id: string;
