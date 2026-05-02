@@ -190,39 +190,41 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
         </section>
       )}
 
-      {/* Free programs */}
-      <section className="border-b border-white/5 py-14 sm:py-16">
-        <div className="max-w-5xl mx-auto px-6">
-          <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.05] via-orange-500/[0.03] to-transparent p-8 sm:p-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono uppercase tracking-widest mb-4">
-              <Gift className="w-3 h-3" />
-              Free programs
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold mb-3">Get sponsored. Get scaled.</h2>
-            <p className="text-gray-300 max-w-2xl mb-6 leading-relaxed">
-              We sponsor a small number of businesses with the Omni AI agentic stack at zero cost — full
-              dashboard access, AI agents, and content engine. Apply if you&apos;re ready to be one of the
-              flagship case studies for the next wave.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/join"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-sm hover:opacity-95 transition"
-              >
-                Apply to be sponsored
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="/sponsor/info"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-amber-500/30 hover:border-amber-500/50 text-amber-200 font-semibold text-sm transition"
-              >
-                Sponsor program details
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+      {/* Free programs — hidden for CPS (already a paid client, not a sponsorship target) */}
+      {slug.toLowerCase() !== "cps" && (
+        <section className="border-b border-white/5 py-14 sm:py-16">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.05] via-orange-500/[0.03] to-transparent p-8 sm:p-12">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono uppercase tracking-widest mb-4">
+                <Gift className="w-3 h-3" />
+                Free programs
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold mb-3">Get sponsored. Get scaled.</h2>
+              <p className="text-gray-300 max-w-2xl mb-6 leading-relaxed">
+                We sponsor a small number of businesses with the Omni AI agentic stack at zero cost — full
+                dashboard access, AI agents, and content engine. Apply if you&apos;re ready to be one of the
+                flagship case studies for the next wave.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Link
+                  href="/join"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-sm hover:opacity-95 transition"
+                >
+                  Apply to be sponsored
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/sponsor/info"
+                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-amber-500/30 hover:border-amber-500/50 text-amber-200 font-semibold text-sm transition"
+                >
+                  Sponsor program details
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Closing CTA */}
       <section className="py-16 sm:py-20">
