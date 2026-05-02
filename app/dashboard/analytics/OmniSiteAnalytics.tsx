@@ -20,18 +20,18 @@ import {
   Smartphone, Monitor, Globe, ArrowUpRight, RefreshCw, Loader2,
 } from "lucide-react";
 
+type Range = '24h' | '7d' | '30d' | 'all';
+
 interface AnalyticsResponse {
+  range: Range;
+  rangeLabel: string;
+  bucketUnit: 'hour' | 'day' | 'week';
   traffic: {
-    pageViews24h: number;
-    pageViews7d: number;
-    pageViews30d: number;
-    sessions24h: number;
-    sessions7d: number;
-    visitors24h: number;
-    visitors7d: number;
-    clicks24h: number;
-    clicks7d: number;
-    formSubmits7d: number;
+    pageViews: number;
+    sessions: number;
+    visitors: number;
+    clicks: number;
+    formSubmits: number;
   };
   daily: { day: string; page_views: number; sessions: number; clicks: number }[];
   topPages: { page_url: string; views: number; visitors: number }[];
@@ -39,6 +39,13 @@ interface AnalyticsResponse {
   topReferrers: { referrer: string; sessions: number }[];
   devices: { mobile: number; desktop: number };
 }
+
+const RANGES: { id: Range; label: string }[] = [
+  { id: 'all', label: 'All time' },
+  { id: '30d', label: '30 days' },
+  { id: '7d',  label: '7 days' },
+  { id: '24h', label: '24h' },
+];
 
 const PALETTE = {
   indigo: "#818cf8",
@@ -55,13 +62,16 @@ export function OmniSiteAnalytics() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadAt, setReloadAt] = useState(0);
+  // Default to "all time" — owner asked for the broadest view by default,
+  // with quick toggles to drill down to 30d / 7d / 24h.
+  const [range, setRange] = useState<Range>("all");
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     setError(null);
     const token = typeof window !== "undefined" ? localStorage.getItem("omni_token") : null;
-    fetch("/api/admin/analytics", {
+    fetch(`/api/admin/analytics?range=${range}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       cache: "no-store",
     })
@@ -76,12 +86,14 @@ export function OmniSiteAnalytics() {
       .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load"); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [reloadAt]);
+  }, [reloadAt, range]);
 
   const t = data?.traffic;
   const totalDevice = (data?.devices.mobile ?? 0) + (data?.devices.desktop ?? 0);
   const mobilePct = totalDevice > 0 ? Math.round(((data?.devices.mobile ?? 0) / totalDevice) * 100) : 0;
   const desktopPct = totalDevice > 0 ? Math.round(((data?.devices.desktop ?? 0) / totalDevice) * 100) : 0;
+  const rangeLabel = data?.rangeLabel ?? RANGES.find(r => r.id === range)?.label ?? "Last 30 days";
+  const subLabel = range === "all" ? "All-time totals" : `Last ${range === "24h" ? "24 hours" : range === "7d" ? "7 days" : "30 days"}`;
 
   return (
     <div className="omni-site-analytics" style={{ marginBottom: 32 }}>
@@ -107,6 +119,12 @@ export function OmniSiteAnalytics() {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 10px;
           }
+          /* Range pills shrink + wrap on tiny phones so the toggle row
+             doesn't fight the Refresh + Visit-site buttons for space. */
+          .osa-range :global(button) {
+            padding: 5px 10px !important;
+            font-size: 11px !important;
+          }
         }
       `}</style>
 
@@ -128,10 +146,36 @@ export function OmniSiteAnalytics() {
             Site Analytics
           </h2>
           <div style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-            First-party tracking · last 30 days
+            First-party tracking · {rangeLabel.toLowerCase()}
           </div>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          {/* Range toggle pills */}
+          <div className="osa-range" style={{ display: "inline-flex", background: "#0f0f0f", border: "1px solid #1e1e1e", borderRadius: 999, padding: 3 }}>
+            {RANGES.map(r => {
+              const active = r.id === range;
+              return (
+                <button
+                  key={r.id}
+                  onClick={() => setRange(r.id)}
+                  disabled={loading && active}
+                  style={{
+                    background: active ? "#1f2937" : "transparent",
+                    border: "none",
+                    color: active ? "#10b981" : "#94a3b8",
+                    padding: "6px 12px",
+                    borderRadius: 999,
+                    fontSize: 12,
+                    fontWeight: active ? 700 : 600,
+                    cursor: loading ? "wait" : "pointer",
+                    transition: "background 0.12s, color 0.12s",
+                  }}
+                >
+                  {r.label}
+                </button>
+              );
+            })}
+          </div>
           <button
             onClick={() => setReloadAt(Date.now())}
             disabled={loading}
@@ -170,24 +214,24 @@ export function OmniSiteAnalytics() {
         </div>
       )}
 
-      {/* KPI strip */}
+      {/* KPI strip — every card shows a number for the active range. */}
       <div className="osa-kpi-grid" style={{ marginBottom: 20 }}>
-        <Stat icon={Eye}                value={loading ? "—" : t?.pageViews24h ?? 0}    label="Page views"    sub="last 24h" color={PALETTE.indigo} />
-        <Stat icon={Activity}           value={loading ? "—" : t?.pageViews7d ?? 0}     label="Page views"    sub="last 7 days" color={PALETTE.violet} />
-        <Stat icon={Users}              value={loading ? "—" : t?.visitors7d ?? 0}      label="Visitors"      sub="last 7 days" color={PALETTE.sky} />
-        <Stat icon={Globe}              value={loading ? "—" : t?.sessions7d ?? 0}      label="Sessions"      sub="last 7 days" color={PALETTE.emerald} />
-        <Stat icon={MousePointerClick}  value={loading ? "—" : t?.clicks7d ?? 0}        label="Clicks"        sub="last 7 days" color={PALETTE.amber} />
-        <Stat icon={Send}               value={loading ? "—" : t?.formSubmits7d ?? 0}   label="Form submits"  sub="last 7 days" color={PALETTE.rose} />
+        <Stat icon={Eye}                value={loading ? "—" : t?.pageViews ?? 0}    label="Page views"   sub={subLabel} color={PALETTE.indigo} />
+        <Stat icon={Users}              value={loading ? "—" : t?.visitors ?? 0}     label="Visitors"     sub={subLabel} color={PALETTE.sky} />
+        <Stat icon={Globe}              value={loading ? "—" : t?.sessions ?? 0}     label="Sessions"     sub={subLabel} color={PALETTE.emerald} />
+        <Stat icon={MousePointerClick}  value={loading ? "—" : t?.clicks ?? 0}       label="Clicks"       sub={subLabel} color={PALETTE.amber} />
+        <Stat icon={Send}               value={loading ? "—" : t?.formSubmits ?? 0}  label="Form submits" sub={subLabel} color={PALETTE.rose} />
+        <Stat icon={Activity}           value={loading ? "—" : (t?.pageViews && t?.sessions ? (t.pageViews / Math.max(1, t.sessions)).toFixed(1) : "0")} label="Pages / session" sub={subLabel} color={PALETTE.violet} />
       </div>
 
-      {/* 14-day chart */}
-      <Card title="Traffic — last 14 days" icon={BarChart3}>
+      {/* Adaptive chart — bucket size shifts with the active range. */}
+      <Card title={`Traffic — ${rangeLabel.toLowerCase()}`} icon={BarChart3}>
         {loading ? (
           <div style={{ height: 180, display: "flex", alignItems: "center", justifyContent: "center", color: "#444" }}>
             <Loader2 size={20} className="animate-spin" />
           </div>
         ) : data?.daily?.length ? (
-          <DailyChart rows={data.daily} />
+          <DailyChart rows={data.daily} bucketUnit={data.bucketUnit} />
         ) : (
           <Empty />
         )}
@@ -195,7 +239,7 @@ export function OmniSiteAnalytics() {
 
       {/* Two-column section: Top Pages + Top Clicks */}
       <div className="osa-split-2" style={{ marginTop: 16 }}>
-        <Card title="Top pages — last 7 days" icon={Eye}>
+        <Card title={`Top pages — ${rangeLabel.toLowerCase()}`} icon={Eye}>
           {loading ? <Skel /> : data?.topPages?.length ? (
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {data.topPages.map((p) => {
@@ -221,7 +265,7 @@ export function OmniSiteAnalytics() {
           ) : <Empty />}
         </Card>
 
-        <Card title="Top click targets — last 7 days" icon={MousePointerClick}>
+        <Card title={`Top click targets — ${rangeLabel.toLowerCase()}`} icon={MousePointerClick}>
           {loading ? <Skel /> : data?.topClicks?.length ? (
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {data.topClicks.map((c, i) => {
@@ -248,7 +292,7 @@ export function OmniSiteAnalytics() {
 
       {/* Two-column section: Referrers + Devices */}
       <div className="osa-split-2" style={{ marginTop: 16 }}>
-        <Card title="Referrers — last 7 days" icon={Globe}>
+        <Card title={`Referrers — ${rangeLabel.toLowerCase()}`} icon={Globe}>
           {loading ? <Skel /> : data?.topReferrers?.length ? (
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {data.topReferrers.map((r) => {
@@ -272,7 +316,7 @@ export function OmniSiteAnalytics() {
           ) : <Empty />}
         </Card>
 
-        <Card title="Devices — last 7 days" icon={Smartphone}>
+        <Card title={`Devices — ${rangeLabel.toLowerCase()}`} icon={Smartphone}>
           {loading ? <Skel /> : totalDevice > 0 ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 14, paddingTop: 4 }}>
               <DeviceRow icon={Monitor} label="Desktop" value={data?.devices.desktop ?? 0} pct={desktopPct} color={PALETTE.indigo} />
@@ -351,7 +395,7 @@ function Skel() {
   );
 }
 
-function DailyChart({ rows }: { rows: { day: string; page_views: number; sessions: number; clicks: number }[] }) {
+function DailyChart({ rows, bucketUnit }: { rows: { day: string; page_views: number; sessions: number; clicks: number }[]; bucketUnit: "hour" | "day" | "week" }) {
   const W = 760;
   const H = 200;
   const PAD_X = 28;
@@ -401,20 +445,28 @@ function DailyChart({ rows }: { rows: { day: string; page_views: number; session
         {/* sessions line */}
         <path d={path("sessions")} stroke={PALETTE.emerald} strokeWidth={1.4} fill="none" strokeDasharray="3 3" />
 
-        {/* x-axis labels — first, middle, last */}
-        {[0, Math.floor(rows.length / 2), rows.length - 1].map((i) => (
-          <text
-            key={i}
-            x={PAD_X + i * xStep}
-            y={H - 2}
-            textAnchor="middle"
-            fontSize="9"
-            fill="#555"
-            fontFamily="ui-monospace, monospace"
-          >
-            {rows[i]?.day.slice(5) ?? ""}
-          </text>
-        ))}
+        {/* x-axis labels — first, middle, last. Format depends on bucket
+            unit: hourly shows HH:00, daily shows MM-DD, weekly shows MM-DD
+            (the start of the week). */}
+        {[0, Math.floor(rows.length / 2), rows.length - 1].map((i) => {
+          const raw = rows[i]?.day ?? "";
+          const label = bucketUnit === "hour"
+            ? `${raw.slice(11, 13)}:00`
+            : raw.slice(5); // MM-DD
+          return (
+            <text
+              key={i}
+              x={PAD_X + i * xStep}
+              y={H - 2}
+              textAnchor="middle"
+              fontSize="9"
+              fill="#555"
+              fontFamily="ui-monospace, monospace"
+            >
+              {label}
+            </text>
+          );
+        })}
       </svg>
       <div style={{ display: "flex", gap: 16, fontSize: 11, color: "#666", marginTop: 8, paddingLeft: PAD_X }}>
         <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
