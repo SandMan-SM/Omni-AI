@@ -858,7 +858,7 @@ export default function DashboardPage() {
           </div>
           <div className="agi-leads-header-divider" style={{ width: 1, height: 20, background: '#222' }} />
           <nav className="agi-leads-nav" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            <Link href="/dashboard/leads" style={navStyle(true)}>Clients</Link>
+            <Link href="/dashboard/leads" style={navStyle(true)}>Leads</Link>
             <Link href="/dashboard/autopilot" style={navStyle(false)}><Bot size={11} /> Autopilot</Link>
             <Link href="/dashboard/coach" style={navStyle(false)}><Brain size={11} /> Coach</Link>
             <Link href="/dashboard/inbox" style={navStyle(false)}><Inbox size={11} /> Inbox</Link>
