@@ -56,9 +56,12 @@ export default function PipelinePage() {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
+        // Default to Omni AI workspace so the agency dashboard shows Omni AI's
+        // own pipeline, not the first business alphabetically.
         const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
+        const omniAi = data.find(b => b.name === 'Omni AI');
         const found = stored && stored !== 'all' ? data.find(b => b.id === stored) : null;
-        setSelectedBiz(found ?? data[0]);
+        setSelectedBiz(found ?? omniAi ?? data[0]);
       }
     });
   }, []);
