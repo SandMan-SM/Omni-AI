@@ -159,8 +159,12 @@ const sections = [
 export default function AdminInfo() {
   const { user, loading } = useAuth();
   const { isAdmin, profileLoading, profile } = useProfile();
-  const isCPS = profile?.username?.toLowerCase() === "cps";
-  const canView = isAdmin || isCPS;
+  const uname = profile?.username?.toLowerCase() ?? "";
+  const isCPS = uname === "cps";
+  const isYoungs = uname === "youngs" || uname === "brent";
+  const isLeifson = uname === "leifson" || uname === "adam";
+  const isSammy = uname === "sammy" || uname === "ltb";
+  const canView = isAdmin || isCPS || isYoungs || isLeifson || isSammy;
   const router = useRouter();
 
   useEffect(() => {

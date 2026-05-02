@@ -116,6 +116,15 @@ export default function Dashboard() {
   const isFray = user?.username?.toLowerCase() === 'fray' || user?.email === 'fray1959@gmail.com';
   const isCPS = user?.username?.toLowerCase() === 'cps';
   const isChaco = user?.username?.toLowerCase() === 'chaco';
+  // Brent owns Young's Cabinet Refinishing; Adam owns Leifson Built.
+  const isYoungs = user?.username?.toLowerCase() === 'youngs' || user?.username?.toLowerCase() === 'brent';
+  const isLeifson = user?.username?.toLowerCase() === 'leifson' || user?.username?.toLowerCase() === 'adam';
+  const isSammy = user?.username?.toLowerCase() === 'sammy' || user?.username?.toLowerCase() === 'ltb';
+  // Single flag for "is a per-brand client viewer" so we can gate the
+  // agentic dashboard, the /admin/info page, and the workspace pinning
+  // logic uniformly. Add new clients here when we onboard them.
+  const isClientViewer = isCPS || isYoungs || isLeifson || isSammy;
+  const clientWorkspaceName: string | null = isCPS ? 'cps' : isYoungs ? 'youngs' : isLeifson ? 'leifson' : isSammy ? 'ltb' : null;
   const profileComplete = !!(
     profile &&
     (profile.name || profile.first_name) &&
@@ -244,26 +253,33 @@ export default function Dashboard() {
     }
   }, [user, loading, router]);
 
-  // Pull live CPS lead counts so the KPI cards stop showing static zeros.
+  // Pull live workspace-scoped lead counts for the signed-in client viewer
+  // (CPS, Youngs/Brent, Leifson/Adam, LTB/Sammy). Replaces hardcoded zeros
+  // in the metrics array so "Leads This Week" reflects reality. Re-uses the
+  // legacy cpsLeadStats state name — value applies to whichever workspace
+  // is active.
   useEffect(() => {
-    if (!isCPS) return;
+    if (!clientWorkspaceName) return;
     let cancelled = false;
     (async () => {
       const { data: biz } = await supabase
         .from("omni_businesses")
-        .select("id,name");
-      const cps = biz?.find(b => b.name?.toLowerCase() === "cps");
-      if (!cps || cancelled) return;
+        .select("id,slug,name");
+      const target = biz?.find(
+        (b) => b.slug?.toLowerCase() === clientWorkspaceName ||
+               b.name?.toLowerCase() === clientWorkspaceName,
+      );
+      if (!target || cancelled) return;
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const [{ count: total }, { count: thisWeek }] = await Promise.all([
-        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", cps.id),
-        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", cps.id).gte("created_at", sevenDaysAgo),
+        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id),
+        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id).gte("created_at", sevenDaysAgo),
       ]);
       if (cancelled) return;
       setCpsLeadStats({ total: total ?? 0, thisWeek: thisWeek ?? 0 });
     })();
     return () => { cancelled = true; };
-  }, [isCPS]);
+  }, [clientWorkspaceName]);
 
   if (loading || profileLoading) {
     return (
@@ -468,9 +484,14 @@ export default function Dashboard() {
             in-place via dynamic import; no page navigation.
             CPS users see the agentic dashboard scoped to their workspace
             with admin-only tabs (Settings, Billing, Newsletter, etc.) hidden. */}
-        {(isAdmin || isCPS) && <AgiAdminPanel isAdmin={isAdmin} />}
+        {(isAdmin || isClientViewer) && (
+          <AgiAdminPanel
+            isAdmin={isAdmin}
+            pinnedWorkspaceSlug={clientWorkspaceName}
+          />
+        )}
 
-        {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
+        {!profileComplete && !onboardingComplete && profile && !isAdmin && !isClientViewer && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
             <div
               className="flex flex-wrap items-center gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-500/10 to-blue-500/10 border border-purple-500/20"
@@ -515,10 +536,10 @@ export default function Dashboard() {
                 // their analytics are wired in and they are paying for the
                 // dashboard experience, so the gate doesn't apply to them.
                 const isLocked =
-                  !isCPS && (!isSponsor || (isSponsor && !profile?.sponsor_insights_paid));
-                // Substitute live CPS values for the static placeholders.
+                  !isClientViewer && (!isSponsor || (isSponsor && !profile?.sponsor_insights_paid));
+                // Substitute live workspace values for the static placeholders.
                 let displayValue: string = metric.value;
-                if (isCPS && cpsLeadStats) {
+                if (isClientViewer && cpsLeadStats) {
                   if (metric.label === "Leads This Week") displayValue = String(cpsLeadStats.thisWeek);
                 }
                 return (

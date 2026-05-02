@@ -45,11 +45,14 @@ export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
 export type Business = {
   id: string;
   name: string;
+  slug?: string | null;
   industry: string | null;
   location: string | null;
   website: string | null;
   plan: 'starter' | 'pro' | 'enterprise';
   contact_email: string | null;
+  partnership_blurb?: string | null;
+  brand_logo_url?: string | null;
   created_at: string;
 };
 
