@@ -39,6 +39,14 @@ const NewsletterView = dynamic(
   { ssr: false, loading: () => <Skel /> }
 );
 
+// Per-tenant client newsletter view — read-only list scoped to the active
+// workspace's business_id via /api/newsletter/scoped-posts. No subscribers,
+// no sends, no payment-link surface; clients edit via email request.
+const ClientNewsletterView = dynamic(
+  () => import("@/components/newsletter-studio/ClientNewsletterStudio").then(m => ({ default: m.ClientNewsletterStudio })),
+  { ssr: false, loading: () => <Skel /> }
+);
+
 // Arena management tab: lightweight admin wrapper around the existing
 // arena components (Leaderboard, RankingTiers, BadgeShowcase) without the
 // public marketing page chrome (hero, footer, modals).
@@ -63,12 +71,14 @@ function makeArenaView(isAdmin: boolean): React.ComponentType {
   return ClientArenaView;
 }
 function makeNewsletterView(isAdmin: boolean): React.ComponentType {
-  // Until ClientNewsletterStudio ships, non-admin clients see the same
-  // NewsletterStudio component but it self-scopes to the active workspace
-  // via the omni_active_business_id localStorage key (the studio already
-  // honours business_id filtering on its API calls — see /api/newsletter/*).
-  // Admin or client, NewsletterView is the right entry point.
-  return NewsletterView;
+  // Admins keep the full NewsletterStudio (subscribers, stats, sends,
+  // payment links). Per-tenant client viewers (Brent / Adam / Sammy /
+  // CPS-owner) get the read-only ClientNewsletterStudio scoped to their
+  // workspace via /api/newsletter/scoped-posts. Editing is request-based
+  // for now — the API gate (omni_business_users membership) is the
+  // first line of defence; the component is the second.
+  if (isAdmin) return NewsletterView;
+  return ClientNewsletterView;
 }
 
 const TABS: Array<{
