@@ -29,6 +29,7 @@ const RunsView       = dynamic(() => import("@/app/dashboard/runs/page"),      {
 const ImportView     = dynamic(() => import("@/app/dashboard/import/page"),    { ssr: false, loading: () => <Skel /> });
 const SettingsView   = dynamic(() => import("@/app/dashboard/settings/page"),  { ssr: false, loading: () => <Skel /> });
 const BillingView    = dynamic(() => import("@/app/dashboard/billing/page"),   { ssr: false, loading: () => <Skel /> });
+const CpsSiteView    = dynamic(() => import("@/components/dashboard/cps-analytics-panel"), { ssr: false, loading: () => <Skel /> });
 
 // Newsletter management tab: existing admin studio component (subscriber
 // audience, premium tier, send job preview, CSV import/export).
@@ -60,6 +61,10 @@ const TABS: Array<{
   group: "core" | "engage" | "intel" | "ops";
   /** When true, the tab only renders while the active workspace is Omni AI. */
   omniOnly?: boolean;
+  /** When true, the tab only renders while the active workspace is CPS. */
+  cpsOnly?: boolean;
+  /** When true, the tab only renders for admins (hidden for non-admin viewers like CPS). */
+  adminOnly?: boolean;
 }> = [
   { id: "leads",      label: "Leads",       icon: Target,         view: LeadsView,      group: "core" },
   { id: "outreach",   label: "Outreach",    icon: Send,           view: OutreachView,   group: "engage" },
@@ -69,18 +74,19 @@ const TABS: Array<{
   { id: "sponsor",    label: "Sponsors",    icon: Handshake,      view: SponsorView,    group: "core",  omniOnly: true },
   { id: "affiliate",  label: "Affiliates",  icon: Users2,         view: AffiliateView,  group: "core",  omniOnly: true },
   { id: "meetings",   label: "Meetings",    icon: Calendar,       view: MeetingsView,   group: "engage" },
-  { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage" },
-  { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage" },
-  { id: "companies",  label: "Companies",   icon: Building2,      view: CompaniesView,  group: "intel" },
-  { id: "campaigns",  label: "Campaigns",   icon: TrendingUp,     view: CampaignsView,  group: "core" },
-  { id: "templates",  label: "Templates",   icon: BookOpen,       view: TemplatesView,  group: "core" },
-  { id: "heatmap",    label: "Heatmap",     icon: Activity,       view: HeatmapView,    group: "intel" },
-  { id: "analytics",  label: "Analytics",   icon: BarChart3,      view: AnalyticsView,  group: "intel" },
-  { id: "autopilot",  label: "Autopilot",   icon: Bot,            view: AutopilotView,  group: "ops" },
-  { id: "runs",       label: "Runs",        icon: Zap,            view: RunsView,       group: "ops" },
-  { id: "import",     label: "Import",      icon: Upload,         view: ImportView,     group: "core" },
-  { id: "settings",   label: "Settings",    icon: SettingsIcon,   view: SettingsView,   group: "ops" },
-  { id: "billing",    label: "Billing",     icon: CreditCard,     view: BillingView,    group: "ops" },
+  { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage", adminOnly: true },
+  { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage", adminOnly: true },
+  { id: "companies",  label: "Companies",   icon: Building2,      view: CompaniesView,  group: "intel",  adminOnly: true },
+  { id: "campaigns",  label: "Campaigns",   icon: TrendingUp,     view: CampaignsView,  group: "core",   adminOnly: true },
+  { id: "templates",  label: "Templates",   icon: BookOpen,       view: TemplatesView,  group: "core",   adminOnly: true },
+  { id: "heatmap",    label: "Heatmap",     icon: Activity,       view: HeatmapView,    group: "intel",  adminOnly: true },
+  { id: "analytics",  label: "Analytics",   icon: BarChart3,      view: AnalyticsView,  group: "intel",  adminOnly: true },
+  { id: "site-analytics", label: "Site Analytics", icon: Activity, view: CpsSiteView, group: "intel", cpsOnly: true },
+  { id: "autopilot",  label: "Autopilot",   icon: Bot,            view: AutopilotView,  group: "ops",    adminOnly: true },
+  { id: "runs",       label: "Runs",        icon: Zap,            view: RunsView,       group: "ops",    adminOnly: true },
+  { id: "import",     label: "Import",      icon: Upload,         view: ImportView,     group: "core",   adminOnly: true },
+  { id: "settings",   label: "Settings",    icon: SettingsIcon,   view: SettingsView,   group: "ops",    adminOnly: true },
+  { id: "billing",    label: "Billing",     icon: CreditCard,     view: BillingView,    group: "ops",    adminOnly: true },
 ];
 
 const GROUP_COLORS: Record<string, string> = {
@@ -90,7 +96,7 @@ const GROUP_COLORS: Record<string, string> = {
   ops:    "text-orange-400",
 };
 
-export function AgiAdminPanel() {
+export function AgiAdminPanel({ isAdmin = true }: { isAdmin?: boolean } = {}) {
   const [active, setActive] = useState("leads");
   const [activeBizId, setActiveBizId] = useState<string | null>(null);
   const [omniAiBizId, setOmniAiBizId] = useState<string | null>(null);
@@ -122,15 +128,29 @@ export function AgiAdminPanel() {
         setBusinessNames(map);
         const omni = data.find(b => b.name === "Omni AI");
         if (omni) setOmniAiBizId(omni.id);
+        // Non-admin viewers (e.g. CPS user) get their workspace pinned on
+        // mount so leads/pipeline/site-analytics scope to their data, not
+        // the default Omni AI view.
+        if (!isAdmin && typeof window !== "undefined") {
+          const current = window.localStorage.getItem("omni_active_business_id");
+          if (!current || current === "all") {
+            const cps = data.find(b => b.name?.toLowerCase() === "cps");
+            if (cps) {
+              window.localStorage.setItem("omni_active_business_id", cps.id);
+              setActiveBizId(cps.id);
+            }
+          }
+        }
       } catch {}
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [isAdmin]);
 
   // 'all' or unset are treated as Omni AI's view (matches the dashboard
   // default in /dashboard/leads), so Sponsors / Affiliates show there too.
   const isOmniAi = !activeBizId || activeBizId === "all" || (omniAiBizId !== null && activeBizId === omniAiBizId);
-  const visibleTabs = TABS.filter(t => !t.omniOnly || isOmniAi);
+  const isCPS = activeBizId !== null && activeBizId !== "all" && businessNames[activeBizId]?.toLowerCase() === "cps";
+  const visibleTabs = TABS.filter(t => (!t.omniOnly || isOmniAi) && (!t.cpsOnly || isCPS) && (!t.adminOnly || isAdmin));
 
   // Header title — reflects whichever workspace the global switcher chose.
   const headerTitle = activeBizId === "all"

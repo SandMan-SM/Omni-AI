@@ -158,14 +158,16 @@ const sections = [
 
 export default function AdminInfo() {
   const { user, loading } = useAuth();
-  const { isAdmin, profileLoading } = useProfile();
+  const { isAdmin, profileLoading, profile } = useProfile();
+  const isCPS = profile?.username?.toLowerCase() === "cps";
+  const canView = isAdmin || isCPS;
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !profileLoading && (!user || !isAdmin)) {
+    if (!loading && !profileLoading && (!user || !canView)) {
       router.push("/dashboard");
     }
-  }, [user, isAdmin, loading, profileLoading, router]);
+  }, [user, canView, loading, profileLoading, router]);
 
   if (loading || profileLoading) {
     return (
@@ -175,7 +177,7 @@ export default function AdminInfo() {
     );
   }
 
-  if (!user || !isAdmin) return null;
+  if (!user || !canView) return null;
 
   return (
     <div className="min-h-screen bg-[#050505] text-white">

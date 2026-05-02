@@ -51,18 +51,6 @@ const CommandCenter = dynamicImport(
     ),
   },
 );
-// CPS-only analytics panel — code-split so non-CPS users never download it.
-const CpsAnalyticsPanel = dynamicImport(
-  () => import("@/components/dashboard/cps-analytics-panel"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="min-h-[200px] flex items-center justify-center">
-        <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
-      </div>
-    ),
-  },
-);
 
 const tierInfo: Record<string, { name: string; icon: typeof Zap; gradient: string; accent: string; level: number }> = {
   apprentice: { name: "Apprentice", icon: Zap, gradient: "from-slate-500 to-slate-600", accent: "text-slate-400", level: 0 },
@@ -451,8 +439,10 @@ export default function Dashboard() {
         )}
 
         {/* Omni AI Admin Panel — tabbed dashboard. Each tab swaps content
-            in-place via dynamic import; no page navigation. */}
-        {isAdmin && <AgiAdminPanel />}
+            in-place via dynamic import; no page navigation.
+            CPS users see the agentic dashboard scoped to their workspace
+            with admin-only tabs (Settings, Billing, Newsletter, etc.) hidden. */}
+        {(isAdmin || isCPS) && <AgiAdminPanel isAdmin={isAdmin} />}
 
         {!profileComplete && !onboardingComplete && profile && !isAdmin && !isCPS && !isFray && !isChaco && (
           <motion.div {...fadeUp} transition={{ duration: 0.3 }}>
@@ -1067,14 +1057,6 @@ export default function Dashboard() {
                 )}
               </CardContent>
             </Card>
-          </motion.div>
-        )}
-
-        {/* CPS analytics — full-width, outside the grid so it never creates
-            an orphaned half-row. Auto-refreshes every 30s. */}
-        {isCPS && (
-          <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.05 }}>
-            <CpsAnalyticsPanel />
           </motion.div>
         )}
 
