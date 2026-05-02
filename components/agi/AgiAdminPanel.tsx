@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import {
   Target, Bot, Brain, Inbox as InboxIcon, Send, Building2, BookOpen,
   BarChart3, Calendar, TrendingUp, Activity, Upload, Settings as SettingsIcon,
-  Zap, CreditCard, ChevronDown, Sparkles, Award, Trophy, Mail,
+  Zap, CreditCard, ChevronDown, Sparkles, Award, Trophy, Mail, Handshake, Users2,
 } from "lucide-react";
 
 // Dynamic imports of each AGI page — lazy-loaded so first paint is fast.
@@ -19,6 +19,8 @@ const CampaignsView  = dynamic(() => import("@/app/dashboard/campaigns/page"), {
 const TemplatesView  = dynamic(() => import("@/app/dashboard/templates/page"), { ssr: false, loading: () => <Skel /> });
 const AnalyticsView  = dynamic(() => import("@/app/dashboard/analytics/page"), { ssr: false, loading: () => <Skel /> });
 const PipelineView   = dynamic(() => import("@/app/dashboard/pipeline/page"),  { ssr: false, loading: () => <Skel /> });
+const SponsorView    = dynamic(() => import("@/app/dashboard/sponsor/page"),   { ssr: false, loading: () => <Skel /> });
+const AffiliateView  = dynamic(() => import("@/app/dashboard/affiliate/page"), { ssr: false, loading: () => <Skel /> });
 const HeatmapView    = dynamic(() => import("@/app/dashboard/heatmap/page"),   { ssr: false, loading: () => <Skel /> });
 const MeetingsView   = dynamic(() => import("@/app/dashboard/meetings/page"),  { ssr: false, loading: () => <Skel /> });
 const AutopilotView  = dynamic(() => import("@/app/dashboard/autopilot/page"), { ssr: false, loading: () => <Skel /> });
@@ -56,12 +58,16 @@ const TABS: Array<{
   icon: React.ElementType;
   view: React.ComponentType;
   group: "core" | "engage" | "intel" | "ops";
+  /** When true, the tab only renders while the active workspace is Omni AI. */
+  omniOnly?: boolean;
 }> = [
-  { id: "leads",      label: "Clients",     icon: Target,         view: LeadsView,      group: "core" },
+  { id: "leads",      label: "Leads",       icon: Target,         view: LeadsView,      group: "core" },
   { id: "outreach",   label: "Outreach",    icon: Send,           view: OutreachView,   group: "engage" },
   { id: "inbox",      label: "Inbox",       icon: InboxIcon,      view: InboxView,      group: "engage" },
   { id: "coach",      label: "Coach",       icon: Brain,          view: CoachView,      group: "intel" },
   { id: "pipeline",   label: "Pipeline",    icon: Award,          view: PipelineView,   group: "core" },
+  { id: "sponsor",    label: "Sponsors",    icon: Handshake,      view: SponsorView,    group: "core",  omniOnly: true },
+  { id: "affiliate",  label: "Affiliates",  icon: Users2,         view: AffiliateView,  group: "core",  omniOnly: true },
   { id: "meetings",   label: "Meetings",    icon: Calendar,       view: MeetingsView,   group: "engage" },
   { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage" },
   { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage" },
@@ -86,9 +92,45 @@ const GROUP_COLORS: Record<string, string> = {
 
 export function AgiAdminPanel() {
   const [active, setActive] = useState("leads");
-  const ActiveView = TABS.find(t => t.id === active)?.view;
+  const [activeBizId, setActiveBizId] = useState<string | null>(null);
+  const [omniAiBizId, setOmniAiBizId] = useState<string | null>(null);
   const tabsScrollRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
+
+  // Track which business is selected globally (used to hide Omni-AI-only tabs).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sync = () => setActiveBizId(localStorage.getItem("omni_active_business_id"));
+    sync();
+    const onStorage = (ev: StorageEvent) => { if (ev.key === "omni_active_business_id") sync(); };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
+  // Resolve Omni AI's business id once so we can decide if omniOnly tabs apply.
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { supabase } = await import("@/lib/agi-supabase");
+        const { data } = await supabase.from("omni_businesses").select("id").eq("name", "Omni AI").maybeSingle();
+        if (!cancelled) setOmniAiBizId(data?.id ?? null);
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // 'all' or unset are treated as Omni AI's view (matches the dashboard
+  // default in /dashboard/leads), so Sponsors / Affiliates show there too.
+  const isOmniAi = !activeBizId || activeBizId === "all" || (omniAiBizId !== null && activeBizId === omniAiBizId);
+  const visibleTabs = TABS.filter(t => !t.omniOnly || isOmniAi);
+
+  // If the active tab gets hidden after switching workspaces, fall back to leads.
+  useEffect(() => {
+    if (!visibleTabs.find(t => t.id === active)) setActive("leads");
+  }, [visibleTabs, active]);
+
+  const ActiveView = visibleTabs.find(t => t.id === active)?.view;
 
   // Auto-scroll the active tab into view when the tab changes — the tab strip
   // overflows on mobile, so without this users can lose track of which tab
@@ -117,7 +159,7 @@ export function AgiAdminPanel() {
               </span>
             </div>
             <p className="text-[11px] text-gray-400 -mt-0.5">
-              Self-driving lead generation · {TABS.length} surfaces
+              Self-driving lead generation · {visibleTabs.length} surfaces
             </p>
           </div>
         </div>
@@ -131,7 +173,7 @@ export function AgiAdminPanel() {
           style={{ scrollSnapType: "x proximity", WebkitOverflowScrolling: "touch" }}
         >
           <div className="flex items-center gap-1 min-w-max">
-            {TABS.map(t => {
+            {visibleTabs.map(t => {
               const Icon = t.icon;
               const isActive = active === t.id;
               const groupColor = GROUP_COLORS[t.group];
