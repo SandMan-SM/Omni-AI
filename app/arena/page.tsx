@@ -260,10 +260,11 @@ export default function Arena() {
   }, []);
 
   // Filtered agents: scope to the active business when one is selected,
-  // otherwise show the top 3 across all businesses (the original behavior).
+  // otherwise show every agent (the cards scroll internally so a long list
+  // doesn't push the page tall).
   const featuredAgents = activeBusinessName
     ? allAgents.filter(a => a.businessName === activeBusinessName)
-    : allAgents.slice(0, 3);
+    : allAgents;
 
   return (
     <div className="min-h-screen text-white noise-overlay">
@@ -467,7 +468,11 @@ export default function Arena() {
                   <Loader2 className="w-6 h-6 animate-spin text-gray-500" />
                 </div>
               ) : (
-                <div className="grid md:grid-cols-3 gap-6">
+                <div
+                  className="overflow-y-auto pr-2"
+                  style={{ maxHeight: 'calc(100vh - 280px)' }}
+                >
+                  <div className="grid md:grid-cols-3 gap-6">
                   {featuredAgents.map((agent, index) => {
                     const config = rankConfig[agent.rank] || rankConfig.unranked;
                     const Icon = config.icon;
@@ -567,6 +572,7 @@ export default function Arena() {
                       </motion.div>
                     );
                   })}
+                  </div>
                 </div>
               )}
             </motion.div>
