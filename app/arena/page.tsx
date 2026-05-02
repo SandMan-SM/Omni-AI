@@ -112,7 +112,8 @@ export default function Arena() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isDarkMode] = useState(true);
-  const [featuredAgents, setFeaturedAgents] = useState<Agent[]>([]);
+  const [allAgents, setAllAgents] = useState<Agent[]>([]);
+  const [activeBusinessName, setActiveBusinessName] = useState<string | null>(null);
   const [loadingFeatured, setLoadingFeatured] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const mouseRef = useRef({ x: 0, y: 0, active: false });
@@ -220,15 +221,49 @@ export default function Arena() {
     mouseRef.current.active = false;
   }, []);
 
+  // Fetch all agents once
   useEffect(() => {
     fetch('/api/agents/rankings')
       .then(r => r.json())
       .then(data => {
-        setFeaturedAgents((data.agents || []).slice(0, 3));
+        setAllAgents(data.agents || []);
       })
       .catch(() => {})
       .finally(() => setLoadingFeatured(false));
   }, []);
+
+  // Resolve the active business name from the global switcher (localStorage).
+  // 'all' or unset → show all agents. A specific business id → show only that
+  // business's agent. Listens to storage events so switching business in
+  // another tab/page updates this view live.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    let cancelled = false;
+    const sync = async () => {
+      const stored = localStorage.getItem('omni_active_business_id');
+      if (!stored || stored === 'all') {
+        if (!cancelled) setActiveBusinessName(null);
+        return;
+      }
+      try {
+        const { supabase } = await import('@/lib/agi-supabase');
+        const { data } = await supabase.from('omni_businesses').select('name').eq('id', stored).maybeSingle();
+        if (!cancelled) setActiveBusinessName(data?.name ?? null);
+      } catch {
+        if (!cancelled) setActiveBusinessName(null);
+      }
+    };
+    sync();
+    const onStorage = (ev: StorageEvent) => { if (ev.key === 'omni_active_business_id') sync(); };
+    window.addEventListener('storage', onStorage);
+    return () => { cancelled = true; window.removeEventListener('storage', onStorage); };
+  }, []);
+
+  // Filtered agents: scope to the active business when one is selected,
+  // otherwise show the top 3 across all businesses (the original behavior).
+  const featuredAgents = activeBusinessName
+    ? allAgents.filter(a => a.businessName === activeBusinessName)
+    : allAgents.slice(0, 3);
 
   return (
     <div className="min-h-screen text-white noise-overlay">
@@ -415,8 +450,16 @@ export default function Arena() {
               className="mb-16"
             >
               <div className="text-center mb-10">
-                <h2 className="text-3xl md:text-4xl font-bold mb-4">Featured Agents</h2>
-                <p className="text-gray-400">Top performers in the Arena</p>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4">
+                  {activeBusinessName ? `${activeBusinessName}'s Agent` : 'Featured Agents'}
+                </h2>
+                <p className="text-gray-400">
+                  {activeBusinessName
+                    ? (featuredAgents.length === 0
+                        ? `No agent deployed for ${activeBusinessName} yet`
+                        : `${activeBusinessName}'s arena agent`)
+                    : 'Top performers in the Arena'}
+                </p>
               </div>
 
               {loadingFeatured ? (
