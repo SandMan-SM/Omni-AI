@@ -24,7 +24,7 @@ const STAGES: Array<{ key: DealLead['deal_stage'] & string; label: string; color
   { key: 'demo',          label: 'Demo',          color: '#facc15' },
   { key: 'proposal',      label: 'Proposal',      color: '#fb923c' },
   { key: 'negotiation',   label: 'Negotiation',   color: '#f87171' },
-  { key: 'closed_won',    label: 'Closed Won',    color: '#10b981' },
+  { key: 'closed_won',    label: 'Client',        color: '#10b981' },
   { key: 'closed_lost',   label: 'Closed Lost',   color: '#475569' },
 ];
 
@@ -188,7 +188,7 @@ export default function PipelinePage() {
         {/* Pipeline value summary */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
           <Stat icon={DollarSign} label="Pipeline Value (weighted)" value={fmtCurrency(totalPipeline)} sub="probability-adjusted" color="#a78bfa" />
-          <Stat icon={Trophy} label="Won Revenue" value={fmtCurrency(wonRevenue)} sub={`${byStage.closed_won.length} deals`} color="#10b981" />
+          <Stat icon={Trophy} label="Client Revenue" value={fmtCurrency(wonRevenue)} sub={`${byStage.closed_won.length} ${byStage.closed_won.length === 1 ? 'client' : 'clients'}`} color="#10b981" />
           <Stat icon={Target} label="Active Deals" value={leads.filter(l => !['closed_won', 'closed_lost'].includes(l.deal_stage ?? 'lead')).length} sub={`${leads.length} total`} color="#38bdf8" />
           <Stat icon={ArrowRight} label="Win Rate" value={`${leads.length > 0 ? Math.round((byStage.closed_won.length / Math.max(byStage.closed_won.length + byStage.closed_lost.length, 1)) * 100) : 0}%`} sub="of closed" color="#facc15" />
         </div>
