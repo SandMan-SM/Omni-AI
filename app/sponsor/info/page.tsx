@@ -174,7 +174,7 @@ export default function SponsorInfo() {
               <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-pink-500/15 blur-3xl pointer-events-none" />
               <div className="absolute -bottom-32 -left-20 w-64 h-64 rounded-full bg-purple-500/15 blur-3xl pointer-events-none" />
               <div className="relative">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-200 text-[11px] font-semibold uppercase tracking-[0.18em] mb-5">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-200 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider sm:tracking-[0.18em] whitespace-nowrap mb-5">
                   <Sparkles className="w-3 h-3" />
                   Send this to a business owner
                 </div>
@@ -321,7 +321,7 @@ export default function SponsorInfo() {
               <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-pink-500/15 blur-3xl pointer-events-none" />
               <div className="absolute -bottom-24 -left-16 w-56 h-56 rounded-full bg-purple-500/15 blur-3xl pointer-events-none" />
               <div className="relative">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-200 text-[11px] font-semibold uppercase tracking-[0.18em] mb-5">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-200 text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider sm:tracking-[0.18em] whitespace-nowrap mb-5">
                   <Sparkles className="w-3 h-3" />
                   Apply now
                 </div>
