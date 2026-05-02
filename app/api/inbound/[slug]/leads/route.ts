@@ -1,0 +1,189 @@
+import { NextResponse } from 'next/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  isValidEmail,
+  isBotSubmission,
+  sanitizeText,
+} from '@/lib/validation';
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
+import {
+  INBOUND_ORIGINS,
+  isInboundSlug,
+  pickAllowedOrigin,
+  type InboundSlug,
+} from '@/lib/inbound-types';
+import {
+  notifyOwnerEmailInbound,
+  notifyOwnerTelegramInbound,
+} from '@/lib/inbound-notify';
+
+/**
+ * Generic inbound lead intake. Drop-in replacement for /api/cps/leads,
+ * parameterised by slug. Each client website's contact / consultation
+ * form posts here.
+ *
+ * Writes to inbound_<slug>_leads, then fans out notification to email
+ * (Resend) and Telegram via lib/inbound-notify.
+ *
+ * Rate-limited 5/10-min/IP/slug.
+ */
+
+function corsHeaders(slug: InboundSlug, origin: string | null): HeadersInit {
+  const allowed = INBOUND_ORIGINS[slug];
+  const ok = origin && allowed.includes(origin);
+  return {
+    'Access-Control-Allow-Origin': ok ? origin! : pickAllowedOrigin(slug, origin),
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  };
+}
+
+export async function OPTIONS(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
+  if (!isInboundSlug(slug)) return new NextResponse(null, { status: 404 });
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(slug, request.headers.get('origin')),
+  });
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> },
+) {
+  const { slug } = await params;
+  if (!isInboundSlug(slug)) {
+    return NextResponse.json({ error: 'Unknown brand' }, { status: 404 });
+  }
+
+  const origin = request.headers.get('origin');
+  const cors = corsHeaders(slug, origin);
+
+  try {
+    const ip = getClientIp(request.headers);
+    const rl = rateLimit(`inbound-leads:${slug}:${ip}`, 5, 10 * 60 * 1000);
+    if (!rl.ok) {
+      const r = rateLimitResponse(rl.resetMs);
+      Object.entries(cors).forEach(([k, v]) => r.headers.set(k, v as string));
+      return r;
+    }
+
+    const body = await request.json().catch(() => ({}));
+
+    if (isBotSubmission(body)) {
+      // Silent success so spammers don't tune their probes.
+      return NextResponse.json({ ok: true }, { headers: cors });
+    }
+
+    const name = sanitizeText(body.name, 200);
+    const email = sanitizeText(body.email, 254).toLowerCase();
+    const phone = sanitizeText(body.phone, 50);
+    const message = sanitizeText(body.message, 4000);
+    const source = sanitizeText(body.source, 50) || 'contact_form';
+
+    if (!name) {
+      return NextResponse.json(
+        { error: 'Name is required.' },
+        { status: 400, headers: cors },
+      );
+    }
+
+    if (email && !isValidEmail(email)) {
+      return NextResponse.json(
+        { error: 'Please enter a valid email address.' },
+        { status: 400, headers: cors },
+      );
+    }
+    if (!email && !phone) {
+      return NextResponse.json(
+        { error: 'Email or phone is required.' },
+        { status: 400, headers: cors },
+      );
+    }
+
+    const fallbackHost = INBOUND_ORIGINS[slug][0] ?? 'https://omnileadsagi.com';
+    const pageUrl = sanitizeText(body.page_url, 2048);
+    let pagePath: string | null = null;
+    try {
+      if (pageUrl) pagePath = new URL(pageUrl, fallbackHost).pathname;
+    } catch {
+      pagePath = null;
+    }
+
+    const sb = createAdminClient();
+    const tableName = `inbound_${slug}_leads`;
+    const { data: inserted, error: insertError } = await sb
+      .from(tableName)
+      .insert({
+        // Existing schema uses full_name (not `name`) and raw_data (not properties).
+        full_name: name,
+        email: email || null,
+        phone: phone || null,
+        message: message || null,
+        service_interest: sanitizeText(body.service_interest, 200) || null,
+        company: sanitizeText(body.company, 200) || null,
+        source,
+        status: 'new',
+        page_url: pageUrl || null,
+        page_path: pagePath,
+        visitor_id: sanitizeText(body.visitor_id, 100) || null,
+        session_id: sanitizeText(body.session_id, 100) || null,
+        utm_source: sanitizeText(body.utm_source, 100) || null,
+        utm_medium: sanitizeText(body.utm_medium, 100) || null,
+        utm_campaign: sanitizeText(body.utm_campaign, 100) || null,
+        referrer: sanitizeText(body.referrer, 2048) || null,
+        ip_address: ip,
+        user_agent: sanitizeText(body.user_agent, 500) || null,
+        raw_data: body && typeof body === 'object' ? body : {},
+      })
+      .select('id')
+      .single();
+
+    if (insertError || !inserted) {
+      console.error(`[inbound/${slug}/leads] insert error:`, insertError);
+      return NextResponse.json(
+        { error: "We couldn't save your submission. Please try again." },
+        { status: 500, headers: cors },
+      );
+    }
+
+    const lead = {
+      id: inserted.id as string,
+      slug,
+      name,
+      email: email || null,
+      phone: phone || null,
+      message: message || null,
+      source,
+      pageUrl: pageUrl || null,
+    };
+
+    const [emailOk, telegramOk] = await Promise.all([
+      notifyOwnerEmailInbound(lead).catch((e) => {
+        console.error(`[inbound/${slug}/leads] email notify failed`, e);
+        return false;
+      }),
+      notifyOwnerTelegramInbound(lead).catch((e) => {
+        console.error(`[inbound/${slug}/leads] telegram notify failed`, e);
+        return false;
+      }),
+    ]);
+
+    if (emailOk || telegramOk) {
+      await sb
+        .from(tableName)
+        .update({ email_notified: emailOk, telegram_notified: telegramOk })
+        .eq('id', lead.id);
+    }
+
+    return NextResponse.json({ ok: true, id: lead.id }, { headers: cors });
+  } catch (e) {
+    console.error(`[inbound/${slug}/leads] failed:`, e);
+    return NextResponse.json({ ok: false }, { status: 500, headers: cors });
+  }
+}

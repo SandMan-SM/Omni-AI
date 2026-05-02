@@ -125,3 +125,72 @@ export type InboundAnalyticsResponse = {
 export function isInboundSlug(value: string): value is InboundSlug {
   return (INBOUND_SLUGS as readonly string[]).includes(value);
 }
+
+/**
+ * Per-slug CORS allowlist used by the generic /api/inbound/[slug]/* ingestion
+ * endpoints. Each entry must include the production domain plus any preview
+ * domains and localhost ports the client's dev process uses. Wildcard / regex
+ * entries are not supported on purpose — explicit allowlist only.
+ */
+export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
+  ltb: [
+    'https://lovethybarber.shop',
+    'https://www.lovethybarber.shop',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
+  ],
+  omnileads: [
+    'https://omnileadsagi.com',
+    'https://www.omnileadsagi.com',
+    'http://localhost:3000',
+    'http://localhost:3010',
+  ],
+  alira: [
+    'https://aliracare.com',
+    'https://www.aliracare.com',
+    'http://localhost:3000',
+  ],
+  cps: [
+    'https://psychandcustodyevaluations.com',
+    'https://www.psychandcustodyevaluations.com',
+    'https://cps-website-nine.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ],
+  otd: [
+    'https://onthedoor.app',
+    'https://www.onthedoor.app',
+    'http://localhost:3000',
+  ],
+  leifson: [
+    'https://utahdeckandbasementremodel.com',
+    'https://www.utahdeckandbasementremodel.com',
+    'https://leifson-built.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ],
+  youngs: [
+    'https://youngscabinetrefinishing.com',
+    'https://www.youngscabinetrefinishing.com',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ],
+  phoenix: [
+    'https://phoenixexteriors.com',
+    'https://www.phoenixexteriors.com',
+    'http://localhost:3000',
+  ],
+  niki: [
+    'https://nikifellow.com',
+    'https://www.nikifellow.com',
+    'http://localhost:3000',
+  ],
+};
+
+/** Default fallback origin if request origin is unknown or omitted. */
+export function pickAllowedOrigin(slug: InboundSlug, requestOrigin: string | null): string {
+  const allowed = INBOUND_ORIGINS[slug] ?? [];
+  if (requestOrigin && allowed.includes(requestOrigin)) return requestOrigin;
+  return allowed[0] ?? 'https://omnileadsagi.com';
+}
