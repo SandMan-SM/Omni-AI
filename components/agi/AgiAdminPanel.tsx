@@ -29,7 +29,8 @@ const RunsView       = dynamic(() => import("@/app/dashboard/runs/page"),      {
 const ImportView     = dynamic(() => import("@/app/dashboard/import/page"),    { ssr: false, loading: () => <Skel /> });
 const SettingsView   = dynamic(() => import("@/app/dashboard/settings/page"),  { ssr: false, loading: () => <Skel /> });
 const BillingView    = dynamic(() => import("@/app/dashboard/billing/page"),   { ssr: false, loading: () => <Skel /> });
-const CpsSiteView    = dynamic(() => import("@/components/dashboard/cps-analytics-panel"), { ssr: false, loading: () => <Skel /> });
+const SiteAnalyticsRouterView = dynamic(() => import("@/components/dashboard/site-analytics-router"), { ssr: false, loading: () => <Skel /> });
+const ClientArenaView = dynamic(() => import("@/components/agi/ClientArenaPanel").then(m => ({ default: m.ClientArenaPanel })), { ssr: false, loading: () => <Skel /> });
 
 // Newsletter management tab: existing admin studio component (subscriber
 // audience, premium tier, send job preview, CSV import/export).
@@ -53,6 +54,23 @@ function Skel() {
   );
 }
 
+// Closure helpers used by the Arena and Newsletter tabs to switch their
+// inner view based on the panel's isAdmin prop. We can't conditionally
+// pass adminOnly to the TABS array (the panel reads that flag at module
+// scope), so the routing happens inside the view component instead.
+function makeArenaView(isAdmin: boolean): React.ComponentType {
+  if (isAdmin) return ArenaView;
+  return ClientArenaView;
+}
+function makeNewsletterView(isAdmin: boolean): React.ComponentType {
+  // Until ClientNewsletterStudio ships, non-admin clients see the same
+  // NewsletterStudio component but it self-scopes to the active workspace
+  // via the omni_active_business_id localStorage key (the studio already
+  // honours business_id filtering on its API calls — see /api/newsletter/*).
+  // Admin or client, NewsletterView is the right entry point.
+  return NewsletterView;
+}
+
 const TABS: Array<{
   id: string;
   label: string;
@@ -63,7 +81,9 @@ const TABS: Array<{
   omniOnly?: boolean;
   /** When true, the tab only renders while the active workspace is CPS. */
   cpsOnly?: boolean;
-  /** When true, the tab only renders for admins (hidden for non-admin viewers like CPS). */
+  /** When true, renders only for client workspaces (cps/youngs/leifson/ltb). */
+  clientOnly?: boolean;
+  /** When true, the tab only renders for admins (hidden for non-admin viewers). */
   adminOnly?: boolean;
 }> = [
   { id: "leads",      label: "Leads",       icon: Target,         view: LeadsView,      group: "core" },
@@ -74,14 +94,14 @@ const TABS: Array<{
   { id: "sponsor",    label: "Sponsors",    icon: Handshake,      view: SponsorView,    group: "core",  omniOnly: true },
   { id: "affiliate",  label: "Affiliates",  icon: Users2,         view: AffiliateView,  group: "core",  omniOnly: true },
   { id: "meetings",   label: "Meetings",    icon: Calendar,       view: MeetingsView,   group: "engage" },
-  { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage", adminOnly: true },
-  { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage", adminOnly: true },
+  { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage" },
+  { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage" },
   { id: "companies",  label: "Companies",   icon: Building2,      view: CompaniesView,  group: "intel",  adminOnly: true },
   { id: "campaigns",  label: "Campaigns",   icon: TrendingUp,     view: CampaignsView,  group: "core",   adminOnly: true },
   { id: "templates",  label: "Templates",   icon: BookOpen,       view: TemplatesView,  group: "core",   adminOnly: true },
   { id: "heatmap",    label: "Heatmap",     icon: Activity,       view: HeatmapView,    group: "intel",  adminOnly: true },
   { id: "analytics",  label: "Analytics",   icon: BarChart3,      view: AnalyticsView,  group: "intel",  adminOnly: true },
-  { id: "site-analytics", label: "Site Analytics", icon: Activity, view: CpsSiteView, group: "intel", cpsOnly: true },
+  { id: "site-analytics", label: "Site Analytics", icon: Activity, view: SiteAnalyticsRouterView, group: "intel", clientOnly: true },
   { id: "autopilot",  label: "Autopilot",   icon: Bot,            view: AutopilotView,  group: "ops",    adminOnly: true },
   { id: "runs",       label: "Runs",        icon: Zap,            view: RunsView,       group: "ops",    adminOnly: true },
   { id: "import",     label: "Import",      icon: Upload,         view: ImportView,     group: "core",   adminOnly: true },
@@ -96,11 +116,19 @@ const GROUP_COLORS: Record<string, string> = {
   ops:    "text-orange-400",
 };
 
-export function AgiAdminPanel({ isAdmin = true }: { isAdmin?: boolean } = {}) {
+export function AgiAdminPanel({
+  isAdmin = true,
+  pinnedWorkspaceSlug = null,
+}: {
+  isAdmin?: boolean;
+  /** Slug to auto-pin the workspace to for non-admin viewers (cps|youngs|leifson|ltb). */
+  pinnedWorkspaceSlug?: string | null;
+} = {}) {
   const [active, setActive] = useState("leads");
   const [activeBizId, setActiveBizId] = useState<string | null>(null);
   const [omniAiBizId, setOmniAiBizId] = useState<string | null>(null);
   const [businessNames, setBusinessNames] = useState<Record<string, string>>({});
+  const [businessSlugs, setBusinessSlugs] = useState<Record<string, string>>({});
   const tabsScrollRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
@@ -114,43 +142,61 @@ export function AgiAdminPanel({ isAdmin = true }: { isAdmin?: boolean } = {}) {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // Resolve all business names once so the header can label whichever
+  // Resolve all business names + slugs once so the header can label whichever
   // workspace is active without an extra round-trip on each switch.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const { supabase } = await import("@/lib/agi-supabase");
-        const { data } = await supabase.from("omni_businesses").select("id,name");
+        const { data } = await supabase.from("omni_businesses").select("id,name,slug");
         if (cancelled || !data) return;
-        const map: Record<string, string> = {};
-        for (const b of data) map[b.id] = b.name;
-        setBusinessNames(map);
+        const nameMap: Record<string, string> = {};
+        const slugMap: Record<string, string> = {};
+        for (const b of data) {
+          nameMap[b.id] = b.name;
+          if (b.slug) slugMap[b.id] = b.slug.toLowerCase();
+        }
+        setBusinessNames(nameMap);
+        setBusinessSlugs(slugMap);
         const omni = data.find(b => b.name === "Omni AI");
         if (omni) setOmniAiBizId(omni.id);
-        // Non-admin viewers (e.g. CPS user) get their workspace pinned on
-        // mount so leads/pipeline/site-analytics scope to their data, not
-        // the default Omni AI view.
-        if (!isAdmin && typeof window !== "undefined") {
+        // Non-admin viewers get their workspace pinned on mount so leads /
+        // pipeline / site-analytics / newsletter scope to their data instead
+        // of defaulting to the Omni AI view.
+        if (!isAdmin && pinnedWorkspaceSlug && typeof window !== "undefined") {
           const current = window.localStorage.getItem("omni_active_business_id");
           if (!current || current === "all") {
-            const cps = data.find(b => b.name?.toLowerCase() === "cps");
-            if (cps) {
-              window.localStorage.setItem("omni_active_business_id", cps.id);
-              setActiveBizId(cps.id);
+            const target = data.find(b =>
+              b.slug?.toLowerCase() === pinnedWorkspaceSlug ||
+              b.name?.toLowerCase() === pinnedWorkspaceSlug,
+            );
+            if (target) {
+              window.localStorage.setItem("omni_active_business_id", target.id);
+              setActiveBizId(target.id);
             }
           }
         }
       } catch {}
     })();
     return () => { cancelled = true; };
-  }, [isAdmin]);
+  }, [isAdmin, pinnedWorkspaceSlug]);
 
   // 'all' or unset are treated as Omni AI's view (matches the dashboard
   // default in /dashboard/leads), so Sponsors / Affiliates show there too.
   const isOmniAi = !activeBizId || activeBizId === "all" || (omniAiBizId !== null && activeBizId === omniAiBizId);
-  const isCPS = activeBizId !== null && activeBizId !== "all" && businessNames[activeBizId]?.toLowerCase() === "cps";
-  const visibleTabs = TABS.filter(t => (!t.omniOnly || isOmniAi) && (!t.cpsOnly || isCPS) && (!t.adminOnly || isAdmin));
+  const activeWorkspaceSlug = activeBizId
+    ? (businessSlugs[activeBizId] ?? businessNames[activeBizId]?.toLowerCase() ?? null)
+    : null;
+  const CLIENT_SLUGS = new Set(["cps", "youngs", "leifson", "ltb"]);
+  const isCPS = activeWorkspaceSlug === "cps";
+  const isClientWorkspace = !!activeWorkspaceSlug && CLIENT_SLUGS.has(activeWorkspaceSlug);
+  const visibleTabs = TABS.filter(t =>
+    (!t.omniOnly || isOmniAi) &&
+    (!t.cpsOnly || isCPS) &&
+    (!t.clientOnly || isClientWorkspace) &&
+    (!t.adminOnly || isAdmin),
+  );
 
   // Header title — reflects whichever workspace the global switcher chose.
   const headerTitle = activeBizId === "all"
@@ -164,7 +210,15 @@ export function AgiAdminPanel({ isAdmin = true }: { isAdmin?: boolean } = {}) {
     if (!visibleTabs.find(t => t.id === active)) setActive("leads");
   }, [visibleTabs, active]);
 
-  const ActiveView = visibleTabs.find(t => t.id === active)?.view;
+  const activeTabDef = visibleTabs.find(t => t.id === active);
+  // Arena and Newsletter tabs route their inner view based on isAdmin so
+  // client viewers (CPS, Brent, Adam, Sammy) get the scoped panels and
+  // admins keep the full management surfaces.
+  const ActiveView = activeTabDef?.id === "arena"
+    ? makeArenaView(isAdmin)
+    : activeTabDef?.id === "newsletter"
+      ? makeNewsletterView(isAdmin)
+      : activeTabDef?.view;
 
   // Auto-scroll the active tab into view when the tab changes — the tab strip
   // overflows on mobile, so without this users can lose track of which tab
