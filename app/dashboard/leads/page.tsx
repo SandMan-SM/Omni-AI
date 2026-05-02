@@ -937,9 +937,9 @@ export default function DashboardPage() {
             <span className="agi-filter-count" style={{ marginLeft: 'auto', fontSize: 12, color: '#444' }}>{filtered.length} leads</span>
           </div>
 
-          <div style={{ overflowX: 'auto' }}>
+          <div style={{ overflowX: 'auto', overflowY: 'auto', maxHeight: 'calc(100vh - 280px)' }}>
             <table className="agi-leads-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
-              <thead>
+              <thead style={{ position: 'sticky', top: 0, background: '#111', zIndex: 1 }}>
                 <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
                   {(selectedBiz === null
                     ? ['Contact', 'Business', 'Title', 'Source', 'Status', 'Score']
