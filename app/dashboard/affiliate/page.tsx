@@ -4,9 +4,9 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
 import {
-  ArrowLeft, ChevronDown, TrendingUp, DollarSign, RefreshCw,
-  Trophy, Target, ArrowRight, Sparkles, AlertCircle, CheckCircle2,
-  Mail, Phone, MapPin
+  ArrowLeft, DollarSign, RefreshCw,
+  Trophy, Target, ArrowRight, AlertCircle, CheckCircle2,
+  Mail, Phone, MapPin, Users2
 } from 'lucide-react';
 
 type DealLead = Lead & {
@@ -18,13 +18,13 @@ type DealLead = Lead & {
 };
 
 const STAGES: Array<{ key: DealLead['deal_stage'] & string; label: string; color: string }> = [
-  { key: 'lead',          label: 'Lead',          color: '#94a3b8' },
-  { key: 'contacted',     label: 'Contacted',     color: '#38bdf8' },
-  { key: 'qualified',     label: 'Qualified',     color: '#a78bfa' },
-  { key: 'demo',          label: 'Demo',          color: '#facc15' },
+  { key: 'lead',          label: 'Prospect',      color: '#94a3b8' },
+  { key: 'contacted',     label: 'Pitched',       color: '#38bdf8' },
+  { key: 'qualified',     label: 'Interested',    color: '#a78bfa' },
+  { key: 'demo',          label: 'Discussion',    color: '#facc15' },
   { key: 'proposal',      label: 'Proposal',      color: '#fb923c' },
   { key: 'negotiation',   label: 'Negotiation',   color: '#f87171' },
-  { key: 'closed_won',    label: 'Client',        color: '#10b981' },
+  { key: 'closed_won',    label: 'Affiliate',     color: '#10b981' },
   { key: 'closed_lost',   label: 'Closed Lost',   color: '#475569' },
 ];
 
@@ -39,12 +39,12 @@ function fmtCurrency(cents?: number) {
   return `$${dollars.toFixed(0)}`;
 }
 
-export default function PipelinePage() {
-  const [businesses, setBusinesses] = useState<Business[]>([]);
-  const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
-  const [bizOpen, setBizOpen] = useState(false);
+const PIPELINE_TYPE = 'affiliate';
+
+export default function AffiliatePipelinePage() {
+  // Locked to Omni AI workspace — affiliate pipeline is Omni AI only.
+  const [omniBiz, setOmniBiz] = useState<Business | null>(null);
   const [leads, setLeads] = useState<DealLead[]>([]);
-  const [scoring, setScoring] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [editing, setEditing] = useState<DealLead | null>(null);
 
@@ -53,36 +53,21 @@ export default function PipelinePage() {
   };
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
-      if (data?.length) {
-        setBusinesses(data);
-        // Default to Omni AI when nothing is stored; otherwise honor whatever
-        // the global business switcher chose ('all' or a specific id).
-        const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
-        const omniAi = data.find(b => b.name === 'Omni AI');
-        if (stored && stored !== 'all') {
-          const found = data.find(b => b.id === stored);
-          setSelectedBiz(found ?? data[0]);
-        } else if (stored === 'all') {
-          // Pipeline doesn't have an "all" view, so fall back to Omni AI.
-          setSelectedBiz(omniAi ?? data[0]);
-        } else {
-          setSelectedBiz(omniAi ?? data[0]);
-        }
-      }
+    supabase.from('omni_businesses').select('*').eq('name', 'Omni AI').maybeSingle().then(({ data }) => {
+      if (data) setOmniBiz(data);
     });
   }, []);
 
   const load = useCallback(async () => {
-    if (!selectedBiz) return;
+    if (!omniBiz) return;
     const { data } = await supabase
       .from('omni_leads_generated')
       .select('*')
-      .eq('business_id', selectedBiz.id)
-      .eq('pipeline_type', 'sales')
+      .eq('business_id', omniBiz.id)
+      .eq('pipeline_type', PIPELINE_TYPE)
       .order('score', { ascending: false });
     setLeads((data ?? []) as DealLead[]);
-  }, [selectedBiz]);
+  }, [omniBiz]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -100,24 +85,6 @@ export default function PipelinePage() {
     showToast('Deal value updated');
   }
 
-  async function bulkScore() {
-    if (!selectedBiz) return;
-    setScoring(true);
-    const r = await fetch('/api/agi/leads/bulk-score', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ business_id: selectedBiz.id, only_unscored: false, max_leads: 25 }),
-    });
-    const j = await r.json();
-    setScoring(false);
-    if (j.ok) {
-      showToast(`Re-scored ${j.scored} leads with Claude`);
-      await load();
-    } else {
-      showToast(`Failed: ${j.error}`, false);
-    }
-  }
-
   // Stage stats
   const byStage: Record<string, DealLead[]> = {};
   for (const stage of STAGES) byStage[stage.key] = [];
@@ -126,7 +93,6 @@ export default function PipelinePage() {
     if (byStage[stage]) byStage[stage].push(l);
   }
 
-  // Pipeline value (won + open weighted by stage probability)
   const stageProbability: Record<string, number> = {
     lead: 0.05, contacted: 0.1, qualified: 0.25, demo: 0.4,
     proposal: 0.6, negotiation: 0.8, closed_won: 1.0, closed_lost: 0,
@@ -139,15 +105,6 @@ export default function PipelinePage() {
 
   const wonRevenue = leads.filter(l => l.deal_stage === 'closed_won').reduce((s, l) => s + (l.deal_value ?? 0), 0);
 
-  // Stuck deals — open stage, idle 14+ days. Surfaces in a banner so the
-  // owner sees stalled pipeline at a glance.
-  const fourteenDaysAgo = Date.now() - 14 * 86_400_000;
-  const stuckLeads = leads.filter(l => {
-    if (['closed_won', 'closed_lost'].includes(l.deal_stage ?? '')) return false;
-    const ts = (l as DealLead & { updated_at?: string }).updated_at ?? l.created_at;
-    return ts && new Date(ts).getTime() <= fourteenDaysAgo;
-  });
-
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
       <header style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -157,38 +114,15 @@ export default function PipelinePage() {
           </Link>
           <div style={{ width: 1, height: 20, background: '#222' }} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <TrendingUp size={14} color="#10b981" />
-            <span style={{ fontWeight: 700, fontSize: 15 }}>Pipeline</span>
+            <Users2 size={14} color="#a78bfa" />
+            <span style={{ fontWeight: 700, fontSize: 15 }}>Affiliates</span>
           </div>
           <div style={{ width: 1, height: 20, background: '#222' }} />
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => setBizOpen(o => !o)} style={{
-              display: 'flex', alignItems: 'center', gap: 8, background: '#191919',
-              border: '1px solid #222', borderRadius: 8, padding: '6px 12px', cursor: 'pointer', color: '#e8e8e8',
-            }}>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>{selectedBiz?.name ?? 'Select Business'}</span>
-              <ChevronDown size={13} color="#555" />
-            </button>
-            {bizOpen && (
-              <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 220, zIndex: 10, overflow: 'hidden' }}>
-                {businesses.map(b => (
-                  <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
-                    <div style={{ fontWeight: 600 }}>{b.name}</div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+          <span style={{ fontSize: 12, color: '#666', background: '#191919', padding: '4px 10px', borderRadius: 6, border: '1px solid #222' }}>
+            Omni AI only
+          </span>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={bulkScore} disabled={scoring} style={{
-            background: scoring ? '#1a1a2e' : '#191919',
-            border: '1px solid #a78bfa40', color: '#a78bfa',
-            padding: '7px 14px', borderRadius: 8, cursor: scoring ? 'not-allowed' : 'pointer',
-            fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
-          }}>
-            <Sparkles size={11} /> {scoring ? 'Scoring…' : 'AI re-score all'}
-          </button>
           <button onClick={load} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '7px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <RefreshCw size={12} /> Refresh
           </button>
@@ -196,44 +130,13 @@ export default function PipelinePage() {
       </header>
 
       <div style={{ padding: '24px 32px' }}>
-        {/* Pipeline value summary */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
-          <Stat icon={DollarSign} label="Pipeline Value (weighted)" value={fmtCurrency(totalPipeline)} sub="probability-adjusted" color="#a78bfa" />
-          <Stat icon={Trophy} label="Client Revenue" value={fmtCurrency(wonRevenue)} sub={`${byStage.closed_won.length} ${byStage.closed_won.length === 1 ? 'client' : 'clients'}`} color="#10b981" />
+          <Stat icon={DollarSign} label="Affiliate Pipeline (weighted)" value={fmtCurrency(totalPipeline)} sub="probability-adjusted" color="#a78bfa" />
+          <Stat icon={Trophy} label="Affiliate Revenue" value={fmtCurrency(wonRevenue)} sub={`${byStage.closed_won.length} ${byStage.closed_won.length === 1 ? 'affiliate' : 'affiliates'}`} color="#10b981" />
           <Stat icon={Target} label="Active Deals" value={leads.filter(l => !['closed_won', 'closed_lost'].includes(l.deal_stage ?? 'lead')).length} sub={`${leads.length} total`} color="#38bdf8" />
           <Stat icon={ArrowRight} label="Win Rate" value={`${leads.length > 0 ? Math.round((byStage.closed_won.length / Math.max(byStage.closed_won.length + byStage.closed_lost.length, 1)) * 100) : 0}%`} sub="of closed" color="#facc15" />
         </div>
 
-        {/* Stuck-deals banner */}
-        {stuckLeads.length > 0 && (
-          <div style={{
-            display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap",
-            background: "linear-gradient(135deg, #2a0d0d 0%, #1a0d0d 100%)",
-            border: "1px solid #f8717140",
-            borderRadius: 10, padding: "12px 16px", marginBottom: 18,
-          }}>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 13, fontWeight: 700, color: "#f87171" }}>
-                {stuckLeads.length} stuck {stuckLeads.length === 1 ? "deal" : "deals"}
-              </div>
-              <div style={{ fontSize: 11, color: "#cbd5e1", marginTop: 2 }}>
-                Open for 14+ days with no movement — total ${stuckLeads.reduce((s, l) => s + ((l.deal_value ?? 0) / 100), 0).toFixed(0)} sitting idle.
-              </div>
-            </div>
-            <button
-              onClick={() => setEditing(stuckLeads[0])}
-              style={{
-                background: "#f87171", border: "none", color: "#000",
-                padding: "7px 14px", borderRadius: 6, fontSize: 12, fontWeight: 700,
-                cursor: "pointer",
-              }}
-            >
-              Open first
-            </button>
-          </div>
-        )}
-
-        {/* Kanban */}
         <div style={{ display: 'grid', gridTemplateColumns: `repeat(${STAGES.length}, minmax(200px, 1fr))`, gap: 12, overflowX: 'auto' }}>
           {STAGES.map(stage => (
             <div key={stage.key} style={{
@@ -242,9 +145,7 @@ export default function PipelinePage() {
             }}>
               <div style={{ marginBottom: 12, paddingBottom: 10, borderBottom: `2px solid ${stage.color}30` }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, color: stage.color }}>
-                    {stage.label}
-                  </span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: stage.color }}>{stage.label}</span>
                   <span style={{ fontSize: 10, fontWeight: 700, color: stage.color, background: `${stage.color}18`, padding: '2px 8px', borderRadius: 4 }}>
                     {byStage[stage.key].length}
                   </span>
@@ -279,11 +180,6 @@ export default function PipelinePage() {
                         {fmtCurrency(l.deal_value)}
                       </div>
                     ) : null}
-                    {l.ai_recommended_angle && (
-                      <div style={{ fontSize: 9, color: '#666', marginTop: 6, fontStyle: 'italic', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {l.ai_recommended_angle}
-                      </div>
-                    )}
                   </div>
                 ))}
                 {byStage[stage.key].length === 0 && (
@@ -310,7 +206,6 @@ export default function PipelinePage() {
               <div style={{ fontSize: 13, color: '#94a3b8', marginTop: 4 }}>{editing.title} @ {editing.company}</div>
             </div>
 
-            {/* Contact info */}
             <div style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14, marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ fontSize: 11, color: '#444', textTransform: 'uppercase', letterSpacing: '0.7px' }}>Contact</div>
               {editing.email ? (
@@ -342,18 +237,6 @@ export default function PipelinePage() {
                 </div>
               )}
             </div>
-
-            {editing.ai_score_reasoning && (
-              <div style={{ background: '#0d2a1e', border: '1px solid #10b98140', borderRadius: 10, padding: 14, marginBottom: 16 }}>
-                <div style={{ fontSize: 11, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>AI Analysis · Score {editing.score}</div>
-                <div style={{ fontSize: 13, color: '#cbd5e1', lineHeight: 1.6 }}>{editing.ai_score_reasoning}</div>
-                {editing.ai_recommended_angle && (
-                  <div style={{ marginTop: 8, fontSize: 12, color: '#facc15', fontStyle: 'italic' }}>
-                    Angle: {editing.ai_recommended_angle}
-                  </div>
-                )}
-              </div>
-            )}
 
             <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 8 }}>Stage</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>

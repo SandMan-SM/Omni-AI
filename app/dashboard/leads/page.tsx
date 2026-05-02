@@ -868,6 +868,12 @@ export default function DashboardPage() {
             <Link href="/dashboard/inbox" style={navStyle(false)}><Inbox size={11} /> Inbox</Link>
             <Link href="/dashboard/meetings" style={navStyle(false)}><Calendar size={11} /> Meetings</Link>
             <Link href="/dashboard/pipeline" style={navStyle(false)}><Award size={11} /> Pipeline</Link>
+            {selectedBiz?.name === 'Omni AI' && (
+              <>
+                <Link href="/dashboard/sponsor" style={navStyle(false)}><Award size={11} /> Sponsors</Link>
+                <Link href="/dashboard/affiliate" style={navStyle(false)}><Award size={11} /> Affiliates</Link>
+              </>
+            )}
             <Link href="/dashboard/heatmap" style={navStyle(false)}><Activity size={11} /> Heatmap</Link>
             <Link href="/dashboard/billing" style={navStyle(false)}><CreditCard size={11} /> Billing</Link>
             <Link href="/dashboard/outreach" style={navStyle(false)}><Sparkles size={11} /> Outreach</Link>
