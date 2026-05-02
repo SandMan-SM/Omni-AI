@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Sparkles, Target, Activity, Mail, Trophy, Rocket, Gift } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
+import PartnerShareButtons from "./PartnerShareButtons";
 
 /**
  * Co-branded conversion landing page. Linked from every newsletter's
@@ -102,7 +103,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
           <div className="absolute -top-40 -left-40 w-[640px] h-[640px] rounded-full bg-gradient-to-br from-emerald-500/15 via-cyan-500/10 to-transparent blur-3xl" />
           <div className="absolute -bottom-40 -right-40 w-[560px] h-[560px] rounded-full bg-gradient-to-tr from-purple-500/15 via-pink-500/10 to-transparent blur-3xl" />
         </div>
-        <div className="max-w-5xl mx-auto px-6 py-24 sm:py-32">
+        <div className="max-w-5xl mx-auto px-6 py-20 sm:py-24">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-mono uppercase tracking-widest mb-6">
             <Sparkles className="w-3 h-3" />
             Agentic Partnership
@@ -135,18 +136,21 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
                 href={partnerWebsite}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 hover:border-white/25 text-gray-300 hover:text-white font-medium text-sm transition"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-white/15 hover:border-white/25 text-gray-300 hover:text-white font-medium text-sm transition"
               >
                 Visit {partnerName}
                 <ArrowRight className="w-4 h-4" />
               </a>
             )}
           </div>
+          <div className="mt-8">
+            <PartnerShareButtons partnerName={partnerName} slug={slug} />
+          </div>
         </div>
       </section>
 
       {/* What Omni AI does */}
-      <section className="border-b border-white/5 py-20 sm:py-24">
+      <section className="border-b border-white/5 py-14 sm:py-16">
         <div className="max-w-5xl mx-auto px-6">
           <h2 className="text-2xl sm:text-3xl font-bold mb-3">What we run for {partnerName}</h2>
           <p className="text-gray-400 mb-10">Four interlocking systems, fully autonomous, fully measured.</p>
@@ -157,7 +161,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
               { Icon: Mail,     title: "Newsletter engine",   body: "AI-drafted, AI-tested, audience-segmented newsletters on a schedule." },
               { Icon: Trophy,   title: "Agentic dashboard",   body: "One command center for leads, pipeline, content, and meetings." },
             ].map(({ Icon, title, body }) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 hover:border-emerald-500/30 hover:bg-emerald-500/[0.03] transition">
+              <div key={title} className="rounded-2xl border border-white/15 bg-white/[0.04] p-5 hover:border-emerald-500/30 hover:bg-emerald-500/[0.03] transition">
                 <Icon className="w-5 h-5 text-emerald-400 mb-3" />
                 <h3 className="font-semibold text-white mb-1.5">{title}</h3>
                 <p className="text-sm text-gray-400 leading-relaxed">{body}</p>
@@ -169,7 +173,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
 
       {/* Trending content */}
       {trending.length > 0 && (
-        <section className="border-b border-white/5 py-20 sm:py-24">
+        <section className="border-b border-white/5 py-14 sm:py-16">
           <div className="max-w-5xl mx-auto px-6">
             <h2 className="text-2xl sm:text-3xl font-bold mb-3">What&apos;s trending right now</h2>
             <p className="text-gray-400 mb-10">Daily AI &amp; business intelligence — written by our agents, deployed by our infrastructure.</p>
@@ -178,7 +182,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
                 <Link
                   key={p.slug}
                   href={`/${p.slug}`}
-                  className="group rounded-2xl border border-white/10 bg-white/[0.02] p-5 hover:border-purple-500/30 hover:bg-purple-500/[0.03] transition block"
+                  className="group rounded-2xl border border-white/15 bg-white/[0.04] p-5 hover:border-purple-500/30 hover:bg-purple-500/[0.03] transition block"
                 >
                   <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-purple-300 transition">{p.title}</h3>
                   <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">{p.description}</p>
@@ -193,7 +197,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
       )}
 
       {/* Free programs */}
-      <section className="border-b border-white/5 py-20 sm:py-24">
+      <section className="border-b border-white/5 py-14 sm:py-16">
         <div className="max-w-5xl mx-auto px-6">
           <div className="rounded-3xl border border-amber-500/20 bg-gradient-to-br from-amber-500/[0.05] via-orange-500/[0.03] to-transparent p-8 sm:p-12">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs font-mono uppercase tracking-widest mb-4">
@@ -227,7 +231,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
       </section>
 
       {/* Closing CTA */}
-      <section className="py-20 sm:py-28">
+      <section className="py-16 sm:py-20">
         <div className="max-w-3xl mx-auto px-6 text-center">
           <Rocket className="w-10 h-10 text-emerald-400 mx-auto mb-5" />
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
