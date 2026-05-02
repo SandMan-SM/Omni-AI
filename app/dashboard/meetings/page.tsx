@@ -57,7 +57,21 @@ export default function MeetingsPage() {
 
   const upcoming = bookings.filter(b => new Date(b.start_at) >= new Date());
   const past = bookings.filter(b => new Date(b.start_at) < new Date());
-  const bookingUrl = selectedBiz ? `${typeof window !== 'undefined' ? window.location.origin : ''}/book/${selectedBiz.id}` : '';
+  // Per-workspace custom booking URLs. When the active workspace is a
+  // client we have a personal-website consultation page for, the displayed
+  // link points to that page instead of the legacy /book/{biz_id} route —
+  // so paste-into-email-signature lands prospects on a richer surface.
+  const CUSTOM_BOOKING_URLS: Record<string, string> = {
+    cps: 'https://psychandcustodyevaluations.com/book-consultation',
+    leifson: 'https://utahdeckandbasementremodel.com/book-consultation',
+    youngs: 'https://youngscabinetrefinishing.com/book-consultation',
+    ltb: 'https://lovethybarber.shop/book-consultation',
+  };
+  const bizSlug = (selectedBiz?.slug || selectedBiz?.name || '').toLowerCase();
+  const customUrl = CUSTOM_BOOKING_URLS[bizSlug];
+  const bookingUrl = selectedBiz
+    ? (customUrl ?? `${typeof window !== 'undefined' ? window.location.origin : ''}/book/${selectedBiz.id}`)
+    : '';
 
   return (
     <div className="agi-meetings-root" style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
@@ -162,7 +176,7 @@ export default function MeetingsPage() {
             }}>
               <Copy size={12} /> Copy
             </button>
-            <Link href={`/book/${selectedBiz?.id ?? ''}`} target="_blank" style={{
+            <Link href={bookingUrl || `/book/${selectedBiz?.id ?? ''}`} target="_blank" style={{
               background: '#191919', border: '1px solid #222', color: '#94a3b8',
               padding: '9px 14px', borderRadius: 8, textDecoration: 'none',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12,
