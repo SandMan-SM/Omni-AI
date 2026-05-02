@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { PinkSparksBackdrop } from "@/components/pink-sparks-backdrop";
 import SponsorShareButtons from "./SponsorShareButtons";
 
 const investmentAreas = [
@@ -87,10 +88,11 @@ export default function SponsorInfo() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen text-white relative">
+      <PinkSparksBackdrop />
       <CursorSpotlight />
-      
-      <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/5">
+
+      <header className="sticky top-0 z-50 bg-black/60 backdrop-blur-lg border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
           <Link href="/" className="text-xl font-bold text-gradient">
             Omni AI
@@ -108,92 +110,82 @@ export default function SponsorInfo() {
       </header>
 
       <main className="relative z-10">
-        {/* Visible breadcrumb — paired with the breadcrumbSchema in
-            app/sponsor/info/layout.tsx. Google only awards the SERP
-            breadcrumb chip when both the schema and visible UI agree.
-            Centered to match the centered hero composition below. */}
-        <div className="flex justify-center pt-10 pb-0 px-4">
-          <Breadcrumb
-            items={[
-              { name: "Home", href: "/" },
-              { name: "Sponsor", href: "/sponsor" },
-              { name: "Information", href: "/sponsor/info" },
-            ]}
-            className="text-xs"
-          />
-        </div>
-        <motion.div
-          initial="initial"
-          animate="animate"
-          variants={fadeUp}
-          className="text-center py-12 md:py-20 px-4"
-        >
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card neon-border mb-4 md:mb-6">
-            <Gift className="w-4 h-4 text-purple-400" />
-            <span className="text-xs md:text-sm text-gray-300">Omni AI Sponsor Program</span>
+        {/* Hero: breadcrumb → eyebrow → title → subtitle → CTA. Single
+            vertical rhythm so the page reads top-down without floating
+            ornaments. */}
+        <section className="px-4 pt-10 md:pt-14 pb-12 md:pb-16">
+          <div className="flex justify-center mb-8 md:mb-10">
+            <Breadcrumb
+              items={[
+                { name: "Home", href: "/" },
+                { name: "Sponsor", href: "/sponsor" },
+                { name: "Information", href: "/sponsor/info" },
+              ]}
+              className="text-xs"
+            />
           </div>
-          
-          <h1 className="text-3xl md:text-5xl lg:text-7xl font-bold mb-4 md:mb-6">
-            <span className="text-gradient">Sponsorship Overview</span>
-          </h1>
-          
-          {/* data-speakable="intro" activates the SpeakableSpecification
-              declared on the sponsorInfoWebPageSchema in
-              app/sponsor/info/layout.tsx. Voice assistants (Google
-              Assistant, Siri read-aloud, Alexa) concatenate h1
-              ("Sponsorship Overview") + this subtitle as the natural
-              ~8-second reply to "what does an Omni AI sponsorship
-              include?" / "how do I sponsor Omni AI?" voice queries,
-              with the six-item OfferCatalog from the Service schema
-              available as the body of the answer. */}
-          <p
-            className="text-lg md:text-xl text-gray-300 max-w-xl mx-auto mb-6 md:mb-8 leading-relaxed"
-            data-speakable="intro"
-          >
-            Your sponsorship funds AI systems that generate qualified leads, automate operations, and deliver measurable growth.
-          </p>
 
-          <Button 
-            onClick={() => router.push("/sponsor/application")}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-lg md:text-xl px-8 md:px-10 py-5 md:py-6"
+          <motion.div
+            initial="initial"
+            animate="animate"
+            variants={fadeUp}
+            className="text-center max-w-3xl mx-auto"
           >
-            Access Sponsor Portal
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card neon-border mb-6">
+              <Gift className="w-4 h-4 text-pink-300" />
+              <span className="text-xs md:text-sm text-gray-200 tracking-wide">Omni AI Sponsor Program</span>
+            </div>
 
-          <div className="max-w-xl mx-auto mt-6 md:mt-8">
-            <Card className="bg-gradient-to-r from-purple-900/30 to-pink-900/20 border border-purple-500/20">
-              <CardContent className="p-4 md:p-6">
-                <p className="text-sm md:text-base text-gray-300 leading-relaxed">
-                  Every dollar supports infrastructure designed to increase efficiency, capture demand, and provide real-time performance visibility through your Sponsor Dashboard.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </motion.div>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-5 leading-[1.1] tracking-tight">
+              <span className="bg-gradient-to-r from-pink-300 via-fuchsia-300 to-purple-300 bg-clip-text text-transparent">
+                Sponsorship Overview
+              </span>
+            </h1>
+
+            {/* data-speakable="intro" activates the SpeakableSpecification
+                in app/sponsor/info/layout.tsx — voice assistants read
+                h1 + this subtitle as the ~8-second reply to "what does
+                an Omni AI sponsorship include?" */}
+            <p
+              className="text-lg md:text-xl text-gray-300 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed"
+              data-speakable="intro"
+            >
+              Your sponsorship funds AI systems that generate qualified leads, automate operations, and deliver measurable growth — with real-time visibility through your Sponsor Dashboard.
+            </p>
+
+            <Button
+              onClick={() => router.push("/sponsor/application")}
+              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-8 md:px-10 py-5 md:py-6 rounded-2xl shadow-2xl shadow-pink-900/40"
+            >
+              Access Sponsor Portal
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </motion.div>
+        </section>
 
         {/* Peer-share callout. Frames the program as something every business
             owner should be aware of, not a private offer. The whole point is
             that sponsorship slots fill faster when current sponsors and
             partners pull their network into the funnel — so the share buttons
             sit prominently above the deep program detail. */}
-        <section className="px-4 pb-12 md:pb-16">
+        <section className="px-4 pb-14 md:pb-20">
           <motion.div variants={fadeUp} className="max-w-3xl mx-auto">
-            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.08] via-orange-500/[0.04] to-transparent p-6 md:p-10 text-center">
-              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl border border-pink-500/30 bg-gradient-to-br from-pink-500/[0.08] via-fuchsia-500/[0.05] to-purple-500/[0.04] p-7 md:p-10 backdrop-blur-sm">
+              <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-pink-500/15 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-32 -left-20 w-64 h-64 rounded-full bg-purple-500/15 blur-3xl pointer-events-none" />
               <div className="relative">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs font-mono uppercase tracking-widest mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-pink-500/15 border border-pink-500/30 text-pink-200 text-[11px] font-semibold uppercase tracking-[0.18em] mb-5">
                   <Sparkles className="w-3 h-3" />
                   Send this to a business owner
                 </div>
-                <h3 className="text-2xl md:text-3xl font-bold mb-3">
+                <h3 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
                   Know a business that should be on this list?
                 </h3>
-                <p className="text-gray-300 max-w-xl mx-auto mb-6 text-sm md:text-base leading-relaxed">
+                <p className="text-gray-300 max-w-2xl mb-7 text-sm md:text-base leading-relaxed">
                   We&apos;re sponsoring a small batch of operators with the full Omni AI agentic stack — autonomous lead gen, live analytics, content engine, dashboard, the works — at zero cost. If you know an owner who&apos;d run with this, send it to them. The slots that get filled are the ones we hear about from people inside the network.
                 </p>
                 <SponsorShareButtons variant="row" />
-                <p className="text-xs text-gray-500 mt-5">
+                <p className="text-xs text-gray-500 mt-6">
                   Or copy the link and drop it anywhere — every share helps another business owner see what&apos;s possible.
                 </p>
               </div>
@@ -201,7 +193,7 @@ export default function SponsorInfo() {
           </motion.div>
         </section>
 
-        <section className="py-12 md:py-16 px-4 bg-black/30">
+        <section className="py-12 md:py-16 px-4">
           <div className="max-w-6xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
@@ -259,7 +251,7 @@ export default function SponsorInfo() {
           </div>
         </section>
 
-        <section className="py-12 md:py-16 px-4 bg-black/30">
+        <section className="py-12 md:py-16 px-4">
           <div className="max-w-4xl mx-auto">
             <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
@@ -323,41 +315,45 @@ export default function SponsorInfo() {
           </div>
         </section>
 
-        <section className="py-12 md:py-20 px-4 bg-gradient-to-b from-purple-900/20 to-transparent">
-          <motion.div variants={fadeUp} className="text-center max-w-2xl mx-auto">
-            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">
-              Ready to See the Impact Firsthand?
-            </h2>
-            <p className="text-gray-400 mb-6 md:mb-8 text-sm md:text-base">
-              Access your dashboard to monitor performance — or apply to become an approved Omni AI sponsor.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 md:gap-4 justify-center">
-              {isSponsor ? (
-                <Button 
-                  onClick={() => router.push("/sponsor")}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
-                >
-                  Access Sponsor Portal
-                  <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
-                </Button>
-              ) : (
-                <>
-                  <Button 
-                    onClick={() => user ? handleActivate() : router.push("/sponsor/application")}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
+        <section className="px-4 py-14 md:py-20">
+          <motion.div variants={fadeUp} className="max-w-3xl mx-auto">
+            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-500/[0.08] via-pink-500/[0.05] to-transparent p-8 md:p-12 backdrop-blur-sm">
+              <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-pink-500/15 blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-24 -left-16 w-56 h-56 rounded-full bg-purple-500/15 blur-3xl pointer-events-none" />
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-200 text-[11px] font-semibold uppercase tracking-[0.18em] mb-5">
+                  <Sparkles className="w-3 h-3" />
+                  Apply now
+                </div>
+                <h2 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+                  Ready to see the impact firsthand?
+                </h2>
+                <p className="text-gray-300 mb-8 text-base md:text-lg leading-relaxed max-w-xl">
+                  Access your dashboard to monitor performance — or apply to become an approved Omni AI sponsor.
+                </p>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <Button
+                    onClick={() => isSponsor
+                      ? router.push("/sponsor")
+                      : user
+                        ? handleActivate()
+                        : router.push("/sponsor/application")}
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-7 md:px-8 py-5 md:py-6 rounded-2xl shadow-2xl shadow-pink-900/40"
                   >
-                    {user ? "Apply Today" : "Apply Today"}
+                    {isSponsor ? "Access Sponsor Portal" : "Apply Today"}
                     <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
                   </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => router.push("/sponsor/application")}
-                    className="border-purple-500/50 text-purple-300 hover:bg-purple-500/10 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
-                  >
-                    Apply to Become a Sponsor
-                  </Button>
-                </>
-              )}
+                  {!isSponsor && (
+                    <button
+                      type="button"
+                      onClick={() => router.push("/sponsor/application")}
+                      className="text-purple-200 hover:text-white text-sm md:text-base font-semibold underline-offset-4 hover:underline transition"
+                    >
+                      Or read the full sponsor brief →
+                    </button>
+                  )}
+                </div>
+              </div>
             </div>
           </motion.div>
         </section>

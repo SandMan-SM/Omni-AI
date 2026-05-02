@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { PinkSparksBackdrop } from "@/components/pink-sparks-backdrop";
 import {
   Dialog,
   DialogContent,
@@ -106,7 +107,8 @@ export default function SponsorApplication() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050505] text-white noise-overlay">
+    <div className="min-h-screen text-white relative">
+      <PinkSparksBackdrop />
       <CursorSpotlight />
       
       <header className="sticky top-0 z-50 bg-black/80 backdrop-blur-lg border-b border-white/5">

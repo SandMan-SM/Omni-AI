@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowRight, Sparkles, Target, Activity, Mail, Trophy, Rocket, Gift } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import PartnerShareButtons from "./PartnerShareButtons";
+import { GreenSparksBackdrop } from "@/components/green-sparks-backdrop";
 
 /**
  * Co-branded conversion landing page. Linked from every newsletter's
@@ -84,7 +85,8 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
   };
 
   return (
-    <main className="min-h-screen bg-[#050505] text-white">
+    <main className="min-h-screen text-white relative">
+      <GreenSparksBackdrop />
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger

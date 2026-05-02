@@ -49,8 +49,8 @@ export default function SponsorShareButtons({
 
   const wrapperClass =
     variant === "stacked"
-      ? "flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-center gap-2"
-      : "flex flex-wrap items-center justify-center gap-2";
+      ? "flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center gap-2"
+      : "flex flex-wrap items-center gap-2";
 
   return (
     <div className={wrapperClass}>
@@ -61,7 +61,7 @@ export default function SponsorShareButtons({
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-amber-500/30 hover:border-amber-400/60 hover:bg-amber-500/[0.08] text-amber-200 hover:text-white text-sm font-semibold transition"
+          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-pink-500/30 hover:border-pink-400/60 hover:bg-pink-500/[0.08] text-pink-100 hover:text-white text-sm font-semibold transition"
         >
           <Icon className="w-4 h-4" />
           {label}
