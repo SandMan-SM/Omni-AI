@@ -8,9 +8,9 @@
     "npm": ">=10"
   },
   "scripts": {
-    "dev": "next dev --turbo",
-    "dev:slow": "next dev",
-    "dev:clean": "rm -rf .next .turbo && next dev --turbo",
+    "dev": "NODE_OPTIONS='--max-old-space-size=3072' next dev --turbo",
+    "dev:slow": "NODE_OPTIONS='--max-old-space-size=3072' next dev",
+    "dev:clean": "rm -rf .next .turbo && NODE_OPTIONS='--max-old-space-size=3072' next dev --turbo",
     "dev:prod": "rm -rf .next-local && NEXT_DIST_DIR=.next-local next build && NEXT_DIST_DIR=.next-local next start",
     "preview": "git push origin HEAD:dev --force && echo '\\n→ Preview building at: https://omni-ai-git-dev-sandman-sms-projects.vercel.app\\n  (refresh in 60-90s for the new build)'",
     "preview:open": "open 'https://omni-ai-git-dev-sandman-sms-projects.vercel.app'",
