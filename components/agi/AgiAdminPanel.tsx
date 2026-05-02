@@ -94,6 +94,7 @@ export function AgiAdminPanel() {
   const [active, setActive] = useState("leads");
   const [activeBizId, setActiveBizId] = useState<string | null>(null);
   const [omniAiBizId, setOmniAiBizId] = useState<string | null>(null);
+  const [businessNames, setBusinessNames] = useState<Record<string, string>>({});
   const tabsScrollRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
@@ -107,14 +108,20 @@ export function AgiAdminPanel() {
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  // Resolve Omni AI's business id once so we can decide if omniOnly tabs apply.
+  // Resolve all business names once so the header can label whichever
+  // workspace is active without an extra round-trip on each switch.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const { supabase } = await import("@/lib/agi-supabase");
-        const { data } = await supabase.from("omni_businesses").select("id").eq("name", "Omni AI").maybeSingle();
-        if (!cancelled) setOmniAiBizId(data?.id ?? null);
+        const { data } = await supabase.from("omni_businesses").select("id,name");
+        if (cancelled || !data) return;
+        const map: Record<string, string> = {};
+        for (const b of data) map[b.id] = b.name;
+        setBusinessNames(map);
+        const omni = data.find(b => b.name === "Omni AI");
+        if (omni) setOmniAiBizId(omni.id);
       } catch {}
     })();
     return () => { cancelled = true; };
@@ -124,6 +131,13 @@ export function AgiAdminPanel() {
   // default in /dashboard/leads), so Sponsors / Affiliates show there too.
   const isOmniAi = !activeBizId || activeBizId === "all" || (omniAiBizId !== null && activeBizId === omniAiBizId);
   const visibleTabs = TABS.filter(t => !t.omniOnly || isOmniAi);
+
+  // Header title — reflects whichever workspace the global switcher chose.
+  const headerTitle = activeBizId === "all"
+    ? "All Businesses"
+    : (activeBizId && businessNames[activeBizId])
+      ? businessNames[activeBizId]
+      : "Omni AI";
 
   // If the active tab gets hidden after switching workspaces, fall back to leads.
   useEffect(() => {
@@ -153,7 +167,7 @@ export function AgiAdminPanel() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-white">Omni AI</h2>
+              <h2 className="text-base font-bold text-white">{headerTitle}</h2>
               <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300">
                 Agentic
               </span>
