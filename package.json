@@ -4,8 +4,10 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "next dev",
-    "dev:clean": "rm -rf .next && next dev",
+    "dev": "NODE_OPTIONS=\"--max-old-space-size=8192\" next dev --turbo",
+    "dev:slow": "next dev",
+    "dev:clean": "rm -rf .next .turbo && NODE_OPTIONS=\"--max-old-space-size=8192\" next dev --turbo",
+    "dev:prod": "rm -rf .next-local && NEXT_DIST_DIR=.next-local next build && NEXT_DIST_DIR=.next-local next start",
     "build": "next build",
     "build:check": "NEXT_DIST_DIR=.next-prod next build && rm -rf .next-prod",
     "start": "next start",
