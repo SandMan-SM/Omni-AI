@@ -78,12 +78,14 @@ export default function PipelinePage() {
   async function moveStage(lead_id: string, new_stage: string) {
     await supabase.from('omni_leads_generated').update({ deal_stage: new_stage }).eq('id', lead_id);
     setLeads(prev => prev.map(l => l.id === lead_id ? { ...l, deal_stage: new_stage as DealLead['deal_stage'] } : l));
+    setEditing(prev => prev && prev.id === lead_id ? { ...prev, deal_stage: new_stage as DealLead['deal_stage'] } : prev);
     showToast(`Moved to ${new_stage}`);
   }
 
   async function updateDealValue(lead_id: string, deal_value: number) {
     await supabase.from('omni_leads_generated').update({ deal_value }).eq('id', lead_id);
     setLeads(prev => prev.map(l => l.id === lead_id ? { ...l, deal_value } : l));
+    setEditing(prev => prev && prev.id === lead_id ? { ...prev, deal_value } : prev);
     showToast('Deal value updated');
   }
 
@@ -225,7 +227,7 @@ export default function PipelinePage() {
           {STAGES.map(stage => (
             <div key={stage.key} style={{
               background: '#0d0d0d', border: '1px solid #1e1e1e', borderRadius: 12,
-              padding: 12, minHeight: 400, display: 'flex', flexDirection: 'column',
+              padding: 12, height: 'calc(100vh - 240px)', minHeight: 400, display: 'flex', flexDirection: 'column',
             }}>
               <div style={{ marginBottom: 12, paddingBottom: 10, borderBottom: `2px solid ${stage.color}30` }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
