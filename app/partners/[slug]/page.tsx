@@ -28,13 +28,7 @@ async function getPartner(slug: string) {
 }
 
 async function getOmniAiBookingUrl(): Promise<string> {
-  const sb = createAdminClient();
-  const { data } = await sb
-    .from("omni_businesses")
-    .select("id")
-    .ilike("name", "Omni AI")
-    .maybeSingle();
-  return data?.id ? `/book/${data.id}` : "/book";
+  return "/book-now";
 }
 
 async function getTrendingPosts() {
@@ -121,7 +115,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
               href={omniBookingPath}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-black font-bold text-sm hover:opacity-95 transition shadow-lg shadow-emerald-500/20"
             >
-              Book a 20-min strategy call
+              Book a 30-min strategy call
               <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
@@ -219,7 +213,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
-                href="/sponsor"
+                href="/sponsor/info"
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-amber-500/30 hover:border-amber-500/50 text-amber-200 font-semibold text-sm transition"
               >
                 Sponsor program details
@@ -238,7 +232,7 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
             Want what {partnerName} has?
           </h2>
           <p className="text-lg text-gray-300 mb-8 leading-relaxed">
-            Book a 20-minute strategy call. We&apos;ll walk you through the agentic infrastructure
+            Book a 30-minute strategy call. We&apos;ll walk you through the agentic infrastructure
             powering this partnership and show you what it would look like for your business.
           </p>
           <Link

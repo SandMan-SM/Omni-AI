@@ -21,6 +21,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Breadcrumb } from "@/components/breadcrumb";
+import SponsorShareButtons from "./SponsorShareButtons";
 
 const investmentAreas = [
   { icon: Bot, title: "AI-powered lead generation", desc: "Systems that identify and capture qualified leads automatically" },
@@ -170,6 +171,35 @@ export default function SponsorInfo() {
             </Card>
           </div>
         </motion.div>
+
+        {/* Peer-share callout. Frames the program as something every business
+            owner should be aware of, not a private offer. The whole point is
+            that sponsorship slots fill faster when current sponsors and
+            partners pull their network into the funnel — so the share buttons
+            sit prominently above the deep program detail. */}
+        <section className="px-4 pb-12 md:pb-16">
+          <motion.div variants={fadeUp} className="max-w-3xl mx-auto">
+            <div className="relative overflow-hidden rounded-2xl md:rounded-3xl border border-amber-500/30 bg-gradient-to-br from-amber-500/[0.08] via-orange-500/[0.04] to-transparent p-6 md:p-10 text-center">
+              <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
+              <div className="relative">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-200 text-xs font-mono uppercase tracking-widest mb-4">
+                  <Sparkles className="w-3 h-3" />
+                  Send this to a business owner
+                </div>
+                <h3 className="text-2xl md:text-3xl font-bold mb-3">
+                  Know a business that should be on this list?
+                </h3>
+                <p className="text-gray-300 max-w-xl mx-auto mb-6 text-sm md:text-base leading-relaxed">
+                  We&apos;re sponsoring a small batch of operators with the full Omni AI agentic stack — autonomous lead gen, live analytics, content engine, dashboard, the works — at zero cost. If you know an owner who&apos;d run with this, send it to them. The slots that get filled are the ones we hear about from people inside the network.
+                </p>
+                <SponsorShareButtons variant="row" />
+                <p className="text-xs text-gray-500 mt-5">
+                  Or copy the link and drop it anywhere — every share helps another business owner see what&apos;s possible.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </section>
 
         <section className="py-12 md:py-16 px-4 bg-black/30">
           <div className="max-w-6xl mx-auto">
