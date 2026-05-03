@@ -152,7 +152,7 @@ export default function SponsorInfo() {
                 Omni AI sponsorship include?" */}
             <div className="space-y-5 mb-8 md:mb-10 text-base md:text-lg text-gray-300 leading-relaxed">
               <p data-speakable="intro">
-                The Omni AI Sponsor Program is how a small group of operators get the entire agentic stack deployed against their business at zero direct cost. Sponsorship dollars fund autonomous lead generation, 24/7 engagement workflows, AI-driven content production, and operational automation — the same infrastructure we run for paying clients, deployed end-to-end on top of the sponsored business&apos;s real domain, real CRM, and real customers.
+                The Omni AI Sponsor Program is how a small group of operators get the entire agentic stack deployed for their business at zero direct cost. Sponsorship dollars fund autonomous lead generation, 24/7 engagement workflows, AI-driven content production, and operational automation — the same infrastructure we run for paying clients, deployed end-to-end on top of the sponsored business&apos;s real domain, real CRM, and real customers.
               </p>
               <p>
                 Every sponsorship is reviewed for fit before a slot is offered. We partner with operators who treat AI infrastructure as an asset, not an expense — businesses ready to be flagship case studies for the next wave of agentic growth. Once you&apos;re in, your Agentic Dashboard streams real-time reporting on lead volume, engagement activity, response performance, and revenue impact, so you can see exactly how every dollar is converting into measurable outcomes from week one.
@@ -180,7 +180,7 @@ export default function SponsorInfo() {
                 <h3 className="text-2xl md:text-3xl font-bold mb-4 leading-tight">
                   Know a business that should be on this list?
                 </h3>
-                <p className="text-gray-300 max-w-2xl mb-7 text-sm md:text-base leading-relaxed">
+                <p className="text-gray-300 mb-7 text-sm md:text-base leading-relaxed">
                   We&apos;re sponsoring a small batch of operators with the full Omni AI agentic stack — autonomous lead gen, live analytics, content engine, dashboard, the works — at zero cost. If you know an owner who&apos;d run with this, send it to them. The slots that get filled are the ones we hear about from people inside the network.
                 </p>
                 <SponsorShareButtons variant="row" />
