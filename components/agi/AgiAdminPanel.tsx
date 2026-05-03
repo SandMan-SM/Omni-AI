@@ -202,9 +202,9 @@ export function AgiAdminPanel({
     return () => { cancelled = true; };
   }, [isAdmin, pinnedWorkspaceSlug]);
 
-  // 'all' or unset are treated as Omni AI's view (matches the dashboard
-  // default in /dashboard/leads), so Sponsors / Affiliates show there too.
-  const isOmniAi = !activeBizId || activeBizId === "all" || (omniAiBizId !== null && activeBizId === omniAiBizId);
+  // Omni-AI-only tabs (Sponsors, Affiliates) only appear when the admin
+  // explicitly selects the Omni AI workspace — not when "All" is active.
+  const isOmniAi = omniAiBizId !== null && activeBizId === omniAiBizId;
   const activeWorkspaceSlug = activeBizId
     ? (businessSlugs[activeBizId] ?? businessNames[activeBizId]?.toLowerCase() ?? null)
     : null;
@@ -219,11 +219,10 @@ export function AgiAdminPanel({
   );
 
   // Header title — reflects whichever workspace the global switcher chose.
-  const headerTitle = activeBizId === "all"
-    ? "All Businesses"
-    : (activeBizId && businessNames[activeBizId])
-      ? businessNames[activeBizId]
-      : "Omni AI";
+  // null and "all" both mean "show everything" → label as "All".
+  const headerTitle = (!activeBizId || activeBizId === "all")
+    ? "All"
+    : (businessNames[activeBizId] ?? "All");
 
   // If the active tab gets hidden after switching workspaces, fall back to leads.
   useEffect(() => {
