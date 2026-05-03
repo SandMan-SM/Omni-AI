@@ -142,7 +142,7 @@ export default function SponsorPortal() {
             find activity for the businesses they sponsor. */}
         <section className="px-4 py-10 md:py-14">
           <div className="max-w-6xl mx-auto">
-            <SectionLabel>Where you'll see your sponsorships</SectionLabel>
+            <SectionLabel>Where you&apos;ll see your sponsorships</SectionLabel>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
               {[
