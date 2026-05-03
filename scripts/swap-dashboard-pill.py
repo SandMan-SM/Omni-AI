@@ -88,7 +88,14 @@ def find_admin_pill(img: Image.Image) -> tuple[int, int, int, int] | None:
 
 
 def draw_vip_pill(img: Image.Image, bbox: tuple[int, int, int, int]) -> None:
-    """Replace the bbox region with a gold VIP Sponsor pill."""
+    """
+    Replace the bbox region with a Fray-style VIP Sponsor badge:
+    rounded-lg (NOT full pill), amber-tinted bg, amber border, crown
+    glyph in amber-400, "VIP Sponsor" text in amber-300. Mirrors the
+    runtime badge in app/dashboard/page.tsx so the screenshot looks
+    consistent with what real VIP sponsors see in the top-right of
+    the live dashboard.
+    """
     x0, y0, x1, y1 = bbox
     w = x1 - x0
     h = y1 - y0
@@ -97,18 +104,26 @@ def draw_vip_pill(img: Image.Image, bbox: tuple[int, int, int, int]) -> None:
     # Erase old pill — fill with the page background (near-black).
     draw.rectangle(bbox, fill=(8, 5, 12, 255))
 
-    # Fresh pill: rounded amber bg + amber border.
-    radius = h // 2
+    # Fresh badge: rounded-lg (~8px radius, not full-pill). Match the
+    # exact visible styling of the live Fray badge in app/dashboard:
+    # bg-amber-500/10 over a black-near bg renders as a warm dark amber;
+    # border-amber-500 reads as a crisp amber outline. We compute the
+    # composited color so PIL renders identically without needing a
+    # working alpha-blend in rounded_rectangle.
+    radius = max(6, int(h * 0.20))
     draw.rounded_rectangle(
         bbox,
+        # bg-amber-500/10 ≈ rgb(33, 21, 12) over rgb(8,5,12)
         radius=radius,
-        fill=(*VIP_GOLD_BG, 255),
-        outline=(*VIP_GOLD_BORDER, 255),
+        fill=(33, 21, 12, 255),
+        # border-amber-500 reads brighter on the live badge — bump to
+        # the full amber-500 colour (not the .30 alpha computation)
+        # so the outline pops the way it does in the navbar.
+        outline=(245, 158, 11, 255),
         width=2,
     )
 
-    # Crown glyph (★ as fallback if no font emoji) + text.
-    label = "★ VIP Sponsor"
+    # Load font: bold for the label.
     font = None
     for candidate in [
         "/System/Library/Fonts/Supplemental/Arial Bold.ttf",
@@ -117,21 +132,79 @@ def draw_vip_pill(img: Image.Image, bbox: tuple[int, int, int, int]) -> None:
     ]:
         if os.path.exists(candidate):
             try:
-                # Pick a size that fits ~60% of the pill height.
-                font = ImageFont.truetype(candidate, max(12, int(h * 0.45)))
+                font = ImageFont.truetype(candidate, max(14, int(h * 0.42)))
                 break
             except OSError:
                 continue
     if font is None:
         font = ImageFont.load_default()
 
-    # Center text within the pill.
-    bbox_text = draw.textbbox((0, 0), label, font=font)
-    text_w = bbox_text[2] - bbox_text[0]
-    text_h = bbox_text[3] - bbox_text[1]
-    tx = x0 + (w - text_w) // 2
-    ty = y0 + (h - text_h) // 2 - 1
-    draw.text((tx, ty), label, fill=(*VIP_GOLD_TEXT, 255), font=font)
+    # Crown drawn as PIL primitives to match Lucide's `Crown` icon:
+    # three rounded peaks with jewels at each peak top, sitting on a
+    # horizontal band. Drawn in stroke-only style (lines + circles +
+    # rect) instead of a solid polygon so it reads as a crown outline,
+    # not a jagged silhouette.
+    label = "VIP Sponsor"
+    label_bbox = draw.textbbox((0, 0), label, font=font)
+    label_w = label_bbox[2] - label_bbox[0]
+    label_h = label_bbox[3] - label_bbox[1]
+
+    crown_size = max(16, int(h * 0.55))   # crown glyph height in px
+    gap_px = max(7, int(h * 0.18))
+    total_w = crown_size + gap_px + label_w
+    base_x = x0 + (w - total_w) // 2
+
+    cy_top = y0 + (h - crown_size) // 2
+    cy_bot = cy_top + crown_size
+    cw = crown_size
+    cx0 = base_x
+
+    AMBER = (251, 191, 36, 255)  # amber-400
+
+    # Three peaks: left, center (taller), right. Each peak is a
+    # filled triangle with a small dip between, sitting on a base band.
+    # Use a solid-fill polygon that traces: left base → up to left peak
+    # → down to dip → up to center peak → down to dip → up to right
+    # peak → down to right base → across base.
+    peak_y_tall = cy_top + cw * 0.05         # center peak (tallest)
+    peak_y_short = cy_top + cw * 0.18        # outer peaks
+    dip_y = cy_top + cw * 0.42               # dip between peaks
+    band_top = cy_bot - cw * 0.30            # top of horizontal base band
+    band_bot = cy_bot - cw * 0.05            # bottom edge of band
+
+    crown_pts = [
+        (cx0 + cw * 0.05, band_top),                # left base top
+        (cx0 + cw * 0.05, peak_y_short + cw * 0.05),
+        (cx0 + cw * 0.18, peak_y_short),            # left peak
+        (cx0 + cw * 0.34, dip_y),                   # left dip
+        (cx0 + cw * 0.50, peak_y_tall),             # center peak
+        (cx0 + cw * 0.66, dip_y),                   # right dip
+        (cx0 + cw * 0.82, peak_y_short),            # right peak
+        (cx0 + cw * 0.95, peak_y_short + cw * 0.05),
+        (cx0 + cw * 0.95, band_top),                # right base top
+        (cx0 + cw * 0.95, band_bot),                # right base bottom
+        (cx0 + cw * 0.05, band_bot),                # left base bottom
+    ]
+    draw.polygon(crown_pts, fill=AMBER)
+
+    # Tiny jewels at each peak so the silhouette unmistakably reads as
+    # a crown.
+    jewel_r = max(1, int(cw * 0.06))
+    jewel_centers = [
+        (cx0 + cw * 0.18, peak_y_short),
+        (cx0 + cw * 0.50, peak_y_tall),
+        (cx0 + cw * 0.82, peak_y_short),
+    ]
+    for jx, jy in jewel_centers:
+        draw.ellipse(
+            (jx - jewel_r, jy - jewel_r, jx + jewel_r, jy + jewel_r),
+            fill=(120, 53, 15, 255),  # amber-900 — darker dot for jewel detail
+        )
+
+    # Label text.
+    cy_label = y0 + (h - label_h) // 2 - label_bbox[1] - 1
+    label_x = base_x + crown_size + gap_px
+    draw.text((label_x, cy_label), label, fill=(252, 211, 77, 255), font=font)  # amber-300
 
 
 def main() -> int:
