@@ -129,7 +129,7 @@ export default function SponsorInfo() {
             initial="initial"
             animate="animate"
             variants={fadeUp}
-            className="max-w-3xl mx-auto"
+            className="max-w-6xl mx-auto"
           >
             {/* Eyebrow + title stay centered as the visual focal point */}
             <div className="text-center">
@@ -145,8 +145,9 @@ export default function SponsorInfo() {
               </h1>
             </div>
 
-            {/* Body copy: two paragraphs, left-aligned. The first carries
-                the data-speakable hook for voice assistants — h1 +
+            {/* Body copy: two paragraphs, full-width inside max-w-6xl so
+                the line length matches the cards in the sections below.
+                Paragraph 1 carries the data-speakable hook — h1 +
                 paragraph 1 form the ~8-second reply to "what does an
                 Omni AI sponsorship include?" */}
             <div className="space-y-5 mb-8 md:mb-10 text-base md:text-lg text-gray-300 leading-relaxed">
