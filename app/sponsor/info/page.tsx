@@ -272,7 +272,7 @@ export default function SponsorInfo() {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp}>
+            <motion.div variants={fadeUp} className="text-center">
               <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6">
                 Monitor system activity, track measurable outcomes, and see exactly how your sponsorship translates into operational and revenue impact — all in one centralized view.
               </p>
@@ -345,7 +345,7 @@ export default function SponsorInfo() {
                     <button
                       type="button"
                       onClick={() => router.push("/sponsor/application")}
-                      className="text-purple-200 hover:text-white text-sm md:text-base font-semibold underline-offset-4 hover:underline transition"
+                      className="inline-flex items-center justify-center text-base md:text-lg font-semibold text-purple-100 hover:text-white border border-purple-400/40 hover:border-purple-300/70 hover:bg-purple-500/[0.08] px-7 md:px-8 py-5 md:py-6 rounded-2xl transition"
                     >
                       Learn more
                     </button>

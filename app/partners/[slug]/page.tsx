@@ -182,8 +182,8 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
                 >
                   <h3 className="font-semibold text-white mb-2 line-clamp-2 group-hover:text-purple-300 transition">{p.title}</h3>
                   <p className="text-sm text-gray-400 line-clamp-3 leading-relaxed">{p.description}</p>
-                  <div className="mt-3 flex items-center gap-1 text-xs text-purple-400 font-medium">
-                    Read <ArrowRight className="w-3 h-3" />
+                  <div className="mt-3 text-xs text-purple-400 font-medium">
+                    Read
                   </div>
                 </Link>
               ))}
@@ -210,17 +210,15 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
               <div className="flex flex-wrap gap-3">
                 <Link
                   href="/join"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-sm hover:opacity-95 transition"
+                  className="inline-flex items-center justify-center px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-sm hover:opacity-95 transition"
                 >
                   Apply to be sponsored
-                  <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/sponsor/info"
-                  className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-amber-500/30 hover:border-amber-500/50 text-amber-200 font-semibold text-sm transition"
+                  className="inline-flex items-center justify-center px-5 py-3 rounded-xl border border-amber-500/30 hover:border-amber-500/50 text-amber-200 font-semibold text-sm transition"
                 >
                   Sponsor program details
-                  <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
             </div>
