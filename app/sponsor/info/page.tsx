@@ -48,7 +48,7 @@ const aiCapabilities = [
 // here maps to a row in `public.sponsorships` in Supabase. If a sponsorship
 // ends or is added, update this list + the DB together.
 const caseStudies = [
-  { name: "Young's Cabinet Refinishing", company: "Sponsored by Fray", metric: "$1,500 funded" },
+  { name: "Youngs Cabinets", company: "Sponsored by Fray", metric: "$1,500 funded" },
   { name: "Leifson Built", company: "Sponsored by Fray", metric: "$1,500 funded" },
   { name: "Omni Leads", company: "Sponsored by Fray", metric: "$1,500 funded" },
 ];
@@ -195,7 +195,7 @@ export default function SponsorInfo() {
 
         <section className="py-12 md:py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+            <motion.div variants={fadeUp} className="mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 Where Your Investment Goes
               </h2>
@@ -224,7 +224,7 @@ export default function SponsorInfo() {
 
         <section className="py-12 md:py-20 px-4">
           <div className="max-w-6xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+            <motion.div variants={fadeUp} className="mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 AI Infrastructure in Action
               </h2>
@@ -253,18 +253,18 @@ export default function SponsorInfo() {
 
         <section className="py-12 md:py-16 px-4">
           <div className="max-w-4xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+            <motion.div variants={fadeUp} className="mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 How You&apos;ll See Results
               </h2>
-              <p className="text-gray-400 text-sm md:text-base">Your Sponsor Dashboard provides real-time reporting on lead volume, engagement activity, response performance, and growth trends.</p>
+              <p className="text-gray-400 text-sm md:text-base">Your Agentic Dashboard streams real-time reporting on lead volume, engagement activity, response performance, and growth trends — the same command center we run for every business in the program.</p>
             </motion.div>
 
             <motion.div variants={fadeUp} className="mb-6 md:mb-8">
               <div className="rounded-xl md:rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl shadow-purple-900/30">
                 <Image
                   src="/dashboard-screenshot.png"
-                  alt="Omni AI Sponsor Dashboard"
+                  alt="Omni AI Agentic Dashboard — live command center for your business"
                   width={1200}
                   height={675}
                   className="w-full h-auto block"
@@ -272,16 +272,15 @@ export default function SponsorInfo() {
               </div>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="text-center">
+            <motion.div variants={fadeUp}>
               <p className="text-sm md:text-lg text-gray-300 mb-4 md:mb-6">
                 Monitor system activity, track measurable outcomes, and see exactly how your sponsorship translates into operational and revenue impact — all in one centralized view.
               </p>
-              <Button 
+              <Button
                 onClick={() => isSponsor ? router.push("/sponsor") : router.push("/sponsor/application")}
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-base md:text-lg px-6 md:px-8 py-4 md:py-6"
               >
-                View Sponsor Dashboard
-                <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
+                View Agentic Dashboard
               </Button>
             </motion.div>
           </div>
@@ -289,7 +288,7 @@ export default function SponsorInfo() {
 
         <section className="py-12 md:py-16 px-4">
           <div className="max-w-6xl mx-auto">
-            <motion.div variants={fadeUp} className="text-center mb-8 md:mb-12">
+            <motion.div variants={fadeUp} className="mb-8 md:mb-12">
               <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-4">
                 Currently Funded
               </h2>
@@ -341,7 +340,6 @@ export default function SponsorInfo() {
                     className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-7 md:px-8 py-5 md:py-6 rounded-2xl shadow-2xl shadow-pink-900/40"
                   >
                     {isSponsor ? "Access Sponsor Portal" : "Apply Today"}
-                    <ArrowRight className="w-4 md:w-5 h-4 md:h-5 ml-2" />
                   </Button>
                   {!isSponsor && (
                     <button
@@ -349,7 +347,7 @@ export default function SponsorInfo() {
                       onClick={() => router.push("/sponsor/application")}
                       className="text-purple-200 hover:text-white text-sm md:text-base font-semibold underline-offset-4 hover:underline transition"
                     >
-                      Or read the full sponsor brief →
+                      Learn more
                     </button>
                   )}
                 </div>
