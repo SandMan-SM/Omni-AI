@@ -129,37 +129,43 @@ export default function SponsorInfo() {
             initial="initial"
             animate="animate"
             variants={fadeUp}
-            className="text-center max-w-3xl mx-auto"
+            className="max-w-3xl mx-auto"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card neon-border mb-6">
-              <Gift className="w-4 h-4 text-pink-300" />
-              <span className="text-xs md:text-sm text-gray-200 tracking-wide">Omni AI Sponsor Program</span>
+            {/* Eyebrow + title stay centered as the visual focal point */}
+            <div className="text-center">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-card neon-border mb-6">
+                <Gift className="w-4 h-4 text-pink-300" />
+                <span className="text-xs md:text-sm text-gray-200 tracking-wide">Omni AI Sponsor Program</span>
+              </div>
+
+              <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-8 md:mb-10 leading-[1.1] tracking-tight">
+                <span className="bg-gradient-to-r from-pink-300 via-fuchsia-300 to-purple-300 bg-clip-text text-transparent">
+                  Sponsorship Overview
+                </span>
+              </h1>
             </div>
 
-            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-5 leading-[1.1] tracking-tight">
-              <span className="bg-gradient-to-r from-pink-300 via-fuchsia-300 to-purple-300 bg-clip-text text-transparent">
-                Sponsorship Overview
-              </span>
-            </h1>
+            {/* Body copy: two paragraphs, left-aligned. The first carries
+                the data-speakable hook for voice assistants — h1 +
+                paragraph 1 form the ~8-second reply to "what does an
+                Omni AI sponsorship include?" */}
+            <div className="space-y-5 mb-8 md:mb-10 text-base md:text-lg text-gray-300 leading-relaxed">
+              <p data-speakable="intro">
+                The Omni AI Sponsor Program is how a small group of operators get the entire agentic stack deployed against their business at zero direct cost. Sponsorship dollars fund autonomous lead generation, 24/7 engagement workflows, AI-driven content production, and operational automation — the same infrastructure we run for paying clients, deployed end-to-end on top of the sponsored business&apos;s real domain, real CRM, and real customers.
+              </p>
+              <p>
+                Every sponsorship is reviewed for fit before a slot is offered. We partner with operators who treat AI infrastructure as an asset, not an expense — businesses ready to be flagship case studies for the next wave of agentic growth. Once you&apos;re in, your Agentic Dashboard streams real-time reporting on lead volume, engagement activity, response performance, and revenue impact, so you can see exactly how every dollar is converting into measurable outcomes from week one.
+              </p>
+            </div>
 
-            {/* data-speakable="intro" activates the SpeakableSpecification
-                in app/sponsor/info/layout.tsx — voice assistants read
-                h1 + this subtitle as the ~8-second reply to "what does
-                an Omni AI sponsorship include?" */}
-            <p
-              className="text-lg md:text-xl text-gray-300 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed"
-              data-speakable="intro"
-            >
-              Your sponsorship funds AI systems that generate qualified leads, automate operations, and deliver measurable growth — with real-time visibility through your Sponsor Dashboard.
-            </p>
-
-            <Button
-              onClick={() => router.push("/sponsor/application")}
-              className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-8 md:px-10 py-5 md:py-6 rounded-2xl shadow-2xl shadow-pink-900/40"
-            >
-              Access Sponsor Portal
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                onClick={() => router.push("/sponsor/application")}
+                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-8 md:px-10 py-5 md:py-6 rounded-2xl shadow-2xl shadow-pink-900/40"
+              >
+                Access Sponsor Portal
+              </Button>
+            </div>
           </motion.div>
         </section>
 
