@@ -241,29 +241,25 @@ export default function SponsorPortal() {
         {/* Closing CTA card */}
         <section className="max-w-6xl mx-auto px-5 md:px-8 pb-14 md:pb-20">
           <div className="rounded-2xl md:rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-500/[0.08] via-fuchsia-500/[0.04] to-transparent p-7 md:p-10 backdrop-blur-sm">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-              <div className="max-w-2xl">
-                <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
-                  Ready to see the agentic stack in motion?
-                </h2>
-                <p className="text-sm md:text-base text-gray-300 leading-relaxed">
-                  Open the dashboard to see live activity across every workspace, or read the full program breakdown to learn how sponsorship slots get filled.
-                </p>
-              </div>
-              <div className="flex flex-col sm:flex-row gap-3 flex-shrink-0">
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold text-sm md:text-base transition shadow-lg shadow-purple-900/30"
-                >
-                  Open agentic dashboard
-                </Link>
-                <Link
-                  href="/sponsor/info"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-purple-400/40 hover:border-purple-300/70 hover:bg-purple-500/[0.08] text-purple-100 hover:text-white font-semibold text-sm md:text-base transition"
-                >
-                  Learn more
-                </Link>
-              </div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-3 leading-tight">
+              Ready to see the agentic stack in motion?
+            </h2>
+            <p className="text-sm md:text-base text-gray-300 leading-relaxed mb-7 max-w-3xl">
+              Open the dashboard to see live activity across every workspace, or read the full program breakdown to learn how sponsorship slots get filled.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold text-sm md:text-base transition shadow-lg shadow-purple-900/30"
+              >
+                Open agentic dashboard
+              </Link>
+              <Link
+                href="/sponsor/info"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-purple-400/40 hover:border-purple-300/70 hover:bg-purple-500/[0.08] text-purple-100 hover:text-white font-semibold text-sm md:text-base transition"
+              >
+                Learn more
+              </Link>
             </div>
           </div>
         </section>
