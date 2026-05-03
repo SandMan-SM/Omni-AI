@@ -27,6 +27,7 @@ import {
   WEB,
   fmtMoney,
 } from "@/components/ui/web-primitives";
+import { PinkSparksBackdrop } from "@/components/pink-sparks-backdrop";
 
 interface Ship {
   title: string;
@@ -120,104 +121,126 @@ export default function SponsorPortal() {
 
   if (!data?.authorized || !data?.sponsorships?.length) {
     return (
-      <PageShell accent="purple">
+      <div className="min-h-screen text-white relative">
+        {/* Pink sparks backdrop — bypasses PageShell so the canvas
+            doesn't sit opaque on top of the fixed-position canvas. */}
+        <PinkSparksBackdrop />
         <PageTopBar label="Sponsor portal" accent="purple" />
-        <PageHero
-          eyebrow="Sponsor portal"
-          title="No active sponsorships yet"
-          meta={`Signed in as ${user.email}`}
-          lede="Once a sponsorship is attached to your email, every business you're funding shows up here — live build-log activity, content shipped, deals closed, metrics moving in real time."
-          accent="purple"
-          right={
-            <CtaRow
-              primary={{ label: "Open agentic dashboard", href: "/dashboard" }}
-              secondary={{ label: "Learn more", href: "/sponsor/info" }}
-              accent="purple"
+
+        {/* Custom hero — title fits one row, lede spans full width,
+            CTAs sit under the paragraph (not floating on the right). */}
+        <section className="max-w-6xl mx-auto px-5 md:px-8 pt-10 md:pt-16 pb-8 md:pb-12">
+          <p className="text-[11px] font-mono uppercase tracking-[0.2em] mb-3 text-purple-300">
+            Sponsor portal
+          </p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-[1.02] text-white mb-3">
+            No active sponsorships yet
+          </h1>
+          <p className="text-sm md:text-[15px] text-gray-400 mb-6">
+            Signed in as {user.email}
+          </p>
+          <p className="text-base md:text-[17px] leading-[1.7] text-gray-300 mb-8">
+            Once a sponsorship is attached to your email, every business you&apos;re funding shows up here — live build-log activity, content shipped, deals closed, metrics moving in real time.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-semibold text-sm md:text-base transition shadow-lg shadow-purple-900/30"
+            >
+              Open agentic dashboard
+            </Link>
+            <Link
+              href="/sponsor/info"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl border border-purple-400/40 hover:border-purple-300/70 hover:bg-purple-500/[0.08] text-purple-100 hover:text-white font-semibold text-sm md:text-base transition"
+            >
+              Learn more
+            </Link>
+          </div>
+        </section>
+
+        {/* Where sponsor info lives + what each surface shows. Empty
+            state shouldn't be a dead end — give the user a clear map
+            of every surface that shows funded-business activity. */}
+        <section className="max-w-6xl mx-auto px-5 md:px-8 pt-6 md:pt-10 pb-10 md:pb-14">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2 leading-tight">
+            Where you&apos;ll see your sponsorships
+          </h2>
+          <p className="text-sm md:text-base text-gray-400 mb-8 max-w-3xl">
+            Six surfaces feed the same live data. Each card explains what shows up, the moment a sponsorship attaches.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {[
+              {
+                Icon: LayoutDashboard,
+                title: "This page (Sponsor portal)",
+                body: "Every funded business in one list. Cards link into the build-log, the partner page, and the daily activity feed for that workspace.",
+              },
+              {
+                Icon: BarChart3,
+                title: "Agentic Dashboard",
+                body: "Live KPIs across every business in the program: leads this week, messages sent, conversion rate, revenue impact. Switch workspaces from the picker.",
+              },
+              {
+                Icon: Sparkles,
+                title: "Co-branded partner pages",
+                body: "omnileadsagi.com/partners/<slug> for each business. Share-ready, indexable, with the full \"what we run for them\" breakdown.",
+              },
+              {
+                Icon: BookOpen,
+                title: "Newsletter engine",
+                body: "Drafts and published posts per workspace, scoped to the businesses you sponsor. Track opens, clicks, and unsubscribes per send.",
+              },
+              {
+                Icon: Building2,
+                title: "Sponsor info page",
+                body: "Full program brief: what gets built, who it's for, how impact is measured. The page you'd send a fellow operator to apply.",
+              },
+              {
+                Icon: Mail,
+                title: "Weekly sponsor digest",
+                body: "Every Monday: which sponsored businesses moved, what shipped, what's queued. Lands in your inbox automatically once a sponsorship is active.",
+              },
+            ].map(({ Icon, title, body }) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-white/10 bg-white/[0.03] hover:border-purple-500/30 hover:bg-purple-500/[0.04] transition p-6 backdrop-blur-sm"
+              >
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/25 to-pink-500/15 border border-purple-500/30 flex items-center justify-center mb-4">
+                  <Icon className="w-5 h-5 text-purple-200" />
+                </div>
+                <h3 className="font-semibold text-white text-base md:text-lg mb-2 leading-tight">{title}</h3>
+                <p className="text-sm text-gray-400 leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Live preview — what the dashboard looks like once a sponsorship
+            is attached. Same image used on /sponsor/info so the flow stays
+            visually consistent. */}
+        <section className="max-w-6xl mx-auto px-5 md:px-8 pb-12 md:pb-16">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white mb-2 leading-tight">
+            What it looks like once active
+          </h2>
+          <p className="text-sm md:text-base text-gray-400 mb-6 max-w-3xl">
+            Every metric, every agent, every shipped post for each business you sponsor — surfaced the moment a sponsorship is attached to your email. No setup required on your end.
+          </p>
+          <div className="rounded-xl md:rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl shadow-purple-900/30">
+            <Image
+              src="/dashboard-screenshot.png"
+              alt="Omni AI Agentic Dashboard preview — KPIs, asset analytics, AI agent stats per sponsored business"
+              width={1200}
+              height={675}
+              className="w-full h-auto block"
+              priority
             />
-          }
-        />
-
-        {/* Where sponsor info lives + what each surface shows. Empty state
-            shouldn't be a dead end — give the user a clear map of where to
-            find activity for the businesses they sponsor. */}
-        <section className="px-4 py-10 md:py-14">
-          <div className="max-w-6xl mx-auto">
-            <SectionLabel>Where you&apos;ll see your sponsorships</SectionLabel>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-              {[
-                {
-                  Icon: LayoutDashboard,
-                  title: "This page (Sponsor portal)",
-                  body: "Every funded business in one list. Cards link into the build-log, the partner page, and the daily activity feed for that workspace.",
-                },
-                {
-                  Icon: BarChart3,
-                  title: "Agentic Dashboard",
-                  body: "Live KPIs across every business in the program: leads this week, messages sent, conversion rate, revenue impact. Switch workspaces from the picker.",
-                },
-                {
-                  Icon: Sparkles,
-                  title: "Co-branded partner pages",
-                  body: "omnileadsagi.com/partners/<slug> for each business. Share-ready, indexable, with the full \"what we run for them\" breakdown.",
-                },
-                {
-                  Icon: BookOpen,
-                  title: "Newsletter engine",
-                  body: "Drafts and published posts per workspace, scoped to the businesses you sponsor. Track opens, clicks, and unsubscribes per send.",
-                },
-                {
-                  Icon: Building2,
-                  title: "Sponsor info page",
-                  body: "Full program brief: what gets built, who it's for, how impact is measured. The page you'd send a fellow operator to apply.",
-                },
-                {
-                  Icon: Mail,
-                  title: "Weekly sponsor digest",
-                  body: "Every Monday: which sponsored businesses moved, what shipped, what's queued. Lands in your inbox automatically once a sponsorship is active.",
-                },
-              ].map(({ Icon, title, body }) => (
-                <Card key={title} className="!p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center flex-shrink-0">
-                      <Icon className="w-5 h-5 text-purple-300" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white text-sm md:text-base mb-1">{title}</h3>
-                      <p className="text-xs md:text-sm text-gray-400 leading-relaxed">{body}</p>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
           </div>
         </section>
 
-        {/* Live preview — show what the dashboard looks like once a
-            sponsorship is attached. Same image used on /sponsor/info so
-            the whole flow is visually consistent. */}
-        <section className="px-4 pb-12 md:pb-16">
-          <div className="max-w-6xl mx-auto">
-            <SectionLabel>What it looks like once active</SectionLabel>
-            <div className="mt-6 rounded-xl md:rounded-2xl overflow-hidden border border-purple-500/20 shadow-2xl shadow-purple-900/30">
-              <Image
-                src="/dashboard-screenshot.png"
-                alt="Omni AI Agentic Dashboard preview — KPIs, asset analytics, AI agent stats per sponsored business"
-                width={1200}
-                height={675}
-                className="w-full h-auto block"
-                priority
-              />
-            </div>
-            <p className="mt-4 text-sm text-gray-400 leading-relaxed">
-              Every metric, every agent, every shipped post for each business you sponsor — surfaced the moment a sponsorship is attached to your email. No setup required on your end.
-            </p>
-          </div>
-        </section>
-
-        {/* Closing CTA row — get them moving toward dashboard or info */}
-        <section className="px-4 pb-14 md:pb-20">
-          <div className="max-w-6xl mx-auto rounded-2xl md:rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-500/[0.08] via-fuchsia-500/[0.04] to-transparent p-7 md:p-10">
+        {/* Closing CTA card */}
+        <section className="max-w-6xl mx-auto px-5 md:px-8 pb-14 md:pb-20">
+          <div className="rounded-2xl md:rounded-3xl border border-purple-500/30 bg-gradient-to-br from-purple-500/[0.08] via-fuchsia-500/[0.04] to-transparent p-7 md:p-10 backdrop-blur-sm">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div className="max-w-2xl">
                 <h2 className="text-2xl md:text-3xl font-bold text-white mb-2 leading-tight">
@@ -252,7 +275,7 @@ export default function SponsorPortal() {
             { label: "Apply", href: "/sponsor/application" },
           ]}
         />
-      </PageShell>
+      </div>
     );
   }
 
