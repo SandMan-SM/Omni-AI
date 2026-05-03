@@ -159,14 +159,6 @@ export default function SponsorInfo() {
               </p>
             </div>
 
-            <div className="flex justify-center">
-              <Button
-                onClick={() => router.push("/sponsor/application")}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-base md:text-lg px-8 md:px-10 py-5 md:py-6 rounded-2xl shadow-2xl shadow-pink-900/40"
-              >
-                Access Sponsor Portal
-              </Button>
-            </div>
           </motion.div>
         </section>
 
@@ -176,7 +168,7 @@ export default function SponsorInfo() {
             partners pull their network into the funnel — so the share buttons
             sit prominently above the deep program detail. */}
         <section className="px-4 pb-14 md:pb-20">
-          <motion.div variants={fadeUp} className="max-w-3xl mx-auto">
+          <motion.div variants={fadeUp} className="max-w-6xl mx-auto">
             <div className="relative overflow-hidden rounded-2xl md:rounded-3xl border border-pink-500/30 bg-gradient-to-br from-pink-500/[0.08] via-fuchsia-500/[0.05] to-purple-500/[0.04] p-7 md:p-10 backdrop-blur-sm">
               <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-pink-500/15 blur-3xl pointer-events-none" />
               <div className="absolute -bottom-32 -left-20 w-64 h-64 rounded-full bg-purple-500/15 blur-3xl pointer-events-none" />
