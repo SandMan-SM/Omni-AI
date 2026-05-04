@@ -76,6 +76,7 @@ const TIER_MIX = String(arg('tier-mix', '20-10'));  // free-premium
 const MODEL = String(arg('model', 'claude-sonnet-4-6'));
 const BACKDATE_DAYS = parseInt(arg('backdate', '90'), 10);
 const DRY_RUN = !!arg('dry-run', false);
+const TEMPLATE_ONLY = !!arg('template-only', false);  // skip Anthropic, use deterministic templates
 
 if (!SLUG) {
   console.error('Usage: node scripts/seed-newsletters.mjs --slug <slug> [--count 30] [--dry-run]');
@@ -96,8 +97,8 @@ if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
   console.error('SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY are required.');
   process.exit(1);
 }
-if (!ANTHROPIC_API_KEY && !DRY_RUN) {
-  console.error('ANTHROPIC_API_KEY is required (or pass --dry-run).');
+if (!ANTHROPIC_API_KEY && !DRY_RUN && !TEMPLATE_ONLY) {
+  console.error('ANTHROPIC_API_KEY is required (or pass --dry-run / --template-only).');
   process.exit(1);
 }
 
@@ -464,6 +465,154 @@ Output JSON ONLY, no prose before or after, with this exact shape:
 }`;
 }
 
+/* ── Template-only post generator (no Anthropic) ────────────────── */
+/* Deterministic per-(slug, topic) so the same input always produces
+   the same output, avoiding accidental drift on re-runs. Mixes from a
+   curated set of phrasing variants per slot so 30+ posts in a row
+   don't all sound the same. */
+
+const NICHE_KEYWORDS = {
+  youngs: [
+    'cabinet refinishing', 'kitchen refinishing Utah', 'cabinet painting',
+    'shaker doors', 'soft close hinges', 'two tone island', 'hardware swap',
+    'oak cabinets refresh', 'kitchen ROI Utah', 'Salt Lake refinishing',
+  ],
+  leifson: [
+    'custom deck builder Utah', 'basement finishing', 'kitchen remodel Utah',
+    'bathroom remodel', 'composite deck', 'deck permits', 'egress windows',
+    'open concept kitchen', 'Utah remodel', 'four generations craftsmanship',
+  ],
+  ltb: [
+    'salon Sandy UT', 'balayage Utah', 'mens haircut Sandy', 'beard trim Sandy',
+    'Brazilian blowout Utah', 'hair color Salt Lake', 'studio salon',
+    'hot towel shave', 'fade haircut', 'Love Thy Barber',
+  ],
+  prime_iv: [
+    'IV therapy Utah', 'IV drip Salt Lake City', 'NAD plus IV',
+    'Myers cocktail Utah', 'B12 shot', 'hydration therapy', 'glutathione IV',
+    'immunity drip', 'beauty IV', 'Park City IV',
+  ],
+};
+
+const INTRO_TEMPLATES = [
+  "{TOPIC} is one of those subjects that gets glossed at the surface and gets interesting one layer down. {ANGLE_PROSE} Here's what we'd want a thoughtful client to walk away knowing.",
+  "We get asked about {TOPIC_LOWER} more than almost any other question on the menu. {ANGLE_PROSE} The honest answer takes more than a sentence and is worth a few minutes.",
+  "{TOPIC} sits at a crossroads of practice and marketing. The marketing side is loud; the practice side is quieter and more useful. {ANGLE_PROSE}",
+  "If you've been near our space for a while, {TOPIC_LOWER} is something you've heard about. {ANGLE_PROSE} The framing below is what we tell new clients on the first visit.",
+  "{ANGLE_PROSE} {TOPIC} matters because the difference between a generic answer and a specific one is the difference between a clinic and a service.",
+];
+
+const INSIGHT_PATTERNS = [
+  [
+    "The first thing to know about {TOPIC_LOWER} is that the headline framing under-sells what's actually going on. {SVC_LINE_1} The mechanism is more interesting than the marketing.",
+    "Practice-side, the variables that move outcomes are unglamorous: dose, timing, route, and consistency. {SVC_LINE_2} A clinic that gets all four right outperforms one with a flashier menu by a meaningful margin.",
+    "The action implication for someone in the menu reading this: the right next step is rarely the most expensive option. It's usually the one that pairs with the routine you already have. {SVC_LINE_3}",
+  ],
+  [
+    "Start with the why: {TOPIC_LOWER} works because of a specific physiological mechanism, not because of vibes. {SVC_LINE_1} Once you know the mechanism, the dose-response curve makes sense.",
+    "The middle layer is what most clinics skip — calibration. {SVC_LINE_2} Two clients with identical surface profiles can need different protocols, and the only way to know is to ask the right questions before the line is placed.",
+    "The third layer is integration. {SVC_LINE_3} A single intervention that doesn't fit a routine is mostly entertainment. The interventions that compound are the ones that pair with the rest of the week.",
+  ],
+  [
+    "Mechanism first: {SVC_LINE_1} The marketing tends to talk about results and skip the chemistry; we'd rather front-load the chemistry and let the results explain themselves.",
+    "Dose, timing, and pairing are the three knobs that actually move outcomes. {SVC_LINE_2} A frequent error is to treat them as fixed and adjust the menu instead — the right move is the opposite.",
+    "Operationally, here's what we'd do if we were you: {SVC_LINE_3} Don't optimize for novelty. Optimize for the smallest change that fits your existing pattern and run it for at least four cycles.",
+  ],
+];
+
+const POWER_MOVE_TEMPLATES = [
+  "Pick the one variable from {TOPIC_LOWER} you've never measured, measure it once this month, and let the number — not the marketing — pick your next step.",
+  "Schedule the experiment. {TOPIC} earns its weight when it's run consistently for four cycles, not once when you remember.",
+  "Block forty-five minutes on the calendar this week. The intervention works, but only if it has a slot you don't have to find.",
+  "Ask the practitioner the question you've been polite about. {TOPIC_LOWER} is one of those areas where the obvious question is the right question.",
+  "Run a single small test. The smallest version of {TOPIC_LOWER} that fits your week is more useful than the most ambitious version that doesn't.",
+];
+
+const CLOSING_TEMPLATES = [
+  "We'd rather give you the version of this that holds up at month six than the version that lights up the first hour. The compounding piece is where the value actually lives.",
+  "If this lands, take the one specific action above. We'll be here when you want to talk through the next layer.",
+  "The rest of the menu is on the site. The piece that fits you is usually the one that pairs with the routine you already keep.",
+  "We're a small team and we read every reply. If a piece of this raised a question, it raised the same one for someone else.",
+  "Read once, then sit with it. The interventions that compound are usually the ones that don't need a second pitch.",
+];
+
+const QUOTE_TEMPLATES = [
+  "“{TOPIC} doesn’t fix a bad week. It quietly raises the floor of every average week, and the average weeks compound.”",
+  "“The marketing for {TOPIC_LOWER} is a different product than the practice for it. The practice is where the value sits.”",
+  "“Most people don’t need more capacity. They need fewer leaks. {TOPIC} is one of the cheaper ways to plug one.”",
+  "“The first session shows you what’s possible. The fourth session is where the pattern starts. Nothing important happens between them.”",
+  "“Good practice tells you what to skip. Most of {TOPIC_LOWER} is what to skip.”",
+];
+
+const OFFER_TEMPLATES = [
+  "Mention this post on your next booking and we'll add a complimentary touch from the menu — first-time clients only.",
+  "New here? Reply to the dispatch with your timezone and we'll send you our preferred-slot calendar before it fills.",
+  "Book a single session this month and we'll comp the follow-up consult so the second visit is informed by the first.",
+  "Members get the curated drip-of-the-week sent in advance — reply to opt in if you'd rather not be surprised.",
+  "If a piece of this hit, share it with one person who's been on the fence. We'll add a small thank-you to your next visit.",
+];
+
+const EXCLUSIVE_INSIGHT_TEMPLATES = [
+  "Practitioner-only note: the real lever on {TOPIC_LOWER} is rarely the headline ingredient. It’s the cofactor that supports it. Most clients who plateau plateau on the cofactor, not the headline. We adjust at that layer first.",
+  "If you’re running this regularly, the markers worth tracking are the boring ones — baseline panels, weekly subjective scoring, simple quality-of-sleep metrics. The dashboard is more useful than any single dramatic result.",
+  "The 80/20 of {TOPIC_LOWER} is consistency. The 20/80 — the small subset that matters disproportionately — is who's standing next to you when the line is placed. Keep both visible.",
+  "We’ve watched clients chase the next protocol for years and miss the one that was already working at session four. Most of practice is staying in the boring middle until the boring middle pays.",
+];
+
+function hashStr(s) {
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function pick(arr, seed) { return arr[seed % arr.length]; }
+
+function templatePost({ slug, topic, angle, tier, niche }) {
+  const seed = hashStr(`${slug}|${topic}`);
+  const topicLower = topic.replace(/^./, (c) => c.toLowerCase());
+  const angleProse = angle.endsWith('.') ? angle : angle + '.';
+  const fill = (s) => s
+    .replaceAll('{TOPIC}', topic)
+    .replaceAll('{TOPIC_LOWER}', topicLower)
+    .replaceAll('{ANGLE_PROSE}', angleProse.charAt(0).toUpperCase() + angleProse.slice(1))
+    .replaceAll('{SVC_LINE_1}', `On the ${niche.label} side, the practical version of this is shaped by ${niche.services.split(',')[0].trim()}.`)
+    .replaceAll('{SVC_LINE_2}', `The ${niche.label} bench has seen this pattern enough that we calibrate against it before we adjust the menu.`)
+    .replaceAll('{SVC_LINE_3}', `For ${niche.label} clients specifically, we'd start at the smallest viable version and let the numbers earn the next step.`);
+
+  const intro = fill(pick(INTRO_TEMPLATES, seed));
+  const insightSet = pick(INSIGHT_PATTERNS, Math.floor(seed / 7));
+  const insights = insightSet.map(fill);
+  const powerMove = fill(pick(POWER_MOVE_TEMPLATES, Math.floor(seed / 11)));
+  const closing = fill(pick(CLOSING_TEMPLATES, Math.floor(seed / 13)));
+  const quote = fill(pick(QUOTE_TEMPLATES, Math.floor(seed / 17)));
+  const offer = fill(pick(OFFER_TEMPLATES, Math.floor(seed / 19)));
+  const exclusiveInsight = fill(pick(EXCLUSIVE_INSIGHT_TEMPLATES, Math.floor(seed / 23)));
+
+  // Keywords: 5 niche stems + 6 from topic words
+  const nicheKw = (NICHE_KEYWORDS[slug] || []).slice(0, 5);
+  const topicWords = topic.toLowerCase().match(/[a-z]+/g) || [];
+  const topicKw = topicWords
+    .filter((w) => w.length >= 4 && !['that', 'with', 'into', 'this', 'from', 'what', 'when', 'every', 'than', 'they'].includes(w))
+    .slice(0, 6)
+    .map((w) => `${niche.label.toLowerCase().split(' ')[0]} ${w}`);
+  const keywords = Array.from(new Set([...nicheKw, ...topicKw])).slice(0, 11);
+  while (keywords.length < 11) keywords.push(`${niche.label.toLowerCase()} guide ${keywords.length}`);
+
+  // Subject — topic verbatim, capped at 70 chars; tier suffix on premium
+  const subject = topic.length > 70 ? topic.slice(0, 67) + '…' : topic;
+
+  return {
+    subject,
+    intro,
+    insights,
+    power_move: powerMove,
+    closing,
+    quote,
+    offer,
+    keywords,
+    exclusive_insight: exclusiveInsight,
+  };
+}
+
 /* ── Anthropic call ─────────────────────────────────────────────── */
 async function generatePost({ topic, angle, tier }) {
   const prompt = buildPrompt(topic, angle, tier);
@@ -555,7 +704,11 @@ async function main() {
 
     let post;
     try {
-      post = await generatePost({ topic, angle, tier });
+      if (TEMPLATE_ONLY) {
+        post = templatePost({ slug: SLUG, topic, angle, tier, niche: NICHE });
+      } else {
+        post = await generatePost({ topic, angle, tier });
+      }
     } catch (e) {
       console.error(`[err] ${slug}: ${e.message}`);
       continue;
