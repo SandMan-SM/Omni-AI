@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { alertCritical } from "@/lib/telegram";
 import { constantTimeEqual } from "@/lib/api-auth";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 export interface HealthStatus {
   status: "ok" | "degraded" | "down";
@@ -12,6 +17,7 @@ export interface HealthStatus {
 const startTime = Date.now();
 
 export async function GET(req: Request) {
+  noStore();
   // Require a secret token for detailed health checks
   const url = new URL(req.url);
   const token = url.searchParams.get("token");

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { generateICS, parseBookingDateTime } from '@/lib/calendar-utils';
@@ -15,11 +16,16 @@ import {
   rateLimitResponse,
 } from '@/lib/rate-limit';
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
 const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 
 export async function GET() {
+  noStore();
   try {
     const supabase = await createClient();
     const { data, error } = await supabase

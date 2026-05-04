@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +15,7 @@ const supabase = createClient(
 //   ?type=leads | replies | bookings | activity
 //   &business_id=...
 export async function GET(req: NextRequest) {
+  noStore();
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const type = searchParams.get('type') ?? 'leads';

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { logEvent } from "@/lib/events";
@@ -8,6 +9,10 @@ import {
   getClientIp,
   rateLimitResponse,
 } from "@/lib/rate-limit";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // POST /api/newsletter — public newsletter subscribe endpoint.
 //
@@ -124,6 +129,7 @@ export async function POST(request: Request) {
 }
 
 export async function GET() {
+  noStore();
   // Authenticated read — GET still goes through the RLS client because
   // only logged-in users should see the subscriber list. Admins with
   // service-role access use /api/admin/newsletter/audience instead.

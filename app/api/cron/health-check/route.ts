@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { alertCritical, alertFix, sendOmniUpdate } from "@/lib/telegram";
 import { constantTimeEqual } from "@/lib/api-auth";
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +17,7 @@ const sb = createClient(
 let lastStatus: "ok" | "degraded" | "down" | null = null;
 
 export async function GET(req: Request) {
+  noStore();
   // Verify cron secret to prevent unauthorized calls. Constant-time
   // compare — see lib/api-auth.ts constantTimeEqual for rationale.
   const authHeader = req.headers.get("authorization") || "";

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { generateICS, parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
@@ -12,11 +13,14 @@ import {
   sanitizeText,
 } from '@/lib/validation';
 import {
-  rateLimit,
+rateLimit,
   getClientIp,
   rateLimitResponse,
 } from '@/lib/rate-limit';
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
 const OWNER_NAME = 'Omni AI';
@@ -25,6 +29,7 @@ const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 // ── GET: Fetch all bookings + webinar registrations ─────────────────────────
 
 export async function GET() {
+  noStore();
   try {
     const supabase = await createClient();
 

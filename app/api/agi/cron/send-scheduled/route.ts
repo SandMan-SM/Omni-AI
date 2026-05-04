@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { sendOutreachEmail } from '@/lib/agi/resend';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +18,7 @@ const supabase = createClient(
 // vercel.json:
 //   { "crons": [{ "path": "/api/cron/send-scheduled", "schedule": "0 * * * *" }] }
 export async function GET(req: NextRequest) {
+  noStore();
   // Auth: Vercel sends `Authorization: Bearer <CRON_SECRET>`
   const auth = req.headers.get('authorization');
   if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {

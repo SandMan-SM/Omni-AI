@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runDailyNewsletter, runPremiumNewsletter, generateDrafts, sendMorningDebrief } from '@/lib/newsletter-sender';
 import { runCEOBriefing } from '@/lib/ceo-briefing';
 import { logEvent } from '@/lib/events';
 import { constantTimeEqual } from '@/lib/api-auth';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 /**
  * Newsletter Cron — Called by Vercel Cron
@@ -12,6 +17,7 @@ import { constantTimeEqual } from '@/lib/api-auth';
  * Default (9:00 AM ET): Send FREE + PREMIUM newsletters, then send ONE clean Telegram debrief
  */
 export async function GET(request: Request) {
+  noStore();
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
   const { searchParams } = new URL(request.url);

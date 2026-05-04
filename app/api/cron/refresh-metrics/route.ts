@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { logEvent } from '@/lib/events';
 import { serverErrorResponse } from '@/lib/api-errors';
 import { constantTimeEqual } from '@/lib/api-auth';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 /**
  * Cron: Refresh materialized dashboard metrics view
  * Schedule: Every hour at :30 (doesn't collide with newsletter cron at :00)
  */
 export async function GET(request: Request) {
+  noStore();
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
