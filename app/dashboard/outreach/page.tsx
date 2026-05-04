@@ -372,6 +372,20 @@ export default function OutreachPage() {
     });
   }, []);
 
+  // Sync with workspace switcher (and AgiAdminPanel auto-pin synthetic event).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    function onStorage(ev: StorageEvent) {
+      if (ev.key !== 'omni_active_business_id') return;
+      const v = ev.newValue;
+      if (!v || v === 'all') return; // Outreach is per-business; ignore "all"
+      const found = businesses.find(b => b.id === v);
+      if (found) { setSelectedBiz(found); setSelectedLeadId(null); }
+    }
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [businesses]);
+
   const loadLeads = useCallback(async (bizId: string) => {
     const { data } = await supabase
       .from('omni_leads_generated')

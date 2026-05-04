@@ -49,6 +49,20 @@ export default function CompaniesPage() {
     });
   }, []);
 
+  // Sync with workspace switcher (and AgiAdminPanel auto-pin synthetic event).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    function onStorage(ev: StorageEvent) {
+      if (ev.key !== 'omni_active_business_id') return;
+      const v = ev.newValue;
+      if (!v || v === 'all') return; // Companies is per-business; ignore "all"
+      const found = businesses.find(b => b.id === v);
+      if (found) { setSelectedBiz(found); setSelected(null); }
+    }
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [businesses]);
+
   useEffect(() => {
     if (!selectedBiz) return;
     fetch(`/api/agi/companies?business_id=${selectedBiz.id}`)

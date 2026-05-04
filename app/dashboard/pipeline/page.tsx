@@ -100,6 +100,22 @@ export default function PipelinePage() {
     });
   }, []);
 
+  // React to live workspace changes from /assets switcher OR the AgiAdminPanel
+  // auto-pin (synthetic StorageEvent). Without this, switching workspaces in
+  // any other tab/panel left this page frozen on the original business.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    function onStorage(ev: StorageEvent) {
+      if (ev.key !== 'omni_active_business_id') return;
+      const v = ev.newValue;
+      if (!v || v === 'all') return; // Pipeline is per-business; ignore "all"
+      const found = businesses.find(b => b.id === v);
+      if (found) setSelectedBiz(found);
+    }
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [businesses]);
+
   const load = useCallback(async () => {
     if (!selectedBiz) return;
     const { data } = await supabase
