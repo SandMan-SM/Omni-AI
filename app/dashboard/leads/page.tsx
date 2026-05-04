@@ -590,17 +590,17 @@ export default function DashboardPage() {
       if (data?.length) {
         setBusinesses(data);
         // Honor the global business switcher (set on /assets via localStorage).
-        // First-ever load (nothing stored) defaults to Omni AI; if the user has
-        // explicitly chosen "All Businesses" or another workspace, respect it.
+        // null and "all" both mean "All Businesses" — matches the AgiAdminPanel
+        // header which renders "All" for both states. Previously this branch
+        // silently defaulted unset → Omni AI which made the panel header
+        // ("All") disagree with the leads count (Omni AI's 17 leads instead
+        // of 318 across all businesses).
         const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
-        if (stored === 'all') {
+        if (!stored || stored === 'all') {
           setSelectedBiz(null);
-        } else if (stored) {
+        } else {
           const found = data.find(b => b.id === stored);
           setSelectedBiz(found ?? null);
-        } else {
-          const omniAi = data.find(b => b.name === 'Omni AI');
-          setSelectedBiz(omniAi ?? null);
         }
       }
       setLoading(false);
