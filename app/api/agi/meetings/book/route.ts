@@ -80,6 +80,9 @@ export async function POST(req: NextRequest) {
         .maybeSingle();
       const slug = biz?.slug?.toLowerCase();
       if (slug && ['cps','youngs','leifson','ltb','prime_iv','otd','phoenix','niki','alira','omnileads'].includes(slug)) {
+        // The inbound_<slug>_bookings tables enforce NOT NULL on services
+        // (jsonb) and total_estimate (int). Default both so agentic-flow
+        // bookings (which don't carry a services list) still mirror cleanly.
         await supabase.from(`inbound_${slug}_bookings`).insert({
           business_id,
           lead_id: lead_id ?? null,
@@ -87,6 +90,8 @@ export async function POST(req: NextRequest) {
           attendee_email,
           attendee_phone: attendee_phone ?? null,
           attendee_notes: attendee_notes ?? null,
+          services: [],
+          total_estimate: 0,
           start_at,
           status: 'confirmed',
         });
