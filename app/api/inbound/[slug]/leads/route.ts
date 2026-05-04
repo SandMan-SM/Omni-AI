@@ -181,6 +181,42 @@ export async function POST(
         .eq('id', lead.id);
     }
 
+    // Mirror into the agentic CRM so the same lead surfaces in the workspace
+    // dashboard's Contacts tab (omni_leads_generated). Without this, every
+    // inbound form submission would only land in inbound_<slug>_leads and
+    // be invisible to the operator's main workflow until manually synced.
+    // Idempotent via (source_table, source_record_id) — re-running the
+    // endpoint won't double-insert.
+    try {
+      const { data: biz } = await sb
+        .from('omni_businesses')
+        .select('id')
+        .eq('slug', slug)
+        .maybeSingle();
+      if (biz?.id) {
+        const firstName = (name.split(' ')[0] || 'Unknown').slice(0, 80);
+        const lastName  = name.split(' ').slice(1).join(' ').trim() || null;
+        await sb.from('omni_leads_generated').insert({
+          business_id: biz.id,
+          first_name: firstName,
+          last_name: lastName,
+          email: email || null,
+          phone: phone || null,
+          source: 'web', // CHECK constraint allows: apollo, web, linkedin, referral, manual
+          status: 'new',
+          notes: message || null,
+          raw_data: { ...body, inbound_source: source },
+          source_table: tableName,
+          source_record_id: lead.id,
+          pipeline_type: 'inbound',
+        });
+      }
+    } catch (e) {
+      // Non-fatal — the inbound row already landed and the operator was
+      // notified. CRM sync failure surfaces in logs but doesn't fail the form.
+      console.error(`[inbound/${slug}/leads] CRM mirror failed:`, e);
+    }
+
     return NextResponse.json({ ok: true, id: lead.id }, { headers: cors });
   } catch (e) {
     console.error(`[inbound/${slug}/leads] failed:`, e);
