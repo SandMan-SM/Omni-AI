@@ -85,8 +85,31 @@ function TrafficPanel() {
     );
   }
 
-  const { traffic, daily, topPages, topClicks, topReferrers, devices } = data;
-  const maxDaily = Math.max(1, ...daily.map(d => d.page_views));
+  // Defensive defaults — the analytics endpoint can return partial payloads
+  // (cold start, RLS gating, table not yet seeded) and previously this
+  // component crashed the entire /admin route with
+  // "Cannot read properties of undefined (reading 'toLocaleString')"
+  // when any of these traffic fields was missing. Coerce every numeric
+  // field to 0 and every collection to [] so the panel renders even when
+  // the API returns an empty/partial body.
+  const traffic = {
+    visitors24h:  data.traffic?.visitors24h  ?? 0,
+    visitors7d:   data.traffic?.visitors7d   ?? 0,
+    pageViews24h: data.traffic?.pageViews24h ?? 0,
+    pageViews7d:  data.traffic?.pageViews7d  ?? 0,
+    pageViews30d: data.traffic?.pageViews30d ?? 0,
+    sessions24h:  data.traffic?.sessions24h  ?? 0,
+    sessions7d:   data.traffic?.sessions7d   ?? 0,
+    clicks24h:    data.traffic?.clicks24h    ?? 0,
+    clicks7d:     data.traffic?.clicks7d     ?? 0,
+    formSubmits7d:data.traffic?.formSubmits7d?? 0,
+  };
+  const daily = data.daily ?? [];
+  const topPages = data.topPages ?? [];
+  const topClicks = data.topClicks ?? [];
+  const topReferrers = data.topReferrers ?? [];
+  const devices = { mobile: data.devices?.mobile ?? 0, desktop: data.devices?.desktop ?? 0 };
+  const maxDaily = Math.max(1, ...daily.map(d => d.page_views ?? 0));
   const deviceTotal = devices.mobile + devices.desktop;
   const mobilePct = deviceTotal ? Math.round((devices.mobile / deviceTotal) * 100) : 0;
 
@@ -257,21 +280,26 @@ interface Props {
 
 export function AdminOverview({ users, onEditUser }: Props) {
   const metrics = useMemo(() => {
-    const clients = users.filter(u => u.crm_status === "client");
-    const leads = users.filter(u => u.crm_status === "lead" || u.crm_status === "prospect");
-    const hot = users.filter(u => u.lead_score === "hot");
-    const warm = users.filter(u => u.lead_score === "warm");
-    const cold = users.filter(u => u.lead_score === "cold");
-    const sponsors = users.filter(u => u.role === "sponsor" || u.is_sponsor);
+    // Defend against an undefined/null users prop — the parent fetch can
+    // briefly resolve to {users: undefined} on cold start or during a
+    // re-auth, and any users.filter(...) below would crash the whole
+    // /admin route with a TypeError that the user has to fight through.
+    const safeUsers = Array.isArray(users) ? users : [];
+    const clients = safeUsers.filter(u => u.crm_status === "client");
+    const leads = safeUsers.filter(u => u.crm_status === "lead" || u.crm_status === "prospect");
+    const hot = safeUsers.filter(u => u.lead_score === "hot");
+    const warm = safeUsers.filter(u => u.lead_score === "warm");
+    const cold = safeUsers.filter(u => u.lead_score === "cold");
+    const sponsors = safeUsers.filter(u => u.role === "sponsor" || u.is_sponsor);
     const activeSponsors = sponsors.filter(u => u.sponsor_activated);
     const paidSponsors = sponsors.filter(u => u.sponsor_insights_paid);
-    const onboarding = users.filter(u => u.crm_status === "onboarding");
-    const churned = users.filter(u => u.crm_status === "churned");
-    const prospects = users.filter(u => u.crm_status === "prospect");
+    const onboarding = safeUsers.filter(u => u.crm_status === "onboarding");
+    const churned = safeUsers.filter(u => u.crm_status === "churned");
+    const prospects = safeUsers.filter(u => u.crm_status === "prospect");
 
     // Revenue
-    const totalRevenue = users.reduce((sum, u) => sum + (u.gross_revenue || 0), 0);
-    const totalSpent = users.reduce((sum, u) => sum + (u.total_spent || 0), 0);
+    const totalRevenue = safeUsers.reduce((sum, u) => sum + (u.gross_revenue || 0), 0);
+    const totalSpent = safeUsers.reduce((sum, u) => sum + (u.total_spent || 0), 0);
     const avgRevenuePerClient = clients.length > 0 ? totalRevenue / clients.length : 0;
 
     // Conversion rate
@@ -279,7 +307,7 @@ export function AdminOverview({ users, onEditUser }: Props) {
     const conversionRate = totalLeadsAndClients > 0 ? (clients.length / totalLeadsAndClients) * 100 : 0;
 
     // Needs attention
-    const needsFollowUp = users.filter(u =>
+    const needsFollowUp = safeUsers.filter(u =>
       u.crm_status && u.crm_status !== "churned" && daysSince(u.last_contacted) > 14
     );
     const lowHealth = clients.filter(u => (u.satisfaction_score || 0) <= 2);
@@ -287,16 +315,16 @@ export function AdminOverview({ users, onEditUser }: Props) {
     const atRisk = clients.filter(u => daysSince(u.last_contacted) > 30);
 
     // Arena
-    const arenaActive = users.filter(u => u.agent_status === "active");
+    const arenaActive = safeUsers.filter(u => u.agent_status === "active");
     const avgElo = arenaActive.length > 0
       ? Math.round(arenaActive.reduce((sum, u) => sum + (u.elo_rating || 1000), 0) / arenaActive.length)
       : 0;
 
     // Newsletter
-    const newsletterSubs = users.filter(u => u.newsletter_subscribed);
+    const newsletterSubs = safeUsers.filter(u => u.newsletter_subscribed);
 
     return {
-      total: users.length, clients, leads, hot, warm, cold,
+      total: safeUsers.length, clients, leads, hot, warm, cold,
       sponsors, activeSponsors, paidSponsors,
       onboarding, churned, prospects,
       totalRevenue, totalSpent, avgRevenuePerClient, conversionRate,
