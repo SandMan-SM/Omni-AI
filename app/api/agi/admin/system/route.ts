@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,6 +19,7 @@ function authorized(req: NextRequest): boolean {
 
 // System config CRUD
 export async function GET(req: NextRequest) {
+  noStore();
   if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { data, error } = await supabase.from('omni_system_config').select('*');
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

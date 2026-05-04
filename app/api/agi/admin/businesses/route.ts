@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,6 +20,7 @@ function authorized(req: NextRequest): boolean {
 }
 
 export async function GET(req: NextRequest) {
+  noStore();
   if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
   // Sort by display_order so Omni AI (display_order=1) comes first.
