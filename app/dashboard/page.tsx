@@ -120,11 +120,17 @@ export default function Dashboard() {
   const isYoungs = user?.username?.toLowerCase() === 'youngs' || user?.username?.toLowerCase() === 'brent';
   const isLeifson = user?.username?.toLowerCase() === 'leifson' || user?.username?.toLowerCase() === 'adam';
   const isSammy = user?.username?.toLowerCase() === 'sammy' || user?.username?.toLowerCase() === 'ltb';
+  // Prime IV Hydration owners — accept several login spellings since
+  // the actual operator account isn't fixed yet at onboarding.
+  const isPrimeIV = (() => {
+    const u = user?.username?.toLowerCase() || '';
+    return u === 'prime_iv' || u === 'primeiv' || u === 'prime' || u === 'primeivutah';
+  })();
   // Single flag for "is a per-brand client viewer" so we can gate the
   // agentic dashboard, the /admin/info page, and the workspace pinning
   // logic uniformly. Add new clients here when we onboard them.
-  const isClientViewer = isCPS || isYoungs || isLeifson || isSammy;
-  const clientWorkspaceName: string | null = isCPS ? 'cps' : isYoungs ? 'youngs' : isLeifson ? 'leifson' : isSammy ? 'ltb' : null;
+  const isClientViewer = isCPS || isYoungs || isLeifson || isSammy || isPrimeIV;
+  const clientWorkspaceName: string | null = isCPS ? 'cps' : isYoungs ? 'youngs' : isLeifson ? 'leifson' : isSammy ? 'ltb' : isPrimeIV ? 'prime_iv' : null;
   const profileComplete = !!(
     profile &&
     (profile.name || profile.first_name) &&

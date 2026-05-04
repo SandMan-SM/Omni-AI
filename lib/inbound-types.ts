@@ -17,6 +17,7 @@ export const INBOUND_SLUGS = [
   'youngs',
   'phoenix',
   'niki',
+  'prime_iv',
 ] as const;
 
 export type InboundSlug = (typeof INBOUND_SLUGS)[number];
@@ -31,6 +32,7 @@ export const INBOUND_SLUG_LABELS: Record<InboundSlug, string> = {
   youngs: 'Youngs',
   phoenix: 'Phoenix',
   niki: 'Niki',
+  prime_iv: 'Prime IV Hydration',
 };
 
 export const SLUGS_WITH_ORDERS: ReadonlySet<InboundSlug> = new Set<InboundSlug>(['ltb']);
@@ -185,6 +187,13 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'https://nikifellow.com',
     'https://www.nikifellow.com',
     'http://localhost:3000',
+  ],
+  prime_iv: [
+    'https://primeivutah.com',
+    'https://www.primeivutah.com',
+    'https://prime-iv.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
   ],
 };
 

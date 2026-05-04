@@ -108,6 +108,7 @@ export async function GET() {
     "leifson",
     "youngs",
     "ltb",
+    "prime_iv",
   ];
 
   const now = Date.now();

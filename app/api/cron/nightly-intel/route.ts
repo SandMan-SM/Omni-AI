@@ -29,7 +29,7 @@ function isoDay(d: Date): string {
   return d.toISOString().slice(0, 10);
 }
 
-const ACTIVE_SLUGS = ["cps", "leifson", "youngs", "ltb"] as const;
+const ACTIVE_SLUGS = ["cps", "leifson", "youngs", "ltb", "prime_iv"] as const;
 
 export async function GET(request: Request) {
   const auth = assertCronCaller(request);

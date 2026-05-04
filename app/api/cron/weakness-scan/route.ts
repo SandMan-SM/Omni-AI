@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
  *
  * Schedule (UTC, vercel.json): 07:15 daily.
  */
-const ACTIVE_SLUGS = ["cps", "leifson", "youngs", "ltb"] as const;
+const ACTIVE_SLUGS = ["cps", "leifson", "youngs", "ltb", "prime_iv"] as const;
 
 type WeekRow = { count: number | null };
 
