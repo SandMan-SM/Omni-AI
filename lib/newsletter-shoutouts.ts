@@ -102,10 +102,23 @@ const SHOUTOUTS: Record<string, Shoutout> = {
 type PartnerKey = keyof typeof SHOUTOUTS;
 
 const SHOUTOUT_SCHEDULE: ReadonlyArray<{ weekStart: string; partner: PartnerKey }> = [
-  // Future weeks — pre-filled so the next batch of posts lights up
-  // automatically without a code change.
-  { weekStart: "2026-05-13", partner: "prime_iv" },
-  { weekStart: "2026-05-06", partner: "ltb" },
+  // Future weeks — pre-filled so the cron doesn't blackhole partner
+  // content (every partner post would land as draft forever otherwise).
+  // Extends 12 weeks past today so the operator has runway to add
+  // more entries before the rotation falls off the list.
+  { weekStart: "2026-07-29", partner: "prime_iv" },
+  { weekStart: "2026-07-22", partner: "ltb" },
+  { weekStart: "2026-07-15", partner: "prime_iv" },
+  { weekStart: "2026-07-08", partner: "ltb" },
+  { weekStart: "2026-07-01", partner: "prime_iv" },
+  { weekStart: "2026-06-24", partner: "ltb" },
+  { weekStart: "2026-06-17", partner: "prime_iv" },
+  { weekStart: "2026-06-10", partner: "ltb" },
+  { weekStart: "2026-06-03", partner: "prime_iv" },
+  { weekStart: "2026-05-27", partner: "ltb" },
+  { weekStart: "2026-05-20", partner: "prime_iv" },
+  { weekStart: "2026-05-13", partner: "ltb" },
+  { weekStart: "2026-05-06", partner: "prime_iv" },
   // Current Wednesday-anchored week (Apr 29 – May 5): Love Thy Barber
   { weekStart: "2026-04-29", partner: "ltb" },
   // Last week (Apr 22 – Apr 28): Prime IV
