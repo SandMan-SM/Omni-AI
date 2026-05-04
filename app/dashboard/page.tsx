@@ -151,11 +151,24 @@ export default function Dashboard() {
   // omni_token bearer and scopes non-admin callers to their own profile.
   // So we just pass the token and let the server decide.
   const { data: campaignsData, isLoading: campaignsLoading } = useQuery({
-    queryKey: ["campaigns", profile?.id, isAdmin],
+    queryKey: ["campaigns", profile?.id, isAdmin, clientWorkspaceName],
     queryFn: async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
       const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch(`/api/agi/campaigns`, { headers: authHeaders });
+      // Client viewers see only their workspace's campaigns. Admins still
+      // see everything (no biz filter). Resolves the workspace business_id
+      // via the supabase client because the slug-only lookup endpoint
+      // doesn't expose it cheaply.
+      let url = '/api/agi/campaigns';
+      if (clientWorkspaceName) {
+        const { data: biz } = await supabase
+          .from('omni_businesses')
+          .select('id')
+          .or(`slug.eq.${clientWorkspaceName},name.ilike.${clientWorkspaceName}`)
+          .maybeSingle();
+        if (biz?.id) url += `?business_id=${biz.id}`;
+      }
+      const res = await fetch(url, { headers: authHeaders });
       return res.json();
     },
     enabled: !!profile,
