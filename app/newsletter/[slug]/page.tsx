@@ -27,7 +27,12 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
-// Use admin client so shared links always work — no auth/RLS gating on individual posts
+// Use admin client so shared links always work — no auth/RLS gating on individual posts.
+// Filter to published rows only: when an admin unpublishes a post (sets
+// published_at = NULL) it should drop out of search-engine indexes AND stop
+// resolving via direct URL, otherwise the "remove from feed" cleanup leaks
+// content the operator explicitly took down. Drafts and removed issues now
+// 404 cleanly here.
 async function getPost(slug: string) {
   noStore();
   const supabase = createAdminClient();
@@ -35,7 +40,8 @@ async function getPost(slug: string) {
     .from("newsletter_posts")
     .select("*")
     .eq("slug", slug)
-    .single();
+    .not("published_at", "is", null)
+    .maybeSingle();
   return data;
 }
 
