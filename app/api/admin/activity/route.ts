@@ -10,6 +10,15 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 // GET /api/admin/activity?profile_id=xxx — fetch activity (admin only)
+//
+// Pulls from two sources and merges by created_at desc:
+//   1. activity_log — manually-logged contact events (calls, emails, notes,
+//      meetings) the operator records via the AdminCRM panel.
+//   2. omni_lead_activity — agentic CRM events (lead status transitions,
+//      AI scoring, outreach sends, replies). Without this fallback the
+//      Recent Activity card on /dashboard rendered an empty state for
+//      every admin even though the system was generating activity in
+//      real time — activity_log just wasn't being populated.
 export async function GET(req: NextRequest) {
   noStore();
   const auth = await requireAdmin();
@@ -19,17 +28,48 @@ export async function GET(req: NextRequest) {
   const profileId = req.nextUrl.searchParams.get("profile_id");
   const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
 
-  let query = sb
+  // 1. Manual activity log — admin-recorded events.
+  let manualQuery = sb
     .from("activity_log")
     .select("*")
     .order("created_at", { ascending: false })
     .limit(limit);
+  if (profileId) manualQuery = manualQuery.eq("profile_id", profileId);
 
-  if (profileId) query = query.eq("profile_id", profileId);
+  // 2. Agentic CRM activity — system events from leads pipeline.
+  const agentic = await sb
+    .from("omni_lead_activity")
+    .select("id, event_type, event_subtype, lead_id, details, created_at")
+    .order("created_at", { ascending: false })
+    .limit(limit);
 
-  const { data, error } = await query;
+  const { data: manualRows, error } = await manualQuery;
   if (error) return serverErrorResponse("admin/activity.GET", error);
-  return NextResponse.json({ activities: data || [] });
+
+  // Coerce both shapes into the dashboard's expected payload:
+  //   { id, type, subject, channel, created_at }
+  const merged = [
+    ...(manualRows || []).map((r: Record<string, unknown>) => ({
+      id: r.id as string,
+      type: (r.type as string) ?? "note",
+      subject: (r.subject as string | null) ?? null,
+      channel: (r.channel as string) ?? "manual",
+      created_at: r.created_at as string,
+    })),
+    ...((agentic.data || []).map((r) => ({
+      id: r.id,
+      type: r.event_type ?? "system",
+      subject: (r.details && typeof r.details === "object" && "summary" in r.details
+        ? String((r.details as Record<string, unknown>).summary)
+        : (r.event_subtype ?? null)),
+      channel: "agentic",
+      created_at: r.created_at,
+    }))),
+  ]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, limit);
+
+  return NextResponse.json({ activities: merged });
 }
 
 // POST /api/admin/activity — log a new activity (admin only)
