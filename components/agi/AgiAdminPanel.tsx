@@ -6,7 +6,7 @@ import {
   Target, Bot, Brain, Inbox as InboxIcon, Send, Building2, BookOpen,
   BarChart3, Calendar, TrendingUp, Activity, Upload, Settings as SettingsIcon,
   Zap, CreditCard, ChevronDown, Sparkles, Award, Trophy, Mail, Handshake, Users2,
-  Crown,
+  Crown, MessageSquare,
 } from "lucide-react";
 
 // Dynamic imports of each AGI page — lazy-loaded so first paint is fast.
@@ -53,6 +53,14 @@ const ClientNewsletterView = dynamic(
 // surface; no per-tenant data exposed). Reads /api/council.
 const CouncilView = dynamic(
   () => import("@/components/agi/CouncilPanel").then(m => ({ default: m.CouncilPanel })),
+  { ssr: false, loading: () => <Skel /> }
+);
+
+// Dialogue tab — Pantheon members talking to each other in response to
+// system_findings + intel_digest. Cron writes new threads every 30 min.
+// Reads /api/council/dialogue.
+const DialogueView = dynamic(
+  () => import("@/components/agi/DialoguePanel").then(m => ({ default: m.DialoguePanel })),
   { ssr: false, loading: () => <Skel /> }
 );
 
@@ -116,6 +124,7 @@ const TABS: Array<{
   { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage" },
   { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage" },
   { id: "council",    label: "Council",     icon: Crown,          view: CouncilView,    group: "engage" },
+  { id: "dialogue",   label: "Dialogue",    icon: MessageSquare,  view: DialogueView,   group: "engage" },
   { id: "companies",  label: "Companies",   icon: Building2,      view: CompaniesView,  group: "intel",  adminOnly: true },
   { id: "campaigns",  label: "Campaigns",   icon: TrendingUp,     view: CampaignsView,  group: "core",   adminOnly: true },
   { id: "templates",  label: "Templates",   icon: BookOpen,       view: TemplatesView,  group: "core",   adminOnly: true },
