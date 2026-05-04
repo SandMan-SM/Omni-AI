@@ -12,6 +12,8 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // could only share or click the CTA. Adding the shared Footer gives them a
 // path back into the site (FAQ, About, Campaigns, Newsletter index).
 import { Footer } from "@/components/footer";
+import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
+import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -181,6 +183,13 @@ export default async function NewsletterPostPage({ params }: Props) {
   });
 
   const isPremium = post.tier === "premium";
+  // Featured-business shoutout — only fires for free posts whose slug
+  // prefix matches a registered partner (prime_iv-, ltb-, leifson-, …).
+  // Premium posts always return null. When a shoutout exists, the
+  // standard "Schedule a Meeting" CTA is replaced with an iMessage-
+  // style preview card pointing at the partner's site so readers
+  // convert against the post's actual subject.
+  const shoutout = getShoutoutForSlug(slug, post.tier);
   // Ensure the counter reflects what actually renders in the list below.
   const tagsToShow = (post.keywords || []).slice(0, 11);
 
@@ -396,12 +405,19 @@ export default async function NewsletterPostPage({ params }: Props) {
           </p>
         </div>
 
+        {/* Shoutout posts (free + slug matches a registered partner) swap
+            the generic Schedule-a-Meeting CTA for a website-preview card
+            pointing at the featured business. Keeps the post focused on
+            the actual subject and pushes conversion to the partner. */}
+        {shoutout && <FeaturedBusinessCard shoutout={shoutout} />}
+
         {/* CTA — recap + scheduler link + share. Gold styling on every
             post (not just premium) so the button reads as the headline
             action. Share icon sits to the right of the primary button.
             Left-aligned with generous, symmetric padding (40px top/bottom,
             32–40px left/right) so the copy breathes and the buttons have
             room on every side. */}
+        {!shoutout && (
         <div className="mb-10 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] px-8 py-10 sm:px-10 sm:py-12 backdrop-blur-sm">
           <h3 className="text-xl md:text-2xl font-semibold text-white mb-4 leading-snug">
             {post.subject}
@@ -442,6 +458,7 @@ export default async function NewsletterPostPage({ params }: Props) {
             30 minutes · free · no obligation
           </p>
         </div>
+        )}
 
         {/* Closing */}
         <p className="text-center text-gray-400 italic text-lg my-10">
