@@ -895,6 +895,11 @@ export default function Admin() {
                 <Command className="w-4 h-4" /> Command Center
               </Button>
             )}
+            <Button variant="outline" className="border-emerald-500/40 bg-emerald-500/10 text-emerald-300 hover:text-emerald-200 hover:bg-emerald-500/15 gap-1.5 px-3"
+              onClick={() => router.push("/admin/tracking-setup")} data-testid="button-admin-tracking">
+              <Activity className="w-4 h-4" />
+              <span className="hidden sm:inline">Tracking</span>
+            </Button>
             <Button variant="outline" className="border-white/20 bg-transparent text-gray-300 hover:text-white gap-1.5 px-3"
               onClick={() => router.push("/dashboard")} data-testid="button-admin-back">
               <ArrowLeft className="w-4 h-4" />
