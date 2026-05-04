@@ -84,12 +84,50 @@ export async function GET(req: Request) {
     new Set(arr.map(r => r[key]).filter(Boolean)).size;
 
   // ── Headline counts (active range) ─────────────────────────────────
+  // We expose two shapes side-by-side:
+  //   - The legacy single-range fields (pageViews/sessions/visitors/clicks/
+  //     formSubmits) used by integrations that pin ?range=… and just want
+  //     a flat count.
+  //   - The 24h / 7d / 30d split fields used by the AdminOverview Traffic
+  //     panel, which renders four "Visitors · 7d / Page Views · 7d / …"
+  //     headline cards plus a "today" sub-line. The shapes were silently
+  //     out of sync — every panel card rendered 0 because pageViews7d etc
+  //     were undefined and got coerced to 0 by the defensive guard.
+  const nowMs = Date.now();
+  const cutoff24h = nowMs - 24 * 3_600_000;
+  const cutoff7d  = nowMs - 7 * 86_400_000;
+  const cutoff30d = nowMs - 30 * 86_400_000;
+
+  const sinceCutoff = (arr: typeof rows, t: number) =>
+    arr.filter(r => r.created_at && new Date(r.created_at as string).getTime() >= t);
+
+  const pv24h = sinceCutoff(pageViews, cutoff24h);
+  const pv7d  = sinceCutoff(pageViews, cutoff7d);
+  const pv30d = sinceCutoff(pageViews, cutoff30d);
+  const cl24h = sinceCutoff(clicks, cutoff24h);
+  const cl7d  = sinceCutoff(clicks, cutoff7d);
+  const sb24h = sinceCutoff(submits, cutoff24h);
+  const sb7d  = sinceCutoff(submits, cutoff7d);
+
   const traffic = {
+    // Legacy active-range fields
     pageViews: pageViews.length,
     sessions: uniq(pageViews, 'session_id'),
     visitors: uniq(pageViews, 'actor_id'),
     clicks: clicks.length,
     formSubmits: submits.length,
+    // Time-bucketed fields the AdminOverview panel reads
+    pageViews24h: pv24h.length,
+    pageViews7d:  pv7d.length,
+    pageViews30d: pv30d.length,
+    sessions24h:  uniq(pv24h, 'session_id'),
+    sessions7d:   uniq(pv7d, 'session_id'),
+    visitors24h:  uniq(pv24h, 'actor_id'),
+    visitors7d:   uniq(pv7d, 'actor_id'),
+    clicks24h:    cl24h.length,
+    clicks7d:     cl7d.length,
+    formSubmits24h: sb24h.length,
+    formSubmits7d:  sb7d.length,
   };
 
   // ── Daily/hourly/weekly timeseries ─────────────────────────────────
