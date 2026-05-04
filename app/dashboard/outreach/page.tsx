@@ -387,6 +387,7 @@ export default function OutreachPage() {
   }, [businesses]);
 
   const loadLeads = useCallback(async (bizId: string) => {
+    setLeads([]);
     const { data } = await supabase
       .from('omni_leads_generated')
       .select('*')

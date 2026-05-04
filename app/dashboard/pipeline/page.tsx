@@ -118,6 +118,7 @@ export default function PipelinePage() {
 
   const load = useCallback(async () => {
     if (!selectedBiz) return;
+    setLeads([]);
     const { data } = await supabase
       .from('omni_leads_generated')
       .select('*')

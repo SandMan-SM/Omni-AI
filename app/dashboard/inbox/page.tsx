@@ -104,6 +104,7 @@ export default function InboxPage() {
 
   const loadReplies = useCallback(async () => {
     if (!selectedBiz) return;
+    setReplies([]);
     const params = new URLSearchParams({ business_id: selectedBiz.id });
     if (filter !== 'all') params.set('category', filter);
     if (hideHandled) params.set('handled', 'false');

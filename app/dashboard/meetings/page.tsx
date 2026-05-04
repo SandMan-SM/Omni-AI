@@ -62,6 +62,7 @@ export default function MeetingsPage() {
 
   const load = useCallback(async () => {
     if (!selectedBiz) return;
+    setBookings([]);
     const r = await fetch(`/api/agi/meetings/book?business_id=${selectedBiz.id}`);
     const j = await r.json();
     setBookings(j.bookings ?? []);
