@@ -43,6 +43,15 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // When the parent passes a new defaultSlug (e.g. SiteAnalyticsRouter
+  // re-resolves after a workspace switch from LTB → Prime IV), sync the
+  // internal slug state so the panel re-fetches against the new brand.
+  // Without this, useState only initialises once and the panel stays on
+  // the previous client's data.
+  useEffect(() => {
+    setSlug(defaultSlug);
+  }, [defaultSlug]);
+
   // Hydrate from ?brand=... and keep URL in sync.
   useEffect(() => {
     if (typeof window === 'undefined') return;
