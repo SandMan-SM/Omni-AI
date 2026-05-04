@@ -1,8 +1,8 @@
 name: Auto-Agent
 
 on:
-  schedule:
-    - cron: '0 3 * * *'
+  # Daily auto-run disabled — superseded by the omni-pulse + omni-morning-briefing
+  # Claude routines (~/.claude/scheduled-tasks/). Triggered manually only.
   workflow_dispatch:
 
 jobs:
