@@ -37,6 +37,21 @@ function Skel() {
 
 export default function SiteAnalyticsRouter() {
   const [slug, setSlug] = useState<string | null>(null);
+  // Bumped when the active business changes — re-runs the resolver effect
+  // so switching workspace mid-session swaps the analytics panel without
+  // a full reload. Without this, opening Site Analytics for one client
+  // and then switching to another via /assets left the original panel.
+  const [bizTick, setBizTick] = useState(0);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function onStorage(ev: StorageEvent) {
+      if (ev.key !== "omni_active_business_id") return;
+      setBizTick(n => n + 1);
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -62,7 +77,7 @@ export default function SiteAnalyticsRouter() {
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [bizTick]);
 
   if (slug === "cps") return <CpsAnalyticsPanel />;
   if (slug === "youngs" || slug === "leifson" || slug === "ltb" || slug === "prime_iv") {
