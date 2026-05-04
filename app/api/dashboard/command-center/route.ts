@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { headers, cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { INBOUND_SLUGS, INBOUND_SLUG_LABELS } from "@/lib/inbound-types";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * GET /api/dashboard/command-center
@@ -76,6 +79,7 @@ async function resolveAdminProfileId(): Promise<string | null> {
 }
 
 export async function GET() {
+  noStore();
   const callerId = await resolveAdminProfileId();
   if (!callerId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

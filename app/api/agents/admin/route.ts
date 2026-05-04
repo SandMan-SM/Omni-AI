@@ -4,10 +4,13 @@
 // Auth: requireAdmin() — same gate the rest of the admin surfaces use.
 
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // POST — create a new agent (insert profile row)
 export async function POST(req: NextRequest) {
@@ -135,6 +138,7 @@ export async function PATCH(req: NextRequest) {
 
 // GET — fetch full profile (including confidential fields) by id
 export async function GET(req: NextRequest) {
+  noStore();
   const auth = await requireAdmin();
   if ("error" in auth && auth.error) return auth.error;
 

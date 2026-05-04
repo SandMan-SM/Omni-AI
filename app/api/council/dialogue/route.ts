@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * GET /api/council/dialogue
@@ -34,6 +37,7 @@ type Row = {
 };
 
 export async function GET() {
+  noStore();
   const sb = createAdminClient();
 
   const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();

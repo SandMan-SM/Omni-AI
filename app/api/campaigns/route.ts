@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { cookies, headers } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * GET /api/campaigns
@@ -27,6 +30,7 @@ export const dynamic = "force-dynamic";
  * now does). Cookie-session callers (legacy SSR flows) continue to work.
  */
 export async function GET() {
+  noStore();
   const sb = createAdminClient();
 
   // ── 1. Admin short-circuit ────────────────────────────────────────────

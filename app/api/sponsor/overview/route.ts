@@ -1,8 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * Sponsor overview: returns every sponsorship funded by the currently
@@ -13,6 +16,7 @@ export const dynamic = 'force-dynamic';
  * empty and the UI shows an empty state.
  */
 export async function GET(req: NextRequest) {
+  noStore();
   const admin = createAdminClient();
   const supabase = await createServerClient();
   const { data: { user } } = await supabase.auth.getUser();

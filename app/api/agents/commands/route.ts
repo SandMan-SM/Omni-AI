@@ -1,8 +1,11 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * Agent command bus. Previously unauthenticated — anyone could (a) read
@@ -20,6 +23,7 @@ export const dynamic = "force-dynamic";
 
 // GET — fetch recent commands + responses (polling for live chat)
 export async function GET(req: Request) {
+  noStore();
   const denied = await authorizeCronOrAdmin(req);
   if (denied) return denied;
   try {

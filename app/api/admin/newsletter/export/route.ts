@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { getNewsletterAudience } from "@/lib/newsletter-audience";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // GET /api/admin/newsletter/export
 //
@@ -11,6 +14,7 @@ export const dynamic = "force-dynamic";
 // the send job hits — as a CSV. Columns mirror the in-memory AudienceMember
 // shape so round-tripping via import preserves state.
 export async function GET() {
+  noStore();
   const auth = await requireAdmin();
   if ("error" in auth && auth.error) return auth.error;
 

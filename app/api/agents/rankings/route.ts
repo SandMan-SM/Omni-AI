@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // ELO rank thresholds
 function computeRank(elo: number): 'diamond' | 'gold' | 'silver' | 'bronze' | 'unranked' {
@@ -84,6 +86,7 @@ function computeElo(profile: any): { elo: number; wins: number; losses: number; 
 
 // GET /api/agents/rankings — fetch all agents with computed ELO
 export async function GET() {
+  noStore();
   const sb = createAdminClient();
 
   // Fetch profiles with business names (include admins with agent_name set).
