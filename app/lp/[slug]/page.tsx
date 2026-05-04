@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
 
@@ -5,6 +6,43 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const { slug } = await params;
+  const { data: page } = await supabase
+    .from('omni_landing_pages')
+    .select('headline, subhead, business_id')
+    .eq('slug', slug)
+    .single();
+  if (!page) return { title: 'Omni AI', description: 'AI marketing and automation for local businesses.' };
+  const { data: business } = await supabase
+    .from('omni_businesses')
+    .select('name')
+    .eq('id', page.business_id)
+    .single();
+  const title = business?.name ? `${page.headline} — ${business.name}` : page.headline;
+  const description = page.subhead || 'AI-powered solutions tailored to your business.';
+  const url = `https://omnileadsagi.com/lp/${slug}`;
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: 'Omni AI',
+      type: 'website',
+      images: [{ url: '/api/og', width: 1200, height: 630, alt: title }],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ['/api/og'],
+    },
+  };
+}
 
 type LandingPage = {
   id: string;
