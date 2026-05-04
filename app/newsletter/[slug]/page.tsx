@@ -189,7 +189,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   // standard "Schedule a Meeting" CTA is replaced with an iMessage-
   // style preview card pointing at the partner's site so readers
   // convert against the post's actual subject.
-  const shoutout = getShoutoutForSlug(slug, post.tier);
+  const shoutout = getShoutoutForSlug(slug, post.tier, post.published_at);
   // Ensure the counter reflects what actually renders in the list below.
   const tagsToShow = (post.keywords || []).slice(0, 11);
 

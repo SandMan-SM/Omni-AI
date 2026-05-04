@@ -82,18 +82,97 @@ const SHOUTOUTS: Record<string, Shoutout> = {
   },
 };
 
+// ─── Weekly shoutout schedule ─────────────────────────────────────────
+// The newsletter publishes daily, but only ONE business gets shouted out
+// per week to keep conversion sharp. Cycle alternates LTB ↔ Prime IV
+// every Wednesday. Older content scrolls off the schedule and reverts
+// to the standard Schedule-a-Meeting CTA.
+//
+// Each entry's `weekStart` is a Wednesday. The entry covers from that
+// Wednesday through the day before the next entry's Wednesday (i.e. the
+// following Tuesday). Posts whose published_at falls in that range and
+// whose slug-prefix matches `partner` render the shoutout card; posts
+// in the same week with a different partner-prefix fall through to the
+// standard CTA. List newest-first so the lookup short-circuits.
+//
+// To add a new week: prepend a new entry. To bring Leifson or Youngs
+// into the rotation, just use their key as `partner` and the existing
+// SHOUTOUTS registry entry handles the rest.
+
+type PartnerKey = keyof typeof SHOUTOUTS;
+
+const SHOUTOUT_SCHEDULE: ReadonlyArray<{ weekStart: string; partner: PartnerKey }> = [
+  // Future weeks — pre-filled so the next batch of posts lights up
+  // automatically without a code change.
+  { weekStart: "2026-05-13", partner: "prime_iv" },
+  { weekStart: "2026-05-06", partner: "ltb" },
+  // Current Wednesday-anchored week (Apr 29 – May 5): Love Thy Barber
+  { weekStart: "2026-04-29", partner: "ltb" },
+  // Last week (Apr 22 – Apr 28): Prime IV
+  { weekStart: "2026-04-22", partner: "prime_iv" },
+  // Alternate going back so historic issues show the right card.
+  { weekStart: "2026-04-15", partner: "ltb" },
+  { weekStart: "2026-04-08", partner: "prime_iv" },
+  { weekStart: "2026-04-01", partner: "ltb" },
+  { weekStart: "2026-03-25", partner: "prime_iv" },
+  { weekStart: "2026-03-18", partner: "ltb" },
+  { weekStart: "2026-03-11", partner: "prime_iv" },
+  { weekStart: "2026-03-04", partner: "ltb" },
+  { weekStart: "2026-02-25", partner: "prime_iv" },
+  { weekStart: "2026-02-18", partner: "ltb" },
+  { weekStart: "2026-02-11", partner: "prime_iv" },
+  { weekStart: "2026-02-04", partner: "ltb" },
+  // Posts published before the earliest weekStart fall through to the
+  // standard CTA — no card. Acceptable: those are deep archive content.
+];
+
+function getScheduledPartner(publishedAt: string | null | undefined): PartnerKey | null {
+  if (!publishedAt) return null;
+  const pubDate = publishedAt.slice(0, 10); // YYYY-MM-DD lex order matches calendar order
+  for (const entry of SHOUTOUT_SCHEDULE) {
+    if (pubDate >= entry.weekStart) return entry.partner;
+  }
+  return null;
+}
+
+// Map a partner key to all slug prefixes that resolve to it. Most partners
+// have one prefix; Prime IV has two (legacy `prime-iv-` and current
+// `prime_iv-`) since older issues were authored before the slug scheme
+// settled on underscores.
+const PREFIXES_FOR_PARTNER: Record<PartnerKey, string[]> = {
+  prime_iv: ["prime_iv-", "prime-iv-"],
+  "prime-iv": ["prime-iv-", "prime_iv-"], // alias — both registry keys point at the same content
+  ltb: ["ltb-"],
+  leifson: ["leifson-"],
+  youngs: ["youngs-"],
+};
+
 /**
- * Resolve a featured-business shoutout for a newsletter post slug, or null
- * if the post is a standard Omni AI issue. Premium posts always return
- * null even if their slug matches — premium is shoutout-free by policy.
+ * Resolve a featured-business shoutout for a newsletter post.
+ *
+ * Returns a shoutout only when ALL three conditions hold:
+ *   1. Post is on the free tier (premium is shoutout-free by policy).
+ *   2. Post's published_at falls inside a scheduled week.
+ *   3. Post's slug-prefix matches the partner scheduled for that week.
+ *
+ * Posts that are partner-prefixed but mismatch the week (e.g. a Prime IV
+ * issue published during a Love-Thy-Barber week) render the standard
+ * Schedule-a-Meeting CTA instead. This is what enforces "one shoutout
+ * per week, alternating every Wednesday."
  */
 export function getShoutoutForSlug(
   slug: string,
   tier: string | null,
+  publishedAt?: string | null,
 ): Shoutout | null {
   if (tier === "premium") return null;
-  for (const [prefix, payload] of Object.entries(SHOUTOUTS)) {
-    if (slug.startsWith(`${prefix}-`)) return payload;
-  }
-  return null;
+
+  const scheduled = getScheduledPartner(publishedAt);
+  if (!scheduled) return null;
+
+  const prefixes = PREFIXES_FOR_PARTNER[scheduled] ?? [`${scheduled}-`];
+  const matches = prefixes.some((p) => slug.startsWith(p));
+  if (!matches) return null;
+
+  return SHOUTOUTS[scheduled];
 }
