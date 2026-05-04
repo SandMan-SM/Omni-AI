@@ -195,7 +195,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
       const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
-      const res = await fetch("/api/agi/admin/activity?limit=6", { headers: authHeaders });
+      const res = await fetch("/api/admin/activity?limit=6", { headers: authHeaders });
       return res.json();
     },
     enabled: !!isAdmin,
@@ -1247,7 +1247,7 @@ function OnboardingDialog({ open, onClose, profile, onSaved }: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
       };
-      const res = await fetch(`/api/agi/admin/users/${profile.id}`, {
+      const res = await fetch(`/api/admin/users/${profile.id}`, {
         method: "PATCH",
         headers,
         body: JSON.stringify({
