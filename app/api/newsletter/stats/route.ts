@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin-auth';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 /**
  * Aggregate subscriber-count stats — admin-only.
@@ -14,6 +19,7 @@ import { requireAdmin } from '@/lib/admin-auth';
  * bearer on this fetch, so no client-side change is needed here.
  */
 export async function GET() {
+  noStore();
   const auth = await requireAdmin();
   if ('error' in auth && auth.error) return auth.error;
 

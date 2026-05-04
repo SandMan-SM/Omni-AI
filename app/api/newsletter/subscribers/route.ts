@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin-auth';
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
 
 /**
  * Newsletter-subscribers endpoint.
@@ -18,6 +23,7 @@ import { requireAdmin } from '@/lib/admin-auth';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export async function GET() {
+  noStore();
   const auth = await requireAdmin();
   if ('error' in auth && auth.error) return auth.error;
 
