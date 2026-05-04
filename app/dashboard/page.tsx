@@ -278,6 +278,22 @@ export default function Dashboard() {
                b.name?.toLowerCase() === clientWorkspaceName,
       );
       if (!target || cancelled) return;
+      // Pre-set localStorage as soon as we resolve the target business so
+      // every dashboard sub-page (LeadsView etc) sees the right workspace
+      // on its first localStorage read — eliminates the first-load race
+      // where Contacts briefly showed All-businesses leads before the
+      // AgiAdminPanel auto-pin fired.
+      if (typeof window !== 'undefined') {
+        const current = window.localStorage.getItem('omni_active_business_id');
+        if (current !== target.id) {
+          window.localStorage.setItem('omni_active_business_id', target.id);
+          window.dispatchEvent(new StorageEvent('storage', {
+            key: 'omni_active_business_id',
+            newValue: target.id,
+            oldValue: current,
+          }));
+        }
+      }
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const [{ count: total }, { count: thisWeek }] = await Promise.all([
         supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id),
