@@ -62,6 +62,7 @@ export default function CoachPage() {
 
   const load = useCallback(async () => {
     if (!selectedBiz) return;
+    setRecs([]);
     const r = await fetch(`/api/agi/coach/recommendations?business_id=${selectedBiz.id}`);
     const j = await r.json();
     setRecs(j.recommendations ?? []);

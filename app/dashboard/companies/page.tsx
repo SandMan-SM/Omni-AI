@@ -65,6 +65,7 @@ export default function CompaniesPage() {
 
   useEffect(() => {
     if (!selectedBiz) return;
+    setCompanies([]);
     fetch(`/api/agi/companies?business_id=${selectedBiz.id}`)
       .then(r => r.json())
       .then(j => {

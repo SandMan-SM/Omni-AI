@@ -66,6 +66,7 @@ export default function RunsPage() {
 
   const load = useCallback(async () => {
     if (!selectedBiz) return;
+    setRuns([]);
     const r = await fetch(`/api/agi/runs?business_id=${selectedBiz.id}`);
     const j = await r.json();
     setRuns(j.runs ?? []);

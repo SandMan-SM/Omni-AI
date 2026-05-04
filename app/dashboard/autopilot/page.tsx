@@ -92,6 +92,7 @@ export default function AutopilotPage() {
 
   const loadAll = useCallback(async () => {
     if (!selectedBiz) return;
+    setLogs([]);
     const [{ configs }, { logs }] = await Promise.all([
       fetch(`/api/agi/autopilot/config?business_id=${selectedBiz.id}`).then(r => r.json()),
       fetch(`/api/agi/autopilot/log?business_id=${selectedBiz.id}&limit=50`).then(r => r.json()),
