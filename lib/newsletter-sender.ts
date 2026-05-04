@@ -945,6 +945,25 @@ import {
   getNewsletterAudience,
   audienceSendList,
 } from '@/lib/newsletter-audience';
+import { getShoutoutForSlug } from '@/lib/newsletter-shoutouts';
+
+// Slug prefixes that flag a post as partner content. The cron's content
+// generator can produce these (it's seeded with partner topics by the
+// agentic stack), so we need a publish-time guard or every off-week
+// shoutout floods the public feed.
+const PARTNER_SLUG_RE = /^(prime_iv-|prime-iv-|ltb-|leifson-|youngs-|otd-)/;
+
+/**
+ * Returns true if a partner-prefixed slug is allowed to publish today
+ * per the rotation in lib/newsletter-shoutouts. Non-partner slugs always
+ * pass. Partner slugs only pass when the active week's scheduled partner
+ * matches the slug's prefix — i.e. there's exactly one shoutout per week.
+ */
+function isPublishAllowed(slug: string | undefined | null): boolean {
+  if (!slug) return true;
+  if (!PARTNER_SLUG_RE.test(slug)) return true;
+  return getShoutoutForSlug(slug, 'free', new Date().toISOString()) !== null;
+}
 
 function buildNewsletterEmailHtml(content: NewsletterContent, tier: 'free' | 'premium'): string {
   const isPremium = tier === 'premium';
@@ -1455,12 +1474,23 @@ export async function runDailyNewsletter(supabase: any = null) {
 
       const sentAt = new Date().toISOString();
 
+      // Schedule guard — partner content only publishes when its prefix
+      // matches the active rotation. Off-week partner posts stay as drafts
+      // (published_at = null) instead of cluttering the public feed; the
+      // operator can still manually republish them later. Non-partner
+      // (Omni AI) content always publishes.
+      const allowPublish = isPublishAllowed(content.slug);
+      const publishedStamp = allowPublish ? sentAt : null;
+      if (!allowPublish) {
+        console.warn(`[publish guard] Partner post off-schedule, keeping as draft: ${content.slug}`);
+      }
+
       if (draftId) {
         // Publish the existing draft + stamp send tracking fields
         await supabase
           .from('newsletter_posts')
           .update({
-            published_at: sentAt,
+            published_at: publishedStamp,
             sent_at: sentAt,
             recipients_count: 1 + freeSent,
             email_sent: emailOk,
@@ -1480,7 +1510,7 @@ export async function runDailyNewsletter(supabase: any = null) {
           offer: content.offer || null,
           keywords: content.keywords || [],
           tier: 'free',
-          published_at: sentAt,
+          published_at: publishedStamp,
           sent_at: sentAt,
           recipients_count: 1 + freeSent,
           email_sent: emailOk,
@@ -1599,12 +1629,21 @@ export async function runPremiumNewsletter(supabase: any = null) {
 
       const premiumSentAt = new Date().toISOString();
 
+      // Premium tier is partner-free by policy — never publish a
+      // partner-prefixed slug as premium. If the generator hands us one,
+      // keep it as a draft so the operator can re-tag it as free.
+      const premiumPartnerSlug = !!content.slug && PARTNER_SLUG_RE.test(content.slug);
+      const premiumPublishedStamp = premiumPartnerSlug ? null : premiumSentAt;
+      if (premiumPartnerSlug) {
+        console.warn(`[publish guard] Premium post has partner slug, keeping as draft: ${content.slug}`);
+      }
+
       if (draftId) {
         // Publish the existing draft + stamp send tracking fields
         await supabase
           .from('newsletter_posts')
           .update({
-            published_at: premiumSentAt,
+            published_at: premiumPublishedStamp,
             sent_at: premiumSentAt,
             recipients_count: premiumSent,
             email_sent: premiumSent > 0,
@@ -1626,7 +1665,7 @@ export async function runPremiumNewsletter(supabase: any = null) {
           ai_recommendation: content.ai_recommendation || null,
           keywords: content.keywords || [],
           tier: 'premium',
-          published_at: premiumSentAt,
+          published_at: premiumPublishedStamp,
           sent_at: premiumSentAt,
           recipients_count: premiumSent,
           email_sent: premiumSent > 0,
