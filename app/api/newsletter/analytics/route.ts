@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { requireAdmin } from '@/lib/admin-auth';
 
 /**
@@ -38,6 +39,7 @@ interface ResendEmail {
 }
 
 export async function GET() {
+  noStore();
   const auth = await requireAdmin();
   if ('error' in auth && auth.error) return auth.error;
 
