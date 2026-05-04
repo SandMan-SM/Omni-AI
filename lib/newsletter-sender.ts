@@ -1448,6 +1448,15 @@ export async function runDailyNewsletter(supabase: any = null) {
     content = await generateFreeContent();
   }
 
+  // Skip the entire send for off-schedule partner content. Sending the
+  // email/telegram with the post landing as draft would leave recipients
+  // clicking a 404 link (drafts return notFound()). Better to no-op the
+  // whole day — the daily cron will run again tomorrow.
+  if (!isPublishAllowed(content.slug)) {
+    console.warn(`[free cron] Skipping send: partner post off-schedule (${content.slug}). Will retry tomorrow.`);
+    return { content, telegramOk: false, emailOk: false, premiumSent: 0, freeSent: 0 };
+  }
+
   const telegramOk = await sendToTelegram(content);
 
   // Send to subscribed audience — resolved via the canonical audience
@@ -1600,6 +1609,15 @@ export async function runPremiumNewsletter(supabase: any = null) {
     }
   } else {
     content = await generatePremiumContent();
+  }
+
+  // Premium tier is partner-free by policy. If the generator hands us a
+  // partner-prefixed slug, skip the entire send — recipients shouldn't
+  // get a Prime IV email under the Premium banner, and the premium
+  // landing would 404 anyway since the publish guard forces draft.
+  if (content.slug && PARTNER_SLUG_RE.test(content.slug)) {
+    console.warn(`[premium cron] Skipping send: partner slug on premium content (${content.slug}).`);
+    return { content, telegramOk: false, premiumSent: 0, skipped: true };
   }
 
   let premiumSent = 0;
