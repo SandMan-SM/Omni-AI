@@ -189,6 +189,11 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'http://localhost:3000',
   ],
   prime_iv: [
+    // Sandy branch landing page — the active conversion URL Jaime promotes
+    // ($85 IV intro offer). Without this, the tracking script's POST gets
+    // 403'd by CORS even though events would otherwise be valid.
+    'https://primeivsandy.com',
+    'https://www.primeivsandy.com',
     'https://primeivutah.com',
     'https://www.primeivutah.com',
     'https://prime-iv.vercel.app',
