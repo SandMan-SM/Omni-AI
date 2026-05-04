@@ -628,6 +628,10 @@ export default function DashboardPage() {
     // when selectedBiz changed: the second loadData kept returning the first
     // call's 320 rows even after .eq() was applied, so a client viewer like
     // Sammy got pinned to LTB but still saw all-businesses leads.
+    // Clear out the previous workspace's leads first so we don't briefly
+    // render the wrong tenant's data while the new query resolves.
+    setLeads([]);
+    setCampaigns([]);
     const leadsBase = () => supabase.from('omni_leads_generated').select('*').order('created_at', { ascending: false });
     const campsBase = () => supabase.from('omni_lead_campaigns').select('*');
     const [{ data: leadsData }, { data: campData }] = await Promise.all([
