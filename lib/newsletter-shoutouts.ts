@@ -31,9 +31,20 @@ export type Shoutout = {
 
 // Match by slug prefix. First match wins, so order doesn't matter as long
 // as prefixes are unambiguous (which they are — each business owns its
-// `<slug>-…` namespace).
+// `<slug>-…` namespace). Some legacy posts use hyphens (`prime-iv-`)
+// and newer posts use underscores (`prime_iv-`); both forms are listed
+// so older issues pick up the same card.
 const SHOUTOUTS: Record<string, Shoutout> = {
   prime_iv: {
+    name: "Prime IV Hydration · Sandy",
+    url: "https://primeivsandy.com",
+    host: "primeivsandy.com",
+    description:
+      "$85 IV therapy introductory offer to make you look better, feel better, and perform better. New clients only.",
+    offer: "$85 intro offer · new clients · 385-318-3283",
+    accent: "blue",
+  },
+  "prime-iv": {
     name: "Prime IV Hydration · Sandy",
     url: "https://primeivsandy.com",
     host: "primeivsandy.com",
@@ -59,6 +70,15 @@ const SHOUTOUTS: Record<string, Shoutout> = {
       "Custom-build contractor for homeowners who want the spec sheet, not the surprise. Free estimate, line-item pricing, no quiet add-ons.",
     offer: "Free, itemized estimate",
     accent: "emerald",
+  },
+  youngs: {
+    name: "Youngs Cabinet Refinishing",
+    url: "https://youngscabinetrefinishing.com",
+    host: "youngscabinetrefinishing.com",
+    description:
+      "Cabinet refinishing that lasts — full prep, factory-grade finish, no on-site overspray. Refinish instead of replacing and save 60–70%.",
+    offer: "Free in-home color & quote consultation",
+    accent: "amber",
   },
 };
 
