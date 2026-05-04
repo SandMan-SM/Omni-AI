@@ -55,8 +55,8 @@ const SHOUTOUTS: Record<string, Shoutout> = {
   },
   ltb: {
     name: "Love Thy Barber",
-    url: "https://lovethy.com",
-    host: "lovethy.com",
+    url: "https://lovethybarber.shop",
+    host: "lovethybarber.shop",
     description:
       "Premium men's grooming, classic cuts, and hot-towel shaves. First-time clients get a discount on the chair.",
     offer: "$5 off your first visit",
