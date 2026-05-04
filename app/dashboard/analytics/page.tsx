@@ -54,6 +54,20 @@ export default function AnalyticsPage() {
     });
   }, []);
 
+  // Live workspace switcher / auto-pin sync.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function onStorage(ev: StorageEvent) {
+      if (ev.key !== 'omni_active_business_id') return;
+      const v = ev.newValue;
+      if (!v || v === 'all') return;
+      const found = businesses.find(b => b.id === v);
+      if (found) setSelectedBiz(found);
+    }
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [businesses]);
+
   useEffect(() => {
     if (!selectedBiz) return;
     (async () => {
