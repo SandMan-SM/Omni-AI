@@ -3,9 +3,12 @@
 // type + URL so the palette can route the user.
 
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -22,6 +25,7 @@ interface SearchResult {
 }
 
 export async function GET(req: NextRequest) {
+  noStore();
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") ?? "").trim();
   if (q.length < 1) return NextResponse.json({ results: [] });

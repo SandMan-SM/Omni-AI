@@ -6,12 +6,14 @@
 // Auth: requireAdmin() — same gate the rest of the agentic surfaces use.
 
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
+  noStore();
   const auth = await requireAdmin();
   if ("error" in auth && auth.error) return auth.error;
 

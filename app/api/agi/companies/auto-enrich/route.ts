@@ -4,9 +4,12 @@
 // (that's handled client-side via MCP); it just identifies candidates.
 
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,6 +17,7 @@ const sb = createClient(
 );
 
 export async function GET(req: NextRequest) {
+  noStore();
   const { searchParams } = new URL(req.url);
   const businessId = searchParams.get("business_id");
   const limit = Math.min(50, Number(searchParams.get("limit") ?? 20));
