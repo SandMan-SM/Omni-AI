@@ -2,12 +2,34 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
 import {
   ArrowLeft, ChevronDown, TrendingUp, DollarSign, RefreshCw,
   Trophy, Target, ArrowRight, Sparkles, AlertCircle, CheckCircle2,
-  Mail, Phone, MapPin
+  Mail, Phone, MapPin, Users2, Handshake
 } from 'lucide-react';
+
+// Lazy-load Sponsors / Affiliates so the default Contacts pipeline ships
+// without their JS payload. They render as sub-sections of this page.
+const SponsorPipelineView = dynamic(() => import('@/app/dashboard/sponsor/page'), {
+  ssr: false,
+  loading: () => <SectionSkel />,
+});
+const AffiliatePipelineView = dynamic(() => import('@/app/dashboard/affiliate/page'), {
+  ssr: false,
+  loading: () => <SectionSkel />,
+});
+
+function SectionSkel() {
+  return (
+    <div style={{ padding: '60px 0', display: 'flex', justifyContent: 'center' }}>
+      <div style={{ width: 24, height: 24, border: '2px solid #a78bfa40', borderTopColor: '#a78bfa', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
+}
+
+type PipelineSection = 'contacts' | 'sponsors' | 'affiliates';
 
 type DealLead = Lead & {
   deal_value?: number;
@@ -47,6 +69,11 @@ export default function PipelinePage() {
   const [scoring, setScoring] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
   const [editing, setEditing] = useState<DealLead | null>(null);
+  // Pipeline now hosts three sub-pipelines as sections (Contacts, Sponsors,
+  // Affiliates). The original top-level Sponsors/Affiliates tabs have been
+  // folded in here so the operator gets a single Pipeline view with a
+  // section switcher instead of three separate dashboard tabs.
+  const [section, setSection] = useState<PipelineSection>('contacts');
 
   const showToast = (msg: string, ok = true) => {
     setToast({ msg, ok }); setTimeout(() => setToast(null), 3000);
@@ -195,6 +222,46 @@ export default function PipelinePage() {
         </div>
       </header>
 
+      {/* Section switcher — Contacts / Sponsors / Affiliates pipelines.
+          Folded into Pipeline so the operator has a single tab with three
+          sub-pipelines instead of three separate dashboard tabs. */}
+      <div style={{ borderBottom: '1px solid #1e1e1e', padding: '0 32px', display: 'flex', gap: 4 }}>
+        {([
+          { key: 'contacts',   label: 'Contacts',   icon: Target },
+          { key: 'sponsors',   label: 'Sponsors',   icon: Handshake },
+          { key: 'affiliates', label: 'Affiliates', icon: Users2 },
+        ] as Array<{ key: PipelineSection; label: string; icon: typeof Target }>).map((s) => {
+          const Icon = s.icon;
+          const active = section === s.key;
+          return (
+            <button
+              key={s.key}
+              onClick={() => setSection(s.key)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                background: 'transparent', border: 'none',
+                color: active ? '#fff' : '#666', padding: '14px 16px',
+                cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                borderBottom: `2px solid ${active ? '#10b981' : 'transparent'}`,
+                marginBottom: -1,
+                transition: 'color 120ms',
+              }}
+              onMouseEnter={e => { if (!active) e.currentTarget.style.color = '#aaa'; }}
+              onMouseLeave={e => { if (!active) e.currentTarget.style.color = '#666'; }}
+            >
+              <Icon size={14} /> {s.label}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Sponsors / Affiliates render their full original page bodies here.
+          The agentic dashboard wrapper hides their inner header via
+          `.agi-embedded-view header` CSS, so they slot into this section
+          cleanly without a duplicate top bar. */}
+      {section === 'sponsors' && <SponsorPipelineView />}
+      {section === 'affiliates' && <AffiliatePipelineView />}
+      {section === 'contacts' && (
       <div style={{ padding: '24px 32px' }}>
         {/* Pipeline value summary */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12, marginBottom: 24 }}>
@@ -294,9 +361,11 @@ export default function PipelinePage() {
           ))}
         </div>
       </div>
+      )}
 
-      {/* Lead editor modal */}
-      {editing && (
+      {/* Lead editor modal — only shown while the Contacts pipeline section
+          is active and a row was clicked into. */}
+      {section === 'contacts' && editing && (
         <div onClick={() => setEditing(null)} style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.8)', zIndex: 50,
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,

@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 import {
   Target, Bot, Brain, Inbox as InboxIcon, Send, Building2, BookOpen,
   BarChart3, Calendar, TrendingUp, Activity, Upload, Settings as SettingsIcon,
-  Zap, CreditCard, ChevronDown, Sparkles, Award, Trophy, Mail, Handshake, Users2,
+  Zap, CreditCard, ChevronDown, Sparkles, Award, Trophy, Mail,
   Crown, MessageSquare,
 } from "lucide-react";
 
@@ -20,8 +20,8 @@ const CampaignsView  = dynamic(() => import("@/app/dashboard/campaigns/page"), {
 const TemplatesView  = dynamic(() => import("@/app/dashboard/templates/page"), { ssr: false, loading: () => <Skel /> });
 const AnalyticsView  = dynamic(() => import("@/app/dashboard/analytics/page"), { ssr: false, loading: () => <Skel /> });
 const PipelineView   = dynamic(() => import("@/app/dashboard/pipeline/page"),  { ssr: false, loading: () => <Skel /> });
-const SponsorView    = dynamic(() => import("@/app/dashboard/sponsor/page"),   { ssr: false, loading: () => <Skel /> });
-const AffiliateView  = dynamic(() => import("@/app/dashboard/affiliate/page"), { ssr: false, loading: () => <Skel /> });
+// SponsorView and AffiliateView are now imported by app/dashboard/pipeline/page.tsx
+// — they render as sub-sections of the Pipeline tab rather than standalone tabs.
 const HeatmapView    = dynamic(() => import("@/app/dashboard/heatmap/page"),   { ssr: false, loading: () => <Skel /> });
 const MeetingsView   = dynamic(() => import("@/app/dashboard/meetings/page"),  { ssr: false, loading: () => <Skel /> });
 const AutopilotView  = dynamic(() => import("@/app/dashboard/autopilot/page"), { ssr: false, loading: () => <Skel /> });
@@ -118,8 +118,9 @@ const TABS: Array<{
   { id: "inbox",      label: "Inbox",       icon: InboxIcon,      view: InboxView,      group: "engage" },
   { id: "coach",      label: "Coach",       icon: Brain,          view: CoachView,      group: "intel" },
   { id: "pipeline",   label: "Pipeline",    icon: Award,          view: PipelineView,   group: "core" },
-  { id: "sponsor",    label: "Sponsors",    icon: Handshake,      view: SponsorView,    group: "core",  omniOnly: true },
-  { id: "affiliate",  label: "Affiliates",  icon: Users2,         view: AffiliateView,  group: "core",  omniOnly: true },
+  // Sponsors and Affiliates are now sub-sections inside the Pipeline tab —
+  // operator switches between Contacts / Sponsors / Affiliates pipelines
+  // via the in-page section switcher rather than three separate tabs.
   { id: "meetings",   label: "Meetings",    icon: Calendar,       view: MeetingsView,   group: "engage" },
   { id: "newsletter", label: "Newsletter",  icon: Mail,           view: NewsletterView, group: "engage" },
   { id: "arena",      label: "Arena",       icon: Trophy,         view: ArenaView,      group: "engage" },
