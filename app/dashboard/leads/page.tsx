@@ -11,6 +11,7 @@ import {
   Bot, BookOpen, Calendar, CreditCard, Activity, Brain, Pencil
 } from 'lucide-react';
 import { AgentEditPanel } from '@/components/agi/AgentEditPanel';
+import { useToast } from '@/hooks/use-toast';
 
 const STATUS_CONFIG = {
   new:       { label: 'New',       color: '#818cf8', bg: 'rgba(129,140,248,0.12)' },
@@ -127,6 +128,7 @@ function LeadRow({ lead, onClick, businessName }: { lead: Lead; onClick: () => v
 }
 
 function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Lead; onClose: () => void; onStatusChange: (id: string, status: Lead['status']) => void; onProfileSaved?: () => void }) {
+  const { toast } = useToast();
   const src = SOURCE_CONFIG[lead.source];
   const [aliases, setAliases] = useState<string[]>([]);
   const [history, setHistory] = useState<Array<{ id: string; from_status: string | null; to_status: string; changed_at: string; note: string | null }>>([]);
@@ -492,9 +494,12 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
               });
               const j = await r.json();
               if (j.ok) {
-                alert(`AI Score: ${j.score}\n\n${j.reasoning}\n\nAngle: ${j.recommended_angle}`);
+                toast({
+                  title: `AI Score: ${j.score}`,
+                  description: `${j.reasoning}\n\nAngle: ${j.recommended_angle}`,
+                });
               } else {
-                alert(`Failed: ${j.error}`);
+                toast({ title: 'Score failed', description: j.error, variant: 'destructive' });
               }
             }}
             style={{
@@ -556,6 +561,7 @@ function Row({ icon: Icon, label, value }: { icon?: React.ElementType; label: st
 }
 
 export default function DashboardPage() {
+  const { toast } = useToast();
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
@@ -664,11 +670,14 @@ export default function DashboardPage() {
       });
       const d = await r.json();
       if (d.error) {
-        alert(`Score failed: ${d.error}`);
+        toast({ title: 'Score failed', description: d.error, variant: 'destructive' });
       } else {
         // After re-score, fire hot-lead alerts for any newly hot leads
         await fetch('/api/agi/leads/hot-lead-alerts', { method: 'POST' }).catch(() => {});
-        alert(`Re-scored ${d.scored ?? '?'} leads. ${d.errors ? `${d.errors} errors.` : 'Done.'}`);
+        toast({
+          title: 'Re-score complete',
+          description: `Scored ${d.scored ?? '?'} leads.${d.errors ? ` ${d.errors} errors.` : ''}`,
+        });
         await loadData(selectedBiz.id);
       }
     } finally {
