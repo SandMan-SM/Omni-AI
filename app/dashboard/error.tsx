@@ -21,6 +21,34 @@ export default function DashboardError({
   useEffect(() => {
     // eslint-disable-next-line no-console
     console.error("[/dashboard] segment error:", error);
+    // Best-effort log to hades_root_audit so silent client errors land
+    // in Hades alongside privileged-action audits. Same endpoint admin
+    // uses; segment is logged via the path field.
+    try {
+      const body = JSON.stringify({
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.slice(0, 4000),
+        digest: error.digest,
+        path: typeof window !== "undefined" ? window.location.pathname : null,
+        ts: new Date().toISOString(),
+      });
+      if (typeof navigator !== "undefined" && navigator.sendBeacon) {
+        navigator.sendBeacon(
+          "/api/admin/log-error",
+          new Blob([body], { type: "application/json" }),
+        );
+      } else {
+        void fetch("/api/admin/log-error", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body,
+          keepalive: true,
+        }).catch(() => {});
+      }
+    } catch {
+      /* never throw inside an error boundary */
+    }
   }, [error]);
 
   return (
