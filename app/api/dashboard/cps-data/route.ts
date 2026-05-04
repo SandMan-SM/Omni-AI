@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { cookies, headers } from "next/headers";
+import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * GET /api/dashboard/cps-data
@@ -63,6 +66,7 @@ async function resolveCallerProfileId(): Promise<string | null> {
 }
 
 export async function GET() {
+  noStore();
   const callerId = await resolveCallerProfileId();
   if (!callerId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

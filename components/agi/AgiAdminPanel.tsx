@@ -113,7 +113,7 @@ const TABS: Array<{
   /** When true, the tab only renders for admins (hidden for non-admin viewers). */
   adminOnly?: boolean;
 }> = [
-  { id: "leads",      label: "Clients",     icon: Target,         view: LeadsView,      group: "core" },
+  { id: "leads",      label: "Contacts",    icon: Target,         view: LeadsView,      group: "core" },
   { id: "outreach",   label: "Outreach",    icon: Send,           view: OutreachView,   group: "engage" },
   { id: "inbox",      label: "Inbox",       icon: InboxIcon,      view: InboxView,      group: "engage" },
   { id: "coach",      label: "Coach",       icon: Brain,          view: CoachView,      group: "intel" },
@@ -217,7 +217,7 @@ export function AgiAdminPanel({
   const activeWorkspaceSlug = activeBizId
     ? (businessSlugs[activeBizId] ?? businessNames[activeBizId]?.toLowerCase() ?? null)
     : null;
-  const CLIENT_SLUGS = new Set(["cps", "youngs", "leifson", "ltb"]);
+  const CLIENT_SLUGS = new Set(["cps", "youngs", "leifson", "ltb", "prime_iv"]);
   const isCPS = activeWorkspaceSlug === "cps";
   const isClientWorkspace = !!activeWorkspaceSlug && CLIENT_SLUGS.has(activeWorkspaceSlug);
   const visibleTabs = TABS.filter(t =>

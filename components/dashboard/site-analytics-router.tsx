@@ -3,10 +3,11 @@
 /**
  * Routes the agentic dashboard's "Site Analytics" tab to the right inner
  * component for the active workspace:
- *   - cps     → CpsAnalyticsPanel   (bespoke /api/dashboard/cps-data feed)
- *   - youngs  → InboundAnalyticsEmbed slug="youngs"
- *   - leifson → InboundAnalyticsEmbed slug="leifson"
- *   - ltb     → InboundAnalyticsEmbed slug="ltb"
+ *   - cps      → CpsAnalyticsPanel   (bespoke /api/dashboard/cps-data feed)
+ *   - youngs   → InboundAnalyticsEmbed slug="youngs"
+ *   - leifson  → InboundAnalyticsEmbed slug="leifson"
+ *   - ltb      → InboundAnalyticsEmbed slug="ltb"
+ *   - prime_iv → InboundAnalyticsEmbed slug="prime_iv"
  *
  * Reads the active workspace from localStorage and resolves it to a slug
  * via omni_businesses lookup (passed down by the AgiAdminPanel via props
@@ -64,12 +65,12 @@ export default function SiteAnalyticsRouter() {
   }, []);
 
   if (slug === "cps") return <CpsAnalyticsPanel />;
-  if (slug === "youngs" || slug === "leifson" || slug === "ltb") {
-    return <InboundAnalyticsEmbed slug={slug as "youngs" | "leifson" | "ltb"} />;
+  if (slug === "youngs" || slug === "leifson" || slug === "ltb" || slug === "prime_iv") {
+    return <InboundAnalyticsEmbed slug={slug as "youngs" | "leifson" | "ltb" | "prime_iv"} />;
   }
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-8 text-sm text-gray-400">
-      Site Analytics is available for client workspaces (CPS, Youngs, Leifson, LTB). Switch workspace to view.
+      Site Analytics is available for client workspaces (CPS, Youngs, Leifson, LTB, Prime IV). Switch workspace to view.
     </div>
   );
 }
