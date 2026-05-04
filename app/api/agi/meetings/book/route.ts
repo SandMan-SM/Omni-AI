@@ -61,6 +61,34 @@ export async function POST(req: NextRequest) {
         .in('status', ['new', 'contacted']);
     }
 
+    // Mirror into the per-tenant inbound_<slug>_bookings analytics table so
+    // the workspace dashboard's Site Analytics "Bookings 30d" KPI counts
+    // bookings made through the agentic flow too — not just ones made via
+    // a public booking widget. Idempotent via the same id (not enforced by
+    // a unique constraint, but the meeting flow only fires once per slot).
+    try {
+      const { data: biz } = await supabase
+        .from('omni_businesses')
+        .select('slug')
+        .eq('id', business_id)
+        .maybeSingle();
+      const slug = biz?.slug?.toLowerCase();
+      if (slug && ['cps','youngs','leifson','ltb','prime_iv','otd','phoenix','niki','alira','omnileads'].includes(slug)) {
+        await supabase.from(`inbound_${slug}_bookings`).insert({
+          business_id,
+          lead_id: lead_id ?? null,
+          attendee_name,
+          attendee_email,
+          attendee_phone: attendee_phone ?? null,
+          attendee_notes: attendee_notes ?? null,
+          start_at,
+          status: 'confirmed',
+        });
+      }
+    } catch (e) {
+      console.error('[meetings/book] inbound mirror failed:', e);
+    }
+
     if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
       notifyBooking({ attendeeName: attendee_name, attendeeEmail: attendee_email, start_at }).catch(() => {});
     }
