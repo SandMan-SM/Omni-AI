@@ -5,8 +5,11 @@
 
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,6 +17,7 @@ const sb = createClient(
 );
 
 export async function GET() {
+  noStore();
   const now = new Date();
   const startOfDay = new Date(now); startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(now); endOfDay.setHours(23, 59, 59, 999);

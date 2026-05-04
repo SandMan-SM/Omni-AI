@@ -3,8 +3,11 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +15,7 @@ const sb = createClient(
 );
 
 export async function GET(req: NextRequest) {
+  noStore();
   const { searchParams } = new URL(req.url);
   const leadId = searchParams.get("lead_id");
   if (!leadId) return NextResponse.json({ error: "lead_id required" }, { status: 400 });
