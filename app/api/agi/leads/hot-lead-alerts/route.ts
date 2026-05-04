@@ -8,10 +8,13 @@
 //   - manual call from the dashboard
 
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
 import { notifyHotLead } from "@/lib/agi/telegram";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,6 +34,7 @@ interface HotLead {
 }
 
 async function run(): Promise<NextResponse> {
+  noStore();
   // Find leads scoring >= 80 that aren't already in the alert log
   const { data: candidates, error } = await sb
     .from("omni_leads_generated")
