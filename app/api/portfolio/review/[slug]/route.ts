@@ -1,9 +1,12 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { gatherClientReview, buildClientReviewHtml } from '@/lib/client-review';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * GET /api/portfolio/review/[slug]
@@ -28,6 +31,7 @@ export const dynamic = 'force-dynamic';
  */
 
 export async function GET(req: Request, { params }: { params: { slug: string } }) {
+  noStore();
   const authErr = await authorizeCronOrAdmin(req);
   if (authErr) return authErr;
 

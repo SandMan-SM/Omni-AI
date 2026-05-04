@@ -1,10 +1,13 @@
 import { NextResponse } from 'next/server';
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { recordMetric } from '@/lib/ship-log';
 import { constantTimeEqual } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * GET /api/portfolio/sync
@@ -16,6 +19,7 @@ export const dynamic = 'force-dynamic';
  *  - Other clients: best-effort — if they ever land Stripe rows in a clients_<slug>_stripe table, wire it here.
  */
 export async function GET(req: Request) {
+  noStore();
   const auth = req.headers.get('authorization') || '';
   const token = auth.replace(/^Bearer\s+/i, '').trim();
   // Vercel cron calls use Bearer CRON_SECRET; manual calls too.
