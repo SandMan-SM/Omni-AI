@@ -70,6 +70,18 @@ export function ClientArenaPanel() {
 
   useEffect(() => { load(); }, []);
 
+  // Re-load when the active workspace changes — without this the panel
+  // shows the previous client's agent until a hard reload.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function onStorage(ev: StorageEvent) {
+      if (ev.key !== "omni_active_business_id") return;
+      load();
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
+
   const saveName = async () => {
     if (!agent || !editingName.trim() || editingName === agent.agentName) return;
     setSaving(true);
