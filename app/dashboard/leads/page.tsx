@@ -622,12 +622,17 @@ export default function DashboardPage() {
   }, [businesses]);
 
   const loadData = useCallback(async (bizId: string | null) => {
-    // bizId === null means "All Businesses" — drop the business_id filter
-    const leadsQuery = supabase.from('omni_leads_generated').select('*').order('created_at', { ascending: false });
-    const campsQuery = supabase.from('omni_lead_campaigns').select('*');
+    // bizId === null means "All Businesses" — drop the business_id filter.
+    // Build a fresh PostgREST query builder per call. Reusing one builder
+    // across two awaited calls (with vs without .eq()) caused stale results
+    // when selectedBiz changed: the second loadData kept returning the first
+    // call's 320 rows even after .eq() was applied, so a client viewer like
+    // Sammy got pinned to LTB but still saw all-businesses leads.
+    const leadsBase = () => supabase.from('omni_leads_generated').select('*').order('created_at', { ascending: false });
+    const campsBase = () => supabase.from('omni_lead_campaigns').select('*');
     const [{ data: leadsData }, { data: campData }] = await Promise.all([
-      bizId ? leadsQuery.eq('business_id', bizId) : leadsQuery,
-      bizId ? campsQuery.eq('business_id', bizId) : campsQuery,
+      bizId ? leadsBase().eq('business_id', bizId) : leadsBase(),
+      bizId ? campsBase().eq('business_id', bizId) : campsBase(),
     ]);
     setLeads(leadsData ?? []);
     setCampaigns(campData ?? []);

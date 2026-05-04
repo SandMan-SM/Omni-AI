@@ -204,6 +204,18 @@ export function AgiAdminPanel({
             if (target) {
               window.localStorage.setItem("omni_active_business_id", target.id);
               setActiveBizId(target.id);
+              // Dispatch a synthetic storage event so the lazy-loaded sub-pages
+              // (LeadsView, InboxView, OutreachView, etc.) see the pin even
+              // though localStorage.setItem in the same tab doesn't fire a
+              // native storage event. Without this, a client viewer like
+              // Sammy logs in, the pinning runs, but the Contacts tab still
+              // shows All-businesses (320 leads instead of LTB's 2).
+              window.dispatchEvent(new StorageEvent("storage", {
+                key: "omni_active_business_id",
+                newValue: target.id,
+                oldValue: null,
+                storageArea: window.localStorage,
+              }));
             }
           }
         }
