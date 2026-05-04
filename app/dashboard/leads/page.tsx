@@ -638,8 +638,16 @@ export default function DashboardPage() {
     setCampaigns(campData ?? []);
   }, []);
 
-  // selectedBiz === null is the "All Businesses" sentinel
-  useEffect(() => { loadData(selectedBiz ? selectedBiz.id : null); }, [selectedBiz, loadData]);
+  // selectedBiz === null is the "All Businesses" sentinel.
+  // Skip the initial loadData while businesses are still loading — otherwise
+  // the page briefly fetches all 320 leads with bizId=null before the
+  // workspace pin resolves to (e.g.) LTB and we re-fetch the 2 LTB leads.
+  // After the pin lands, `loading` flips false and the load fires once
+  // against the correctly-scoped business.
+  useEffect(() => {
+    if (loading) return;
+    loadData(selectedBiz ? selectedBiz.id : null);
+  }, [selectedBiz, loadData, loading]);
 
   const total = leads.length;
   const qualified = leads.filter(l => l.status === 'qualified' || l.status === 'converted').length;
