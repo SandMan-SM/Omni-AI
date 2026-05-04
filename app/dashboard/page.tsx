@@ -221,7 +221,7 @@ export default function Dashboard() {
   const { data: newsletterData } = useQuery<{ posts: { id: string; slug: string; subject: string; tier?: string; published_at?: string }[] }>({
     queryKey: ["newsletter-posts"],
     queryFn: async () => {
-      const res = await fetch(`/api/agi/newsletter/posts?_t=${Date.now()}`, { cache: 'no-store' });
+      const res = await fetch(`/api/newsletter/posts?_t=${Date.now()}`, { cache: 'no-store' });
       return res.json();
     },
   });
