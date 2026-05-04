@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * GET /api/council
@@ -39,6 +42,7 @@ type RunRow = {
 };
 
 export async function GET() {
+  noStore();
   const sb = createAdminClient();
 
   const [{ data: agents, error: agentsErr }, { data: runs, error: runsErr }] =

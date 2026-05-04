@@ -1,8 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 /**
  * Admin command-center metrics — revenue, pipeline, lead scores, client
@@ -18,6 +21,7 @@ export const dynamic = "force-dynamic";
  * required for admins; unauthenticated callers just get 401.
  */
 export async function GET() {
+  noStore();
   const auth = await requireAdmin();
   if ('error' in auth && auth.error) return auth.error;
 
