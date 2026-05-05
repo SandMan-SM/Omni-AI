@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -26,7 +27,12 @@ function scoreLeadLocal(lead: Record<string, unknown>, icp: ICP): number {
   return Math.min(100, Math.max(0, score));
 }
 
+// Admin-or-cron gated. Generates synthetic leads (currently demo data —
+// future Apollo path) and inserts them into the supplied business_id.
+// Without auth, anyone could spam-create leads under any tenant.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, campaign_id, icp } = await req.json() as {
       business_id: string; campaign_id?: string; icp: ICP;

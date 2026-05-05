@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -29,7 +30,13 @@ function scoreImportedLead(row: ImportRow): number {
   return Math.min(100, score);
 }
 
+// Admin-or-cron gated. Imports lead rows in bulk under whatever
+// business_id the caller supplies — without auth, anyone could spray
+// arbitrary first_name/email/phone/title rows into any tenant's
+// omni_leads_generated table.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, campaign_id, rows } = await req.json() as {
       business_id: string;

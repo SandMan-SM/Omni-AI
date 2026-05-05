@@ -7,9 +7,10 @@
 //   - the daily Claude Code scheduled task (catches anything not via re-score)
 //   - manual call from the dashboard
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 import { notifyHotLead } from "@/lib/agi/telegram";
 
 export const dynamic = "force-dynamic";
@@ -33,8 +34,15 @@ interface HotLead {
   ai_score_reasoning: string | null;
 }
 
-async function run(): Promise<NextResponse> {
+async function run(req: NextRequest): Promise<NextResponse> {
   noStore();
+  // Admin-or-cron gated. Each call fires a Telegram alert per matching
+  // hot lead — without auth, anyone could trigger arbitrary numbers of
+  // Telegram messages to the operator's chat by hitting this endpoint
+  // in a loop, and the side effect of inserting omni_hot_lead_alerts
+  // rows would mask the same leads from future legit scans.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   // Find leads scoring >= 80 that aren't already in the alert log
   const { data: candidates, error } = await sb
     .from("omni_leads_generated")
