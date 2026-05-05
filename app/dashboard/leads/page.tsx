@@ -866,23 +866,43 @@ export default function DashboardPage() {
             </button>
             {bizOpen && (
               <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 240, zIndex: 10, overflow: 'hidden' }}>
-                <button
-                  onClick={() => { setSelectedBiz(null); setBizOpen(false); }}
-                  style={{
-                    display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px',
-                    background: selectedBiz === null ? '#191919' : 'transparent',
-                    border: 'none', borderBottom: '1px solid #1e1e1e', color: '#e8e8e8', cursor: 'pointer', fontSize: 13,
-                  }}
-                >
-                  <div style={{ fontWeight: 600, color: '#a78bfa' }}>All Businesses</div>
-                  <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>Combined view · {businesses.length} businesses</div>
-                </button>
-                {businesses.map(b => (
-                  <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
-                    <div style={{ fontWeight: 600 }}>{b.name}</div>
-                    <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{b.industry} · {b.location}</div>
-                  </button>
-                ))}
+                {/* Admin sees the full switcher (All + every business). Client
+                    viewers only see their own pinned workspace — no
+                    cross-tenant escape hatch. Detected via the omni_user
+                    is_admin flag stashed by auth-login. */}
+                {(() => {
+                  let isAdmin = false;
+                  try {
+                    if (typeof window !== 'undefined') {
+                      const u = JSON.parse(localStorage.getItem('omni_user') || 'null');
+                      isAdmin = !!u?.is_admin;
+                    }
+                  } catch {}
+                  const visibleBizs = isAdmin ? businesses : (selectedBiz ? [selectedBiz] : []);
+                  return (
+                    <>
+                      {isAdmin && (
+                        <button
+                          onClick={() => { setSelectedBiz(null); setBizOpen(false); }}
+                          style={{
+                            display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px',
+                            background: selectedBiz === null ? '#191919' : 'transparent',
+                            border: 'none', borderBottom: '1px solid #1e1e1e', color: '#e8e8e8', cursor: 'pointer', fontSize: 13,
+                          }}
+                        >
+                          <div style={{ fontWeight: 600, color: '#a78bfa' }}>All Businesses</div>
+                          <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>Combined view · {businesses.length} businesses</div>
+                        </button>
+                      )}
+                      {visibleBizs.map(b => (
+                        <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
+                          <div style={{ fontWeight: 600 }}>{b.name}</div>
+                          <div style={{ fontSize: 11, color: '#555', marginTop: 2 }}>{b.industry} · {b.location}</div>
+                        </button>
+                      ))}
+                    </>
+                  );
+                })()}
               </div>
             )}
           </div>
