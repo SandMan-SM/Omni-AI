@@ -150,8 +150,12 @@ export async function handleResendWebhook(event: {
   if (event.type === 'email.opened') {
     q = q.eq('status', 'sent');
   }
+  // Include the asset's own id so we can populate
+  // omni_suppressions.source_asset_id correctly on bounce — the prior
+  // version passed lead_id (a foreign-key into a different table)
+  // which made the audit trail useless and broke any later joins.
   const { data: asset } = await q
-    .select('lead_id, touch_number, business_id')
+    .select('id, lead_id, touch_number, business_id')
     .single();
 
   // Auto-suppress on hard bounce
@@ -168,7 +172,7 @@ export async function handleResendWebhook(event: {
           business_id: asset.business_id,
           email: lead.email.toLowerCase(),
           reason: 'bounce',
-          source_asset_id: asset.lead_id,
+          source_asset_id: asset.id,
         }, { onConflict: 'business_id,email' });
     }
   }
