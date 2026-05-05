@@ -31,10 +31,16 @@ export async function GET(req: NextRequest) {
   // the fetch hit a 404. Cron looked successful (returned ok:true sent:0)
   // while no retros actually went out.
   const baseUrl = req.url.replace(/\/api\/agi\/cron\/weekly-retro.*/, '');
+  // Forward CRON_SECRET as Bearer so retro/weekly can require auth without
+  // breaking the cron path.
+  const cronAuth: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.CRON_SECRET}`,
+  };
   let sent = 0;
   for (const b of businesses ?? []) {
     const r = await fetch(`${baseUrl}/api/agi/retro/weekly`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      method: 'POST', headers: cronAuth,
       body: JSON.stringify({ business_id: b.id, send_email: true }),
     });
     if (!r.ok) continue;

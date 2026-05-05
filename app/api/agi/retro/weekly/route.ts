@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 import { sendOutreachEmail } from '@/lib/agi/resend';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,7 +12,12 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // Weekly retro: Monday morning report covering last 7 days.
 // AI-summarized: what worked, what didn't, what to focus on this week.
+// Admin-or-cron gated. Without auth, a stranger could trigger Claude
+// (Sonnet) + Resend email-to-operator on every call. cron/weekly-retro
+// forwards CRON_SECRET so the scheduled Monday run still passes.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, send_email } = await req.json();
     if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

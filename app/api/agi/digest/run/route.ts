@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 import { sendOutreachEmail } from '@/lib/agi/resend';
 import { todayPt, ptStartOfDayIso } from '@/lib/tz';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +14,15 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // Generate end-of-day digest for a business: counts, hottest replies,
 // AI-written summary, optionally email the user.
+//
+// Admin-or-cron gated. Each call is a Claude call + optionally a Resend
+// email send to the operator. Without auth, a stranger could drain
+// Claude budget and force daily-digest emails to the operator with junk
+// data. The cron loop (cron/daily-digest) forwards CRON_SECRET so the
+// scheduled run still passes.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, send_email } = await req.json();
     if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

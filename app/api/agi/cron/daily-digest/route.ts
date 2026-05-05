@@ -33,11 +33,18 @@ export async function GET(req: NextRequest) {
   const baseUrl = req.url.replace(/\/api\/agi\/cron\/daily-digest.*/, '');
   const results: Array<{ business_id: string; ok: boolean; emailed?: boolean }> = [];
 
+  // Forward CRON_SECRET as Bearer so the downstream digest/run route can
+  // require auth without breaking the cron loop. Always present here —
+  // we passed the constantTimeEqual check above.
+  const cronAuth: Record<string, string> = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${process.env.CRON_SECRET}`,
+  };
   for (const b of businesses ?? []) {
     if (!(b as { sender_email?: string }).sender_email) continue;
     const r = await fetch(`${baseUrl}/api/agi/digest/run`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: cronAuth,
       body: JSON.stringify({ business_id: b.id, send_email: true }),
     });
     if (!r.ok) {
