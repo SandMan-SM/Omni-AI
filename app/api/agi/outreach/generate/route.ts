@@ -39,13 +39,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Business not found' }, { status: 404 });
     }
 
-    // Wipe any existing draft assets for this lead before regenerating
-    await supabase
-      .from('omni_outreach_assets')
-      .delete()
-      .eq('lead_id', lead_id)
-      .eq('status', 'draft');
-
+    // Generate FIRST, then replace. The previous order deleted the
+    // operator's existing drafts before calling Claude — if generation
+    // failed (API timeout, parse error), they were left with zero drafts
+    // and no replacement.
     const { assets, personalization_notes } = await generateOutreachAssets(lead, business);
 
     const rows = assets.map(a => ({
@@ -60,6 +57,13 @@ export async function POST(req: NextRequest) {
       ai_personalization_notes: personalization_notes,
       status: 'draft' as const,
     }));
+
+    // Now safe to delete — generation succeeded, we have replacements.
+    await supabase
+      .from('omni_outreach_assets')
+      .delete()
+      .eq('lead_id', lead_id)
+      .eq('status', 'draft');
 
     const { data, error } = await supabase
       .from('omni_outreach_assets')

@@ -45,13 +45,9 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        // Wipe existing drafts
-        await supabase
-          .from('omni_outreach_assets')
-          .delete()
-          .eq('lead_id', lead_id)
-          .eq('status', 'draft');
-
+        // Generate FIRST, then replace — same data-loss fix pattern as
+        // /api/agi/outreach/generate. Don't delete existing drafts until
+        // we know we have new ones to insert.
         const { assets, personalization_notes } = await generateOutreachAssets(lead, business);
 
         const rows = assets.map(a => ({
@@ -68,6 +64,12 @@ export async function POST(req: NextRequest) {
             ? new Date(Date.now() + (a.send_after_days ?? 0) * 86400000).toISOString()
             : null,
         }));
+
+        await supabase
+          .from('omni_outreach_assets')
+          .delete()
+          .eq('lead_id', lead_id)
+          .eq('status', 'draft');
 
         await supabase.from('omni_outreach_assets').insert(rows);
         results.push({ lead_id, ok: true, assets: rows.length });
