@@ -184,8 +184,11 @@ export default function PipelinePage() {
     proposal: 0.6, negotiation: 0.8, closed_won: 1.0, closed_lost: 0,
   };
 
+  // Same dead-lead exclusion as agi/ltv: drop both deal_stage='closed_lost'
+  // AND status='lost' so leads marked lost at the lead-level don't keep
+  // inflating the weighted pipeline.
   const totalPipeline = leads.reduce((s, l) => {
-    if (l.deal_stage === 'closed_lost') return s;
+    if (l.deal_stage === 'closed_lost' || l.status === 'lost') return s;
     return s + ((l.deal_value ?? 0) * (stageProbability[l.deal_stage ?? 'lead'] ?? 0.05));
   }, 0);
 
