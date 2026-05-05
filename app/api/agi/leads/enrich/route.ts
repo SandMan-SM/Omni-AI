@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { checkCreditBudget, consumeCredit } from '@/lib/agi/apollo';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,7 +14,12 @@ const supabase = createClient(
 // flow, we expose an enrich-mock endpoint AND a structured hook for the
 // real call from the dashboard agent run.
 
+// Admin-or-cron gated. Real (non-mock) enrichment consumes Apollo credits,
+// which cost real money. Without auth, anyone could drain the budget by
+// repeatedly POSTing arbitrary lead_id/business_id pairs.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { lead_id, business_id, mock } = await req.json() as {
       lead_id: string; business_id: string; mock?: boolean;
