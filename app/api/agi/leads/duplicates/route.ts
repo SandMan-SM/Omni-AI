@@ -14,10 +14,22 @@ const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
-// GET — list duplicate groups
-export async function GET() {
+// GET — list duplicate groups for a single business. Previously returned
+// duplicates across ALL tenants (no business_id filter), so a client-
+// viewer hitting this endpoint saw rows from every workspace. Filter by
+// business_id when supplied; reject without it to avoid the leak.
+export async function GET(req: NextRequest) {
   noStore();
-  const { data, error } = await sb.from("omni_lead_duplicates").select("*").limit(100);
+  const { searchParams } = new URL(req.url);
+  const business_id = searchParams.get('business_id');
+  if (!business_id) {
+    return NextResponse.json({ error: 'business_id required' }, { status: 400 });
+  }
+  const { data, error } = await sb
+    .from("omni_lead_duplicates")
+    .select("*")
+    .eq("business_id", business_id)
+    .limit(100);
   if (error) {
     console.error("[leads/duplicates GET]", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
