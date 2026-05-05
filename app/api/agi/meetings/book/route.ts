@@ -191,7 +191,10 @@ export async function DELETE(req: NextRequest) {
       );
     }
     if (notify && process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID && booking) {
+      // Format in PT — without timeZone, the server (UTC) renders the
+      // wrong wall-clock time in the operator's cancellation Telegram.
       const dt = new Date(booking.start_at).toLocaleString('en-US', {
+        timeZone: 'America/Los_Angeles',
         weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
       });
       fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -238,10 +241,15 @@ async function sendCancellationEmail(b: {
   meeting_type: string | null;
 }) {
   const startDate = new Date(b.start_at);
+  // Render in PT — the cancellation email's "Was scheduled for ... at ..."
+  // line was showing UTC wall-clock on Vercel, which is hours off from the
+  // attendee's actual booked PT slot.
   const dateFormatted = startDate.toLocaleDateString('en-US', {
+    timeZone: 'America/Los_Angeles',
     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
   });
   const timeFormatted = startDate.toLocaleTimeString('en-US', {
+    timeZone: 'America/Los_Angeles',
     hour: 'numeric', minute: '2-digit',
   });
   const isStrategyCall = (b.meeting_type ?? 'strategy_call') === 'strategy_call';

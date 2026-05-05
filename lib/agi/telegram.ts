@@ -72,7 +72,11 @@ export async function notifyBooking(args: {
   attendeeEmail: string;
   start_at: string;
 }) {
+  // Format in PT — without an explicit timeZone, toLocaleString uses
+  // server-local (UTC on Vercel) so a booking at 1500 UTC was rendering
+  // as "3:00 PM GMT" in the operator's Telegram instead of "8:00 AM PDT".
   const dt = new Date(args.start_at).toLocaleString('en-US', {
+    timeZone: 'America/Los_Angeles',
     weekday: 'short', month: 'short', day: 'numeric',
     hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
   });

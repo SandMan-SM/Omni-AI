@@ -93,7 +93,9 @@ export async function GET(req: NextRequest) {
       type: "meeting",
       id: m.id,
       title: m.attendee_name,
-      subtitle: `${start.toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · ${m.status}`,
+      // Format in PT (Vercel runs in UTC, so default would say e.g.
+      // "Apr 6, 4:00 PM" instead of the operator-expected "Apr 6, 9:00 AM").
+      subtitle: `${start.toLocaleString("en-US", { timeZone: "America/Los_Angeles", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })} · ${m.status}`,
       href: `/dashboard/meetings`,
       score: 40,
     });
