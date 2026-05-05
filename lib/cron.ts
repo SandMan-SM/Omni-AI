@@ -8,6 +8,7 @@
  * Routes import `assertCronCaller(req)` and short-circuit on rejection.
  */
 import { NextResponse } from "next/server";
+import { constantTimeEqual } from "@/lib/api-auth";
 
 export type CronAuthResult =
   | { ok: true; reason: "secret" | "vercel-cron" }
@@ -18,7 +19,11 @@ export function assertCronCaller(request: Request): CronAuthResult {
   const ua = request.headers.get("user-agent") || "";
   const secret = process.env.CRON_SECRET || "";
 
-  if (secret && auth === `Bearer ${secret}`) {
+  // Constant-time comparison so the secret can't be reconstructed
+  // byte-by-byte via response-time timing. Same defense the rest of
+  // the auth surface uses (lib/api-auth).
+  const presented = auth.replace(/^Bearer\s+/i, "").trim();
+  if (secret && constantTimeEqual(presented, secret)) {
     return { ok: true, reason: "secret" };
   }
   if (ua.startsWith("vercel-cron/")) {
