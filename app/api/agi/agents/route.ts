@@ -73,16 +73,24 @@ export async function PUT(req: NextRequest) {
     let context = '';
 
     if (caps.includes('lead_search') || caps.includes('all')) {
+      // Highest-score leads first — without order, the custom agent was
+      // running its system prompt against 30 random leads instead of the
+      // most actionable ones.
       const { data: leads } = await supabase
         .from('omni_leads_generated').select('first_name, last_name, company, title, score, deal_stage')
-        .eq('business_id', agent.business_id).limit(30);
+        .eq('business_id', agent.business_id)
+        .order('score', { ascending: false })
+        .limit(30);
       context += `\n\nLEADS:\n${(leads ?? []).map(l => `- ${l.first_name} ${l.last_name} | ${l.title} @ ${l.company} | score=${l.score} | ${l.deal_stage}`).join('\n')}`;
     }
 
     if (caps.includes('replies') || caps.includes('all')) {
+      // Most-recent replies first; the section header below says "RECENT".
       const { data: replies } = await supabase
         .from('omni_outreach_assets').select('reply_text, reply_category')
-        .eq('business_id', agent.business_id).eq('status', 'replied').limit(20);
+        .eq('business_id', agent.business_id).eq('status', 'replied')
+        .order('replied_at', { ascending: false })
+        .limit(20);
       context += `\n\nRECENT REPLIES:\n${(replies ?? []).map(r => `[${r.reply_category}] ${r.reply_text?.slice(0, 100)}`).join('\n')}`;
     }
 
