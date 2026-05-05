@@ -111,6 +111,13 @@ export async function GET() {
     );
   }
 
+  // Lookup so the elo_peak update below can read the existing historical
+  // peak (otherwise we'd ratchet it DOWN to the current rating any time
+  // an agent dropped from their high — peak is supposed to be all-time).
+  const profileById = new Map<string, { elo_peak?: number }>(
+    (profiles ?? []).map((p: any) => [p.id, p]),
+  );
+
   // Get activity counts per profile
   const { data: activities } = await sb
     .from('activity_log')
@@ -227,13 +234,17 @@ export async function GET() {
   });
   deduped.forEach((a, i) => { a.leaderboardPosition = i + 1; });
 
-  // Fire-and-forget: update ELO in database. wins/losses/streak removed —
-  // not surfaced anywhere in the UI now, the DB columns are dormant.
+  // Update ELO in database. We previously wrote elo_peak = max(currentElo,
+  // 1000) on every call — that clobbered the historical peak any time an
+  // agent dropped below their previous high (peak ratcheted DOWN with the
+  // current rating instead of retaining the all-time max). Read existing
+  // peak via the lookup map and only raise it.
   for (const agent of agents) {
+    const existingPeak = (profileById.get(agent.id) as { elo_peak?: number } | undefined)?.elo_peak ?? 0;
     sb.from('profiles').update({
       elo_rating: agent.elo,
       elo_rank: agent.rank,
-      elo_peak: Math.max(agent.elo, 1000),
+      elo_peak: Math.max(agent.elo, existingPeak, 1000),
       last_elo_update: new Date().toISOString(),
     }).eq('id', agent.id).then(() => {});
   }
