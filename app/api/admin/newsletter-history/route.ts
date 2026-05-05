@@ -137,15 +137,8 @@ export async function POST(request: Request) {
   if (action === "regenerate-drafts") {
     const errors: string[] = [];
 
-    // 1. Delete ALL existing drafts
-    const { data: deleted, error: delErr } = await sb
-      .from("newsletter_posts")
-      .delete()
-      .is("published_at", null)
-      .select("id, subject");
-    if (delErr) errors.push(`Delete error: ${JSON.stringify(delErr)}`);
-
-    // 2. Fetch recent subjects to avoid duplicates
+    // 1. Fetch recent subjects to avoid duplicates (do this BEFORE the
+    // delete so the dedupe list survives even if generation fails).
     let avoidSubjects: string[] = [];
     const { data: recentPosts } = await sb
       .from("newsletter_posts")
@@ -156,9 +149,19 @@ export async function POST(request: Request) {
       avoidSubjects = Array.from(new Set(recentPosts.map((p: any) => p.subject)));
     }
 
-    // 3. Generate fresh content
+    // 2. Generate fresh content FIRST. If Claude times out or returns bad
+    // JSON we throw out of this branch with no destructive side effects;
+    // the existing drafts the operator might have edited remain intact.
     const freeContent = await generateFreeContent(avoidSubjects);
     const premiumContent = await generatePremiumContent([...avoidSubjects, freeContent.subject]);
+
+    // 3. Now delete the old drafts — generation succeeded.
+    const { data: deleted, error: delErr } = await sb
+      .from("newsletter_posts")
+      .delete()
+      .is("published_at", null)
+      .select("id, subject");
+    if (delErr) errors.push(`Delete error: ${JSON.stringify(delErr)}`);
 
     const dateSuffix = new Date().toISOString().slice(0, 10);
     const rand = Math.random().toString(36).slice(2, 6);
