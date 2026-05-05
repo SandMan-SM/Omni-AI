@@ -105,17 +105,32 @@ export async function GET(request: Request) {
     let insight = '';
 
     try {
-      // Count today's meetings from demo_bookings
-      const todayStart = new Date();
-      todayStart.setHours(0, 0, 0, 0);
-      const todayEnd = new Date();
-      todayEnd.setHours(23, 59, 59, 999);
+      // Count today's meetings from demo_bookings — anchor on PT so
+      // "today" matches what the operator means when they read the brief.
+      // Without this, the cron at 5 AM PT counted from 17:00 PT yesterday.
+      const now = new Date();
+      const todayPt = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Los_Angeles',
+        year: 'numeric', month: '2-digit', day: '2-digit',
+      }).format(now);
+      const [py, pm, pd] = todayPt.split('-').map(n => parseInt(n, 10));
+      const ptToUtcIso = (h: number, mi: number, s = 0, ms = 0): string => {
+        const guess = new Date(Date.UTC(py, pm - 1, pd, h, mi, s, ms));
+        const parts = new Intl.DateTimeFormat('en-CA', {
+          timeZone: 'America/Los_Angeles',
+          hour: '2-digit', minute: '2-digit', hour12: false,
+        }).formatToParts(guess);
+        const get = (t: string) => parseInt(parts.find(p => p.type === t)!.value, 10);
+        const ptHourActual = get('hour') === 24 ? 0 : get('hour');
+        const off = (h - ptHourActual) * 60 + (mi - get('minute'));
+        return new Date(guess.getTime() + off * 60_000).toISOString();
+      };
 
       const { count } = await (supabase as any)
         .from('demo_bookings')
         .select('id', { count: 'exact', head: true })
-        .gte('scheduled_at', todayStart.toISOString())
-        .lte('scheduled_at', todayEnd.toISOString());
+        .gte('scheduled_at', ptToUtcIso(0, 0, 0, 0))
+        .lte('scheduled_at', ptToUtcIso(23, 59, 59, 999));
 
       meetingsToday = count || 0;
     } catch {
