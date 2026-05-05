@@ -232,7 +232,9 @@ function CampaignCard({ campaign, onEdit, onDelete, onToggle }: {
   onToggle: () => void;
 }) {
   const icp = (campaign.icp as ICP) ?? {};
-  const pct = Math.min(100, Math.round((campaign.leads_generated / campaign.leads_target) * 100));
+  const target = campaign.leads_target ?? 0;
+  const generated = campaign.leads_generated ?? 0;
+  const pct = target > 0 ? Math.min(100, Math.round((generated / target) * 100)) : 0;
   const active = campaign.status === 'active';
 
   return (
@@ -252,7 +254,7 @@ function CampaignCard({ campaign, onEdit, onDelete, onToggle }: {
             </span>
           </div>
           <div style={{ fontSize: 12, color: '#666' }}>
-            {campaign.leads_generated} / {campaign.leads_target} leads · {pct}% to target
+            {generated} / {target} leads · {pct}% to target
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
