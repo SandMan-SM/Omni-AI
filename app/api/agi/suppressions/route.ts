@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
   // Cancel any scheduled outreach for this email
   const { data: leads } = await supabase
     .from('omni_leads_generated')
-    .select('id').eq('business_id', business_id).ilike('email', email);
+    .select('id, notes').eq('business_id', business_id).ilike('email', email);
   if (leads?.length) {
     const leadIds = leads.map(l => l.id);
     await supabase
@@ -45,10 +45,20 @@ export async function POST(req: NextRequest) {
       .update({ status: 'draft' })
       .in('lead_id', leadIds)
       .eq('status', 'scheduled');
-    await supabase
-      .from('omni_leads_generated')
-      .update({ status: 'lost', notes: 'Auto: unsubscribed' })
-      .in('id', leadIds);
+    // Preserve operator-curated notes — append the suppression reason
+    // instead of overwriting. Previous code clobbered any manual context
+    // (call recaps, internal flags) with the literal "Auto: unsubscribed".
+    for (const l of leads) {
+      const stamp = new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' });
+      const tag = `\n\n[${stamp}] Auto: unsubscribed`;
+      await supabase
+        .from('omni_leads_generated')
+        .update({
+          status: 'lost',
+          notes: ((l as { notes?: string | null }).notes ?? '') + tag,
+        })
+        .eq('id', l.id);
+    }
   }
 
   return NextResponse.json({ ok: true, suppression: data });
