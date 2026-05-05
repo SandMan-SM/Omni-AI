@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -39,6 +40,11 @@ const PATCHABLE_BRANDING_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. Without this anyone could PATCH branding on any tenant —
+  // change brand_subdomain to hijack a vanity URL, swap sender_email to
+  // exfiltrate replies, or point booking_url at a competitor.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { business_id } = body as { business_id?: string };
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

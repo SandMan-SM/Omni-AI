@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -13,6 +14,12 @@ const supabase = createClient(
 
 // Capture win/loss reasoning when a deal closes
 export async function POST(req: NextRequest) {
+  // Auth-gate. Without this anyone could write arbitrary win/loss
+  // reasoning + flip deal_stage on any tenant's leads — corrupts
+  // pipeline reports, inflates/deflates win-rate, and scrambles the
+  // competitor intel that drives ICP/coach output.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { lead_id, win_loss_category, win_loss_reason, competitor_name, deal_stage } = await req.json();
   if (!lead_id) return NextResponse.json({ error: 'lead_id required' }, { status: 400 });
 
@@ -30,6 +37,11 @@ export async function POST(req: NextRequest) {
 // Aggregate win/loss reasons across business
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. The aggregate exposes competitor names + lost-deal
+  // values; an unauthenticated caller could iterate business_ids
+  // and pull every tenant's competitive intel.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

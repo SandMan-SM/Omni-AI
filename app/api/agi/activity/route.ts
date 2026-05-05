@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -14,6 +15,11 @@ const supabase = createClient(
 // Lead activity feed - chronological events for a single lead OR business
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Without auth + without business_id, the query returns
+  // recent activity rows across every tenant — full PII feed (lead
+  // names + company) leaked.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const lead_id = searchParams.get('lead_id');
   const business_id = searchParams.get('business_id');
@@ -36,6 +42,11 @@ export async function GET(req: NextRequest) {
 
 // Manually log an activity event (useful for notes, calls, custom events)
 export async function POST(req: NextRequest) {
+  // Auth-gate. The activity feed drives coach + report-card narratives;
+  // without auth anyone could inject fake "call_completed" / "meeting_booked"
+  // events to inflate metrics, or spam thousands of rows to degrade the feed.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { lead_id, business_id, event_type, event_subtype, details } = await req.json();
   if (!lead_id || !business_id || !event_type) {
     return NextResponse.json({ error: 'lead_id, business_id, event_type required' }, { status: 400 });
