@@ -9,9 +9,10 @@
 // Telegram message highlights the top 3 businesses by advancement-score
 // delta and any business that newly converted a lead in the past 24h.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { sendTelegram } from "@/lib/agi/telegram";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -29,7 +30,12 @@ interface SnapshotRow {
   advancement_score: number;
 }
 
-async function run(): Promise<NextResponse> {
+async function run(req: NextRequest): Promise<NextResponse> {
+  // Auth-gate the daily digest. Without this, an attacker could repeatedly
+  // POST this endpoint to spam the owner's Telegram + force RPC-driven
+  // snapshot inserts on every call.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   // 1. Capture today's snapshot via the SQL helper (idempotent)
   const { error: snapErr } = await sb.rpc("omni_ai_capture_advancement_snapshots");
   if (snapErr) {
