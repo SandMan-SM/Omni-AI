@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore as noStore } from "next/cache";
+import { ptStartOfDayIso, ptEndOfDayIso } from "@/lib/tz";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -19,32 +20,9 @@ const sb = createClient(
 export async function GET() {
   noStore();
   const now = new Date();
-  // "Today" is the operator's PT day, not the server's UTC day. Without the
-  // PT anchor, /focus run at 7 AM PT (= 14:00 UTC) used `setHours(0)` in
-  // UTC and returned meetings since 17:00 PT *yesterday* — i.e. yesterday's
-  // late-afternoon items showed up under "today's meetings". Build the PT
-  // calendar day, then convert to UTC ISO for the supabase filters.
-  const todayPt = new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Los_Angeles',
-    year: 'numeric', month: '2-digit', day: '2-digit',
-  }).format(now);
-  const [py, pm, pd] = todayPt.split('-').map(n => parseInt(n, 10));
-  // 00:00 PT and 23:59:59 PT for that calendar day, expressed in UTC.
-  // Add the runtime offset so we don't have to re-handle DST manually.
-  function ptWallToUtc(year: number, month0: number, day: number, hour: number, minute: number, second = 0, ms = 0): Date {
-    const utcGuess = new Date(Date.UTC(year, month0, day, hour, minute, second, ms));
-    const parts = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'America/Los_Angeles',
-      year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', hour12: false,
-    }).formatToParts(utcGuess);
-    const get = (t: string) => parseInt(parts.find(p => p.type === t)!.value, 10);
-    const ptHourActual = get('hour') === 24 ? 0 : get('hour');
-    const offsetMin = (hour - ptHourActual) * 60 + (minute - get('minute'));
-    return new Date(utcGuess.getTime() + offsetMin * 60_000);
-  }
-  const startOfDay = ptWallToUtc(py, pm - 1, pd, 0, 0, 0, 0);
-  const endOfDay = ptWallToUtc(py, pm - 1, pd, 23, 59, 59, 999);
+  // "Today" is the operator's PT day, not the server's UTC day — see lib/tz.
+  const startOfDay = new Date(ptStartOfDayIso(now));
+  const endOfDay = new Date(ptEndOfDayIso(now));
   const weekAgo = new Date(now.getTime() - 7 * 86_400_000);
   const dayAgo = new Date(now.getTime() - 86_400_000);
   const fourteenDaysAgo = new Date(now.getTime() - 14 * 86_400_000);
