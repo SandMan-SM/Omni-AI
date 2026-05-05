@@ -160,12 +160,20 @@ export async function runAutopilotForBusiness(business_id: string): Promise<{
         // Endpoints live under /api/agi/replies/*; the previous /api/replies/*
         // paths 404'd silently — fetch() resolves on 4xx so the autopilot log
         // recorded "success" while nothing was categorized or drafted.
+        // Forward CRON_SECRET as Bearer so the downstream routes can require
+        // auth without breaking autopilot. Dev-only fallback: if CRON_SECRET
+        // isn't set, the downstream routes also skip the check.
+        const internalAuth: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (process.env.CRON_SECRET) internalAuth.Authorization = `Bearer ${process.env.CRON_SECRET}`;
+
         let categorizeOk = true;
         let draftOk = true;
         if (config.auto_categorize_replies && !r.reply_category) {
           const res = await fetch(`${baseUrl}/api/agi/replies/categorize`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: internalAuth,
             body: JSON.stringify({ asset_id: r.id, reply_text: r.reply_text }),
           });
           categorizeOk = res.ok;
@@ -174,7 +182,7 @@ export async function runAutopilotForBusiness(business_id: string): Promise<{
         if (config.auto_draft_responses && !r.ai_draft_response) {
           const res = await fetch(`${baseUrl}/api/agi/replies/draft`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: internalAuth,
             body: JSON.stringify({ asset_id: r.id }),
           });
           draftOk = res.ok;
