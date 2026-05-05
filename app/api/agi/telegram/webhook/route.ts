@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendTelegram } from '@/lib/agi/telegram';
+import { ptStartOfDayIso } from '@/lib/tz';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -134,8 +135,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (text.startsWith('/digest')) {
-      const today = new Date().toISOString().slice(0, 10);
-      const startISO = new Date(today).toISOString();
+      // Anchor "today" on the operator's PT calendar day. The previous
+      // computation used UTC midnight, so an early-morning telegram poll
+      // showed yesterday-evening counts under "today".
+      const startISO = ptStartOfDayIso();
       const [{ count: leads }, { count: sent }, { count: replies }, { count: bookings }] = await Promise.all([
         supabase.from('omni_leads_generated').select('*', { count: 'exact', head: true }).eq('business_id', business.id).gte('created_at', startISO),
         supabase.from('omni_outreach_assets').select('*', { count: 'exact', head: true }).eq('business_id', business.id).gte('sent_at', startISO),
