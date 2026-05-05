@@ -27,7 +27,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'messages[] required' }, { status: 400 });
     }
 
-    const baseUrl = req.url.replace(/\/api\/gmail\/sync.*/, '');
+    // The route lives at /api/agi/gmail/sync (not /api/gmail/sync), so the
+    // old regex never matched and baseUrl was the full request URL — which
+    // then got concatenated to a 404 path below. Strip the actual path.
+    const baseUrl = req.url.replace(/\/api\/agi\/gmail\/sync.*/, '');
     const results: Array<{ email: string; matched: boolean; asset_id?: string; error?: string }> = [];
 
     for (const msg of messages) {
@@ -63,12 +66,19 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
-      // Log the reply (auto-categorizes + drafts)
-      await fetch(`${baseUrl}/api/replies/log`, {
+      // Log the reply (auto-categorizes + drafts). Endpoint lives at
+      // /api/agi/replies/log — old call hit /api/replies/log (404) and
+      // fetch() resolved on 4xx so we silently reported matched:true with
+      // nothing actually logged. Now we check res.ok and surface failure.
+      const logRes = await fetch(`${baseUrl}/api/agi/replies/log`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ asset_id: asset.id, reply_text: msg.body_text }),
       });
+      if (!logRes.ok) {
+        results.push({ email, matched: false, asset_id: asset.id, error: `replies/log returned ${logRes.status}` });
+        continue;
+      }
 
       results.push({ email, matched: true, asset_id: asset.id });
     }
