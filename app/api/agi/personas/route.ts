@@ -36,8 +36,25 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, persona: data });
 }
 
+// Allowlist on PATCH — without this a caller could PATCH `{ id, sends_today: 0 }`
+// to bypass the daily send limit, or `business_id` to transfer ownership.
+const PATCHABLE_PERSONA_FIELDS = new Set([
+  'name', 'sender_email', 'sender_signature', 'tone', 'is_active',
+  'daily_send_limit',
+]);
+
 export async function PATCH(req: NextRequest) {
-  const { id, ...updates } = await req.json();
+  const body = await req.json();
+  const { id } = body as { id?: string };
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  const updates: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (k === 'id') continue;
+    if (PATCHABLE_PERSONA_FIELDS.has(k)) updates[k] = v;
+  }
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'no updatable fields' }, { status: 400 });
+  }
   const { data, error } = await supabase
     .from('omni_sender_personas').update(updates).eq('id', id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -31,8 +31,24 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ campaign: data });
 }
 
+// Allowlist so callers can't transfer ownership (business_id) or
+// rewrite leads_generated counters via PATCH.
+const PATCHABLE_CAMPAIGN_FIELDS = new Set([
+  'name', 'icp', 'leads_target', 'status',
+]);
+
 export async function PATCH(req: NextRequest) {
-  const { id, ...updates } = await req.json();
+  const body = await req.json();
+  const { id } = body as { id?: string };
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  const updates: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (k === 'id') continue;
+    if (PATCHABLE_CAMPAIGN_FIELDS.has(k)) updates[k] = v;
+  }
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'no updatable fields' }, { status: 400 });
+  }
   const { data, error } = await supabase.from('omni_lead_campaigns').update(updates).eq('id', id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ campaign: data });

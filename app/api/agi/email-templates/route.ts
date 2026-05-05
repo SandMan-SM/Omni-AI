@@ -37,8 +37,24 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, template: data });
 }
 
+// Allowlist on PATCH so the spread can't transfer ownership (business_id)
+// or reset use_count from the API.
+const PATCHABLE_TEMPLATE_FIELDS = new Set([
+  'name', 'category', 'subject', 'body', 'variables',
+]);
+
 export async function PATCH(req: NextRequest) {
-  const { id, ...updates } = await req.json();
+  const body = await req.json();
+  const { id } = body as { id?: string };
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  const updates: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (k === 'id') continue;
+    if (PATCHABLE_TEMPLATE_FIELDS.has(k)) updates[k] = v;
+  }
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'no updatable fields' }, { status: 400 });
+  }
   const { data, error } = await supabase
     .from('omni_email_templates').update(updates).eq('id', id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
