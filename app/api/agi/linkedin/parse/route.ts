@@ -8,8 +8,24 @@ export async function POST(req: NextRequest) {
     const { url } = await req.json();
     if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });
 
+    // Hostname-pinned SSRF guard. The original regex match only required
+    // the substring `linkedin.com/in/` somewhere in the URL, so an attacker
+    // could pass `http://internal-host/?path=linkedin.com/in/foo` and the
+    // server would still hit that internal host with the fetch below.
+    let parsed: URL;
+    try { parsed = new URL(url); } catch {
+      return NextResponse.json({ error: 'Invalid URL' }, { status: 400 });
+    }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      return NextResponse.json({ error: 'Only http(s) URLs allowed' }, { status: 400 });
+    }
+    const hostOk = parsed.hostname === 'linkedin.com' || parsed.hostname === 'www.linkedin.com';
+    if (!hostOk) {
+      return NextResponse.json({ error: 'Not a LinkedIn URL' }, { status: 400 });
+    }
+
     // Extract slug from /in/<slug>
-    const m = url.match(/linkedin\.com\/in\/([a-zA-Z0-9-]+)/);
+    const m = parsed.pathname.match(/^\/in\/([a-zA-Z0-9-]+)/);
     const slug = m?.[1] ?? null;
 
     if (!slug) {
