@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,8 @@ const supabase = createClient(
 // Variables format: {{first_name}}, {{company}}, etc.
 export async function GET(req: NextRequest) {
   noStore();
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   let query = supabase.from('omni_email_templates').select('*').order('use_count', { ascending: false });
@@ -25,6 +28,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, name, category, subject, body, variables } = await req.json();
   if (!business_id || !name || !body) {
     return NextResponse.json({ error: 'business_id, name, body required' }, { status: 400 });
@@ -44,6 +49,8 @@ const PATCHABLE_TEMPLATE_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { id } = body as { id?: string };
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -62,6 +69,8 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
