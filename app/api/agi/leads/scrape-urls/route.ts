@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
     // could pass http://169.254.169.254/latest/meta-data/ (AWS) or any
     // internal hostname and have the server fetch + return the response
     // body to Claude (which would surface secrets in lead data).
-    function isUrlSafe(raw: string): boolean {
+    const isUrlSafe = (raw: string): boolean => {
       let u: URL;
       try { u = new URL(raw); } catch { return false; }
       if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       if (/^\[?f[cd][0-9a-f]{2}:/i.test(host)) return false;
       if (/^\[?fe80:/i.test(host)) return false;
       return true;
-    }
+    };
 
     type UrlResult = { url: string; status: 'completed' | 'failed'; leads_found: number; error?: string };
     const results: UrlResult[] = [];
