@@ -73,12 +73,16 @@ export async function runAutopilotForBusiness(business_id: string): Promise<{
 
   // 1. Find new leads with no draft outreach yet
   if (config.auto_generate_outreach) {
+    // Order score desc — without it autopilot picked an arbitrary N new
+    // leads each tick, so a high-scoring lead could sit cold for several
+    // runs while lower-scoring ones got outreach generated first.
     const { data: candidates } = await supabase
       .from('omni_leads_generated')
       .select('id, score, first_name, company')
       .eq('business_id', business_id)
       .eq('status', 'new')
       .gte('score', config.min_score_to_send)
+      .order('score', { ascending: false })
       .limit(config.max_leads_per_run);
 
     for (const lead of candidates ?? []) {
@@ -134,12 +138,16 @@ export async function runAutopilotForBusiness(business_id: string): Promise<{
 
   // 2. Categorize + draft replies for any unhandled replied assets
   if (config.auto_categorize_replies || config.auto_draft_responses) {
+    // Oldest unhandled replies first — keeps the response time honest
+    // even when the queue grows past 20 (without order, the same arbitrary
+    // 20 could be re-processed each tick while older ones stayed pending).
     const { data: replies } = await supabase
       .from('omni_outreach_assets')
       .select('id, reply_text, reply_category, ai_draft_response')
       .eq('business_id', business_id)
       .eq('status', 'replied')
       .eq('reply_handled', false)
+      .order('replied_at', { ascending: true })
       .limit(20);
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3002';
