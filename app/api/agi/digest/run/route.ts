@@ -17,8 +17,27 @@ export async function POST(req: NextRequest) {
     const { business_id, send_email } = await req.json();
     if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
 
-    const today = new Date().toISOString().slice(0, 10);
-    const startOfDay = new Date(); startOfDay.setHours(0, 0, 0, 0);
+    // "Today" anchored on the operator's PT calendar day. Without this,
+    // the digest run at 7 AM PT counted from 17:00 PT *yesterday* — every
+    // metric ("leads today", "sends today") included a chunk of yesterday
+    // and dropped this morning's pre-5-AM-PT activity.
+    const now = new Date();
+    const todayPt = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+    }).format(now);
+    const today = todayPt; // already YYYY-MM-DD in PT
+    const [py, pm, pd] = todayPt.split('-').map(n => parseInt(n, 10));
+    const utcGuess = new Date(Date.UTC(py, pm - 1, pd, 0, 0));
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(utcGuess);
+    const get = (t: string) => parseInt(parts.find(p => p.type === t)!.value, 10);
+    const ptHourActual = get('hour') === 24 ? 0 : get('hour');
+    const offsetMin = (0 - ptHourActual) * 60 + (0 - get('minute'));
+    const startOfDay = new Date(utcGuess.getTime() + offsetMin * 60_000);
     const startISO = startOfDay.toISOString();
 
     // Pull today's metrics
