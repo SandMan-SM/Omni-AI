@@ -32,23 +32,57 @@ export async function GET(req: NextRequest) {
 
   const bookedTimes = new Set((booked ?? []).map(b => b.start_at));
 
-  // Generate default slots (next 14 weekdays, 9-11am + 2-4pm PT in 15-min increments)
+  // Generate default slots (next 14 weekdays, 9-11am + 2-4pm PT in 15-min increments).
+  // PT-aware: build the wall-clock moment in America/Los_Angeles and convert
+  // to a UTC ISO string. Vercel runs in UTC, so the previous code was using
+  // setHours(h) in UTC and serving "9 AM" slots that the booking widget then
+  // rendered as 2 AM in the user's local PT timezone. Intl-based detection
+  // handles PDT/PST correctly across the spring/fall DST transitions.
   const slots: { start_at: string; available: boolean }[] = [];
+
+  function ptWallToUtcIso(year: number, month0: number, day: number, ptHour: number, ptMinute: number): string {
+    // Start with a UTC guess that has the requested hour/minute in UTC.
+    // Compare its rendering in PT to the requested PT hour/minute and
+    // shift by the delta — gives us the actual UTC moment whose PT
+    // wall-clock is exactly H:M, regardless of DST.
+    const utcGuess = new Date(Date.UTC(year, month0, day, ptHour, ptMinute));
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(utcGuess);
+    const get = (t: string) => parseInt(parts.find(p => p.type === t)!.value, 10);
+    const ptHourActual = get('hour') === 24 ? 0 : get('hour');
+    const offsetMin = (ptHour - ptHourActual) * 60 + (ptMinute - get('minute'));
+    return new Date(utcGuess.getTime() + offsetMin * 60_000).toISOString();
+  }
+
+  // Use today's PT calendar date as the base so we don't accidentally roll
+  // a UTC-anchored "tomorrow" into the wrong PT day near midnight UTC.
   const now = new Date();
+  const todayPt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(now); // YYYY-MM-DD in PT
+  const [py, pm, pd] = todayPt.split('-').map(n => parseInt(n, 10));
+  const todayPtAsUtc = new Date(Date.UTC(py, pm - 1, pd));
 
   for (let dayOffset = 1; dayOffset <= 14; dayOffset++) {
-    const day = new Date(now);
-    day.setDate(day.getDate() + dayOffset);
-    const dow = day.getDay();
-    if (dow === 0 || dow === 6) continue; // skip weekends
+    const day = new Date(todayPtAsUtc);
+    day.setUTCDate(day.getUTCDate() + dayOffset);
+    const dow = day.getUTCDay();
+    if (dow === 0 || dow === 6) continue; // skip weekends in PT
 
-    // 9-11am and 2-4pm PT
     for (const [startHour, endHour] of [[9, 11], [14, 16]]) {
       for (let h = startHour; h < endHour; h++) {
         for (let m = 0; m < 60; m += 15) {
-          const slot = new Date(day);
-          slot.setHours(h, m, 0, 0);
-          const iso = slot.toISOString();
+          const iso = ptWallToUtcIso(
+            day.getUTCFullYear(),
+            day.getUTCMonth(),
+            day.getUTCDate(),
+            h,
+            m,
+          );
           slots.push({ start_at: iso, available: !bookedTimes.has(iso) });
         }
       }
