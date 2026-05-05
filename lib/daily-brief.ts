@@ -81,10 +81,18 @@ export async function gatherDailyBrief(): Promise<DailyBriefPayload> {
     severity: severityMap[c.slug] || 'green',
   }));
 
+  // "Biggest mover" by magnitude — without abs() the comparison was
+  // `delta > biggest.delta_mrr_usd`, which always picked the most-positive
+  // delta. On a day where every client shrank, that surfaced the LEAST
+  // bad drop and framed it as "today's biggest mover" — masking the real
+  // story. The downstream UI already handles the +/- prefix to show
+  // direction; what we want here is "the largest absolute change."
   let biggest: { slug: string; name: string; delta_mrr_usd: number } | undefined;
   for (const c of clients || []) {
     const delta = (tMap[c.slug] || 0) - (yMap[c.slug] || 0);
-    if (!biggest || delta > biggest.delta_mrr_usd) biggest = { slug: c.slug, name: c.name, delta_mrr_usd: delta };
+    if (!biggest || Math.abs(delta) > Math.abs(biggest.delta_mrr_usd)) {
+      biggest = { slug: c.slug, name: c.name, delta_mrr_usd: delta };
+    }
   }
 
   const portfolio_arr = perClient.reduce((s, c) => s + c.arr_usd, 0);
