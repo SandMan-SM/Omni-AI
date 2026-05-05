@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -39,7 +40,14 @@ export async function GET(req: NextRequest) {
 
 // POST { keep_id, merge_ids[] } — keeps keep_id, merges others into it.
 // Each merged lead's email becomes an alias on the keeper, then deleted.
+//
+// Admin-or-cron gated. The merge action HARD-DELETES rows from
+// omni_leads_generated. The same-tenant filter (added in 7888e65)
+// prevents cross-tenant deletion if a caller passes mixed IDs, but the
+// auth gate stops anyone from reaching the route at all.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { keep_id, merge_ids } = body as { keep_id?: string; merge_ids?: string[] };
   if (!keep_id || !Array.isArray(merge_ids) || merge_ids.length === 0) {
