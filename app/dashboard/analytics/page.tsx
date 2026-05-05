@@ -47,10 +47,21 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
-      if (data?.length) {
-        setBusinesses(data);
-        setSelectedBiz(data[0]);
-      }
+      if (!data?.length) return;
+      setBusinesses(data);
+      // Honor the pinned workspace from localStorage so Sammy/Jaime/Brent
+      // land on their own analytics, not whoever happens to be alphabetical
+      // first. Falls back to data[0] only if no pin or pin doesn't match.
+      let initial: Business | null = null;
+      try {
+        if (typeof window !== "undefined") {
+          const pinned = localStorage.getItem("omni_active_business_id");
+          if (pinned && pinned !== "all") {
+            initial = data.find(b => b.id === pinned) ?? null;
+          }
+        }
+      } catch {}
+      setSelectedBiz(initial ?? data[0]);
     });
   }, []);
 
@@ -111,6 +122,17 @@ export default function AnalyticsPage() {
     })();
   }, [selectedBiz]);
 
+  // Privacy: filter businesses dropdown so non-admin client viewers
+  // can't see (or click into) other tenants' workspaces.
+  const visibleBizs = (() => {
+    try {
+      if (typeof window === "undefined") return businesses;
+      const u = JSON.parse(localStorage.getItem("omni_user") || "null");
+      if (u?.is_admin) return businesses;
+      return selectedBiz ? [selectedBiz] : [];
+    } catch { return businesses; }
+  })();
+
   const replyRate = stats.sentAssets > 0 ? Math.round((stats.repliedAssets / stats.sentAssets) * 100) : 0;
   const openRate = stats.sentAssets > 0 ? Math.round((stats.openedAssets / stats.sentAssets) * 100) : 0;
   const conversionRate = stats.totalLeads > 0 ? Math.round((stats.convertedLeads / stats.totalLeads) * 100) : 0;
@@ -150,7 +172,7 @@ export default function AnalyticsPage() {
           </button>
           {bizOpen && (
             <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 220, zIndex: 10, overflow: 'hidden' }}>
-              {businesses.map(b => (
+              {visibleBizs.map(b => (
                 <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
                   <div style={{ fontWeight: 600 }}>{b.name}</div>
                 </button>

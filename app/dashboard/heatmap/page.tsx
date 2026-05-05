@@ -23,10 +23,21 @@ export default function HeatmapPage() {
 
   useEffect(() => {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
-      if (data?.length) {
-        setBusinesses(data);
-        setSelectedBiz(data[0]);
-      }
+      if (!data?.length) return;
+      setBusinesses(data);
+      // Honor the pinned workspace so client viewers (Sammy, Jaime, Brent,
+      // Adam) land on their own tenant instead of whoever's alphabetical
+      // first. Falls through to data[0] if no pin or pin doesn't match.
+      let initial: any = null;
+      try {
+        if (typeof window !== "undefined") {
+          const pinned = localStorage.getItem("omni_active_business_id");
+          if (pinned && pinned !== "all") {
+            initial = data.find((b: any) => b.id === pinned) ?? null;
+          }
+        }
+      } catch {}
+      setSelectedBiz(initial ?? data[0]);
     });
   }, []);
 
@@ -53,6 +64,17 @@ export default function HeatmapPage() {
 
   useEffect(() => { load(); }, [load]);
 
+  // Privacy: filter businesses dropdown so non-admin client viewers
+  // can't see (or click into) other tenants' workspaces.
+  const visibleBizs = (() => {
+    try {
+      if (typeof window === "undefined") return businesses;
+      const u = JSON.parse(localStorage.getItem("omni_user") || "null");
+      if (u?.is_admin) return businesses;
+      return selectedBiz ? [selectedBiz] : [];
+    } catch { return businesses; }
+  })();
+
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
       <header style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', gap: 16 }}>
@@ -72,7 +94,7 @@ export default function HeatmapPage() {
           </button>
           {bizOpen && (
             <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 220, zIndex: 10, overflow: 'hidden' }}>
-              {businesses.map(b => (
+              {visibleBizs.map(b => (
                 <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
                   <div style={{ fontWeight: 600 }}>{b.name}</div>
                 </button>

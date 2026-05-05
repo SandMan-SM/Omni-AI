@@ -43,10 +43,18 @@ export default function RunsPage() {
 
   useEffect(() => {
     supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
-      if (data?.length) {
-        setBusinesses(data);
-        setSelectedBiz(data[0]);
-      }
+      if (!data?.length) return;
+      setBusinesses(data);
+      let initial: any = null;
+      try {
+        if (typeof window !== "undefined") {
+          const pinned = localStorage.getItem("omni_active_business_id");
+          if (pinned && pinned !== "all") {
+            initial = data.find((b: any) => b.id === pinned) ?? null;
+          }
+        }
+      } catch {}
+      setSelectedBiz(initial ?? data[0]);
     });
   }, []);
 
