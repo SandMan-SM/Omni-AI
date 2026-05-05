@@ -148,12 +148,17 @@ export async function GET() {
       .eq("is_phone_click", true)
       .gte("created_at", since7d),
 
+    // Top-pages + top-clicks tallies sample the 2000 most recent events,
+    // not an arbitrary page-order subset. On a busy week the sample
+    // represents the latest activity, which is what the operator cares
+    // about for "what's hot right now."
     sb
       .from("cps_events")
       .select("page_path")
       .eq("event_type", "page_view")
       .gte("created_at", since7d)
       .not("page_path", "is", null)
+      .order("created_at", { ascending: false })
       .limit(2000),
 
     sb
@@ -162,6 +167,7 @@ export async function GET() {
       .eq("event_type", "click")
       .gte("created_at", since7d)
       .not("target_id", "is", null)
+      .order("created_at", { ascending: false })
       .limit(2000),
 
     sb
