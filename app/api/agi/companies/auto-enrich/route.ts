@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
   noStore();
   const { searchParams } = new URL(req.url);
   const businessId = searchParams.get("business_id");
-  const limit = Math.min(50, Number(searchParams.get("limit") ?? 20));
+  const rawLimit = Number(searchParams.get("limit") ?? 20);
+  const limit = Math.min(50, Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 20);
 
   // Pull leads with a company set + already-enriched companies for this biz
   let leadsQ = sb

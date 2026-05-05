@@ -18,7 +18,8 @@ const sb = createClient(
 export async function GET(req: NextRequest) {
   noStore();
   const { searchParams } = new URL(req.url);
-  const limit = Math.min(100, Number(searchParams.get("limit") ?? 30));
+  const rawLimit = Number(searchParams.get("limit") ?? 30);
+  const limit = Math.min(100, Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 30);
   const action = searchParams.get("action");
 
   let q = sb.from("omni_admin_audit_log").select("*").order("created_at", { ascending: false }).limit(limit);

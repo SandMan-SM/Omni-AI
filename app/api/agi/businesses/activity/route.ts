@@ -19,7 +19,8 @@ export async function GET(req: NextRequest) {
   noStore();
   const { searchParams } = new URL(req.url);
   const businessId = searchParams.get("business_id");
-  const limit = Math.min(50, Number(searchParams.get("limit") ?? 10));
+  const rawLimit = Number(searchParams.get("limit") ?? 10);
+  const limit = Math.min(50, Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 10);
 
   let q = sb.from("omni_business_activity_feed").select("*").order("event_at", { ascending: false }).limit(limit);
   if (businessId) q = q.eq("business_id", businessId);
