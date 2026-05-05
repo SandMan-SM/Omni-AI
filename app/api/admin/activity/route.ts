@@ -46,6 +46,26 @@ export async function GET(req: NextRequest) {
   const { data: manualRows, error } = await manualQuery;
   if (error) return serverErrorResponse("admin/activity.GET", error);
 
+  // Format an agentic event into a human-readable single line. The
+  // dashboard renders subject as the main text — keep it readable for the
+  // operator without forcing them to click into the lead. Examples:
+  //   created → "Lead created"
+  //   stage_change + subject 'qualified' → "Stage moved to Qualified"
+  //   status_change + subject 'converted' → "Status marked Converted"
+  function formatAgenticSubject(eventType: string | null, eventSubtype: string | null, details: unknown): string {
+    const summary = (details && typeof details === "object" && "summary" in details
+      ? String((details as Record<string, unknown>).summary)
+      : null);
+    if (summary) return summary;
+    const cap = (s: string) => s.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    if (eventType === "created") return "Lead created";
+    if (eventType === "stage_change" && eventSubtype) return `Stage moved to ${cap(eventSubtype)}`;
+    if (eventType === "status_change" && eventSubtype) return `Status marked ${cap(eventSubtype)}`;
+    if (eventType && eventSubtype) return `${cap(eventType)} · ${cap(eventSubtype)}`;
+    if (eventType) return cap(eventType);
+    return eventSubtype ? cap(eventSubtype) : "Activity";
+  }
+
   // Coerce both shapes into the dashboard's expected payload:
   //   { id, type, subject, channel, created_at }
   const merged = [
@@ -59,9 +79,7 @@ export async function GET(req: NextRequest) {
     ...((agentic.data || []).map((r) => ({
       id: r.id,
       type: r.event_type ?? "system",
-      subject: (r.details && typeof r.details === "object" && "summary" in r.details
-        ? String((r.details as Record<string, unknown>).summary)
-        : (r.event_subtype ?? null)),
+      subject: formatAgenticSubject(r.event_type, r.event_subtype, r.details),
       channel: "agentic",
       created_at: r.created_at,
     }))),
