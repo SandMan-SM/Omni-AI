@@ -42,12 +42,16 @@ export async function GET(req: NextRequest) {
     });
   }
 
-  // Rate limit: max 25 emails per cron tick to avoid spam triggers
+  // Rate limit: max 25 emails per cron tick to avoid spam triggers.
+  // Order by scheduled_at asc so the oldest scheduled assets ship first —
+  // without this, PostgREST returned arbitrary 25 each tick and an asset
+  // could sit in the queue for days while newer ones leapfrogged it.
   const { data: assets, error } = await supabase
     .from('omni_outreach_assets')
     .select('id, lead_id, subject, body, asset_type')
     .eq('status', 'scheduled')
     .lte('scheduled_at', now.toISOString())
+    .order('scheduled_at', { ascending: true })
     .limit(25);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
