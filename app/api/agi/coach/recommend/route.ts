@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const [{ data: leads }, { data: replies }, { data: bookings }] = await Promise.all([
       supabase.from('omni_leads_generated').select('id, first_name, last_name, company, title, score, status, deal_stage, deal_value, ai_recommended_angle, updated_at').eq('business_id', business_id).order('score', { ascending: false }).limit(100),
       supabase.from('omni_outreach_assets').select('id, lead_id, reply_text, reply_category, reply_handled, replied_at').eq('business_id', business_id).eq('status', 'replied').eq('reply_handled', false),
-      supabase.from('omni_meeting_bookings').select('id, lead_id, attendee_name, start_at').eq('business_id', business_id).gte('start_at', new Date().toISOString()).limit(20),
+      supabase.from('omni_meeting_bookings').select('id, lead_id, attendee_name, start_at').eq('business_id', business_id).gte('start_at', new Date().toISOString()).order('start_at', { ascending: true }).limit(20),
     ]);
 
     const leadsArr = leads ?? [];
