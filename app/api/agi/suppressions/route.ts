@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -24,7 +25,14 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ suppressions: data });
 }
 
+// Admin-or-cron gated. POST adds an email to a tenant's suppression
+// list — without auth, anyone could mass-suppress competitors' emails
+// in any tenant (legally must-respect, so once added it kills outreach).
+// Reply-categorize (which auto-suppresses on 'unsubscribe') already
+// auth-gates as of 79f3d2a; this closes the manual + bulk path.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, email, reason, source_asset_id, notes } = await req.json();
   if (!business_id || !email) return NextResponse.json({ error: 'business_id and email required' }, { status: 400 });
 
@@ -64,7 +72,12 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, suppression: data });
 }
 
+// Admin-or-cron gated. DELETE removes an email from the suppression
+// list — that's an "OK to email this address again" action which an
+// attacker could abuse to re-enable outreach to addresses that opted out.
 export async function DELETE(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
