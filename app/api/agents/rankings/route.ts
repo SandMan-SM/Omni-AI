@@ -244,7 +244,12 @@ export async function GET() {
   // agent dropped below their previous high (peak ratcheted DOWN with the
   // current rating instead of retaining the all-time max). Read existing
   // peak via the lookup map and only raise it.
-  for (const agent of agents) {
+  //
+  // Iterate `deduped` rather than the pre-dedup `agents` array. The dedup
+  // step keeps only the highest-ELO row per business_name; updating the
+  // dropped duplicates afterwards wrote a stale ELO over the survivor in
+  // races and wasted write capacity on every refresh.
+  for (const agent of deduped) {
     const existingPeak = (profileById.get(agent.id) as { elo_peak?: number } | undefined)?.elo_peak ?? 0;
     sb.from('profiles').update({
       elo_rating: agent.elo,
