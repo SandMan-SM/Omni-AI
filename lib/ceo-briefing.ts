@@ -47,10 +47,28 @@ export async function collectBusinessMetrics(
   const now = new Date();
   const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const in7d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-  const todayStart = new Date(now);
-  todayStart.setHours(0, 0, 0, 0);
-  const todayEnd = new Date(now);
-  todayEnd.setHours(23, 59, 59, 999);
+  // Anchor "today" on PT calendar day (not server UTC). Without this the
+  // brief at 7 AM PT included yesterday-evening-PT bookings under "today"
+  // and dropped the early-morning-PT ones — same root cause as 1688fb5.
+  const todayPt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(now);
+  const [py, pm, pd] = todayPt.split('-').map(n => parseInt(n, 10));
+  function ptWallToUtc(year: number, month0: number, day: number, hour: number, minute: number, second = 0, ms = 0): Date {
+    const utcGuess = new Date(Date.UTC(year, month0, day, hour, minute, second, ms));
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Los_Angeles',
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', hour12: false,
+    }).formatToParts(utcGuess);
+    const get = (t: string) => parseInt(parts.find(p => p.type === t)!.value, 10);
+    const ptHourActual = get('hour') === 24 ? 0 : get('hour');
+    const offsetMin = (hour - ptHourActual) * 60 + (minute - get('minute'));
+    return new Date(utcGuess.getTime() + offsetMin * 60_000);
+  }
+  const todayStart = ptWallToUtc(py, pm - 1, pd, 0, 0, 0, 0);
+  const todayEnd = ptWallToUtc(py, pm - 1, pd, 23, 59, 59, 999);
 
   const metrics: BusinessMetrics = {
     newSubscribers24h: 0,
