@@ -24,9 +24,34 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ configs: data });
 }
 
+// Allowlist on PATCH so a caller can't tamper with last_run_at /
+// total_runs (telemetry) or write columns we haven't designed for.
+const PATCHABLE_AUTOPILOT_FIELDS = new Set([
+  'enabled',
+  'auto_generate_outreach',
+  'auto_schedule_sequences',
+  'auto_categorize_replies',
+  'auto_draft_responses',
+  'auto_score_with_ai',
+  'auto_followup_on_open',
+  'min_score_to_send',
+  'max_leads_per_run',
+  'followup_after_days',
+]);
+
 export async function PATCH(req: NextRequest) {
-  const { business_id, ...updates } = await req.json();
+  const body = await req.json();
+  const { business_id } = body as { business_id?: string };
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
+
+  const updates: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (k === 'business_id') continue;
+    if (PATCHABLE_AUTOPILOT_FIELDS.has(k)) updates[k] = v;
+  }
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'no updatable fields' }, { status: 400 });
+  }
 
   const { data, error } = await supabase
     .from('omni_autopilot_config')

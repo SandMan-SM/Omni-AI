@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
+import { constantTimeEqual } from '@/lib/api-auth';
 import { createClient } from '@supabase/supabase-js';
 import { sendOutreachEmail } from '@/lib/agi/resend';
 export const dynamic = "force-dynamic";
@@ -21,7 +22,10 @@ export async function GET(req: NextRequest) {
   noStore();
   // Auth: Vercel sends `Authorization: Bearer <CRON_SECRET>`
   const auth = req.headers.get('authorization');
-  if (process.env.CRON_SECRET && auth !== `Bearer ${process.env.CRON_SECRET}`) {
+  // Constant-time bearer compare so the secret can't be probed
+  // byte-by-byte via response-time timing.
+  const token = (auth || '').replace(/^Bearer\s+/i, '').trim();
+  if (!process.env.CRON_SECRET || !constantTimeEqual(token, process.env.CRON_SECRET)) {
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   }
 
