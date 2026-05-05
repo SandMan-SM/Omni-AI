@@ -50,7 +50,10 @@ export async function POST(req: NextRequest) {
 
     // Build pipeline context
     const [{ data: leads }, { data: replies }, { data: bookings }, { data: business }] = await Promise.all([
-      supabase.from('omni_leads_generated').select('first_name, company, title, score, status, deal_stage, deal_value, ai_recommended_angle').eq('business_id', business_id).limit(50),
+      // Order by score desc — the prompt below labels these "TOP 5 LEADS
+      // BY SCORE" but without the order they were arriving in arbitrary
+      // DB-page order, so the AI got 5 random leads to coach against.
+      supabase.from('omni_leads_generated').select('first_name, company, title, score, status, deal_stage, deal_value, ai_recommended_angle').eq('business_id', business_id).order('score', { ascending: false }).limit(50),
       supabase.from('omni_outreach_assets').select('reply_category, reply_sentiment').eq('business_id', business_id).eq('status', 'replied').limit(20),
       supabase.from('omni_meeting_bookings').select('attendee_name, start_at').eq('business_id', business_id).limit(10),
       supabase.from('omni_businesses').select('name, industry').eq('id', business_id).single(),
