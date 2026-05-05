@@ -57,16 +57,26 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
 
-    // Always start on the free tier — never trust a client-supplied tier.
-    // Admin users who need to grant premium can use /api/admin/newsletter/*.
+    // New subscribers default to the free tier — never trust a client-
+    // supplied tier. But preserve an existing 'premium' row (paid via
+    // Stripe) so re-submitting the public form can't silently downgrade
+    // a paying subscriber. Admin grants stay handled via /api/admin/*.
     const supabase = createAdminClient();
+    const { data: existing } = await supabase
+      .from('newsletter_subscriptions')
+      .select('subscription_tier')
+      .eq('email', emailRaw)
+      .maybeSingle();
+    const preservedTier =
+      existing?.subscription_tier === 'premium' ? 'premium' : 'subscribed';
+
     const { data, error } = await supabase
       .from('newsletter_subscriptions')
       .upsert(
         {
           email: emailRaw,
           first_name: firstNameRaw,
-          subscription_tier: 'subscribed',
+          subscription_tier: preservedTier,
           subscribed: true,
         },
         { onConflict: 'email' },
