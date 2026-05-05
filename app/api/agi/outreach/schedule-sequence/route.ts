@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,12 @@ const supabase = createClient(
 // - Touch 3: scheduled_at = +7 days
 // All touches respect business-hour pacing in the cron.
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST flips every draft email asset for a lead to
+  // status='scheduled' — same risk as outreach/send PATCH but in
+  // bulk. Without auth, attackers schedule any tenant's drafts to
+  // deploy at an attacker-chosen time.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { lead_id, start_at } = await req.json() as {
       lead_id: string;

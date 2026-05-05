@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,6 +13,12 @@ const supabase = createClient(
 //
 // Run periodically or on-demand from the dashboard.
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST rewrites every draft email's subject to the
+  // observed "winner" — without auth, an attacker can dictate every
+  // subject line going out across any tenant by forcing this run
+  // (and earlier ab-tests PATCH ballot-stuffing flows into it).
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, min_sends } = await req.json() as {
       business_id: string;

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { generateOutreachAssets } from '@/lib/agi/outreach';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -13,6 +14,12 @@ const supabase = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST hits Claude per-call ($) and writes new outreach
+  // drafts to whichever business owns the lead — without auth this
+  // is a budget-drain vector and a way to insert attacker-influenced
+  // drafts into another tenant's queue.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { lead_id } = await req.json() as { lead_id: string };
     if (!lead_id) {
@@ -87,6 +94,11 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Without auth + without filters, GET dumps every
+  // tenant's outreach drafts (subject + full body content) — heavy
+  // PII + outreach-strategy intel.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const lead_id = searchParams.get('lead_id');
   const business_id = searchParams.get('business_id');

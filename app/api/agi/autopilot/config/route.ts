@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -13,6 +14,12 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Without auth + without business_id, GET returns
+  // every tenant's autopilot config (which Claude routes are armed,
+  // min_score_to_send, max_leads_per_run, followup cadence) — both
+  // a privacy leak and a recipe for crafting a follow-up attack.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
 
@@ -40,6 +47,12 @@ const PATCHABLE_AUTOPILOT_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. Allowlist below blocks mass-assignment but PATCH still
+  // needs auth: flipping `enabled=true` arms automated outbound on
+  // any tenant, and `min_score_to_send=0` floods their entire lead
+  // list with Claude-drafted email through Resend.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { business_id } = body as { business_id?: string };
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateOutreachAssets } from '@/lib/agi/outreach';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +11,12 @@ const supabase = createClient(
 // Generate outreach for many leads at once. Useful after a CSV import
 // or after a campaign agent run. Returns per-lead results.
 export async function POST(req: NextRequest) {
+  // Auth-gate. Bulk-generate hits Claude up to 50× per call ($$$).
+  // Without auth: budget drain, plus the also_schedule:true branch
+  // can flip status='scheduled' on attacker-influenced drafts and
+  // queue them for outbound on any tenant.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { lead_ids, also_schedule } = await req.json() as {
       lead_ids: string[];
