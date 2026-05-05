@@ -115,6 +115,10 @@ export async function handleResendWebhook(event: {
   if (!messageId) return;
 
   const updates: Record<string, string> = {};
+  // Only "opened" advances the status; "clicked" alone doesn't transition
+  // the row out of opened (it just records clicked_at). "replied" and
+  // "bounced" are stronger terminal signals that we never want to roll
+  // back to "opened" — see the targeted update query below.
   switch (event.type) {
     case 'email.opened':
       updates.status = 'opened';
@@ -134,11 +138,19 @@ export async function handleResendWebhook(event: {
 
   if (Object.keys(updates).length === 0) return;
 
-  // Update the asset
-  const { data: asset } = await supabase
+  // Build the update with a status-aware guard: an out-of-order or retried
+  // 'opened' webhook used to clobber an already-replied/bounced row, which
+  // hid genuine replies in the inbox/dashboard. For 'opened' we restrict
+  // the UPDATE to rows whose current status is still 'sent' so a stronger
+  // terminal status survives. The other event types remain authoritative.
+  let q = supabase
     .from('omni_outreach_assets')
     .update(updates)
-    .eq('resend_message_id', messageId)
+    .eq('resend_message_id', messageId);
+  if (event.type === 'email.opened') {
+    q = q.eq('status', 'sent');
+  }
+  const { data: asset } = await q
     .select('lead_id, touch_number, business_id')
     .single();
 
