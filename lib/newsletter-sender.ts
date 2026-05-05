@@ -1501,7 +1501,7 @@ export async function runDailyNewsletter(supabase: any = null) {
           .update({
             published_at: publishedStamp,
             sent_at: sentAt,
-            recipients_count: 1 + freeSent,
+            recipients_count: freeSent,
             email_sent: emailOk,
             telegram_sent: telegramOk,
           })
@@ -1521,7 +1521,7 @@ export async function runDailyNewsletter(supabase: any = null) {
           tier: 'free',
           published_at: publishedStamp,
           sent_at: sentAt,
-          recipients_count: 1 + freeSent,
+          recipients_count: freeSent,
           email_sent: emailOk,
           telegram_sent: telegramOk,
         }).then(() => {}).catch((e: any) => console.error('Post save error:', e));
@@ -1532,7 +1532,7 @@ export async function runDailyNewsletter(supabase: any = null) {
         post_id: draftId || null,
         subject: content.subject,
         tier: 'free',
-        recipients_total: 1 + freeSent,
+        recipients_total: freeSent,
         telegram_ok: telegramOk,
         email_ok: emailOk,
         sent_at: sentAt,
@@ -1543,7 +1543,7 @@ export async function runDailyNewsletter(supabase: any = null) {
         post_id: draftId || null,
         subject: content.subject,
         sent_at: sentAt,
-        recipients_count: 1 + freeSent,
+        recipients_count: freeSent,
         notes: null,
         improvement_tags: [],
       });
