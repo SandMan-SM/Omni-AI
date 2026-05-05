@@ -28,10 +28,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 503 });
     }
 
+    // Order newest-first so when the operator hits bulk-score the recent
+    // leads get the AI treatment first (most actionable), and so repeat
+    // calls process the same deterministic prefix of the queue rather
+    // than a random 25 each time.
     let query = supabase
       .from('omni_leads_generated')
       .select('id, first_name, last_name, title, company, lead_location, email, phone, score, ai_score_reasoning')
       .eq('business_id', business_id)
+      .order('created_at', { ascending: false })
       .limit(max_leads ?? 25);
     if (only_unscored) query = query.is('ai_score_reasoning', null);
 
