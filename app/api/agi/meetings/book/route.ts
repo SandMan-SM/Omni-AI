@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { notifyBooking } from '@/lib/agi/telegram';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -14,6 +15,11 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. GET joins booking attendee PII to lead PII; the
+  // public booking widget posts new rows but doesn't need to read
+  // the dashboard's full booking list.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   let query = supabase
@@ -115,6 +121,12 @@ export async function POST(req: NextRequest) {
 
 // PATCH — reschedule, edit notes, change status
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. PATCH lets the dashboard reschedule / cancel any
+  // booking by id. Without auth, anyone could mass-cancel
+  // confirmed meetings on any tenant. Public booking widget only
+  // POSTs, never PATCHes.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const body = await req.json();
     const { id, ...patch } = body as {
@@ -156,6 +168,12 @@ export async function PATCH(req: NextRequest) {
 // Also sends a cancellation email to the attendee with a reschedule link.
 // Pass ?notify=0 to skip the email (e.g. silent cancel from CLI).
 export async function DELETE(req: NextRequest) {
+  // Auth-gate. DELETE cancels (or hard-deletes with ?hard=1) any
+  // booking by id and fires an attendee email + Telegram ping. Without
+  // auth, anyone could mass-cancel + spam attendees with cancellation
+  // emails for any tenant.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get('id');
