@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +16,13 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 //
 // Body: { business_id, source_text, source_url? }
 // Claude returns JSON array of lead candidates -> insert as 'web' source leads.
+//
+// Admin-or-cron auth gated. Without it, anyone could POST raw text +
+// arbitrary business_id to drain Claude budget and inject leads into
+// any tenant. Same threat model as scrape-urls / insights/strategic.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, source_text, source_url, campaign_id } = await req.json() as {
       business_id: string;
