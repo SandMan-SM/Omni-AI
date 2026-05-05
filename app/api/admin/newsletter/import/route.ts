@@ -67,16 +67,30 @@ export async function POST(request: Request) {
       skipped++;
       continue;
     }
-    const first_name = nameIdx !== -1 ? cols[nameIdx] || null : null;
-    const subscription_tier =
-      tierIdx !== -1 ? cols[tierIdx] || "subscribed" : "subscribed";
+    const csvFirstName = nameIdx !== -1 ? cols[nameIdx] || null : null;
+    const csvTier = tierIdx !== -1 ? cols[tierIdx] || null : null;
+
+    // Merge-import: read existing row so we never silently re-subscribe a
+    // previously opted-out email or downgrade a premium tier when the CSV
+    // omits a tier column. New rows still default to subscribed=true /
+    // tier='subscribed' (the importer's normal behavior).
+    const { data: existing } = await admin
+      .from("newsletter_subscriptions")
+      .select("first_name, subscription_tier, subscribed")
+      .eq("email", email)
+      .maybeSingle();
+
+    const payload: Record<string, unknown> = {
+      email,
+      first_name: existing?.first_name ?? csvFirstName,
+      subscription_tier:
+        csvTier ?? existing?.subscription_tier ?? "subscribed",
+      subscribed: existing ? existing.subscribed !== false : true,
+    };
 
     const { error } = await admin
       .from("newsletter_subscriptions")
-      .upsert(
-        { email, first_name, subscription_tier, subscribed: true },
-        { onConflict: "email" },
-      );
+      .upsert(payload, { onConflict: "email" });
     if (error) {
       skipped++;
       // Log full error server-side (row + code + message) so admins can
