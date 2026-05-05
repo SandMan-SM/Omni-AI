@@ -243,19 +243,28 @@ function formatTelegram(metrics: BusinessMetrics, briefing: CEOBriefing): string
     day: 'numeric',
   });
 
+  // Telegram's Markdown parse mode treats *, _, `, [ as control chars.
+  // Claude-generated headline/wins/risks/action content frequently
+  // contains stray asterisks or underscores ("Q4 was *the* breakout"),
+  // which used to make the API return 400 and silently drop the entire
+  // briefing. Escape interpolated values; leave the literal control
+  // characters in our own template untouched.
+  const md = (s: string | null | undefined) =>
+    (s ? String(s) : '').replace(/[*_`\[]/g, c => `\\${c}`);
+
   const lines: string[] = [];
-  lines.push(`🧠 *AI CEO Briefing* — _${today}_`);
+  lines.push(`🧠 *AI CEO Briefing* — _${md(today)}_`);
   lines.push('');
-  lines.push(`*${briefing.headline}*`);
+  lines.push(`*${md(briefing.headline)}*`);
   lines.push('');
   lines.push(`✅ *Wins*`);
-  lines.push(briefing.wins);
+  lines.push(md(briefing.wins));
   lines.push('');
   lines.push(`⚠️ *Risks*`);
-  lines.push(briefing.risks);
+  lines.push(md(briefing.risks));
   lines.push('');
   lines.push(`🎯 *Today's Move*`);
-  lines.push(briefing.action);
+  lines.push(md(briefing.action));
   lines.push('');
   lines.push(
     `_Subs ${metrics.totalActiveSubscribers} (+${metrics.newSubscribers24h}/-${metrics.unsubscribes24h}) · Leads ${metrics.totalLeads} (+${metrics.newLeads24h}) · Demos today ${metrics.demoBookingsToday}_`

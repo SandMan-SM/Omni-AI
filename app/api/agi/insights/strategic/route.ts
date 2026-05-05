@@ -144,16 +144,20 @@ ${JSON.stringify(context, null, 2)}`,
     }).then(() => {});
   }
 
-  // Build Telegram digest
+  // Build Telegram digest. Escape Claude-generated strings so stray
+  // *, _, `, [ characters in summary/action/rationale don't make
+  // Telegram return 400 and silently drop the digest.
+  const md = (s: string | null | undefined) =>
+    (s ? String(s) : '').replace(/[*_`\[]/g, c => `\\${c}`);
   const lines: string[] = [];
   lines.push("🧠 *Strategic Insights*");
-  lines.push(`_${parsed.summary}_`);
+  lines.push(`_${md(parsed.summary)}_`);
   lines.push("");
   for (const r of parsed.recommendations ?? []) {
     const flag = r.priority === "high" ? "🚨" : r.priority === "medium" ? "⚠️" : "💡";
-    lines.push(`${flag} *${r.business}*`);
-    lines.push(`*Action:* ${r.action}`);
-    lines.push(`_${r.rationale}_`);
+    lines.push(`${flag} *${md(r.business)}*`);
+    lines.push(`*Action:* ${md(r.action)}`);
+    lines.push(`_${md(r.rationale)}_`);
     lines.push("");
   }
 

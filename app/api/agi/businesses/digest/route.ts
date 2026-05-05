@@ -96,10 +96,16 @@ async function run(req: NextRequest): Promise<NextResponse> {
   const totalConv24h = deltas.reduce((s, d) => s + d.conversions_24h, 0);
   const totalMeetings = deltas.reduce((s, d) => s + d.meetings_upcoming, 0);
 
+  // Escape interpolated business names so a tenant called e.g.
+  // "Smith_Co" doesn't break Markdown parsing and silently drop the
+  // entire digest. Static markers like the *headers* stay untouched.
+  const md = (s: string | null | undefined) =>
+    (s ? String(s) : '').replace(/[*_`\[]/g, c => `\\${c}`);
+
   const lines: string[] = [];
   lines.push("📊 *Business Advancement Digest*");
   lines.push("");
-  lines.push(`*${today}*`);
+  lines.push(`*${md(today)}*`);
   lines.push(`Last 24h: *+${totalLeads24h}* leads · *+${totalConv24h}* conversions`);
   lines.push(`Pipeline: *${totalMeetings}* upcoming meetings across all businesses`);
 
@@ -108,7 +114,7 @@ async function run(req: NextRequest): Promise<NextResponse> {
     lines.push("*🏆 Top movers (last 7 days)*");
     for (const t of top) {
       const arrow = t.score_delta_7d > 0 ? "↑" : t.score_delta_7d < 0 ? "↓" : "—";
-      lines.push(`• *${t.business_name}* — score ${t.advancement_score} (${arrow}${Math.abs(t.score_delta_7d)}), +${t.leads_added_7d} leads`);
+      lines.push(`• *${md(t.business_name)}* — score ${t.advancement_score} (${arrow}${Math.abs(t.score_delta_7d)}), +${t.leads_added_7d} leads`);
     }
   }
 

@@ -215,13 +215,17 @@ export async function DELETE(req: NextRequest) {
         timeZone: 'America/Los_Angeles',
         weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
       });
+      // Escape attendee name + email so Telegram Markdown parser
+      // doesn't 400 on stray *, _, `, [ chars in user-supplied data.
+      const md = (s: string | null | undefined) =>
+        (s ? String(s) : '').replace(/[*_`\[]/g, c => `\\${c}`);
       fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           chat_id: process.env.TELEGRAM_CHAT_ID,
           parse_mode: 'Markdown',
-          text: `❌ *Meeting cancelled*\n\n*${booking.attendee_name}*\n${booking.attendee_email}\n\n🕐 ${dt}`,
+          text: `❌ *Meeting cancelled*\n\n*${md(booking.attendee_name)}*\n${md(booking.attendee_email)}\n\n🕐 ${md(dt)}`,
         }),
       }).catch(() => {});
     }

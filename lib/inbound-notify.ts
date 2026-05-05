@@ -86,12 +86,17 @@ export async function notifyOwnerEmailInbound(lead: InboundLead): Promise<boolea
 export async function notifyOwnerTelegramInbound(lead: InboundLead): Promise<boolean> {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) return false;
   const brand = INBOUND_SLUG_LABELS[lead.slug] ?? lead.slug;
+  // Telegram's Markdown parse mode treats *, _, `, [ as control chars —
+  // a name like "John_Smith" or a URL with underscores would otherwise
+  // make the API return 400 and the notification was silently dropped.
+  const md = (s: string | null | undefined) =>
+    (s ? String(s) : '').replace(/[*_`\[]/g, c => `\\${c}`);
   const lines = [
-    `*New ${brand} lead* — ${lead.name}`,
-    lead.phone ? `📞 ${lead.phone}` : null,
-    lead.email ? `✉️ ${lead.email}` : null,
-    lead.pageUrl ? `🔗 ${lead.pageUrl}` : null,
-    lead.message ? `\n${lead.message.slice(0, 400)}` : null,
+    `*New ${md(brand)} lead* — ${md(lead.name)}`,
+    lead.phone ? `📞 ${md(lead.phone)}` : null,
+    lead.email ? `✉️ ${md(lead.email)}` : null,
+    lead.pageUrl ? `🔗 ${md(lead.pageUrl)}` : null,
+    lead.message ? `\n${md(lead.message.slice(0, 400))}` : null,
   ].filter(Boolean);
 
   try {

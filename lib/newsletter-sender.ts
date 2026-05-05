@@ -1173,14 +1173,23 @@ export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
     year: 'numeric',
   });
 
+  // Telegram's Markdown parse mode treats *, _, `, [ as control chars.
+  // Newsletter subjects + recentFixes + insight all flow from Claude or
+  // user-provided strings — without escaping, any one of them could
+  // contain a stray asterisk or underscore and the API would 400 and
+  // silently drop the entire morning debrief. Only escape interpolated
+  // values; the literal *header* / _italic_ markers we own stay intact.
+  const md = (s: string | null | undefined) =>
+    (s ? String(s) : '').replace(/[*_`\[]/g, c => `\\${c}`);
+
   // Determine market subject from the free newsletter topic
   const marketSubject = data.freeContent?.subject || 'AI & business intelligence';
 
   const lines: string[] = [];
 
   // Greeting
-  lines.push(`Good morning! Here's today's daily debrief on *${marketSubject}*.`);
-  lines.push(`_${today}_`);
+  lines.push(`Good morning! Here's today's daily debrief on *${md(marketSubject)}*.`);
+  lines.push(`_${md(today)}_`);
   lines.push('');
 
   // Calendar
@@ -1194,17 +1203,17 @@ export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
   // Fixes / features completed
   if (data.recentFixes.length > 0) {
     const topFix = data.recentFixes[0];
-    lines.push(`I've also built out the *${topFix}* system while you were sleeping. Here is the full debrief on tasks completed:`);
+    lines.push(`I've also built out the *${md(topFix)}* system while you were sleeping. Here is the full debrief on tasks completed:`);
     lines.push('');
     for (const fix of data.recentFixes) {
-      lines.push(`✅ ${fix}`);
+      lines.push(`✅ ${md(fix)}`);
     }
     lines.push('');
   }
 
   // Insight — actionable commitment driver
   if (data.insight) {
-    lines.push(`💡 *Insight:* _${data.insight}_`);
+    lines.push(`💡 *Insight:* _${md(data.insight)}_`);
   }
 
   // Build inline keyboard buttons for newsletter links
