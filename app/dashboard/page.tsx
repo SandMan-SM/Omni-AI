@@ -104,10 +104,17 @@ export default function Dashboard() {
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  // Live CPS lead counts pulled from omni_leads_generated scoped to the
-  // CPS workspace. Replaces the hardcoded zeros in the metrics array
-  // when the signed-in user is CPS so "Leads This Week" reflects reality.
-  const [cpsLeadStats, setCpsLeadStats] = useState<{ total: number; thisWeek: number } | null>(null);
+  // Live workspace KPIs pulled from omni_leads_generated + omni_outreach_assets
+  // scoped to whichever client workspace is active. Replaces the hardcoded
+  // zeros in the metrics array so client viewers (Sammy/Jaime/Brent/Adam) see
+  // real numbers across all four cards, not just "Leads This Week".
+  const [cpsLeadStats, setCpsLeadStats] = useState<{
+    total: number;
+    thisWeek: number;
+    messagesSent: number;
+    converted: number;
+    revenueCents: number;
+  } | null>(null);
   const tierMap: Record<number, string> = { 0: "apprentice", 1: "knight", 2: "royal", 3: "ascended" };
   const currentTier = isAdmin ? "admin" : (tierMap[tier] || "apprentice");
   const currentTierData = tierInfo[currentTier] || tierInfo["apprentice"];
@@ -308,12 +315,31 @@ export default function Dashboard() {
         }
       }
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const [{ count: total }, { count: thisWeek }] = await Promise.all([
+      const [
+        { count: total },
+        { count: thisWeek },
+        { count: messagesSent },
+        { count: converted },
+        { data: wonLeads },
+      ] = await Promise.all([
         supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id),
         supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id).gte("created_at", sevenDaysAgo),
+        supabase.from("omni_outreach_assets").select("*", { count: "exact", head: true }).eq("business_id", target.id).in("status", ["sent", "opened", "clicked", "replied"]),
+        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id).eq("status", "converted"),
+        supabase.from("omni_leads_generated").select("deal_value").eq("business_id", target.id).eq("status", "converted"),
       ]);
       if (cancelled) return;
-      setCpsLeadStats({ total: total ?? 0, thisWeek: thisWeek ?? 0 });
+      const revenueCents = (wonLeads ?? []).reduce(
+        (s, l) => s + (typeof l.deal_value === "number" ? l.deal_value : 0),
+        0,
+      );
+      setCpsLeadStats({
+        total: total ?? 0,
+        thisWeek: thisWeek ?? 0,
+        messagesSent: messagesSent ?? 0,
+        converted: converted ?? 0,
+        revenueCents,
+      });
     })();
     return () => { cancelled = true; };
   }, [clientWorkspaceName]);
@@ -576,8 +602,23 @@ export default function Dashboard() {
                   !isClientViewer && (!isSponsor || (isSponsor && !profile?.sponsor_insights_paid));
                 // Substitute live workspace values for the static placeholders.
                 let displayValue: string = metric.value;
+                let displayChange: string = metric.change;
                 if (isClientViewer && cpsLeadStats) {
                   if (metric.label === "Leads This Week") displayValue = String(cpsLeadStats.thisWeek);
+                  if (metric.label === "Messages Sent") displayValue = String(cpsLeadStats.messagesSent);
+                  if (metric.label === "Conversion Rate") {
+                    const rate = cpsLeadStats.total > 0
+                      ? Math.round((cpsLeadStats.converted / cpsLeadStats.total) * 100)
+                      : 0;
+                    displayValue = `${rate}%`;
+                  }
+                  if (metric.label === "Revenue Impact") {
+                    displayValue = `$${Math.round(cpsLeadStats.revenueCents / 100).toLocaleString()}`;
+                  }
+                  // The "+0%" delta is a placeholder we never compute for
+                  // client viewers — show "—" instead so it doesn't read as
+                  // "no growth this period".
+                  displayChange = "—";
                 }
                 return (
                   <motion.div key={metric.label} transition={{ duration: 0.4, delay: i * 0.06 }}>
@@ -585,7 +626,7 @@ export default function Dashboard() {
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-4">
                           <MetricIcon className="w-5 h-5 text-gray-500" />
-                          <span className={`text-xs font-medium ${isLocked ? 'blur-sm' : 'text-green-400'}`} data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.change}</span>
+                          <span className={`text-xs font-medium ${isLocked ? 'blur-sm' : displayChange === '—' ? 'text-gray-500' : 'text-green-400'}`} data-testid={`text-change-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{displayChange}</span>
                         </div>
                         <p className={`text-2xl font-bold text-white ${isLocked ? 'blur-sm' : ''}`} data-testid={`text-metric-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{displayValue}</p>
                         <p className="text-xs text-gray-500 mt-1" data-testid={`text-label-${metric.label.toLowerCase().replace(/\s/g, "-")}`}>{metric.label}</p>
