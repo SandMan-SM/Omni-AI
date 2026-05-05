@@ -94,12 +94,17 @@ Return ONLY this JSON:
       recommended_angle: string;
     };
 
-    // Update lead with AI score (replaces rule-based score)
+    // Update lead with AI score (replaces rule-based score) and stash the
+    // AI reasoning into dedicated columns so we don't clobber the operator's
+    // manual notes. Previously this wrote the AI summary into `notes`,
+    // which destroyed whatever the operator had typed (call recap, custom
+    // priority, internal context) every time they re-scored.
     await supabase
       .from('omni_leads_generated')
       .update({
         score: Math.max(0, Math.min(100, Math.round(result.score))),
-        notes: `AI: ${result.reasoning}\n\nSignals: ${result.key_signals.join(' · ')}\n\nAngle: ${result.recommended_angle}`,
+        ai_score_reasoning: result.reasoning,
+        ai_recommended_angle: result.recommended_angle,
       })
       .eq('id', lead_id);
 
