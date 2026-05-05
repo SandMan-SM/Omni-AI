@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -16,6 +17,13 @@ const supabase = createClient(
 //   &business_id=...
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. CRITICAL: this is a one-shot bulk PII exfiltration
+  // endpoint — a single GET with a guessed business_id pulls every
+  // lead/reply/booking/activity row for that tenant as a downloadable
+  // CSV. Without auth this is the worst privacy bug surface on the
+  // app.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const type = searchParams.get('type') ?? 'leads';

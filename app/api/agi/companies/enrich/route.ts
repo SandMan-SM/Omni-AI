@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,6 +11,13 @@ const supabase = createClient(
 // The actual Apollo enrichment call is made client-side via the dashboard,
 // which uses the Apollo MCP tool directly. This endpoint persists the result.
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST upserts arbitrary org metadata into a tenant's
+  // omni_company_intel by (business_id, domain). Without auth an
+  // attacker could poison ICP data — fake "estimated_num_employees",
+  // bogus funding events, attacker-controlled raw_data — which then
+  // drives downstream Claude scoring + outreach generation.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, domain, organization } = await req.json() as {
       business_id: string;

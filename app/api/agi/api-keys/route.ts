@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { createHash, randomBytes } from 'crypto';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,12 @@ const supabase = createClient(
 // Public API key management
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. The API-keys table is the auth surface for the public
+  // API; even returning prefixes + scopes lets an attacker enumerate
+  // a tenant's integrations and target the right key for credential
+  // stuffing later.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
@@ -30,6 +37,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Auth-gate. CRITICAL: POST mints a brand-new public API key for
+  // any business_id and returns the full token. Without auth this is
+  // a one-shot full takeover of any tenant's API surface.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, name, scopes, rate_limit_per_min, expires_at } = await req.json();
   if (!business_id || !name) {
     return NextResponse.json({ error: 'business_id and name required' }, { status: 400 });
@@ -64,6 +76,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // Auth-gate. DELETE revokes any tenant's API key by id — a denial-
+  // of-service vector against integrations relying on those keys.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });

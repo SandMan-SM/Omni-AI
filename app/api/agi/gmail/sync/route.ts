@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -17,6 +18,12 @@ const supabase = createClient(
 //   2. Find the most recent sent outreach asset for that lead
 //   3. Mark asset as 'replied', store reply_text, trigger categorize+draft
 export async function POST(req: NextRequest) {
+  // Auth-gate. Without auth anyone could push fabricated "messages"
+  // and forge replies on any tenant's leads — auto-categorize then
+  // draft a Claude response from spoofed inbound mail. Pollutes the
+  // reply pipeline + corrupts coach/report-card.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { messages, business_id } = await req.json() as {
       messages: Array<{ from_email: string; subject?: string; body_text: string }>;
@@ -70,9 +77,14 @@ export async function POST(req: NextRequest) {
       // /api/agi/replies/log — old call hit /api/replies/log (404) and
       // fetch() resolved on 4xx so we silently reported matched:true with
       // nothing actually logged. Now we check res.ok and surface failure.
+      // Forward CRON_SECRET so the auth-gated downstream accepts the call.
+      const internalAuth: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (process.env.CRON_SECRET) {
+        internalAuth.Authorization = `Bearer ${process.env.CRON_SECRET}`;
+      }
       const logRes = await fetch(`${baseUrl}/api/agi/replies/log`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalAuth,
         body: JSON.stringify({ asset_id: asset.id, reply_text: msg.body_text }),
       });
       if (!logRes.ok) {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { sendOutreachEmail } from '@/lib/agi/resend';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,13 @@ const supabase = createClient(
 );
 
 export async function POST(req: NextRequest) {
+  // Auth-gate. CRITICAL: this endpoint sends a real email through
+  // Resend on the tenant's behalf. Without auth: spam vector,
+  // domain-reputation damage, real $ on the Resend bill, and an
+  // attacker-controlled override_subject/body lets the message body
+  // be anything they want signed by the tenant's verified domain.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { asset_id, override_subject, override_body } = await req.json() as {
       asset_id: string;
@@ -63,6 +71,11 @@ export async function POST(req: NextRequest) {
 
 // Schedule send for later (asset moves to 'scheduled' status with scheduled_at).
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. PATCH flips an asset to status='scheduled' which the
+  // outbound queue picks up; without auth, anyone could schedule any
+  // tenant's drafts to deploy at an attacker-chosen time.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { asset_id, scheduled_at } = await req.json();
 

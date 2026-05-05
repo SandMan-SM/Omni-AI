@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { checkCreditBudget } from '@/lib/agi/apollo';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -14,6 +15,11 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. The credits payload includes recent_reveals (the actual
+  // contacts each tenant pulled from Apollo this month) — that's PII +
+  // competitive intel about who they're prospecting.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
 

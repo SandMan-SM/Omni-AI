@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,6 +19,12 @@ const sb = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Without business_id this enumerates leads + enriched
+  // companies across every tenant. With business_id but no auth, an
+  // attacker can pull a tenant's prospect list (lead PII) by simply
+  // guessing the tenant id.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const businessId = searchParams.get("business_id");
   const rawLimit = Number(searchParams.get("limit") ?? 20);
