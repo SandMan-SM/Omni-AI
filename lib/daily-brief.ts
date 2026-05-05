@@ -215,16 +215,26 @@ function escapeTxt(s: string): string {
 }
 
 export function buildTelegramBrief(b: DailyBriefPayload): string {
+  // sendTelegram (from lib/telegram) uses parse_mode: HTML, but this
+  // function used to emit Markdown — so the *bold* markers showed up
+  // as literal asterisks AND any < > & in the focus / mover.name
+  // would make the HTML parser 400, dropping the brief entirely.
+  // Now we emit Telegram's HTML subset (<b>, plain text) and escape
+  // user-supplied strings.
+  const esc = (s: string | null | undefined) =>
+    (s ? String(s) : '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
   const lines: string[] = [];
-  lines.push(`📊 *CEO Brief — ${b.date}*`);
+  lines.push(`📊 <b>CEO Brief — ${esc(b.date)}</b>`);
   lines.push('');
-  lines.push(`Portfolio: *${fmtMoney(b.portfolio_arr_usd)}* ARR · *${fmtMoney(b.portfolio_mrr_usd)}* MRR`);
+  lines.push(`Portfolio: <b>${esc(fmtMoney(b.portfolio_arr_usd))}</b> ARR · <b>${esc(fmtMoney(b.portfolio_mrr_usd))}</b> MRR`);
   lines.push(`${b.ships_24h} ships · ${b.reds} red risks`);
   if (b.biggest_mover && b.biggest_mover.delta_mrr_usd !== 0) {
-    lines.push(`🚀 Mover: *${b.biggest_mover.name}* ${b.biggest_mover.delta_mrr_usd >= 0 ? '+' : ''}${fmtMoney(b.biggest_mover.delta_mrr_usd)}`);
+    const sign = b.biggest_mover.delta_mrr_usd >= 0 ? '+' : '';
+    lines.push(`🚀 Mover: <b>${esc(b.biggest_mover.name)}</b> ${sign}${esc(fmtMoney(b.biggest_mover.delta_mrr_usd))}`);
   }
   lines.push('');
-  lines.push(`🎯 ${b.focus}`);
+  lines.push(`🎯 ${esc(b.focus)}`);
   lines.push('');
   lines.push('https://omnileadsagi.com/command');
   return lines.join('\n');
