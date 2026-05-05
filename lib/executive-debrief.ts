@@ -68,9 +68,11 @@ export async function gatherExecDebrief(commits30d: number): Promise<ExecDebrief
     for (const t of txns ?? []) {
       const status = String(t.transaction_status || '').toUpperCase();
       if (status !== 'S' && status !== 'COMPLETED') continue;
-      const code = String(t.transaction_event_code || '');
-      // Payment-ish event codes (T00=payment, T01=transfer, T03=fee, T05=refund-related)
-      if (/^T00|^T01/.test(code)) {
+      const code = String(t.transaction_event_code || '').toUpperCase();
+      // Only T00 is real payment revenue (matches admin/paypal-finance's
+      // canonical classify()). T01/T03/T22 are transfers/withdrawals/holds
+      // that don't represent net new cash.
+      if (code.startsWith('T00')) {
         const amt = Number(t.transaction_amount) || 0;
         if (amt > 0) cash_collected += amt;
       }

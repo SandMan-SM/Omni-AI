@@ -45,9 +45,16 @@ export async function GET(req: Request) {
     for (const t of txns || []) {
       const s = String(t.transaction_status || '').toUpperCase();
       if (s !== 'S' && s !== 'COMPLETED') continue;
-      const code = String(t.transaction_event_code || '');
-      // payment-ish event codes
-      if (/^T00|^T01|^T03|^T05|^T22/.test(code)) {
+      const code = String(t.transaction_event_code || '').toUpperCase();
+      // PayPal event-code classification matches admin/paypal-finance:
+      //   T00 = payment (the only one that's revenue)
+      //   T01 = non-payment fee / transfer (NOT revenue)
+      //   T03 = bank deposit / withdrawal (NOT revenue, just balance moves)
+      //   T05 = currency conversion (not net new money)
+      //   T22 = hold / release (temporary, not realized revenue)
+      // The previous regex included all of these, inflating MRR by the
+      // sum of holds + withdrawals + transfers. Keep only T00.
+      if (code.startsWith('T00')) {
         gross30 += Number(t.transaction_amount || 0);
       }
     }
