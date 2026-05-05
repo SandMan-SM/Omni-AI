@@ -27,7 +27,16 @@ export async function GET(req: NextRequest) {
   const arr = leads ?? [];
   const won = arr.filter(l => l.deal_stage === 'closed_won');
   const lost = arr.filter(l => l.deal_stage === 'closed_lost');
-  const open = arr.filter(l => !['closed_won', 'closed_lost'].includes(l.deal_stage ?? ''));
+  // "Open" = not yet closed at the deal-stage level AND not already marked
+  // lost at the lead-status level. The previous filter excluded only
+  // closed_won/closed_lost stages, so leads where the operator set
+  // status='lost' (without setting deal_stage) still got rolled into the
+  // weighted pipeline forecast — inflating projected revenue with
+  // already-dead leads.
+  const open = arr.filter(l =>
+    !['closed_won', 'closed_lost'].includes(l.deal_stage ?? '') &&
+    l.status !== 'lost',
+  );
 
   // Historical metrics
   const totalWon = won.reduce((s, l) => s + (l.deal_value ?? 0), 0);
