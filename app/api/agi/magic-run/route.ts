@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { generateOutreachAssets } from '@/lib/agi/outreach';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -16,6 +17,12 @@ const supabase = createClient(
 //
 // Useful as the homepage "try it" button or sales demo.
 export async function POST(req: NextRequest) {
+  // Auth-gate. magic-run = full pipeline (insert lead, Claude
+  // generate, optional schedule) in one shot. Without auth this is
+  // a Claude budget-drain vector + an outbound spam vector when
+  // schedule:true is set.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, first_name, last_name, email, company, title, location, schedule } = await req.json();
 

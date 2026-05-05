@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,10 @@ const supabase = createClient(
 // historical conversion rates, average deal size, and current pipeline.
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Returns LTV / pipeline / forecast — financial intel
+  // per tenant when business_id is iterated.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

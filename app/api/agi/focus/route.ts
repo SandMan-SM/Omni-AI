@@ -3,10 +3,11 @@
 // a nudge, today's meetings, businesses with cancelled meetings to
 // reschedule, conversions in last 24h to celebrate.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore as noStore } from "next/cache";
 import { ptStartOfDayIso, ptEndOfDayIso } from "@/lib/tz";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,8 +18,13 @@ const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
 );
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Focus = admin's daily summary across EVERY tenant
+  // (lead PII, meeting attendees, conversion deal values). Single
+  // unauth GET pulls the entire operator briefing.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const now = new Date();
   // "Today" is the operator's PT day, not the server's UTC day — see lib/tz.
   const startOfDay = new Date(ptStartOfDayIso(now));

@@ -1,9 +1,10 @@
 // Platform stats — row counts across the agentic + legacy tables. Used
 // by the Agentic Assets console to show platform-health at a glance.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore as noStore } from "next/cache";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -37,8 +38,12 @@ const TABLES = [
   { name: "newsletter_sends",               label: "Newsletter sends",      group: "legacy" },
 ];
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Even row counts are signal — they let an attacker
+  // measure tenant volume + fingerprint outreach activity.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const counts = await Promise.all(
     TABLES.map(async t => {
       try {

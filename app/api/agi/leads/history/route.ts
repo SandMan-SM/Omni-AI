@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore as noStore } from "next/cache";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,6 +17,10 @@ const sb = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. lead_id-keyed read of status transitions including
+  // operator notes — UUID-iterable, leaks notes across tenants.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const leadId = searchParams.get("lead_id");
   if (!leadId) return NextResponse.json({ error: "lead_id required" }, { status: 400 });

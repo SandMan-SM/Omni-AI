@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,11 @@ const supabase = createClient(
 // Used for the dashboard heatmap visualization.
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Heatmap reads every lead's location / title / company /
+  // deal_value for the requested business — that's lead market intel
+  // by tenant.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

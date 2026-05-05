@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -24,6 +25,12 @@ export async function GET() {
 
 // Apply a template to a business: creates a campaign with that ICP
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST mints a new campaign on the supplied business_id
+  // (with the template's ICP wired in). Without auth, anyone can
+  // create unlimited campaigns on any tenant — pollutes the campaigns
+  // tab and arms downstream Claude generation against attacker ICP.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { template_id, business_id, name } = await req.json();
     if (!template_id || !business_id) {

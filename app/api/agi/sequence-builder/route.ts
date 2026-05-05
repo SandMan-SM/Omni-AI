@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -21,6 +22,11 @@ const supabase = createClient(
 //   ]}
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. campaign_id is UUID-iterable; without auth an
+  // attacker can read any tenant's sequence steps (subject + body
+  // templates).
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const campaign_id = searchParams.get('campaign_id');
   if (!campaign_id) return NextResponse.json({ error: 'campaign_id required' }, { status: 400 });
@@ -42,6 +48,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. PATCH writes attacker-supplied steps[] into a
+  // campaign's icp.sequence_spec — those steps then drive outbound
+  // generation, so an attacker can dictate the cadence + body
+  // template across any tenant's campaign.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { campaign_id, sequence_spec } = await req.json();
   if (!campaign_id || !sequence_spec) {
     return NextResponse.json({ error: 'campaign_id and sequence_spec required' }, { status: 400 });

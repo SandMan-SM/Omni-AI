@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -13,6 +14,10 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Without auth + without business_id, dumps every
+  // tenant's campaigns + ICPs (target market intel).
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
 
@@ -24,9 +29,28 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ campaigns: data });
 }
 
+// Insert allowlist — without this, raw spread of req.json() lets a
+// caller write arbitrary columns (leads_generated counter, status,
+// even foreign key shifts).
+const POSTABLE_CAMPAIGN_FIELDS = new Set([
+  'business_id', 'name', 'icp', 'leads_target', 'status',
+]);
+
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST inserted the raw body — combined with anon-role
+  // service client, that's both an unauth campaign creator AND a
+  // mass-assignment vector for any column on omni_lead_campaigns.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
-  const { data, error } = await supabase.from('omni_lead_campaigns').insert(body).select().single();
+  if (!body?.business_id) {
+    return NextResponse.json({ error: 'business_id required' }, { status: 400 });
+  }
+  const insert: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (POSTABLE_CAMPAIGN_FIELDS.has(k)) insert[k] = v;
+  }
+  const { data, error } = await supabase.from('omni_lead_campaigns').insert(insert).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ campaign: data });
 }
@@ -38,6 +62,8 @@ const PATCHABLE_CAMPAIGN_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { id } = body as { id?: string };
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -55,6 +81,10 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // Auth-gate. DELETE drops a campaign by id — without auth, anyone
+  // can wipe a tenant's campaigns (and their cascaded leads).
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
