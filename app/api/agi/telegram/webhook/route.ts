@@ -62,6 +62,15 @@ export async function POST(req: NextRequest) {
 
     const baseUrl = req.url.replace(/\/api\/agi\/telegram\/webhook.*/, '').replace(/\/api\/telegram\/webhook.*/, '');
 
+    // Forward CRON_SECRET on every internal fetch so auth-gated routes
+    // (bulk-score, hot-lead-alerts, autopilot/run, etc.) accept this
+    // webhook's calls. The webhook itself is authenticated via chat-id
+    // match above; this re-uses the cron path's auth surface.
+    const internalAuth: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (process.env.CRON_SECRET) internalAuth.Authorization = `Bearer ${process.env.CRON_SECRET}`;
+
     if (text.startsWith('/focus')) {
       const r = await fetch(`${baseUrl}/api/agi/focus`, { cache: 'no-store' });
       const f = await r.json();
@@ -95,7 +104,9 @@ export async function POST(req: NextRequest) {
     }
 
     if (text.startsWith('/hot')) {
-      const r = await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, { method: 'POST' });
+      const r = await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, {
+        method: 'POST', headers: internalAuth,
+      });
       const j = await r.json();
       await sendTelegram(
         j.ok
@@ -122,7 +133,7 @@ export async function POST(req: NextRequest) {
     if (text.startsWith('/score')) {
       await sendTelegram(`🧠 Re-scoring all leads for ${business.name}…`, chatId);
       const r = await fetch(`${baseUrl}/api/agi/leads/bulk-score`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        method: 'POST', headers: internalAuth,
         body: JSON.stringify({ business_id: business.id }),
       });
       const j = await r.json();
@@ -132,8 +143,10 @@ export async function POST(req: NextRequest) {
           : `✓ Scored ${j.scored ?? '?'} leads · ${j.errors ?? 0} errors`,
         chatId
       );
-      // Chain hot-lead alerts
-      await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, { method: 'POST' }).catch(() => {});
+      // Chain hot-lead alerts (auth-forwarded).
+      await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, {
+        method: 'POST', headers: internalAuth,
+      }).catch(() => {});
       return NextResponse.json({ ok: true });
     }
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +13,14 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // AI lead scoring: uses Claude to evaluate fit beyond rule-based scoring.
 // Considers title authority, company stage signals, tech stack relevance,
 // industry alignment, and growth signals from Apollo company intel.
+//
+// Admin-or-cron gated. Each call hits Claude (Haiku, $/run) and writes
+// AI fields into the lead row. Without auth, anyone iterating lead_id
+// UUIDs could drain the Claude budget AND plant arbitrary text in
+// ai_score_reasoning + ai_recommended_angle (visible in the dashboard).
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { lead_id } = await req.json();
     if (!lead_id) return NextResponse.json({ error: 'lead_id required' }, { status: 400 });

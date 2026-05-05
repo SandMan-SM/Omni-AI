@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +13,14 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // Bulk re-score every lead in a business using Claude.
 // Pulls company intel for each lead and feeds it into a fit-prediction prompt.
 // Updates score, ai_score_reasoning, ai_recommended_angle.
+//
+// Admin-or-cron gated. Per call hits Claude up to max_leads times (Haiku
+// each). Without auth, anyone could repeatedly POST `{ business_id }` to
+// drain the Anthropic budget. The Telegram bot's /score command already
+// passes through cron-or-admin (telegram webhook is CRON_SECRET-checked).
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, only_unscored, max_leads } = await req.json() as {
       business_id: string;
