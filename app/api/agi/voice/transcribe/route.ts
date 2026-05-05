@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -17,7 +18,14 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // Browser records audio → uploads transcript text (or audio_url if hosted).
 // Body: { lead_id, business_id, transcript, audio_url?, duration_seconds? }
 // Claude extracts action items + summary, stores back to lead notes.
+//
+// Admin-or-cron gated. Each call hits Claude (Haiku, $/run) AND appends
+// to the lead's notes column. Without auth, anyone could drain Claude
+// budget AND inject arbitrary text into any lead's notes by submitting
+// junk transcripts referencing real lead_ids.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { lead_id, business_id, transcript, audio_url, duration_seconds } = await req.json();
     if (!business_id || !lead_id || !transcript) {
