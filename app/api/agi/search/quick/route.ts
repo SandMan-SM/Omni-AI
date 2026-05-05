@@ -30,8 +30,13 @@ export async function GET(req: NextRequest) {
   const q = (searchParams.get("q") ?? "").trim();
   if (q.length < 1) return NextResponse.json({ results: [] });
 
-  const term = `%${q}%`;
-  const lower = q.toLowerCase();
+  // Strip PostgREST .or() reserved chars (commas, parens) and SQL wildcards
+  // (%, _) from the term so a Cmd-K query like "John, CTO" doesn't break the
+  // filter parser, and so users typing % or _ get literal matching.
+  const cleaned = q.replace(/[,()%_\\]/g, ' ').trim();
+  if (!cleaned) return NextResponse.json({ results: [] });
+  const term = `%${cleaned}%`;
+  const lower = cleaned.toLowerCase();
 
   const [leadsR, bizsR, mtgsR] = await Promise.all([
     sb.from("omni_leads_generated")
