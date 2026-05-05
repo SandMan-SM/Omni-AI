@@ -284,9 +284,24 @@ export async function GET(
   const eventsTable = `inbound_${typedSlug}_events`;
 
   const now = Date.now();
-  const sinceToday = new Date(
-    new Date().toISOString().slice(0, 10) + 'T00:00:00Z',
-  ).toISOString();
+  // "Today" anchored on the operator's PT calendar day, not UTC midnight.
+  // Without this the per-tenant inbound dashboard's "leads today" rolled
+  // yesterday's PT-evening rows into "today" on UTC.
+  const nowDate = new Date(now);
+  const todayPt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+  }).format(nowDate);
+  const [py, pm, pd] = todayPt.split('-').map(n => parseInt(n, 10));
+  const utcGuess = new Date(Date.UTC(py, pm - 1, pd, 0, 0));
+  const ptParts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(utcGuess);
+  const get = (t: string) => parseInt(ptParts.find(p => p.type === t)!.value, 10);
+  const ptHourActual = get('hour') === 24 ? 0 : get('hour');
+  const offsetMin = (0 - ptHourActual) * 60 + (0 - get('minute'));
+  const sinceToday = new Date(utcGuess.getTime() + offsetMin * 60_000).toISOString();
   const since7d = new Date(now - 7 * DAY_MS).toISOString();
   const since30d = new Date(now - 30 * DAY_MS).toISOString();
 
