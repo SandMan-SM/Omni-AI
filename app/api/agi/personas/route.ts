@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { todayPt } from '@/lib/tz';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -103,10 +104,18 @@ export async function PUT(req: NextRequest) {
     .eq('business_id', business_id).eq('is_active', true)
     .order('last_send_at', { ascending: true, nullsFirst: true });
 
-  // Pick first persona under daily limit
-  const today = new Date().toISOString().slice(0, 10);
+  // Pick first persona under daily limit. Anchor "today" on PT — the
+  // operator's day. The previous UTC anchor reset sends_today at 4-5 PM
+  // PT, then re-counted into the next PT day for the 7-8 hours between
+  // 00:00 UTC and 00:00 PT — sending nearly 2× the configured limit on
+  // the operator's calendar day. Last_send_at is stored as a full UTC
+  // ISO timestamp; convert it through the same PT formatter so the
+  // comparison happens in operator-day space.
+  const today = todayPt();
+  const ptDateOf = (iso: string | null | undefined) =>
+    iso ? todayPt(new Date(iso)) : null;
   const available = (personas ?? []).find(p => {
-    const lastSendDate = p.last_send_at ? p.last_send_at.slice(0, 10) : null;
+    const lastSendDate = ptDateOf(p.last_send_at);
     const sendsToday = lastSendDate === today ? (p.sends_today ?? 0) : 0;
     return sendsToday < p.daily_send_limit;
   });
@@ -116,7 +125,7 @@ export async function PUT(req: NextRequest) {
   }
 
   // Increment usage
-  const lastSendDate = available.last_send_at?.slice(0, 10);
+  const lastSendDate = ptDateOf(available.last_send_at);
   const newCount = lastSendDate === today ? (available.sends_today ?? 0) + 1 : 1;
   await supabase
     .from('omni_sender_personas')
