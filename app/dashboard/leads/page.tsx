@@ -987,23 +987,38 @@ export default function DashboardPage() {
                     {selectedBiz ? (
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
                         <div>No leads under <strong style={{ color: '#94a3b8' }}>{selectedBiz.name}</strong> yet.</div>
-                        <button
-                          onClick={() => {
-                            if (typeof window !== 'undefined') {
-                              localStorage.setItem('omni_active_business_id', 'all');
-                              window.dispatchEvent(new StorageEvent('storage', { key: 'omni_active_business_id', newValue: 'all' }));
-                            }
-                            setSelectedBiz(null);
-                          }}
-                          style={{
-                            background: 'linear-gradient(135deg, #a78bfa, #38bdf8)',
-                            color: '#fff', border: 'none',
-                            padding: '8px 16px', borderRadius: 8,
-                            fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                          }}
-                        >
-                          Show all businesses
-                        </button>
+                        {/* Only admins get the "Show all businesses" escape hatch.
+                            For client viewers (sammy/jaime/adam/brent/cps) that
+                            button would expose every other tenant's leads via
+                            the all-leads supabase query — privacy hole.
+                            Detected by reading the omni_user payload localStorage
+                            stash from the auth-login response. */}
+                        {(() => {
+                          if (typeof window === 'undefined') return null;
+                          let isAdmin = false;
+                          try {
+                            const u = JSON.parse(localStorage.getItem('omni_user') || 'null');
+                            isAdmin = !!u?.is_admin;
+                          } catch {}
+                          if (!isAdmin) return null;
+                          return (
+                            <button
+                              onClick={() => {
+                                localStorage.setItem('omni_active_business_id', 'all');
+                                window.dispatchEvent(new StorageEvent('storage', { key: 'omni_active_business_id', newValue: 'all' }));
+                                setSelectedBiz(null);
+                              }}
+                              style={{
+                                background: 'linear-gradient(135deg, #a78bfa, #38bdf8)',
+                                color: '#fff', border: 'none',
+                                padding: '8px 16px', borderRadius: 8,
+                                fontSize: 12, fontWeight: 700, cursor: 'pointer',
+                              }}
+                            >
+                              Show all businesses
+                            </button>
+                          );
+                        })()}
                       </div>
                     ) : (
                       <>No leads found. {campaigns.length > 0 ? 'Click "Run Agent" to generate leads.' : 'Import leads via the Import tab.'}</>
