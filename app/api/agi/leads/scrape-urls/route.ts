@@ -33,10 +33,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'ANTHROPIC_API_KEY not set' }, { status: 503 });
     }
 
+    // SSRF guard: refuse non-http(s) schemes, private/loopback/link-local
+    // hostnames, and the cloud-metadata endpoint. Without this, a caller
+    // could pass http://169.254.169.254/latest/meta-data/ (AWS) or any
+    // internal hostname and have the server fetch + return the response
+    // body to Claude (which would surface secrets in lead data).
+    function isUrlSafe(raw: string): boolean {
+      let u: URL;
+      try { u = new URL(raw); } catch { return false; }
+      if (u.protocol !== 'http:' && u.protocol !== 'https:') return false;
+      const host = u.hostname.toLowerCase();
+      if (host === 'localhost' || host === '0.0.0.0' || host === '::1') return false;
+      // IPv4-literal blocklist (private, loopback, link-local, metadata)
+      if (/^127\./.test(host)) return false;
+      if (/^10\./.test(host)) return false;
+      if (/^192\.168\./.test(host)) return false;
+      if (/^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host)) return false;
+      if (/^169\.254\./.test(host)) return false; // includes AWS metadata
+      // IPv6-literal blocklist (loopback, unique-local fc00::/7, link-local fe80::/10)
+      if (/^\[?::1\]?$/.test(host)) return false;
+      if (/^\[?f[cd][0-9a-f]{2}:/i.test(host)) return false;
+      if (/^\[?fe80:/i.test(host)) return false;
+      return true;
+    }
+
     type UrlResult = { url: string; status: 'completed' | 'failed'; leads_found: number; error?: string };
     const results: UrlResult[] = [];
 
     for (const url of urls) {
+      if (!isUrlSafe(url)) {
+        results.push({ url, status: 'failed', leads_found: 0, error: 'URL blocked (private / metadata / non-http)' });
+        continue;
+      }
+
       // Create job row
       const { data: job } = await supabase
         .from('omni_url_scrape_jobs')
