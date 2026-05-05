@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -15,7 +16,12 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // 4. Insert leads, dedupe
 //
 // Limited to 5 URLs per call to avoid abusing target sites.
+// Admin-or-cron gated — without it, an unauth caller could spam Claude
+// (Sonnet/Haiku $/call), force the SSRF-guarded fetch loop to thrash, and
+// write into omni_leads_generated for whatever business_id they specify.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, campaign_id, urls } = await req.json() as {
       business_id: string;
