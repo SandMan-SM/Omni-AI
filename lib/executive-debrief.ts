@@ -194,13 +194,19 @@ export function buildExecDebriefHtml(d: ExecDebriefPayload): string {
     'green',
   );
 
-  // Revenue table
+  // Revenue table — HTML-escape client name + package since these
+  // come from client_portfolio rows where the operator may have used
+  // & < > " ' in display strings (Smith & Co, "QuickFix", etc).
+  const esc = (s: string | null | undefined) =>
+    (s ? String(s) : '').replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    })[m] as string);
   const revenueTable = dataTable(
     ['Client', 'Package', 'MRR', 'ARR'],
     d.paying.map((p) => ({
       cells: [
-        { content: `${p.emoji} ${p.name}`, align: 'left' as const },
-        { content: p.package, align: 'left' as const, color: THEME.textMuted },
+        { content: `${esc(p.emoji)} ${esc(p.name)}`, align: 'left' as const },
+        { content: esc(p.package), align: 'left' as const, color: THEME.textMuted },
         { content: fmtMoney(p.mrr), align: 'right' as const, color: THEME.green },
         { content: fmtMoney(p.arr), align: 'right' as const, color: THEME.cyan },
       ],
