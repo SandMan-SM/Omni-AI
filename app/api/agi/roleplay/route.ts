@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -23,7 +24,11 @@ const SCENARIO_PROMPTS: Record<string, string> = {
 
 // Roleplay session: user practices a sales scenario, Claude plays the prospect.
 // At session end, Claude evaluates and gives a score + feedback.
+// Admin-or-cron gated. Each turn hits Claude (Sonnet) — without auth,
+// anyone could pin the bot in an infinite roleplay loop and drain budget.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, session_id, scenario, message } = await req.json();
 

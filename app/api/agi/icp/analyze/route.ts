@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,7 +12,14 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // ICP fingerprint analyzer: looks at won deals, identifies the patterns that
 // distinguish winners from losers, and returns an "ideal customer profile" you can
 // feed back into the campaign builder.
+//
+// Admin-or-cron gated. The response surfaces titles/companies/locations
+// of the tenant's won + lost deals — without auth, anyone iterating
+// business_id UUIDs could exfiltrate per-tenant deal context and drain
+// Claude (Sonnet) budget at the same time.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id } = await req.json();
     if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

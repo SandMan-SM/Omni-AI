@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -71,8 +72,14 @@ export async function DELETE(req: NextRequest) {
   return NextResponse.json({ ok: true });
 }
 
-// Run a custom agent with a user-provided message + pipeline context
+// Run a custom agent with a user-provided message + pipeline context.
+// Admin-or-cron gated. PUT runs Claude (Sonnet) with the agent's stored
+// system_prompt — without auth, anyone could spend the operator's
+// Anthropic budget on attacker-supplied user_input messages, and the
+// custom agents include real pipeline context in their system prompt.
 export async function PUT(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { agent_id, user_input } = await req.json();
     if (!agent_id) return NextResponse.json({ error: 'agent_id required' }, { status: 400 });
