@@ -26,7 +26,8 @@ export async function GET(req: NextRequest) {
 
   const sb = createAdminClient();
   const profileId = req.nextUrl.searchParams.get("profile_id");
-  const limit = parseInt(req.nextUrl.searchParams.get("limit") || "50");
+  const rawLimit = parseInt(req.nextUrl.searchParams.get("limit") || "50", 10);
+  const limit = Math.min(Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 50, 200);
 
   // 1. Manual activity log — admin-recorded events.
   let manualQuery = sb

@@ -15,7 +15,8 @@ export async function GET(req: NextRequest) {
   noStore();
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
-  const limit = parseInt(searchParams.get('limit') ?? '50');
+  const rawLimit = parseInt(searchParams.get('limit') ?? '50', 10);
+  const limit = Math.min(Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 50, 500);
 
   let query = supabase
     .from('omni_autopilot_log')

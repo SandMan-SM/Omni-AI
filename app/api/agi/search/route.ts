@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const q = searchParams.get('q');
-  const limit = parseInt(searchParams.get('limit') ?? '20');
+  const rawLimit = parseInt(searchParams.get('limit') ?? '20', 10);
+  const limit = Math.min(Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 20, 100);
   if (!business_id || !q) {
     return NextResponse.json({ error: 'business_id and q required' }, { status: 400 });
   }

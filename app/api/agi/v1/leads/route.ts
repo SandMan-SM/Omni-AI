@@ -50,8 +50,12 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const status = searchParams.get('status');
-  const limit = Math.min(parseInt(searchParams.get('limit') ?? '50'), 200);
-  const offset = parseInt(searchParams.get('offset') ?? '0');
+  // NaN-safe parse — non-numeric ?limit=abc used to produce limit=NaN
+  // which silently disabled the cap.
+  const rawLimit = parseInt(searchParams.get('limit') ?? '50', 10);
+  const limit = Math.min(Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 50, 200);
+  const rawOffset = parseInt(searchParams.get('offset') ?? '0', 10);
+  const offset = Number.isFinite(rawOffset) && rawOffset >= 0 ? rawOffset : 0;
 
   let query = supabase
     .from('omni_leads_generated')

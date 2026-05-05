@@ -16,7 +16,11 @@ export async function GET(req: NextRequest) {
   noStore();
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
-  const days = parseInt(searchParams.get('days') ?? '30');
+  // NaN-safe parse + sane bounds — non-numeric ?days=abc would otherwise
+  // produce setDate(getDate() - NaN) and the downstream loop would build
+  // NaN buckets that never matched any lead.
+  const rawDays = parseInt(searchParams.get('days') ?? '30', 10);
+  const days = Math.min(Math.max(Number.isFinite(rawDays) && rawDays > 0 ? rawDays : 30, 1), 365);
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
 
   // Snapshot from won deals

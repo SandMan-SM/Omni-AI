@@ -17,7 +17,8 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const lead_id = searchParams.get('lead_id');
   const business_id = searchParams.get('business_id');
-  const limit = parseInt(searchParams.get('limit') ?? '100');
+  const rawLimit = parseInt(searchParams.get('limit') ?? '100', 10);
+  const limit = Math.min(Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 100, 500);
 
   let query = supabase
     .from('omni_lead_activity')
