@@ -328,6 +328,7 @@ export async function GET(
     .from(bookingsTable)
     .select('created_at')
     .gte('created_at', since30d)
+    .order('created_at', { ascending: false })
     .limit(EVENT_FETCH_LIMIT);
 
   const events30dPromise = sb
