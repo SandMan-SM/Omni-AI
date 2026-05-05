@@ -122,14 +122,18 @@ Return ONLY JSON array:
       } catch { /* swallow */ }
     }
 
-    // Persist (replace existing pending recs for this business)
-    await supabase
-      .from('omni_coach_recommendations')
-      .delete()
-      .eq('business_id', business_id)
-      .eq('acted_on', false);
-
+    // Persist (replace existing pending recs for this business). Only
+    // delete when we actually have replacements — same data-loss fix as
+    // 135adda / 3fe60d2. Otherwise a coach run with zero usable recs
+    // (rule-based produced none + Claude swallowed an error) wiped the
+    // operator's existing pending recommendations with nothing to show.
     if (recs.length > 0) {
+      await supabase
+        .from('omni_coach_recommendations')
+        .delete()
+        .eq('business_id', business_id)
+        .eq('acted_on', false);
+
       await supabase.from('omni_coach_recommendations').insert(
         recs.map(r => ({ ...r, business_id }))
       );
