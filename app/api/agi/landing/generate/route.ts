@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +13,13 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // Generate a per-lead landing page with custom slug.
 // URL becomes /lp/<slug> — paste in cold emails as a personalized
 // "I made you something" hook. Conversion rates on per-lead LPs are 5-10x higher.
+//
+// Admin-or-cron gated. Each call is a Sonnet messages.create (~$0.05) and
+// inserts a publicly-accessible landing_pages row. Without auth, anyone
+// could drain the Claude budget and pollute the public LP namespace.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { lead_id } = await req.json();
     if (!lead_id) return NextResponse.json({ error: 'lead_id required' }, { status: 400 });
