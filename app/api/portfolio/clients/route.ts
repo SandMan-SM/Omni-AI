@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -12,8 +13,14 @@ export const fetchCache = "force-no-store";
  * Returns every client with: current metrics, 30-day MRR spark, last ship, open risks count, % to $1M.
  * Admin-client (bypasses RLS). Only aggregated data — safe for the /command page to poll.
  */
-export async function GET() {
+export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. The "aggregated" payload here is portfolio-wide MRR/ARR
+  // + every client's current_arr_usd + risk severity — that's the
+  // financial intel the /command page is gated behind admin auth for.
+  // Without this gate the API endpoint leaks the same data unauth.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const supabase = createAdminClient();
 
   const [{ data: clients }, { data: metrics }, { data: lastShips }, { data: risks }] = await Promise.all([
