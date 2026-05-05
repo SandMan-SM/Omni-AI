@@ -13,10 +13,13 @@
  * only ingest events from origins on the CORS allowlist.
  */
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Copy, Check, Activity } from "lucide-react";
 import { INBOUND_SLUGS, INBOUND_SLUG_LABELS, INBOUND_ORIGINS, type InboundSlug } from "@/lib/inbound-types";
+import { useAuth } from "@/hooks/use-auth";
+import { useProfile } from "@/hooks/use-profile";
 
 const ENDPOINT_BASE = "https://omnileadsagi.com/api/inbound";
 
@@ -93,8 +96,19 @@ function buildSnippet(slug: InboundSlug): string {
 }
 
 export default function TrackingSetupPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+  const { isAdmin, profileLoading } = useProfile();
   const [copied, setCopied] = useState<InboundSlug | null>(null);
   const [active, setActive] = useState<InboundSlug>("ltb");
+
+  // Admin-only — same gate as /admin and /admin/interlinked. Non-admins are
+  // redirected back to their dashboard. Loading state shows nothing to avoid
+  // flashing the snippet to a user who shouldn't see it.
+  useEffect(() => { if (!authLoading && !user) router.push("/"); }, [user, authLoading, router]);
+  useEffect(() => {
+    if (!profileLoading && (!isAdmin)) router.push("/dashboard");
+  }, [profileLoading, isAdmin, router]);
 
   async function copy(slug: InboundSlug) {
     try {
@@ -103,6 +117,8 @@ export default function TrackingSetupPage() {
       setTimeout(() => setCopied(null), 1500);
     } catch {}
   }
+
+  if (authLoading || profileLoading || !user || !isAdmin) return null;
 
   const allowed = INBOUND_ORIGINS[active] ?? [];
 
