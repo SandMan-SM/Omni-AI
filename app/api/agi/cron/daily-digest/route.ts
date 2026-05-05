@@ -23,16 +23,23 @@ export async function GET(req: NextRequest) {
     .from('omni_businesses')
     .select('id, sender_email');
 
-  const baseUrl = req.url.replace(/\/api\/cron\/daily-digest.*/, '');
+  // Route + target both live under /api/agi/*. Old paths 404'd silently —
+  // every business looked "ok" with emailed:undefined, sent_to: 0. Now we
+  // strip the right prefix and check r.ok before parsing the response.
+  const baseUrl = req.url.replace(/\/api\/agi\/cron\/daily-digest.*/, '');
   const results: Array<{ business_id: string; ok: boolean; emailed?: boolean }> = [];
 
   for (const b of businesses ?? []) {
     if (!(b as { sender_email?: string }).sender_email) continue;
-    const r = await fetch(`${baseUrl}/api/digest/run`, {
+    const r = await fetch(`${baseUrl}/api/agi/digest/run`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: b.id, send_email: true }),
     });
+    if (!r.ok) {
+      results.push({ business_id: b.id, ok: false });
+      continue;
+    }
     const j = await r.json();
     results.push({ business_id: b.id, ok: j.ok ?? false, emailed: j.emailed });
   }

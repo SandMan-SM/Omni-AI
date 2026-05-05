@@ -188,8 +188,13 @@ export async function POST(req: NextRequest) {
     }
 
     if (text.startsWith('/run')) {
-      const baseUrl = req.url.replace(/\/api\/telegram\/webhook.*/, '');
-      const r = await fetch(`${baseUrl}/api/autopilot/run`, {
+      // Both base regex and target path were wrong — this route is mounted
+      // at /api/agi/telegram/webhook and the autopilot endpoint at
+      // /api/agi/autopilot/run. With the old paths the fetch hit a 404
+      // and the bot replied "Autopilot failed: undefined" without ever
+      // running the autopilot.
+      const baseUrl = req.url.replace(/\/api\/agi\/telegram\/webhook.*/, '');
+      const r = await fetch(`${baseUrl}/api/agi/autopilot/run`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ business_id: business.id }),
       });

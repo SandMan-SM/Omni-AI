@@ -22,13 +22,18 @@ export async function GET(req: NextRequest) {
   const { data: businesses } = await supabase
     .from('omni_businesses').select('id');
 
-  const baseUrl = req.url.replace(/\/api\/cron\/weekly-retro.*/, '');
+  // Route + target both live under /api/agi/* (the old /api/cron/...
+  // and /api/retro/... paths don't exist), so the regex never matched and
+  // the fetch hit a 404. Cron looked successful (returned ok:true sent:0)
+  // while no retros actually went out.
+  const baseUrl = req.url.replace(/\/api\/agi\/cron\/weekly-retro.*/, '');
   let sent = 0;
   for (const b of businesses ?? []) {
-    const r = await fetch(`${baseUrl}/api/retro/weekly`, {
+    const r = await fetch(`${baseUrl}/api/agi/retro/weekly`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: b.id, send_email: true }),
     });
+    if (!r.ok) continue;
     const j = await r.json();
     if (j.emailed) sent++;
   }

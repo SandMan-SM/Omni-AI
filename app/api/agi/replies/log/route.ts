@@ -56,20 +56,24 @@ export async function POST(req: NextRequest) {
       })
       .eq('id', asset_id);
 
-    // Auto-categorize and draft via internal endpoints
+    // Auto-categorize and draft via internal endpoints. The route lives at
+    // /api/agi/replies/log (not /api/replies/log) — old regex never matched
+    // so `base` was the full URL, and the downstream calls to /api/replies/*
+    // 404'd. fetch() resolves on 4xx so this looked fine in logs while
+    // categorization + drafting silently never ran.
     if (auto_categorize) {
-      const base = req.url.replace(/\/api\/replies\/log.*/, '');
-      const cat = await fetch(`${base}/api/replies/categorize`, {
+      const base = req.url.replace(/\/api\/agi\/replies\/log.*/, '');
+      const cat = await fetch(`${base}/api/agi/replies/categorize`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ asset_id, reply_text }),
-      }).then(r => r.json()).catch(() => null);
+      }).then(r => r.ok ? r.json() : null).catch(() => null);
 
-      const draft = await fetch(`${base}/api/replies/draft`, {
+      const draft = await fetch(`${base}/api/agi/replies/draft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ asset_id }),
-      }).then(r => r.json()).catch(() => null);
+      }).then(r => r.ok ? r.json() : null).catch(() => null);
 
       return NextResponse.json({ ok: true, category: cat, draft });
     }
