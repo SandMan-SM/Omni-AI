@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
@@ -74,6 +74,9 @@ export default function PipelinePage() {
   // folded in here so the operator gets a single Pipeline view with a
   // section switcher instead of three separate dashboard tabs.
   const [section, setSection] = useState<PipelineSection>('contacts');
+  // Tracks the latest selectedBiz.id so in-flight loads can detect they're stale.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
 
   const showToast = (msg: string, ok = true) => {
     setToast({ msg, ok }); setTimeout(() => setToast(null), 3000);
@@ -118,13 +121,18 @@ export default function PipelinePage() {
 
   const load = useCallback(async () => {
     if (!selectedBiz) return;
+    // Snapshot the workspace id at call time. If the user switches biz before
+    // the response lands, the in-flight result is stale and we drop it —
+    // otherwise a slow LTB query could overwrite freshly-loaded Prime IV data.
+    const requestedBizId = selectedBiz.id;
     setLeads([]);
     const { data } = await supabase
       .from('omni_leads_generated')
       .select('*')
-      .eq('business_id', selectedBiz.id)
+      .eq('business_id', requestedBizId)
       .eq('pipeline_type', 'sales')
       .order('score', { ascending: false });
+    if (selectedBizRef.current !== requestedBizId) return;
     setLeads((data ?? []) as DealLead[]);
   }, [selectedBiz]);
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import {
@@ -102,14 +102,20 @@ export default function InboxPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale responses if the user switches workspace mid-flight.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   const loadReplies = useCallback(async () => {
     if (!selectedBiz) return;
+    const requestedBizId = selectedBiz.id;
     setReplies([]);
-    const params = new URLSearchParams({ business_id: selectedBiz.id });
+    const params = new URLSearchParams({ business_id: requestedBizId });
     if (filter !== 'all') params.set('category', filter);
     if (hideHandled) params.set('handled', 'false');
     const r = await fetch(`/api/agi/replies/log?${params}`);
     const j = await r.json();
+    if (selectedBizRef.current !== requestedBizId) return;
     setReplies(j.replies ?? []);
   }, [selectedBiz, filter, hideHandled]);
 

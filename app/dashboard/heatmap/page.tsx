@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import { ArrowLeft, ChevronDown, Activity, MapPin, Building2, Briefcase, Target, RefreshCw } from 'lucide-react';
@@ -55,10 +55,16 @@ export default function HeatmapPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale responses if the user switches workspace mid-flight.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   const load = useCallback(async () => {
     if (!selectedBiz) return;
-    const r = await fetch(`/api/agi/heatmap?business_id=${selectedBiz.id}`);
+    const requestedBizId = selectedBiz.id;
+    const r = await fetch(`/api/agi/heatmap?business_id=${requestedBizId}`);
     const j = await r.json();
+    if (selectedBizRef.current !== requestedBizId) return;
     setHeatmap(j);
   }, [selectedBiz]);
 

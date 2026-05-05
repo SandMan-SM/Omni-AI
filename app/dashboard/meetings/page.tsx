@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import { ArrowLeft, ChevronDown, Calendar, Clock, Mail, Phone, RefreshCw, Copy, ExternalLink, X, Edit3, CalendarX, RotateCcw, CheckCircle2 } from 'lucide-react';
@@ -60,11 +60,17 @@ export default function MeetingsPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale responses if the user switches workspace mid-flight.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   const load = useCallback(async () => {
     if (!selectedBiz) return;
+    const requestedBizId = selectedBiz.id;
     setBookings([]);
-    const r = await fetch(`/api/agi/meetings/book?business_id=${selectedBiz.id}`);
+    const r = await fetch(`/api/agi/meetings/book?business_id=${requestedBizId}`);
     const j = await r.json();
+    if (selectedBizRef.current !== requestedBizId) return;
     setBookings(j.bookings ?? []);
   }, [selectedBiz]);
 

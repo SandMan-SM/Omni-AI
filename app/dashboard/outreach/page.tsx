@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
 import {
@@ -386,6 +386,10 @@ export default function OutreachPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale responses if the user switches workspace mid-flight.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   const loadLeads = useCallback(async (bizId: string) => {
     setLeads([]);
     const { data } = await supabase
@@ -393,6 +397,7 @@ export default function OutreachPage() {
       .select('*')
       .eq('business_id', bizId)
       .order('score', { ascending: false });
+    if (selectedBizRef.current !== bizId) return;
     setLeads(data ?? []);
     if (data?.length && !selectedLeadId) setSelectedLeadId(data[0].id);
   }, [selectedLeadId]);
