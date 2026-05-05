@@ -149,26 +149,40 @@ export async function runAutopilotForBusiness(business_id: string): Promise<{
       const t0 = Date.now();
 
       try {
+        // Endpoints live under /api/agi/replies/*; the previous /api/replies/*
+        // paths 404'd silently — fetch() resolves on 4xx so the autopilot log
+        // recorded "success" while nothing was categorized or drafted.
+        let categorizeOk = true;
+        let draftOk = true;
         if (config.auto_categorize_replies && !r.reply_category) {
-          await fetch(`${baseUrl}/api/replies/categorize`, {
+          const res = await fetch(`${baseUrl}/api/agi/replies/categorize`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ asset_id: r.id, reply_text: r.reply_text }),
           });
+          categorizeOk = res.ok;
         }
 
         if (config.auto_draft_responses && !r.ai_draft_response) {
-          await fetch(`${baseUrl}/api/replies/draft`, {
+          const res = await fetch(`${baseUrl}/api/agi/replies/draft`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ asset_id: r.id }),
           });
+          draftOk = res.ok;
         }
 
-        await logAction(business_id, 'process_reply', 'asset', r.id, 'success',
-          { categorized: config.auto_categorize_replies, drafted: config.auto_draft_responses },
-          undefined, Date.now() - t0);
-        succeeded++;
+        if (categorizeOk && draftOk) {
+          await logAction(business_id, 'process_reply', 'asset', r.id, 'success',
+            { categorized: config.auto_categorize_replies, drafted: config.auto_draft_responses },
+            undefined, Date.now() - t0);
+          succeeded++;
+        } else {
+          await logAction(business_id, 'process_reply', 'asset', r.id, 'failed',
+            { categorize_ok: categorizeOk, draft_ok: draftOk },
+            'downstream endpoint returned non-2xx', Date.now() - t0);
+          failed++;
+        }
       } catch (err) {
         await logAction(business_id, 'process_reply', 'asset', r.id, 'failed', {},
           err instanceof Error ? err.message : 'unknown', Date.now() - t0);
