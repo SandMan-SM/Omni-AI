@@ -54,9 +54,34 @@ export async function gatherExecDebrief(commits30d: number): Promise<ExecDebrief
   const portfolio_mrr = clients.reduce((acc, c) => acc + (c.current_mrr_usd || 0), 0);
   const portfolio_arr = clients.reduce((acc, c) => acc + (c.current_arr_usd || 0), 0);
 
-  // Cash collected = real money in bank from the 3-month packages + Omni AI recurring
-  // CPS $1,800 + Fray 3×$1,500 = $6,300 realised from the new deals
-  const cash_collected = 6300;
+  // Cash collected — real money landed in PayPal in the last 90 days.
+  // Was hardcoded to $6,300 forever (CPS $1,800 + Fray 3×$1,500 from
+  // initial sale), so the brief showed the same stale number in every
+  // email regardless of new closures. Pull live from paypal_transactions.
+  let cash_collected = 0;
+  try {
+    const ninetyDaysAgo = new Date(Date.now() - 90 * 86400000).toISOString();
+    const { data: txns } = await s
+      .from('paypal_transactions')
+      .select('transaction_amount, transaction_status, transaction_event_code')
+      .gte('transaction_initiation_date', ninetyDaysAgo);
+    for (const t of txns ?? []) {
+      const status = String(t.transaction_status || '').toUpperCase();
+      if (status !== 'S' && status !== 'COMPLETED') continue;
+      const code = String(t.transaction_event_code || '');
+      // Payment-ish event codes (T00=payment, T01=transfer, T03=fee, T05=refund-related)
+      if (/^T00|^T01/.test(code)) {
+        const amt = Number(t.transaction_amount) || 0;
+        if (amt > 0) cash_collected += amt;
+      }
+    }
+    cash_collected = Math.round(cash_collected);
+  } catch {
+    // If the paypal_transactions table is empty / unavailable, fall back
+    // to 0 rather than the stale 6300 — the operator will see a clear
+    // signal ("nothing landed") and can investigate.
+    cash_collected = 0;
+  }
 
   return {
     date: new Date().toISOString().slice(0, 10),
@@ -156,14 +181,14 @@ export function buildExecDebriefHtml(d: ExecDebriefPayload): string {
   const kpis = kpiRow([
     { value: fmtMoney(d.portfolio_mrr), label: 'Portfolio MRR', color: THEME.green },
     { value: fmtMoney(d.portfolio_arr), label: 'ARR', color: THEME.cyan },
-    { value: fmtMoney(d.cash_collected), label: 'Cash collected · new deals', color: THEME.green },
+    { value: fmtMoney(d.cash_collected), label: 'Cash collected · last 90d', color: THEME.green },
     { value: `${d.paying_clients}/${d.total_clients}`, label: 'Paying clients' },
     { value: String(d.ships_30d), label: 'Ships · 30d', color: THEME.green },
   ]);
 
   const focus = callout(
     'Headline',
-    `<strong style="color:${THEME.textPrimary};">${fmtMoney(d.portfolio_mrr)} MRR</strong> across ${d.paying_clients} paying clients. ${fmtMoney(d.cash_collected)} cash collected from the new CPS + Fray deals (all 3-month packages). ${d.commits_30d} commits and ${d.ships_30d} logged ships in 30 days — the infrastructure to run 4 AI CEOs is now standing.`,
+    `<strong style="color:${THEME.textPrimary};">${fmtMoney(d.portfolio_mrr)} MRR</strong> across ${d.paying_clients} paying clients. ${fmtMoney(d.cash_collected)} cash landed in PayPal over the last 90 days. ${d.commits_30d} commits and ${d.ships_30d} logged ships in 30 days — the infrastructure to run 4 AI CEOs is now standing.`,
     'green',
   );
 
