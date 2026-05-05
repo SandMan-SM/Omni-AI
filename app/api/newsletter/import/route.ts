@@ -53,12 +53,32 @@ export async function POST(request: Request) {
       const email = cols[emailIdx]?.toLowerCase();
       if (!email) { skipped++; continue; }
 
-      const first_name = nameIdx !== -1 ? (cols[nameIdx] || null) : null;
-      const subscription_tier = tierIdx !== -1 ? (cols[tierIdx] || 'subscribed') : 'subscribed';
+      const csvFirstName = nameIdx !== -1 ? (cols[nameIdx] || null) : null;
+      const csvTier = tierIdx !== -1 ? (cols[tierIdx] || null) : null;
+
+      // Merge-import: never silently downgrade a premium subscriber to free
+      // because the CSV omits a tier column, and never silently re-subscribe
+      // someone who already opted out. Read the existing row first and only
+      // set fields the CSV explicitly carries.
+      const { data: existing } = await supabase
+        .from('newsletter_subscriptions')
+        .select('first_name, subscription_tier, subscribed')
+        .eq('email', email)
+        .maybeSingle();
+
+      const payload: Record<string, unknown> = { email };
+      // first_name: prefer existing if present, else CSV value
+      payload.first_name = existing?.first_name ?? csvFirstName;
+      // tier: only overwrite when CSV explicitly carries a non-empty value
+      if (csvTier) payload.subscription_tier = csvTier;
+      else if (existing?.subscription_tier) payload.subscription_tier = existing.subscription_tier;
+      else payload.subscription_tier = 'subscribed';
+      // subscribed: respect existing opt-out, default new rows to true
+      payload.subscribed = existing ? existing.subscribed !== false : true;
 
       const { error } = await supabase
         .from('newsletter_subscriptions')
-        .upsert({ email, first_name, subscription_tier, subscribed: true }, { onConflict: 'email', ignoreDuplicates: false });
+        .upsert(payload, { onConflict: 'email', ignoreDuplicates: false });
 
       if (error) { skipped++; } else { added++; }
     }
