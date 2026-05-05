@@ -79,10 +79,19 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid type. Use: leads, replies, bookings, activity' }, { status: 400 });
   }
 
-  // Build CSV
+  // Build CSV. Two protections:
+  //   1. Quote/escape commas, quotes, and newlines (RFC 4180).
+  //   2. Defuse formula injection — Excel and Google Sheets execute any
+  //      cell that starts with =, +, -, @, or tab as a formula on open.
+  //      A lead whose name was set to `=HYPERLINK("//evil","click me")`
+  //      would, before this guard, ship as live HYPERLINK in every export
+  //      the operator sent to a customer. Prefix offending cells with a
+  //      leading apostrophe — Excel reads that as "treat as text."
+  const FORMULA_LEAD = /^[=+\-@\t\r]/;
   const escape = (v: unknown): string => {
     if (v === null || v === undefined) return '';
-    const s = String(v).replace(/\r?\n/g, ' ');
+    let s = String(v).replace(/\r?\n/g, ' ');
+    if (FORMULA_LEAD.test(s)) s = `'${s}`;
     return /[",]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
   };
 

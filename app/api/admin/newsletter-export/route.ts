@@ -23,12 +23,23 @@ export async function GET() {
   const seen = new Set<string>();
   const rows: string[] = ["Name,Email,Source"];
 
+  // Defuse formula injection — Excel/Sheets execute cells starting with
+  // =, +, -, @ or tab on open. A subscriber whose first_name was set to
+  // `=HYPERLINK("//evil","click")` would, before this guard, ship live
+  // in every export the operator opened.
+  const FORMULA_LEAD = /^[=+\-@\t\r]/;
+  const cell = (v: string): string => {
+    let s = v.replace(/\r?\n/g, ' ').replace(/"/g, '""');
+    if (FORMULA_LEAD.test(s)) s = `'${s}`;
+    return s;
+  };
+
   // CRM subscribers
   for (const p of profilesRes.data || []) {
     if (p.newsletter_subscribed && p.email) {
       seen.add(p.email.toLowerCase());
       const name = p.business_name || p.name || p.first_name || "";
-      rows.push(`"${name.replace(/"/g, '""')}","${p.email}","CRM"`);
+      rows.push(`"${cell(name)}","${cell(p.email)}","CRM"`);
     }
   }
 
@@ -37,7 +48,7 @@ export async function GET() {
     if (s.subscribed !== false && !seen.has(s.email.toLowerCase())) {
       seen.add(s.email.toLowerCase());
       const name = s.first_name || "";
-      rows.push(`"${name.replace(/"/g, '""')}","${s.email}","Website"`);
+      rows.push(`"${cell(name)}","${cell(s.email)}","Website"`);
     }
   }
 

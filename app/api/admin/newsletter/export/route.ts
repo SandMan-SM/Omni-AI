@@ -23,6 +23,13 @@ export async function GET() {
 
   const header =
     "email,first_name,source,active,is_premium,unsubscribed,subscription_tier,created_at\n";
+  // Defuse formula injection on cells the operator opens in Excel/Sheets.
+  const FORMULA_LEAD = /^[=+\-@\t\r]/;
+  const cell = (v: unknown): string => {
+    let s = String(v).replace(/\r?\n/g, ' ').replace(/"/g, '""');
+    if (FORMULA_LEAD.test(s)) s = `'${s}`;
+    return `"${s}"`;
+  };
   const rows = members.map((m) =>
     [
       m.email,
@@ -34,7 +41,7 @@ export async function GET() {
       m.subscription_tier ?? "",
       m.created_at ?? "",
     ]
-      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .map(cell)
       .join(","),
   );
 

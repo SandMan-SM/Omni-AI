@@ -19,9 +19,17 @@ export async function GET() {
 
     const rows = data || [];
     const header = 'id,email,first_name,subscription_tier,subscribed,created_at\n';
+    // Defuse formula injection — Excel/Sheets execute cells starting with
+    // =, +, -, @ or tab on open. Prefix offending values with an apostrophe.
+    const FORMULA_LEAD = /^[=+\-@\t\r]/;
+    const cell = (v: unknown): string => {
+      let s = String(v).replace(/\r?\n/g, ' ').replace(/"/g, '""');
+      if (FORMULA_LEAD.test(s)) s = `'${s}`;
+      return `"${s}"`;
+    };
     const body = rows.map(r =>
       [r.id, r.email, r.first_name || '', r.subscription_tier || 'subscribed', r.subscribed !== false, r.created_at || '']
-        .map(v => `"${String(v).replace(/"/g, '""')}"`)
+        .map(cell)
         .join(',')
     ).join('\n');
 
