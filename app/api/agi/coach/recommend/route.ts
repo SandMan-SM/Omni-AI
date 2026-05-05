@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,7 +12,14 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // AI deal coach: analyzes a business's pipeline and generates 5 prioritized
 // recommendations. Looks for: stalled deals, hot replies needing follow-up,
 // high-score leads with no outreach, etc.
+//
+// Admin-or-cron gated. Each call drives a Claude (Haiku) call AND inserts
+// rows into omni_coach_recommendations. Without auth, anyone iterating
+// business_id UUIDs could drain Claude budget + plant attacker-controlled
+// recommendation text into the operator's coach panel.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id } = await req.json();
     if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

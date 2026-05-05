@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,7 +11,13 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // Monthly client deliverable: AI-written report card with grades + recommendations.
 // Designed to be sent TO clients as a PDF/HTML deliverable.
+//
+// Admin-or-cron gated. The report card is a deliverable that goes to
+// clients — without auth, anyone could trigger Sonnet calls on arbitrary
+// business_ids and exfiltrate the metrics of any tenant.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, period_days } = await req.json() as { business_id: string; period_days?: number };
     if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

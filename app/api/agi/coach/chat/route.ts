@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -28,7 +29,12 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ messages: data });
 }
 
+// Admin-or-cron gated. Per call hits Claude (Sonnet) AND inserts the
+// user's message into omni_coach_chat. Without auth, anyone could pollute
+// the chat history with spam and drain Claude budget.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, message } = await req.json();
     if (!business_id || !message) {
