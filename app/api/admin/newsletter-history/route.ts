@@ -93,7 +93,10 @@ export async function GET() {
   const now = new Date();
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-  const totalPosts = posts.length;
+  // totalPosts = published only. The Newsletter Posts KPI on the command
+  // center is meant to read as "things readers can see" — counting drafts
+  // here was misleading (it showed 248 when only 58 were actually live).
+  const totalPosts = posts.filter((p: any) => p.published_at).length;
   const freePosts = posts.filter((p: any) => p.tier === "free" && p.published_at).length;
   const premiumPosts = posts.filter((p: any) => p.tier === "premium" && p.published_at).length;
   const drafts = posts.filter((p: any) => !p.published_at).length;
