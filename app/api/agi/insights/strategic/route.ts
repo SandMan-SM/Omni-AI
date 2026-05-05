@@ -6,10 +6,11 @@
 // Output: structured JSON of recommendations (priority, business, action,
 // rationale) + a Markdown Telegram-friendly digest.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import { sendTelegram } from "@/lib/agi/telegram";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +29,11 @@ interface Recommendation {
   rationale: string;
 }
 
-async function run(): Promise<NextResponse> {
+async function run(req: NextRequest): Promise<NextResponse> {
+  // Auth-gate. Without this anyone could trigger Claude API spend
+  // ($/run) + spam the operator's Telegram with insights.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   // Pull cross-business state
   // Order each pull explicitly. Without order() PostgREST returns rows in
   // arbitrary page order, so the .slice(0, 10) at the bottom of this file
