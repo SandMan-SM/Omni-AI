@@ -157,14 +157,39 @@ function getBusinessValueProp(business: Business): string {
 
 async function fetchCompanyIntel(business_id: string, company: string | null): Promise<CompanyIntel | null> {
   if (!company) return null;
-  const { data } = await supabase
+  // ilike treats `%` and `_` as wildcards, so a lead.company that
+  // contains either character (e.g. an unsanitized CSV row) used to
+  // match every intel row in the tenant. Escape both before building
+  // the substring pattern.
+  // We also try an exact (case-insensitive) match first via .ilike
+  // with the escaped term — if that hits, it's the right intel for
+  // sure. Substring fallback handles cases like "Apple" matching
+  // the canonical "Apple Inc" Apollo returned. Order by closest
+  // length match so e.g. "Apple" prefers "Apple Inc" over a stray
+  // "Pineapple Computing".
+  const escaped = company.replace(/[%_\\]/g, c => `\\${c}`);
+
+  // Exact case-insensitive try first.
+  const { data: exact } = await supabase
     .from('omni_company_intel')
     .select('name, industry, short_description, founded_year, estimated_num_employees, city, state, technology_names, keywords, departmental_head_count, latest_funding_stage, latest_funding_date')
     .eq('business_id', business_id)
-    .ilike('name', `%${company}%`)
+    .ilike('name', escaped)
     .limit(1)
     .maybeSingle();
-  return data as CompanyIntel | null;
+  if (exact) return exact as CompanyIntel;
+
+  // Substring fallback — pick the shortest matching intel row so a
+  // generic lead.company doesn't latch onto a longer unrelated brand.
+  const { data: candidates } = await supabase
+    .from('omni_company_intel')
+    .select('name, industry, short_description, founded_year, estimated_num_employees, city, state, technology_names, keywords, departmental_head_count, latest_funding_stage, latest_funding_date')
+    .eq('business_id', business_id)
+    .ilike('name', `%${escaped}%`)
+    .limit(5);
+  if (!candidates || candidates.length === 0) return null;
+  candidates.sort((a, b) => (a.name?.length ?? 999) - (b.name?.length ?? 999));
+  return candidates[0] as CompanyIntel;
 }
 
 export async function generateOutreachAssets(
