@@ -72,7 +72,14 @@ Return ONLY this JSON:
       const { data: lead } = await supabase
         .from('omni_leads_generated').select('notes').eq('id', lead_id).single();
       const existingNotes = lead?.notes ?? '';
-      const newNotes = `${existingNotes}\n\n📞 ${new Date().toLocaleString()}: ${summary}`.trim();
+      // Render in PT so the lead-notes timestamp matches when the operator
+      // actually placed the call, not whatever wall-clock the Vercel UTC
+      // server prints by default.
+      const stamp = new Date().toLocaleString('en-US', {
+        timeZone: 'America/Los_Angeles',
+        month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit',
+      });
+      const newNotes = `${existingNotes}\n\n📞 ${stamp}: ${summary}`.trim();
       await supabase
         .from('omni_leads_generated')
         .update({ notes: newNotes })

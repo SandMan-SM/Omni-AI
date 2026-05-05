@@ -75,7 +75,10 @@ function sparkSvg(points: number[], accent: string): string {
 
 export function buildClientReviewHtml(d: ClientReviewData): string {
   const c = d.client;
-  const reviewDate = new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' });
+  const reviewDate = new Date().toLocaleDateString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    month: 'long', day: 'numeric', year: 'numeric',
+  });
   const target = c.arr_target_usd || 1_000_000;
   const progressPct = Math.min(100, Math.round(((c.current_arr_usd || 0) / target) * 100));
   const mrrPoints = d.metrics.map((m) => m.mrr_usd || 0);

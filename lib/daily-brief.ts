@@ -110,7 +110,12 @@ export async function gatherDailyBrief(): Promise<DailyBriefPayload> {
 }
 
 export function buildDailyBriefHtml(b: DailyBriefPayload): string {
-  const dateLong = new Date(b.date).toLocaleDateString(undefined, {
+  // Anchor at noon UTC so the human date in the email header matches the
+  // calendar day in any reader timezone. `new Date('2026-05-05')` parses
+  // as 00:00 UTC, which is yesterday in PT — toLocaleDateString then
+  // mislabels the brief by one day.
+  const dateLong = new Date(b.date + 'T12:00:00Z').toLocaleDateString('en-US', {
+    timeZone: 'America/Los_Angeles',
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -159,7 +164,7 @@ export function buildDailyBriefHtml(b: DailyBriefPayload): string {
           .map((s) =>
             listRow({
               kind: s.kind,
-              when: `${s.client_slug || '—'} · ${new Date(s.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+              when: `${s.client_slug || '—'} · ${new Date(s.created_at).toLocaleTimeString('en-US', { timeZone: 'America/Los_Angeles', hour: '2-digit', minute: '2-digit' })}`,
               title: s.title,
             })
           )

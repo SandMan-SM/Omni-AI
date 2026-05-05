@@ -76,7 +76,10 @@ export async function POST(req: NextRequest) {
       if ((f.today_meetings ?? []).length) {
         lines.push(`\n📅 *${f.today_meetings.length} meetings today*`);
         for (const m of f.today_meetings.slice(0, 3)) {
-          const t = new Date(m.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+          const t = new Date(m.start_at).toLocaleTimeString('en-US', {
+            timeZone: 'America/Los_Angeles',
+            hour: 'numeric', minute: '2-digit',
+          });
           lines.push(`  • ${t} · ${m.attendee_name}`);
         }
       }

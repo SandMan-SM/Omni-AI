@@ -145,7 +145,13 @@ export async function gatherExecDebrief(commits30d: number): Promise<ExecDebrief
 }
 
 export function buildExecDebriefHtml(d: ExecDebriefPayload): string {
-  const dateLong = new Date(d.date).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  // Noon-UTC anchor + explicit PT timezone so the email header reads the
+  // same calendar day regardless of reader locale (parsing 'YYYY-MM-DD'
+  // alone gives midnight UTC = yesterday in PT).
+  const dateLong = new Date(d.date + 'T12:00:00Z').toLocaleDateString('en-US', {
+    timeZone: 'America/Los_Angeles',
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  });
 
   const kpis = kpiRow([
     { value: fmtMoney(d.portfolio_mrr), label: 'Portfolio MRR', color: THEME.green },

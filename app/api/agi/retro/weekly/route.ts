@@ -79,7 +79,7 @@ Format: 3 sections each 2 sentences max:
       await sendOutreachEmail({
         asset_id: 'system-weekly-retro',
         to: senderEmail,
-        subject: `📊 Weekly retro — ${business?.name} — ${new Date().toLocaleDateString()}`,
+        subject: `📊 Weekly retro — ${business?.name} — ${new Date().toLocaleDateString('en-US', { timeZone: 'America/Los_Angeles' })}`,
         body,
       }).catch(() => {});
       emailed = true;
