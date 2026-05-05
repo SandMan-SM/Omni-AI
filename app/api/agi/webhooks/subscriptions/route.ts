@@ -31,6 +31,28 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'business_id and endpoint_url required' }, { status: 400 });
   }
 
+  // SSRF guard at write time. lib/agi/webhooks fires `fetch(wh.endpoint_url)`
+  // on every event, so a malicious caller registering
+  // `http://169.254.169.254/...` would have the server hit AWS metadata
+  // every time a lead/reply/booking landed. Reject the obvious shapes here
+  // so they never get persisted.
+  let parsed: URL;
+  try { parsed = new URL(endpoint_url); } catch {
+    return NextResponse.json({ error: 'Invalid endpoint_url' }, { status: 400 });
+  }
+  if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+    return NextResponse.json({ error: 'endpoint_url must be http(s)' }, { status: 400 });
+  }
+  const host = parsed.hostname.toLowerCase();
+  const isPrivate =
+    host === 'localhost' || host === '0.0.0.0' || host === '::1' ||
+    /^127\./.test(host) || /^10\./.test(host) || /^192\.168\./.test(host) ||
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(host) || /^169\.254\./.test(host) ||
+    /^\[?::1\]?$/.test(host) || /^\[?f[cd][0-9a-f]{2}:/i.test(host) || /^\[?fe80:/i.test(host);
+  if (isPrivate) {
+    return NextResponse.json({ error: 'endpoint_url cannot point to a private/loopback/metadata host' }, { status: 400 });
+  }
+
   const secret = randomBytes(24).toString('hex');
   const { data, error } = await supabase
     .from('omni_user_webhooks')
