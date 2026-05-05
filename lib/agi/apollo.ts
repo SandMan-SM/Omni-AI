@@ -49,12 +49,17 @@ export async function checkCreditBudget(business_id: string): Promise<{
 }> {
   const month = new Date().toISOString().slice(0, 7);
 
+  // ensure a row exists for this (business, month) but DO NOT clobber the
+  // existing credits_used. Default upsert semantics are ON CONFLICT DO
+  // UPDATE — that was zeroing out usage every time the budget check ran,
+  // making the gate (`used < limit - reserved`) always pass. ignoreDuplicates
+  // makes this an INSERT-or-skip, which is what we actually want here.
   await supabase.from('omni_apollo_credits').upsert({
     business_id,
     month,
     credits_used: 0,
     credits_limit: 95,
-  }, { onConflict: 'business_id,month' });
+  }, { onConflict: 'business_id,month', ignoreDuplicates: true });
 
   const { data } = await supabase
     .from('omni_apollo_credits')
