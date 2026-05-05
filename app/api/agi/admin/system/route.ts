@@ -34,9 +34,12 @@ export async function PATCH(req: NextRequest) {
   if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   const { key, value } = await req.json();
   if (!key) return NextResponse.json({ error: 'key required' }, { status: 400 });
+  // Conflict on the logical 'key' column — without this, supabase-js uses
+  // the table's primary key (probably an `id` UUID we never send), so every
+  // PATCH inserted a new row instead of updating the existing config entry.
   const { error } = await supabase
     .from('omni_system_config')
-    .upsert({ key, value, updated_at: new Date().toISOString() });
+    .upsert({ key, value, updated_at: new Date().toISOString() }, { onConflict: 'key' });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ ok: true });
 }
