@@ -76,7 +76,13 @@ export async function collectBusinessMetrics(
 
     const rows = data || [];
     metrics.totalActiveSubscribers = rows.filter((r: any) => r.subscribed !== false).length;
-    metrics.premiumSubscribers = rows.filter((r: any) => r.subscription_tier === 'premium').length;
+    // Premium count must also exclude unsubscribed rows — otherwise
+    // churned premium subscribers stayed counted in the headline
+    // metric and inflated the briefing's "premium subscribers"
+    // figure long after they left.
+    metrics.premiumSubscribers = rows.filter(
+      (r: any) => r.subscription_tier === 'premium' && r.subscribed !== false,
+    ).length;
     metrics.newSubscribers24h = rows.filter(
       (r: any) => r.created_at && new Date(r.created_at) >= yesterday
     ).length;
