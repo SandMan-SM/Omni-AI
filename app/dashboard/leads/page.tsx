@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Lead, type Campaign } from '@/lib/agi-supabase';
 import {
@@ -621,6 +621,10 @@ export default function DashboardPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Tracks the latest workspace key so an older in-flight loadData can detect
+  // it's stale and bail before stomping fresh state. Encodes null as "all" so
+  // the All-Businesses sentinel is comparable.
+  const activeBizKeyRef = useRef<string>('all');
   const loadData = useCallback(async (bizId: string | null) => {
     // bizId === null means "All Businesses" — drop the business_id filter.
     // Build a fresh PostgREST query builder per call. Reusing one builder
@@ -630,6 +634,8 @@ export default function DashboardPage() {
     // Sammy got pinned to LTB but still saw all-businesses leads.
     // Clear out the previous workspace's leads first so we don't briefly
     // render the wrong tenant's data while the new query resolves.
+    const requestedKey = bizId ?? 'all';
+    activeBizKeyRef.current = requestedKey;
     setLeads([]);
     setCampaigns([]);
     const leadsBase = () => supabase.from('omni_leads_generated').select('*').order('created_at', { ascending: false });
@@ -638,6 +644,8 @@ export default function DashboardPage() {
       bizId ? leadsBase().eq('business_id', bizId) : leadsBase(),
       bizId ? campsBase().eq('business_id', bizId) : campsBase(),
     ]);
+    // If the user switched workspaces during the await, drop this response.
+    if (activeBizKeyRef.current !== requestedKey) return;
     setLeads(leadsData ?? []);
     setCampaigns(campData ?? []);
   }, []);
