@@ -237,7 +237,7 @@ Return JSON with exactly these keys (no other text):
 
 function formatTelegram(metrics: BusinessMetrics, briefing: CEOBriefing): string {
   const today = new Date().toLocaleDateString('en-US', {
-    timeZone: 'America/New_York',
+    timeZone: 'America/Los_Angeles',
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -266,7 +266,7 @@ function formatTelegram(metrics: BusinessMetrics, briefing: CEOBriefing): string
 
 function formatEmail(metrics: BusinessMetrics, briefing: CEOBriefing): string {
   const today = new Date().toLocaleDateString('en-US', {
-    timeZone: 'America/New_York',
+    timeZone: 'America/Los_Angeles',
     weekday: 'long',
     month: 'long',
     day: 'numeric',
