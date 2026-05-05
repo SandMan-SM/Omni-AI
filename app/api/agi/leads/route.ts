@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -13,6 +14,12 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate the read. The dashboard already filters by an explicit
+  // business_id, but without auth, an unauthenticated caller could
+  // omit business_id and pull every lead across every tenant on a
+  // service-role connection.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const status = searchParams.get('status');
@@ -45,6 +52,12 @@ const PATCHABLE_LEAD_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. The dashboard's leads page calls this PATCH from an
+  // authenticated session — cookies / omni_token forward correctly.
+  // Pairs with the PATCHABLE_LEAD_FIELDS allowlist below to prevent
+  // both unauth writes and (if auth bypassed) mass-assignment.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { id } = body as { id?: string };
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
