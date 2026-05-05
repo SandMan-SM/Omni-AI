@@ -1,13 +1,20 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@/lib/supabase/server';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. CSV export of every newsletter subscriber's email +
+  // tier — if RLS isn't enforced on newsletter_subscriptions (and
+  // many service-role paths bypass it), an unauth GET dumps the
+  // entire list.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const supabase = await createClient();
     const { data, error } = await supabase
