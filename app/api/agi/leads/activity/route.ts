@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore as noStore } from "next/cache";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,6 +19,10 @@ const sb = createClient(
 // GET ?lead_id=… returns all activity rows desc
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. lead_id is a UUID — guessable enough that without auth
+  // anyone could iterate IDs and read every tenant's activity history.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const leadId = searchParams.get("lead_id");
   if (!leadId) return NextResponse.json({ error: "lead_id required" }, { status: 400 });
@@ -40,6 +45,12 @@ export async function GET(req: NextRequest) {
 // Used by the lead detail panel's quick-action buttons (log call, log email,
 // add note) and by automated systems that record events.
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST appends arbitrary event_type / details to any lead's
+  // activity log; the per-business feed picks up business_id from the
+  // lead row, so an attacker could spam fake "call_completed" events
+  // into another tenant's feed and pollute coach/report-card output.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { lead_id, event_type, event_subtype, details } = body as {
     lead_id?: string;

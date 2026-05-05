@@ -13,7 +13,12 @@ const supabase = createClient(
 );
 
 function authorized(req: NextRequest): boolean {
-  if (!process.env.ADMIN_API_KEY) return true;
+  // Fail closed when ADMIN_API_KEY isn't configured — previously this
+  // returned true and let unauthenticated callers read/write the
+  // system-wide config. In production we ALWAYS want a key set; if it
+  // isn't, treat every request as unauthorized rather than silently
+  // opening the door.
+  if (!process.env.ADMIN_API_KEY) return false;
   const authz = req.headers.get('authorization') || '';
   const presented = authz.replace(/^Bearer\s+/i, '').trim();
   // Constant-time so the auth comparison can't be probed byte-by-byte

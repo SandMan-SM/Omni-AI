@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -17,6 +18,11 @@ const sb = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. The audit log surfaces every owner-level mutation
+  // (subscriber edits, plan changes, manual deletes). Leaking it lets
+  // an attacker map the operator's behavior + figure out what to attack.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const rawLimit = Number(searchParams.get("limit") ?? 30);
   const limit = Math.min(100, Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 30);
@@ -35,6 +41,11 @@ export async function GET(req: NextRequest) {
 
 // POST — append an audit event manually (e.g. from a cron task)
 export async function POST(req: NextRequest) {
+  // Auth-gate. Without auth, an attacker could pollute the audit log
+  // with fake events (drowning real events) or impersonate the actor
+  // field to muddy any forensic trail.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { action, target_type, target_id, metadata, actor } = body;
   if (!action) return NextResponse.json({ error: "action required" }, { status: 400 });

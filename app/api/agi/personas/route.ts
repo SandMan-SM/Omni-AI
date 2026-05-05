@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -13,6 +14,10 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Personas include sender_email + signature_html — leaking
+  // them across tenants exposes who's sending mail on each tenant's behalf.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
@@ -24,6 +29,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST creates a sender persona that the round-robin
+  // picker will use to relay outbound mail. Without auth, anyone could
+  // mint a persona on a tenant — pointing at attacker email/signature.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, name, email, title, bio, signature_html, daily_send_limit } = await req.json();
   if (!business_id || !name || !email) {
     return NextResponse.json({ error: 'business_id, name, email required' }, { status: 400 });
@@ -44,6 +54,11 @@ const PATCHABLE_PERSONA_FIELDS = new Set([
 ]);
 
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. Allowlist below blocks mass-assignment but PATCH still
+  // needs auth so an attacker can't flip is_active or raise daily_send_limit
+  // on another tenant's persona.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const body = await req.json();
   const { id } = body as { id?: string };
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -62,6 +77,10 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // Auth-gate. DELETE drops a persona by id — without auth, anyone can
+  // wipe a tenant's sending identities and break their outbound flow.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -71,6 +90,11 @@ export async function DELETE(req: NextRequest) {
 
 // Round-robin: PUT returns next available persona for a business
 export async function PUT(req: NextRequest) {
+  // Auth-gate. PUT both reads + increments sends_today; an unauthed
+  // attacker could exhaust a tenant's daily_send_limit by repeatedly
+  // calling this and starve the real outbound queue.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id } = await req.json();
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
 

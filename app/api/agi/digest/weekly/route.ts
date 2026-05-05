@@ -3,8 +3,9 @@
 // Markdown-y HTML email. Triggered by a Claude Code scheduled task on
 // Mondays at 7am local.
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +28,13 @@ interface Snapshot {
   revenue_from_leads: number;
 }
 
-async function run(): Promise<NextResponse> {
+async function run(req: NextRequest): Promise<NextResponse> {
+  // Auth-gate. The digest hits Resend (real $) and triggers a snapshot
+  // RPC. Without auth anyone could spam this endpoint and run up the
+  // email bill / churn snapshots.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
+
   // 1. Capture today's snapshot first so the comparison baseline is fresh
   await sb.rpc("omni_ai_capture_advancement_snapshots");
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,10 @@ const supabase = createClient(
 // Auto-credits referrer when referee becomes 'qualified' or 'won'.
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Without auth anyone could iterate business_id values
+  // and pull referrer/referee names + payout amounts across tenants.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
@@ -43,9 +48,25 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST mints reward-payout rows + tags the referee lead's
+  // source. Without auth: bogus referral entries inflating payouts, or
+  // attacker tagging another tenant's lead's source = 'referral'.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, referrer_lead_id, referrer_name, referrer_email, referee_lead_id, reward_amount, notes } = await req.json();
   if (!business_id || (!referrer_lead_id && !referrer_email) || !referee_lead_id) {
     return NextResponse.json({ error: 'business_id, referrer (lead_id or email), referee_lead_id required' }, { status: 400 });
+  }
+
+  // Cross-tenant guard: referee must belong to the same business or
+  // the source-tagging update below silently mutates another tenant's lead.
+  const { data: refereeLead } = await supabase
+    .from('omni_leads_generated')
+    .select('business_id')
+    .eq('id', referee_lead_id)
+    .single();
+  if (!refereeLead || refereeLead.business_id !== business_id) {
+    return NextResponse.json({ error: 'referee_lead_id does not belong to business_id' }, { status: 403 });
   }
 
   const { data, error } = await supabase
@@ -71,10 +92,19 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. PATCH flips status (qualified/won → triggers payout) and
+  // stamps reward_paid_at — both money-adjacent. No business_id filter
+  // here, so any id with auth bypassed could be flipped cross-tenant.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { id, status, reward_paid_at } = await req.json();
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
   const updates: Record<string, unknown> = {};
   if (status) updates.status = status;
   if (reward_paid_at) updates.reward_paid_at = reward_paid_at;
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'no updatable fields' }, { status: 400 });
+  }
 
   const { data, error } = await supabase
     .from('omni_referrals').update(updates).eq('id', id).select().single();

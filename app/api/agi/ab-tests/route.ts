@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -16,6 +17,10 @@ type Variant = { key: string; value: string; sent: number; opened: number; repli
 // CRUD for A/B tests + winner detection
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. A/B test rows include test names + variant copy that
+  // reveal the tenant's outreach experiments — competitive intel.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
@@ -27,6 +32,10 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST creates a test row scoped to business_id; without
+  // auth, anyone can spam tests against a tenant or steer test copy.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, name, test_type, variants } = await req.json();
   if (!business_id || !name || !Array.isArray(variants)) {
     return NextResponse.json({ error: 'business_id, name, variants[] required' }, { status: 400 });
@@ -43,6 +52,11 @@ export async function POST(req: NextRequest) {
 
 // Increment variant counter
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. PATCH increments variant counters which drive winner
+  // detection. Without auth an attacker could ballot-stuff any test
+  // (e.g. force their preferred variant to "win" and lock in poor copy).
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { id, variant_key, metric } = await req.json();
   if (!id || !variant_key || !metric) {
     return NextResponse.json({ error: 'id, variant_key, metric required' }, { status: 400 });
