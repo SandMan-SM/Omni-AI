@@ -145,16 +145,21 @@ export async function GET() {
   let omniReach = 0;
   try {
     const [{ data: txns }, { count: subCount }, { data: sends }] = await Promise.all([
-      sb.from('paypal_transactions').select('transaction_amount,transaction_status'),
+      sb.from('paypal_transactions').select('transaction_amount,transaction_status,transaction_event_code'),
       sb.from('newsletter_subscriptions').select('id', { count: 'exact', head: true }).eq('subscribed', true),
       sb.from('newsletter_sends').select('recipients_total'),
     ]);
+    // Match the canonical paypal classifier (admin/paypal-finance):
+    //   payment = T00, status in {S, COMPLETED}.
+    // Previously summed every txn regardless of event code (so refunds/
+    // withdrawals netted in) and trusted empty-status rows as completed.
     omniRevenue = (txns || []).reduce((sum, t: any) => {
       const status = (t.transaction_status || '').toUpperCase();
-      if (status === 'S' || status === 'COMPLETED' || status === '') {
-        return sum + (Number(t.transaction_amount) || 0);
-      }
-      return sum;
+      if (status !== 'S' && status !== 'COMPLETED') return sum;
+      const code = (t.transaction_event_code || '').toUpperCase();
+      if (!code.startsWith('T00')) return sum;
+      const amt = Number(t.transaction_amount) || 0;
+      return amt > 0 ? sum + amt : sum;
     }, 0);
     const sendsTotal = (sends || []).reduce((sum, s: any) => sum + (Number(s.recipients_total) || 0), 0);
     omniReach = (subCount || 0) + sendsTotal;

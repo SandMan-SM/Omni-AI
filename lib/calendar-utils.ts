@@ -78,8 +78,14 @@ export function generateICS(event: CalendarEvent): string {
 }
 
 /**
- * Parse a date string (YYYY-MM-DD) and time string (e.g. "2:00 PM") into a Date object
- * Assumes America/Chicago timezone
+ * Parse a date string (YYYY-MM-DD) and time string (e.g. "2:00 PM") into a Date object.
+ * Assumes America/Chicago timezone — DST-aware via Intl, so it gives the
+ * right UTC moment in both CST (Nov–Mar, UTC-6) and CDT (Mar–Nov, UTC-5).
+ *
+ * The previous version hardcoded `hour24 + 5` (CDT offset only), so every
+ * winter booking was stored as one hour earlier than the operator picked,
+ * and the calendar invite + Telegram notification were both wrong from
+ * roughly Nov to March each year.
  */
 export function parseBookingDateTime(dateStr: string, timeStr: string): Date {
   const [timePart, ampm] = timeStr.split(' ');
@@ -88,14 +94,21 @@ export function parseBookingDateTime(dateStr: string, timeStr: string): Date {
   if (ampm === 'PM' && hrs !== 12) hour24 += 12;
   if (ampm === 'AM' && hrs === 12) hour24 = 0;
 
-  // Parse date parts
   const [year, month, day] = dateStr.split('-').map(Number);
+  const minute = mins || 0;
 
-  // Create in Chicago timezone (CST = UTC-6, CDT = UTC-5)
-  // Use a simple approach: create the date and adjust for Central Time
-  const date = new Date(Date.UTC(year, month - 1, day, hour24 + 5, mins || 0)); // CDT offset (+5 to convert to UTC)
-
-  return date;
+  // Anchor a UTC guess, then ask Intl what wall-clock that moment shows
+  // in Chicago. The delta tells us the offset to correct by — handles DST
+  // automatically without a hardcoded UTC-5 / UTC-6.
+  const utcGuess = new Date(Date.UTC(year, month - 1, day, hour24, minute));
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Chicago',
+    hour: '2-digit', minute: '2-digit', hour12: false,
+  }).formatToParts(utcGuess);
+  const get = (t: string) => parseInt(parts.find(p => p.type === t)!.value, 10);
+  const ctHourActual = get('hour') === 24 ? 0 : get('hour');
+  const offsetMin = (hour24 - ctHourActual) * 60 + (minute - get('minute'));
+  return new Date(utcGuess.getTime() + offsetMin * 60_000);
 }
 
 /**
