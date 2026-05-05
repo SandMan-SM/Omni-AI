@@ -158,8 +158,10 @@ export async function GET() {
     return d >= weekAgo;
   }).length;
   const totalNewslettersSent = allSends.length;
-  const premiumPosts = allPosts.filter(p => p.tier === "premium").length;
-  const freePosts = allPosts.filter(p => p.tier === "free").length;
+  // Only count published issues — drafts shouldn't inflate the public-facing
+  // "posts shipped" KPIs the operator reads on the command center.
+  const premiumPosts = allPosts.filter(p => p.tier === "premium" && p.published_at).length;
+  const freePosts = allPosts.filter(p => p.tier === "free" && p.published_at).length;
   const premiumSubscribers = allSubs.filter(s => s.subscription_tier === "premium" && s.subscribed !== false).length;
   const freeSubscribers = allSubs.filter(s => s.subscribed !== false).length;
 
