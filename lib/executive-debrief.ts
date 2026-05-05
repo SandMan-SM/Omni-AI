@@ -45,7 +45,7 @@ export async function gatherExecDebrief(commits30d: number): Promise<ExecDebrief
   const [{ data: portfolio }, { data: ships }, { count: newsletterCount }, { count: lpCount }] = await Promise.all([
     s.from('client_portfolio').select('*').order('current_mrr_usd', { ascending: false }),
     s.from('build_log').select('id, kind, created_at').gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()),
-    s.from('newsletter_posts').select('*', { count: 'exact', head: true }),
+    s.from('newsletter_posts').select('*', { count: 'exact', head: true }).not('published_at', 'is', null),
     s.from('landing_pages').select('*', { count: 'exact', head: true }),
   ]);
 
