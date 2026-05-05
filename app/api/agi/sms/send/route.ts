@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,7 +16,14 @@ const supabase = createClient(
 //   TWILIO_ACCOUNT_SID
 //   TWILIO_AUTH_TOKEN
 //   TWILIO_FROM_NUMBER
+//
+// Admin-or-cron gated. Each call is a billable Twilio SMS — without auth,
+// anyone could POST `{ to_phone: '+1...', body: 'spam' }` repeatedly to
+// drain the operator's Twilio balance and use the omnileadsagi number to
+// blast arbitrary numbers (carrier abuse + 10DLC violation risk).
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id, lead_id, to_phone, body, scheduled_at } = await req.json();
 
