@@ -30,6 +30,10 @@ interface Recommendation {
 
 async function run(): Promise<NextResponse> {
   // Pull cross-business state
+  // Order each pull explicitly. Without order() PostgREST returns rows in
+  // arbitrary page order, so the .slice(0, 10) at the bottom of this file
+  // was coaching Claude with 10 random hot/stuck leads instead of the most
+  // valuable / most stale.
   const [{ data: businesses }, { data: hotLeads }, { data: stuckLeads }, { data: recentMeetings }] = await Promise.all([
     sb.from("omni_business_advancement").select("*"),
     sb.from("omni_leads_generated")
@@ -37,15 +41,18 @@ async function run(): Promise<NextResponse> {
       .gte("score", 70)
       .neq("status", "converted")
       .neq("status", "lost")
+      .order("score", { ascending: false })
       .limit(20),
     sb.from("omni_leads_generated")
       .select("first_name, last_name, company, status, updated_at, business_id")
       .not("status", "in", "(converted,lost)")
       .lte("updated_at", new Date(Date.now() - 14 * 86_400_000).toISOString())
+      .order("updated_at", { ascending: true }) // most stale first
       .limit(20),
     sb.from("omni_meeting_bookings")
       .select("attendee_name, status, start_at, business_id")
       .gte("start_at", new Date(Date.now() - 7 * 86_400_000).toISOString())
+      .order("start_at", { ascending: false })
       .limit(20),
   ]);
 
