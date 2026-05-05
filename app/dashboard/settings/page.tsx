@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import {
@@ -71,8 +71,13 @@ export default function SettingsPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale warmup responses on rapid workspace switches.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   useEffect(() => {
     if (!selectedBiz) return;
+    const requestedBizId = selectedBiz.id;
     setForm({
       sender_name: (selectedBiz as Business & { sender_name?: string }).sender_name ?? '',
       sender_email: (selectedBiz as Business & { sender_email?: string }).sender_email ?? '',
@@ -83,7 +88,10 @@ export default function SettingsPage() {
       location: selectedBiz.location ?? '',
       website: selectedBiz.website ?? '',
     });
-    fetch(`/api/agi/warmup?business_id=${selectedBiz.id}`).then(r => r.json()).then(setWarmup);
+    fetch(`/api/agi/warmup?business_id=${requestedBizId}`).then(r => r.json()).then(d => {
+      if (selectedBizRef.current !== requestedBizId) return;
+      setWarmup(d);
+    });
   }, [selectedBiz]);
 
   async function handleSave() {
