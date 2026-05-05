@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import {
@@ -63,12 +63,18 @@ export default function CompaniesPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale responses if the user switches workspace mid-flight.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   useEffect(() => {
     if (!selectedBiz) return;
+    const requestedBizId = selectedBiz.id;
     setCompanies([]);
-    fetch(`/api/agi/companies?business_id=${selectedBiz.id}`)
+    fetch(`/api/agi/companies?business_id=${requestedBizId}`)
       .then(r => r.json())
       .then(j => {
+        if (selectedBizRef.current !== requestedBizId) return;
         setCompanies(j.companies ?? []);
         if (j.companies?.length && !selected) setSelected(j.companies[0]);
       });

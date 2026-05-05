@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Campaign } from '@/lib/agi-supabase';
 import {
@@ -63,9 +63,17 @@ export default function CampaignsPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale responses if the user switches workspace mid-flight.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   useEffect(() => {
     if (!selectedBiz) return;
-    fetch(`/api/agi/campaigns?business_id=${selectedBiz.id}`).then(r => r.json()).then(j => setCampaigns(j.campaigns ?? []));
+    const requestedBizId = selectedBiz.id;
+    fetch(`/api/agi/campaigns?business_id=${requestedBizId}`).then(r => r.json()).then(j => {
+      if (selectedBizRef.current !== requestedBizId) return;
+      setCampaigns(j.campaigns ?? []);
+    });
   }, [selectedBiz]);
 
   async function handleSave(c: Partial<Campaign>) {

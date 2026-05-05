@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import {
@@ -98,15 +98,21 @@ export default function AutopilotPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // Drop stale responses if the user switches workspace mid-flight.
+  const selectedBizRef = useRef<string | null>(null);
+  useEffect(() => { selectedBizRef.current = selectedBiz?.id ?? null; }, [selectedBiz]);
+
   const loadAll = useCallback(async () => {
     if (!selectedBiz) return;
+    const requestedBizId = selectedBiz.id;
     setLogs([]);
     const [{ configs }, { logs }] = await Promise.all([
-      fetch(`/api/agi/autopilot/config?business_id=${selectedBiz.id}`).then(r => r.json()),
-      fetch(`/api/agi/autopilot/log?business_id=${selectedBiz.id}&limit=50`).then(r => r.json()),
+      fetch(`/api/agi/autopilot/config?business_id=${requestedBizId}`).then(r => r.json()),
+      fetch(`/api/agi/autopilot/log?business_id=${requestedBizId}&limit=50`).then(r => r.json()),
     ]);
+    if (selectedBizRef.current !== requestedBizId) return;
     setConfig(configs?.[0] ?? {
-      business_id: selectedBiz.id,
+      business_id: requestedBizId,
       enabled: false,
       auto_generate_outreach: true,
       auto_schedule_sequences: true,
