@@ -146,6 +146,18 @@ export default function AutopilotPage() {
     }
   }
 
+  // Privacy: filter businesses dropdown so non-admin client viewers
+  // can't see (or click into) other tenants' workspaces.
+  const visibleBizs = (() => {
+    try {
+      if (typeof window === "undefined") return businesses;
+      const u = JSON.parse(localStorage.getItem("omni_user") || "null");
+      if (u?.is_admin) return businesses;
+      return selectedBiz ? [selectedBiz] : [];
+    } catch { return businesses; }
+  })();
+
+
   return (
     <div style={{ background: '#0a0a0a', minHeight: '100vh', fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif', color: '#e8e8e8' }}>
       <header style={{ background: '#111', borderBottom: '1px solid #1e1e1e', padding: '0 32px', height: 60, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -174,7 +186,7 @@ export default function AutopilotPage() {
             </button>
             {bizOpen && (
               <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 220, zIndex: 10, overflow: 'hidden' }}>
-                {businesses.map(b => (
+                {visibleBizs.map(b => (
                   <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
                     <div style={{ fontWeight: 600 }}>{b.name}</div>
                   </button>
