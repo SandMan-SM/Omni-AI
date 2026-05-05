@@ -30,7 +30,8 @@ export async function GET(req: Request) {
     const supabase = await createClient();
     const { searchParams } = new URL(req.url);
     const since = searchParams.get("since");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const rawLimit = parseInt(searchParams.get("limit") || "20", 10);
+    const limit = Math.min(Number.isFinite(rawLimit) && rawLimit > 0 ? rawLimit : 20, 100);
 
     let query = supabase
       .from("agent_commands")
