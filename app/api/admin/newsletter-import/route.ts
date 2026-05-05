@@ -48,12 +48,25 @@ export async function POST(req: Request) {
         continue;
       }
 
+      // Merge-import: never silently re-subscribe someone who already opted
+      // out. Read the existing row first so we only set subscribed=true
+      // for new emails; existing rows keep their current subscribed state.
+      const lower = email.toLowerCase();
+      const { data: existing } = await sb
+        .from("newsletter_subscriptions")
+        .select("first_name, subscribed")
+        .eq("email", lower)
+        .maybeSingle();
+
+      const payload: Record<string, unknown> = {
+        email: lower,
+        first_name: existing?.first_name ?? (name || null),
+        subscribed: existing ? existing.subscribed !== false : true,
+      };
+
       const { error } = await sb
         .from("newsletter_subscriptions")
-        .upsert(
-          { email: email.toLowerCase(), first_name: name || null, subscribed: true },
-          { onConflict: "email" }
-        );
+        .upsert(payload, { onConflict: "email" });
 
       if (error) {
         skipped++;
