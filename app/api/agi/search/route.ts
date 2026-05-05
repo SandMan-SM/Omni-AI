@@ -22,7 +22,17 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'business_id and q required' }, { status: 400 });
   }
 
-  const pattern = `%${q}%`;
+  // PostgREST's .or() uses commas as separators and parens for grouping —
+  // a search for "John, CTO" broke the filter parser and returned empty.
+  // Strip syntactically reserved chars + SQL wildcards `%` / `_` (so users
+  // typing them get literal matching) before building the ILIKE pattern.
+  const cleaned = q.replace(/[,()%_\\]/g, ' ').trim();
+  if (!cleaned) {
+    return NextResponse.json({
+      query: q, leads: [], replies: [], bookings: [], companies: [], total: 0,
+    });
+  }
+  const pattern = `%${cleaned}%`;
 
   const [
     { data: leads },
