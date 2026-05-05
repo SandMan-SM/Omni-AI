@@ -47,7 +47,12 @@ export async function POST(req: NextRequest) {
       lead_volume: grade(m.leads, [80, 40, 15]),
       engagement: grade(m.replies, [10, 5, 2]),
       conversion: grade(m.bookings, [5, 2, 1]),
-      revenue: grade(m.deals_won, [3, 1, 0.5]),
+      // m.revenue is the sum of deal_value (stored in cents) for closed-won
+      // leads in the period. Thresholds: A ≥ $5k, B ≥ $1k, C ≥ $100. The
+      // previous grade compared m.deals_won (a count) to [3,1,0.5] — 0.5
+      // was dead because count >= 0.5 means count >= 1, collapsing C into B
+      // and labeling the card "revenue" while actually grading deal count.
+      revenue: grade(m.revenue, [500_000, 100_000, 10_000]),
     };
 
     let aiNarrative: string | null = null;
