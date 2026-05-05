@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getStripe } from '@/lib/agi/stripe';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,12 @@ const supabase = createClient(
 
 // Create a Stripe Customer Portal session for self-service billing
 export async function POST(req: NextRequest) {
+  // Auth-gate. The portal session URL is a bearer-token to that
+  // tenant's Stripe billing surface — payment methods, invoices,
+  // cancellation. Without auth, anyone with a guessed business_id
+  // gets a working portal link to that tenant's Stripe customer.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const stripe = getStripe();
     if (!stripe) return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });

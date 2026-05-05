@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { getStripe } from '@/lib/agi/stripe';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,6 +10,13 @@ const supabase = createClient(
 
 // POST: create a Stripe Checkout session for a plan
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST mints a Stripe checkout session bound to the
+  // tenant's customer record. Worse: if no stripe_customer_id
+  // exists, it CREATES one against the tenant's contact_email and
+  // stamps it back on the row. Without auth, an attacker can pin
+  // the wrong Stripe customer to any tenant.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const stripe = getStripe();
     if (!stripe) {

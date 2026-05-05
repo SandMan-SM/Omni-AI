@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -16,6 +17,10 @@ const TOTAL_STEPS = 5;
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Returns sender_email + booking_url + raw onboarding_data
+  // for any business_id passed in.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
@@ -37,6 +42,11 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  // Auth-gate. PATCH writes onboarding_data + can stamp
+  // onboarding_completed_at on any tenant — flips them out of the
+  // setup wizard prematurely and clobbers their config blob.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, step, data, complete } = await req.json();
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
 

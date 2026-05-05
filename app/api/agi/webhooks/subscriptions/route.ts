@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { randomBytes } from 'crypto';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,11 @@ const supabase = createClient(
 // User webhook subscription management
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Webhook rows include endpoint_url + plaintext secret
+  // (used to HMAC-sign delivery). Leaking those = full webhook
+  // signature spoof against the receiver.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
@@ -26,6 +32,12 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  // Auth-gate. POST registers a webhook subscription where the
+  // tenant ships every lead/reply/booking event. Without auth, an
+  // attacker can register their own endpoint on any tenant and
+  // siphon every inbound event into their own server.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, endpoint_url, events } = await req.json();
   if (!business_id || !endpoint_url) {
     return NextResponse.json({ error: 'business_id and endpoint_url required' }, { status: 400 });
@@ -74,6 +86,10 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  // Auth-gate. DELETE drops a webhook by id — without auth, anyone
+  // can wipe a tenant's outbound integrations.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
