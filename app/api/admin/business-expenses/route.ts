@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { serverErrorResponse } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // Same allow-list as /api/admin/paypal-finance. Finance is a sensitive
 // surface — only the two designated finance admins may read or mutate.
@@ -75,6 +78,7 @@ type Expense = {
 
 // GET — list all expenses + aggregated totals (monthly burn, one-time total).
 export async function GET(request: Request) {
+  noStore();
   const auth = await requireFinanceAdmin(request);
   if ("error" in auth) return auth.error;
 

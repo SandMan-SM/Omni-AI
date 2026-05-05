@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { serverErrorResponse } from "@/lib/api-errors";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 // Extra belt-and-braces: only these two admins may view finance data.
 // Read from env in production for easy rotation; fall back to hardcoded pair.
@@ -103,6 +106,7 @@ function classify(code: string | null): "payment" | "refund" | "withdrawal" | "o
 }
 
 export async function GET(request: Request) {
+  noStore();
   const auth = await requireFinanceAdmin(request);
   if ("error" in auth) return auth.error;
 
