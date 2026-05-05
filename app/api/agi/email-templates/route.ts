@@ -61,6 +61,12 @@ export async function PUT(req: NextRequest) {
   const { data: lead } = await supabase
     .from('omni_leads_generated').select('*').eq('id', lead_id).single();
   if (!template || !lead) return NextResponse.json({ error: 'Not found' }, { status: 404 });
+  // Cross-tenant guard: a template from Tenant A combined with a lead from
+  // Tenant B would render Tenant B's PII into Tenant A's template body and
+  // return it to the caller. Refuse the combination.
+  if (template.business_id !== lead.business_id) {
+    return NextResponse.json({ error: 'Template and lead are not in the same business' }, { status: 403 });
+  }
 
   const { data: business } = await supabase
     .from('omni_businesses').select('*').eq('id', lead.business_id).single();

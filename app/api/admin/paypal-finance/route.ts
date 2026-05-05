@@ -111,7 +111,11 @@ export async function GET(request: Request) {
   if ("error" in auth) return auth.error;
 
   const { searchParams } = new URL(request.url);
-  const days = Math.max(1, Math.min(3650, Number(searchParams.get("days") || "365")));
+  // NaN-safe — non-numeric ?days=abc would otherwise produce NaN, then
+  // Date.now() - NaN*86400000 throws on .toISOString() and the whole
+  // finance dashboard 500s on a malformed query string.
+  const rawDays = Number(searchParams.get("days") || "365");
+  const days = Math.max(1, Math.min(3650, Number.isFinite(rawDays) && rawDays > 0 ? rawDays : 365));
 
   const sb = createAdminClient();
   const cutoff = new Date(Date.now() - days * 86400000).toISOString();
