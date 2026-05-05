@@ -227,38 +227,51 @@ export async function GET(req: Request) {
     .slice(0, 15);
 
   // ── Referrers ──────────────────────────────────────────────────────
+  // Track unique session_ids per referrer so the card reads "X sessions"
+  // truthfully. The previous version incremented per page_view, which made
+  // a single visitor with 10 page-views from Google show as 10 "sessions"
+  // from Google.
   const host = 'omnileadsagi.com';
-  const refAgg = new Map<string, number>();
+  const refSessions = new Map<string, Set<string>>();
+  const addSession = (key: string, sid: string | null | undefined) => {
+    if (!sid) return;
+    let set = refSessions.get(key);
+    if (!set) { set = new Set(); refSessions.set(key, set); }
+    set.add(sid);
+  };
   for (const r of pageViews) {
+    const sid = (r.session_id as string | null | undefined) ?? null;
     let ref = ((r.properties as { referrer?: string })?.referrer) || '';
-    if (!ref) {
-      refAgg.set('direct', (refAgg.get('direct') || 0) + 1);
-      continue;
-    }
+    if (!ref) { addSession('direct', sid); continue; }
     try {
       const u = new URL(ref);
-      if (u.hostname.includes(host)) {
-        refAgg.set('internal', (refAgg.get('internal') || 0) + 1);
-      } else {
-        refAgg.set(u.hostname, (refAgg.get(u.hostname) || 0) + 1);
-      }
+      if (u.hostname.includes(host)) addSession('internal', sid);
+      else addSession(u.hostname, sid);
     } catch {
-      refAgg.set(ref.slice(0, 60), (refAgg.get(ref.slice(0, 60)) || 0) + 1);
+      addSession(ref.slice(0, 60), sid);
     }
   }
-  const topReferrers = Array.from(refAgg.entries())
-    .map(([referrer, sessions]) => ({ referrer, sessions }))
+  const topReferrers = Array.from(refSessions.entries())
+    .map(([referrer, set]) => ({ referrer, sessions: set.size }))
     .sort((a, b) => b.sessions - a.sessions)
     .slice(0, 8);
 
   // ── Device split ───────────────────────────────────────────────────
-  let mobile = 0;
-  let desktop = 0;
+  // Count UNIQUE sessions per device class, not raw page-view rows. The
+  // operator reads "Desktop · 42" as "42 desktop visitors" — counting
+  // events conflated visitors with pageviews and inflated the number on
+  // any visitor who scrolled more than one page.
+  const mobileSessions = new Set<string>();
+  const desktopSessions = new Set<string>();
   for (const r of pageViews) {
+    const sid = r.session_id as string | null | undefined;
+    if (!sid) continue;
     const ua = (r.user_agent || '').toLowerCase();
-    if (/mobile|iphone|android/.test(ua)) mobile += 1;
-    else desktop += 1;
+    if (/mobile|iphone|android/.test(ua)) mobileSessions.add(sid);
+    else desktopSessions.add(sid);
   }
+  const mobile = mobileSessions.size;
+  const desktop = desktopSessions.size;
 
   return NextResponse.json({
     range,
