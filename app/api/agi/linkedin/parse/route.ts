@@ -1,9 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 // Parse a LinkedIn URL into structured fields.
 // LinkedIn blocks server-side scraping aggressively, so this just extracts
 // what we can from the URL itself + canonicalizes it.
 export async function POST(req: NextRequest) {
+  // Auth-gate. The endpoint fires an outbound fetch to LinkedIn from
+  // the server. Without auth, attackers can use it as a low-cost
+  // proxy to LinkedIn (rate-limit risk against the platform's IP)
+  // and get LinkedIn-blocked at the edge.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { url } = await req.json();
     if (!url) return NextResponse.json({ error: 'url required' }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,6 +16,11 @@ const supabase = createClient(
 // 14-day history. Used by the dashboard widget + cron pre-flight check.
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Domain warmup state is sender-reputation telemetry +
+  // an attacker can pin the omni_check_send_limit RPC by repeatedly
+  // hitting this endpoint to bump cron behavior.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });

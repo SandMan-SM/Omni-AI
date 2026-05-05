@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -14,6 +15,14 @@ const supabase = createClient(
 // Universal search: leads + replies + meetings + notes
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Universal search returns lead PII + reply text +
+  // booking notes for the supplied business_id. Without auth + with
+  // a guessed business_id, this is one of the most efficient PII
+  // exfil endpoints (search "" returns nothing, but search "@" returns
+  // everyone with an email; search common-name fragments scrapes
+  // the lead pool fast).
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const q = searchParams.get('q');

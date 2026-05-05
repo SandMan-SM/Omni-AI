@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from "@supabase/supabase-js";
+import { authorizeCronOrAdmin } from "@/lib/api-auth";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -26,6 +27,11 @@ interface SearchResult {
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Cmd-K palette has no business_id filter at all —
+  // unauth this dumps lead/business/meeting matches across every
+  // tenant simultaneously. Even worse leak than universal-search.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const q = (searchParams.get("q") ?? "").trim();
   if (q.length < 1) return NextResponse.json({ results: [] });

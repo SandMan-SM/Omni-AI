@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -14,6 +15,12 @@ const supabase = createClient(
 // CRUD for tracked competitors. Mentions are scanned across replies/notes.
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Competitor list + reply mentions = high-signal
+  // intel about who each tenant fears + what their prospects are
+  // saying. Without business_id this would dump every tenant's
+  // intel in one read.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const include_mentions = searchParams.get('include_mentions') === '1';
@@ -36,6 +43,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id, name, domain, notes } = await req.json();
   if (!business_id || !name) {
     return NextResponse.json({ error: 'business_id and name required' }, { status: 400 });
@@ -47,6 +56,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const id = searchParams.get('id');
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
@@ -56,6 +67,11 @@ export async function DELETE(req: NextRequest) {
 
 // Scan all replies for competitor mentions, log new ones
 export async function PUT(req: NextRequest) {
+  // Auth-gate. PUT iterates every replied asset for the tenant +
+  // does N×M string scans. Without auth, an attacker could pin the
+  // server in a cpu-bound loop on any tenant's reply set.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { business_id } = await req.json();
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
 
