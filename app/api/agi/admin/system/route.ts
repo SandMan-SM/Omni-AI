@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { constantTimeEqual } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -13,8 +14,11 @@ const supabase = createClient(
 
 function authorized(req: NextRequest): boolean {
   if (!process.env.ADMIN_API_KEY) return true;
-  const auth = req.headers.get('authorization');
-  return auth === `Bearer ${process.env.ADMIN_API_KEY}`;
+  const authz = req.headers.get('authorization') || '';
+  const presented = authz.replace(/^Bearer\s+/i, '').trim();
+  // Constant-time so the auth comparison can't be probed byte-by-byte
+  // via response-time timing attacks. Same pattern as cron/health-check.
+  return constantTimeEqual(presented, process.env.ADMIN_API_KEY);
 }
 
 // System config CRUD

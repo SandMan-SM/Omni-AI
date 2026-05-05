@@ -39,8 +39,24 @@ export async function POST(req: NextRequest) {
   return NextResponse.json({ ok: true, agent: data });
 }
 
+// Allowlist on PATCH so a caller can't transfer ownership (business_id),
+// reset run_count, or write to columns the operator shouldn't touch.
+const PATCHABLE_AGENT_FIELDS = new Set([
+  'name', 'description', 'system_prompt', 'temperature', 'is_active',
+]);
+
 export async function PATCH(req: NextRequest) {
-  const { id, ...updates } = await req.json();
+  const body = await req.json();
+  const { id } = body as { id?: string };
+  if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  const updates: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (k === 'id') continue;
+    if (PATCHABLE_AGENT_FIELDS.has(k)) updates[k] = v;
+  }
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'no updatable fields' }, { status: 400 });
+  }
   const { data, error } = await supabase
     .from('omni_custom_agents').update(updates).eq('id', id).select().single();
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

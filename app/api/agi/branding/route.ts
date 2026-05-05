@@ -29,18 +29,38 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ branding: data });
 }
 
+// Branding-only allowlist on the businesses table. Without this a caller
+// could PATCH `{ business_id, plan: 'enterprise' }` to upgrade their tier,
+// or `{ business_id, contact_email: '<attacker>' }` to redirect notifications.
+const PATCHABLE_BRANDING_FIELDS = new Set([
+  'brand_logo_url', 'brand_primary_color', 'brand_subdomain',
+  'partnership_blurb', 'sender_name', 'sender_email', 'sender_phone',
+  'booking_url', 'website',
+]);
+
 export async function PATCH(req: NextRequest) {
-  const { business_id, ...updates } = await req.json();
+  const body = await req.json();
+  const { business_id } = body as { business_id?: string };
   if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
 
+  const updates: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (k === 'business_id') continue;
+    if (PATCHABLE_BRANDING_FIELDS.has(k)) updates[k] = v;
+  }
+
   // Validate subdomain (alphanumeric + dash only)
-  if (updates.brand_subdomain) {
+  if (typeof updates.brand_subdomain === 'string') {
     if (!/^[a-z0-9-]{3,30}$/i.test(updates.brand_subdomain)) {
       return NextResponse.json({
         error: 'Subdomain must be 3-30 chars, letters/numbers/dashes only',
       }, { status: 400 });
     }
     updates.brand_subdomain = updates.brand_subdomain.toLowerCase();
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'no updatable fields' }, { status: 400 });
   }
 
   const { data, error } = await supabase

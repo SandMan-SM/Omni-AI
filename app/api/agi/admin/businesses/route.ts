@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
+import { constantTimeEqual } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -15,8 +16,9 @@ const supabase = createClient(
 // In production, lock this behind ADMIN_API_KEY.
 function authorized(req: NextRequest): boolean {
   if (!process.env.ADMIN_API_KEY) return true; // open in dev
-  const auth = req.headers.get('authorization');
-  return auth === `Bearer ${process.env.ADMIN_API_KEY}`;
+  const authz = req.headers.get('authorization') || '';
+  const presented = authz.replace(/^Bearer\s+/i, '').trim();
+  return constantTimeEqual(presented, process.env.ADMIN_API_KEY);
 }
 
 export async function GET(req: NextRequest) {
