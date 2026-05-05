@@ -48,6 +48,16 @@ export async function sendTelegram(msg: TelegramMessage | string, override_chat_
   }
 }
 
+// Telegram's "Markdown" (legacy) parse mode treats *, _, `, [ as control
+// characters — a lead named "John *Real" or a company with an underscore
+// caused Telegram to return 400 and silently drop the notification. The
+// helpers below escape those four characters before interpolating any
+// user-supplied string.
+function md(s: string | null | undefined): string {
+  if (!s) return '';
+  return String(s).replace(/[*_`\[]/g, c => `\\${c}`);
+}
+
 // Helper for common notifications
 export async function notifyReply(args: {
   leadName: string;
@@ -63,7 +73,7 @@ export async function notifyReply(args: {
     unsubscribe: '🚫',
   }[args.category ?? 'other'] ?? '💬';
 
-  const text = `${emoji} *Lead Replied!*\n\n*${args.leadName}*${args.company ? ` @ ${args.company}` : ''}\nCategory: \`${args.category ?? 'unknown'}\`\n\n_${args.snippet.slice(0, 200)}_`;
+  const text = `${emoji} *Lead Replied!*\n\n*${md(args.leadName)}*${args.company ? ` @ ${md(args.company)}` : ''}\nCategory: \`${md(args.category) || 'unknown'}\`\n\n_${md(args.snippet.slice(0, 200))}_`;
   return sendTelegram(text);
 }
 
@@ -80,7 +90,7 @@ export async function notifyBooking(args: {
     weekday: 'short', month: 'short', day: 'numeric',
     hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
   });
-  const text = `📅 *New Meeting Booked!*\n\n*${args.attendeeName}*\n${args.attendeeEmail}\n\n🕐 ${dt}`;
+  const text = `📅 *New Meeting Booked!*\n\n*${md(args.attendeeName)}*\n${md(args.attendeeEmail)}\n\n🕐 ${md(dt)}`;
   return sendTelegram(text);
 }
 
@@ -90,6 +100,6 @@ export async function notifyHotLead(args: {
   score: number;
   reason: string;
 }) {
-  const text = `🔥 *Hot Lead Surfaced!*\n\n*${args.leadName}* @ ${args.company ?? '?'}\nScore: *${args.score}/100*\n\n${args.reason}`;
+  const text = `🔥 *Hot Lead Surfaced!*\n\n*${md(args.leadName)}* @ ${md(args.company) || '?'}\nScore: *${args.score}/100*\n\n${md(args.reason)}`;
   return sendTelegram(text);
 }
