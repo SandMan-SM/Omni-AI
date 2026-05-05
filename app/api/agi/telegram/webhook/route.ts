@@ -180,7 +180,12 @@ export async function POST(req: NextRequest) {
         .eq('business_id', business.id);
       const arr = leads ?? [];
       const won = arr.filter(l => l.deal_stage === 'closed_won');
-      const open = arr.filter(l => !['closed_won', 'closed_lost'].includes(l.deal_stage ?? ''));
+      // Match the dashboard's open-pipeline definition: exclude both
+      // deal_stage closed_lost AND lead-level status='lost'.
+      const open = arr.filter(l =>
+        !['closed_won', 'closed_lost'].includes(l.deal_stage ?? '') &&
+        l.status !== 'lost',
+      );
       const wonRevenue = won.reduce((s, l) => s + (l.deal_value ?? 0), 0);
       await sendTelegram(
         `📈 *Pipeline @ ${business.name}*\n\n` +
