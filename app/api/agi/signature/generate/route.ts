@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,8 +10,14 @@ const supabase = createClient(
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// Generate an HTML email signature using business branding + sender info
+// Generate an HTML email signature using business branding + sender info.
+// Admin-or-cron gated — without it, anyone could drain Claude budget by
+// POSTing repeated business_ids and the route would return signed HTML
+// containing the operator's sender_name + sender_email (a small PII
+// surface visible to anyone who can iterate business_id UUIDs).
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { business_id } = await req.json();
     if (!business_id) return NextResponse.json({ error: 'business_id required' }, { status: 400 });
