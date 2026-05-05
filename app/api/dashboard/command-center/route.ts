@@ -134,7 +134,11 @@ export async function GET() {
         { count: pv28d },
         { count: nlOpens7d },
         { data: lastLeadRow },
-        { count: activeSessions },
+        // session-id rows in the last 30 min — we de-dupe in JS so the
+        // headline KPI counts unique visitors, not raw event rows. With
+        // head:true + count:"exact" Postgres returns the row count, which
+        // would inflate "active sessions" to the volume of fired events.
+        { data: recentSessionRows },
       ] = await Promise.all([
         sb.from(leadsTable).select("id", { count: "exact", head: true }).gte("created_at", since7d),
         sb.from(leadsTable).select("id", { count: "exact", head: true }).gte("created_at", since28d),
@@ -142,8 +146,14 @@ export async function GET() {
         sb.from(eventsTable).select("id", { count: "exact", head: true }).eq("event_type", "page_view").gte("created_at", since28d),
         sb.from(newsletterTable).select("id", { count: "exact", head: true }).eq("event_type", "open").gte("created_at", since7d),
         sb.from(leadsTable).select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-        sb.from(eventsTable).select("session_id", { count: "exact", head: true }).gte("created_at", since30min),
+        sb.from(eventsTable).select("session_id").gte("created_at", since30min).limit(2000),
       ]);
+
+      const uniqueSessions = new Set(
+        ((recentSessionRows ?? []) as { session_id: string | null }[])
+          .map(r => r.session_id)
+          .filter((s): s is string => !!s),
+      );
 
       return {
         slug,
@@ -153,7 +163,7 @@ export async function GET() {
         page_views_7d: pv7d || 0,
         page_views_28d: pv28d || 0,
         newsletter_opens_7d: nlOpens7d || 0,
-        active_sessions_30min: activeSessions || 0,
+        active_sessions_30min: uniqueSessions.size,
         last_lead_at:
           (lastLeadRow as { created_at?: string } | null)?.created_at || null,
       };
