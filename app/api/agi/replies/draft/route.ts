@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +13,16 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 // Claude drafts a contextual response to a reply.
 // Pulls in the original outreach + the reply, then writes a follow-up.
 // Tunes tone based on the reply's category (interested -> book; not_now -> archive; etc).
+//
+// Admin-or-cron gated. Each call is a Claude (Haiku) call and writes
+// the AI draft into omni_outreach_assets.ai_draft_response — without
+// auth, anyone could drain Claude budget + plant attacker-controlled
+// drafts that the operator might paste into Resend without rereading.
+// Autopilot (01defcc) + replies/log forward CRON_SECRET so the internal
+// flows still work.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { asset_id } = await req.json() as { asset_id: string };
     if (!asset_id) return NextResponse.json({ error: 'asset_id required' }, { status: 400 });

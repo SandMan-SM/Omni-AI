@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Anthropic from '@anthropic-ai/sdk';
 import { notifyReply } from '@/lib/agi/telegram';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,7 +22,15 @@ const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 //   meeting_booked  — confirms meeting time
 //   spam            — auto-reply or non-human
 //   other           — fallback
+//
+// Admin-or-cron gated. Each call hits Claude (Haiku) + can auto-suppress
+// an email and cancel any future scheduled outreach to that lead. Without
+// auth, an attacker could POST `{ asset_id: '<known>', reply_text: '...' }`
+// to forcibly suppress + drop sequences for any lead. Autopilot
+// (01defcc) and replies/log forward CRON_SECRET so internals still work.
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { asset_id, reply_text } = await req.json() as {
       asset_id: string;

@@ -61,17 +61,26 @@ export async function POST(req: NextRequest) {
     // so `base` was the full URL, and the downstream calls to /api/replies/*
     // 404'd. fetch() resolves on 4xx so this looked fine in logs while
     // categorization + drafting silently never ran.
+    //
+    // Forward CRON_SECRET so the now-auth-gated downstream routes accept
+    // our internal call. In dev (no CRON_SECRET set) the downstream routes
+    // also skip auth so the omitted Authorization header is harmless.
     if (auto_categorize) {
       const base = req.url.replace(/\/api\/agi\/replies\/log.*/, '');
+      const internalAuth: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      if (process.env.CRON_SECRET) internalAuth.Authorization = `Bearer ${process.env.CRON_SECRET}`;
+
       const cat = await fetch(`${base}/api/agi/replies/categorize`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalAuth,
         body: JSON.stringify({ asset_id, reply_text }),
       }).then(r => r.ok ? r.json() : null).catch(() => null);
 
       const draft = await fetch(`${base}/api/agi/replies/draft`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: internalAuth,
         body: JSON.stringify({ asset_id }),
       }).then(r => r.ok ? r.json() : null).catch(() => null);
 
