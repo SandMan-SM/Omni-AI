@@ -32,12 +32,15 @@ interface SponsorBlockProps {
 
 const FRED_LINK = "https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc";
 const LBP_LINK = "https://livebetterpodcast.com";
+const CPS_LINK = "https://psychandcustodyevaluations.com";
 
 // Where the embed pings analytics. Always the central dashboard so the
 // operator sees ALL tenants' sponsor traffic in one place.
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
-function ping(slug: string, target: "fred" | "lbp", action: "view" | "click" | "share", extra?: Record<string, unknown>) {
+type Target = "fred" | "lbp" | "cps";
+
+function ping(slug: string, target: Target, action: "view" | "click" | "share", extra?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
   // Fire-and-forget — never block the click. keepalive lets the beacon
   // survive even when the user is navigating away to the sponsor URL.
@@ -61,15 +64,23 @@ function ping(slug: string, target: "fred" | "lbp", action: "view" | "click" | "
   }
 }
 
-function trackedHref(target: "fred" | "lbp", slug: string): string {
-  const base = target === "fred" ? FRED_LINK : LBP_LINK;
-  // UTM tagging so Fred and Jaime can see attribution in their own
+function trackedHref(target: Target, slug: string): string {
+  const base =
+    target === "fred" ? FRED_LINK :
+    target === "lbp" ? LBP_LINK :
+    CPS_LINK;
+  // UTM tagging so Fred / Jaime / CPS can see attribution in their own
   // analytics. utm_source = the tenant slug → they know which Omni
   // portfolio site sent the click.
   const u = new URL(base);
   u.searchParams.set("utm_source", `omni-${slug}`);
   u.searchParams.set("utm_medium", "newsletter");
-  u.searchParams.set("utm_campaign", target === "fred" ? "fred-circle" : "live-better-podcast");
+  u.searchParams.set(
+    "utm_campaign",
+    target === "fred" ? "fred-circle" :
+    target === "lbp" ? "live-better-podcast" :
+    "cps-feature",
+  );
   return u.toString();
 }
 
@@ -79,10 +90,11 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
   useEffect(() => {
     ping(slug, "fred", "view");
     ping(slug, "lbp", "view");
+    ping(slug, "cps", "view");
   }, [slug]);
 
   const onClick = useCallback(
-    (target: "fred" | "lbp") => {
+    (target: Target) => {
       ping(slug, target, "click");
     },
     [slug],
@@ -237,6 +249,65 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
         title="Live Better Podcast — in partnership with Omni AI"
         slug={slug}
         target="lbp"
+        align="left"
+      />
+
+      {/* TERTIARY — CPS · Featured Client. The third tier in the slot
+          hierarchy: paid sponsor → strategic partnership → featured
+          client. CPS is one of our flagship operators (forensic
+          psych + custody evaluations) and gets cross-portfolio
+          promotion as part of the agency relationship. Visually
+          subdued vs. Fred's card so it never competes with the
+          paying sponsor for attention. */}
+      <a
+        href={trackedHref("cps", slug)}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={() => onClick("cps")}
+        style={{
+          display: "block",
+          background: card,
+          border: `1px solid ${border}`,
+          borderRadius: 12,
+          padding: "16px 20px",
+          textDecoration: "none",
+          color: textPrimary,
+          marginTop: 16,
+        }}
+      >
+        <div style={{ display: "flex", alignItems: "center", gap: 14, justifyContent: "space-between" }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: textMuted,
+                marginBottom: 4,
+              }}
+            >
+              Featured client · powered by Omni AI
+            </div>
+            <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
+              CPS · Psych &amp; Custody Evaluations
+            </div>
+            <div style={{ fontSize: 13, color: textMuted }}>
+              Forensic psychology + custody evaluations across Utah.
+              Trusted by attorneys, courts, and families.
+            </div>
+          </div>
+          <span style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>
+            Learn more →
+          </span>
+        </div>
+      </a>
+
+      <ShareControls
+        url={trackedHref("cps", slug)}
+        title="CPS · Psych & Custody Evaluations — featured client of Omni AI"
+        slug={slug}
+        target="cps"
         align="left"
       />
     </section>

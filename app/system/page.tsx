@@ -11,11 +11,11 @@ import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-
 export const metadata: Metadata = {
   title: "Portfolio Promotion System · Omni AI",
   description:
-    "How every Omni AI portfolio site promotes Fred Circle (sponsor) and Live Better Podcast (partnership) — the embed, the analytics, the attribution.",
+    "How every Omni AI portfolio site promotes our sponsor (Fred Circle), our partnership (Live Better Podcast), and our featured client (CPS) — the embed, the analytics, the attribution.",
   openGraph: {
     title: "Portfolio Promotion System · Omni AI",
     description:
-      "Fred Circle + Live Better Podcast embedded across every Omni AI portfolio site. One source of truth, attribution to omnileadsagi.com/dashboard.",
+      "Sponsor + partner + featured client embedded across every Omni AI portfolio site. One source of truth, attribution to omnileadsagi.com/dashboard.",
     url: "https://omnileadsagi.com/system",
     siteName: "Omni AI",
     type: "website",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Portfolio Promotion System · Omni AI",
     description:
-      "Fred Circle + Live Better Podcast embedded across every Omni AI portfolio site.",
+      "Sponsor + partner + featured client embedded across every Omni AI portfolio site.",
   },
 };
 
@@ -848,6 +848,56 @@ export default function SystemPage() {
               partnership is the marketing point — the &ldquo;in partnership
               with&rdquo; badge on the secondary slot is what ties their
               audience back to the Omni AI portfolio.
+            </div>
+          </div>
+
+          {/* Tertiary slot — featured client. CPS gets cross-portfolio
+              promotion as part of the agency relationship, but visually
+              the card sits below the paying sponsor and the partnership
+              tier so the hierarchy reads correctly to both readers and
+              prospective sponsors. */}
+          <div
+            style={{
+              background: "#1a1a1a",
+              border: "1px solid #27272a",
+              borderRadius: 12,
+              padding: "20px 22px",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                letterSpacing: "0.14em",
+                textTransform: "uppercase",
+                color: "#a1a1aa",
+                marginBottom: 4,
+              }}
+            >
+              Featured client · powered by Omni AI
+            </div>
+            <div
+              style={{
+                fontSize: 16,
+                fontWeight: 600,
+                color: "#fafafa",
+                marginBottom: 4,
+              }}
+            >
+              CPS · Psych &amp; Custody Evaluations
+            </div>
+            <div
+              style={{
+                fontSize: 14,
+                color: "#d4d4d8",
+                lineHeight: 1.65,
+              }}
+            >
+              Forensic psychology + custody evaluations across Utah —
+              one of our flagship operators. Cross-portfolio promotion
+              comes with the agency relationship. The card stays
+              tertiary so it never competes with Fred for the primary
+              attention slot.
             </div>
           </div>
         </div>

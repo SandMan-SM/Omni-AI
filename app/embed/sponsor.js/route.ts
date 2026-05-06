@@ -23,26 +23,35 @@ const CACHE_HEADER = "public, max-age=3600, s-maxage=3600, stale-while-revalidat
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 const FRED_LINK = "https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc";
 const LBP_LINK = "https://livebetterpodcast.com";
+const CPS_LINK = "https://psychandcustodyevaluations.com";
 
 const SCRIPT = /* js */ `(function(){
-  // ── omni-sponsor v1 ───────────────────────────────────────────────
-  // Renders Fred (sponsor, primary) + Live Better Podcast (partner,
-  // secondary) + share affordances + a newsletter capture into every
+  // ── omni-sponsor v2 ───────────────────────────────────────────────
+  // Three-tier feature block:
+  //   1. Fred (paid sponsor, primary)
+  //   2. Live Better Podcast (strategic partnership, secondary)
+  //   3. CPS · Psych & Custody Evaluations (featured client, tertiary)
+  // Plus share affordances + newsletter capture. Renders into every
   // <div id="omni-sponsor" data-slug="..."> on the page. Re-runs on
   // SPA navigations via MutationObserver so framework apps work too.
   var ANALYTICS_HOST = ${JSON.stringify(ANALYTICS_HOST)};
   var FRED = ${JSON.stringify(FRED_LINK)};
   var LBP = ${JSON.stringify(LBP_LINK)};
+  var CPS = ${JSON.stringify(CPS_LINK)};
 
   function trackedHref(target, slug) {
     try {
-      var u = new URL(target === 'fred' ? FRED : LBP);
+      var base = target === 'fred' ? FRED : target === 'lbp' ? LBP : CPS;
+      var u = new URL(base);
       u.searchParams.set('utm_source', 'omni-' + slug);
       u.searchParams.set('utm_medium', 'newsletter');
-      u.searchParams.set('utm_campaign', target === 'fred' ? 'fred-circle' : 'live-better-podcast');
+      u.searchParams.set('utm_campaign',
+        target === 'fred' ? 'fred-circle' :
+        target === 'lbp' ? 'live-better-podcast' :
+        'cps-feature');
       return u.toString();
     } catch (e) {
-      return target === 'fred' ? FRED : LBP;
+      return target === 'fred' ? FRED : target === 'lbp' ? LBP : CPS;
     }
   }
 
@@ -239,6 +248,22 @@ const SCRIPT = /* js */ `(function(){
       + '</div>';
     lbpCard.addEventListener('click', function(){ ping(slug, 'lbp', 'click'); });
 
+    // TERTIARY — CPS · Featured Client
+    var cpsHref = trackedHref('cps', slug);
+    var cpsCard = el('a', {
+      href: cpsHref, target: '_blank', rel: 'noopener noreferrer',
+      style: 'display:block;background:#1a1a1a;border:1px solid #27272a;border-radius:12px;padding:16px 20px;text-decoration:none;color:#fafafa;margin-top:16px;'
+    });
+    cpsCard.innerHTML = '<div style="display:flex;align-items:center;gap:14px;justify-content:space-between;">'
+      + '<div style="flex:1;min-width:0;">'
+      + '<div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#a1a1aa;margin-bottom:4px;">Featured client · powered by Omni AI</div>'
+      + '<div style="font-size:15px;font-weight:600;margin-bottom:2px;">CPS · Psych & Custody Evaluations</div>'
+      + '<div style="font-size:13px;color:#a1a1aa;">Forensic psychology + custody evaluations across Utah. Trusted by attorneys, courts, and families.</div>'
+      + '</div>'
+      + '<span style="flex-shrink:0;font-size:12px;color:#f59e0b;font-weight:600;">Learn more →</span>'
+      + '</div>';
+    cpsCard.addEventListener('click', function(){ ping(slug, 'cps', 'click'); });
+
     // Container
     var section = el('section', {
       style: 'background:#0f0f0f;border-radius:16px;padding:28px 24px;margin:32px 0;border:1px solid #27272a;color:#fafafa;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;'
@@ -251,6 +276,8 @@ const SCRIPT = /* js */ `(function(){
     section.appendChild(shareRow('fred', slug, fredHref, 'Live with Fred Circle — sponsored dispatch from Omni AI'));
     section.appendChild(lbpCard);
     section.appendChild(shareRow('lbp', slug, lbpHref, 'Live Better Podcast — in partnership with Omni AI'));
+    section.appendChild(cpsCard);
+    section.appendChild(shareRow('cps', slug, cpsHref, 'CPS · Psych & Custody Evaluations — featured client of Omni AI'));
     section.appendChild(newsletterForm(slug, brand));
 
     host.innerHTML = '';
@@ -259,6 +286,7 @@ const SCRIPT = /* js */ `(function(){
     // Impression ping — once per render
     ping(slug, 'fred', 'view');
     ping(slug, 'lbp', 'view');
+    ping(slug, 'cps', 'view');
   }
 
   function scan() {
