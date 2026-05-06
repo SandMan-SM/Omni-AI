@@ -144,6 +144,15 @@ const PORTFOLIO_SITES: PortfolioSite[] = [
     status: "live",
     group: "marketing-property",
   },
+  {
+    name: "Rene Laveau",
+    slug: "rene",
+    preview: "https://renelaveau-website.vercel.app",
+    blurb:
+      "Spiritual / mystic operator. Silver Line capture wired to the dashboard — leads land in inbound_rene_leads in real time.",
+    status: "wip",
+    group: "client-site",
+  },
   // Newsrooms — domains bought + DNS pointed at Vercel, but the
   // editorial product is still in development. Show "Coming soon"
   // pills and route the card CTA to the Vercel preview build until
