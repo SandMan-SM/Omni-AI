@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SponsorBlock } from "@/components/sponsor/SponsorBlock";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
+import { AuroraMeshBackdrop } from "@/components/aurora-mesh-backdrop";
 import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-ld";
 
 export const metadata: Metadata = {
@@ -204,10 +205,15 @@ export default function SystemPage() {
         overflow: "hidden",
       }}
     >
-      {/* Chrome-gold sparks. Matches the amber sponsor accent of the
-          page so the ambient motion reinforces the brand cue rather
-          than competing with it. Respects prefers-reduced-motion via
-          the component's own useReducedMotion guard. */}
+      {/* Layered backdrops:
+          1. AuroraMeshBackdrop — slow-shifting amber + indigo + rose
+             + emerald gradient blobs with a faint dot grid overlay.
+             Provides depth + subtle color motion behind everything.
+          2. GoldSparksBackdrop — chrome-gold ember field on top of
+             the aurora. Reinforces the brand cue with kinetic detail.
+          Together they read as ambient + branded without competing
+          with the content. Both respect prefers-reduced-motion. */}
+      <AuroraMeshBackdrop />
       <GoldSparksBackdrop />
 
       {/* Structured data so LLMs (ChatGPT, Perplexity, Gemini) and
@@ -831,17 +837,54 @@ export default function SystemPage() {
                 </span>
               </div>
 
+              {/* Blurb gets a fixed visual height (3 lines max) via
+                  webkit-line-clamp so cards with shorter copy don't
+                  collapse and cards with longer copy don't push the
+                  button below the grid baseline. Combined with the
+                  card's min-height below, this guarantees every
+                  button lands at the same y-position across the row. */}
               {s.blurb && (
-                <div style={{ fontSize: 12, color: "#a1a1aa", lineHeight: 1.55 }}>
+                <div
+                  style={{
+                    fontSize: 12,
+                    color: "#a1a1aa",
+                    lineHeight: 1.55,
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                  }}
+                >
                   {s.blurb}
                 </div>
               )}
 
-              {/* Action row pinned to the bottom of the card with
-                  marginTop:auto so every button sits on the same
-                  baseline regardless of how long each card's blurb is.
-                  Without this, cards with a longer blurb push their
-                  button down and the grid loses visual rhythm. */}
+              {/* Meta line BEFORE the action row in DOM order so
+                  the action row can sit flush at the very bottom of
+                  the card without anything below it. */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  fontSize: 10,
+                  color: "#52525b",
+                  fontFamily: "ui-monospace, SFMono-Regular, monospace",
+                }}
+              >
+                <span>slug · {s.slug}</span>
+                {s.url && (
+                  <span style={{ color: "#71717a" }}>
+                    {s.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                  </span>
+                )}
+              </div>
+
+              {/* Action row — pinned to the bottom of the card with
+                  marginTop:auto and rendered as the last child so
+                  every button lands on the same baseline regardless of
+                  blurb length. Cards in the same row already share a
+                  height (CSS grid stretches them by default), so
+                  combined this gives a perfectly straight button line. */}
               <div
                 style={{
                   display: "flex",
@@ -851,9 +894,6 @@ export default function SystemPage() {
                 }}
               >
                 {s.url ? (
-                  // Production domain attached — single Visit live CTA.
-                  // The Vercel preview is redundant for live sites; hide
-                  // it so the card has one clear action instead of two.
                   <a
                     href={s.url}
                     target="_blank"
@@ -865,7 +905,7 @@ export default function SystemPage() {
                       color: "#1c1917",
                       fontSize: 11,
                       fontWeight: 700,
-                      padding: "7px 12px",
+                      padding: "8px 12px",
                       borderRadius: 6,
                       textDecoration: "none",
                       letterSpacing: "0.04em",
@@ -874,8 +914,6 @@ export default function SystemPage() {
                     Visit live →
                   </a>
                 ) : (
-                  // No production domain yet — surface the Vercel preview
-                  // as the only way to view the in-development build.
                   <a
                     href={s.preview}
                     target="_blank"
@@ -888,7 +926,7 @@ export default function SystemPage() {
                       color: "#d4d4d8",
                       fontSize: 11,
                       fontWeight: 700,
-                      padding: "7px 12px",
+                      padding: "8px 12px",
                       borderRadius: 6,
                       textDecoration: "none",
                       letterSpacing: "0.04em",
@@ -896,24 +934,6 @@ export default function SystemPage() {
                   >
                     Preview build →
                   </a>
-                )}
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: 12,
-                  fontSize: 10,
-                  color: "#52525b",
-                  marginTop: 4,
-                  fontFamily: "ui-monospace, SFMono-Regular, monospace",
-                }}
-              >
-                <span>slug · {s.slug}</span>
-                {s.url && (
-                  <span style={{ color: "#71717a" }}>
-                    {s.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                  </span>
                 )}
               </div>
             </div>
