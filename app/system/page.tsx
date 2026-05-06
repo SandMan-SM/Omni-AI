@@ -7,6 +7,7 @@ import Link from "next/link";
 import { SponsorBlock } from "@/components/sponsor/SponsorBlock";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { AtomOrb } from "@/components/atom-orb";
 import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-ld";
 
 export const metadata: Metadata = {
@@ -270,6 +271,20 @@ export default function SystemPage() {
           ← omnileadsagi.com
         </Link>
 
+        {/* Hero atom orb — visual signature for the system. Warm
+            palette + reflective floor matches the operator-pinned
+            reference image. Sits above the eyebrow + headline so the
+            page reads as an artifact first, an operations doc second. */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            margin: "8px 0 28px 0",
+          }}
+        >
+          <AtomOrb size={300} variant="warm" reflection />
+        </div>
+
         <div
           style={{
             color: "#f59e0b",
@@ -278,6 +293,7 @@ export default function SystemPage() {
             letterSpacing: "0.18em",
             textTransform: "uppercase",
             marginTop: 16,
+            textAlign: "center",
           }}
         >
           Portfolio Promotion System
@@ -289,6 +305,7 @@ export default function SystemPage() {
             margin: "10px 0 18px 0",
             letterSpacing: "-0.02em",
             lineHeight: 1.15,
+            textAlign: "center",
           }}
         >
           One sponsor. One partner. Promoted on every site.
@@ -299,7 +316,8 @@ export default function SystemPage() {
             color: "#d4d4d8",
             lineHeight: 1.65,
             maxWidth: 720,
-            margin: "0 0 36px 0",
+            margin: "0 auto 36px",
+            textAlign: "center",
           }}
         >
           Every site in the Omni AI portfolio runs a single embedded block

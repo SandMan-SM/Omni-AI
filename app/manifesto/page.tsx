@@ -12,6 +12,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
+import { AtomOrb } from "@/components/atom-orb";
 import {
   JsonLd,
   organizationSchema,
@@ -154,6 +155,20 @@ export default function ManifestoPage() {
         >
           ← omnileadsagi.com / system
         </Link>
+
+        {/* Atom orb hero — cool/violet variant matches the second
+            reference image. The orb IS the manifesto's central
+            metaphor: one center, many systems orbiting it. Reflection
+            gives the "resting on a polished surface" feel. */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            margin: "8px 0 36px 0",
+          }}
+        >
+          <AtomOrb size={260} variant="cool" reflection />
+        </div>
 
         {/* Eyebrow */}
         <div
