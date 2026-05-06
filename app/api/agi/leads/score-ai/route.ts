@@ -38,15 +38,36 @@ export async function POST(req: NextRequest) {
     const { data: business } = await supabase
       .from('omni_businesses').select('*').eq('id', lead.business_id).single();
 
-    const { data: intel } = lead.company
-      ? await supabase
+    // Same hardening as lib/agi/outreach.ts fetchCompanyIntel — escape
+    // SQL wildcards in lead.company (CSV imports often have % or _),
+    // try exact case-insensitive match first, fall back to substring
+    // ordered by name length so "Apple" doesn't latch onto "Pineapple
+    // Computing".
+    let intel: any | null = null;
+    if (lead.company) {
+      const escaped = String(lead.company).replace(/[%_\\]/g, c => `\\${c}`);
+      const { data: exact } = await supabase
+        .from('omni_company_intel')
+        .select('*')
+        .eq('business_id', lead.business_id)
+        .ilike('name', escaped)
+        .limit(1)
+        .maybeSingle();
+      if (exact) {
+        intel = exact;
+      } else {
+        const { data: candidates } = await supabase
           .from('omni_company_intel')
           .select('*')
           .eq('business_id', lead.business_id)
-          .ilike('name', `%${lead.company}%`)
-          .limit(1)
-          .maybeSingle()
-      : { data: null };
+          .ilike('name', `%${escaped}%`)
+          .limit(5);
+        if (candidates && candidates.length) {
+          candidates.sort((a, b) => (String(a.name ?? '').length) - (String(b.name ?? '').length));
+          intel = candidates[0];
+        }
+      }
+    }
 
     const prompt = `Score this lead's fit for our outreach campaign.
 
