@@ -298,6 +298,197 @@ export default function SystemPage() {
           so attribution is visible per portfolio site.
         </p>
 
+        {/* The Interlinked thread — the philosophical layer the
+            sponsorship + partnership system exists to serve. CPS works
+            with families fractured by the same disconnection the
+            manifesto names; Live Better Podcast is the show built on
+            that homecoming; Omni AI is the agentic tool that gives
+            people back the attention to feel any of it. Three operators
+            in one frame. The full essay lives at /manifesto. */}
+        <section
+          style={{
+            background:
+              "linear-gradient(135deg,#0d0a08 0%,#0d0d0d 55%,#1a0c0c 100%)",
+            border: "1px solid #292524",
+            borderRadius: 16,
+            padding: "30px 28px",
+            margin: "44px 0 12px 0",
+          }}
+        >
+          <div
+            style={{
+              color: "#fbbf24",
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: "0.18em",
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
+            The Interlinked thread
+          </div>
+          <h2
+            style={{
+              fontSize: 26,
+              fontWeight: 800,
+              letterSpacing: "-0.015em",
+              lineHeight: 1.22,
+              margin: "0 0 14px 0",
+              color: "#fafafa",
+              fontFamily:
+                "Georgia, 'Iowan Old Style', 'Times New Roman', serif",
+            }}
+          >
+            Why these three sit on every page — together.
+          </h2>
+          <p
+            style={{
+              fontSize: 17,
+              fontStyle: "italic",
+              color: "#fafafa",
+              lineHeight: 1.65,
+              margin: "0 0 16px 0",
+              maxWidth: 720,
+              fontFamily:
+                "Georgia, 'Iowan Old Style', 'Times New Roman', serif",
+              borderLeft: "3px solid #fbbf24",
+              paddingLeft: 18,
+            }}
+          >
+            &ldquo;We are not here to help you manage your stress. We are
+            here to dissolve the machinery that produces it.&rdquo;
+          </p>
+          <p
+            style={{
+              fontSize: 14.5,
+              color: "#d4d4d8",
+              lineHeight: 1.7,
+              margin: "0 0 22px 0",
+              maxWidth: 720,
+            }}
+          >
+            That line is from the{" "}
+            <Link
+              href="/manifesto"
+              style={{ color: "#fbbf24", textDecoration: "none" }}
+            >
+              Interlinked manifesto
+            </Link>{" "}
+            — the philosophical layer behind every operator on this
+            page. The sponsorship system isn&apos;t built to sell more
+            ads. It&apos;s built to put the operators who serve the same
+            purpose in front of the same people, at the same time. A
+            single thread.
+          </p>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 16,
+              marginTop: 8,
+            }}
+          >
+            <div>
+              <div
+                style={{
+                  color: "#10b981",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
+                Omni AI · The engine
+              </div>
+              <div
+                style={{
+                  fontSize: 13.5,
+                  color: "#e4e4e7",
+                  lineHeight: 1.6,
+                }}
+              >
+                Liberation of attention. Agentic systems that carry the
+                load humans were never meant to carry — inbox, calendar,
+                spreadsheets, the algorithms that decide your worth — so
+                what&apos;s left is the part only you can do.
+              </div>
+            </div>
+            <div>
+              <div
+                style={{
+                  color: "#a855f7",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
+                Live Better Podcast · The homecoming
+              </div>
+              <div
+                style={{
+                  fontSize: 13.5,
+                  color: "#e4e4e7",
+                  lineHeight: 1.6,
+                }}
+              >
+                Jaime&apos;s show is the Interlinked recognition put in
+                public — the conversations that remind people they were
+                never separate to begin with. Our partnership puts that
+                signal in front of every Omni AI audience.
+              </div>
+            </div>
+            <div>
+              <div
+                style={{
+                  color: "#38bdf8",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  letterSpacing: "0.16em",
+                  textTransform: "uppercase",
+                  marginBottom: 6,
+                }}
+              >
+                CPS · The repair
+              </div>
+              <div
+                style={{
+                  fontSize: 13.5,
+                  color: "#e4e4e7",
+                  lineHeight: 1.6,
+                }}
+              >
+                Forensic psychology and custody evaluations meet families
+                at the moment the manifesto names — when one tear,
+                somewhere upstream, has fractured a family system. CPS
+                is the operator who walks people through that repair.
+              </div>
+            </div>
+          </div>
+
+          <div
+            style={{
+              marginTop: 24,
+              paddingTop: 18,
+              borderTop: "1px solid #292524",
+              fontSize: 14,
+              color: "#a8a29e",
+              lineHeight: 1.65,
+            }}
+          >
+            Read the full essay:{" "}
+            <Link
+              href="/manifesto"
+              style={{ color: "#fbbf24", textDecoration: "none", fontWeight: 600 }}
+            >
+              omnileadsagi.com/manifesto →
+            </Link>
+          </div>
+        </section>
+
         {/* How we're different — positioning the system explicitly so
             sponsors / partners / prospects understand WHY this is novel
             before they see the mechanics. Keeps the tone confident

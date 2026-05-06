@@ -31,6 +31,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/arena`, lastModified: now, changeFrequency: "weekly", priority: 0.7 },
     { url: `${baseUrl}/arena/info`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     { url: `${baseUrl}/interlinked`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    // /manifesto — the canonical Interlinked manifesto. Long-form essay
+    // tying Omni AI + Live Better Podcast + CPS under a single thread;
+    // shareable with Open Graph + Twitter card.
+    { url: `${baseUrl}/manifesto`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/system`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${baseUrl}/oracle`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${baseUrl}/join`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     // /sponsor is intentionally omitted — it's a logged-in sponsor portal
