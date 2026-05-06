@@ -66,12 +66,17 @@ export async function GET(req: Request) {
       .select('*', { count: 'exact', head: true })
       .eq('newsletter_subscribed', true);
 
+    // The previous code wrote `mrrOmni || 2333` so a true-zero gross
+    // got clobbered to the seeded floor. That hid actual cash droughts
+    // in the operator dashboard for as long as PayPal stayed quiet.
+    // Write the real number; only fall back to the floor when the
+    // query failed (handled by the catch block below).
     await supabase
       .from('client_portfolio')
       .update({
-        current_mrr_usd: mrrOmni || 2333,           // keep seeded floor if no txns
-        current_arr_usd: arrOmni || 28000,
-        customer_count: newsletterCount || 0,
+        current_mrr_usd: mrrOmni,
+        current_arr_usd: arrOmni,
+        customer_count: newsletterCount ?? 0,
         last_synced_at: new Date().toISOString(),
       })
       .eq('slug', 'omni-ai');
@@ -79,9 +84,9 @@ export async function GET(req: Request) {
     await recordMetric({
       client: 'omni-ai',
       date: today,
-      mrrUsd: mrrOmni || 2333,
-      arrUsd: arrOmni || 28000,
-      leads: newsletterCount || 0,
+      mrrUsd: mrrOmni,
+      arrUsd: arrOmni,
+      leads: newsletterCount ?? 0,
       source: 'paypal',
     });
 
