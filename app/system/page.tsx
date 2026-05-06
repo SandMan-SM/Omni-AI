@@ -732,7 +732,11 @@ export default function SystemPage() {
         </p>
         <SponsorBlock slug="omnileads" />
 
-        {/* Architecture */}
+        {/* How it works — written for sponsors / partners / prospects.
+            Skip the technical implementation (script tags, UTM names,
+            inbound API paths) and lead with what the AI fabric actually
+            does for the audiences who matter. The /embed/sponsor.js
+            mechanics still ship; they're just operator-facing detail. */}
         <div
           style={{
             color: "#a1a1aa",
@@ -745,48 +749,118 @@ export default function SystemPage() {
         >
           2 · How it works
         </div>
-        <ol
+
+        <p
           style={{
             color: "#d4d4d8",
-            fontSize: 15,
-            lineHeight: 1.85,
-            paddingLeft: 24,
-            margin: "12px 0 0 0",
+            fontSize: 16,
+            lineHeight: 1.7,
+            margin: "12px 0 18px 0",
+            maxWidth: 720,
           }}
         >
-          <li>
-            Each client site drops in a one-line script tag pointing at{" "}
-            <code style={{ color: "#f59e0b" }}>
-              omnileadsagi.com/embed/sponsor.js
-            </code>
-            .
-          </li>
-          <li>
-            The embed renders Fred&apos;s card (primary, biggest CTA),
-            Live Better Podcast (secondary, partnership badge), share
-            controls on each, and an email-capture form.
-          </li>
-          <li>
-            UTM-tagged outbound links —{" "}
-            <code style={{ color: "#f59e0b" }}>
-              utm_source=omni-&lt;slug&gt;
-            </code>{" "}
-            — let Fred and Jaime see attribution in their own analytics
-            without us having to share dashboards.
-          </li>
-          <li>
-            Every impression / click / share / subscribe pings{" "}
-            <code style={{ color: "#f59e0b" }}>
-              /api/inbound/&lt;slug&gt;/events
-            </code>{" "}
-            on omnileadsagi.com. The per-tenant agentic dashboard sees the
-            attribution row by row.
-          </li>
-          <li>
-            Copy or sponsor changes once, propagates everywhere — no
-            client-repo edits required.
-          </li>
-        </ol>
+          We built an AI fabric that sits across every property in the
+          portfolio. It doesn&apos;t serve ads — it{" "}
+          <em>routes attention</em>. When a reader lands on any site in
+          the network, the system already knows who the active sponsor
+          is, who the partner is, which clients fit the moment, and how
+          to put the right surface in front of them without breaking
+          the editorial frame.
+        </p>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+            gap: 18,
+            marginTop: 8,
+          }}
+        >
+          <div>
+            <div
+              style={{
+                color: "#f59e0b",
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                marginBottom: 6,
+              }}
+            >
+              For sponsors
+            </div>
+            <div style={{ fontSize: 14, color: "#e4e4e7", lineHeight: 1.7 }}>
+              Your message lands once and propagates instantly to every
+              site. The agentic layer measures who saw it, who clicked,
+              who shared, and feeds the signal into your own analytics
+              under your campaign — no shared dashboards, no exported
+              reports.
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                color: "#a855f7",
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                marginBottom: 6,
+              }}
+            >
+              For partners
+            </div>
+            <div style={{ fontSize: 14, color: "#e4e4e7", lineHeight: 1.7 }}>
+              Your audience compounds with ours. Every Omni AI reader
+              becomes a doorway back to the partnership without you
+              spending on retargeting. The AI surfaces your show, your
+              practice, your work — wherever it&apos;s relevant.
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                color: "#38bdf8",
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                marginBottom: 6,
+              }}
+            >
+              For featured clients
+            </div>
+            <div style={{ fontSize: 14, color: "#e4e4e7", lineHeight: 1.7 }}>
+              The agency relationship now travels. CPS gets credibility
+              boost from being featured alongside trusted operators on
+              every page in the network, not just their own. The AI
+              decides when their card belongs in front of which reader.
+            </div>
+          </div>
+
+          <div>
+            <div
+              style={{
+                color: "#10b981",
+                fontSize: 10,
+                fontWeight: 800,
+                letterSpacing: "0.16em",
+                textTransform: "uppercase",
+                marginBottom: 6,
+              }}
+            >
+              For the operator
+            </div>
+            <div style={{ fontSize: 14, color: "#e4e4e7", lineHeight: 1.7 }}>
+              One change at the center, propagated everywhere in
+              seconds. No client-by-client deploys. No stale ad units.
+              No sponsor rotation that takes a week. The AI is the
+              distribution.
+            </div>
+          </div>
+        </div>
 
         {/* Portfolio coverage */}
         <div
