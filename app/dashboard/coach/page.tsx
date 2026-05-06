@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import { ArrowLeft, ChevronDown, Brain, Sparkles, RefreshCw, CheckCircle2, X, AlertTriangle, TrendingUp, ArrowRight } from 'lucide-react';
 
 type Recommendation = {
@@ -76,10 +77,18 @@ export default function CoachPage() {
     if (!selectedBiz) return;
     const requestedBizId = selectedBiz.id;
     setRecs([]);
-    const r = await fetch(`/api/agi/coach/recommendations?business_id=${requestedBizId}`);
+    // authFetch forwards the omni_token bearer so the gated endpoint
+    // accepts the call even when cookies are blocked. Cookie auth still
+    // works on its own; the bearer is defense-in-depth.
+    const r = await authFetch(`/api/agi/coach/recommendations?business_id=${requestedBizId}`);
+    if (selectedBizRef.current !== requestedBizId) return;
+    if (!r.ok) {
+      console.error('[coach] load failed:', r.status);
+      return;
+    }
     const j = await r.json();
     if (selectedBizRef.current !== requestedBizId) return;
-    setRecs(j.recommendations ?? []);
+    setRecs(Array.isArray(j?.recommendations) ? j.recommendations : []);
   }, [selectedBiz]);
 
   useEffect(() => { load(); }, [load]);
@@ -87,22 +96,22 @@ export default function CoachPage() {
   async function regenerate() {
     if (!selectedBiz) return;
     setGenerating(true);
-    const r = await fetch('/api/agi/coach/recommend', {
+    const r = await authFetch('/api/agi/coach/recommend', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: selectedBiz.id }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setGenerating(false);
     if (j.ok) {
       showToast(`Generated ${j.count} recommendations`);
       load();
     } else {
-      showToast(`Failed: ${j.error}`);
+      showToast(`Failed: ${j.error || `HTTP ${r.status}`}`);
     }
   }
 
   async function dismiss(id: string) {
-    await fetch('/api/agi/coach/recommendations', {
+    await authFetch('/api/agi/coach/recommendations', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, dismissed: true }),
     });
@@ -110,7 +119,7 @@ export default function CoachPage() {
   }
 
   async function markActed(id: string) {
-    await fetch('/api/agi/coach/recommendations', {
+    await authFetch('/api/agi/coach/recommendations', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, acted_on: true }),
     });

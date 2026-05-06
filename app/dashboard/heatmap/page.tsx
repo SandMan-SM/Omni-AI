@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import { ArrowLeft, ChevronDown, Activity, MapPin, Building2, Briefcase, Target, RefreshCw } from 'lucide-react';
 
 type Bucket = { key: string; count: number; qualified: number; value: number; avg_score: number };
@@ -62,9 +63,26 @@ export default function HeatmapPage() {
   const load = useCallback(async () => {
     if (!selectedBiz) return;
     const requestedBizId = selectedBiz.id;
-    const r = await fetch(`/api/agi/heatmap?business_id=${requestedBizId}`);
+    // authFetch forwards the omni_token bearer so the now-gated
+    // /api/agi/heatmap endpoint accepts the call even when cookies
+    // are blocked (Safari ITP, third-party-cookie restrictions, etc.).
+    // Cookie auth still works on its own; the bearer is defense-in-depth.
+    const r = await authFetch(`/api/agi/heatmap?business_id=${requestedBizId}`);
+    if (selectedBizRef.current !== requestedBizId) return;
+    if (!r.ok) {
+      console.error('[heatmap] load failed:', r.status);
+      setHeatmap(null);
+      return;
+    }
     const j = await r.json();
     if (selectedBizRef.current !== requestedBizId) return;
+    // Defensive: 200 with `{error: ...}` shouldn't crash the rendering
+    // path that expects by_location / by_company / by_title / by_stage.
+    if (!j || typeof j !== 'object' || !Array.isArray(j.by_location)) {
+      console.error('[heatmap] unexpected shape:', j);
+      setHeatmap(null);
+      return;
+    }
     setHeatmap(j);
   }, [selectedBiz]);
 

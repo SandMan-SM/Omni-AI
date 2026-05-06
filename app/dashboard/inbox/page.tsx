@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, Inbox, Sparkles, Send, RefreshCw,
   CheckCircle2, AlertCircle, MessageSquare, Calendar,
@@ -113,10 +114,17 @@ export default function InboxPage() {
     const params = new URLSearchParams({ business_id: requestedBizId });
     if (filter !== 'all') params.set('category', filter);
     if (hideHandled) params.set('handled', 'false');
-    const r = await fetch(`/api/agi/replies/log?${params}`);
-    const j = await r.json();
+    // authFetch forwards omni_token so the gated endpoint accepts the
+    // call when cookies are blocked. Cookie auth still works alone.
+    const r = await authFetch(`/api/agi/replies/log?${params}`);
     if (selectedBizRef.current !== requestedBizId) return;
-    setReplies(j.replies ?? []);
+    if (!r.ok) {
+      console.error('[inbox] load failed:', r.status);
+      return;
+    }
+    const j = await r.json().catch(() => ({}));
+    if (selectedBizRef.current !== requestedBizId) return;
+    setReplies(Array.isArray(j?.replies) ? j.replies : []);
   }, [selectedBiz, filter, hideHandled]);
 
   useEffect(() => { loadReplies(); }, [loadReplies]);
@@ -126,23 +134,23 @@ export default function InboxPage() {
   async function handleDraft() {
     if (!selected) return;
     setDrafting(true);
-    const r = await fetch('/api/agi/replies/draft', {
+    const r = await authFetch('/api/agi/replies/draft', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asset_id: selected.id }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setDrafting(false);
     if (j.ok) {
       setDraft(j.draft);
       showToast('Draft generated');
     } else {
-      showToast(`Failed: ${j.error}`, false);
+      showToast(`Failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 
   async function handleMarkHandled() {
     if (!selected) return;
-    await fetch('/api/agi/replies/log', {
+    await authFetch('/api/agi/replies/log', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asset_id: selected.id, reply_handled: true }),
     });
@@ -153,7 +161,7 @@ export default function InboxPage() {
 
   async function handleSendDraft() {
     if (!selected || !draft) return;
-    const r = await fetch('/api/agi/outreach/send', {
+    const r = await authFetch('/api/agi/outreach/send', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         asset_id: selected.id,
@@ -161,29 +169,29 @@ export default function InboxPage() {
         override_body: draft,
       }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     if (j.ok) {
       showToast('Reply sent');
       await handleMarkHandled();
     } else {
-      showToast(`Send failed: ${j.error}`, false);
+      showToast(`Send failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 
   async function handleLogReply() {
     if (!logAsset || !logText) return;
-    const r = await fetch('/api/agi/replies/log', {
+    const r = await authFetch('/api/agi/replies/log', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asset_id: logAsset, reply_text: logText }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     if (j.ok) {
       showToast('Reply logged & categorized');
       setLogOpen(false);
       setLogAsset(''); setLogText('');
       await loadReplies();
     } else {
-      showToast(`Failed: ${j.error}`, false);
+      showToast(`Failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 

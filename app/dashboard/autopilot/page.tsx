@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, Bot, Play, Pause, RefreshCw,
   CheckCircle2, AlertCircle, Activity, Zap, Settings as SettingsIcon,
@@ -106,12 +107,18 @@ export default function AutopilotPage() {
     if (!selectedBiz) return;
     const requestedBizId = selectedBiz.id;
     setLogs([]);
-    const [{ configs }, { logs }] = await Promise.all([
-      fetch(`/api/agi/autopilot/config?business_id=${requestedBizId}`).then(r => r.json()),
-      fetch(`/api/agi/autopilot/log?business_id=${requestedBizId}&limit=50`).then(r => r.json()),
+    // authFetch forwards omni_token bearer so the gated endpoints
+    // accept the call when cookies are blocked. Promise.all so a
+    // single 401 on either route doesn't crash the destructure.
+    const [cfgRes, logRes] = await Promise.all([
+      authFetch(`/api/agi/autopilot/config?business_id=${requestedBizId}`),
+      authFetch(`/api/agi/autopilot/log?business_id=${requestedBizId}&limit=50`),
     ]);
     if (selectedBizRef.current !== requestedBizId) return;
-    setConfig(configs?.[0] ?? {
+    const cfgJson = cfgRes.ok ? await cfgRes.json().catch(() => ({})) : {};
+    const logJson = logRes.ok ? await logRes.json().catch(() => ({})) : {};
+    if (selectedBizRef.current !== requestedBizId) return;
+    setConfig(cfgJson.configs?.[0] ?? {
       business_id: requestedBizId,
       enabled: false,
       auto_generate_outreach: true,
@@ -125,38 +132,40 @@ export default function AutopilotPage() {
       next_run_at: null,
       total_runs: 0,
     });
-    setLogs(logs ?? []);
+    setLogs(Array.isArray(logJson.logs) ? logJson.logs : []);
   }, [selectedBiz]);
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
   async function updateConfig(updates: Partial<AutopilotConfig>) {
     if (!config) return;
-    const r = await fetch('/api/agi/autopilot/config', {
+    const r = await authFetch('/api/agi/autopilot/config', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: config.business_id, ...updates }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     if (j.config) {
       setConfig(j.config);
       showToast('Saved');
+    } else {
+      showToast(`Failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 
   async function runNow() {
     if (!selectedBiz) return;
     setRunning(true);
-    const r = await fetch('/api/agi/autopilot/run', {
+    const r = await authFetch('/api/agi/autopilot/run', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: selectedBiz.id }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setRunning(false);
     if (j.ok) {
       showToast(`✓ ${j.succeeded} actions · ${j.skipped} skipped · ${j.failed} failed`);
       await loadAll();
     } else {
-      showToast(`Failed: ${j.error}`, false);
+      showToast(`Failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 
