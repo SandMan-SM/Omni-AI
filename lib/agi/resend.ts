@@ -93,6 +93,22 @@ export async function sendOutreachEmail(input: SendInput): Promise<{
     return { ok: false, error: error.message };
   }
 
+  // Promote the lead to 'contacted' once we've actually shipped a
+  // touch. Nothing else in the codebase wrote that transition, so the
+  // funnel state machine effectively skipped 'contacted' entirely —
+  // every lead lived in 'new' until they replied (or the operator
+  // manually set status). That broke any analytics that bucketed by
+  // funnel stage, and the qualified-on-reply auto-promote couldn't
+  // catch lifts from 'contacted' for the same reason.
+  //
+  // Look up the asset's lead_id, then move the lead from 'new' to
+  // 'contacted' only — never roll back a stronger status.
+  const { data: assetForLead } = await supabase
+    .from('omni_outreach_assets')
+    .select('lead_id')
+    .eq('id', input.asset_id)
+    .maybeSingle();
+
   await supabase
     .from('omni_outreach_assets')
     .update({
@@ -101,6 +117,14 @@ export async function sendOutreachEmail(input: SendInput): Promise<{
       resend_message_id: data?.id,
     })
     .eq('id', input.asset_id);
+
+  if (assetForLead?.lead_id) {
+    await supabase
+      .from('omni_leads_generated')
+      .update({ status: 'contacted' })
+      .eq('id', assetForLead.lead_id)
+      .eq('status', 'new');
+  }
 
   return { ok: true, message_id: data?.id };
 }
