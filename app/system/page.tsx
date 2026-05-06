@@ -143,34 +143,36 @@ const PORTFOLIO_SITES: PortfolioSite[] = [
     status: "live",
     group: "marketing-property",
   },
+  // Newsrooms — domains bought + DNS pointed at Vercel, but the
+  // editorial product is still in development. Show "Coming soon"
+  // pills and route the card CTA to the Vercel preview build until
+  // each is ready to launch publicly. Production URLs will swap in
+  // once each masthead is fully shipped.
   {
     name: "Utah Main Street",
     slug: "mainst",
-    url: "https://utahmainstreet.com",
     preview: "https://utah-main-street.vercel.app",
     blurb:
       "Weekly broadsheet covering Utah's best operators. Pulse of who's earning trust this week.",
-    status: "live",
+    status: "soon",
     group: "newsroom",
   },
   {
     name: "Beehive Biz Pulse",
     slug: "beehive",
-    url: "https://beehivebizpulse.com",
     preview: "https://beehive-biz-pulse.vercel.app",
     blurb:
       "Daily business ticker for Utah — hiring, raising, opening, winning. 90 seconds, no scrolling.",
-    status: "live",
+    status: "soon",
     group: "newsroom",
   },
   {
     name: "The Wasatch Post",
     slug: "wasatch",
-    url: "https://thewasatchpost.com",
     preview: "https://the-wasatch-post.vercel.app",
     blurb:
       "Long-form investigative business journalism from Utah's front range.",
-    status: "live",
+    status: "soon",
     group: "newsroom",
   },
 ];
@@ -835,7 +837,19 @@ export default function SystemPage() {
                 </div>
               )}
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
+              {/* Action row pinned to the bottom of the card with
+                  marginTop:auto so every button sits on the same
+                  baseline regardless of how long each card's blurb is.
+                  Without this, cards with a longer blurb push their
+                  button down and the grid loses visual rhythm. */}
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 8,
+                  marginTop: "auto",
+                }}
+              >
                 {s.url ? (
                   // Production domain attached — single Visit live CTA.
                   // The Vercel preview is redundant for live sites; hide
