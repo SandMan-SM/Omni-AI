@@ -9,6 +9,7 @@
 // view.
 
 import { useEffect, useState, useCallback } from "react";
+import { authFetch } from "@/lib/auth";
 import {
   Building2, TrendingUp, Target, Award, Calendar, RefreshCw, Loader2,
   Crown, Mail, ArrowUpRight, Activity, ChevronDown, ChevronRight, Plus, X,
@@ -81,10 +82,12 @@ export function AgiBusinessAdvancement() {
   const load = useCallback(async () => {
     setLoading(true); setError(null);
     try {
-      const r = await fetch("/api/agi/businesses/advancement", { cache: "no-store" });
+      // authFetch forwards omni_token bearer so the gated endpoint
+      // accepts the call when cookies are blocked.
+      const r = await authFetch("/api/agi/businesses/advancement", { cache: "no-store" });
       if (!r.ok) throw new Error(`HTTP ${r.status}`);
       const d = await r.json();
-      setList(d.businesses ?? []);
+      setList(Array.isArray(d?.businesses) ? d.businesses : []);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load advancement data");
     } finally { setLoading(false); }
@@ -202,9 +205,9 @@ function BizCard({ biz }: { biz: BusinessAdvancement }) {
   useEffect(() => {
     if (!expanded || events.length > 0) return;
     setLoadingEvents(true);
-    fetch(`/api/agi/businesses/activity?business_id=${biz.business_id}&limit=8`, { cache: "no-store" })
+    authFetch(`/api/agi/businesses/activity?business_id=${biz.business_id}&limit=8`, { cache: "no-store" })
       .then(r => r.ok ? r.json() : { events: [] })
-      .then(d => setEvents(d.events ?? []))
+      .then(d => setEvents(Array.isArray(d?.events) ? d.events : []))
       .finally(() => setLoadingEvents(false));
   }, [expanded, events.length, biz.business_id]);
 

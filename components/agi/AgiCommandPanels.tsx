@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/auth";
 import { Building2, AlertTriangle, Activity, Zap, TrendingUp } from "lucide-react";
 
 // Wave D: AGI panels for the /command page (next to portfolio panels)
@@ -37,7 +38,10 @@ export function AgiBusinessesPanel() {
   const [data, setData] = useState<{ businesses: AGIBusiness[]; system_totals: { businesses_count: number; leads: number; replies: number; bookings: number } } | null>(null);
 
   useEffect(() => {
-    fetch("/api/agi/admin/businesses").then(r => r.json()).then(setData);
+    authFetch("/api/agi/admin/businesses")
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => d && setData(d))
+      .catch(() => {});
   }, []);
 
   return (
@@ -81,13 +85,19 @@ export function AgiRisksPanel() {
   const [recs, setRecs] = useState<AGIRec[]>([]);
 
   useEffect(() => {
-    fetch("/api/agi/admin/businesses").then(r => r.json()).then(d => {
-      const bid = d.businesses?.[0]?.id;
-      if (!bid) return;
-      fetch(`/api/agi/coach/recommendations?business_id=${bid}`)
-        .then(r => r.json())
-        .then(j => setRecs((j.recommendations ?? []).filter((x: AGIRec) => x.priority === "high")));
-    });
+    authFetch("/api/agi/admin/businesses")
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const bid = d?.businesses?.[0]?.id;
+        if (!bid) return;
+        return authFetch(`/api/agi/coach/recommendations?business_id=${bid}`)
+          .then(r => (r.ok ? r.json() : null))
+          .then(j => {
+            const list = Array.isArray(j?.recommendations) ? j.recommendations : [];
+            setRecs(list.filter((x: AGIRec) => x.priority === "high"));
+          });
+      })
+      .catch(() => {});
   }, []);
 
   return (
@@ -119,11 +129,16 @@ export function AgiRunsPanel() {
   const [runs, setRuns] = useState<AGIRun[]>([]);
 
   useEffect(() => {
-    fetch("/api/agi/admin/businesses").then(r => r.json()).then(d => {
-      const bid = d.businesses?.[0]?.id;
-      if (!bid) return;
-      fetch(`/api/agi/runs?business_id=${bid}&limit=10`).then(r => r.json()).then(j => setRuns(j.runs ?? []));
-    });
+    authFetch("/api/agi/admin/businesses")
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        const bid = d?.businesses?.[0]?.id;
+        if (!bid) return;
+        return authFetch(`/api/agi/runs?business_id=${bid}&limit=10`)
+          .then(r => (r.ok ? r.json() : null))
+          .then(j => setRuns(Array.isArray(j?.runs) ? j.runs : []));
+      })
+      .catch(() => {});
   }, []);
 
   function tAgo(d: string) {

@@ -6,6 +6,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
+import { authFetch } from "@/lib/auth";
 import { Search, Target, Building2, Calendar, X, Loader2 } from "lucide-react";
 
 interface QuickResult {
@@ -68,9 +69,15 @@ export function AgiCommandPalette() {
     setLoading(true);
     const t = setTimeout(async () => {
       try {
-        const r = await fetch(`/api/agi/search/quick?q=${encodeURIComponent(query)}`, { cache: "no-store" });
-        const d = await r.json();
-        setResults(d.results ?? []);
+        // authFetch forwards the omni_token bearer so the gated
+        // search/quick endpoint accepts the call when cookies fail.
+        const r = await authFetch(`/api/agi/search/quick?q=${encodeURIComponent(query)}`, { cache: "no-store" });
+        if (!r.ok) {
+          setResults([]);
+          return;
+        }
+        const d = await r.json().catch(() => ({}));
+        setResults(Array.isArray(d?.results) ? d.results : []);
         setActiveIdx(0);
       } catch {
         setResults([]);

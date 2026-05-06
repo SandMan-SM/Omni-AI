@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { authFetch } from "@/lib/auth";
 import { Brain, Sparkles, AlertTriangle, TrendingUp, ArrowRight, RefreshCw } from "lucide-react";
 
 type Recommendation = {
@@ -35,9 +36,13 @@ export function AgiCoachAlerts() {
   async function load(bid: string) {
     setLoading(true);
     try {
-      const r = await fetch(`/api/agi/coach/recommendations?business_id=${bid}`);
-      const j = await r.json();
-      setRecs(j.recommendations ?? []);
+      const r = await authFetch(`/api/agi/coach/recommendations?business_id=${bid}`);
+      if (!r.ok) {
+        setRecs([]);
+        return;
+      }
+      const j = await r.json().catch(() => ({}));
+      setRecs(Array.isArray(j?.recommendations) ? j.recommendations : []);
     } finally {
       setLoading(false);
     }
@@ -47,7 +52,7 @@ export function AgiCoachAlerts() {
     if (!businessId) return;
     setGenerating(true);
     try {
-      await fetch("/api/agi/coach/recommend", {
+      await authFetch("/api/agi/coach/recommend", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ business_id: businessId }),
@@ -59,15 +64,16 @@ export function AgiCoachAlerts() {
   }
 
   useEffect(() => {
-    fetch("/api/agi/admin/businesses")
-      .then(r => r.json())
+    authFetch("/api/agi/admin/businesses")
+      .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        const first = d.businesses?.[0];
+        const first = d?.businesses?.[0];
         if (first) {
           setBusinessId(first.id);
           load(first.id);
         }
-      });
+      })
+      .catch(() => {});
   }, []);
 
   if (loading || recs.length === 0) {
