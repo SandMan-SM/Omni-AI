@@ -5,7 +5,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SponsorBlock } from "@/components/sponsor/SponsorBlock";
-import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { SpaceFieldBackdrop } from "@/components/space-field-backdrop";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AtomOrb } from "@/components/atom-orb";
 import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-ld";
@@ -215,11 +215,11 @@ export default function SystemPage() {
         overflow: "hidden",
       }}
     >
-      {/* Same backdrop stack as /arena — FireSparksBackdrop for the
-          warm ember field + CursorSpotlight for the radial glow that
-          tracks the cursor. Standardizes /system to the established
-          site aesthetic instead of carrying its own bespoke effects. */}
-      <FireSparksBackdrop />
+      {/* Space field backdrop — same purple + cyan particle drift
+          and twin radial glows as the homepage hero. The atom orb
+          below sits in this field instead of a flat dark surface, so
+          it reads as suspended in space rather than pasted on top. */}
+      <SpaceFieldBackdrop />
       <CursorSpotlight />
 
       {/* Structured data so LLMs (ChatGPT, Perplexity, Gemini) and

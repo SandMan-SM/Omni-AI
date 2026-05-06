@@ -10,7 +10,7 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { SpaceFieldBackdrop } from "@/components/space-field-backdrop";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AtomOrb } from "@/components/atom-orb";
 import {
@@ -93,11 +93,11 @@ export default function ManifestoPage() {
         overflow: "hidden",
       }}
     >
-      {/* Same backdrop stack as /arena and the rest of the site —
-          FireSparksBackdrop for the warm ember field + CursorSpotlight
-          for the radial glow tracking the cursor. Brand continuity over
-          bespoke effects. */}
-      <FireSparksBackdrop />
+      {/* Space field — same purple + cyan particle drift the homepage
+          hero uses. The cool/violet atom orb below is now suspended IN
+          this field, which reinforces the manifesto's central image of
+          one center connected to everything else. */}
+      <SpaceFieldBackdrop />
       <CursorSpotlight />
 
       {/* Structured data — Article schema so this manifesto is parsed
