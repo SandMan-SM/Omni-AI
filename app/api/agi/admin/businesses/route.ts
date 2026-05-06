@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
-import { constantTimeEqual } from '@/lib/api-auth';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -13,17 +13,17 @@ const supabase = createClient(
 );
 
 // Super-admin: see all businesses + key metrics across the system.
-// In production, lock this behind ADMIN_API_KEY.
-function authorized(req: NextRequest): boolean {
-  if (!process.env.ADMIN_API_KEY) return true; // open in dev
-  const authz = req.headers.get('authorization') || '';
-  const presented = authz.replace(/^Bearer\s+/i, '').trim();
-  return constantTimeEqual(presented, process.env.ADMIN_API_KEY);
-}
-
+//
+// Previous bespoke gate did `if (!process.env.ADMIN_API_KEY) return true`,
+// meaning any Vercel deploy without ADMIN_API_KEY explicitly set served
+// per-tenant lead/reply/booking aggregates to anyone. Switch to the
+// shared cron-or-admin gate so this route follows the same auth model
+// as the rest of /api/agi/* — accepts cookie session, omni_token bearer,
+// or CRON_SECRET. Fail-closed by construction.
 export async function GET(req: NextRequest) {
   noStore();
-  if (!authorized(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
 
   // Sort by display_order so Omni AI (display_order=1) comes first.
   const { data: businesses } = await supabase
