@@ -119,6 +119,13 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   noStore();
+  // Auth-gate. Without business_id, this dumps every tenant's SMS
+  // history (to_phone + body) — and even with business_id, the lack
+  // of an auth check meant any guessed tenant id leaked the row set.
+  // Body of an SMS often includes booking links, deal-value hints,
+  // and other lead-context strings the operator wrote.
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const lead_id = searchParams.get('lead_id');
