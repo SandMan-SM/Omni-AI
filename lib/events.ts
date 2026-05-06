@@ -47,6 +47,10 @@ export async function logEvent(
   payload: EventPayload
 ): Promise<void> {
   try {
+    // Use ?? for the numeric/duration fields so a legitimate zero
+    // doesn't get clobbered to null. Previously `0 || null` flattened
+    // any event that genuinely measured 0 (zero-ms scroll completion,
+    // zero-value tally, etc.) into a null row.
     const { error } = await supabase
       .from('events')
       .insert({
@@ -60,9 +64,9 @@ export async function logEvent(
         page_url: payload.page_url || null,
         session_id: payload.session_id || null,
         user_agent: payload.user_agent || null,
-        value_numeric: payload.value_numeric || null,
+        value_numeric: payload.value_numeric ?? null,
         value_text: payload.value_text || null,
-        duration_ms: payload.duration_ms || null,
+        duration_ms: payload.duration_ms ?? null,
         properties: payload.properties || {},
       });
 
@@ -83,6 +87,7 @@ export async function logEvents(
 ): Promise<void> {
   if (!payloads.length) return;
   try {
+    // Same ?? vs || zero-preservation fix as logEvent above.
     const rows = payloads.map(p => ({
       actor_type: p.actor_type,
       actor_id: p.actor_id || null,
@@ -94,9 +99,9 @@ export async function logEvents(
       page_url: p.page_url || null,
       session_id: p.session_id || null,
       user_agent: p.user_agent || null,
-      value_numeric: p.value_numeric || null,
+      value_numeric: p.value_numeric ?? null,
       value_text: p.value_text || null,
-      duration_ms: p.duration_ms || null,
+      duration_ms: p.duration_ms ?? null,
       properties: p.properties || {},
     }));
 
