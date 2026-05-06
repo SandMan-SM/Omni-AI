@@ -110,6 +110,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
 
   return (
     <section
+      className="omni-sponsor-block"
       style={{
         background: surface,
         borderRadius: 16,
@@ -119,6 +120,27 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
       }}
       aria-labelledby={`sponsor-block-${slug}`}
     >
+      {/* Mobile rules — narrow phones (≤520px) need: tighter inner
+          padding, smaller card font sizes, and the right-side CTA
+          allowed to drop BELOW the text. Without these, the
+          description gets squeezed under the "Open →" pill and the
+          card overflows the gutter. Inline <style> keeps everything
+          colocated with the component. */}
+      <style>{`
+        @media (max-width: 520px) {
+          .omni-sponsor-block { padding: 20px 16px !important; }
+          .omni-sponsor-block .osb-card { padding: 18px 18px !important; }
+          .osb-card-row { flex-wrap: wrap !important; gap: 12px !important; }
+          .osb-card-cta { align-self: flex-start !important; }
+          .osb-fred-title { font-size: 17px !important; line-height: 1.3 !important; }
+          .osb-card-desc { font-size: 13px !important; }
+          .omni-sponsor-block .osb-share-row { gap: 6px !important; }
+          .omni-sponsor-block .osb-share-row button {
+            font-size: 11px !important;
+            padding: 5px 10px !important;
+          }
+        }
+      `}</style>
       <h2
         id={`sponsor-block-${slug}`}
         style={{
@@ -139,6 +161,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => onClick("fred")}
+        className="osb-card"
         style={{
           display: "block",
           background: `linear-gradient(135deg, ${card} 0%, #1f1410 100%)`,
@@ -151,8 +174,8 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
           transition: "transform 0.15s, border-color 0.15s",
         }}
       >
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 16, justifyContent: "space-between" }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="osb-card-row" style={{ display: "flex", alignItems: "flex-start", gap: 16, justifyContent: "space-between" }}>
+          <div style={{ flex: "1 1 220px", minWidth: 0 }}>
             <div
               style={{
                 fontSize: 10,
@@ -165,15 +188,16 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
             >
               Sponsor
             </div>
-            <div style={{ fontSize: 19, fontWeight: 700, marginBottom: 6, lineHeight: 1.25 }}>
+            <div className="osb-fred-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 6, lineHeight: 1.25 }}>
               Fred Circle — Live with the Host
             </div>
-            <div style={{ fontSize: 14, color: textMuted, lineHeight: 1.55 }}>
+            <div className="osb-card-desc" style={{ fontSize: 14, color: textMuted, lineHeight: 1.55 }}>
               Tap in to Fred&apos;s live host event. Sponsor of this
               dispatch — the click goes straight to him.
             </div>
           </div>
           <span
+            className="osb-card-cta"
             style={{
               flexShrink: 0,
               background: accent,
@@ -206,6 +230,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => onClick("lbp")}
+        className="osb-card"
         style={{
           display: "block",
           background: card,
@@ -217,8 +242,8 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
           marginTop: 22,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 14, justifyContent: "space-between" }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="osb-card-row" style={{ display: "flex", alignItems: "center", gap: 14, justifyContent: "space-between" }}>
+          <div style={{ flex: "1 1 220px", minWidth: 0 }}>
             <div
               style={{
                 fontSize: 10,
@@ -234,11 +259,11 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
               Live Better Podcast
             </div>
-            <div style={{ fontSize: 13, color: textMuted }}>
+            <div className="osb-card-desc" style={{ fontSize: 13, color: textMuted }}>
               Show + community from our partner Jaime — listen, subscribe, share.
             </div>
           </div>
-          <span style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>
+          <span className="osb-card-cta" style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>
             Listen →
           </span>
         </div>
@@ -264,6 +289,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => onClick("cps")}
+        className="osb-card"
         style={{
           display: "block",
           background: card,
@@ -275,8 +301,8 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
           marginTop: 16,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 14, justifyContent: "space-between" }}>
-          <div style={{ flex: 1, minWidth: 0 }}>
+        <div className="osb-card-row" style={{ display: "flex", alignItems: "center", gap: 14, justifyContent: "space-between" }}>
+          <div style={{ flex: "1 1 220px", minWidth: 0 }}>
             <div
               style={{
                 fontSize: 10,
@@ -292,12 +318,12 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
               CPS · Psych &amp; Custody Evaluations
             </div>
-            <div style={{ fontSize: 13, color: textMuted }}>
+            <div className="osb-card-desc" style={{ fontSize: 13, color: textMuted }}>
               Forensic psychology + custody evaluations across Utah.
               Trusted by attorneys, courts, and families.
             </div>
           </div>
-          <span style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>
+          <span className="osb-card-cta" style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>
             Learn more →
           </span>
         </div>

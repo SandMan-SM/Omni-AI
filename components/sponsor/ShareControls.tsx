@@ -114,6 +114,9 @@ export function ShareControls({
     <div
       role="group"
       aria-label={`Share ${target}`}
+      // osb-share-row class lets the parent SponsorBlock tighten the
+      // gap + button padding via media query on narrow phones.
+      className="osb-share-row"
       style={{
         display: "flex",
         flexWrap: "wrap",
