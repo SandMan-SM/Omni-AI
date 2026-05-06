@@ -10,8 +10,8 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
-import { InterlinkedConstellationBackdrop } from "@/components/interlinked-constellation-backdrop";
+import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { CursorSpotlight } from "@/components/cursor-spotlight";
 import {
   JsonLd,
   organizationSchema,
@@ -92,15 +92,12 @@ export default function ManifestoPage() {
         overflow: "hidden",
       }}
     >
-      {/* Layered backdrops for the manifesto:
-          1. GoldSparksBackdrop — the same chrome-gold ember field
-             every Omni AI essay surface uses. Brand continuity.
-          2. InterlinkedConstellationBackdrop — drifting nodes
-             connected by faint pulsing lines. Visual metaphor for
-             the manifesto's central claim: we were never separate
-             to begin with. The lattice IS the argument. */}
-      <GoldSparksBackdrop />
-      <InterlinkedConstellationBackdrop />
+      {/* Same backdrop stack as /arena and the rest of the site —
+          FireSparksBackdrop for the warm ember field + CursorSpotlight
+          for the radial glow tracking the cursor. Brand continuity over
+          bespoke effects. */}
+      <FireSparksBackdrop />
+      <CursorSpotlight />
 
       {/* Structured data — Article schema so this manifesto is parsed
           as long-form content by LLMs + search. Pairs with the OG card

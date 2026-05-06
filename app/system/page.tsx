@@ -5,8 +5,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SponsorBlock } from "@/components/sponsor/SponsorBlock";
-import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
-import { AuroraMeshBackdrop } from "@/components/aurora-mesh-backdrop";
+import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
+import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-ld";
 
 export const metadata: Metadata = {
@@ -214,16 +214,12 @@ export default function SystemPage() {
         overflow: "hidden",
       }}
     >
-      {/* Layered backdrops:
-          1. AuroraMeshBackdrop — slow-shifting amber + indigo + rose
-             + emerald gradient blobs with a faint dot grid overlay.
-             Provides depth + subtle color motion behind everything.
-          2. GoldSparksBackdrop — chrome-gold ember field on top of
-             the aurora. Reinforces the brand cue with kinetic detail.
-          Together they read as ambient + branded without competing
-          with the content. Both respect prefers-reduced-motion. */}
-      <AuroraMeshBackdrop />
-      <GoldSparksBackdrop />
+      {/* Same backdrop stack as /arena — FireSparksBackdrop for the
+          warm ember field + CursorSpotlight for the radial glow that
+          tracks the cursor. Standardizes /system to the established
+          site aesthetic instead of carrying its own bespoke effects. */}
+      <FireSparksBackdrop />
+      <CursorSpotlight />
 
       {/* Structured data so LLMs (ChatGPT, Perplexity, Gemini) and
           search engines pick up this page as the canonical Omni AI
