@@ -152,7 +152,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
           margin: "0 0 18px 0",
         }}
       >
-        Featured · Sponsored by Fred Circle
+        Featured · Sponsored by Fred
       </h2>
 
       {/* PRIMARY — Fred (sponsor) */}
@@ -189,7 +189,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
               Sponsor
             </div>
             <div className="osb-fred-title" style={{ fontSize: 19, fontWeight: 700, marginBottom: 6, lineHeight: 1.25 }}>
-              Fred Circle — Live with the Host
+              Fred — Live with the Host
             </div>
             <div className="osb-card-desc" style={{ fontSize: 14, color: textMuted, lineHeight: 1.55 }}>
               Tap in to Fred&apos;s live host event. Sponsor of this
@@ -218,7 +218,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
           row so analytics can split sponsor-share from partner-share. */}
       <ShareControls
         url={trackedHref("fred", slug)}
-        title="Live with Fred Circle — sponsored dispatch from Omni AI"
+        title="Live with Fred — sponsored dispatch from Omni AI"
         slug={slug}
         target="fred"
         align="left"

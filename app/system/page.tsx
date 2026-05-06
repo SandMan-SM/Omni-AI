@@ -13,7 +13,7 @@ import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-
 export const metadata: Metadata = {
   title: "Portfolio Promotion System · Omni AI",
   description:
-    "How every Omni AI portfolio site promotes our sponsor (Fred Circle), our partnership (Live Better Podcast), and our featured client (CPS) — the embed, the analytics, the attribution.",
+    "How every Omni AI portfolio site promotes our sponsor (Fred), our partnership (Live Better Podcast), and our featured client (CPS) — the embed, the analytics, the attribution.",
   openGraph: {
     title: "Portfolio Promotion System · Omni AI",
     description:
@@ -242,7 +242,7 @@ export default function SystemPage() {
           name: "Omni AI Portfolio Promotion System",
           url: "https://omnileadsagi.com/system",
           description:
-            "How every Omni AI portfolio site promotes our sponsor (Fred Circle), our partnership (Live Better Podcast), and our featured clients — the embed, the analytics, the attribution dashboard.",
+            "How every Omni AI portfolio site promotes our sponsor (Fred), our partnership (Live Better Podcast), and our featured clients — the embed, the analytics, the attribution dashboard.",
           isPartOf: { "@type": "WebSite", name: "Omni AI", url: "https://omnileadsagi.com" },
           inLanguage: "en-US",
           author: { "@type": "Organization", name: "Omni AI", url: "https://omnileadsagi.com" },
@@ -321,7 +321,7 @@ export default function SystemPage() {
           }}
         >
           Every site in the Omni AI portfolio runs a single embedded block
-          that promotes our sponsor (<strong>Fred Circle</strong>) as the
+          that promotes our sponsor (<strong>Fred</strong>) as the
           primary slot and our partner (<strong>Live Better Podcast</strong>)
           as the secondary slot. One snippet, one source of truth, one
           analytics destination — every click, share, and subscribe pings
@@ -1049,7 +1049,7 @@ export default function SystemPage() {
                 marginBottom: 6,
               }}
             >
-              Fred Circle
+              Fred
             </div>
             <div
               style={{

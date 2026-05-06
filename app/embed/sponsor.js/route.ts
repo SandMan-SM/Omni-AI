@@ -225,7 +225,7 @@ const SCRIPT = /* js */ `(function(){
     fredCard.innerHTML = '<div style="display:flex;align-items:flex-start;gap:16px;justify-content:space-between;">'
       + '<div style="flex:1;min-width:0;">'
       + '<div style="font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#f59e0b;margin-bottom:6px;">Sponsor</div>'
-      + '<div style="font-size:19px;font-weight:700;margin-bottom:6px;line-height:1.25;">Fred Circle — Live with the Host</div>'
+      + '<div style="font-size:19px;font-weight:700;margin-bottom:6px;line-height:1.25;">Fred — Live with the Host</div>'
       + '<div style="font-size:14px;color:#a1a1aa;line-height:1.55;">Tap in to Fred\\'s live host event. Sponsor of this dispatch — the click goes straight to him.</div>'
       + '</div>'
       + '<span style="flex-shrink:0;background:#f59e0b;color:#0a0a0a;padding:10px 16px;border-radius:999px;font-size:12px;font-weight:700;white-space:nowrap;">Open →</span>'
@@ -270,10 +270,10 @@ const SCRIPT = /* js */ `(function(){
     });
     var heading = el('h2', {
       style: 'color:#a1a1aa;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin:0 0 18px 0;'
-    }, ['Featured · Sponsored by Fred Circle']);
+    }, ['Featured · Sponsored by Fred']);
     section.appendChild(heading);
     section.appendChild(fredCard);
-    section.appendChild(shareRow('fred', slug, fredHref, 'Live with Fred Circle — sponsored dispatch from Omni AI'));
+    section.appendChild(shareRow('fred', slug, fredHref, 'Live with Fred — sponsored dispatch from Omni AI'));
     section.appendChild(lbpCard);
     section.appendChild(shareRow('lbp', slug, lbpHref, 'Live Better Podcast — in partnership with Omni AI'));
     section.appendChild(cpsCard);
