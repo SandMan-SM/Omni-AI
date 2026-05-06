@@ -5,6 +5,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { SponsorBlock } from "@/components/sponsor/SponsorBlock";
+import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
+import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-ld";
 
 export const metadata: Metadata = {
   title: "Portfolio Promotion System · Omni AI",
@@ -185,18 +187,58 @@ export default function SystemPage() {
   return (
     <main
       style={{
+        // Bare-black base so the chrome-gold spark hue reads true. The
+        // backdrop component fixes itself to the viewport (z-index 0,
+        // pointer-events none); content sits above at z-index 10.
         background: "#0a0a0a",
         minHeight: "100vh",
         color: "#fafafa",
         fontFamily:
           '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* Chrome-gold sparks. Matches the amber sponsor accent of the
+          page so the ambient motion reinforces the brand cue rather
+          than competing with it. Respects prefers-reduced-motion via
+          the component's own useReducedMotion guard. */}
+      <GoldSparksBackdrop />
+
+      {/* Structured data so LLMs (ChatGPT, Perplexity, Gemini) and
+          search engines pick up this page as the canonical Omni AI
+          sponsorship system reference. Breadcrumb gives the SERP
+          chip; Organization confirms us as the publisher; WebPage
+          ties the description back to the OG description so social
+          unfurls and search summaries match. */}
+      <JsonLd data={organizationSchema} />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Omni AI", url: "https://omnileadsagi.com" },
+          { name: "Portfolio Promotion System", url: "https://omnileadsagi.com/system" },
+        ])}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebPage",
+          name: "Omni AI Portfolio Promotion System",
+          url: "https://omnileadsagi.com/system",
+          description:
+            "How every Omni AI portfolio site promotes our sponsor (Fred Circle), our partnership (Live Better Podcast), and our featured clients — the embed, the analytics, the attribution dashboard.",
+          isPartOf: { "@type": "WebSite", name: "Omni AI", url: "https://omnileadsagi.com" },
+          inLanguage: "en-US",
+          author: { "@type": "Organization", name: "Omni AI", url: "https://omnileadsagi.com" },
+        }}
+      />
+
       <div
         style={{
           maxWidth: 920,
           margin: "0 auto",
           padding: "60px 24px 80px",
+          position: "relative",
+          zIndex: 10,
         }}
       >
         <Link
