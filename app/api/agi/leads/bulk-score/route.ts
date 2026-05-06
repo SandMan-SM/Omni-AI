@@ -70,10 +70,28 @@ export async function POST(req: NextRequest) {
     type Result = { lead_id: string; old_score: number; new_score: number; reasoning: string };
     const results: Result[] = [];
 
+    // Same intel-resolution fix as score-ai + outreach: prefer exact
+    // case-insensitive match, fall back to substring with shortest-
+    // name preference. The previous `.find(([k]) => k.includes(company))`
+    // matched "Pineapple Computing" against lead.company="Apple"
+    // because "pineapple computing".includes("apple") = true, and the
+    // first map entry won regardless of which was the better match.
+    const resolveIntel = (company: string | null) => {
+      if (!company) return null;
+      const lower = company.toLowerCase();
+      const exact = intelByCompany.get(lower);
+      if (exact) return exact;
+      const candidates: NonNullable<typeof allIntel>[number][] = [];
+      Array.from(intelByCompany.entries()).forEach(([k, v]) => {
+        if (k.includes(lower)) candidates.push(v);
+      });
+      if (candidates.length === 0) return null;
+      candidates.sort((a, b) => (String(a.name ?? '').length) - (String(b.name ?? '').length));
+      return candidates[0];
+    };
+
     for (const lead of leads) {
-      const intel = lead.company
-        ? Array.from(intelByCompany.entries()).find(([k]) => k.includes(lead.company!.toLowerCase()))?.[1]
-        : null;
+      const intel = resolveIntel(lead.company);
 
       const prompt = `Score this lead's fit (0-100). Be strict; reserve >85 for strong matches.
 
