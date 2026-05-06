@@ -83,7 +83,14 @@ export async function POST(req: Request) {
     const tgChatId = process.env.TELEGRAM_CHAT_ID;
     if (tgToken && tgChatId) {
       try {
-        const tgMsg = `🎯 <b>LIVE COMMAND</b>\n\n${body.target_project ? `📦 Project: ${body.target_project}\n` : ""}💬 ${body.command}\n\n⏳ Status: Queued`;
+        // Telegram parse_mode: HTML treats <, >, & as control characters.
+        // body.command + body.target_project come from the operator's UI
+        // — totally fine to contain those characters — but interpolating
+        // them raw into the message used to make Telegram return 400
+        // ("can't parse entities") and silently drop the agent ping.
+        const esc = (s: unknown) =>
+          String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        const tgMsg = `🎯 <b>LIVE COMMAND</b>\n\n${body.target_project ? `📦 Project: ${esc(body.target_project)}\n` : ""}💬 ${esc(body.command)}\n\n⏳ Status: Queued`;
         await fetch(`https://api.telegram.org/bot${tgToken}/sendMessage`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

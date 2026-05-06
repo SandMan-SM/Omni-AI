@@ -63,19 +63,28 @@ export async function sendOmniUpdate(update: OmniUpdate): Promise<boolean> {
     hour12: true,
   });
 
+  // Telegram parse_mode: HTML treats <, >, & as control characters.
+  // alertCritical / notifyDeploy callers frequently pass error message
+  // strings (Postgres errors, fetch bodies) that contain those chars.
+  // Without escaping, the API returns 400 ("can't parse entities") and
+  // the entire system alert is silently dropped — exactly the wrong time
+  // to lose a notification.
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
   const lines = [
     `${typeEmoji(update.type)} <b>[OMNI AI UPDATE]</b>`,
     ``,
-    `<b>Time:</b> ${ts} PT`,
-    `<b>Type:</b> ${update.type}`,
-    `<b>Severity:</b> ${severityEmoji(update.severity)} ${update.severity}`,
+    `<b>Time:</b> ${esc(ts)} PT`,
+    `<b>Type:</b> ${esc(update.type)}`,
+    `<b>Severity:</b> ${severityEmoji(update.severity)} ${esc(update.severity)}`,
     ``,
-    `<b>Summary:</b> ${update.summary}`,
-    `<b>Impact:</b> ${update.impact}`,
+    `<b>Summary:</b> ${esc(update.summary)}`,
+    `<b>Impact:</b> ${esc(update.impact)}`,
   ];
 
   if (update.details) {
-    lines.push(``, `<b>Details:</b>`, `<code>${update.details}</code>`);
+    lines.push(``, `<b>Details:</b>`, `<code>${esc(update.details)}</code>`);
   }
 
   return sendTelegram(lines.join("\n"));
