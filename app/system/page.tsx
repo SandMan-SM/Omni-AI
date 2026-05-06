@@ -146,28 +146,31 @@ const PORTFOLIO_SITES: PortfolioSite[] = [
   {
     name: "Utah Main Street",
     slug: "mainst",
+    url: "https://utahmainstreet.com",
     preview: "https://utah-main-street.vercel.app",
     blurb:
-      "Weekly broadsheet covering Utah's best operators. Domain (utahmainstreet.com) pending.",
-    status: "soon",
+      "Weekly broadsheet covering Utah's best operators. Pulse of who's earning trust this week.",
+    status: "live",
     group: "newsroom",
   },
   {
     name: "Beehive Biz Pulse",
     slug: "beehive",
+    url: "https://beehivebizpulse.com",
     preview: "https://beehive-biz-pulse.vercel.app",
     blurb:
-      "Daily business ticker for Utah — hiring, raising, opening, winning. Domain (beehivebizpulse.com) pending.",
-    status: "soon",
+      "Daily business ticker for Utah — hiring, raising, opening, winning. 90 seconds, no scrolling.",
+    status: "live",
     group: "newsroom",
   },
   {
     name: "The Wasatch Post",
     slug: "wasatch",
+    url: "https://thewasatchpost.com",
     preview: "https://the-wasatch-post.vercel.app",
     blurb:
-      "Long-form business journalism from the front range. Domain (thewasatchpost.com) pending.",
-    status: "soon",
+      "Long-form investigative business journalism from Utah's front range.",
+    status: "live",
     group: "newsroom",
   },
 ];
