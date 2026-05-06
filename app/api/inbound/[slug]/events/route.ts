@@ -121,7 +121,23 @@ export async function POST(
 
     const sb = createAdminClient();
     const tableName = `inbound_${slug}_events`;
+
+    // Same business_id resolution as the leads route — inbound_<slug>_events
+    // also declares business_id NOT NULL with no default, so every insert
+    // has to pass it explicitly. Without this, fresh tenants 500 silently.
+    const { data: bizRow } = await sb
+      .from('omni_businesses')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+    const businessId = bizRow?.id ?? null;
+    if (!businessId) {
+      console.error(`[inbound/${slug}/events] no omni_businesses row for slug`);
+      return NextResponse.json({ ok: false }, { status: 500, headers: cors });
+    }
+
     const { error } = await sb.from(tableName).insert({
+      business_id: businessId,
       visitor_id: sanitizeText(body.visitor_id, 100) || null,
       session_id: sanitizeText(body.session_id, 100) || null,
       event_type: sanitizeText(body.event_type, 50) || 'page_view',

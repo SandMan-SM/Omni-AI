@@ -117,9 +117,32 @@ export async function POST(
 
     const sb = createAdminClient();
     const tableName = `inbound_${slug}_leads`;
+
+    // Resolve business_id from slug. The inbound_<slug>_leads tables
+    // declare business_id as NOT NULL with no default — every insert
+    // has to pass it. Previously this lookup only happened during the
+    // omni_leads_generated mirror further below, which meant the
+    // primary insert quietly relied on a default that doesn't exist.
+    // (Pre-Rene tenants had rows from manual seeding; new slugs would
+    // 500 on first form submit until this was fixed.)
+    const { data: bizRow } = await sb
+      .from('omni_businesses')
+      .select('id')
+      .eq('slug', slug)
+      .maybeSingle();
+    const businessId = bizRow?.id ?? null;
+    if (!businessId) {
+      console.error(`[inbound/${slug}/leads] no omni_businesses row for slug`);
+      return NextResponse.json(
+        { error: 'Tenant not configured.' },
+        { status: 500, headers: cors },
+      );
+    }
+
     const { data: inserted, error: insertError } = await sb
       .from(tableName)
       .insert({
+        business_id: businessId,
         // Existing schema uses full_name (not `name`) and raw_data (not properties).
         full_name: name,
         email: email || null,
@@ -188,16 +211,12 @@ export async function POST(
     // Idempotent via (source_table, source_record_id) — re-running the
     // endpoint won't double-insert.
     try {
-      const { data: biz } = await sb
-        .from('omni_businesses')
-        .select('id')
-        .eq('slug', slug)
-        .maybeSingle();
-      if (biz?.id) {
+      // businessId already resolved above; no need to re-query.
+      if (businessId) {
         const firstName = (name.split(' ')[0] || 'Unknown').slice(0, 80);
         const lastName  = name.split(' ').slice(1).join(' ').trim() || null;
         await sb.from('omni_leads_generated').insert({
-          business_id: biz.id,
+          business_id: businessId,
           first_name: firstName,
           last_name: lastName,
           email: email || null,

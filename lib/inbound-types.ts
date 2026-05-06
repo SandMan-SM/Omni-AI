@@ -18,6 +18,12 @@ export const INBOUND_SLUGS = [
   'phoenix',
   'niki',
   'prime_iv',
+  // Rene Laveau — spiritual / mystic operator. Silver Line capture
+  // form lives at renelaveau.com (and the in-dev preview at
+  // renelaveau-website.vercel.app). Tables (inbound_rene_leads /
+  // _events / _bookings / _newsletter_events) created via migration
+  // add_rene_laveau_tenant.
+  'rene',
 ] as const;
 
 export type InboundSlug = (typeof INBOUND_SLUGS)[number];
@@ -33,6 +39,7 @@ export const INBOUND_SLUG_LABELS: Record<InboundSlug, string> = {
   phoenix: 'Phoenix',
   niki: 'Niki',
   prime_iv: 'Prime IV Hydration',
+  rene: 'Rene Laveau',
 };
 
 export const SLUGS_WITH_ORDERS: ReadonlySet<InboundSlug> = new Set<InboundSlug>(['ltb']);
@@ -199,6 +206,17 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'https://prime-iv.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
+  ],
+  rene: [
+    // Production domain pending. In-dev preview lives on a Vercel
+    // hostname; localhost handles the npm-run-dev case. Add the prod
+    // domain to this list when the renelaveau.com purchase + DNS land.
+    'https://renelaveau.com',
+    'https://www.renelaveau.com',
+    'https://renelaveau-website.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002',
   ],
 };
 
