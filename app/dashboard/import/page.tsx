@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import { ArrowLeft, Upload, FileText, ChevronDown, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
 type ImportRow = {
@@ -97,19 +98,19 @@ export default function ImportPage() {
   async function handleImport() {
     if (!selectedBiz || parsed.length === 0) return;
     setImporting(true);
-    const r = await fetch('/api/agi/leads/import', {
+    const r = await authFetch('/api/agi/leads/import', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: selectedBiz.id, rows: parsed }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setImporting(false);
     if (j.ok) {
       setResult({ ok: true, msg: `Imported ${j.inserted} leads to ${selectedBiz.name}` });
       setCsv('');
       setParsed([]);
     } else {
-      setResult({ ok: false, msg: j.error ?? 'Import failed' });
+      setResult({ ok: false, msg: j.error ?? `Import failed (HTTP ${r.status})` });
     }
   }
 

@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, CreditCard, ExternalLink, CheckCircle2,
   AlertCircle, Crown, Calendar, Zap
@@ -74,14 +75,14 @@ export default function BillingPage() {
   async function openPortal() {
     if (!selectedBiz) return;
     setLoading(true);
-    const r = await fetch('/api/agi/billing/portal', {
+    const r = await authFetch('/api/agi/billing/portal', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: selectedBiz.id }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setLoading(false);
     if (j.url) window.location.href = j.url;
-    else alert(j.error ?? 'Portal failed');
+    else alert(j.error ?? `Portal failed (HTTP ${r.status})`);
   }
 
   const status = selectedBiz?.subscription_status ?? 'trialing';

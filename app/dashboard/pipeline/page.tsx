@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, TrendingUp, DollarSign, RefreshCw,
   Trophy, Target, ArrowRight, Sparkles, AlertCircle, CheckCircle2,
@@ -155,18 +156,18 @@ export default function PipelinePage() {
   async function bulkScore() {
     if (!selectedBiz) return;
     setScoring(true);
-    const r = await fetch('/api/agi/leads/bulk-score', {
+    const r = await authFetch('/api/agi/leads/bulk-score', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: selectedBiz.id, only_unscored: false, max_leads: 25 }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setScoring(false);
     if (j.ok) {
       showToast(`Re-scored ${j.scored} leads with Claude`);
       await load();
     } else {
-      showToast(`Failed: ${j.error}`, false);
+      showToast(`Failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 

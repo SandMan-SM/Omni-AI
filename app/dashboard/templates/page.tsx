@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, BookOpen, Sparkles, CheckCircle2,
   AlertCircle, Briefcase, MapPin, Tag, ArrowRight, Zap
@@ -57,7 +58,11 @@ export default function TemplatesPage() {
       } catch {}
       setSelectedBiz(initial ?? data[0]);
     });
-    fetch('/api/agi/templates').then(r => r.json()).then(j => setTemplates(j.templates ?? []));
+    // Templates GET is intentionally public (returns only is_public=true).
+    fetch('/api/agi/templates')
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => setTemplates(Array.isArray(j?.templates) ? j.templates : []))
+      .catch(() => {});
   }, []);
 
   // Live workspace switcher / auto-pin sync.
@@ -77,16 +82,17 @@ export default function TemplatesPage() {
   async function handleApply(template_id: string) {
     if (!selectedBiz) return;
     setApplying(template_id);
-    const r = await fetch('/api/agi/templates', {
+    // POST is auth-gated — forward bearer.
+    const r = await authFetch('/api/agi/templates', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ template_id, business_id: selectedBiz.id }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setApplying(null);
     if (j.ok) {
       showToast(`Campaign "${j.campaign.name}" created`);
     } else {
-      showToast(`Failed: ${j.error}`, false);
+      showToast(`Failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 
