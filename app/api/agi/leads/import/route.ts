@@ -62,11 +62,25 @@ export async function POST(req: NextRequest) {
     const existingEmails = new Set((existing ?? []).map(e => e.email?.toLowerCase()).filter(Boolean) as string[]);
     const existingLinkedins = new Set((existing ?? []).map(e => e.linkedin_url).filter(Boolean) as string[]);
 
+    // Track duplicates against the DB AND against rows already accepted
+    // earlier in THIS batch. Without the in-batch dedup, a CSV with the
+    // same email/linkedin twice would pass the DB check (only one was in
+    // DB) and then both inserts would land — except the unique index on
+    // omni_leads_generated would reject the second one and the entire
+    // .insert([...]) call throws, returning the operator a generic 500
+    // for what's actually just a duplicate row inside their CSV.
     let duplicates = 0;
+    const seenEmails = new Set<string>();
+    const seenLinkedins = new Set<string>();
     const leadsToInsert = validRows
       .filter(r => {
-        if (r.email && existingEmails.has(r.email.toLowerCase())) { duplicates++; return false; }
+        const emailKey = r.email?.toLowerCase();
+        if (emailKey && existingEmails.has(emailKey)) { duplicates++; return false; }
+        if (emailKey && seenEmails.has(emailKey)) { duplicates++; return false; }
         if (r.linkedin_url && existingLinkedins.has(r.linkedin_url)) { duplicates++; return false; }
+        if (r.linkedin_url && seenLinkedins.has(r.linkedin_url)) { duplicates++; return false; }
+        if (emailKey) seenEmails.add(emailKey);
+        if (r.linkedin_url) seenLinkedins.add(r.linkedin_url);
         return true;
       })
       .map(r => ({
