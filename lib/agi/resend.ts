@@ -177,13 +177,21 @@ export async function handleResendWebhook(event: {
     }
   }
 
-  // On reply: auto-promote lead to 'qualified' and cancel later touches
+  // On reply: auto-promote lead to 'qualified' and cancel later touches.
+  //
+  // The previous filter only promoted leads still in 'new' status. But
+  // most replies happen AFTER the first send moved the lead to
+  // 'contacted' — the contacted→qualified transition is exactly what
+  // a reply signals. Promote both 'new' and 'contacted' so the dashboard's
+  // qualified count reflects the actual sales-funnel reality.
+  // We still skip already-qualified / converted / lost leads so a reply
+  // doesn't roll back a manually-classified terminal state.
   if (event.type === 'email.replied' && asset) {
     await supabase
       .from('omni_leads_generated')
       .update({ status: 'qualified' })
       .eq('id', asset.lead_id)
-      .eq('status', 'new'); // only auto-promote if still 'new'
+      .in('status', ['new', 'contacted']);
 
     // Cancel scheduled emails with higher touch numbers (don't keep sending if they replied)
     await supabase
