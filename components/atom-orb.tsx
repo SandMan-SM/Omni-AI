@@ -90,26 +90,39 @@ export function AtomOrb({
   // Total height includes the optional reflection strip below the orb.
   const reflectionHeight = reflection ? Math.round(size * 0.32) : 0;
 
+  // Responsive sizing — clamp the orb's effective width to whichever
+  // is smaller: the requested size, or the viewport minus 32px of
+  // gutter. The internal SVG uses viewBox so it scales to whatever
+  // width the wrapper resolves to. aspect-ratio: 1/1 keeps the orb
+  // round even when the width is reduced. Reflection strip below
+  // scales by the same proportion.
+  const cssSize = `min(${size}px, calc(100vw - 32px))`;
+
   return (
     <div
       aria-hidden
       className={className}
       style={{
         position: "relative",
-        width: size,
-        height: size + reflectionHeight,
+        width: cssSize,
+        // Total height = orb (square) + reflection strip (32% of orb size).
+        // Express as relative units so it shrinks with the orb.
+        aspectRatio: reflection
+          ? `${size} / ${size + reflectionHeight}`
+          : "1 / 1",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
         flexShrink: 0,
       }}
     >
-      {/* The orb itself */}
+      {/* The orb itself — square, 100% of wrapper width if no
+          reflection, or the orb-portion if reflection is on. */}
       <div
         style={{
           position: "relative",
-          width: size,
-          height: size,
+          width: "100%",
+          aspectRatio: "1 / 1",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

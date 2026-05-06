@@ -293,19 +293,20 @@ export default function SystemPage() {
             letterSpacing: "0.18em",
             textTransform: "uppercase",
             marginTop: 16,
-            textAlign: "center",
           }}
         >
           Portfolio Promotion System
         </div>
         <h1
           style={{
-            fontSize: 38,
+            // clamp so the headline shrinks on narrow phones (375px
+            // iPhone SE → ~28px, desktop → 38px). Without clamp the
+            // "One sponsor. One partner." line wrapped awkwardly.
+            fontSize: "clamp(26px, 5.6vw, 38px)",
             fontWeight: 800,
             margin: "10px 0 18px 0",
             letterSpacing: "-0.02em",
             lineHeight: 1.15,
-            textAlign: "center",
           }}
         >
           One sponsor. One partner. Promoted on every site.
@@ -316,8 +317,7 @@ export default function SystemPage() {
             color: "#d4d4d8",
             lineHeight: 1.65,
             maxWidth: 720,
-            margin: "0 auto 36px",
-            textAlign: "center",
+            margin: "0 0 36px 0",
           }}
         >
           Every site in the Omni AI portfolio runs a single embedded block
@@ -363,7 +363,7 @@ export default function SystemPage() {
           </div>
           <h2
             style={{
-              fontSize: 26,
+              fontSize: "clamp(20px, 4.5vw, 26px)",
               fontWeight: 800,
               letterSpacing: "-0.015em",
               lineHeight: 1.22,
@@ -551,7 +551,7 @@ export default function SystemPage() {
           </div>
           <h2
             style={{
-              fontSize: 26,
+              fontSize: "clamp(20px, 4.5vw, 26px)",
               fontWeight: 800,
               letterSpacing: "-0.015em",
               lineHeight: 1.2,

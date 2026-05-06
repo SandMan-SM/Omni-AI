@@ -186,10 +186,12 @@ export default function ManifestoPage() {
           Interlinked · A Manifesto
         </div>
 
-        {/* Title */}
+        {/* Title — clamp so a narrow phone gets ~44px while desktop
+            keeps the bold 64px. Without clamp the title clipped on
+            375px viewports. */}
         <h1
           style={{
-            fontSize: 64,
+            fontSize: "clamp(44px, 9vw, 64px)",
             fontWeight: 900,
             margin: "0 0 8px 0",
             letterSpacing: "-0.025em",
@@ -437,7 +439,9 @@ function ManifestoSectionTitle({
   return (
     <h2
       style={{
-        fontSize: 30,
+        // clamp so phones get ~24px section titles instead of 30px,
+        // keeping the visual hierarchy proportional on smaller widths.
+        fontSize: "clamp(24px, 5vw, 30px)",
         fontWeight: 800,
         margin: "44px 0 20px 0",
         letterSpacing: "-0.015em",
@@ -460,7 +464,11 @@ function ManifestoBody({
   return (
     <p
       style={{
-        fontSize: emphasized ? 21 : 18,
+        // Body copy stays close to 16px on small phones and bumps up
+        // on desktop. Emphasized lines get a larger ceiling.
+        fontSize: emphasized
+          ? "clamp(17px, 3.6vw, 21px)"
+          : "clamp(15.5px, 3.2vw, 18px)",
         lineHeight: 1.75,
         color: emphasized ? "#fafafa" : "#e7e5e4",
         margin: "0 0 22px 0",
