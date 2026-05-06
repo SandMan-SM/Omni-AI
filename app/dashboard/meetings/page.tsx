@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import { ArrowLeft, ChevronDown, Calendar, Clock, Mail, Phone, RefreshCw, Copy, ExternalLink, X, Edit3, CalendarX, RotateCcw, CheckCircle2 } from 'lucide-react';
 
 type Booking = {
@@ -68,10 +69,16 @@ export default function MeetingsPage() {
     if (!selectedBiz) return;
     const requestedBizId = selectedBiz.id;
     setBookings([]);
-    const r = await fetch(`/api/agi/meetings/book?business_id=${requestedBizId}`);
-    const j = await r.json();
+    // authFetch + tolerate non-2xx so a 401 doesn't blank the calendar.
+    const r = await authFetch(`/api/agi/meetings/book?business_id=${requestedBizId}`);
     if (selectedBizRef.current !== requestedBizId) return;
-    setBookings(j.bookings ?? []);
+    if (!r.ok) {
+      console.error('[meetings] load failed:', r.status);
+      return;
+    }
+    const j = await r.json().catch(() => ({}));
+    if (selectedBizRef.current !== requestedBizId) return;
+    setBookings(Array.isArray(j?.bookings) ? j.bookings : []);
   }, [selectedBiz]);
 
   useEffect(() => { load(); }, [load]);
@@ -427,11 +434,14 @@ function MeetingPanel({
   async function patch(body: Record<string, unknown>) {
     setBusy(true);
     try {
-      const r = await fetch('/api/agi/meetings/book', {
+      const r = await authFetch('/api/agi/meetings/book', {
         method: 'PATCH', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: booking.id, ...body }),
       });
-      if (!r.ok) throw new Error((await r.json()).error || 'Failed');
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.error || `HTTP ${r.status}`);
+      }
       onChanged();
     } catch (e) {
       alert(`Failed: ${e instanceof Error ? e.message : 'unknown'}`);
@@ -444,8 +454,8 @@ function MeetingPanel({
     if (!confirm('Cancel this meeting? The attendee will need to be notified separately.')) return;
     setBusy(true);
     try {
-      const r = await fetch(`/api/agi/meetings/book?id=${booking.id}`, { method: 'DELETE' });
-      if (!r.ok) throw new Error('Cancel failed');
+      const r = await authFetch(`/api/agi/meetings/book?id=${booking.id}`, { method: 'DELETE' });
+      if (!r.ok) throw new Error(`Cancel failed (HTTP ${r.status})`);
       onCancelled();
     } catch (e) {
       alert(`Failed: ${e instanceof Error ? e.message : 'unknown'}`);

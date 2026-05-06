@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, Building2, Sparkles, Users, MapPin, Calendar,
   TrendingUp, Briefcase, Cpu, RefreshCw, ExternalLink
@@ -71,13 +72,16 @@ export default function CompaniesPage() {
     if (!selectedBiz) return;
     const requestedBizId = selectedBiz.id;
     setCompanies([]);
-    fetch(`/api/agi/companies?business_id=${requestedBizId}`)
-      .then(r => r.json())
+    // authFetch + tolerate non-2xx so a 401 doesn't crash the destructure.
+    authFetch(`/api/agi/companies?business_id=${requestedBizId}`)
+      .then(r => (r.ok ? r.json() : null))
       .then(j => {
         if (selectedBizRef.current !== requestedBizId) return;
-        setCompanies(j.companies ?? []);
-        if (j.companies?.length && !selected) setSelected(j.companies[0]);
-      });
+        const list = Array.isArray(j?.companies) ? j.companies : [];
+        setCompanies(list);
+        if (list.length && !selected) setSelected(list[0]);
+      })
+      .catch(() => {});
   }, [selectedBiz, selected]);
 
   async function handleEnrich() {

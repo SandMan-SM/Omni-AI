@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Campaign } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, Target, Plus, Edit3, Trash2, Save,
   X, CheckCircle2, Pause, Play, Briefcase, MapPin, Tag
@@ -70,44 +71,48 @@ export default function CampaignsPage() {
   useEffect(() => {
     if (!selectedBiz) return;
     const requestedBizId = selectedBiz.id;
-    fetch(`/api/agi/campaigns?business_id=${requestedBizId}`).then(r => r.json()).then(j => {
-      if (selectedBizRef.current !== requestedBizId) return;
-      setCampaigns(j.campaigns ?? []);
-    });
+    // authFetch + tolerate non-2xx so a 401 doesn't crash the destructure.
+    authFetch(`/api/agi/campaigns?business_id=${requestedBizId}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => {
+        if (selectedBizRef.current !== requestedBizId) return;
+        setCampaigns(Array.isArray(j?.campaigns) ? j.campaigns : []);
+      })
+      .catch(() => {});
   }, [selectedBiz]);
 
   async function handleSave(c: Partial<Campaign>) {
     const isNew = !c.id;
-    const r = await fetch('/api/agi/campaigns', {
+    const r = await authFetch('/api/agi/campaigns', {
       method: isNew ? 'POST' : 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(isNew ? { ...c, business_id: selectedBiz?.id } : c),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     if (j.campaign) {
       showToast(isNew ? 'Campaign created' : 'Campaign updated');
       if (selectedBiz) {
-        const r2 = await fetch(`/api/agi/campaigns?business_id=${selectedBiz.id}`);
-        const j2 = await r2.json();
-        setCampaigns(j2.campaigns ?? []);
+        const r2 = await authFetch(`/api/agi/campaigns?business_id=${selectedBiz.id}`);
+        const j2 = r2.ok ? await r2.json().catch(() => ({})) : {};
+        setCampaigns(Array.isArray(j2?.campaigns) ? j2.campaigns : []);
       }
       setEditing(null);
       setCreating(false);
     } else {
-      showToast(j.error ?? 'Save failed', false);
+      showToast(j.error ?? `Save failed (HTTP ${r.status})`, false);
     }
   }
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this campaign? Leads will remain but lose campaign association.')) return;
-    await fetch(`/api/agi/campaigns?id=${id}`, { method: 'DELETE' });
+    await authFetch(`/api/agi/campaigns?id=${id}`, { method: 'DELETE' });
     setCampaigns(prev => prev.filter(c => c.id !== id));
     showToast('Campaign deleted');
   }
 
   async function toggleStatus(c: Campaign) {
     const newStatus = c.status === 'active' ? 'paused' : 'active';
-    await fetch('/api/agi/campaigns', {
+    await authFetch('/api/agi/campaigns', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id: c.id, status: newStatus }),

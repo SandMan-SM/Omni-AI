@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, Settings as SettingsIcon, ChevronDown, User,
   Mail, Phone, Calendar, Save, CheckCircle2, AlertCircle, Activity, TrendingUp
@@ -88,10 +89,14 @@ export default function SettingsPage() {
       location: selectedBiz.location ?? '',
       website: selectedBiz.website ?? '',
     });
-    fetch(`/api/agi/warmup?business_id=${requestedBizId}`).then(r => r.json()).then(d => {
-      if (selectedBizRef.current !== requestedBizId) return;
-      setWarmup(d);
-    });
+    // authFetch + tolerate non-2xx so a 401 doesn't crash the warmup widget.
+    authFetch(`/api/agi/warmup?business_id=${requestedBizId}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(d => {
+        if (selectedBizRef.current !== requestedBizId) return;
+        if (d) setWarmup(d);
+      })
+      .catch(() => {});
   }, [selectedBiz]);
 
   async function handleSave() {

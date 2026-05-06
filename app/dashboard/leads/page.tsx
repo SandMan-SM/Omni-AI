@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Lead, type Campaign } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   Users, TrendingUp, Target, Zap, ChevronDown,
   Mail, Phone, Link as LinkIcon, MapPin, Star, RefreshCw,
@@ -44,7 +45,10 @@ function CreditMeter({ businessId }: { businessId: string }) {
   const [data, setData] = useState<{ used: number; limit: number; remaining: number; reserved: number } | null>(null);
 
   useEffect(() => {
-    fetch(`/api/agi/credits?business_id=${businessId}`).then(r => r.json()).then(setData);
+    authFetch(`/api/agi/credits?business_id=${businessId}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => j && setData(j))
+      .catch(() => {});
   }, [businessId]);
 
   if (!data) return null;
@@ -157,16 +161,16 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
         setAliases(Array.from(new Set(others)));
       });
 
-    // Status history timeline — fire in parallel
-    fetch(`/api/agi/leads/history?lead_id=${lead.id}`, { cache: 'no-store' })
+    // Status history timeline — fire in parallel via authFetch.
+    authFetch(`/api/agi/leads/history?lead_id=${lead.id}`, { cache: 'no-store' })
       .then(r => r.ok ? r.json() : { history: [] })
-      .then(d => { if (!cancelled) setHistory(d.history ?? []); })
+      .then(d => { if (!cancelled) setHistory(Array.isArray(d?.history) ? d.history : []); })
       .catch(() => {});
 
     // Activity log — calls, emails, notes
-    fetch(`/api/agi/leads/activity?lead_id=${lead.id}`, { cache: 'no-store' })
+    authFetch(`/api/agi/leads/activity?lead_id=${lead.id}`, { cache: 'no-store' })
       .then(r => r.ok ? r.json() : { activity: [] })
-      .then(d => { if (!cancelled) setActivity(d.activity ?? []); })
+      .then(d => { if (!cancelled) setActivity(Array.isArray(d?.activity) ? d.activity : []); })
       .catch(() => {});
 
     return () => { cancelled = true; };
@@ -175,7 +179,7 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
   async function logActivity(event_type: string, opts: { event_subtype?: string; note?: string } = {}) {
     setLogging(true);
     try {
-      const r = await fetch('/api/agi/leads/activity', {
+      const r = await authFetch('/api/agi/leads/activity', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           lead_id: lead.id, event_type,
@@ -183,12 +187,12 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
           details: opts.note ? { note: opts.note } : undefined,
         }),
       });
-      const j = await r.json();
+      const j = await r.json().catch(() => ({}));
       if (j.ok) {
         // Reload activity stream
-        const r2 = await fetch(`/api/agi/leads/activity?lead_id=${lead.id}`, { cache: 'no-store' });
-        const d = await r2.json();
-        setActivity(d.activity ?? []);
+        const r2 = await authFetch(`/api/agi/leads/activity?lead_id=${lead.id}`, { cache: 'no-store' });
+        const d = r2.ok ? await r2.json().catch(() => ({})) : {};
+        setActivity(Array.isArray(d?.activity) ? d.activity : []);
       }
     } finally {
       setLogging(false);
@@ -488,18 +492,18 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
           )}
           <button
             onClick={async () => {
-              const r = await fetch('/api/agi/leads/score-ai', {
+              const r = await authFetch('/api/agi/leads/score-ai', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ lead_id: lead.id }),
               });
-              const j = await r.json();
+              const j = await r.json().catch(() => ({}));
               if (j.ok) {
                 toast({
                   title: `AI Score: ${j.score}`,
                   description: `${j.reasoning}\n\nAngle: ${j.recommended_angle}`,
                 });
               } else {
-                toast({ title: 'Score failed', description: j.error, variant: 'destructive' });
+                toast({ title: 'Score failed', description: j.error || `HTTP ${r.status}`, variant: 'destructive' });
               }
             }}
             style={{
@@ -676,7 +680,7 @@ export default function DashboardPage() {
   async function runAgent() {
     if (!selectedBiz || !campaigns[0]) return;
     setGenerating(true);
-    await fetch('/api/agi/leads/generate', {
+    await authFetch('/api/agi/leads/generate', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ business_id: selectedBiz.id, campaign_id: campaigns[0].id, icp: campaigns[0].icp }),
     });
@@ -689,16 +693,16 @@ export default function DashboardPage() {
     if (!confirm(`Re-score every lead in ${selectedBiz.name} with Claude? This may take a minute.`)) return;
     setScoringAll(true);
     try {
-      const r = await fetch('/api/agi/leads/bulk-score', {
+      const r = await authFetch('/api/agi/leads/bulk-score', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ business_id: selectedBiz.id }),
       });
-      const d = await r.json();
+      const d = await r.json().catch(() => ({}));
       if (d.error) {
         toast({ title: 'Score failed', description: d.error, variant: 'destructive' });
       } else {
         // After re-score, fire hot-lead alerts for any newly hot leads
-        await fetch('/api/agi/leads/hot-lead-alerts', { method: 'POST' }).catch(() => {});
+        await authFetch('/api/agi/leads/hot-lead-alerts', { method: 'POST' }).catch(() => {});
         toast({
           title: 'Re-score complete',
           description: `Scored ${d.scored ?? '?'} leads.${d.errors ? ` ${d.errors} errors.` : ''}`,
@@ -711,7 +715,7 @@ export default function DashboardPage() {
   }
 
   async function handleStatusChange(id: string, status: Lead['status']) {
-    await fetch('/api/agi/leads', {
+    await authFetch('/api/agi/leads', {
       method: 'PATCH', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ id, status }),
     });

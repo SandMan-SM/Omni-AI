@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   Mail, MessageSquare, Phone, Send, Sparkles, Eye, MousePointerClick,
   RefreshCw, ChevronDown, ArrowLeft, Zap, AlertCircle, CheckCircle2, Clock,
@@ -63,9 +64,10 @@ function CreditMeter({ businessId }: { businessId: string }) {
   const [data, setData] = useState<{ used: number; limit: number; remaining: number; reserved: number } | null>(null);
 
   useEffect(() => {
-    fetch(`/api/agi/credits?business_id=${businessId}`)
-      .then(r => r.json())
-      .then(setData);
+    authFetch(`/api/agi/credits?business_id=${businessId}`)
+      .then(r => (r.ok ? r.json() : null))
+      .then(j => j && setData(j))
+      .catch(() => {});
   }, [businessId]);
 
   if (!data) return null;
@@ -407,9 +409,16 @@ export default function OutreachPage() {
   }, [selectedBiz, loadLeads]);
 
   const loadAssets = useCallback(async (leadId: string) => {
-    const r = await fetch(`/api/agi/outreach/generate?lead_id=${leadId}`);
-    const j = await r.json();
-    setAssets(j.assets ?? []);
+    // authFetch forwards omni_token bearer + we tolerate non-2xx
+    // gracefully so the assets pane doesn't crash on an unauth response.
+    const r = await authFetch(`/api/agi/outreach/generate?lead_id=${leadId}`);
+    if (!r.ok) {
+      console.error('[outreach] loadAssets failed:', r.status);
+      setAssets([]);
+      return;
+    }
+    const j = await r.json().catch(() => ({}));
+    setAssets(Array.isArray(j?.assets) ? j.assets : []);
   }, []);
 
   useEffect(() => {
@@ -421,48 +430,48 @@ export default function OutreachPage() {
   async function handleGenerate() {
     if (!selectedLeadId) return;
     setGenerating(true);
-    const r = await fetch('/api/agi/outreach/generate', {
+    const r = await authFetch('/api/agi/outreach/generate', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lead_id: selectedLeadId }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     setGenerating(false);
     if (j.ok) {
       showToast('Outreach assets generated');
       await loadAssets(selectedLeadId);
     } else {
-      showToast(`Generation failed: ${j.error}`, false);
+      showToast(`Generation failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 
   async function handleSend(asset_id: string) {
-    const r = await fetch('/api/agi/outreach/send', {
+    const r = await authFetch('/api/agi/outreach/send', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asset_id }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     if (j.ok) {
       showToast('Email sent');
       if (selectedLeadId) await loadAssets(selectedLeadId);
     } else {
-      showToast(`Send failed: ${j.error}`, false);
+      showToast(`Send failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 
   async function handleEnrich(lead_id: string) {
-    const r = await fetch('/api/agi/leads/enrich', {
+    const r = await authFetch('/api/agi/leads/enrich', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ lead_id, business_id: selectedBiz?.id, mock: true }),
     });
-    const j = await r.json();
+    const j = await r.json().catch(() => ({}));
     if (j.ok) {
       showToast('Lead enriched');
       if (selectedBiz) await loadLeads(selectedBiz.id);
     } else {
-      showToast(`Enrichment failed: ${j.error}`, false);
+      showToast(`Enrichment failed: ${j.error || `HTTP ${r.status}`}`, false);
     }
   }
 

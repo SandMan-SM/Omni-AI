@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import { ArrowLeft, ChevronDown, Activity, RefreshCw, CheckCircle2, XCircle, Clock, Zap } from 'lucide-react';
 
 type Run = {
@@ -80,10 +81,17 @@ export default function RunsPage() {
     if (!selectedBiz) return;
     const requestedBizId = selectedBiz.id;
     setRuns([]);
-    const r = await fetch(`/api/agi/runs?business_id=${requestedBizId}`);
-    const j = await r.json();
+    // authFetch + tolerate non-2xx so the polling loop doesn't crash
+    // on a transient 401.
+    const r = await authFetch(`/api/agi/runs?business_id=${requestedBizId}`);
     if (selectedBizRef.current !== requestedBizId) return;
-    setRuns(j.runs ?? []);
+    if (!r.ok) {
+      console.error('[runs] load failed:', r.status);
+      return;
+    }
+    const j = await r.json().catch(() => ({}));
+    if (selectedBizRef.current !== requestedBizId) return;
+    setRuns(Array.isArray(j?.runs) ? j.runs : []);
   }, [selectedBiz]);
 
   useEffect(() => { load(); }, [load]);
