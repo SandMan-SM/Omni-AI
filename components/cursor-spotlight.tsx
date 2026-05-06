@@ -1,3 +1,10 @@
+"use client";
+
+// Client component — uses useEffect + useState. The "use client"
+// directive lets server components (like /system and /manifesto, which
+// export `metadata` and JSON-LD) import this without bumping themselves
+// to client renders.
+
 import { useEffect, useState } from "react";
 
 export function CursorSpotlight() {
