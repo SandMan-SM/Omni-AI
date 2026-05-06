@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
         const prompt = `Analyze this sales win/loss data to identify the ideal customer profile.
 
 WON DEALS (${wonArr.length}):
-${wonArr.slice(0, 20).map((w, i) => `${i+1}. ${w.title} | ${w.company} | ${w.lead_location} | score=${w.score} | $${(w.deal_value ?? 0)/100}`).join('\n')}
+${wonArr.slice(0, 20).map((w, i) => `${i+1}. ${w.title} | ${w.company} | ${w.lead_location} | score=${w.score} | $${w.deal_value ?? 0}`).join('\n')}
 
 LOST DEALS (${lostArr.length}):
 ${lostArr.slice(0, 10).map((l, i) => `${i+1}. ${l.title} | ${l.company} | ${l.lead_location} | score=${l.score}`).join('\n')}
