@@ -836,7 +836,10 @@ export default function SystemPage() {
               )}
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 4 }}>
-                {s.url && (
+                {s.url ? (
+                  // Production domain attached — single Visit live CTA.
+                  // The Vercel preview is redundant for live sites; hide
+                  // it so the card has one clear action instead of two.
                   <a
                     href={s.url}
                     target="_blank"
@@ -856,27 +859,30 @@ export default function SystemPage() {
                   >
                     Visit live →
                   </a>
+                ) : (
+                  // No production domain yet — surface the Vercel preview
+                  // as the only way to view the in-development build.
+                  <a
+                    href={s.preview}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      flex: "1 1 auto",
+                      textAlign: "center",
+                      background: "transparent",
+                      border: "1px solid #3f3f46",
+                      color: "#d4d4d8",
+                      fontSize: 11,
+                      fontWeight: 700,
+                      padding: "7px 12px",
+                      borderRadius: 6,
+                      textDecoration: "none",
+                      letterSpacing: "0.04em",
+                    }}
+                  >
+                    Preview build →
+                  </a>
                 )}
-                <a
-                  href={s.preview}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    flex: "1 1 auto",
-                    textAlign: "center",
-                    background: "transparent",
-                    border: "1px solid #3f3f46",
-                    color: "#d4d4d8",
-                    fontSize: 11,
-                    fontWeight: 700,
-                    padding: "7px 12px",
-                    borderRadius: 6,
-                    textDecoration: "none",
-                    letterSpacing: "0.04em",
-                  }}
-                >
-                  Preview build →
-                </a>
               </div>
 
               <div
