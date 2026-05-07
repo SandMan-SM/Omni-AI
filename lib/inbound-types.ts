@@ -24,6 +24,10 @@ export const INBOUND_SLUGS = [
   // _events / _bookings / _newsletter_events) created via migration
   // add_rene_laveau_tenant.
   'rene',
+  // Utah newsroom mastheads — added with migration add_newsroom_tables
+  'mainst',
+  'beehive',
+  'wasatch',
 ] as const;
 
 export type InboundSlug = (typeof INBOUND_SLUGS)[number];
@@ -40,6 +44,9 @@ export const INBOUND_SLUG_LABELS: Record<InboundSlug, string> = {
   niki: 'Niki',
   prime_iv: 'Prime IV Hydration',
   rene: 'Rene Laveau',
+  mainst: 'Utah Main Street',
+  beehive: 'Beehive Biz Pulse',
+  wasatch: 'The Wasatch Post',
 };
 
 export const SLUGS_WITH_ORDERS: ReadonlySet<InboundSlug> = new Set<InboundSlug>(['ltb']);
@@ -217,6 +224,24 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'http://localhost:3000',
     'http://localhost:3001',
     'http://localhost:3002',
+  ],
+  mainst: [
+    'https://utahmainstreet.com',
+    'https://www.utahmainstreet.com',
+    'https://utah-main-street.vercel.app',
+    'http://localhost:3000',
+  ],
+  beehive: [
+    'https://beehivebizpulse.com',
+    'https://www.beehivebizpulse.com',
+    'https://beehive-biz-pulse.vercel.app',
+    'http://localhost:3000',
+  ],
+  wasatch: [
+    'https://thewasatchpost.com',
+    'https://www.thewasatchpost.com',
+    'https://the-wasatch-post.vercel.app',
+    'http://localhost:3000',
   ],
 };
 
