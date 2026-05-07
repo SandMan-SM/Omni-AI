@@ -11,16 +11,36 @@
 // in a Suspense boundary, so static prerender still works for the layout.
 
 import { useState, useEffect } from "react";
+import dynamic from "next/dynamic";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Navbar } from "@/components/navbar";
 import { HeroSection } from "@/components/hero-section";
-import { LegacySection } from "@/components/legacy-section";
-import { CampaignsSection } from "@/components/campaigns-section";
-import { EcosystemSection } from "@/components/ecosystem-section";
-import { SeoContentSection } from "@/components/seo-content-section";
-import { TestimonialsSection } from "@/components/testimonials-section";
-import { ContactSection } from "@/components/contact-section";
-import { Footer } from "@/components/footer";
+// Below-fold sections are code-split via next/dynamic so the initial
+// JS bundle ships only the hero + nav + chrome. ssr:true preserves
+// the SSR HTML for SEO; only the client hydration is deferred. This
+// is the single biggest TBT/LCP win on the homepage — hero hydrates
+// fast, the rest loads as the user scrolls.
+const LegacySection = dynamic(
+  () => import("@/components/legacy-section").then((m) => ({ default: m.LegacySection })),
+);
+const CampaignsSection = dynamic(
+  () => import("@/components/campaigns-section").then((m) => ({ default: m.CampaignsSection })),
+);
+const EcosystemSection = dynamic(
+  () => import("@/components/ecosystem-section").then((m) => ({ default: m.EcosystemSection })),
+);
+const SeoContentSection = dynamic(
+  () => import("@/components/seo-content-section").then((m) => ({ default: m.SeoContentSection })),
+);
+const TestimonialsSection = dynamic(
+  () => import("@/components/testimonials-section").then((m) => ({ default: m.TestimonialsSection })),
+);
+const ContactSection = dynamic(
+  () => import("@/components/contact-section").then((m) => ({ default: m.ContactSection })),
+);
+const Footer = dynamic(
+  () => import("@/components/footer").then((m) => ({ default: m.Footer })),
+);
 import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
 import { JsonLd, personSchema, faqPageSchema } from "@/components/json-ld";
 
