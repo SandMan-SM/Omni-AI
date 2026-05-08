@@ -144,6 +144,52 @@ export type InboundAnalyticsResponse = {
   time_series: InboundTimeSeriesPoint[];
 };
 
+/** Per-tenant rollup row in the aggregate dashboard. */
+export type InboundAggregateTenantRow = {
+  slug: InboundSlug;
+  label: string;
+  events_30d: number;
+  page_views_30d: number;
+  leads_30d: number;
+  leads_7d: number;
+  leads_today: number;
+  bookings_30d: number;
+  newsletter_subs_30d: number;
+};
+
+export type InboundAggregateDailyPoint = {
+  date: string;
+  events: number;
+  leads: number;
+  bookings: number;
+};
+
+export type InboundAggregateEventTypeRow = {
+  event_type: string;
+  count: number;
+};
+
+/** Cross-portfolio rollup payload returned by
+ *  /api/dashboard/aggregate-analytics. Same auth pattern as the
+ *  per-tenant endpoint (platform-admin only — clients do not see
+ *  cross-tenant data). */
+export type InboundAggregateResponse = {
+  fetched_at: string;
+  totals: {
+    events_30d: number;
+    page_views_30d: number;
+    leads_30d: number;
+    leads_7d: number;
+    leads_today: number;
+    bookings_30d: number;
+    newsletter_subs_30d: number;
+    active_tenants: number;
+  };
+  by_tenant: InboundAggregateTenantRow[];
+  by_event_type: InboundAggregateEventTypeRow[];
+  daily_series: InboundAggregateDailyPoint[];
+};
+
 export function isInboundSlug(value: string): value is InboundSlug {
   return (INBOUND_SLUGS as readonly string[]).includes(value);
 }

@@ -19,6 +19,12 @@ import {
   type InboundAnalyticsResponse,
   type InboundSlug,
 } from '@/lib/inbound-types';
+import AggregateAnalytics from './AggregateAnalytics';
+
+// Synthetic dropdown option representing the cross-portfolio rollup.
+// Sentinel string chosen so it cannot collide with any real slug.
+const ALL_BUSINESSES = '__all__' as const;
+type SelectedBrand = InboundSlug | typeof ALL_BUSINESSES;
 
 type Props = {
   /** Default slug if URL search param is absent. */
@@ -37,7 +43,14 @@ const PALETTE = {
 };
 
 export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
-  const [slug, setSlug] = useState<InboundSlug>(defaultSlug);
+  // `selected` covers both real slugs and the synthetic
+  // "All businesses" rollup. `slug` (a derived InboundSlug) is what
+  // the per-tenant payload fetcher cares about; when the user picks
+  // ALL_BUSINESSES we short-circuit and render <AggregateAnalytics />
+  // instead of issuing the per-tenant request.
+  const [selected, setSelected] = useState<SelectedBrand>(defaultSlug);
+  const isAggregate = selected === ALL_BUSINESSES;
+  const slug: InboundSlug = isAggregate ? defaultSlug : (selected as InboundSlug);
   const [open, setOpen] = useState(false);
   const [data, setData] = useState<InboundAnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -49,31 +62,49 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
   // Without this, useState only initialises once and the panel stays on
   // the previous client's data.
   useEffect(() => {
-    setSlug(defaultSlug);
+    setSelected(defaultSlug);
   }, [defaultSlug]);
 
-  // Hydrate from ?brand=... and keep URL in sync.
+  // Hydrate from ?brand=... and keep URL in sync. Accept the literal
+  // "all" value to deep-link the rollup view.
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
     const fromUrl = params.get('brand');
-    if (fromUrl && isInboundSlug(fromUrl)) {
-      setSlug(fromUrl);
+    if (fromUrl === 'all') {
+      setSelected(ALL_BUSINESSES);
+    } else if (fromUrl && isInboundSlug(fromUrl)) {
+      setSelected(fromUrl);
     }
   }, []);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
     const params = new URLSearchParams(window.location.search);
-    if (params.get('brand') !== slug) {
-      params.set('brand', slug);
+    const urlValue = isAggregate ? 'all' : (selected as string);
+    if (params.get('brand') !== urlValue) {
+      params.set('brand', urlValue);
       const next = `${window.location.pathname}?${params.toString()}`;
       window.history.replaceState(null, '', next);
     }
-  }, [slug]);
+  }, [selected, isAggregate]);
 
-  // Fetch payload whenever slug changes.
+  // Setter wrapper so the dropdown can hand back either a real slug or
+  // the synthetic ALL_BUSINESSES sentinel.
+  const setSlug = (s: SelectedBrand) => setSelected(s);
+
+  // Fetch payload whenever slug changes. When the user has selected the
+  // synthetic "All businesses" view, skip this fetch — <AggregateAnalytics />
+  // owns its own data lifecycle.
   useEffect(() => {
+    if (isAggregate) {
+      // Reset to a clean state so the per-tenant view doesn't flash old data
+      // if the user toggles back.
+      setLoading(false);
+      setError(null);
+      setData(null);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
@@ -111,9 +142,11 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [slug]);
+  }, [slug, isAggregate]);
 
-  const brandLabel = data?.brand_label ?? INBOUND_SLUG_LABELS[slug];
+  const brandLabel = isAggregate
+    ? 'All businesses'
+    : data?.brand_label ?? INBOUND_SLUG_LABELS[slug];
   const hasOrders = data?.has_orders ?? false;
 
   const funnelMax = useMemo(() => {
@@ -229,6 +262,36 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
                 boxShadow: '0 12px 32px rgba(0,0,0,0.45)',
               }}
             >
+              {/* Synthetic "All businesses" rollup at the top of the
+                  dropdown. Pinned + visually separated so it reads as
+                  the meta-option, not just another tenant. */}
+              <button
+                key="__all__"
+                type="button"
+                onClick={() => {
+                  setSlug(ALL_BUSINESSES);
+                  setOpen(false);
+                }}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  textAlign: 'left',
+                  padding: '10px 14px',
+                  background: isAggregate ? '#191919' : 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid #222',
+                  color: '#e8e8e8',
+                  cursor: 'pointer',
+                  fontSize: 13,
+                }}
+              >
+                <div style={{ fontWeight: 700, color: '#a78bfa' }}>
+                  All businesses
+                </div>
+                <div style={{ fontSize: 11, color: '#666' }}>
+                  Cross-portfolio rollup · 30d
+                </div>
+              </button>
               {INBOUND_SLUGS.map((s) => (
                 <button
                   key={s}
@@ -242,7 +305,7 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
                     width: '100%',
                     textAlign: 'left',
                     padding: '10px 14px',
-                    background: s === slug ? '#191919' : 'transparent',
+                    background: !isAggregate && s === slug ? '#191919' : 'transparent',
                     border: 'none',
                     color: '#e8e8e8',
                     cursor: 'pointer',
@@ -257,6 +320,13 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
           )}
         </div>
       </div>
+
+      {/* Aggregate ("All businesses") short-circuits the per-tenant
+          panels below. Clicking a tenant row in the leaderboard
+          switches the dropdown back to that single brand. */}
+      {isAggregate ? (
+        <AggregateAnalytics onTenantClick={(s) => setSelected(s)} />
+      ) : (<>
 
       {error && (
         <div
@@ -590,6 +660,7 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
           </div>
         )}
       </Card>
+      </>)}
     </section>
   );
 }
