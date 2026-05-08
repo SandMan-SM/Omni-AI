@@ -219,7 +219,7 @@ function SectionHeading({
           {eyebrow}
         </p>
       )}
-      <h2 className="text-3xl md:text-5xl font-bold tracking-tight">
+      <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight">
         {children}
       </h2>
     </motion.div>
@@ -251,8 +251,8 @@ export default function InterlinkedDeveloperInfoPage() {
           className="top-[120px] right-[-60px] w-[380px] h-[380px]"
         />
 
-        <div className="relative max-w-5xl mx-auto px-4 pt-16 md:pt-24 pb-16">
-          <div className="flex justify-start mb-8">
+        <div className="relative max-w-5xl mx-auto px-4 sm:px-6 pt-10 sm:pt-16 md:pt-24 pb-12 sm:pb-16">
+          <div className="flex justify-start mb-6 sm:mb-8">
             <Breadcrumb
               items={[
                 { name: "Home", href: "/" },
@@ -294,7 +294,7 @@ export default function InterlinkedDeveloperInfoPage() {
               initial={{ opacity: 0, scale: 0.92 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.15 }}
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest text-black mb-6"
+              className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-widest text-black mb-6 max-w-full"
               style={{
                 background:
                   "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%)",
@@ -302,12 +302,17 @@ export default function InterlinkedDeveloperInfoPage() {
                   "inset 0 1px 0 rgba(255,255,255,0.5), 0 0 18px rgba(255,215,0,0.5)",
               }}
             >
-              <Crown className="w-3.5 h-3.5" />
-              $50,000 Program · Sponsor coverage available
-              <Sparkles className="w-3.5 h-3.5" />
+              <Crown className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span className="hidden sm:inline">
+                $50,000 Program · Sponsor coverage available
+              </span>
+              <span className="sm:hidden">
+                $50K · Sponsor coverage
+              </span>
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             </motion.div>
 
-            <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-5 leading-[1.02]">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-5 leading-[1.05] sm:leading-[1.02]">
               Build{" "}
               <span
                 className="inline-block"
@@ -334,7 +339,7 @@ export default function InterlinkedDeveloperInfoPage() {
               teach?" voice queries.
             */}
             <p
-              className="text-lg md:text-xl text-gray-300 max-w-3xl leading-relaxed"
+              className="text-base sm:text-lg md:text-xl text-gray-300 max-w-3xl leading-relaxed"
               data-speakable="intro"
             >
               The Interlinked Developer Curriculum is a{" "}
@@ -386,7 +391,7 @@ export default function InterlinkedDeveloperInfoPage() {
             {/* Trust sub-stats — explicitly centered per Sita's request:
                 the rest of the hero aligns left, but the analytics
                 row stays centered as a self-contained block. */}
-            <div className="mt-14 grid grid-cols-3 gap-4 max-w-2xl mx-auto text-center">
+            <div className="mt-10 sm:mt-14 grid grid-cols-3 gap-2 sm:gap-4 max-w-2xl mx-auto text-center">
               {[
                 { value: "5", label: "Modules" },
                 { value: "40h", label: "Curriculum" },
@@ -397,12 +402,12 @@ export default function InterlinkedDeveloperInfoPage() {
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.4, delay: 0.5 + i * 0.08 }}
-                  className="rounded-2xl border border-white/10 bg-white/[0.02] px-4 py-5 text-center"
+                  className="rounded-2xl border border-white/10 bg-white/[0.02] px-2 sm:px-4 py-4 sm:py-5 text-center"
                 >
-                  <div className="text-2xl md:text-3xl font-extrabold mb-1">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-extrabold mb-1">
                     {stat.value}
                   </div>
-                  <div className="text-[11px] text-gray-400 uppercase tracking-widest">
+                  <div className="text-[9px] sm:text-[11px] text-gray-400 uppercase tracking-wider sm:tracking-widest leading-tight">
                     {stat.label}
                   </div>
                 </motion.div>
@@ -413,7 +418,7 @@ export default function InterlinkedDeveloperInfoPage() {
       </section>
 
       {/* ── Why this exists ────────────────────────────────────────── */}
-      <section className="relative py-20">
+      <section className="relative py-12 sm:py-16 md:py-20">
         <div className="relative max-w-4xl mx-auto px-4">
           <SectionHeading eyebrow="Why we built this">
             AI isn&rsquo;t hard.{" "}
@@ -455,7 +460,7 @@ export default function InterlinkedDeveloperInfoPage() {
       </section>
 
       {/* ── What's an AI CEO? ──────────────────────────────────────── */}
-      <section className="relative py-20">
+      <section className="relative py-12 sm:py-16 md:py-20">
         <GradientOrb
           color="magenta"
           className="top-[40px] right-[-80px] w-[420px] h-[420px]"
@@ -542,7 +547,7 @@ export default function InterlinkedDeveloperInfoPage() {
       </section>
 
       {/* ── Curriculum ──────────────────────────────────────────────── */}
-      <section id="curriculum" className="relative py-20">
+      <section id="curriculum" className="relative py-12 sm:py-16 md:py-20">
         <GradientOrb
           color="purple"
           className="top-[100px] left-[-100px] w-[420px] h-[420px]"
@@ -608,7 +613,7 @@ export default function InterlinkedDeveloperInfoPage() {
       </section>
 
       {/* ── Value stack ─────────────────────────────────────────────── */}
-      <section className="relative py-20">
+      <section className="relative py-12 sm:py-16 md:py-20">
         <div className="relative max-w-3xl mx-auto px-4">
           <SectionHeading eyebrow="What's included">
             Total retail value.
@@ -671,7 +676,7 @@ export default function InterlinkedDeveloperInfoPage() {
       </section>
 
       {/* ── Newsletter block ────────────────────────────────────────── */}
-      <section className="relative py-20">
+      <section className="relative py-12 sm:py-16 md:py-20">
         <div className="relative max-w-5xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -715,7 +720,7 @@ export default function InterlinkedDeveloperInfoPage() {
       </section>
 
       {/* ── Sponsor-coverage application form ──────────────────────── */}
-      <section id="claim" className="relative py-20 scroll-mt-24">
+      <section id="claim" className="relative py-12 sm:py-16 md:py-20 scroll-mt-24">
         <GradientOrb
           color="gold"
           className="top-[40px] right-[-100px] w-[420px] h-[420px]"
@@ -761,7 +766,7 @@ export default function InterlinkedDeveloperInfoPage() {
       </section>
 
       {/* ── Community rail ──────────────────────────────────────────── */}
-      <section className="relative py-20">
+      <section className="relative py-12 sm:py-16 md:py-20">
         <div className="relative max-w-5xl mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
