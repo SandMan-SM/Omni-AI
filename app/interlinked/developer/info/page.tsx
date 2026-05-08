@@ -237,7 +237,7 @@ export default function InterlinkedDeveloperInfoPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-x-hidden noise-overlay">
+    <div className="min-h-screen bg-[#050508] text-white overflow-x-hidden noise-overlay">
       <Navbar />
 
       {/* ── Hero ──────────────────────────────────────────────────── */}
