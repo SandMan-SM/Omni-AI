@@ -83,6 +83,7 @@ import {
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { Breadcrumb } from "@/components/breadcrumb";
+import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { DeveloperSignupForm } from "./DeveloperSignupForm";
 
 // Curriculum — byte-aligned with the `teaches` array on courseSchema
@@ -237,7 +238,13 @@ export default function InterlinkedDeveloperInfoPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050508] text-white overflow-x-hidden noise-overlay">
+    // No opaque page background — GoldSparksBackdrop (warm gold radial
+    // wash + rising chrome-gold embers, fixed inset-0 -z-10) paints
+    // through every section. Same pattern as /newsletter/premium/info,
+    // /sponsor/info, /arena. The chrome-gold ember palette ties to the
+    // gold value chip + CTA + tuition card already on this page.
+    <div className="min-h-screen text-white overflow-x-hidden noise-overlay relative">
+      <GoldSparksBackdrop />
       <Navbar />
 
       {/* ── Hero ──────────────────────────────────────────────────── */}
