@@ -236,6 +236,45 @@ export async function POST(
       console.error(`[inbound/${slug}/leads] CRM mirror failed:`, e);
     }
 
+    // Stage N.2 — federation cross-brand attribution.
+    // If the visitor was driven here by a federation cross-promo (their
+    // tracker captured `referring_federation_slug` from a `?ref=`
+    // querystring on first arrival), record the conversion. The lead
+    // itself was already saved above; this adds an attribution-only row.
+    try {
+      const referringSlug = sanitizeText(body.referring_federation_slug, 64);
+      const referringCreative = sanitizeText(body.referring_creative_id, 64);
+      if (referringSlug && referringSlug !== slug) {
+        await sb.from('cross_brand_referrals').insert({
+          originating_slug: referringSlug,
+          target_slug: slug,
+          creative_id: referringCreative || null,
+          visitor_id: sanitizeText(body.visitor_id, 100) || null,
+          session_id: sanitizeText(body.session_id, 100) || null,
+          lead_id: lead.id,
+          page_path: pagePath,
+          attribution_breakdown: {
+            first_touch: 0.3,
+            last_touch: 0.5,
+            linear: 0.2,
+            note: 'Stage N.2 advisory split; not yet enforced in payouts.',
+          },
+        });
+        // Also drop a conversion row for the dashboard funnel rollups.
+        if (referringCreative) {
+          await sb.from('cross_ad_conversions').insert({
+            creative_id: referringCreative,
+            originating_slug: referringSlug,
+            target_slug: slug,
+            target_event_type: 'lead_form_submit',
+            value_usd: null,
+          });
+        }
+      }
+    } catch (e) {
+      console.warn(`[inbound/${slug}/leads] referral attribution failed:`, e);
+    }
+
     return NextResponse.json({ ok: true, id: lead.id }, { headers: cors });
   } catch (e) {
     console.error(`[inbound/${slug}/leads] failed:`, e);

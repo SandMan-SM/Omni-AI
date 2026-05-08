@@ -62,10 +62,14 @@ export async function GET(request: Request) {
     );
   }
 
+  const dayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
   const [
     { data: digest },
     { data: stewards },
     { data: findings },
+    { data: federationReferrals },
+    { data: federationConversions },
   ] = await Promise.all([
     sb
       .from("intel_digest")
@@ -85,6 +89,18 @@ export async function GET(request: Request) {
       .is("resolved_at", null)
       .order("created_at", { ascending: false })
       .limit(3),
+    sb
+      .from("cross_brand_referrals")
+      .select("originating_slug, target_slug, ts")
+      .gte("ts", dayAgo)
+      .order("ts", { ascending: false })
+      .limit(50),
+    sb
+      .from("cross_ad_conversions")
+      .select("originating_slug, target_slug, target_event_type, attributed_at")
+      .gte("attributed_at", dayAgo)
+      .order("attributed_at", { ascending: false })
+      .limit(50),
   ]);
 
   const digestRow = digest as
@@ -116,6 +132,32 @@ export async function GET(request: Request) {
     message_md: string;
     created_at: string;
   }>;
+  // Stage N.5 — Federation overnight block.
+  type Refkey = string;
+  const refRows = (federationReferrals || []) as Array<{ originating_slug: string | null; target_slug: string }>;
+  const cvrRows = (federationConversions || []) as Array<{ originating_slug: string | null; target_slug: string; target_event_type: string | null }>;
+  const refTally = new Map<Refkey, number>();
+  for (const r of refRows) {
+    const k = `${r.originating_slug || "(unknown)"} → ${r.target_slug}`;
+    refTally.set(k, (refTally.get(k) || 0) + 1);
+  }
+  const topRefs = Array.from(refTally.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+  const federationHtml = (refRows.length || cvrRows.length)
+    ? `<ul style="margin:0 0 24px 16px;padding:0;">
+        <li style="margin:0 0 6px;color:#d4d4d4;"><strong>${refRows.length}</strong> cross-brand referral${refRows.length === 1 ? "" : "s"} captured · <strong>${cvrRows.length}</strong> conversion${cvrRows.length === 1 ? "" : "s"} attributed</li>
+        ${topRefs.map(([k, n]) => `<li style="margin:0 0 4px;color:#d4d4d4;">${escapeHtml(k)} · <strong>${n}</strong></li>`).join("")}
+      </ul>`
+    : '<p style="margin:0 0 24px;color:#888;font-size:13px;">No federation referrals overnight. Embeds may not be deployed yet.</p>';
+  const federationText = (refRows.length || cvrRows.length)
+    ? [
+        `Federation overnight:`,
+        `- ${refRows.length} cross-brand referrals · ${cvrRows.length} conversions`,
+        ...topRefs.map(([k, n]) => `- ${k}: ${n}`),
+      ].join("\n")
+    : "Federation overnight: nothing yet.";
+
   const findingsHtml = findingRows.length
     ? findingRows
         .map(
@@ -138,6 +180,9 @@ export async function GET(request: Request) {
 
   <h3 style="margin:24px 0 8px;color:#fde68a;font-size:14px;font-family:Georgia,serif;font-weight:400;">Active Stewards</h3>
   <ul style="margin:0 0 24px 16px;padding:0;">${stewardHtml || '<li style="color:#888;">No active runs.</li>'}</ul>
+
+  <h3 style="margin:24px 0 8px;color:#a7f3d0;font-size:14px;font-family:Georgia,serif;font-weight:400;">Federation overnight</h3>
+  ${federationHtml}
 
   <h3 style="margin:24px 0 8px;color:#fda4af;font-size:14px;font-family:Georgia,serif;font-weight:400;">Top findings</h3>
   <ul style="margin:0 0 32px 16px;padding:0;">${findingsHtml}</ul>
@@ -164,6 +209,8 @@ export async function GET(request: Request) {
       (s) =>
         `- ${s.domain}: ${s.council_agents?.name || "—"} (${Math.max(0, Math.floor((new Date(s.run_ends_at).getTime() - Date.now()) / 86_400_000))}d left)`,
     ),
+    "",
+    federationText,
     "",
     "Top findings:",
     ...(findingRows.length

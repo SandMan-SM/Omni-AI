@@ -28,6 +28,10 @@ export const INBOUND_SLUGS = [
   'mainst',
   'beehive',
   'wasatch',
+  // Founder flagship + Mastermind — added with migration
+  // add_sitanim_imperium_tenants (Stage L + M, 2026-05-08).
+  'sitanim',
+  'imperium',
 ] as const;
 
 export type InboundSlug = (typeof INBOUND_SLUGS)[number];
@@ -47,6 +51,8 @@ export const INBOUND_SLUG_LABELS: Record<InboundSlug, string> = {
   mainst: 'Utah Main Street',
   beehive: 'Beehive Biz Pulse',
   wasatch: 'The Wasatch Post',
+  sitanim: 'Sitani Mafi',
+  imperium: 'Imperium',
 };
 
 export const SLUGS_WITH_ORDERS: ReadonlySet<InboundSlug> = new Set<InboundSlug>(['ltb']);
@@ -242,6 +248,21 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'https://www.thewasatchpost.com',
     'https://the-wasatch-post.vercel.app',
     'http://localhost:3000',
+  ],
+  sitanim: [
+    'https://sitanimafi.live',
+    'https://www.sitanimafi.live',
+    'https://sitanimafi-website.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ],
+  imperium: [
+    'https://secretimperium.com',
+    'https://www.secretimperium.com',
+    'https://imperium-web.vercel.app',
+    'https://imperium-website.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
   ],
 };
 

@@ -14,7 +14,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
-import { SponsorBlock } from "@/components/sponsor/SponsorBlock";
+import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -473,7 +473,7 @@ export default async function NewsletterPostPage({ params }: Props) {
             CTA so it never competes with it for the headline action.
             All clicks + shares + impressions ping inbound_omnileads_events
             so the dashboard at /dashboard shows attribution. */}
-        <SponsorBlock slug="omnileads" />
+        <SponsorBanner slug="omnileads" seed={post.slug || post.id || ""} />
 
         {/* Closing */}
         <p className="text-center text-gray-400 italic text-lg my-10">
