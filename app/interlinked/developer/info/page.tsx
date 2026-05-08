@@ -61,7 +61,6 @@
  * above the fold before the user scrolls.
  */
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -77,7 +76,6 @@ import {
   CheckCircle2,
   Mail,
   Users,
-  Flame,
   BookOpen,
 } from "lucide-react";
 import { Navbar } from "@/components/navbar";
@@ -168,16 +166,6 @@ const VALUE_STACK = [
   { label: "Cohort-style community support", value: "Included" },
 ] as const;
 
-// Rotating hero sub-labels — cheap way to add motion to the eyebrow
-// without shipping a carousel. Four variants cycle through every
-// 2.4 seconds using a setInterval in the hero component below.
-const HERO_EYEBROWS = [
-  "Interlinked Developer Curriculum",
-  "Build AI CEOs from zero",
-  "Pantheon-grade multi-agent training",
-  "$50,000 program · sponsor-funded seats available",
-] as const;
-
 function GradientOrb({
   className,
   color,
@@ -228,15 +216,6 @@ function SectionHeading({
 }
 
 export default function InterlinkedDeveloperInfoPage() {
-  const [eyebrowIdx, setEyebrowIdx] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setEyebrowIdx((i) => (i + 1) % HERO_EYEBROWS.length);
-    }, 2400);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     // No opaque page background — GoldSparksBackdrop (warm gold radial
     // wash + rising chrome-gold embers, fixed inset-0 -z-10) paints
@@ -279,23 +258,6 @@ export default function InterlinkedDeveloperInfoPage() {
             transition={{ duration: 0.6 }}
             className="text-left"
           >
-            {/* Rotating eyebrow — motion without a full carousel */}
-            <div className="h-6 mb-4 flex items-center justify-start">
-              <motion.span
-                key={eyebrowIdx}
-                initial={{ opacity: 0, y: 6 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
-                className="inline-flex items-center gap-2 px-4 py-1 rounded-full border border-purple-400/30 bg-purple-500/10"
-              >
-                <Flame className="w-3.5 h-3.5 text-purple-300" />
-                <span className="text-xs uppercase tracking-widest text-purple-200 font-semibold">
-                  {HERO_EYEBROWS[eyebrowIdx]}
-                </span>
-              </motion.span>
-            </div>
-
             {/* Value chip — gold anchor for the $50K promise */}
             <motion.div
               initial={{ opacity: 0, scale: 0.92 }}
@@ -332,8 +294,12 @@ export default function InterlinkedDeveloperInfoPage() {
                 }}
               >
                 AI CEOs.
-              </span>{" "}
-              Not chatbots.
+              </span>
+              {/* Drop the 'Not chatbots.' qualifier on small phones —
+                  the gradient 'AI CEOs.' is the headline beat; on
+                  iPhone SE the second clause wraps awkwardly and
+                  steals visual weight from the gold word. */}
+              <span className="hidden sm:inline"> Not chatbots.</span>
             </h1>
 
             {/*
