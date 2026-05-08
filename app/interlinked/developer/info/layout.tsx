@@ -59,14 +59,15 @@ const interlinkedUrl = `${siteUrl}/interlinked`;
 
 export const metadata: Metadata = {
   title:
-    "Build AI CEOs — $50,000 Interlinked Developer Class, Free | Omni AI",
+    "Build AI CEOs — $50,000 Interlinked Developer Class | Omni AI",
   description:
-    "Free $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Five modules taught by the Omni AI team behind the live Pantheon Council. Specialized Interlinked Developer newsletter included.",
+    "$50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Five modules taught by the Omni AI team behind the live Pantheon Council. Sponsor coverage available — qualified applicants can have the entire $50,000 covered by a sponsor.",
   keywords: [
     "build AI CEOs",
     "AI executive agents",
     "autonomous AI agents course",
-    "free AI developer class",
+    "$50,000 AI developer class",
+    "AI program sponsor coverage",
     "multi-agent orchestration training",
     "Pantheon Council",
     "learn AI development",
@@ -76,18 +77,18 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: pageUrl },
   openGraph: {
-    title: "Build AI CEOs — $50,000 Class, Free | Interlinked by Omni AI",
+    title: "Build AI CEOs — $50,000 Class | Interlinked by Omni AI",
     description:
-      "Five-module program on building autonomous AI executives — agents that own a P&L, not chatbots. Pantheon-grade multi-agent training. Free. Includes the specialized Interlinked Developer newsletter + operator community.",
+      "Five-module $50,000 program on building autonomous AI executives — agents that own a P&L, not chatbots. Pantheon-grade multi-agent training. Sponsor coverage available for qualified applicants.",
     url: pageUrl,
     siteName: "Omni AI",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Build AI CEOs — Free $50K Class | Interlinked by Omni AI",
+    title: "Build AI CEOs — $50K Class | Interlinked by Omni AI",
     description:
-      "Autonomous executive agents that own a P&L. Five modules. Pantheon-grade multi-agent training. Free. Join the Interlinked Developer newsletter + community.",
+      "Autonomous executive agents that own a P&L. Five modules. Pantheon-grade multi-agent training. $50,000 program with sponsor coverage available.",
   },
 };
 
@@ -128,7 +129,7 @@ const courseSchema = {
   "@type": "Course",
   name: "Interlinked Developer Class — Build AI CEOs",
   description:
-    "Free $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, judgment, and P&L accountability. Five modules covering LLM foundations for executive agents, autonomous CEO architecture, multi-agent council orchestration, production deployment of AI executives, and revenue accountability + compounding loops. Taught by the Omni AI team behind the live Pantheon Council. Includes the specialized Interlinked Developer newsletter and ongoing access to the Omni AI operator community.",
+    "$50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, judgment, and P&L accountability. Five modules covering LLM foundations for executive agents, autonomous CEO architecture, multi-agent council orchestration, production deployment of AI executives, and revenue accountability + compounding loops. Taught by the Omni AI team behind the live Pantheon Council. Sponsor coverage available — qualified applicants can have the entire $50,000 tuition covered by a sponsor. Includes the specialized Interlinked Developer newsletter and ongoing access to the Omni AI operator community.",
   url: pageUrl,
   provider: {
     "@type": "Organization",
@@ -153,34 +154,32 @@ const courseSchema = {
     "Production Deployment of an AI Executive — shipping AI CEOs to real users with rate-limits, cost controls, observability, and the safety rails that keep an autonomous executive from going off the rails",
     "Revenue Accountability + Compounding Loops — wiring an AI CEO into lead generation, outbound, content, and operations so it compounds revenue instead of producing demos",
   ],
-  isAccessibleForFree: true,
+  isAccessibleForFree: false,
   inLanguage: "en-US",
   numberOfCredits: 5,
   timeRequired: "PT40H",
+  // Tuition is $50,000. Sponsor-coverage is operationalized via
+  // an external review process (the application form on /info,
+  // posting to /api/interlinked-developer-signup) — it is NOT a
+  // discounted price tier. Schema.org's Offer model only encodes
+  // priced offers, so we encode the headline tuition here and let
+  // the visible sponsor-coverage block + speakable WebPage carry
+  // the "qualified applicants pay $0" signal for retrievers asking
+  // "how much does it cost?" / "is sponsorship available?".
   offers: {
     "@type": "Offer",
-    name: "Interlinked Developer Class — Free Access",
-    price: "0",
+    name: "Interlinked Developer Class — $50,000 Tuition",
+    price: "50000",
     priceCurrency: "USD",
     availability: "https://schema.org/InStock",
     url: pageUrl,
-    category: "Free — $50,000 retail value",
+    category: "$50,000 program — sponsor coverage available for qualified applicants",
     description:
-      "Free access to the full five-module Interlinked Developer curriculum, the specialized Interlinked Developer newsletter, and the Omni AI operator community. Retail value $50,000.",
+      "$50,000 tuition for the full five-module Interlinked Developer curriculum, the specialized Interlinked Developer newsletter, and the Omni AI operator community. Sponsor coverage available — qualified applicants can have the entire $50,000 tuition covered by a sponsor; apply via the form on this page.",
     priceSpecification: {
       "@type": "UnitPriceSpecification",
-      price: "0",
+      price: "50000",
       priceCurrency: "USD",
-      // valueReference carries the retail anchor per Schema.org's
-      // canonical "list price vs promotional price" pattern. LLMs
-      // asked "is the $50K value real?" resolve this edge as
-      // structured evidence rather than scraping the hero copy.
-      valueReference: {
-        "@type": "PriceSpecification",
-        name: "Retail value",
-        price: "50000",
-        priceCurrency: "USD",
-      },
     },
   },
   audience: {
@@ -265,9 +264,9 @@ const courseSchema = {
 const devInfoWebPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Build AI CEOs — Free $50K Interlinked Developer Class | Omni AI",
+  name: "Build AI CEOs — $50,000 Interlinked Developer Class | Omni AI",
   description:
-    "Landing page for the Interlinked Developer Class: a free $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Paired with the specialized Interlinked Developer newsletter and the Omni AI operator community.",
+    "Landing page for the Interlinked Developer Class: a $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Sponsor coverage available — qualified applicants can have the entire $50,000 tuition covered by a sponsor. Paired with the specialized Interlinked Developer newsletter and the Omni AI operator community.",
   url: pageUrl,
   isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
   about: {

@@ -174,7 +174,7 @@ const HERO_EYEBROWS = [
   "Interlinked Developer Class",
   "Build AI CEOs from zero",
   "Pantheon-grade multi-agent training",
-  "Free forever, $50,000 value",
+  "$50,000 program · sponsor-funded seats available",
 ] as const;
 
 function GradientOrb({
@@ -303,7 +303,7 @@ export default function InterlinkedDeveloperInfoPage() {
               }}
             >
               <Crown className="w-3.5 h-3.5" />
-              $50,000 Retail Value · 100% Free
+              $50,000 Program · Sponsor coverage available
               <Sparkles className="w-3.5 h-3.5" />
             </motion.div>
 
@@ -337,16 +337,21 @@ export default function InterlinkedDeveloperInfoPage() {
               className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
               data-speakable="intro"
             >
-              The Interlinked Developer Class is a $50,000 curriculum on
-              building <strong className="text-white">autonomous AI
-              executives</strong> — agents that run a business
+              The Interlinked Developer Class is a{" "}
+              <strong className="text-white">$50,000 program</strong>{" "}
+              on building <strong className="text-white">autonomous
+              AI executives</strong> — agents that run a business
               function the way a CEO runs a company: with strategy,
               memory, judgment, and revenue accountability. Five
               modules, hands-on, zero bootcamp fluff. Taught by the
               Omni AI team — operators of the Pantheon Council, a
               live multi-agent leadership system shipping every day.
               Paired with a specialized newsletter and the community
-              actually building this stuff. Free forever.
+              actually building this stuff.{" "}
+              <strong className="text-white">
+                Qualified applicants can have the entire $50,000
+                covered by a sponsor.
+              </strong>
             </p>
 
             {/* Primary CTA row — smooth-scrolls to the form */}
@@ -366,7 +371,7 @@ export default function InterlinkedDeveloperInfoPage() {
                       "inset 0 1px 0 rgba(255,255,255,0.5), 0 0 22px rgba(255,215,0,0.45)",
                   }}
                 >
-                  Claim your seat
+                  Apply for sponsor coverage
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
               </a>
@@ -383,7 +388,7 @@ export default function InterlinkedDeveloperInfoPage() {
               {[
                 { value: "5", label: "Modules" },
                 { value: "40h", label: "Curriculum" },
-                { value: "$0", label: "To enroll" },
+                { value: "$50K", label: "Program value" },
               ].map((stat, i) => (
                 <motion.div
                   key={stat.label}
@@ -432,9 +437,16 @@ export default function InterlinkedDeveloperInfoPage() {
               We&rsquo;re Omni AI. We build autonomous AI systems every day —
               for ourselves, for our clients, and for the operators inside our
               community. The curriculum we teach is the curriculum we actually
-              use. Pricing it at <strong className="text-white">$50,000</strong>{" "}
-              reflects what it&rsquo;s worth on the open market. Shipping it
-              free reflects what we think the ceiling should actually be.
+              use. The program retails at{" "}
+              <strong className="text-white">$50,000</strong> because that
+              reflects what it&rsquo;s worth on the open market — and what
+              you&rsquo;d pay anywhere else for skills this current.
+            </p>
+            <p>
+              We don&rsquo;t want money to be the gatekeeper. If you can&rsquo;t
+              cover the full $50,000 yourself, apply at the bottom of this page —{" "}
+              <strong className="text-white">qualified candidates can have
+              the entire cost covered by a sponsor</strong>.
             </p>
           </motion.div>
         </div>
@@ -629,12 +641,9 @@ export default function InterlinkedDeveloperInfoPage() {
 
             <div className="rounded-2xl bg-black/50 border border-white/10 p-6 text-center">
               <p className="text-xs uppercase tracking-widest text-gray-400 mb-2">
-                Your price today
+                Program tuition
               </p>
               <div className="flex items-baseline justify-center gap-3">
-                <span className="text-gray-600 line-through text-xl md:text-2xl">
-                  $50,000
-                </span>
                 <span
                   className="text-4xl md:text-5xl font-extrabold"
                   style={{
@@ -645,11 +654,14 @@ export default function InterlinkedDeveloperInfoPage() {
                     backgroundClip: "text",
                   }}
                 >
-                  $0
+                  $50,000
                 </span>
               </div>
-              <p className="text-gray-500 text-xs mt-3">
-                No credit card. No upsell. No catch.
+              <p className="text-gray-300 text-sm mt-3 font-semibold">
+                Qualified applicants — sponsor covers 100% of tuition.
+              </p>
+              <p className="text-gray-500 text-xs mt-2">
+                Apply at the bottom of this page. No credit card to apply.
               </p>
             </div>
           </motion.div>
@@ -700,7 +712,7 @@ export default function InterlinkedDeveloperInfoPage() {
         </div>
       </section>
 
-      {/* ── Signup form ─────────────────────────────────────────────── */}
+      {/* ── Sponsor-coverage application form ──────────────────────── */}
       <section id="claim" className="relative py-20 scroll-mt-24">
         <GradientOrb
           color="gold"
@@ -711,9 +723,37 @@ export default function InterlinkedDeveloperInfoPage() {
           className="bottom-[-80px] left-[-80px] w-[380px] h-[380px]"
         />
         <div className="relative max-w-2xl mx-auto px-4">
-          <SectionHeading eyebrow="Three fields · One click">
-            Get started.
+          <SectionHeading eyebrow="Sponsor coverage application">
+            Need a sponsor to help pay for the program?
           </SectionHeading>
+
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center text-gray-300 leading-relaxed max-w-xl mx-auto mb-10 space-y-3"
+          >
+            <p>
+              The Interlinked Developer Class is a{" "}
+              <strong className="text-white">$50,000 program</strong>.
+              We don&rsquo;t want money to be the gatekeeper between
+              you and the skills to build AI CEOs — so we partner with
+              sponsors who fund seats.
+            </p>
+            <p
+              className="text-base font-semibold rounded-xl border border-amber-300/40 bg-amber-300/[0.06] py-3 px-4"
+              style={{ color: "#fde68a" }}
+            >
+              If you qualify, a sponsor can cover the entire $50,000.
+            </p>
+            <p className="text-sm text-gray-400">
+              Fill out the form below — three fields, one click. We
+              review every application personally and match qualified
+              candidates with a sponsor.
+            </p>
+          </motion.div>
+
           <DeveloperSignupForm />
         </div>
       </section>
@@ -749,7 +789,7 @@ export default function InterlinkedDeveloperInfoPage() {
               The Omni AI community is the operator network actually shipping
               production AI — founders, solo technical ops, agencies, and the
               Omni AI team itself. Ask questions, show your work, get
-              unstuck. Every developer enrolled in this class gets in.
+              unstuck. Every developer admitted to this class gets in.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -764,7 +804,7 @@ export default function InterlinkedDeveloperInfoPage() {
                   }}
                 >
                   <Sparkles className="w-4 h-4" />
-                  Enroll & Join the Community
+                  Apply for sponsor coverage
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
                 </button>
               </a>
