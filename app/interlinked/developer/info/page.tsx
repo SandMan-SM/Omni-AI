@@ -2,7 +2,7 @@
 
 /**
  * /interlinked/developer/info — conversion landing for the free
- * $50,000 Interlinked Developer Class.
+ * $50,000 Interlinked Developer Curriculum.
  *
  * User brief
  * ----------
@@ -171,7 +171,7 @@ const VALUE_STACK = [
 // without shipping a carousel. Four variants cycle through every
 // 2.4 seconds using a setInterval in the hero component below.
 const HERO_EYEBROWS = [
-  "Interlinked Developer Class",
+  "Interlinked Developer Curriculum",
   "Build AI CEOs from zero",
   "Pantheon-grade multi-agent training",
   "$50,000 program · sponsor-funded seats available",
@@ -212,7 +212,7 @@ function SectionHeading({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.5 }}
-      className="text-center mb-12"
+      className="text-left mb-12"
     >
       {eyebrow && (
         <p className="text-purple-300 text-xs uppercase tracking-widest mb-3 font-semibold">
@@ -237,7 +237,7 @@ export default function InterlinkedDeveloperInfoPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050508] text-white overflow-x-hidden noise-overlay">
+    <div className="min-h-screen bg-black text-white overflow-x-hidden noise-overlay">
       <Navbar />
 
       {/* ── Hero ──────────────────────────────────────────────────── */}
@@ -252,13 +252,13 @@ export default function InterlinkedDeveloperInfoPage() {
         />
 
         <div className="relative max-w-5xl mx-auto px-4 pt-16 md:pt-24 pb-16">
-          <div className="flex justify-center mb-8">
+          <div className="flex justify-start mb-8">
             <Breadcrumb
               items={[
                 { name: "Home", href: "/" },
                 { name: "Interlinked", href: "/interlinked" },
                 {
-                  name: "Developer Class",
+                  name: "Developer Curriculum",
                   href: "/interlinked/developer/info",
                 },
               ]}
@@ -270,10 +270,10 @@ export default function InterlinkedDeveloperInfoPage() {
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="text-center"
+            className="text-left"
           >
             {/* Rotating eyebrow — motion without a full carousel */}
-            <div className="h-6 mb-4 flex items-center justify-center">
+            <div className="h-6 mb-4 flex items-center justify-start">
               <motion.span
                 key={eyebrowIdx}
                 initial={{ opacity: 0, y: 6 }}
@@ -334,10 +334,10 @@ export default function InterlinkedDeveloperInfoPage() {
               teach?" voice queries.
             */}
             <p
-              className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
+              className="text-lg md:text-xl text-gray-300 max-w-3xl leading-relaxed"
               data-speakable="intro"
             >
-              The Interlinked Developer Class is a{" "}
+              The Interlinked Developer Curriculum is a{" "}
               <strong className="text-white">$50,000 program</strong>{" "}
               on building <strong className="text-white">autonomous
               AI executives</strong> — agents that run a business
@@ -359,7 +359,7 @@ export default function InterlinkedDeveloperInfoPage() {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.35 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-9"
+              className="flex flex-col sm:flex-row items-stretch sm:items-center justify-start gap-3 mt-9"
             >
               <a href="#claim" className="w-full sm:w-auto">
                 <button
@@ -383,8 +383,10 @@ export default function InterlinkedDeveloperInfoPage() {
               </a>
             </motion.div>
 
-            {/* Trust sub-stats — no fake numbers, just honest signals */}
-            <div className="mt-14 grid grid-cols-3 gap-4 max-w-2xl mx-auto">
+            {/* Trust sub-stats — explicitly centered per Sita's request:
+                the rest of the hero aligns left, but the analytics
+                row stays centered as a self-contained block. */}
+            <div className="mt-14 grid grid-cols-3 gap-4 max-w-2xl mx-auto text-center">
               {[
                 { value: "5", label: "Modules" },
                 { value: "40h", label: "Curriculum" },
@@ -423,7 +425,7 @@ export default function InterlinkedDeveloperInfoPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center text-gray-300 text-lg leading-relaxed space-y-4 max-w-3xl mx-auto"
+            className="text-left text-gray-300 text-lg leading-relaxed space-y-4 max-w-3xl"
           >
             <p>
               Bootcamps charge <strong className="text-white">$15,000</strong>{" "}
@@ -469,7 +471,7 @@ export default function InterlinkedDeveloperInfoPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center text-gray-300 text-lg leading-relaxed max-w-3xl mx-auto mb-12"
+            className="text-left text-gray-300 text-lg leading-relaxed max-w-3xl mb-12"
           >
             <p>
               An <strong className="text-white">AI CEO</strong> is an
@@ -527,7 +529,7 @@ export default function InterlinkedDeveloperInfoPage() {
             ))}
           </div>
 
-          <div className="text-center mt-12">
+          <div className="text-left mt-12">
             <Link
               href="/system"
               className="inline-flex items-center gap-2 text-sm text-purple-300 hover:text-purple-200 transition-colors"
@@ -732,10 +734,10 @@ export default function InterlinkedDeveloperInfoPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center text-gray-300 leading-relaxed max-w-xl mx-auto mb-10 space-y-3"
+            className="text-left text-gray-300 leading-relaxed max-w-xl mb-10 space-y-3"
           >
             <p>
-              The Interlinked Developer Class is a{" "}
+              The Interlinked Developer Curriculum is a{" "}
               <strong className="text-white">$50,000 program</strong>.
               We don&rsquo;t want money to be the gatekeeper between
               you and the skills to build AI CEOs — so we partner with

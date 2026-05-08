@@ -3,7 +3,7 @@ import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
 
 /**
  * /interlinked/developer/info — landing page for the Interlinked
- * Developer Class: a free curriculum pitched at $50,000 of retail
+ * Developer Curriculum: a free curriculum pitched at $50,000 of retail
  * training value, delivered through the specialized "Interlinked
  * Developer" newsletter and the Omni AI operator community.
  *
@@ -59,7 +59,7 @@ const interlinkedUrl = `${siteUrl}/interlinked`;
 
 export const metadata: Metadata = {
   title:
-    "Build AI CEOs — $50,000 Interlinked Developer Class | Omni AI",
+    "Build AI CEOs — $50,000 Interlinked Developer Curriculum | Omni AI",
   description:
     "$50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Five modules taught by the Omni AI team behind the live Pantheon Council. Sponsor coverage available — qualified applicants can have the entire $50,000 covered by a sponsor.",
   keywords: [
@@ -127,7 +127,7 @@ export const metadata: Metadata = {
 const courseSchema = {
   "@context": "https://schema.org",
   "@type": "Course",
-  name: "Interlinked Developer Class — Build AI CEOs",
+  name: "Interlinked Developer Curriculum — Build AI CEOs",
   description:
     "$50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, judgment, and P&L accountability. Five modules covering LLM foundations for executive agents, autonomous CEO architecture, multi-agent council orchestration, production deployment of AI executives, and revenue accountability + compounding loops. Taught by the Omni AI team behind the live Pantheon Council. Sponsor coverage available — qualified applicants can have the entire $50,000 tuition covered by a sponsor. Includes the specialized Interlinked Developer newsletter and ongoing access to the Omni AI operator community.",
   url: pageUrl,
@@ -168,7 +168,7 @@ const courseSchema = {
   // "how much does it cost?" / "is sponsorship available?".
   offers: {
     "@type": "Offer",
-    name: "Interlinked Developer Class — $50,000 Tuition",
+    name: "Interlinked Developer Curriculum — $50,000 Tuition",
     price: "50000",
     priceCurrency: "USD",
     availability: "https://schema.org/InStock",
@@ -189,7 +189,7 @@ const courseSchema = {
   },
   hasCourseInstance: {
     "@type": "CourseInstance",
-    name: "Interlinked Developer Class — Self-Paced + Community",
+    name: "Interlinked Developer Curriculum — Self-Paced + Community",
     courseMode: "Online",
     courseWorkload: "PT40H",
     // Start date is "rolling" — enrollment opens the moment a user
@@ -264,14 +264,14 @@ const courseSchema = {
 const devInfoWebPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Build AI CEOs — $50,000 Interlinked Developer Class | Omni AI",
+  name: "Build AI CEOs — $50,000 Interlinked Developer Curriculum | Omni AI",
   description:
-    "Landing page for the Interlinked Developer Class: a $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Sponsor coverage available — qualified applicants can have the entire $50,000 tuition covered by a sponsor. Paired with the specialized Interlinked Developer newsletter and the Omni AI operator community.",
+    "Landing page for the Interlinked Developer Curriculum: a $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Sponsor coverage available — qualified applicants can have the entire $50,000 tuition covered by a sponsor. Paired with the specialized Interlinked Developer newsletter and the Omni AI operator community.",
   url: pageUrl,
   isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
   about: {
     "@type": "Course",
-    name: "Interlinked Developer Class — Build AI CEOs",
+    name: "Interlinked Developer Curriculum — Build AI CEOs",
     url: pageUrl,
   },
   primaryImageOfPage: {
@@ -324,7 +324,7 @@ export default function DeveloperInfoLayout({
         data={breadcrumbSchema([
           { name: "Home", url: siteUrl },
           { name: "Interlinked", url: interlinkedUrl },
-          { name: "Developer Class", url: pageUrl },
+          { name: "Developer Curriculum", url: pageUrl },
         ])}
       />
       {children}

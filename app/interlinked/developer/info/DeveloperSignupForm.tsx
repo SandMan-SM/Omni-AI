@@ -2,7 +2,7 @@
 
 /**
  * DeveloperSignupForm — the conversion surface for the Interlinked
- * Developer Class landing. Three required fields (name, email,
+ * Developer Curriculum landing. Three required fields (name, email,
  * phone), plus a hidden honeypot the server-side bot check reads
  * via lib/validation.isBotSubmission.
  *
