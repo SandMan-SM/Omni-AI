@@ -59,34 +59,35 @@ const interlinkedUrl = `${siteUrl}/interlinked`;
 
 export const metadata: Metadata = {
   title:
-    "Interlinked Developer Class — $50,000 of AI Skill-Up Training, Free | Omni AI",
+    "Build AI CEOs — $50,000 Interlinked Developer Class, Free | Omni AI",
   description:
-    "Free $50,000 AI developer class — learn to build autonomous agents, integrate frontier LLMs, and ship production AI systems. Join the specialized Interlinked Developer newsletter and the Omni AI operator community.",
+    "Free $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Five modules taught by the Omni AI team behind the live Pantheon Council. Specialized Interlinked Developer newsletter included.",
   keywords: [
+    "build AI CEOs",
+    "AI executive agents",
+    "autonomous AI agents course",
     "free AI developer class",
+    "multi-agent orchestration training",
+    "Pantheon Council",
     "learn AI development",
-    "AI agent development course",
     "LLM integration tutorial",
-    "autonomous AI training free",
     "Interlinked Developer newsletter",
     "Omni AI developer community",
-    "build AI agents tutorial",
   ],
   alternates: { canonical: pageUrl },
   openGraph: {
-    title:
-      "Interlinked Developer Class — $50,000 of AI Training, Yours Free",
+    title: "Build AI CEOs — $50,000 Class, Free | Interlinked by Omni AI",
     description:
-      "Five-module curriculum on building autonomous AI agents. Free. Includes the specialized Interlinked Developer newsletter + operator community.",
+      "Five-module program on building autonomous AI executives — agents that own a P&L, not chatbots. Pantheon-grade multi-agent training. Free. Includes the specialized Interlinked Developer newsletter + operator community.",
     url: pageUrl,
     siteName: "Omni AI",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Free $50K AI Developer Class — Interlinked by Omni AI",
+    title: "Build AI CEOs — Free $50K Class | Interlinked by Omni AI",
     description:
-      "Build autonomous agents, integrate frontier LLMs, ship production AI. Free. Join the Interlinked Developer newsletter + community.",
+      "Autonomous executive agents that own a P&L. Five modules. Pantheon-grade multi-agent training. Free. Join the Interlinked Developer newsletter + community.",
   },
 };
 
@@ -125,9 +126,9 @@ export const metadata: Metadata = {
 const courseSchema = {
   "@context": "https://schema.org",
   "@type": "Course",
-  name: "Interlinked Developer Class — Build Autonomous AI Systems",
+  name: "Interlinked Developer Class — Build AI CEOs",
   description:
-    "Free $50,000 curriculum on building autonomous AI systems from scratch. Five modules covering LLM fundamentals, multi-agent orchestration, production deployment, revenue-workflow integration, and shipping real products. Taught by the Omni AI team. Includes the specialized Interlinked Developer newsletter and ongoing access to the Omni AI operator community.",
+    "Free $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, judgment, and P&L accountability. Five modules covering LLM foundations for executive agents, autonomous CEO architecture, multi-agent council orchestration, production deployment of AI executives, and revenue accountability + compounding loops. Taught by the Omni AI team behind the live Pantheon Council. Includes the specialized Interlinked Developer newsletter and ongoing access to the Omni AI operator community.",
   url: pageUrl,
   provider: {
     "@type": "Organization",
@@ -146,11 +147,11 @@ const courseSchema = {
   educationalLevel: "Beginner",
   educationalCredentialAwarded: "Certificate of completion",
   teaches: [
-    "LLM fundamentals — how frontier models (Claude, GPT, Gemini) actually work under the hood and how to choose between them for a given task",
-    "Autonomous AI agent architecture — state, memory, tool-use, self-correction, and the loop patterns that separate toy demos from production systems",
-    "Multi-agent orchestration — coordinating specialist agents across sales, marketing, and operations without context collapse or infinite loops",
-    "Production deployment — shipping AI to real users with rate-limits, cost controls, observability, and the safety rails that keep an autonomous system from going off the rails",
-    "Revenue-workflow integration — wiring AI into lead generation, outbound, content, and operations so it compounds revenue instead of producing demos",
+    "LLM Foundations for Executive Agents — how frontier models (Claude, GPT, Gemini) actually work under the hood and how an executive agent decides which model to reach for and why",
+    "Autonomous CEO Architecture — identity, memory, tool-use, self-correction, and the loop patterns that turn a chatbot into an agent with a P&L it owns",
+    "Multi-Agent Council Orchestration — coordinating a Pantheon (CEO, CFO, CMO, COO) of specialist agents across sales, marketing, finance, and operations without context collapse or infinite loops",
+    "Production Deployment of an AI Executive — shipping AI CEOs to real users with rate-limits, cost controls, observability, and the safety rails that keep an autonomous executive from going off the rails",
+    "Revenue Accountability + Compounding Loops — wiring an AI CEO into lead generation, outbound, content, and operations so it compounds revenue instead of producing demos",
   ],
   isAccessibleForFree: true,
   inLanguage: "en-US",
@@ -217,31 +218,31 @@ const courseSchema = {
   hasPart: [
     {
       "@type": "LearningResource",
-      name: "Module 1 — LLM Foundations",
+      name: "Module 1 — LLM Foundations for Executive Agents",
       educationalLevel: "Beginner",
       learningResourceType: "Curriculum module",
     },
     {
       "@type": "LearningResource",
-      name: "Module 2 — Autonomous Agent Architecture",
+      name: "Module 2 — Autonomous CEO Architecture",
       educationalLevel: "Beginner",
       learningResourceType: "Curriculum module",
     },
     {
       "@type": "LearningResource",
-      name: "Module 3 — Multi-Agent Orchestration",
+      name: "Module 3 — Multi-Agent Council Orchestration",
       educationalLevel: "Intermediate",
       learningResourceType: "Curriculum module",
     },
     {
       "@type": "LearningResource",
-      name: "Module 4 — Production Deployment",
+      name: "Module 4 — Production Deployment of an AI Executive",
       educationalLevel: "Intermediate",
       learningResourceType: "Curriculum module",
     },
     {
       "@type": "LearningResource",
-      name: "Module 5 — Revenue-Workflow Integration",
+      name: "Module 5 — Revenue Accountability + Compounding Loops",
       educationalLevel: "Intermediate",
       learningResourceType: "Curriculum module",
     },
@@ -264,14 +265,14 @@ const courseSchema = {
 const devInfoWebPageSchema = {
   "@context": "https://schema.org",
   "@type": "WebPage",
-  name: "Interlinked Developer Class — Free $50K AI Training | Omni AI",
+  name: "Build AI CEOs — Free $50K Interlinked Developer Class | Omni AI",
   description:
-    "Landing page for the Interlinked Developer Class: a free $50,000 curriculum on building autonomous AI systems, paired with the specialized Interlinked Developer newsletter and the Omni AI operator community.",
+    "Landing page for the Interlinked Developer Class: a free $50,000 program teaching you to build AI CEOs — autonomous executive agents that own a business function with strategy, memory, and P&L accountability. Paired with the specialized Interlinked Developer newsletter and the Omni AI operator community.",
   url: pageUrl,
   isPartOf: { "@type": "WebSite", name: "Omni AI", url: siteUrl },
   about: {
     "@type": "Course",
-    name: "Interlinked Developer Class — Build Autonomous AI Systems",
+    name: "Interlinked Developer Class — Build AI CEOs",
     url: pageUrl,
   },
   primaryImageOfPage: {

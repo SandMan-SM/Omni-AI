@@ -99,57 +99,57 @@ import { DeveloperSignupForm } from "./DeveloperSignupForm";
 const CURRICULUM = [
   {
     icon: Cpu,
-    title: "Module 1 — LLM Foundations",
-    skill: "Understand frontier models like an engineer, not a user",
+    title: "Module 1 — LLM Foundations for Executive Agents",
+    skill: "Understand frontier models like an architect, not a user",
     value: "$7,500",
     deliverables: [
       "How Claude, GPT, and Gemini actually work under the hood",
-      "Model-choice framework — when to reach for which model and why",
-      "Prompt architecture patterns that scale past the demo",
+      "Model-choice framework — when an executive agent reaches for which model and why",
+      "Prompt architecture patterns that scale past the demo into recurring decisions",
     ],
   },
   {
     icon: Code2,
-    title: "Module 2 — Autonomous Agent Architecture",
-    skill: "Ship agents that run for hours, not seconds",
+    title: "Module 2 — Autonomous CEO Architecture",
+    skill: "Ship a single agent that runs a business function for hours, not seconds",
     value: "$9,500",
     deliverables: [
-      "State, memory, and tool-use patterns that survive production",
-      "Self-correction loops and the safety rails you actually need",
-      "The difference between a toy demo and a real autonomous system",
+      "Identity, memory, and tool-use patterns that survive a quarter of operation",
+      "Self-correction loops, post-mortems, and the safety rails an autonomous executive actually needs",
+      "The difference between a chatbot and an agent with a P&L it owns",
     ],
   },
   {
     icon: Network,
-    title: "Module 3 — Multi-Agent Orchestration",
-    skill: "Coordinate specialist agents without context collapse",
+    title: "Module 3 — Multi-Agent Council Orchestration",
+    skill: "Coordinate a Pantheon — CEO, CFO, CMO, COO — without context collapse",
     value: "$11,000",
     deliverables: [
-      "Orchestrator patterns that prevent infinite loops",
-      "Context management across sales, marketing, and ops agents",
-      "How to architect systems that compose instead of colliding",
+      "Orchestrator patterns that prevent infinite loops between specialist agents",
+      "Context management across sales, marketing, finance, and ops council members",
+      "How to architect a leadership council that composes instead of colliding",
     ],
   },
   {
     icon: Layers,
-    title: "Module 4 — Production Deployment",
-    skill: "Ship AI to real users with the engineering to back it up",
+    title: "Module 4 — Production Deployment of an AI Executive",
+    skill: "Put an AI CEO in front of real users with the engineering to back it up",
     value: "$10,500",
     deliverables: [
-      "Rate-limiting, cost controls, and budget guardrails",
-      "Observability — what to log, what to alert on, what to ignore",
-      "The safety rails that keep an autonomous system from going off the rails",
+      "Rate-limiting, cost controls, and budget guardrails for an agent with spending authority",
+      "Observability — what to log, what to alert on, what to escalate to a human",
+      "The safety rails that keep an autonomous executive from going off the rails",
     ],
   },
   {
     icon: Target,
-    title: "Module 5 — Revenue-Workflow Integration",
-    skill: "Wire AI into the business so it compounds, not just runs",
+    title: "Module 5 — Revenue Accountability + Compounding Loops",
+    skill: "Wire an AI CEO into the business so it compounds, not just runs",
     value: "$11,500",
     deliverables: [
-      "Lead-gen, outbound, content, and ops integration patterns",
-      "How to attach dollar outcomes to every agent you ship",
-      "The revenue-loop architecture that turns AI into a profit center",
+      "Lead-gen, outbound, content, and ops integration patterns under one accountable agent",
+      "How to attach dollar outcomes to every decision the AI executive makes",
+      "The revenue-loop architecture that turns an AI CEO into a profit center, not a cost line",
     ],
   },
 ] as const;
@@ -159,7 +159,8 @@ const CURRICULUM = [
 // claim. Sum must match the retail anchor on courseSchema.offers
 // in layout.tsx ($50,000).
 const VALUE_STACK = [
-  { label: "5-module curriculum ($10K avg × 5)", value: "$50,000" },
+  { label: "5-module curriculum on building AI CEOs ($10K avg × 5)", value: "$50,000" },
+  { label: "Pantheon Council source-code walkthrough", value: "Included" },
   { label: "Interlinked Developer newsletter — ongoing", value: "Included" },
   { label: "Omni AI operator community access", value: "Included" },
   { label: "Certificate of completion", value: "Included" },
@@ -171,8 +172,8 @@ const VALUE_STACK = [
 // 2.4 seconds using a setInterval in the hero component below.
 const HERO_EYEBROWS = [
   "Interlinked Developer Class",
-  "Skill up from zero",
-  "Build real autonomous AI",
+  "Build AI CEOs from zero",
+  "Pantheon-grade multi-agent training",
   "Free forever, $50,000 value",
 ] as const;
 
@@ -307,7 +308,7 @@ export default function InterlinkedDeveloperInfoPage() {
             </motion.div>
 
             <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight mb-5 leading-[1.02]">
-              Build real AI.{" "}
+              Build{" "}
               <span
                 className="inline-block"
                 style={{
@@ -318,28 +319,34 @@ export default function InterlinkedDeveloperInfoPage() {
                   backgroundClip: "text",
                 }}
               >
-                For free.
-              </span>
+                AI CEOs.
+              </span>{" "}
+              Not chatbots.
             </h1>
 
             {/*
               data-speakable="intro" activates the SpeakableSpecification
               declared on devInfoWebPageSchema in layout.tsx. Voice
-              assistants concatenate h1 ("Build real AI. For free.") +
-              this subtitle as the natural ~12-second reply to
-              "what is the Interlinked Developer class?" / "is the
-              Omni AI developer training really free?" / "what does
-              the $50,000 class teach?" voice queries.
+              assistants concatenate h1 ("Build AI CEOs.") + this
+              subtitle as the natural ~12-second reply to "what is the
+              Interlinked Developer class?" / "is the Omni AI developer
+              training really free?" / "what does the $50,000 class
+              teach?" voice queries.
             */}
             <p
               className="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed"
               data-speakable="intro"
             >
               The Interlinked Developer Class is a $50,000 curriculum on
-              building autonomous AI systems — five modules, hands-on, zero
-              bootcamp fluff. Taught by the Omni AI team. Paired with a
-              specialized newsletter and the operator community actually
-              shipping this stuff. Free forever.
+              building <strong className="text-white">autonomous AI
+              executives</strong> — agents that run a business
+              function the way a CEO runs a company: with strategy,
+              memory, judgment, and revenue accountability. Five
+              modules, hands-on, zero bootcamp fluff. Taught by the
+              Omni AI team — operators of the Pantheon Council, a
+              live multi-agent leadership system shipping every day.
+              Paired with a specialized newsletter and the community
+              actually building this stuff. Free forever.
             </p>
 
             {/* Primary CTA row — smooth-scrolls to the form */}
@@ -430,6 +437,93 @@ export default function InterlinkedDeveloperInfoPage() {
               free reflects what we think the ceiling should actually be.
             </p>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ── What's an AI CEO? ──────────────────────────────────────── */}
+      <section className="relative py-20">
+        <GradientOrb
+          color="magenta"
+          className="top-[40px] right-[-80px] w-[420px] h-[420px]"
+        />
+        <div className="relative max-w-5xl mx-auto px-4">
+          <SectionHeading eyebrow="The thing you'll actually build">
+            What we mean by{" "}
+            <span className="text-purple-300">AI CEO</span>.
+          </SectionHeading>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center text-gray-300 text-lg leading-relaxed max-w-3xl mx-auto mb-12"
+          >
+            <p>
+              An <strong className="text-white">AI CEO</strong> is an
+              autonomous executive agent. It owns a business function —
+              sales, marketing, ops, content — the way a real CEO owns
+              the company. It has identity, memory, judgment, a P&amp;L
+              it&rsquo;s accountable to, and the authority to act
+              without a human approving every decision. We run a
+              council of them at Omni AI under a system we call the{" "}
+              <strong className="text-white">Pantheon</strong>. By the
+              end of this program you&rsquo;ll have shipped one of your
+              own.
+            </p>
+          </motion.div>
+
+          <div className="grid md:grid-cols-3 gap-5">
+            {[
+              {
+                icon: Crown,
+                title: "Identity + judgment",
+                body:
+                  "An AI CEO doesn't just answer prompts — it has a stable identity, a stake, and a point of view it defends across decisions.",
+              },
+              {
+                icon: Cpu,
+                title: "Authority + memory",
+                body:
+                  "Long-running state, tool use, and decision authority. It remembers what it shipped last quarter and what didn't work.",
+              },
+              {
+                icon: Target,
+                title: "P&L accountability",
+                body:
+                  "Every decision attaches to a dollar outcome. The agent gets reviewed on revenue, retention, and growth — not on activity.",
+              },
+            ].map((card, i) => (
+              <motion.div
+                key={card.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="rounded-2xl border border-white/10 bg-white/[0.02] p-7 hover:border-purple-400/30 transition-colors"
+              >
+                <div className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-400/20 mb-4">
+                  <card.icon className="w-5 h-5 text-purple-300" />
+                </div>
+                <h3 className="text-lg font-bold text-white mb-2">
+                  {card.title}
+                </h3>
+                <p className="text-sm text-gray-400 leading-relaxed">
+                  {card.body}
+                </p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="text-center mt-12">
+            <Link
+              href="/system"
+              className="inline-flex items-center gap-2 text-sm text-purple-300 hover:text-purple-200 transition-colors"
+            >
+              See the live Pantheon Council running production
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
