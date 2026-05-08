@@ -192,15 +192,16 @@ export function DeveloperSignupForm() {
       {/* Floating value badge — ties the form back to the $50K hero */}
       <div className="absolute -top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-amber-400 to-orange-500 text-black text-[10px] font-bold uppercase tracking-widest shadow-[0_0_16px_rgba(251,191,36,0.5)]">
         <Sparkles className="w-3 h-3" />
-        100% Free &middot; $50,000 value
+        $50,000 program &middot; sponsor coverage
       </div>
 
       <div className="text-center mb-7">
         <h3 className="text-2xl md:text-3xl font-bold mb-2">
-          Claim your seat.
+          Apply for sponsor coverage.
         </h3>
         <p className="text-gray-400 text-sm">
-          Three fields. One click. The full curriculum in your inbox today.
+          Three fields. One click. Qualified applicants get the
+          entire $50,000 covered by a sponsor.
         </p>
       </div>
 
