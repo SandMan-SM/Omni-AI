@@ -10,7 +10,8 @@
 // <SiteTracker /> in app/layout.tsx uses useSearchParams() but is wrapped
 // in a Suspense boundary, so static prerender still works for the layout.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Navbar } from "@/components/navbar";
@@ -153,6 +154,36 @@ const homepageFaqs = [
   },
 ];
 
+// Inner component that consumes useSearchParams. Must be wrapped in
+// <Suspense> per Next 14 App Router rules (any client hook reading
+// search params bails out of static prerender otherwise).
+function SigninUrlWatcher({
+  onOpen,
+  onCompleteBanner,
+}: {
+  onOpen: () => void;
+  onCompleteBanner: () => void;
+}) {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (searchParams?.get("signin") === "true") {
+      onOpen();
+      if (searchParams.get("complete") === "true") {
+        onCompleteBanner();
+      }
+      // Clean the URL so a refresh doesn't re-open the modal. router.replace
+      // is reactive (next/navigation) where the previous window.history
+      // replaceState lost the searchParams hook on next nav.
+      router.replace(pathname || "/");
+    }
+  }, [searchParams, router, pathname, onOpen, onCompleteBanner]);
+
+  return null;
+}
+
 export default function HomePage() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
@@ -163,17 +194,6 @@ export default function HomePage() {
     setAuthPrompt(prompt);
     setIsAuthModalOpen(true);
   };
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get("signin") === "true") {
-      setIsAuthModalOpen(true);
-      if (params.get("complete") === "true") {
-        setShowCompleteBanner(true);
-      }
-      window.history.replaceState({}, "", "/");
-    }
-  }, []);
 
   return (
     <div className="min-h-screen text-white noise-overlay overflow-x-hidden">
@@ -201,8 +221,21 @@ export default function HomePage() {
           carry after the WebPage/Speakable block. */}
       <JsonLd data={faqPageSchema(homepageFaqs)} />
       <CursorSpotlight />
-      <Navbar 
-        onBookDemo={() => setIsDemoModalOpen(true)} 
+      {/* Reactive ?signin=true URL watcher. Must be Suspense-wrapped
+          because useSearchParams bails the static prerender otherwise.
+          Returns null — pure side-effect component that opens the
+          AuthModal whenever a navigation lands on /?signin=true,
+          including soft client-side navs from /sponsor / /join /
+          /newsletter where the 'Sign in' link uses router.push instead
+          of mounting its own AuthModal. */}
+      <Suspense fallback={null}>
+        <SigninUrlWatcher
+          onOpen={() => setIsAuthModalOpen(true)}
+          onCompleteBanner={() => setShowCompleteBanner(true)}
+        />
+      </Suspense>
+      <Navbar
+        onBookDemo={() => setIsDemoModalOpen(true)}
         onSignIn={() => openAuthWithPrompt()}
         onDashboard={() => openAuthWithPrompt("It doesn't look like you've signed in yet. Please sign in to continue.")}
       />
