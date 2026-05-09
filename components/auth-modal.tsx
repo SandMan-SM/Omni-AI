@@ -1,3 +1,13 @@
+"use client";
+
+// IMPORTANT: this file MUST keep the "use client" directive. The
+// component uses useState / useRouter / framer-motion hooks. Without
+// the directive, Next 14 silently fails to mount it on first open
+// when imported from a server boundary — the symptom is "click sign
+// in does nothing, then refresh shows the modal" (refresh wins the
+// race because the ?signin=true URL effect sets state synchronously
+// before hydration completes).
+
 import { useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";

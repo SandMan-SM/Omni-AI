@@ -41,7 +41,14 @@ const ContactSection = dynamic(
 const Footer = dynamic(
   () => import("@/components/footer").then((m) => ({ default: m.Footer })),
 );
-import { BookDemoModal, AuthModal } from "@/components/modals/lazy";
+import { BookDemoModal } from "@/components/modals/lazy";
+// AuthModal is imported directly (not via the lazy wrapper) on
+// purpose: when it was dynamic({ ssr: false }), the chunk-load
+// delay on first click let the modal mount race with state, so
+// clicking 'Sign in' did nothing visible until the page was
+// refreshed (refresh's ?signin=true URL effect won the race).
+// AuthModal is small and gates a hot path — bundle it directly.
+import { AuthModal } from "@/components/auth-modal";
 import { JsonLd, personSchema, faqPageSchema } from "@/components/json-ld";
 
 // WebPage schema for the homepage itself. Organization + WebSite +
