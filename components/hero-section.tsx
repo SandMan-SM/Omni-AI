@@ -271,7 +271,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.8, delay: 1.3 }}
-          className="flex flex-col items-center gap-4 pt-16 pb-10"
+          className="flex flex-col items-center gap-4 pt-12 pb-2"
         >
           <span className="text-sm sm:text-base text-white/80 tracking-wider">
             Partnered with platforms like
