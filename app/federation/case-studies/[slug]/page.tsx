@@ -55,11 +55,16 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
+// Each tier carries an `agentRole` — the rank-on-the-council that
+// matches what kind of system you'd actually be hiring at this
+// price. Escalates Apprentice → Tactician → Full Stack → Architect
+// the same way the council ladders skill: the higher the tier, the
+// more of the build the agent layer owns.
 const TIERS = [
-  { name: "Template", range: "$1.5k – $3.5k", desc: "Squarespace / Wix / Webflow stock theme. No custom code.", fits: "Hobbyists, side projects.", accent: "rgba(160,123,255,0.18)", fg: "#a07bff", key: "template" },
-  { name: "Themed CMS", range: "$5k – $12k", desc: "WordPress or Shopify with theme customization, basic plugins.", fits: "Local services, e-commerce starters.", accent: "rgba(88,200,255,0.16)", fg: "#58c8ff", key: "themed" },
-  { name: "Bespoke Next.js", range: "$18k – $25k", desc: "Custom codebase, custom design system, JSON-LD schema, analytics pipeline.", fits: "Operators, artists, founders, mastermind hosts.", accent: "rgba(251,191,36,0.18)", fg: "#fbbf24", key: "bespoke" },
-  { name: "Federation member", range: "$30k – $80k+", desc: "Above + federation distribution + AI CEO layer + retained operation.", fits: "Long-term partners with revenue at stake.", accent: "rgba(45,220,168,0.18)", fg: "#2ddca8", key: "federation" },
+  { name: "Template",         agentRole: "Static Apprentice",  range: "$1.5k – $3.5k", desc: "Squarespace / Wix / Webflow stock theme. No custom code.", fits: "Hobbyists, side projects.",                       accent: "rgba(160,123,255,0.18)", fg: "#a07bff", key: "template" },
+  { name: "Themed CMS",       agentRole: "Themed Tactician",   range: "$5k – $12k",    desc: "WordPress or Shopify with theme customization, basic plugins.",                                                         fits: "Local services, e-commerce starters.",         accent: "rgba(88,200,255,0.16)", fg: "#58c8ff", key: "themed" },
+  { name: "Bespoke Next.js",  agentRole: "Agentic Full Stack", range: "$18k – $25k",   desc: "Custom codebase, custom design system, JSON-LD schema, analytics pipeline.",                                             fits: "Operators, artists, founders, mastermind hosts.", accent: "rgba(251,191,36,0.18)", fg: "#fbbf24", key: "bespoke" },
+  { name: "Federation member", agentRole: "Council Architect", range: "$30k – $80k+",  desc: "Above + federation distribution + AI CEO layer + retained operation.",                                                  fits: "Long-term partners with revenue at stake.",     accent: "rgba(45,220,168,0.18)", fg: "#2ddca8", key: "federation" },
 ];
 
 const STATUS_BADGE: Record<string, { bg: string; fg: string; label: string }> = {
@@ -498,6 +503,17 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
                     {isThis ? "THIS BUILD" : t.name}
                   </span>
                   <p className="mt-2 text-xl" style={{ fontFamily: "Georgia, serif" }}>{t.name}</p>
+                  {/* Agent-role subtitle — names the council rank you're
+                      hiring at this price. Color-matched to the tier's
+                      accent so the escalation reads visually:
+                      Apprentice (violet) → Tactician (sky) → Full Stack
+                      (gold, this build's tier) → Architect (emerald). */}
+                  <p
+                    className="mt-1 text-[10px] font-semibold tracking-[0.28em] uppercase"
+                    style={{ color: t.fg }}
+                  >
+                    {t.agentRole}
+                  </p>
                   <p className="mt-2 text-2xl font-semibold tabular-nums">{t.range}</p>
                   <p className="mt-3 text-sm text-zinc-400 leading-relaxed">{t.desc}</p>
                   <p className="mt-4 text-xs text-zinc-500 italic">{t.fits}</p>
