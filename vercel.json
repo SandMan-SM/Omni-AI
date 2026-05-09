@@ -2,11 +2,5 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
-  "crons": [
-    {
-      "path": "/api/cron/pantheon-review",
-      "schedule": "30 7 * * *"
-    }
-  ]
+  "outputDirectory": ".next"
 }

@@ -22,6 +22,28 @@ const nextConfig = {
       allowedOrigins: ['omnileadsagi.com', 'omni-ai-theta.vercel.app', 'localhost:3000'],
     },
   },
+  async redirects() {
+    return [
+      // Federation case studies moved from /infrastructure/development
+      // to /federation/case-studies. Permanent 301 keeps old links
+      // (already shared via email) working.
+      {
+        source: '/infrastructure/development',
+        destination: '/federation/case-studies',
+        permanent: true,
+      },
+      {
+        source: '/infrastructure/development/:slug',
+        destination: '/federation/case-studies/:slug',
+        permanent: true,
+      },
+      {
+        source: '/infrastructure/development/:slug/opengraph-image',
+        destination: '/federation/case-studies/:slug/opengraph-image',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

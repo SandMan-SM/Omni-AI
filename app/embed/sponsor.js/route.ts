@@ -35,7 +35,7 @@ const CREATIVES = [
     weight: 2,
     eyebrow: "Partner",
     title: "Live Better Podcast",
-    blurb: "Show + community from our partner Jaime.",
+    blurb: "Show + community from our podcast partner.",
     cta: "Listen",
     href: LBP_LINK,
     utm: { source: "omni-sponsor", medium: "embed", campaign: "live-better-podcast" },

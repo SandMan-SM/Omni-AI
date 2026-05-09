@@ -10,7 +10,7 @@
 //      attribution must surface his link first, biggest, with the
 //      strongest CTA.
 //   2. Live Better Podcast — SECONDARY. Partnership with omnileadsagi.com
-//      (Prime IV / Jaime). The "in partnership with" badge is
+//      (Prime IV channel). The "in partnership with" badge is
 //      non-optional — the partnership is the marketing point.
 //
 // Every interactive element pings back to omnileadsagi.com so the
@@ -69,7 +69,7 @@ function trackedHref(target: Target, slug: string): string {
     target === "fred" ? FRED_LINK :
     target === "lbp" ? LBP_LINK :
     CPS_LINK;
-  // UTM tagging so Fred / Jaime / CPS can see attribution in their own
+  // UTM tagging so each partner (Fred / podcast / CPS) can see attribution in their own
   // analytics. utm_source = the tenant slug → they know which Omni
   // portfolio site sent the click.
   const u = new URL(base);
@@ -260,7 +260,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
               Live Better Podcast
             </div>
             <div className="osb-card-desc" style={{ fontSize: 13, color: textMuted }}>
-              Show + community from our partner Jaime — listen, subscribe, share.
+              Show + community from our podcast partner — listen, subscribe, share.
             </div>
           </div>
           <span className="osb-card-cta" style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>

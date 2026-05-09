@@ -1,0 +1,50 @@
+<!--
+  ─────────────────────────────────────────────────────────────────────
+  Federation embed — paste into ANY non-Vercel platform.
+  Squarespace · WordPress · Webflow · Cloudflare-fronted sites · raw HTML.
+
+  Replace REPLACE_WITH_SLUG with this site's slug from INBOUND_SLUGS:
+    leifson, phoenix, cps, youngs, ltb, prime_iv, rene, mainst, beehive,
+    wasatch, sitanim, imperium, otd, alira, niki, omnileads.
+
+  What this gives you:
+    - Inbound analytics: page views / clicks / scroll depth / form submits
+      streaming to inbound_<slug>_events on Supabase, surfaced on the
+      operator's pinned dashboard.
+    - Federation cross-promo banner in the footer (auto-rotated by the
+      Pantheon Decision Engine).
+    - Sponsor banner (slim, host-adaptive — inherits your fonts + colors).
+    - Federation referral capture (?ref=<slug> from cross-promo links
+      gets persisted + attributed on form submit).
+
+  Where to paste:
+    Squarespace  → Settings → Advanced → Code Injection → Footer
+    WordPress    → Appearance → Customize → Custom HTML widget in footer
+                   OR install "Insert Headers and Footers" plugin
+                   OR edit theme footer.php right before </body>
+    Webflow      → Project Settings → Custom Code → Footer Code
+    Cloudflare   → use a Worker, or paste at theme/host level
+    Raw HTML     → just before </body>
+
+  After pasting, real visitor traffic will start landing in Supabase
+  inbound_<slug>_events within seconds. Verify in the operator dashboard
+  pinned to this workspace.
+  ─────────────────────────────────────────────────────────────────────
+-->
+
+<!-- 1. Universal inbound tracker (page views, clicks, scroll, form submits) -->
+<script src="https://omnileadsagi.com/embed/inbound-tracker.js"
+        data-slug="REPLACE_WITH_SLUG"
+        defer></script>
+
+<!-- 2. Sponsor banner — slim, host-adaptive, rotates Fred + LBP + CPS -->
+<div id="omni-sponsor"
+     data-slug="REPLACE_WITH_SLUG"
+     data-brand="REPLACE_WITH_BRAND_NAME"></div>
+<script src="https://omnileadsagi.com/embed/sponsor.js" defer></script>
+
+<!-- 3. Federation cross-promo banner — Pantheon Decision Engine picks per visitor -->
+<div id="omni-fedad-footer"
+     data-slot="footer"
+     data-slug="REPLACE_WITH_SLUG"></div>
+<script src="https://omnileadsagi.com/embed/federation-ad.js" defer></script>

@@ -33,7 +33,7 @@ const LBP: Creative = {
   id: "lbp",
   eyebrow: "Partner",
   title: "Live Better Podcast",
-  blurb: "Show + community from our partner Jaime.",
+  blurb: "Show + community from our podcast partner.",
   cta: "Listen",
   href: "https://livebetterpodcast.com",
   utm: { source: "omni-sponsor", medium: "newsletter", campaign: "live-better-podcast" },

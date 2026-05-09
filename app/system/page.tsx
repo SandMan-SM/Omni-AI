@@ -1,5 +1,5 @@
 // /system — describes the cross-portfolio sponsor + partner promotion
-// system. Public page so Fred / Jaime / future sponsors can see exactly
+// system. Public page so Fred / podcast partner / future sponsors can see exactly
 // how lead-gen flows back to them. Doubles as internal documentation.
 
 import type { Metadata } from "next";
@@ -132,7 +132,7 @@ const PORTFOLIO_SITES: PortfolioSite[] = [
     url: "https://livebetterpodcast.com",
     preview: "https://on-the-drip-deploy.vercel.app",
     blurb:
-      "Show + community in partnership with Omni AI. Hosted by Jaime (Prime IV).",
+      "Show + community in partnership with Omni AI. The on-air channel for Prime IV.",
     status: "live",
     group: "partnership",
   },
@@ -469,10 +469,10 @@ export default function SystemPage() {
                   lineHeight: 1.6,
                 }}
               >
-                Jaime&apos;s show is the Interlinked recognition put in
-                public — the conversations that remind people they were
-                never separate to begin with. Our partnership puts that
-                signal in front of every Omni AI audience.
+                The show is the Interlinked recognition put in public —
+                conversations that remind people they were never separate
+                to begin with. Our partnership puts that signal in front
+                of every Omni AI audience.
               </div>
             </div>
             <div>
@@ -1175,10 +1175,10 @@ export default function SystemPage() {
                 lineHeight: 1.65,
               }}
             >
-              Show + community from our partner Jaime (Prime IV). The
-              partnership is the marketing point — the &ldquo;in partnership
-              with&rdquo; badge on the secondary slot is what ties their
-              audience back to the Omni AI portfolio.
+              Show + community from our podcast partner — the on-air channel
+              for Prime IV. The partnership is the marketing point — the
+              &ldquo;in partnership with&rdquo; badge on the secondary slot
+              is what ties that audience back to the Omni AI portfolio.
             </div>
           </div>
 

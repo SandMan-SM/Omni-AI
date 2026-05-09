@@ -243,12 +243,17 @@ export async function POST(
     // itself was already saved above; this adds an attribution-only row.
     try {
       const referringSlug = sanitizeText(body.referring_federation_slug, 64);
-      const referringCreative = sanitizeText(body.referring_creative_id, 64);
+      const rawCreative = sanitizeText(body.referring_creative_id, 64);
+      // creative_id is a uuid FK in cross_ad_* tables — only pass it
+      // through if it actually looks like a UUID. Free-form strings get
+      // dropped to null so the FK insert succeeds.
+      const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const referringCreative = rawCreative && UUID_RE.test(rawCreative) ? rawCreative : null;
       if (referringSlug && referringSlug !== slug) {
-        await sb.from('cross_brand_referrals').insert({
+        const refIns = await sb.from('cross_brand_referrals').insert({
           originating_slug: referringSlug,
           target_slug: slug,
-          creative_id: referringCreative || null,
+          creative_id: referringCreative,
           visitor_id: sanitizeText(body.visitor_id, 100) || null,
           session_id: sanitizeText(body.session_id, 100) || null,
           lead_id: lead.id,
@@ -260,15 +265,21 @@ export async function POST(
             note: 'Stage N.2 advisory split; not yet enforced in payouts.',
           },
         });
+        if (refIns.error) {
+          console.warn(`[inbound/${slug}/leads] cross_brand_referrals insert failed:`, refIns.error);
+        }
         // Also drop a conversion row for the dashboard funnel rollups.
         if (referringCreative) {
-          await sb.from('cross_ad_conversions').insert({
+          const cvrIns = await sb.from('cross_ad_conversions').insert({
             creative_id: referringCreative,
             originating_slug: referringSlug,
             target_slug: slug,
             target_event_type: 'lead_form_submit',
             value_usd: null,
           });
+          if (cvrIns.error) {
+            console.warn(`[inbound/${slug}/leads] cross_ad_conversions insert failed:`, cvrIns.error);
+          }
         }
       }
     } catch (e) {
