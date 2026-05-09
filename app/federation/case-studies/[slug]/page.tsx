@@ -6,7 +6,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import CaseCosmicBackground from "@/components/case-study/CaseCosmicBackground";
-import CaseStudyGate from "@/components/case-study/CaseStudyGate";
+// NOTE: individual /federation/case-studies/[slug] pages are public on
+// purpose so they can be shared cold to prospects via the ShareRow
+// links below. The /federation/case-studies INDEX is still gated by
+// CaseStudyGate (see ../page.tsx) — only the inner-circle catalog of
+// every node stays restricted. Each individual case study renders
+// without auth.
 import ShareRow from "@/components/case-study/ShareRow";
 import { CASE_STUDIES, getCaseStudy } from "@/lib/case-studies";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -142,7 +147,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
   const tierKey = c.marketTier;
 
   return (
-    <CaseStudyGate>
+    <>
       <CaseCosmicBackground />
       <main className="min-h-screen text-zinc-100 relative z-10">
         <section className="border-b border-white/5 relative overflow-hidden">
@@ -359,7 +364,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
           <ShareRow url={pageUrl} title={pageTitle} caption="Pass it forward" />
         </section>
       </main>
-    </CaseStudyGate>
+    </>
   );
 }
 
