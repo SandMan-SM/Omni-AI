@@ -8,7 +8,7 @@
 // race because the ?signin=true URL effect sets state synchronously
 // before hydration completes).
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, User, Lock, Loader2, CheckCircle } from "lucide-react";
@@ -52,10 +52,21 @@ export function AuthModal({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, user } = useAuth();
   const { toast } = useToast();
   const pathname = usePathname();
   const router = useRouter();
+
+  // Belt-and-suspenders: if the modal is open AND a user is now set
+  // in the auth context (just signed in), force the modal closed.
+  // This guards against any state-flip-flop where the parent's
+  // setIsAuthModalOpen(false) gets reverted by another effect — once
+  // we have a user, the modal SHOULD never be visible.
+  useEffect(() => {
+    if (isOpen && user) {
+      onClose();
+    }
+  }, [isOpen, user, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,13 +94,17 @@ export function AuthModal({
         // navigate away.
         onSuccess?.();
         // redirectTo semantics:
-        //   undefined → legacy /dashboard redirect
-        //   string    → redirect there
+        //   undefined → /dashboard hard-redirect (escapes any client-side
+        //               state weirdness — soft-nav router.push was
+        //               sometimes intercepted by the homepage's URL
+        //               watcher mid-flight, leaving the user staring at
+        //               an open modal on the homepage)
+        //   string    → redirect there (still hard-nav for safety)
         //   null      → stay put (no navigation)
         if (redirectTo === undefined) {
-          router.push("/dashboard");
+          window.location.href = "/dashboard";
         } else if (typeof redirectTo === "string") {
-          router.push(redirectTo);
+          window.location.href = redirectTo;
         }
       }
     } catch (err) {

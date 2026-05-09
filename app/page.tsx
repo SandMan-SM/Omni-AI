@@ -10,9 +10,10 @@
 // <SiteTracker /> in app/layout.tsx uses useSearchParams() but is wrapped
 // in a Suspense boundary, so static prerender still works for the layout.
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
+import { useAuth } from "@/hooks/use-auth";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { Navbar } from "@/components/navbar";
 import { HeroSection } from "@/components/hero-section";
@@ -157,6 +158,12 @@ const homepageFaqs = [
 // Inner component that consumes useSearchParams. Must be wrapped in
 // <Suspense> per Next 14 App Router rules (any client hook reading
 // search params bails out of static prerender otherwise).
+//
+// Important: callbacks are kept in refs so the effect deps don't
+// include them. Inline closures from the parent are new every
+// render — putting them in deps would re-run the effect on every
+// render and could flip-flop the modal state. Refs let us read the
+// latest callback without tracking it as a dep.
 function SigninUrlWatcher({
   onOpen,
   onCompleteBanner,
@@ -167,19 +174,28 @@ function SigninUrlWatcher({
   const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
+  const onOpenRef = useRef(onOpen);
+  const onCompleteBannerRef = useRef(onCompleteBanner);
+  // Keep refs current without triggering the effect.
+  onOpenRef.current = onOpen;
+  onCompleteBannerRef.current = onCompleteBanner;
 
   useEffect(() => {
     if (searchParams?.get("signin") === "true") {
-      onOpen();
+      onOpenRef.current();
       if (searchParams.get("complete") === "true") {
-        onCompleteBanner();
+        onCompleteBannerRef.current();
       }
-      // Clean the URL so a refresh doesn't re-open the modal. router.replace
-      // is reactive (next/navigation) where the previous window.history
-      // replaceState lost the searchParams hook on next nav.
-      router.replace(pathname || "/");
+      // Clean the URL synchronously (window.history.replaceState — does NOT
+      // trigger a Next navigation, so the searchParams hook still updates
+      // on the next tick but no nav is queued; router.replace was queueing
+      // an extra nav that compounded with the post-signin router.push and
+      // racing with state updates).
+      if (typeof window !== "undefined") {
+        window.history.replaceState({}, "", pathname || "/");
+      }
     }
-  }, [searchParams, router, pathname, onOpen, onCompleteBanner]);
+  }, [searchParams, pathname]);
 
   return null;
 }
@@ -189,8 +205,18 @@ export default function HomePage() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [authPrompt, setAuthPrompt] = useState<string | undefined>();
   const [showCompleteBanner, setShowCompleteBanner] = useState(false);
+  const { user } = useAuth();
+  const router = useRouter();
 
+  // Open the auth modal if the user is NOT signed in. If they ARE
+  // signed in, send them straight to /dashboard instead (no point
+  // showing a sign-in form to someone who's already authed). Hard
+  // navigation so we escape any client-side router cache.
   const openAuthWithPrompt = (prompt?: string) => {
+    if (user) {
+      window.location.href = "/dashboard";
+      return;
+    }
     setAuthPrompt(prompt);
     setIsAuthModalOpen(true);
   };
