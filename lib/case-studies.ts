@@ -126,7 +126,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     pricing: FEDERATION_PRICING,
     marketTier: "federation",
     marketTierLabel: "Federation HQ — not for sale",
-    buildPriceRange: "—",
+    buildPriceRange: "$30k – $80k+",
     liveSince: "2025-11",
   },
 
@@ -485,7 +485,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     ],
     marketTier: "themed",
     marketTierLabel: "Channel partner · attribution-only",
-    buildPriceRange: "—",
+    buildPriceRange: "$3,500 onboarding",
     liveSince: "2026-05",
   },
 
