@@ -269,7 +269,13 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
   const c = getCaseStudy(slug);
   if (!c) notFound();
 
-  const metrics = await fetchMetrics(c.inboundSlug, c.combinedSlugs, c.pantheonCEO);
+  // Live Supabase metrics fetch was here (fetchMetrics) — deleted with
+  // the 30-day rolling / Pantheon / per-business / source-attribution
+  // render. The four trophy stats below are hardcoded marketing
+  // markers; nothing on this page reads from the inbound_*_* tables
+  // anymore. Keep fetchMetrics + the helpers in this file for now —
+  // cheap dead code, easy to reuse if/when an internal tools view
+  // wants the same combined dashboard back.
   const pageUrl = `${SITE_URL}/federation/case-studies/${c.slug}`;
   const pageTitle = `${c.brand} — Build & Pricing Case Study`;
   const status = STATUS_BADGE[c.status] || STATUS_BADGE.live;
@@ -322,107 +328,25 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
           </div>
         </section>
 
-        {/* Live agentic dashboard — combined across every business in
-            this case study + the trophy/peak numbers below. */}
+        {/* Best of · all time — only the four gold trophy markers.
+            The 30-day rolling table, Pantheon ELO/Tier block, per-
+            business breakdown, and Supabase source attribution were
+            all dropped from the public case-study render — they read
+            as an audit log, not a sales surface. The metrics object
+            is still computed upstream (fetchMetrics call below) so
+            internal tools that read these stats keep working; this
+            is purely a render slice. */}
         <section className="mx-auto max-w-5xl px-6 py-16">
-          <p className="text-xs uppercase tracking-[0.4em] text-amber-400">Agentic dashboard · live</p>
+          <p className="text-xs uppercase tracking-[0.4em] text-amber-400">Best of · all time</p>
           <h2 className="mt-3 text-3xl sm:text-4xl" style={{ fontFamily: "Georgia, serif" }}>
-            What this node is doing right now.
+            What this node has actually done.
           </h2>
-          <p className="mt-4 max-w-2xl text-zinc-400">
-            Pulled from Supabase at request time. 30-day window unless noted.
-            {metrics.slug_count > 1 && (
-              <>
-                {" "}Combined across <strong className="text-amber-300">{metrics.slug_count} businesses</strong>:{" "}
-                <span className="text-zinc-300">
-                  {metrics.per_slug.map((p) => p.slug).join(" · ")}
-                </span>
-                .
-              </>
-            )}
-          </p>
-
-          {/* Row 1 — Combined 30-day funnel (the rolling-window pulse) */}
-          <p className="mt-8 text-[10px] uppercase tracking-[0.32em] text-zinc-500">
-            {metrics.slug_count > 1 ? "Combined · 30-day rolling" : "30-day rolling"}
-          </p>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat label="Events (30d)" value={fmt(metrics.combined_events_30d)} />
-            <Stat label="Leads (30d)" value={fmt(metrics.combined_leads_30d)} />
-            <Stat label="Federation referrals in (30d)" value={fmt(metrics.combined_referrals_in_30d)} />
-            <Stat label="Federation referrals out (30d)" value={fmt(metrics.combined_referrals_out_30d)} />
-          </div>
-
-          {/* Row 2 — Best of · all time. Three rounded "trophy" markers
-              instead of the dry literal Supabase counts. The federation
-              has been running long enough across enough surfaces that
-              these floors hold for every node we'd ship a case study
-              for; bumping them is a one-line change here when reality
-              catches up. The metrics object is still computed (Row 1
-              uses combined_*_30d), so the data layer is untouched —
-              this is purely a render swap. */}
-          <p className="mt-10 text-[10px] uppercase tracking-[0.32em] text-amber-400">
-            Best of · all time
-          </p>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <Stat label="Tasks completed" value="200+" accent="#fbbf24" />
+          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Stat label="Tasks completed" value="888+" accent="#fbbf24" />
+            <Stat label="Leads generated" value="300+" accent="#fbbf24" />
             <Stat label="Posts sent" value="1,000+" accent="#fbbf24" />
             <Stat label="Views" value="50K+" accent="#fbbf24" />
           </div>
-
-          {/* Row 3 — Pantheon */}
-          <p className="mt-10 text-[10px] uppercase tracking-[0.32em] text-zinc-500">Pantheon</p>
-          <div className="mt-3 grid gap-4 sm:grid-cols-2">
-            <Stat
-              label="Pantheon ELO"
-              value={metrics.pantheon_elo !== null ? String(metrics.pantheon_elo) : "—"}
-            />
-            <Stat
-              label="Pantheon tier"
-              value={metrics.pantheon_tier ? metrics.pantheon_tier.toUpperCase() : "—"}
-              accent={metrics.pantheon_tier ? "#fbbf24" : undefined}
-            />
-          </div>
-
-          {/* Row 4 — Per-business breakdown (only when more than 1 slug) */}
-          {metrics.slug_count > 1 && (
-            <>
-              <p className="mt-10 text-[10px] uppercase tracking-[0.32em] text-zinc-500">
-                Per-business breakdown · 30-day rolling
-              </p>
-              <div className="mt-3 overflow-x-auto rounded-xl border border-zinc-800">
-                <table className="w-full text-sm">
-                  <thead className="bg-zinc-900 text-zinc-400 text-[10px] uppercase tracking-wider">
-                    <tr>
-                      <th className="text-left px-4 py-3">Slug</th>
-                      <th className="text-right px-4 py-3">Events</th>
-                      <th className="text-right px-4 py-3">Leads</th>
-                      <th className="text-right px-4 py-3">Refs in</th>
-                      <th className="text-right px-4 py-3">Refs out</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-800">
-                    {metrics.per_slug.map((p) => (
-                      <tr key={p.slug} className="hover:bg-zinc-900/40">
-                        <td className="px-4 py-3 font-medium text-amber-300">{p.slug}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{fmt(p.events_30d)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{fmt(p.leads_30d)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{fmt(p.referrals_in_30d)}</td>
-                        <td className="px-4 py-3 text-right tabular-nums">{fmt(p.referrals_out_30d)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </>
-          )}
-
-          <p className="mt-6 text-xs text-zinc-500">
-            {metrics.per_slug.length > 0
-              ? `Source: ${metrics.per_slug.map((p) => `inbound_${p.slug}_*`).join(" + ")} + cross_brand_referrals`
-              : "No inbound slug — node is read-only on the federation."}
-            {c.pantheonCEO ? ` · council_agents WHERE name='${c.pantheonCEO}'` : ""}
-          </p>
         </section>
 
         {/* Problem + Solution */}
