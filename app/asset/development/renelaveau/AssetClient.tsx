@@ -85,7 +85,7 @@ export function AssetClient({
   function shareIntent(platform: string) {
     ping("rene", "share", platform);
     const title =
-      "Build your own AI-CEO site — recommended by Rene Laveau";
+      "Build Your Own Agentic Website — recommended by Rene Laveau";
     if (platform === "native" && typeof navigator !== "undefined" && navigator.share) {
       navigator.share({ title, url: pageUrl }).catch(() => {});
       return;
@@ -226,6 +226,25 @@ export function AssetClient({
           inside the same premium-chrome surface family. */}
       <GoldSparksBackdrop />
 
+      {/* Top-of-viewport cosmic wash — GoldSparksBackdrop concentrates
+          its three radials at the BOTTOM of the viewport (50%/100%,
+          20%/85%, 80%/80%), so the hero area used to look like flat
+          dark with no atmosphere. This overlay sits at -z-[9] (above
+          sparks, below content) and adds silver-cyan + amber radials
+          at 20%/10% and 80%/15% so the hero reads as a cosmos.
+          Both stops are transparent in the middle so the sparks
+          still rise through visibly. */}
+      <div
+        aria-hidden
+        className="fixed inset-0 -z-[9] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(ellipse at 20% 10%, rgba(165,243,252,0.10), transparent 55%), " +
+            "radial-gradient(ellipse at 80% 15%, rgba(252,211,77,0.08), transparent 50%), " +
+            "radial-gradient(ellipse at 50% 5%, rgba(167,139,250,0.06), transparent 60%)",
+        }}
+      />
+
       {/* HERO */}
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 pt-16 sm:pt-24 pb-12">
@@ -236,7 +255,7 @@ export function AssetClient({
             className="mt-3 text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.05]"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            Build your own{" "}
+            Build Your Own{" "}
             <span
               style={{
                 backgroundImage:
@@ -246,7 +265,7 @@ export function AssetClient({
                 backgroundClip: "text",
               }}
             >
-              agentic website.
+              Agentic Website.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-base sm:text-lg text-zinc-300 leading-relaxed">

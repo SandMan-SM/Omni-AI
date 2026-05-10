@@ -28,21 +28,21 @@ const PAY_FULL_URL = "https://buy.stripe.com/28EcN51f43aw1R52u49fW0b";
 const PAY_KLARNA_URL = "https://buy.stripe.com/28E9AT5vkfXibrFfgQ9fW0c";
 
 export const metadata: Metadata = {
-  title: "Build Your Own AI-CEO Site · Recommended by Rene Laveau",
+  title: "Build Your Own Agentic Website · Recommended by Rene Laveau",
   description:
-    "Rene Laveau's recommended partner for building your own AI-CEO website inside The Society of the Silver Line. Bespoke Next.js codebase, federation distribution, 12-month operational retainer. $1,500 one-time or 3 × $500 via Klarna.",
+    "Rene Laveau's recommended partner for building your own agentic website inside The Society of the Silver Line. Bespoke Next.js codebase, AI CEO layer, federation distribution, 12-month operational retainer. $1,500 one-time or 3 × $500 via Klarna.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Build Your Own AI-CEO Site · Recommended by Rene Laveau",
+    title: "Build Your Own Agentic Website · Recommended by Rene Laveau",
     description:
       "Bespoke Next.js + AI CEO layer + federation distribution. $1,500 one-time or 3 × $500 via Klarna.",
     url: PAGE_URL,
     type: "website",
-    images: [{ url: `${SITE_URL}/api/og?title=Build%20Your%20Own%20AI-CEO%20Site&topic=Recommended%20by%20Rene%20Laveau`, width: 1200, height: 630 }],
+    images: [{ url: `${SITE_URL}/api/og?title=Build%20Your%20Own%20Agentic%20Website&topic=Recommended%20by%20Rene%20Laveau`, width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Build Your Own AI-CEO Site · Recommended by Rene Laveau",
+    title: "Build Your Own Agentic Website · Recommended by Rene Laveau",
     description:
       "Bespoke Next.js + AI CEO layer + federation distribution. $1,500 one-time or 3 × $500 via Klarna.",
   },
