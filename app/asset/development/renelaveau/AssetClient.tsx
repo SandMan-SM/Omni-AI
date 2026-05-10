@@ -205,7 +205,7 @@ export function AssetClient({
       <section className="relative border-y border-white/5 bg-black/30 backdrop-blur-sm">
         <div className="mx-auto max-w-5xl px-6 py-16">
           <p className="text-xs uppercase tracking-[0.4em] text-amber-300">
-            What's in the build
+            What&apos;s in the build
           </p>
           <h2
             className="mt-3 text-3xl sm:text-4xl"
@@ -347,7 +347,7 @@ export function AssetClient({
             Book a 15-minute call first.
           </h2>
           <p className="mt-4 text-zinc-400 leading-relaxed">
-            Tell us what you're building. We'll map the AI-CEO layer
+            Tell us what you&apos;re building. We&apos;ll map the AI-CEO layer
             for your specific business and tell you honestly whether
             this fits. No deck, no pitch, just the conversation.
           </p>
