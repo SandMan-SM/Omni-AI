@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
+import { CASE_STUDY_TIERS } from "@/lib/case-study-tiers";
 
 // AssetClient — the visible UI. Hero (with both pay buttons), middle
 // pricing pane (repeated, exactly as Sita asked: "both payment plans
@@ -113,73 +114,85 @@ export function AssetClient({
     }
   }
 
-  // Pricing-card pair. Each card is flex-col with the button pinned
-  // to the bottom (mt-auto) so the two CTA buttons sit on the same
-  // baseline no matter how many lines the description wraps to. Used
-  // once — in the hero — per Sita's latest brief ('put those two in
-  // the header for the buttons').
+  // Pricing-card pair. h-full makes both cards span the full grid
+  // row so the cards have equal total heights even when the right
+  // description wraps to one extra line. flex-col + mt-auto on the
+  // button anchors the two CTAs to the same baseline regardless.
+  // Both buttons are larger (py-3.5), bolder, and the Klarna gradient
+  // alpha was bumped (0.22 -> 0.34) so it doesn't read dim against
+  // the cosmic backdrop.
   const PricingCards = () => (
-    <div className="grid gap-4 sm:grid-cols-2 text-left">
-      <div className="flex flex-col rounded-xl border border-amber-400/30 bg-amber-400/[0.04] p-6">
+    <div className="grid gap-4 sm:grid-cols-2 items-stretch text-left">
+      <div className="flex flex-col h-full rounded-xl border border-amber-400/40 bg-amber-400/[0.05] p-6">
         <p className="text-xs uppercase tracking-[0.28em] text-amber-300">
           Pay in full
         </p>
         <p
-          className="mt-2 text-3xl tabular-nums"
+          className="mt-2 text-3xl tabular-nums text-white"
           style={{ fontFamily: "Georgia, serif" }}
         >
           $1,500
         </p>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
           One-time charge. Any card, Apple Pay, Google Pay.
         </p>
         <button
           type="button"
           onClick={() => onPay("full")}
-          className="mt-auto pt-5 w-full rounded-full px-5 py-3 text-sm font-bold text-zinc-900 transition-all hover:brightness-110"
-          style={{
-            background:
-              "linear-gradient(135deg, #fff5b8 0%, #ffd700 30%, #fbbf24 55%, #ffd700 80%, #fff5b8 100%)",
-            boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,0.5), 0 0 18px rgba(255,215,0,0.4)",
-          }}
+          className="mt-auto pt-5 w-full text-base font-bold text-zinc-900 transition-all hover:brightness-110 hover:-translate-y-px active:translate-y-0"
+          style={{ background: "transparent" }}
         >
-          Pay $1,500 →
+          <span
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5"
+            style={{
+              background:
+                "linear-gradient(135deg, #fff5b8 0%, #ffd700 30%, #fbbf24 55%, #ffd700 80%, #fff5b8 100%)",
+              boxShadow:
+                "inset 0 1px 0 rgba(255,255,255,0.6), 0 0 24px rgba(255,215,0,0.5)",
+            }}
+          >
+            Pay $1,500 <span aria-hidden>→</span>
+          </span>
         </button>
       </div>
       <div
-        className="flex flex-col rounded-xl border p-6"
+        className="flex flex-col h-full rounded-xl border p-6"
         style={{
-          borderColor: "rgba(165,243,252,0.30)",
+          borderColor: "rgba(165,243,252,0.45)",
           background:
-            "linear-gradient(135deg, rgba(165,243,252,0.04) 0%, rgba(34,211,238,0.04) 100%)",
+            "linear-gradient(135deg, rgba(165,243,252,0.06) 0%, rgba(34,211,238,0.06) 100%)",
         }}
       >
         <p className="text-xs uppercase tracking-[0.28em] text-cyan-200">
           Klarna · 3 months
         </p>
         <p
-          className="mt-2 text-3xl tabular-nums"
+          className="mt-2 text-3xl tabular-nums text-white"
           style={{ fontFamily: "Georgia, serif" }}
         >
           $500 <span className="text-base text-zinc-500">/ mo</span>
         </p>
-        <p className="mt-2 text-sm text-zinc-400">
+        <p className="mt-2 text-sm text-zinc-400 leading-relaxed">
           Three monthly installments. Interest-free. Soft credit
           check at checkout — no impact on your score.
         </p>
         <button
           type="button"
           onClick={() => onPay("klarna")}
-          className="mt-auto pt-5 w-full rounded-full px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-110"
-          style={{
-            background:
-              "linear-gradient(135deg, rgba(165,243,252,0.22) 0%, rgba(255,255,255,0.12) 50%, rgba(34,211,238,0.22) 100%)",
-            border: "1px solid rgba(165,243,252,0.5)",
-            boxShadow: "0 0 18px rgba(34,211,238,0.18)",
-          }}
+          className="mt-auto pt-5 w-full text-base font-bold text-white transition-all hover:brightness-110 hover:-translate-y-px active:translate-y-0"
+          style={{ background: "transparent" }}
         >
-          Start with $500 →
+          <span
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full px-6 py-3.5"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(165,243,252,0.34) 0%, rgba(255,255,255,0.20) 50%, rgba(34,211,238,0.34) 100%)",
+              border: "1px solid rgba(165,243,252,0.6)",
+              boxShadow: "0 0 24px rgba(34,211,238,0.28)",
+            }}
+          >
+            Start with $500 <span aria-hidden>→</span>
+          </span>
         </button>
       </div>
     </div>
@@ -198,7 +211,7 @@ export function AssetClient({
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 pt-16 sm:pt-24 pb-12">
           <p className="text-xs uppercase tracking-[0.4em] text-cyan-200/80">
-            The Silver Line · Asset
+            The Silver Line · Asset · Development
           </p>
           <h1
             className="mt-3 text-4xl sm:text-6xl md:text-7xl tracking-tight leading-[1.05]"
@@ -214,7 +227,7 @@ export function AssetClient({
                 backgroundClip: "text",
               }}
             >
-              AI-CEO site.
+              agentic website.
             </span>
           </h1>
           <p className="mt-6 max-w-2xl text-base sm:text-lg text-zinc-300 leading-relaxed">
@@ -278,6 +291,96 @@ export function AssetClient({
                 </li>
               ))}
             </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* RENE'S PERSONAL ASSET — link out to the case study so a
+          prospect can see the actual build the asset is selling. Sits
+          right above the market-position grid: 'here's the example,
+          and here's where it sits among other tiers.' */}
+      <section className="relative">
+        <div className="mx-auto max-w-5xl px-6 pt-16">
+          <Link
+            href="/federation/case-studies/rene-laveau"
+            className="group block rounded-xl border border-amber-400/30 bg-amber-400/[0.03] p-6 sm:p-8 hover:border-amber-400/60 transition-colors"
+          >
+            <p className="text-xs uppercase tracking-[0.32em] text-amber-300">
+              The example
+            </p>
+            <div className="mt-3 flex items-center justify-between gap-4">
+              <p
+                className="text-2xl sm:text-3xl text-white"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                View Rene Laveau&apos;s personal asset →
+              </p>
+              <span className="hidden sm:inline text-sm text-zinc-500 group-hover:text-amber-300 transition-colors">
+                Case study
+              </span>
+            </div>
+            <p className="mt-3 text-sm text-zinc-400 max-w-2xl leading-relaxed">
+              The same Tier 3 build delivered live: bespoke Next.js,
+              autonomous AI CEO, federation distribution. Open the
+              case study to see the systems, the agentic stack, and
+              live metrics from the running site.
+            </p>
+          </Link>
+        </div>
+      </section>
+
+      {/* MARKET POSITION — same four-tier grid that appears on every
+          /federation/case-studies/[slug] page. Tier 3 / Bespoke
+          Next.js is highlighted as 'this build' because that's what
+          this asset sells. Sourced from the shared CASE_STUDY_TIERS
+          lib so updates here AND on the case-study slug page stay
+          byte-aligned. */}
+      <section className="relative">
+        <div className="mx-auto max-w-5xl px-6 py-16">
+          <p className="text-xs uppercase tracking-[0.4em] text-zinc-500">
+            Market position · 2026
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-4xl"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            Where this build sits.
+          </h2>
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {CASE_STUDY_TIERS.map((t) => {
+              const isThis = t.key === "bespoke";
+              return (
+                <article
+                  key={t.key}
+                  className={`relative overflow-hidden rounded-xl border bg-zinc-950/40 ${isThis ? "border-amber-400/60" : "border-zinc-800"}`}
+                >
+                  {isThis && (
+                    <div className="border-b border-amber-400/40 bg-gradient-to-r from-amber-400/15 via-amber-400/25 to-amber-400/15 px-6 py-2 text-center text-[11px] font-bold uppercase tracking-[0.32em] text-amber-300">
+                      This Build
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <p
+                      className="text-xl leading-tight"
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      {t.name}
+                      <span className="text-zinc-500"> | </span>
+                      <span style={{ color: t.fg }}>{t.kind}</span>
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold tabular-nums">
+                      {t.range}
+                    </p>
+                    <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
+                      {t.desc}
+                    </p>
+                    <p className="mt-4 text-xs text-zinc-500 italic">
+                      {t.fits}
+                    </p>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         </div>
       </section>
