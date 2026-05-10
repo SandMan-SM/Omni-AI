@@ -10,6 +10,7 @@ import {
   Mail,
   Link2,
   Check,
+  Play,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { XIcon } from "@/components/case-study/XIcon";
@@ -323,18 +324,33 @@ export function AssetClient({
             href="/federation/case-studies/rene-laveau"
             className="group block rounded-xl border border-amber-400/30 bg-amber-400/[0.03] p-6 sm:p-8 hover:border-amber-400/60 transition-colors"
           >
+            {/* Eyebrow now reads "THE EXAMPLE · CASE STUDY" — the
+                'Case study' label that used to float on the right of
+                the headline is co-located here so the two labels
+                read as one orientation line. */}
             <p className="text-xs uppercase tracking-[0.32em] text-amber-300">
               The example
+              <span className="text-zinc-600"> · </span>
+              <span className="text-zinc-500 group-hover:text-amber-300 transition-colors">
+                Case study
+              </span>
             </p>
-            <div className="mt-3 flex items-center justify-between gap-4">
+            {/* Headline + 'View Now ▶' affordance. The right-facing
+                triangle is Lucide's Play icon (filled, scales with
+                the text color) — replaces the trailing → arrow per
+                Sita's note. flex-wrap so on narrow phones the View
+                Now pill drops to a second line rather than
+                truncating the headline. */}
+            <div className="mt-3 flex flex-wrap items-center gap-3">
               <p
                 className="text-2xl sm:text-3xl text-white"
                 style={{ fontFamily: "Georgia, serif" }}
               >
-                View Rene Laveau&apos;s personal asset →
+                View Rene Laveau&apos;s personal asset
               </p>
-              <span className="hidden sm:inline text-sm text-zinc-500 group-hover:text-amber-300 transition-colors">
-                Case study
+              <span className="inline-flex items-center gap-2 rounded-full border border-amber-400/40 bg-amber-400/[0.06] px-3 py-1 text-xs font-bold uppercase tracking-[0.18em] text-amber-300 group-hover:bg-amber-400/[0.12] transition-colors">
+                View Now
+                <Play className="w-3 h-3 fill-amber-300" />
               </span>
             </div>
             <p className="mt-3 text-sm text-zinc-400 max-w-2xl leading-relaxed">
