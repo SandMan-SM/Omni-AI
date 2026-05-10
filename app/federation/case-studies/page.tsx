@@ -109,7 +109,7 @@ export default function CaseStudyIndex() {
                     <Link
                       key={c.slug}
                       href={`/federation/case-studies/${c.slug}`}
-                      className="block rounded-xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm p-6 hover:border-amber-400 transition-colors"
+                      className="flex h-full flex-col rounded-xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm p-6 hover:border-amber-400 transition-colors"
                     >
                       <div className="flex items-start justify-between gap-3">
                         <p className="text-xl" style={{ fontFamily: "Georgia, serif" }}>{c.brand}</p>
@@ -126,7 +126,13 @@ export default function CaseStudyIndex() {
                       <p className="mt-3 text-sm text-zinc-400 leading-relaxed line-clamp-3">
                         {c.tagline}
                       </p>
-                      <div className="mt-4 flex items-center justify-between text-xs">
+                      {/* Bottom row pinned to card baseline (mt-auto) so
+                          the Visit Now link + price sit at the same
+                          y-position on every card in the grid, no
+                          matter how many lines the tagline / role
+                          wrap to above. Pairs with the flex-col +
+                          h-full on the card wrapper. */}
+                      <div className="mt-auto pt-4 flex items-center justify-between text-xs">
                         {c.url !== "#" ? (
                           <VisitNowButton url={c.url} />
                         ) : (

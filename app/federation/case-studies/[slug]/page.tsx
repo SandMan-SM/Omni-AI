@@ -314,8 +314,10 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
               <span className="mx-2 text-zinc-700">/</span>
               <span className="text-zinc-300">{c.brand}</span>
             </nav>
-            <p className="mt-3 text-xs uppercase tracking-[0.4em] text-amber-400">Case study</p>
-            <h1 className="mt-4 text-5xl sm:text-7xl tracking-tight" style={{ fontFamily: "Georgia, serif" }}>
+            {/* Amber 'CASE STUDY' eyebrow removed — it duplicated the
+                breadcrumb's 'Case Studies' segment immediately above.
+                The breadcrumb does the job. */}
+            <h1 className="mt-5 text-5xl sm:text-7xl tracking-tight" style={{ fontFamily: "Georgia, serif" }}>
               {c.brand}
             </h1>
             <p className="mt-6 max-w-3xl text-lg text-zinc-400">{c.tagline}</p>

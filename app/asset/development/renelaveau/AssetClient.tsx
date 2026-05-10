@@ -278,14 +278,14 @@ export function AssetClient({
           >
             Three layers. One node in the federation.
           </h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {deliverables.map((d) => (
               <div
                 key={d.title}
-                className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-6"
+                className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-5 sm:p-6"
               >
                 <h3
-                  className="text-xl"
+                  className="text-lg sm:text-xl leading-snug"
                   style={{ fontFamily: "Georgia, serif" }}
                 >
                   {d.title}
@@ -509,6 +509,10 @@ export function AssetClient({
                         <span>Share</span>
                       </button>
                     )}
+                    {/* X button intentionally renders icon-only — the
+                        glyph IS the brand mark, the redundant 'X'
+                        text label read like a typo next to it. The
+                        screen-reader label still names the platform. */}
                     <button
                       type="button"
                       onClick={() => shareIntent("twitter")}
@@ -516,7 +520,6 @@ export function AssetClient({
                       aria-label="Share to X"
                     >
                       <XIcon className={iconClass} />
-                      <span>X</span>
                     </button>
                     <button
                       type="button"

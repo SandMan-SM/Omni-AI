@@ -116,9 +116,11 @@ export default function ShareRow({ url, title, caption }: Props) {
             <span>Share</span>
           </button>
         )}
+        {/* X button intentionally renders icon-only — the X glyph IS the
+            brand mark, a 'X' text label next to it read redundantly. The
+            aria-label still names the platform for screen readers. */}
         <button type="button" onClick={shareTwitter} className={baseBtn} aria-label="Share to X">
           <XIcon className={iconClass} />
-          <span>X</span>
         </button>
         <button type="button" onClick={shareLinkedIn} className={baseBtn} aria-label="Share to LinkedIn">
           <Linkedin className={iconClass} />
