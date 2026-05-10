@@ -295,42 +295,40 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
       <main className="min-h-screen text-zinc-100 relative z-10">
         <section className="border-b border-white/5 relative overflow-hidden">
           <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
-            <p className="text-xs uppercase tracking-[0.4em] text-zinc-500">
-              Infrastructure · Development
-            </p>
-            <p className="mt-2 text-xs uppercase tracking-[0.4em] text-amber-400">Case study</p>
-            <div className="mt-4 flex items-center gap-3 flex-wrap">
-              <h1 className="text-5xl sm:text-7xl tracking-tight" style={{ fontFamily: "Georgia, serif" }}>
-                {c.brand}
-              </h1>
-              <span
-                className="inline-block text-[10px] font-bold tracking-[0.32em] px-2 py-1 rounded mt-3"
-                style={{ background: status.bg, color: status.fg }}
+            {/* Breadcrumb — replaces the static "Infrastructure ·
+                Development" eyebrow. Home / Case Studies / <brand>. */}
+            <nav
+              aria-label="Breadcrumb"
+              className="text-xs uppercase tracking-[0.32em] text-zinc-500"
+            >
+              <Link href="/" className="hover:text-amber-300 transition-colors">
+                Home
+              </Link>
+              <span className="mx-2 text-zinc-700">/</span>
+              <Link
+                href="/federation/case-studies"
+                className="hover:text-amber-300 transition-colors"
               >
-                {status.label}
-              </span>
-            </div>
+                Case Studies
+              </Link>
+              <span className="mx-2 text-zinc-700">/</span>
+              <span className="text-zinc-300">{c.brand}</span>
+            </nav>
+            <p className="mt-3 text-xs uppercase tracking-[0.4em] text-amber-400">Case study</p>
+            <h1 className="mt-4 text-5xl sm:text-7xl tracking-tight" style={{ fontFamily: "Georgia, serif" }}>
+              {c.brand}
+            </h1>
             <p className="mt-6 max-w-3xl text-lg text-zinc-400">{c.tagline}</p>
             <div className="mt-3 text-xs uppercase tracking-[0.32em] text-zinc-500">
               {c.role} · Realm {c.realm === 1 ? "I" : c.realm === 2 ? "II" : "III"}
               {c.liveSince && ` · live since ${c.liveSince}`}
             </div>
             <div className="mt-10 flex flex-wrap gap-3">
-              {c.url !== "#" && (
-                <a
-                  href={c.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 font-semibold text-zinc-900 hover:bg-amber-300 transition-colors"
-                >
-                  Visit {c.domain} →
-                </a>
-              )}
               <Link
                 href="/federation/case-studies"
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-6 py-3 font-semibold text-zinc-100 hover:border-amber-400 transition-colors"
               >
-                ← All case studies
+                All case studies
               </Link>
             </div>
           </div>
