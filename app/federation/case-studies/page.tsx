@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CaseCosmicBackground from "@/components/case-study/CaseCosmicBackground";
 import CaseStudyGate from "@/components/case-study/CaseStudyGate";
+import { VisitNowButton } from "@/components/case-study/VisitNowButton";
 import { CASE_STUDIES } from "@/lib/case-studies";
 
 export const dynamic = "force-static";
@@ -126,24 +127,8 @@ export default function CaseStudyIndex() {
                         {c.tagline}
                       </p>
                       <div className="mt-4 flex items-center justify-between text-xs">
-                        {/* "Visit Now" replaces the raw domain string. It's
-                            a <button> (not <a>) so we don't violate HTML's
-                            nested-anchor rule — the whole card is already
-                            wrapped in a <Link> to the case study. e.preventDefault
-                            + e.stopPropagation cancels the parent navigation
-                            so this click ONLY opens the external site. */}
                         {c.url !== "#" ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              window.open(c.url, "_blank", "noopener,noreferrer");
-                            }}
-                            className="text-zinc-400 underline underline-offset-4 hover:text-amber-400 transition-colors"
-                          >
-                            Visit Now
-                          </button>
+                          <VisitNowButton url={c.url} />
                         ) : (
                           <span className="text-zinc-500">{c.domain}</span>
                         )}
