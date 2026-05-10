@@ -23,6 +23,12 @@ export type CaseStudy = {
   domain: string;                  // public domain (no protocol)
   url: string;                     // full canonical URL
   inboundSlug: string | null;      // matching key in inbound_<slug>_* tables / cross_brand_referrals; null = no analytics
+  /** Optional list of OTHER business slugs whose analytics should fold
+   *  into this case study's combined view (e.g. an Imperium case study
+   *  that also includes ltb + omni newsletter activity because they all
+   *  share the Mastermind funnel). The page sums events/leads/referrals
+   *  across `inboundSlug` + every entry in this array. */
+  combinedSlugs?: string[];
   realm: 1 | 2 | 3;                // I=site, II=HQ/dashboard, III=Interlinked
   role: string;                    // "Operator · AI CEO" / "Mastermind" / etc.
   status: "live" | "in_progress" | "scaffold" | "forthcoming" | "archived";
@@ -85,6 +91,14 @@ export const CASE_STUDIES: CaseStudy[] = [
     domain: "omnileadsagi.com",
     url: "https://omnileadsagi.com",
     inboundSlug: "omnileads",
+    // Federation HQ aggregates EVERY tenant's analytics — its case study
+    // dashboard should reflect the full network, not just omnileadsagi.com
+    // page-views. Order kept stable for readable per-business breakdown.
+    combinedSlugs: [
+      "sitanim", "imperium", "rene", "cps", "leifson", "youngs",
+      "ltb", "phoenix", "prime_iv", "mainst", "beehive", "wasatch",
+      "alira", "otd",
+    ],
     realm: 2,
     role: "Federation HQ · Pantheon",
     status: "live",
@@ -482,6 +496,10 @@ export const CASE_STUDIES: CaseStudy[] = [
     domain: "agiarena.online",
     url: "https://agiarena.online",
     inboundSlug: null,
+    // Public Pantheon viewer surfaces the cluster's combined activity:
+    // it's a window into the federation, so the dashboard combines
+    // every Realm I + II tenant.
+    combinedSlugs: ["omnileads", "sitanim", "imperium", "rene", "ltb", "leifson", "youngs", "cps"],
     realm: 1,
     role: "Public Pantheon spectator",
     status: "live",
@@ -513,6 +531,9 @@ export const CASE_STUDIES: CaseStudy[] = [
     domain: "utahdeckandbasementremodel.com",
     url: "https://utahdeckandbasementremodel.com",
     inboundSlug: "leifson",
+    // Leifson satellite — funnel work also touches youngs (cabinet
+    // upsell) on the way through.
+    combinedSlugs: ["youngs"],
     realm: 1,
     role: "Leifson satellite · GEO funnel",
     status: "live",
@@ -543,6 +564,10 @@ export const CASE_STUDIES: CaseStudy[] = [
     domain: "omnileads.shop",
     url: "https://omnileads.shop/merch",
     inboundSlug: "omnileads",
+    // Federation merch — every brand on the merch wall (Imperium hoodie,
+    // Pantheon mug, Live Better tee) routes referral traffic back into
+    // its origin tenant. Combined view shows the merch funnel reach.
+    combinedSlugs: ["imperium", "sitanim", "rene", "ltb"],
     realm: 1,
     role: "Federation merch",
     status: "live",
@@ -576,6 +601,10 @@ export const CASE_STUDIES: CaseStudy[] = [
     domain: "aidigitalmarketingsolution.com",
     url: "https://aidigitalmarketingsolution.com",
     inboundSlug: "omnileads",
+    // Case-study funnel that walks prospects through CPS, Leifson, and
+    // Phoenix proof points before pitching the strategy call. The 3
+    // referenced clients' analytics fold into this node's combined view.
+    combinedSlugs: ["cps", "leifson", "phoenix"],
     realm: 1,
     role: "Omni AI case-study funnel",
     status: "live",
@@ -605,6 +634,10 @@ export const CASE_STUDIES: CaseStudy[] = [
     domain: "seoandppcmarketing.com",
     url: "https://seoandppcmarketing.com",
     inboundSlug: null,
+    // 14 short-link redirects route attribution into 7 federation
+    // tenants. Combined dashboard surfaces aggregate redirect-driven
+    // referrals into each.
+    combinedSlugs: ["cps", "leifson", "youngs", "ltb", "phoenix", "imperium", "sitanim"],
     realm: 1,
     role: "Branded short-link redirect",
     status: "live",
@@ -640,8 +673,8 @@ export const CASE_STUDIES: CaseStudy[] = [
     url: "https://alira.live",
     inboundSlug: "alira",
     realm: 1,
-    role: "AI CEO layer · positioning pending",
-    status: "in_progress",
+    role: "Personal Brand · AI CEO",
+    status: "live",
     pantheonArchetype: "Plato (visionary lens)",
     pantheonCEO: null,
     tagline: "Spiritual leadership platform. AI CEO layer in place; public positioning in flight.",

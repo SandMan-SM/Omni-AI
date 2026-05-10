@@ -46,6 +46,10 @@ export default function CaseStudyIndex() {
     "imperium",
     "rene-laveau",
     "live-better-on-the-drip",
+    // Alira — spiritual-leadership personal brand. AI CEO layer
+    // shipped via Interlinked + the public site is live, so it
+    // belongs in the personal-branding cluster, not Pending.
+    "alira",
   ]);
 
   const grouped = {
