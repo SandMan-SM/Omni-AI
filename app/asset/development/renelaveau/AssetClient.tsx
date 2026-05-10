@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 
 // AssetClient — the visible UI. Hero (with both pay buttons), middle
 // pricing pane (repeated, exactly as Sita asked: "both payment plans
@@ -112,54 +113,86 @@ export function AssetClient({
     }
   }
 
-  const PayButtons = ({ size = "lg" }: { size?: "lg" | "md" }) => (
-    <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-      <button
-        type="button"
-        onClick={() => onPay("full")}
-        className={`group inline-flex items-center justify-center gap-2 rounded-full font-bold text-zinc-900 transition-all hover:brightness-110 ${size === "lg" ? "px-7 py-4 text-base" : "px-6 py-3 text-sm"}`}
+  // Pricing-card pair. Each card is flex-col with the button pinned
+  // to the bottom (mt-auto) so the two CTA buttons sit on the same
+  // baseline no matter how many lines the description wraps to. Used
+  // once — in the hero — per Sita's latest brief ('put those two in
+  // the header for the buttons').
+  const PricingCards = () => (
+    <div className="grid gap-4 sm:grid-cols-2 text-left">
+      <div className="flex flex-col rounded-xl border border-amber-400/30 bg-amber-400/[0.04] p-6">
+        <p className="text-xs uppercase tracking-[0.28em] text-amber-300">
+          Pay in full
+        </p>
+        <p
+          className="mt-2 text-3xl tabular-nums"
+          style={{ fontFamily: "Georgia, serif" }}
+        >
+          $1,500
+        </p>
+        <p className="mt-2 text-sm text-zinc-400">
+          One-time charge. Any card, Apple Pay, Google Pay.
+        </p>
+        <button
+          type="button"
+          onClick={() => onPay("full")}
+          className="mt-auto pt-5 w-full rounded-full px-5 py-3 text-sm font-bold text-zinc-900 transition-all hover:brightness-110"
+          style={{
+            background:
+              "linear-gradient(135deg, #fff5b8 0%, #ffd700 30%, #fbbf24 55%, #ffd700 80%, #fff5b8 100%)",
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,0.5), 0 0 18px rgba(255,215,0,0.4)",
+          }}
+        >
+          Pay $1,500 →
+        </button>
+      </div>
+      <div
+        className="flex flex-col rounded-xl border p-6"
         style={{
+          borderColor: "rgba(165,243,252,0.30)",
           background:
-            "linear-gradient(135deg, #fff5b8 0%, #ffd700 30%, #fbbf24 55%, #ffd700 80%, #fff5b8 100%)",
-          boxShadow:
-            "inset 0 1px 0 rgba(255,255,255,0.55), 0 0 24px rgba(255,215,0,0.45)",
+            "linear-gradient(135deg, rgba(165,243,252,0.04) 0%, rgba(34,211,238,0.04) 100%)",
         }}
       >
-        Pay $1,500 in full
-        <span className="opacity-70 group-hover:translate-x-0.5 transition-transform">→</span>
-      </button>
-      <button
-        type="button"
-        onClick={() => onPay("klarna")}
-        className={`group inline-flex items-center justify-center gap-2 rounded-full font-bold text-white transition-all hover:brightness-110 ${size === "lg" ? "px-7 py-4 text-base" : "px-6 py-3 text-sm"}`}
-        style={{
-          background:
-            "linear-gradient(135deg, rgba(165,243,252,0.18) 0%, rgba(255,255,255,0.10) 50%, rgba(34,211,238,0.18) 100%)",
-          border: "1px solid rgba(165,243,252,0.45)",
-          boxShadow: "0 0 24px rgba(34,211,238,0.18)",
-        }}
-      >
-        3 × $500 / mo · Klarna
-        <span className="opacity-70 group-hover:translate-x-0.5 transition-transform">→</span>
-      </button>
+        <p className="text-xs uppercase tracking-[0.28em] text-cyan-200">
+          Klarna · 3 months
+        </p>
+        <p
+          className="mt-2 text-3xl tabular-nums"
+          style={{ fontFamily: "Georgia, serif" }}
+        >
+          $500 <span className="text-base text-zinc-500">/ mo</span>
+        </p>
+        <p className="mt-2 text-sm text-zinc-400">
+          Three monthly installments. Interest-free. Soft credit
+          check at checkout — no impact on your score.
+        </p>
+        <button
+          type="button"
+          onClick={() => onPay("klarna")}
+          className="mt-auto pt-5 w-full rounded-full px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-110"
+          style={{
+            background:
+              "linear-gradient(135deg, rgba(165,243,252,0.22) 0%, rgba(255,255,255,0.12) 50%, rgba(34,211,238,0.22) 100%)",
+            border: "1px solid rgba(165,243,252,0.5)",
+            boxShadow: "0 0 18px rgba(34,211,238,0.18)",
+          }}
+        >
+          Start with $500 →
+        </button>
+      </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#050508] text-zinc-100 overflow-x-hidden">
-      {/* Cosmic backdrop — pure CSS, no canvas. Three radial gradients
-          tuned to Rene's silver/cyan/gold palette. */}
-      <div
-        aria-hidden
-        className="fixed inset-0 -z-10 pointer-events-none"
-        style={{
-          background:
-            "radial-gradient(ellipse at 20% 10%, rgba(165,243,252,0.10), transparent 55%), " +
-            "radial-gradient(ellipse at 80% 20%, rgba(252,211,77,0.08), transparent 50%), " +
-            "radial-gradient(ellipse at 50% 100%, rgba(167,139,250,0.10), transparent 55%), " +
-            "#050508",
-        }}
-      />
+    <div className="min-h-screen text-zinc-100 overflow-x-hidden relative">
+      {/* Space-cosmos backdrop — canvas-based chrome-gold ember field
+          + warm radial wash, fixed inset-0 -z-10. Same component the
+          /interlinked/developer/info, /sponsor/info, /arena and
+          /newsletter/premium/info pages use, so the asset page sits
+          inside the same premium-chrome surface family. */}
+      <GoldSparksBackdrop />
 
       {/* HERO */}
       <section className="relative">
@@ -192,10 +225,10 @@ export function AssetClient({
             payment now or three monthly installments.
           </p>
 
-          <div className="mt-9">
-            <PayButtons size="lg" />
+          <div className="mt-10">
+            <PricingCards />
           </div>
-          <p className="mt-4 text-xs uppercase tracking-[0.28em] text-zinc-500">
+          <p className="mt-5 text-xs uppercase tracking-[0.28em] text-zinc-500">
             Secure checkout via Stripe · Klarna pay-in-3 supported
           </p>
         </div>
@@ -249,7 +282,10 @@ export function AssetClient({
         </div>
       </section>
 
-      {/* MIDDLE PRICING — both options surface again per Sita's brief. */}
+      {/* MIDDLE PRICING — both options surface again. Reuses the same
+          <PricingCards /> component as the hero so the two placements
+          stay byte-aligned: changing a price, label, or card style
+          updates the hero AND the middle section in lock-step. */}
       <section className="relative">
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-cyan-200/80">
@@ -266,70 +302,8 @@ export function AssetClient({
             full or split it across three months with Klarna —
             interest-free, soft credit check only.
           </p>
-
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 text-left">
-            <div className="rounded-xl border border-amber-400/30 bg-amber-400/[0.04] p-6">
-              <p className="text-xs uppercase tracking-[0.28em] text-amber-300">
-                Pay in full
-              </p>
-              <p
-                className="mt-2 text-3xl tabular-nums"
-                style={{ fontFamily: "Georgia, serif" }}
-              >
-                $1,500
-              </p>
-              <p className="mt-2 text-sm text-zinc-400">
-                One-time charge. Any card, Apple Pay, Google Pay.
-              </p>
-              <button
-                type="button"
-                onClick={() => onPay("full")}
-                className="mt-5 w-full rounded-full px-5 py-3 text-sm font-bold text-zinc-900 transition-all hover:brightness-110"
-                style={{
-                  background:
-                    "linear-gradient(135deg, #fff5b8 0%, #ffd700 30%, #fbbf24 55%, #ffd700 80%, #fff5b8 100%)",
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.5), 0 0 18px rgba(255,215,0,0.4)",
-                }}
-              >
-                Pay $1,500 →
-              </button>
-            </div>
-            <div
-              className="rounded-xl border p-6"
-              style={{
-                borderColor: "rgba(165,243,252,0.30)",
-                background:
-                  "linear-gradient(135deg, rgba(165,243,252,0.04) 0%, rgba(34,211,238,0.04) 100%)",
-              }}
-            >
-              <p className="text-xs uppercase tracking-[0.28em] text-cyan-200">
-                Klarna · 3 months
-              </p>
-              <p
-                className="mt-2 text-3xl tabular-nums"
-                style={{ fontFamily: "Georgia, serif" }}
-              >
-                $500 <span className="text-base text-zinc-500">/ mo</span>
-              </p>
-              <p className="mt-2 text-sm text-zinc-400">
-                Three monthly installments. Interest-free. Soft credit
-                check at checkout — no impact on your score.
-              </p>
-              <button
-                type="button"
-                onClick={() => onPay("klarna")}
-                className="mt-5 w-full rounded-full px-5 py-3 text-sm font-bold text-white transition-all hover:brightness-110"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(165,243,252,0.22) 0%, rgba(255,255,255,0.12) 50%, rgba(34,211,238,0.22) 100%)",
-                  border: "1px solid rgba(165,243,252,0.5)",
-                  boxShadow: "0 0 18px rgba(34,211,238,0.18)",
-                }}
-              >
-                Start with $500 →
-              </button>
-            </div>
+          <div className="mt-10">
+            <PricingCards />
           </div>
         </div>
       </section>
