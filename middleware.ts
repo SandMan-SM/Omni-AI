@@ -2,7 +2,24 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-const protectedRoutes = ['/dashboard', '/admin'];
+// /dashboard is intentionally NOT in protectedRoutes any more.
+//
+// The middleware checks supabase.auth.getUser() (cookie session).
+// The actual sign-in flow that ships in production goes through the
+// `auth-login` Supabase edge function and stores a custom omni_token
+// in localStorage — middleware can't see localStorage, so it always
+// thought signed-in users were anonymous and redirected them to
+// /?signin=true. That redirect was the entire post-signin loop the
+// user kept hitting: log in → modal closes → router.push('/dashboard')
+// → middleware 307s back to /?signin=true → URL watcher reopens
+// modal → "still broken on the homepage."
+//
+// The dashboard page (app/dashboard/page.tsx) already does its own
+// client-side auth check via useAuth().user (redirects to '/' after
+// 500ms if no user). That covers the same surface without colliding
+// with the localStorage token. Once the auth path is unified onto
+// real Supabase cookie sessions we can put /dashboard back here.
+const protectedRoutes = ['/admin'];
 const adminOnlyRoutes = ['/admin'];
 const publicRoutes = ['/', '/details', '/interlinked', '/campaigns', '/sponsor', '/join', '/arena'];
 
@@ -19,8 +36,17 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Allow public routes
-  if (publicRoutes.some(route => pathname.startsWith(route))) {
+  // Allow public routes. The `/` entry has to be matched exactly,
+  // not via startsWith — every path starts with `/`, which previously
+  // short-circuited the auth check on EVERY request including
+  // /dashboard and /admin (Round-9 audit). startsWith works for the
+  // others because they're path prefixes, not the bare slash.
+  if (
+    pathname === '/' ||
+    publicRoutes
+      .filter(r => r !== '/')
+      .some(route => pathname === route || pathname.startsWith(`${route}/`))
+  ) {
     return NextResponse.next();
   }
 
