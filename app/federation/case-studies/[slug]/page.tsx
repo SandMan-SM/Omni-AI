@@ -324,6 +324,16 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
               {c.liveSince && ` · live since ${c.liveSince}`}
             </div>
             <div className="mt-10 flex flex-wrap gap-3">
+              {c.url !== "#" && (
+                <a
+                  href={c.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 font-semibold text-zinc-900 hover:bg-amber-300 transition-colors"
+                >
+                  Visit Website
+                </a>
+              )}
               <Link
                 href="/federation/case-studies"
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-6 py-3 font-semibold text-zinc-100 hover:border-amber-400 transition-colors"
