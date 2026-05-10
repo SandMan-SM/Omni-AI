@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import {
+  Share2,
+  Linkedin,
+  Facebook,
+  Smartphone,
+  Mail,
+  Link2,
+  Check,
+} from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
+import { XIcon } from "@/components/case-study/XIcon";
 import { CASE_STUDY_TIERS } from "@/lib/case-study-tiers";
 
 // AssetClient — the visible UI. Hero (with both pay buttons), middle
@@ -90,6 +100,14 @@ export function AssetClient({
     if (platform === "linkedin") {
       window.open(
         `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`,
+        "_blank",
+        "noopener,noreferrer",
+      );
+      return;
+    }
+    if (platform === "facebook") {
+      window.open(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(title)}`,
         "_blank",
         "noopener,noreferrer",
       );
@@ -451,23 +469,96 @@ export function AssetClient({
               build? Send this to them.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              {[
-                ["native", "Share"],
-                ["twitter", "X / Twitter"],
-                ["linkedin", "LinkedIn"],
-                ["sms", "SMS"],
-                ["email", "Email"],
-                ["copy", copied ? "Copied ✓" : "Copy link"],
-              ].map(([key, label]) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => shareIntent(key)}
-                  className="inline-flex items-center justify-center min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors"
-                >
-                  {label}
-                </button>
-              ))}
+              {(() => {
+                const iconClass = "w-4 h-4 flex-shrink-0";
+                const baseBtn =
+                  "inline-flex items-center justify-center gap-2 min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors";
+                // Native share intent only renders when navigator.share
+                // exists (mobile + macOS Safari). On desktop the row
+                // just starts with X. Facebook lives between LinkedIn
+                // and SMS — was missing from the prior version.
+                const hasNative =
+                  typeof navigator !== "undefined" &&
+                  !!(navigator as Navigator & { share?: unknown }).share;
+                return (
+                  <>
+                    {hasNative && (
+                      <button
+                        type="button"
+                        onClick={() => shareIntent("native")}
+                        className={baseBtn}
+                        aria-label="Share"
+                      >
+                        <Share2 className={iconClass} />
+                        <span>Share</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("twitter")}
+                      className={baseBtn}
+                      aria-label="Share to X"
+                    >
+                      <XIcon className={iconClass} />
+                      <span>X</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("linkedin")}
+                      className={baseBtn}
+                      aria-label="Share to LinkedIn"
+                    >
+                      <Linkedin className={iconClass} />
+                      <span>LinkedIn</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("facebook")}
+                      className={baseBtn}
+                      aria-label="Share to Facebook"
+                    >
+                      <Facebook className={iconClass} />
+                      <span>Facebook</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("sms")}
+                      className={baseBtn}
+                      aria-label="Share via SMS"
+                    >
+                      <Smartphone className={iconClass} />
+                      <span>SMS</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("email")}
+                      className={baseBtn}
+                      aria-label="Share via email"
+                    >
+                      <Mail className={iconClass} />
+                      <span>Email</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("copy")}
+                      className={baseBtn}
+                      aria-label="Copy link"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className={iconClass} />
+                          <span>Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Link2 className={iconClass} />
+                          <span>Copy link</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

@@ -1,11 +1,21 @@
 "use client";
 
 // Share row for case-study pages. Native share where supported,
-// X/Twitter, LinkedIn, SMS, Email, Copy link. Each click pings
-// /api/inbound/omnileads/events with `event_type=case_share` so we can
-// see which channels move the page.
+// X (logo, not bird), LinkedIn, Facebook, SMS, Email, Copy link.
+// Each click pings /api/inbound/omnileads/events with
+// `event_type=case_share` so we can see which channels move the page.
 
 import { useState } from "react";
+import {
+  Share2,
+  Linkedin,
+  Facebook,
+  Smartphone,
+  Mail,
+  Link2,
+  Check,
+} from "lucide-react";
+import { XIcon } from "./XIcon";
 
 type Props = {
   url: string;
@@ -88,7 +98,8 @@ export default function ShareRow({ url, title, caption }: Props) {
     !!(navigator as Navigator & { share?: unknown }).share;
 
   const baseBtn =
-    "inline-flex items-center justify-center min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors";
+    "inline-flex items-center justify-center gap-2 min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors";
+  const iconClass = "w-4 h-4 flex-shrink-0";
 
   return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 backdrop-blur-sm p-6">
@@ -100,17 +111,43 @@ export default function ShareRow({ url, title, caption }: Props) {
       </p>
       <div className="flex flex-wrap gap-2">
         {hasNative && (
-          <button type="button" onClick={shareNative} className={baseBtn}>
-            Share
+          <button type="button" onClick={shareNative} className={baseBtn} aria-label="Share">
+            <Share2 className={iconClass} />
+            <span>Share</span>
           </button>
         )}
-        <button type="button" onClick={shareTwitter} className={baseBtn}>X / Twitter</button>
-        <button type="button" onClick={shareLinkedIn} className={baseBtn}>LinkedIn</button>
-        <button type="button" onClick={shareFacebook} className={baseBtn}>Facebook</button>
-        <button type="button" onClick={shareSms} className={baseBtn}>SMS</button>
-        <button type="button" onClick={shareEmail} className={baseBtn}>Email</button>
-        <button type="button" onClick={copyLink} className={baseBtn}>
-          {copied ? "Copied ✓" : "Copy link"}
+        <button type="button" onClick={shareTwitter} className={baseBtn} aria-label="Share to X">
+          <XIcon className={iconClass} />
+          <span>X</span>
+        </button>
+        <button type="button" onClick={shareLinkedIn} className={baseBtn} aria-label="Share to LinkedIn">
+          <Linkedin className={iconClass} />
+          <span>LinkedIn</span>
+        </button>
+        <button type="button" onClick={shareFacebook} className={baseBtn} aria-label="Share to Facebook">
+          <Facebook className={iconClass} />
+          <span>Facebook</span>
+        </button>
+        <button type="button" onClick={shareSms} className={baseBtn} aria-label="Share via SMS">
+          <Smartphone className={iconClass} />
+          <span>SMS</span>
+        </button>
+        <button type="button" onClick={shareEmail} className={baseBtn} aria-label="Share via email">
+          <Mail className={iconClass} />
+          <span>Email</span>
+        </button>
+        <button type="button" onClick={copyLink} className={baseBtn} aria-label="Copy link">
+          {copied ? (
+            <>
+              <Check className={iconClass} />
+              <span>Copied</span>
+            </>
+          ) : (
+            <>
+              <Link2 className={iconClass} />
+              <span>Copy link</span>
+            </>
+          )}
         </button>
       </div>
     </div>
