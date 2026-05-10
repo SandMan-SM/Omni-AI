@@ -426,33 +426,29 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
               return (
                 <article
                   key={t.key}
-                  className={`rounded-xl border p-6 bg-zinc-950/40 ${isThis ? "border-amber-400/60" : "border-zinc-800"}`}
+                  className={`relative overflow-hidden rounded-xl border bg-zinc-950/40 ${isThis ? "border-amber-400/60" : "border-zinc-800"}`}
                 >
-                  <span
-                    className="inline-block text-[10px] font-bold tracking-[0.3em] uppercase px-2 py-1 rounded"
-                    style={{ background: t.accent, color: t.fg }}
-                  >
-                    {isThis ? "THIS BUILD" : t.name}
-                  </span>
-                  {/* Title reads as "<tier> | <kind>" on one line. The
-                      kind is dimmed to a hairline tone-shift so the
-                      rank still leads visually but the second half is
-                      legible as the descriptor. */}
-                  <p className="mt-2 text-xl leading-tight" style={{ fontFamily: "Georgia, serif" }}>
-                    {t.name}
-                    <span className="text-zinc-500"> | </span>
-                    <span style={{ color: t.fg }}>{t.kind}</span>
-                  </p>
-                  <p className="mt-2 text-2xl font-semibold tabular-nums">{t.range}</p>
-                  <p className="mt-3 text-sm text-zinc-400 leading-relaxed">{t.desc}</p>
-                  {/* Universal AI-CEO chip — every tier ships with the
-                      autonomous executive layer; gold accent makes it
-                      read as the federation-wide guarantee, not a
-                      tier-4 differentiator. */}
-                  <p className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/[0.06] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-300">
-                    AI CEO layer · included
-                  </p>
-                  <p className="mt-4 text-xs text-zinc-500 italic">{t.fits}</p>
+                  {/* THIS BUILD banner — full-width gold strip across the
+                      top of the active tier card. Replaces the per-card
+                      pill; non-active tiers get no top tag at all. */}
+                  {isThis && (
+                    <div className="border-b border-amber-400/40 bg-gradient-to-r from-amber-400/15 via-amber-400/25 to-amber-400/15 px-6 py-2 text-center text-[11px] font-bold uppercase tracking-[0.32em] text-amber-300">
+                      This Build
+                    </div>
+                  )}
+                  <div className="p-6">
+                    {/* Title reads as "<tier> | <kind>" on one line.
+                        Kind is color-matched to the tier's accent so the
+                        rank ladder reads visually as you scan top-to-bottom. */}
+                    <p className="text-xl leading-tight" style={{ fontFamily: "Georgia, serif" }}>
+                      {t.name}
+                      <span className="text-zinc-500"> | </span>
+                      <span style={{ color: t.fg }}>{t.kind}</span>
+                    </p>
+                    <p className="mt-2 text-2xl font-semibold tabular-nums">{t.range}</p>
+                    <p className="mt-3 text-sm text-zinc-400 leading-relaxed">{t.desc}</p>
+                    <p className="mt-4 text-xs text-zinc-500 italic">{t.fits}</p>
+                  </div>
                 </article>
               );
             })}
