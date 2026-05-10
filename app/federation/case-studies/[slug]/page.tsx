@@ -55,16 +55,24 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   };
 }
 
-// Each tier carries an `agentRole` — the rank-on-the-council that
-// matches what kind of system you'd actually be hiring at this
-// price. Escalates Apprentice → Tactician → Full Stack → Architect
-// the same way the council ladders skill: the higher the tier, the
-// more of the build the agent layer owns.
+// Each tier carries a `kind` — the second half of the title (after
+// the pipe). Reads as "<tier> | <kind>" on the card so the rank
+// ladder is one line: Basic → Advanced → Agentic → Sovereign Empire.
+// Every tier ships an AI CEO layer; that's a federation-wide promise,
+// not a tier-4 differentiator.
 const TIERS = [
-  { name: "Template",         agentRole: "Static Apprentice",  range: "$1.5k – $3.5k", desc: "Squarespace / Wix / Webflow stock theme. No custom code.", fits: "Hobbyists, side projects.",                       accent: "rgba(160,123,255,0.18)", fg: "#a07bff", key: "template" },
-  { name: "Themed CMS",       agentRole: "Themed Tactician",   range: "$5k – $12k",    desc: "WordPress or Shopify with theme customization, basic plugins.",                                                         fits: "Local services, e-commerce starters.",         accent: "rgba(88,200,255,0.16)", fg: "#58c8ff", key: "themed" },
-  { name: "Bespoke Next.js",  agentRole: "Agentic Full Stack", range: "$18k – $25k",   desc: "Custom codebase, custom design system, JSON-LD schema, analytics pipeline.",                                             fits: "Operators, artists, founders, mastermind hosts.", accent: "rgba(251,191,36,0.18)", fg: "#fbbf24", key: "bespoke" },
-  { name: "Federation member", agentRole: "Council Architect", range: "$30k – $80k+",  desc: "Above + federation distribution + AI CEO layer + retained operation.",                                                  fits: "Long-term partners with revenue at stake.",     accent: "rgba(45,220,168,0.18)", fg: "#2ddca8", key: "federation" },
+  { name: "Template",        kind: "Basic Website",     range: "$1.5k – $3.5k", desc: "Squarespace / Wix / Webflow stock theme. No custom code. AI CEO layer included.",                                fits: "Hobbyists, side projects.",                       accent: "rgba(160,123,255,0.18)", fg: "#a07bff", key: "template" },
+  // Themed CMS now carries the emerald-green slot (was sky blue) — green
+  // reads as "growing" / "healthy" which fits the small-business segment
+  // this tier targets, and frees up cyan for the Ultimate Power slot below.
+  { name: "Themed CMS",      kind: "Advanced Website",  range: "$5k – $12k",    desc: "WordPress or Shopify with theme customization, basic plugins. AI CEO layer included.",                                fits: "Local services, e-commerce starters.",            accent: "rgba(45,220,168,0.18)",  fg: "#2ddca8", key: "themed" },
+  { name: "Bespoke Next.js", kind: "Agentic Website",   range: "$18k – $25k",   desc: "Custom codebase, custom design system, JSON-LD schema, analytics pipeline. AI CEO layer included.",                  fits: "Operators, artists, founders, mastermind hosts.", accent: "rgba(251,191,36,0.18)",  fg: "#fbbf24", key: "bespoke" },
+  // Ultimate Power gets the chrome-blue gradient that matches the
+  // Tier 5 / Diamond pill on /details (from-cyan-300 via-white
+  // to-cyan-400). Three-stop gradient with white in the middle is what
+  // gives it the metallic / iridescent read; solid cyan alone would
+  // just look like another colored chip.
+  { name: "Ultimate Power",  kind: "Sovereign Empire",  range: "$30k – $80k+",  desc: "Above + federation distribution + multi-site AI CEO orchestration + retained operation.",                            fits: "Long-term partners with revenue at stake.",       accent: "linear-gradient(135deg, rgba(165,243,252,0.32) 0%, rgba(255,255,255,0.20) 50%, rgba(34,211,238,0.32) 100%)", fg: "#a5f3fc", key: "federation" },
 ];
 
 const STATUS_BADGE: Record<string, { bg: string; fg: string; label: string }> = {
@@ -426,20 +434,24 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
                   >
                     {isThis ? "THIS BUILD" : t.name}
                   </span>
-                  <p className="mt-2 text-xl" style={{ fontFamily: "Georgia, serif" }}>{t.name}</p>
-                  {/* Agent-role subtitle — names the council rank you're
-                      hiring at this price. Color-matched to the tier's
-                      accent so the escalation reads visually:
-                      Apprentice (violet) → Tactician (sky) → Full Stack
-                      (gold, this build's tier) → Architect (emerald). */}
-                  <p
-                    className="mt-1 text-[10px] font-semibold tracking-[0.28em] uppercase"
-                    style={{ color: t.fg }}
-                  >
-                    {t.agentRole}
+                  {/* Title reads as "<tier> | <kind>" on one line. The
+                      kind is dimmed to a hairline tone-shift so the
+                      rank still leads visually but the second half is
+                      legible as the descriptor. */}
+                  <p className="mt-2 text-xl leading-tight" style={{ fontFamily: "Georgia, serif" }}>
+                    {t.name}
+                    <span className="text-zinc-500"> | </span>
+                    <span style={{ color: t.fg }}>{t.kind}</span>
                   </p>
                   <p className="mt-2 text-2xl font-semibold tabular-nums">{t.range}</p>
                   <p className="mt-3 text-sm text-zinc-400 leading-relaxed">{t.desc}</p>
+                  {/* Universal AI-CEO chip — every tier ships with the
+                      autonomous executive layer; gold accent makes it
+                      read as the federation-wide guarantee, not a
+                      tier-4 differentiator. */}
+                  <p className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-amber-400/30 bg-amber-400/[0.06] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-300">
+                    AI CEO layer · included
+                  </p>
                   <p className="mt-4 text-xs text-zinc-500 italic">{t.fits}</p>
                 </article>
               );
@@ -478,11 +490,6 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
               </table>
             </div>
           </div>
-        </section>
-
-        {/* MIDDLE share */}
-        <section className="mx-auto max-w-3xl px-6 py-12">
-          <ShareRow url={pageUrl} title={pageTitle} caption="Share this case study" />
         </section>
 
         {/* CTA */}
