@@ -62,6 +62,16 @@ export function AssetClient({
   scope,
 }: Props) {
   const [copied, setCopied] = useState(false);
+  // Inline toast keyed by platform so every share button gives the
+  // user immediate visible feedback ("Opened X", "Link copied").
+  // Without it desktop clicks felt broken — popup opens in a new tab
+  // the user never sees, or the platform URL is blocked, and the
+  // button just sat there looking inert.
+  const [feedback, setFeedback] = useState<string | null>(null);
+  function flash(msg: string) {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 2200);
+  }
 
   function onPay(target: "full" | "klarna") {
     ping("rene", "pay_intent", target);
@@ -79,56 +89,100 @@ export function AssetClient({
     window.open("https://cal.com/omni-ai/15min", "_blank", "noopener,noreferrer");
   }
 
-  // Share intents. URL is the canonical /asset/development/renelaveau
-  // page so recipients land where they can buy. Each click pings
-  // inbound_rene_events with channel + share_url props.
-  function shareIntent(platform: string) {
+  // Share intents. Every branch fires the inbound analytics ping AND
+  // surfaces visible feedback via flash() so the click never feels
+  // inert. window.open's return value is captured: when a popup is
+  // blocked we fall back to copying the destination URL so the user
+  // still gets a working share link.
+  async function shareIntent(platform: string) {
     ping("rene", "share", platform);
     const title =
       "Build Your Own Agentic Website — recommended by Rene Laveau";
-    if (platform === "native" && typeof navigator !== "undefined" && navigator.share) {
-      navigator.share({ title, url: pageUrl }).catch(() => {});
+    const body = `${title}\n\n${pageUrl}`;
+
+    // open() helper: returns true on success, false if popup-blocked.
+    const openOrFallback = (url: string, label: string) => {
+      const win = window.open(url, "_blank", "noopener,noreferrer");
+      if (!win) {
+        // Popup blocked. Copy the URL so the user can paste it.
+        navigator.clipboard?.writeText(url).catch(() => {});
+        flash(`Popup blocked — ${label} link copied`);
+        return false;
+      }
+      flash(`Opened ${label}`);
+      return true;
+    };
+
+    if (platform === "native") {
+      // navigator.share rejects with an AbortError when the user
+      // closes the share sheet — treat that as a no-op, not an error.
+      if (typeof navigator !== "undefined" && navigator.share) {
+        try {
+          await navigator.share({ title, url: pageUrl });
+          flash("Shared");
+        } catch {
+          /* user dismissed */
+        }
+      }
       return;
     }
     if (platform === "twitter") {
-      window.open(
-        `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(pageUrl)}`,
-        "_blank",
-        "noopener,noreferrer",
+      // x.com canonical (twitter.com still redirects but x.com avoids
+      // the redirect hop and the intent params survive cleanly).
+      openOrFallback(
+        `https://x.com/intent/post?text=${encodeURIComponent(title)}&url=${encodeURIComponent(pageUrl)}`,
+        "X",
       );
       return;
     }
     if (platform === "linkedin") {
-      window.open(
+      openOrFallback(
         `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`,
-        "_blank",
-        "noopener,noreferrer",
+        "LinkedIn",
       );
       return;
     }
     if (platform === "facebook") {
-      window.open(
+      openOrFallback(
         `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(title)}`,
-        "_blank",
-        "noopener,noreferrer",
+        "Facebook",
       );
       return;
     }
     if (platform === "sms") {
-      window.location.href = `sms:?body=${encodeURIComponent(`${title} — ${pageUrl}`)}`;
+      // sms: only opens an app on mobile. Desktop fires the URL but
+      // nothing happens visibly — so we also copy the message body.
+      window.location.href = `sms:?&body=${encodeURIComponent(body)}`;
+      navigator.clipboard?.writeText(body).catch(() => {});
+      flash("Message copied — paste into texts");
       return;
     }
     if (platform === "email") {
-      window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`${title}\n\n${pageUrl}`)}`;
+      // mailto requires a registered default mail handler. Many
+      // desktop users don't have one — open Gmail's web compose as a
+      // fallback in a new tab so the share still works.
+      const subject = encodeURIComponent(title);
+      const encBody = encodeURIComponent(body);
+      const gmail = `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${encBody}`;
+      // Fire mailto first; the browser opens whatever's registered.
+      // The Gmail tab opens in parallel so there's always a working path.
+      try {
+        window.location.href = `mailto:?subject=${subject}&body=${encBody}`;
+      } catch {
+        /* fall through */
+      }
+      window.open(gmail, "_blank", "noopener,noreferrer");
+      flash("Opened email");
       return;
     }
     if (platform === "copy") {
       try {
-        navigator.clipboard.writeText(pageUrl);
+        await navigator.clipboard.writeText(pageUrl);
         setCopied(true);
         setTimeout(() => setCopied(false), 1800);
+        flash("Link copied");
       } catch {
-        /* swallow */
+        flash("Couldn't copy — long-press the URL bar instead");
       }
     }
   }
@@ -508,11 +562,17 @@ export function AssetClient({
                 const iconClass = "w-4 h-4 flex-shrink-0";
                 const baseBtn =
                   "inline-flex items-center justify-center gap-2 min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors";
-                // Native share intent only renders when navigator.share
-                // exists (mobile + macOS Safari). On desktop the row
-                // just starts with X. Facebook lives between LinkedIn
-                // and SMS — was missing from the prior version.
+                // Native share + SMS only make sense on real mobile.
+                // Desktop Chrome exposes navigator.share but the macOS
+                // share sheet is underwhelming, and `sms:` no-ops
+                // entirely on desktop — both buttons looked broken.
+                // Gate on a coarse-pointer media query, which true-positives
+                // on phones/tablets and skips desktops + laptops.
+                const isTouch =
+                  typeof window !== "undefined" &&
+                  window.matchMedia?.("(pointer: coarse)").matches;
                 const hasNative =
+                  isTouch &&
                   typeof navigator !== "undefined" &&
                   !!(navigator as Navigator & { share?: unknown }).share;
                 return (
@@ -558,15 +618,17 @@ export function AssetClient({
                       <Facebook className={iconClass} />
                       <span>Facebook</span>
                     </button>
-                    <button
-                      type="button"
-                      onClick={() => shareIntent("sms")}
-                      className={baseBtn}
-                      aria-label="Share via SMS"
-                    >
-                      <Smartphone className={iconClass} />
-                      <span>SMS</span>
-                    </button>
+                    {isTouch && (
+                      <button
+                        type="button"
+                        onClick={() => shareIntent("sms")}
+                        className={baseBtn}
+                        aria-label="Share via SMS"
+                      >
+                        <Smartphone className={iconClass} />
+                        <span>SMS</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => shareIntent("email")}
@@ -598,6 +660,17 @@ export function AssetClient({
                 );
               })()}
             </div>
+            {/* Live feedback so every click registers visually —
+                otherwise a working share that opens in a background
+                tab feels like the button did nothing. */}
+            <p
+              className="mt-3 text-xs text-amber-300 transition-opacity"
+              role="status"
+              aria-live="polite"
+              style={{ opacity: feedback ? 1 : 0 }}
+            >
+              {feedback ?? " "}
+            </p>
           </div>
         </div>
       </section>
