@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
 import { authFetch } from '@/lib/auth';
+import { loadBusinessByName } from '@/lib/dashboard-businesses';
 import {
   ArrowLeft, DollarSign, RefreshCw,
   Trophy, Target, ArrowRight, AlertCircle, CheckCircle2,
@@ -54,7 +55,7 @@ export default function AffiliatePipelinePage() {
   };
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').eq('name', 'Omni AI').maybeSingle().then(({ data }) => {
+    loadBusinessByName('Omni AI').then(({ data }) => {
       if (data) setOmniBiz(data);
     });
   }, []);

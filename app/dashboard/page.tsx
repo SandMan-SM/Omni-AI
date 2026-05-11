@@ -26,6 +26,7 @@ import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AgiAdminPanel } from "@/components/agi/AgiAdminPanel";
 import { supabase } from "@/lib/agi-supabase";
 import { authFetch } from "@/lib/auth";
+import { loadBusinesses } from "@/lib/dashboard-businesses";
 
 // Code-split the two heaviest tabs so non-admin / non-sponsor users don't
 // download them. CommandCenter is ~673 LOC + its own admin query stack;
@@ -169,12 +170,14 @@ export default function Dashboard() {
       // doesn't expose it cheaply.
       let url = '/api/agi/campaigns';
       if (clientWorkspaceName) {
-        const { data: biz } = await supabase
-          .from('omni_businesses')
-          .select('id')
-          .or(`slug.eq.${clientWorkspaceName},name.ilike.${clientWorkspaceName}`)
-          .maybeSingle();
-        if (biz?.id) url += `?business_id=${biz.id}`;
+        // omni_businesses is RLS-locked to service_role; resolve via the
+        // server endpoint and match locally on slug/name.
+        const { data: bizs } = await loadBusinesses();
+        const target = bizs.find(b =>
+          (b.slug ?? '').toLowerCase() === clientWorkspaceName ||
+          (b.name ?? '').toLowerCase() === clientWorkspaceName,
+        );
+        if (target?.id) url += `?business_id=${target.id}`;
       }
       const res = await fetch(url, { headers: authHeaders });
       return res.json();
@@ -291,9 +294,7 @@ export default function Dashboard() {
     if (!clientWorkspaceName) return;
     let cancelled = false;
     (async () => {
-      const { data: biz } = await supabase
-        .from("omni_businesses")
-        .select("id,slug,name");
+      const { data: biz } = await loadBusinesses();
       const target = biz?.find(
         (b) => b.slug?.toLowerCase() === clientWorkspaceName ||
                b.name?.toLowerCase() === clientWorkspaceName,

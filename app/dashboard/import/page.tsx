@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import { ArrowLeft, Upload, FileText, ChevronDown, CheckCircle2, AlertCircle, Sparkles } from 'lucide-react';
 
@@ -57,7 +58,7 @@ export default function ImportPage() {
   const [result, setResult] = useState<{ ok: boolean; msg: string } | null>(null);
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
+    loadBusinesses().then(({ data }) => {
       if (!data?.length) return;
       setBusinesses(data);
       // Honor the pinned workspace so client viewers (Sammy, Jaime, Brent,

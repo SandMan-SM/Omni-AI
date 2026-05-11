@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import { ArrowLeft, ChevronDown, Calendar, Clock, Mail, Phone, RefreshCw, Copy, ExternalLink, X, Edit3, CalendarX, RotateCcw, CheckCircle2 } from 'lucide-react';
 
@@ -36,7 +37,7 @@ export default function MeetingsPage() {
   const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 2000); };
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
+    loadBusinesses().then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
         // Honor global active-business switcher from /assets if set

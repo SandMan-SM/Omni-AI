@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, Bot, Play, Pause, RefreshCw,
@@ -69,7 +70,7 @@ export default function AutopilotPage() {
   };
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
+    loadBusinesses().then(({ data }) => {
       if (!data?.length) return;
       setBusinesses(data);
       let initial: any = null;

@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, Building2, Sparkles, Users, MapPin, Calendar,
@@ -40,7 +41,7 @@ export default function CompaniesPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
+    loadBusinesses().then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
         const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;

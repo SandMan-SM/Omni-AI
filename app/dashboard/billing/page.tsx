@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, CreditCard, ExternalLink, CheckCircle2,
@@ -29,7 +30,7 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
+    loadBusinesses().then(({ data }) => {
       if (!data?.length) return;
       setBusinesses(data as BillingBiz[]);
       // Honor the pinned workspace so client viewers (Sammy, Jaime, etc.)

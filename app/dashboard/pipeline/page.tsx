@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
+import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, TrendingUp, DollarSign, RefreshCw,
@@ -84,7 +85,7 @@ export default function PipelinePage() {
   };
 
   useEffect(() => {
-    supabase.from('omni_businesses').select('*').order('display_order', { ascending: true, nullsFirst: false }).order('name').then(({ data }) => {
+    loadBusinesses().then(({ data }) => {
       if (data?.length) {
         setBusinesses(data);
         // Default to Omni AI when nothing is stored; otherwise honor whatever
