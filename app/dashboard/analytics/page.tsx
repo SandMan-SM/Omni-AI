@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, BarChart3, Users, Send, Eye, MousePointerClick,
   CheckCircle2, TrendingUp, Award, Target, Mail
@@ -82,12 +83,17 @@ export default function AnalyticsPage() {
   useEffect(() => {
     if (!selectedBiz) return;
     (async () => {
-      const [{ data: leads }, { data: assets }] = await Promise.all([
-        supabase.from('omni_leads_generated').select('status, source, score').eq('business_id', selectedBiz.id),
+      // omni_leads_generated is RLS-locked to service_role; the browser
+      // anon client silently returns zero rows. Pull leads via the server
+      // endpoint instead and keep outreach assets on the direct client
+      // (no equivalent RLS lock there).
+      const leadsUrl = `/api/dashboard/leads?business_id=${encodeURIComponent(selectedBiz.id)}&limit=5000`;
+      const [leadsRes, { data: assets }] = await Promise.all([
+        authFetch(leadsUrl).then(r => (r.ok ? r.json() : { leads: [] })).catch(() => ({ leads: [] })),
         supabase.from('omni_outreach_assets').select('status, asset_type').eq('business_id', selectedBiz.id),
       ]);
 
-      const leadsArr = leads ?? [];
+      const leadsArr = ((leadsRes?.leads as Array<{ status: string; source: string; score: number }> | undefined) ?? []);
       const assetsArr = assets ?? [];
 
       const statusCounts = leadsArr.reduce<Record<string, number>>((acc, l) => {

@@ -25,6 +25,7 @@ import { useProfile } from "@/hooks/use-profile";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AgiAdminPanel } from "@/components/agi/AgiAdminPanel";
 import { supabase } from "@/lib/agi-supabase";
+import { authFetch } from "@/lib/auth";
 
 // Code-split the two heaviest tabs so non-admin / non-sponsor users don't
 // download them. CommandCenter is ~673 LOC + its own admin query stack;
@@ -315,29 +316,31 @@ export default function Dashboard() {
         }
       }
       const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
-      const [
-        { count: total },
-        { count: thisWeek },
-        { count: messagesSent },
-        { count: converted },
-        { data: wonLeads },
-      ] = await Promise.all([
-        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id),
-        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id).gte("created_at", sevenDaysAgo),
+      // omni_leads_generated is RLS-locked to service_role; the four
+      // separate count(*) queries from the anon client used to return 0
+      // every time. Fetch the workspace's leads once via the server
+      // endpoint and compute all four counts + revenue client-side.
+      const leadsUrl = `/api/dashboard/leads?business_id=${encodeURIComponent(target.id)}&limit=5000`;
+      const [leadsRes, { count: messagesSent }] = await Promise.all([
+        authFetch(leadsUrl).then(r => (r.ok ? r.json() : { leads: [] })).catch(() => ({ leads: [] })),
         supabase.from("omni_outreach_assets").select("*", { count: "exact", head: true }).eq("business_id", target.id).in("status", ["sent", "opened", "clicked", "replied"]),
-        supabase.from("omni_leads_generated").select("*", { count: "exact", head: true }).eq("business_id", target.id).eq("status", "converted"),
-        supabase.from("omni_leads_generated").select("deal_value").eq("business_id", target.id).eq("status", "converted"),
       ]);
       if (cancelled) return;
-      const revenueCents = (wonLeads ?? []).reduce(
+      type LeadRow = { status?: string; created_at?: string; deal_value?: number };
+      const leadsArr = ((leadsRes?.leads as LeadRow[] | undefined) ?? []);
+      const total = leadsArr.length;
+      const thisWeek = leadsArr.filter(l => (l.created_at ?? "") >= sevenDaysAgo).length;
+      const convertedLeads = leadsArr.filter(l => l.status === "converted");
+      const converted = convertedLeads.length;
+      const revenueCents = convertedLeads.reduce(
         (s, l) => s + (typeof l.deal_value === "number" ? l.deal_value : 0),
         0,
       );
       setCpsLeadStats({
-        total: total ?? 0,
-        thisWeek: thisWeek ?? 0,
+        total,
+        thisWeek,
         messagesSent: messagesSent ?? 0,
-        converted: converted ?? 0,
+        converted,
         revenueCents,
       });
     })();

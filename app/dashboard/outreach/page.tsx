@@ -394,14 +394,16 @@ export default function OutreachPage() {
 
   const loadLeads = useCallback(async (bizId: string) => {
     setLeads([]);
-    const { data } = await supabase
-      .from('omni_leads_generated')
-      .select('*')
-      .eq('business_id', bizId)
-      .order('score', { ascending: false });
+    // RLS on omni_leads_generated blocks the browser anon client — go
+    // through the service-role-backed server endpoint.
+    const url = `/api/dashboard/leads?business_id=${encodeURIComponent(bizId)}&order_by=score&limit=5000`;
+    const res = await authFetch(url)
+      .then(r => (r.ok ? r.json() : { leads: [] }))
+      .catch(() => ({ leads: [] }));
     if (selectedBizRef.current !== bizId) return;
-    setLeads(data ?? []);
-    if (data?.length && !selectedLeadId) setSelectedLeadId(data[0].id);
+    const data = ((res?.leads as Lead[] | undefined) ?? []);
+    setLeads(data);
+    if (data.length && !selectedLeadId) setSelectedLeadId(data[0].id);
   }, [selectedLeadId]);
 
   useEffect(() => {

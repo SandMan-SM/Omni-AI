@@ -127,14 +127,14 @@ export default function PipelinePage() {
     // otherwise a slow LTB query could overwrite freshly-loaded Prime IV data.
     const requestedBizId = selectedBiz.id;
     setLeads([]);
-    const { data } = await supabase
-      .from('omni_leads_generated')
-      .select('*')
-      .eq('business_id', requestedBizId)
-      .eq('pipeline_type', 'sales')
-      .order('score', { ascending: false });
+    // omni_leads_generated is RLS-locked to service_role only; the browser
+    // anon client returns 0 rows silently. Use the server endpoint instead.
+    const url = `/api/dashboard/leads?business_id=${encodeURIComponent(requestedBizId)}&pipeline_type=sales&order_by=score&limit=5000`;
+    const res = await authFetch(url)
+      .then(r => (r.ok ? r.json() : { leads: [] }))
+      .catch(() => ({ leads: [] }));
     if (selectedBizRef.current !== requestedBizId) return;
-    setLeads((data ?? []) as DealLead[]);
+    setLeads(((res?.leads as DealLead[] | undefined) ?? []));
   }, [selectedBiz]);
 
   useEffect(() => { load(); }, [load]);

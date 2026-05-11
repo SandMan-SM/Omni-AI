@@ -642,15 +642,21 @@ export default function DashboardPage() {
     activeBizKeyRef.current = requestedKey;
     setLeads([]);
     setCampaigns([]);
-    const leadsBase = () => supabase.from('omni_leads_generated').select('*').order('created_at', { ascending: false });
+    // Leads come from the server endpoint (service-role) because
+    // omni_leads_generated has a service_role_all RLS policy that blocks
+    // the browser anon client — the previous direct .from('omni_leads_generated')
+    // call silently returned zero rows on every request. Campaigns table
+    // is not RLS-locked the same way, so it stays on the browser client
+    // for now.
+    const leadsUrl = `/api/dashboard/leads?business_id=${encodeURIComponent(bizId ?? 'all')}&limit=5000`;
     const campsBase = () => supabase.from('omni_lead_campaigns').select('*');
-    const [{ data: leadsData }, { data: campData }] = await Promise.all([
-      bizId ? leadsBase().eq('business_id', bizId) : leadsBase(),
+    const [leadsRes, { data: campData }] = await Promise.all([
+      authFetch(leadsUrl).then(r => (r.ok ? r.json() : { leads: [] })).catch(() => ({ leads: [] })),
       bizId ? campsBase().eq('business_id', bizId) : campsBase(),
     ]);
     // If the user switched workspaces during the await, drop this response.
     if (activeBizKeyRef.current !== requestedKey) return;
-    setLeads(leadsData ?? []);
+    setLeads((leadsRes?.leads as Lead[] | undefined) ?? []);
     setCampaigns(campData ?? []);
   }, []);
 

@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Lead } from '@/lib/agi-supabase';
+import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, DollarSign, RefreshCw,
   Trophy, Target, ArrowRight, AlertCircle, CheckCircle2,
@@ -60,13 +61,13 @@ export default function AffiliatePipelinePage() {
 
   const load = useCallback(async () => {
     if (!omniBiz) return;
-    const { data } = await supabase
-      .from('omni_leads_generated')
-      .select('*')
-      .eq('business_id', omniBiz.id)
-      .eq('pipeline_type', PIPELINE_TYPE)
-      .order('score', { ascending: false });
-    setLeads((data ?? []) as DealLead[]);
+    // RLS on omni_leads_generated locks the browser anon client out; go
+    // through the server endpoint that uses the service-role key.
+    const url = `/api/dashboard/leads?business_id=${encodeURIComponent(omniBiz.id)}&pipeline_type=${PIPELINE_TYPE}&order_by=score&limit=5000`;
+    const res = await authFetch(url)
+      .then(r => (r.ok ? r.json() : { leads: [] }))
+      .catch(() => ({ leads: [] }));
+    setLeads(((res?.leads as DealLead[] | undefined) ?? []));
   }, [omniBiz]);
 
   useEffect(() => { load(); }, [load]);
