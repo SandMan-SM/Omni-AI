@@ -2,25 +2,25 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 
-// /dashboard is intentionally NOT in protectedRoutes any more.
+// Neither /dashboard NOR /admin is in protectedRoutes any more.
 //
 // The middleware checks supabase.auth.getUser() (cookie session).
 // The actual sign-in flow that ships in production goes through the
 // `auth-login` Supabase edge function and stores a custom omni_token
 // in localStorage — middleware can't see localStorage, so it always
 // thought signed-in users were anonymous and redirected them to
-// /?signin=true. That redirect was the entire post-signin loop the
-// user kept hitting: log in → modal closes → router.push('/dashboard')
-// → middleware 307s back to /?signin=true → URL watcher reopens
-// modal → "still broken on the homepage."
+// /?signin=true. That redirect was the entire post-signin loop on
+// /dashboard, and it ALSO blocked signed-in admins from reaching
+// /admin (Sita typed /admin and got bounced to the sign-in modal even
+// though she was already signed in as $Mafi).
 //
-// The dashboard page (app/dashboard/page.tsx) already does its own
-// client-side auth check via useAuth().user (redirects to '/' after
-// 500ms if no user). That covers the same surface without colliding
-// with the localStorage token. Once the auth path is unified onto
-// real Supabase cookie sessions we can put /dashboard back here.
-const protectedRoutes = ['/admin'];
-const adminOnlyRoutes = ['/admin'];
+// Both /dashboard and every /admin/* page already do their own
+// client-side auth check via useAuth().user + useProfile.isAdmin
+// (redirects to '/' or '/dashboard' depending on role). Once the
+// auth path is unified onto real Supabase cookie sessions we can
+// put these back here.
+const protectedRoutes: string[] = [];
+const adminOnlyRoutes: string[] = [];
 const publicRoutes = ['/', '/details', '/interlinked', '/campaigns', '/sponsor', '/join', '/arena'];
 
 export async function middleware(request: NextRequest) {
