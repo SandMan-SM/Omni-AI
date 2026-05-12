@@ -95,12 +95,25 @@ interface DemoBooking {
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
   const { profile, profileLoading, isAdmin, isSponsor, tier, onboardingComplete, displayName, fetchProfile } = useProfile();
-  // Tighter gate than isAdmin — only the owner ($Mafi / sitanim8@gmail.com)
-  // sees the Agentic Assets button.
-  const isMafi = !!profile && (
-    (profile.name ?? '').trim() === '$Mafi' ||
-    (profile.email ?? '').toLowerCase() === 'sitanim8@gmail.com'
-  );
+  // Recognize the owner ($Mafi / sitanim8@gmail.com) across every source
+  // the auth + profile rows expose — the prior check only looked at
+  // profile.name/email, which is null for users whose row identifies
+  // them by username only, so the Manage Assets tile silently hid from
+  // Sita on the production dashboard.
+  const isMafi =
+    [
+      (profile?.name ?? '').trim(),
+      (profile?.username ?? '').trim(),
+      (user?.username ?? '').trim(),
+    ].some((v) => v === '$Mafi') ||
+    [profile?.email, user?.email]
+      .map((v) => (v ?? '').toLowerCase())
+      .includes('sitanim8@gmail.com');
+  // Manage Assets surfaces for the owner AND any platform admin, since
+  // admins legitimately need access to prompts, models, automations,
+  // and secrets. Owner-only used to read narrower than the request "add
+  // the manage assets to the admin dashboard".
+  const canManageAssets = isMafi || isAdmin;
   const router = useRouter();
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
@@ -510,9 +523,11 @@ export default function Dashboard() {
           </div>
         </Link>
 
-        {/* Agentic Assets shortcut — owner-only ($Mafi). Sits above the
-            agentic dashboard so it's the first thing the owner sees. */}
-        {isMafi && (
+        {/* Manage Assets shortcut — surfaces for the owner AND any
+            platform admin. Sits above the agentic dashboard so the
+            controls (prompts / models / automations / secrets) are
+            one click away from the command center. */}
+        {canManageAssets && (
           <Link
             href="/assets"
             data-testid="link-agentic-assets"
@@ -539,8 +554,8 @@ export default function Dashboard() {
                 <Sparkles size={18} color="#fff" />
               </div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Agentic Assets</div>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Owner-only · prompts, models, automations, secrets</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#fff' }}>Manage Assets</div>
+                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Prompts, models, automations, secrets</div>
               </div>
             </div>
             <ArrowRight size={18} color="#a78bfa" />
