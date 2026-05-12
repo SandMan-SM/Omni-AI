@@ -6,13 +6,10 @@
 //   4. Categorize+draft any new replies
 // All actions logged to omni_autopilot_log.
 
-import { createClient } from '@supabase/supabase-js';
+import { createLazyAdminClient } from '@/lib/supabase/admin';
 import { generateOutreachAssets } from './outreach';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createLazyAdminClient();
 
 type AutopilotConfig = {
   business_id: string;

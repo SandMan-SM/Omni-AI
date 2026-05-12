@@ -5,13 +5,10 @@
 // - 1 voicemail script (15 seconds spoken)
 
 import Anthropic from '@anthropic-ai/sdk';
-import { createClient } from '@supabase/supabase-js';
+import { createLazyAdminClient } from '@/lib/supabase/admin';
 import type { Lead, Business } from '../agi-supabase';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createLazyAdminClient();
 
 export type CompanyIntel = {
   name: string | null;

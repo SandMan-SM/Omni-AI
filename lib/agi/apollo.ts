@@ -2,12 +2,9 @@
 // Apollo free plan blocks broad search but allows enrichment (1 credit each).
 // We always check credit budget before spending.
 
-import { createClient } from '@supabase/supabase-js';
+import { createLazyAdminClient } from '@/lib/supabase/admin';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createLazyAdminClient();
 
 export type EnrichInput = {
   business_id: string;

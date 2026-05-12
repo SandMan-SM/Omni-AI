@@ -1,11 +1,13 @@
-// Webhook delivery: fan out events to all subscribed user webhooks for a business
-import { createClient } from '@supabase/supabase-js';
+// Webhook delivery: fan out events to all subscribed user webhooks for a business.
+//
+// SECURITY: this module reads/writes `omni_user_webhooks` which contains
+// HMAC `secret` columns. We deliberately use the service-role admin client
+// (not anon) so PostgREST RLS can be enabled on the table without breaking
+// fan-out — Round-4 audit fix for sensitive_columns_exposed advisory.
+import { createLazyAdminClient } from '@/lib/supabase/admin';
 import { createHmac } from 'crypto';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createLazyAdminClient();
 
 export type WebhookEvent =
   | 'lead.created' | 'lead.updated' | 'lead.qualified' | 'lead.won' | 'lead.lost'

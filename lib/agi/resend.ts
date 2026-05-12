@@ -2,7 +2,7 @@
 // Wraps the Resend SDK and updates outreach asset status in Supabase after send.
 
 import { Resend } from 'resend';
-import { createAdminClient } from '@/lib/supabase/admin';
+import { createLazyAdminClient } from '@/lib/supabase/admin';
 import { notifyReply } from './telegram';
 
 // Lazy-instantiate so we don't throw at module load when key is missing.
@@ -13,7 +13,7 @@ function getResend(): Resend | null {
   return _resend;
 }
 
-const supabase = createAdminClient();
+const supabase = createLazyAdminClient();
 
 export type SendInput = {
   asset_id: string;
