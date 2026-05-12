@@ -143,8 +143,10 @@ export default function PilotPage() {
           </li>
           <li style={{ marginBottom: 10 }}>
             <strong style={{ color: '#fff' }}>Sponsor brokerage with revenue share</strong> &mdash;
-            outside brands pitched on sponsoring your property. Apollo discovery + operator approval
-            per row. Revenue split shown on every brand-deal page, tracked at the lead level.
+            we pull more eyeballs into your funnel through SEO, geo-targeting, and paid ads, then
+            broker sponsorships from the brands those readers belong to. Every candidate is gated
+            by operator approval before any pitch leaves the system. Revenue split is shown on
+            every brand-deal page and tracked at the lead level.
           </li>
           <li style={{ marginBottom: 10 }}>
             <strong style={{ color: '#fff' }}>Personalized, deliverability-safe email</strong> from a
@@ -215,9 +217,10 @@ export default function PilotPage() {
             Letters first, because it is daily; the others follow.
           </li>
           <li style={{ marginBottom: 12 }}>
-            <strong style={{ color: '#fff' }}>Next.</strong> Brand-deal funnels light up. Apollo
-            discovery drops candidate sponsors into a queue; nothing leaves the system without
-            operator approval per row. Revenue share is visible on every brand-deal page.
+            <strong style={{ color: '#fff' }}>Next.</strong> Brand-deal funnels light up. We grow
+            the audience through SEO, geo-targeting, and paid ads, then broker sponsorships from
+            the brands those readers belong to. Nothing leaves the system without operator approval
+            per row. Revenue share is visible on every brand-deal page.
           </li>
           <li style={{ marginBottom: 12 }}>
             <strong style={{ color: '#fff' }}>Then.</strong> Cross-promotion gets agentic — the
