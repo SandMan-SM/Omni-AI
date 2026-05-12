@@ -158,7 +158,7 @@ export default function PilotPage() {
 
         <p style={{ color: '#cfd3e0', margin: '0 0 20px' }}>
           We are not guessing at this. The outcome is already real to us — a federation of small
-          businesses, each one fully alive in its own voice, all of them carrying each other's
+          businesses, each one fully alive in its own voice, all of them carrying each other&rsquo;s
           attention without anyone having to ask. That picture is fixed. The work of the next
           quarter is not to imagine the destination; it is to remove, week by week, the systems
           between us and the version of this network that already exists.
