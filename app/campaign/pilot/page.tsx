@@ -54,7 +54,7 @@ export default function PilotPage() {
       <article
         style={{
           position: 'relative',
-          maxWidth: 720,
+          maxWidth: 780,
           margin: '0 auto',
           padding: '96px 28px 120px',
           lineHeight: 1.75,
@@ -93,16 +93,16 @@ export default function PilotPage() {
           }}
         >
           That wave was a test.{' '}
-          <span style={{ color: '#fbbf24' }}>Here is the plan.</span>
+          <span style={{ color: '#fbbf24' }}>Here is what you actually get.</span>
         </h1>
 
         <p style={{ color: '#cfd3e0', margin: '0 0 28px' }}>
-          You just received the first dispatch from a brand-new federation sending substrate.
-          The copy was placeholder. The button pointed at a page that does not exist yet. That
-          is intentional. What we needed to know was simple: can ten domains, freshly DKIM-signed,
-          send personalized mail to the federation roster in one motion, with one-click
-          unsubscribe, with bounce + complaint suppression wired before the first byte leaves the
-          server. The answer came back yes. Now we build the part that matters.
+          You are inside the federation. That means starting now your business is featured
+          across <strong style={{ color: '#fff' }}>ten local Utah websites</strong>, mentioned in
+          <strong style={{ color: '#fff' }}> every single newsletter we publish</strong>, and
+          surfaced across <strong style={{ color: '#fff' }}>every social channel we operate</strong>.
+          One operator, one agentic infrastructure, ten outbound surfaces &mdash; pointed at your
+          brand on rotation, with attribution tracked back to the lead, the booking, the close.
         </p>
 
         <h2
@@ -114,34 +114,47 @@ export default function PilotPage() {
             color: '#fff',
           }}
         >
-          What is actually being built
+          What you get, plainly
         </h2>
 
-        <p style={{ color: '#cfd3e0', margin: '0 0 20px' }}>
-          Ten verified domains. One operating system. Each domain you own — Sacred Letters,
-          Imperium Editorial, Love Thy Barber, Beehive Biz Pulse, Wasatch Post, Utah Main Street,
-          Leifson Built, Youngs Cabinet, Alira Care, Psych &amp; Custody Evaluations — is now an
-          arm of a single agentic infrastructure that:
-        </p>
         <ul style={{ color: '#cfd3e0', paddingLeft: 22, margin: '0 0 28px' }}>
           <li style={{ marginBottom: 10 }}>
-            Sends personalized, deliverability-safe email from a real human-named sender on the
-            right domain to the audience that asked to hear from it.
+            <strong style={{ color: '#fff' }}>Feature placement across 10 Utah-rooted properties</strong>{' '}
+            &mdash; Sacred Letters (renelaveau.com), Imperium Editorial, Love Thy Barber, Beehive Biz
+            Pulse, The Wasatch Post, Utah Main Street, Leifson Built, Youngs Cabinet, Alira Care, and
+            Psych &amp; Custody Evaluations. Cross-promo blocks on each one rotate your brand into view
+            of every visitor.
           </li>
           <li style={{ marginBottom: 10 }}>
-            Hosts a product landing page per offer at <code style={codeStyle}>/p/&lt;brand&gt;/&lt;slug&gt;</code>{' '}
-            so every send has somewhere honest to land.
+            <strong style={{ color: '#fff' }}>Inclusion in every newsletter</strong> we ship across
+            the federation &mdash; daily Wasatch Front briefings, Sacred Letters, small-business
+            spotlights, expert columns. Your business shows up in the rotation, addressed to readers
+            who already opted in.
           </li>
           <li style={{ marginBottom: 10 }}>
-            Holds a brand-deal funnel for outside sponsors — every approved prospect, no purchased
-            lists, revenue split tracked at the row level.
+            <strong style={{ color: '#fff' }}>Coverage across every social channel</strong> we operate
+            &mdash; Instagram, Facebook, X, LinkedIn, TikTok &mdash; coordinated from one Pantheon
+            decision engine that scores what converts and re-balances the spotlight nightly.
           </li>
           <li style={{ marginBottom: 10 }}>
-            Tracks opens, clicks, bounces, complaints, unsubs per send. Auto-pauses any domain
-            that crosses the 5% bad-event threshold.
+            <strong style={{ color: '#fff' }}>Your own product + brand-deal landing page</strong> on
+            omnileadsagi.com at <code style={codeStyle}>/p/&lt;your-brand&gt;/&lt;offer&gt;</code> &mdash;
+            real CTA, real Stripe/booking link behind it, real numbers on the page.
           </li>
           <li style={{ marginBottom: 10 }}>
-            Logs every dispatch to the agentic dashboard so the operator sees one stream, not ten.
+            <strong style={{ color: '#fff' }}>Sponsor brokerage with revenue share</strong> &mdash;
+            outside brands pitched on sponsoring your property. Apollo discovery + operator approval
+            per row. Revenue split shown on every brand-deal page, tracked at the lead level.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong style={{ color: '#fff' }}>Personalized, deliverability-safe email</strong> from a
+            real human-named sender on a DKIM-aligned domain. One-click unsub, bounce + complaint
+            auto-suppression wired before the first byte leaves the server.
+          </li>
+          <li style={{ marginBottom: 10 }}>
+            <strong style={{ color: '#fff' }}>Everything tracked in one agentic dashboard</strong> &mdash;
+            opens, clicks, bounces, unsubs, sponsor approvals, revenue, attribution. One operator sees
+            one stream, not ten.
           </li>
         </ul>
 
