@@ -504,6 +504,36 @@ export default function Dashboard() {
           </div>
         </Link>
 
+        {/* Federation Marketing — admin-only console for owner-network +
+            brand-deal campaigns across the 10 verified Resend domains. */}
+        {isAdmin && (
+          <Link
+            href="/dashboard/marketing"
+            className="block group"
+            data-testid="banner-federation-marketing"
+          >
+            <div className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-blue-500/10 hover:border-amber-400/60 transition-all p-5 sm:p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-500/20 border border-amber-400/30 text-[10px] font-bold uppercase tracking-wider text-amber-300">
+                      <Mail className="w-3 h-3" /> Federation Marketing
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-400">10 domains</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">
+                    Owner-network newsletters · brand-deal funnels
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                    Console for the 10 verified Resend domains. Enqueue, run, approve sponsor prospects.
+                  </p>
+                </div>
+                <ArrowRight className="w-6 h-6 text-amber-400 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+              </div>
+            </div>
+          </Link>
+        )}
+
         {/* Omni AI Admin Panel — tabbed dashboard. Each tab swaps content
             in-place via dynamic import; no page navigation.
             CPS users see the agentic dashboard scoped to their workspace

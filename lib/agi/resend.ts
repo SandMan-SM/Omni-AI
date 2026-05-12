@@ -2,7 +2,7 @@
 // Wraps the Resend SDK and updates outreach asset status in Supabase after send.
 
 import { Resend } from 'resend';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { notifyReply } from './telegram';
 
 // Lazy-instantiate so we don't throw at module load when key is missing.
@@ -13,10 +13,7 @@ function getResend(): Resend | null {
   return _resend;
 }
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 export type SendInput = {
   asset_id: string;
@@ -137,6 +134,65 @@ export async function handleResendWebhook(event: {
 }) {
   const messageId = event.data.email_id;
   if (!messageId) return;
+
+  // ── Federation Marketing System mirror ─────────────────────────────
+  // marketing_sends.resend_id is the same Resend message id, so every
+  // event also updates the matching row there. Idempotent (a no-op if
+  // resend_id doesn't match any row, which is the normal case for
+  // omni_outreach_assets-only sends).
+  const marketingFields: Record<string, string> = {};
+  switch (event.type) {
+    case 'email.opened':
+      marketingFields.opened_at = new Date().toISOString();
+      break;
+    case 'email.clicked':
+      marketingFields.clicked_at = new Date().toISOString();
+      break;
+    case 'email.bounced':
+      marketingFields.bounced_at = new Date().toISOString();
+      break;
+    case 'email.complained':
+      marketingFields.complained_at = new Date().toISOString();
+      break;
+  }
+  if (Object.keys(marketingFields).length > 0) {
+    await supabase
+      .from('marketing_sends')
+      .update(marketingFields)
+      .eq('resend_id', messageId);
+    // Mirror onto the universal email_sends log too. opened_at /
+    // clicked_at columns exist on both tables; bounced/complained
+    // don't, so they only land on marketing_sends.
+    const eFields: Record<string, string> = {};
+    if (marketingFields.opened_at) eFields.opened_at = marketingFields.opened_at;
+    if (marketingFields.clicked_at) eFields.clicked_at = marketingFields.clicked_at;
+    if (Object.keys(eFields).length > 0) {
+      await supabase.from('email_sends').update(eFields).eq('resend_id', messageId);
+    }
+  }
+  // On bounce/complaint, also add a global suppression so any future
+  // campaign skips this address. Recipient lookup goes through the
+  // marketing_sends row (separate from omni_outreach_assets path below).
+  if (event.type === 'email.bounced' || event.type === 'email.complained') {
+    const { data: ms } = await supabase
+      .from('marketing_sends')
+      .select('recipient_email')
+      .eq('resend_id', messageId)
+      .single();
+    if (ms?.recipient_email) {
+      await supabase
+        .from('omni_suppressions')
+        .upsert(
+          {
+            business_id: null,
+            email: ms.recipient_email.toLowerCase(),
+            reason: event.type === 'email.bounced' ? 'bounce' : 'spam_complaint',
+            notes: 'federation-marketing-auto',
+          },
+          { onConflict: 'business_id,email', ignoreDuplicates: true },
+        );
+    }
+  }
 
   const updates: Record<string, string> = {};
   // Only "opened" advances the status; "clicked" alone doesn't transition

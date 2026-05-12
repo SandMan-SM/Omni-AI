@@ -105,10 +105,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     slug: string;
     published_at: string | null;
   }[] = [];
+  let marketingLandingRows: {
+    slug: string;
+    business_slug: string;
+    created_at: string | null;
+  }[] = [];
 
   try {
     const supabase = createAdminClient();
-    const [landingRes, newsletterRes] = await Promise.all([
+    const [landingRes, newsletterRes, marketingRes] = await Promise.all([
       supabase
         .from("landing_pages")
         .select("slug, date")
@@ -124,9 +129,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         .not("published_at", "is", null)
         .order("published_at", { ascending: false })
         .limit(5000),
+      // Federation Marketing System landings — every published row gets a
+      // /p/<business_slug>/<slug> entry.
+      supabase
+        .from("marketing_landings")
+        .select("slug, business_slug, created_at")
+        .eq("status", "published")
+        .order("created_at", { ascending: false })
+        .limit(5000),
     ]);
     if (!landingRes.error && landingRes.data) landingRows = landingRes.data;
     if (!newsletterRes.error && newsletterRes.data) newsletterRows = newsletterRes.data;
+    if (!marketingRes.error && marketingRes.data) marketingLandingRows = marketingRes.data;
   } catch {
     // Swallow — static sitemap still returns.
   }
@@ -151,5 +165,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
 
-  return [...staticPages, ...comparisonPages, ...landingPages, ...newsletterPages];
+  const marketingLandings: MetadataRoute.Sitemap = marketingLandingRows
+    .filter((r) => r.slug && r.business_slug)
+    .map((r) => ({
+      url: `${baseUrl}/p/${r.business_slug}/${r.slug}`,
+      lastModified: r.created_at ? new Date(r.created_at).toISOString() : now,
+      changeFrequency: "weekly",
+      priority: 0.6,
+    }));
+
+  return [
+    ...staticPages,
+    ...comparisonPages,
+    ...landingPages,
+    ...newsletterPages,
+    ...marketingLandings,
+  ];
 }
