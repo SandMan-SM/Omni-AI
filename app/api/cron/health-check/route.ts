@@ -1,17 +1,15 @@
 import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from '@/lib/supabase/admin';
 import { alertCritical, alertFix, sendOmniUpdate } from "@/lib/telegram";
 import { constantTimeEqual } from "@/lib/api-auth";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+// Lazy admin client — Vercel preview page-data-collection doesn't have
+// Supabase env, so module-level createClient() would crash the build.
+const sb = createAdminClient();
 
 // Track last known state in-memory (resets on cold start — that's fine)
 let lastStatus: "ok" | "degraded" | "down" | null = null;

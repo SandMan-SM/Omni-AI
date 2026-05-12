@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { constantTimeEqual } from '@/lib/api-auth';
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from '@/lib/supabase/admin';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+// Lazy admin client so Vercel preview builds don't instantiate
+// Supabase at module load (preview env scopes Supabase to prod only).
+const supabase = createAdminClient();
 
 // Manual sync trigger for Omni AI's leads.
 // Triggers do most of the work automatically — this endpoint is a fallback
