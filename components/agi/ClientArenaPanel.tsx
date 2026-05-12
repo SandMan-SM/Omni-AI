@@ -52,11 +52,13 @@ export function ClientArenaPanel() {
       const res = await fetch("/api/agents/rankings");
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const all: AgentRow[] = await res.json();
-      // Resolve the active workspace's slug/name so we can pick the right row.
-      const { supabase } = await import("@/lib/agi-supabase");
-      const { data: biz } = bizId
-        ? await supabase.from("omni_businesses").select("name,slug").eq("id", bizId).maybeSingle()
-        : { data: null };
+      // Resolve the active workspace's name so we can pick the right
+      // row. omni_businesses is RLS-locked to service_role; the prior
+      // direct supabase call returned null in the browser. Use the
+      // service-role-backed helper instead.
+      const { loadBusinesses } = await import("@/lib/dashboard-businesses");
+      const { data: list } = await loadBusinesses();
+      const biz = bizId ? list.find(b => b.id === bizId) : null;
       const target = (biz?.name ?? "").toLowerCase();
       const found = all.find(a => (a.businessName ?? "").toLowerCase() === target);
       setAgent(found || null);

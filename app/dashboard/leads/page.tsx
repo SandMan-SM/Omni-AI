@@ -643,22 +643,18 @@ export default function DashboardPage() {
     activeBizKeyRef.current = requestedKey;
     setLeads([]);
     setCampaigns([]);
-    // Leads come from the server endpoint (service-role) because
-    // omni_leads_generated has a service_role_all RLS policy that blocks
-    // the browser anon client — the previous direct .from('omni_leads_generated')
-    // call silently returned zero rows on every request. Campaigns table
-    // is not RLS-locked the same way, so it stays on the browser client
-    // for now.
+    // Both leads AND campaigns tables are RLS-locked to service_role —
+    // the prior direct `.from('omni_lead_campaigns')` call returned zero
+    // rows in the browser. Route both through service-role endpoints.
     const leadsUrl = `/api/dashboard/leads?business_id=${encodeURIComponent(bizId ?? 'all')}&limit=5000`;
-    const campsBase = () => supabase.from('omni_lead_campaigns').select('*');
-    const [leadsRes, { data: campData }] = await Promise.all([
+    const campsUrl = `/api/dashboard/campaigns?business_id=${encodeURIComponent(bizId ?? 'all')}`;
+    const [leadsRes, campsRes] = await Promise.all([
       authFetch(leadsUrl).then(r => (r.ok ? r.json() : { leads: [] })).catch(() => ({ leads: [] })),
-      bizId ? campsBase().eq('business_id', bizId) : campsBase(),
+      authFetch(campsUrl).then(r => (r.ok ? r.json() : { campaigns: [] })).catch(() => ({ campaigns: [] })),
     ]);
-    // If the user switched workspaces during the await, drop this response.
     if (activeBizKeyRef.current !== requestedKey) return;
     setLeads((leadsRes?.leads as Lead[] | undefined) ?? []);
-    setCampaigns(campData ?? []);
+    setCampaigns((campsRes?.campaigns as Campaign[] | undefined) ?? []);
   }, []);
 
   // selectedBiz === null is the "All Businesses" sentinel.
@@ -1095,8 +1091,12 @@ export default function DashboardPage() {
             // the updated row + refresh the side panel selection.
             await loadData(selectedBiz ? selectedBiz.id : null);
             if (selectedLead) {
-              const { data } = await supabase.from('omni_leads_generated').select('*').eq('id', selectedLead.id).maybeSingle();
-              if (data) setSelectedLead(data as Lead);
+              // Single-lead refetch — direct supabase call hit RLS and
+              // returned null. Use the service-role endpoint instead.
+              const r = await authFetch(`/api/dashboard/leads/${selectedLead.id}`);
+              const j = r.ok ? (await r.json().catch(() => null)) : null;
+              const fresh = (j && (j.lead as Lead | null)) || null;
+              if (fresh) setSelectedLead(fresh);
             }
           }}
         />

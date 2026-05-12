@@ -74,14 +74,24 @@ export default function AffiliatePipelinePage() {
   useEffect(() => { load(); }, [load]);
 
   async function moveStage(lead_id: string, new_stage: string) {
-    await supabase.from('omni_leads_generated').update({ deal_stage: new_stage }).eq('id', lead_id);
+    // omni_leads_generated is RLS-locked to service_role; PATCH through
+    // the service-role endpoint so the update actually persists.
+    await authFetch(`/api/dashboard/leads/${lead_id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deal_stage: new_stage }),
+    });
     setLeads(prev => prev.map(l => l.id === lead_id ? { ...l, deal_stage: new_stage as DealLead['deal_stage'] } : l));
     setEditing(prev => prev && prev.id === lead_id ? { ...prev, deal_stage: new_stage as DealLead['deal_stage'] } : prev);
     showToast(`Moved to ${new_stage}`);
   }
 
   async function updateDealValue(lead_id: string, deal_value: number) {
-    await supabase.from('omni_leads_generated').update({ deal_value }).eq('id', lead_id);
+    await authFetch(`/api/dashboard/leads/${lead_id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ deal_value }),
+    });
     setLeads(prev => prev.map(l => l.id === lead_id ? { ...l, deal_value } : l));
     setEditing(prev => prev && prev.id === lead_id ? { ...prev, deal_value } : prev);
     showToast('Deal value updated');

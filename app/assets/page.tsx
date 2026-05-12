@@ -128,9 +128,13 @@ export default function AssetsPage() {
 
     let cancelled = false;
 
-    // Reusable fetcher — call to refresh the dropdown
+    // Reusable fetcher — call to refresh the dropdown. omni_businesses
+    // is RLS-locked to service_role; the prior direct query returned
+    // zero rows for every viewer. Route through the service-role
+    // endpoint via loadBusinesses().
     const refreshBusinesses = async () => {
-      const { data } = await agiSb.from("omni_businesses").select("id, name, plan").order("name");
+      const { loadBusinesses } = await import("@/lib/dashboard-businesses");
+      const { data } = await loadBusinesses();
       if (cancelled) return;
       setBusinesses(data ?? []);
       const stored = typeof window !== "undefined" ? localStorage.getItem(ACTIVE_BIZ_KEY) : null;

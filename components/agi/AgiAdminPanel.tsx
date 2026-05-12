@@ -159,6 +159,10 @@ export function AgiAdminPanel({
   const [omniAiBizId, setOmniAiBizId] = useState<string | null>(null);
   const [businessNames, setBusinessNames] = useState<Record<string, string>>({});
   const [businessSlugs, setBusinessSlugs] = useState<Record<string, string>>({});
+  // Ordered list backing the admin-only header dropdown. Same source
+  // as businessNames but keeps loadBusinesses()'s display_order so the
+  // dropdown matches the rest of the dashboard.
+  const [businessList, setBusinessList] = useState<{ id: string; name: string }[]>([]);
   const tabsScrollRef = useRef<HTMLDivElement | null>(null);
   const activeTabRef = useRef<HTMLButtonElement | null>(null);
 
@@ -174,12 +178,16 @@ export function AgiAdminPanel({
 
   // Resolve all business names + slugs once so the header can label whichever
   // workspace is active without an extra round-trip on each switch.
+  // Goes through /api/dashboard/businesses because omni_businesses is
+  // RLS-locked to service_role — the previous direct supabase call
+  // returned zero rows for every viewer, which silently broke the
+  // header label (always "All") and the omni-only tab gates.
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const { supabase } = await import("@/lib/agi-supabase");
-        const { data } = await supabase.from("omni_businesses").select("id,name,slug");
+        const { loadBusinesses } = await import("@/lib/dashboard-businesses");
+        const { data } = await loadBusinesses();
         if (cancelled || !data) return;
         const nameMap: Record<string, string> = {};
         const slugMap: Record<string, string> = {};
@@ -189,6 +197,7 @@ export function AgiAdminPanel({
         }
         setBusinessNames(nameMap);
         setBusinessSlugs(slugMap);
+        setBusinessList(data.map(b => ({ id: b.id, name: b.name })));
         const omni = data.find(b => b.name === "Omni AI");
         if (omni) setOmniAiBizId(omni.id);
         // Non-admin viewers get their workspace pinned on mount so leads /
@@ -292,6 +301,40 @@ export function AgiAdminPanel({
             </p>
           </div>
         </div>
+        {/* Workspace selector — admin-only. Lets Sita switch which
+            tenant's agentic dashboard is active without leaving the
+            panel. Writes to localStorage + fires a synthetic storage
+            event so every sub-page (LeadsView / PipelineView /
+            analytics / etc) rescopes immediately. */}
+        {isAdmin && businessList.length > 0 && (
+          <label className="flex items-center gap-2 text-[11px] text-gray-400">
+            <span className="uppercase tracking-[0.18em]">Workspace</span>
+            <select
+              value={activeBizId && activeBizId !== "all" ? activeBizId : "all"}
+              onChange={(e) => {
+                if (typeof window === "undefined") return;
+                const next = e.target.value;
+                const prev = window.localStorage.getItem("omni_active_business_id");
+                window.localStorage.setItem("omni_active_business_id", next);
+                window.dispatchEvent(new StorageEvent("storage", {
+                  key: "omni_active_business_id",
+                  newValue: next,
+                  oldValue: prev,
+                  storageArea: window.localStorage,
+                }));
+                setActiveBizId(next);
+              }}
+              className="bg-zinc-900/80 border border-white/10 rounded-md px-2.5 py-1.5 text-xs text-white hover:border-emerald-400/50 focus:border-emerald-400 focus:outline-none cursor-pointer min-w-[160px]"
+              data-testid="workspace-selector"
+              aria-label="Switch workspace"
+            >
+              <option value="all">All Businesses</option>
+              {businessList.map((b) => (
+                <option key={b.id} value={b.id}>{b.name}</option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
 
       {/* Tabs */}
