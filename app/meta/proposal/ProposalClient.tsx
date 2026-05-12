@@ -103,11 +103,11 @@ export function ProposalClient({
 
       {/* 2. Hex dot grid */}
       <div
-        className="pointer-events-none fixed inset-0 -z-[18] opacity-[0.04]"
+        className="pointer-events-none fixed inset-0 -z-[18] opacity-[0.07]"
         aria-hidden="true"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.6) 1px, transparent 0)",
+            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.7) 1px, transparent 0)",
           backgroundSize: "32px 32px",
         }}
       />
@@ -118,7 +118,7 @@ export function ProposalClient({
         aria-hidden="true"
         style={{
           background:
-            "linear-gradient(115deg, rgba(255,200,80,0.08) 0%, transparent 28%), linear-gradient(245deg, rgba(160,123,255,0.06) 0%, transparent 28%)",
+            "linear-gradient(115deg, rgba(255,200,80,0.16) 0%, transparent 32%), linear-gradient(245deg, rgba(160,123,255,0.12) 0%, transparent 32%)",
         }}
       />
 
@@ -135,13 +135,16 @@ export function ProposalClient({
         }}
       />
 
-      {/* 6. Top spotlight — the hero focal */}
+      {/* 6. Top spotlight — the hero focal. Strong enough to be
+          unmistakable on every screen including mobile + over JPEG
+          compression. Three colors stack: amber from the upper-left,
+          violet from the upper-right, cyan rising from below center. */}
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[70vh] -z-[9]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[90vh] -z-[9]"
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(900px 420px at 20% 8%, rgba(255,200,80,0.14), transparent 62%), radial-gradient(800px 380px at 80% 14%, rgba(160,123,255,0.10), transparent 62%), radial-gradient(1100px 480px at 50% 0%, rgba(56,189,248,0.08), transparent 62%)",
+            "radial-gradient(1100px 540px at 18% 6%, rgba(255,200,80,0.55), transparent 58%), radial-gradient(1000px 480px at 82% 12%, rgba(160,123,255,0.45), transparent 58%), radial-gradient(1400px 620px at 50% -5%, rgba(56,189,248,0.30), transparent 58%)",
         }}
       />
 
@@ -151,13 +154,13 @@ export function ProposalClient({
       <style jsx global>{`
         .aurora-mesh {
           background:
-            radial-gradient(60vw 50vh at 18% 22%, rgba(255,200,80,0.10), transparent 60%),
-            radial-gradient(55vw 48vh at 82% 28%, rgba(160,123,255,0.10), transparent 60%),
-            radial-gradient(70vw 60vh at 50% 80%, rgba(56,189,248,0.07), transparent 60%),
-            radial-gradient(40vw 36vh at 30% 70%, rgba(255,200,80,0.05), transparent 60%);
+            radial-gradient(60vw 50vh at 18% 22%, rgba(255,200,80,0.38), transparent 60%),
+            radial-gradient(55vw 48vh at 82% 28%, rgba(160,123,255,0.32), transparent 60%),
+            radial-gradient(70vw 60vh at 50% 80%, rgba(56,189,248,0.22), transparent 60%),
+            radial-gradient(40vw 36vh at 30% 70%, rgba(255,200,80,0.20), transparent 60%);
           background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%;
           animation: aurora-drift 28s ease-in-out infinite alternate;
-          filter: saturate(1.05);
+          filter: saturate(1.25);
         }
         @keyframes aurora-drift {
           0% {
@@ -360,7 +363,7 @@ export function ProposalClient({
             className="mt-3 text-3xl sm:text-4xl tracking-tight"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            We've shipped this shape before.
+            We&rsquo;ve shipped this shape before.
           </h2>
 
           <div className="mt-10 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-8 sm:p-10">
