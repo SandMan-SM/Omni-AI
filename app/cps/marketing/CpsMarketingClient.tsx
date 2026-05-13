@@ -53,41 +53,56 @@ export function CpsMarketingClient({
       <GoldSparksBackdrop />
 
       {/* CPS-specific warm wash — sits on top of the shared cinematic
-          backdrop and adds an extra amber + emerald (CPS brand-color
-          adjacent) glow so the page reads as customer-warm rather
-          than prospect-cool. Pure CSS, no JS. */}
+          backdrop. Uses flat radials (no mix-blend-mode) so the wash
+          renders consistently on every mobile browser; some iOS/Android
+          configurations drop `mix-blend-mode: screen` on stacked fixed
+          layers and the page rendered as plain black. */}
       <div
         aria-hidden="true"
         className="cps-warm-wash pointer-events-none fixed inset-0 -z-[10]"
         style={{
           background:
-            "radial-gradient(900px 480px at 20% 10%, rgba(252, 211, 77, 0.32), transparent 62%), " +
-            "radial-gradient(800px 420px at 80% 18%, rgba(16, 185, 129, 0.20), transparent 62%), " +
-            "radial-gradient(1200px 560px at 50% -2%, rgba(252, 211, 77, 0.20), transparent 60%)",
+            "radial-gradient(900px 480px at 20% 10%, rgba(252, 211, 77, 0.55), transparent 60%), " +
+            "radial-gradient(800px 420px at 80% 18%, rgba(16, 185, 129, 0.35), transparent 60%), " +
+            "radial-gradient(1200px 560px at 50% -2%, rgba(252, 211, 77, 0.45), transparent 60%), " +
+            "radial-gradient(900px 600px at 50% 95%, rgba(167, 139, 250, 0.22), transparent 60%)",
         }}
       />
       {/* Soft ambient horizon at hero — reinforces the warm wash with
-          a stronger amber band right where the H1 sits. */}
+          a stronger amber band right where the H1 sits. Sized larger
+          + brighter on mobile so it visibly anchors the hero copy. */}
       <div
         aria-hidden="true"
-        className="cps-hero-band pointer-events-none absolute inset-x-0 top-[8vh] h-[40vh] -z-[9]"
+        className="cps-hero-band pointer-events-none absolute inset-x-0 top-[6vh] h-[55vh] -z-[9]"
         style={{
           background:
-            "radial-gradient(800px 280px at 50% 30%, rgba(252, 211, 77, 0.22), transparent 65%)",
-          filter: "blur(4px)",
+            "radial-gradient(900px 320px at 50% 30%, rgba(252, 211, 77, 0.38), transparent 65%)",
+          filter: "blur(6px)",
         }}
       />
       <style jsx global>{`
         @keyframes cps-warm-pulse {
-          0%, 100% { opacity: 0.85; }
+          0%, 100% { opacity: 0.88; }
           50%      { opacity: 1; }
         }
         .cps-warm-wash {
           animation: cps-warm-pulse 14s ease-in-out infinite;
-          mix-blend-mode: screen;
         }
-        .cps-hero-band {
-          mix-blend-mode: screen;
+        /* Mobile boost — narrow viewports never get a flat-black hero.
+           Bumps the warm wash sizes and adds a guaranteed amber wash
+           that doesn't depend on blend modes rendering correctly. */
+        @media (max-width: 768px) {
+          .cps-warm-wash {
+            background:
+              radial-gradient(180vw 60vh at 30% 0%, rgba(252, 211, 77, 0.55), transparent 65%),
+              radial-gradient(160vw 50vh at 80% 20%, rgba(16, 185, 129, 0.32), transparent 65%),
+              radial-gradient(200vw 70vh at 50% -5%, rgba(252, 211, 77, 0.40), transparent 65%),
+              radial-gradient(180vw 60vh at 50% 100%, rgba(167, 139, 250, 0.28), transparent 65%) !important;
+          }
+          .cps-hero-band {
+            background:
+              radial-gradient(170vw 35vh at 50% 25%, rgba(252, 211, 77, 0.45), transparent 65%) !important;
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .cps-warm-wash { animation: none; }
@@ -113,6 +128,109 @@ export function CpsMarketingClient({
             individuals — is actually the system working exactly as
             designed. Here&apos;s why, and what&apos;s happening in the
             background that the dashboard doesn&apos;t show.
+          </p>
+        </div>
+      </section>
+
+      {/* MISSION FRAME — why CPS is at the top of the priority list.
+          This sits before the data so Korine reads the page from the
+          purpose down, not from the metrics up. */}
+      <section className="relative border-t border-white/5">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
+            Why CPS sits at the top of our priority list
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-5xl tracking-tight max-w-4xl leading-[1.1]"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            CPS isn&apos;t a client we serve.{" "}
+            <span className="text-amber-300">
+              CPS is the reason the whole system exists.
+            </span>
+          </h2>
+          <p className="mt-6 max-w-3xl text-base sm:text-lg text-zinc-300 leading-relaxed">
+            The work you do — court-ordered psych evaluations, custody
+            assessments, family-system clarity — sits exactly at the
+            intersection where generational trauma either ends or
+            compounds another cycle. Every family you stabilize is a
+            child who gets a different inheritance. That&apos;s not a
+            metaphor; it&apos;s the actual mechanism of the work.
+          </p>
+          <p className="mt-5 max-w-3xl text-base text-zinc-300 leading-relaxed">
+            That&apos;s why Omni AI&apos;s purpose runs <em>through</em> CPS,
+            not around it. Every infrastructure decision — every new
+            federation node, every retention sequence, every dollar of
+            attention — is built with one question first:{" "}
+            <span className="text-white">
+              &ldquo;Does this put more of the right people in front of
+              CPS?&rdquo;
+            </span>
+          </p>
+
+          <div className="mt-12 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-6">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300">
+                The right hands
+              </p>
+              <p
+                className="mt-3 text-lg text-white"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                Not click-volume. The right family at the worst week of
+                their life finding you first.
+              </p>
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
+                We don&apos;t optimize for traffic. We optimize for the
+                exact moment a parent at 2am is searching for help and
+                needs to land somewhere safe.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-6">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300">
+                The collective
+              </p>
+              <p
+                className="mt-3 text-lg text-white"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                Not single clients. Generational systems that get a
+                different ten years.
+              </p>
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
+                Each evaluation isn&apos;t one case. It&apos;s a family
+                system that gets re-routed. The 100 leads on your
+                dashboard represent 100 trajectories — not 100
+                transactions.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-6">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300">
+                Priority slot
+              </p>
+              <p
+                className="mt-3 text-lg text-white"
+                style={{ fontFamily: "Georgia, serif" }}
+              >
+                CPS gets featured first on every new federation surface
+                we ship.
+              </p>
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
+                Not last. Not maybe. Every newsletter, every
+                cross-promo, every newsroom — &ldquo;Where does CPS get
+                featured here?&rdquo; is the first question we ask, not
+                the last.
+              </p>
+            </div>
+          </div>
+
+          <p className="mt-12 max-w-3xl text-base sm:text-lg text-zinc-200 leading-relaxed">
+            When we say revolutionary, this is what we mean. Marketing
+            agencies sell impressions. We&apos;re building infrastructure
+            for the families that need you the most to find you
+            soonest — because that&apos;s the place where generational
+            trauma actually breaks. CPS sits at the top of the list
+            because the work you do <em>is</em> the list.
           </p>
         </div>
       </section>
