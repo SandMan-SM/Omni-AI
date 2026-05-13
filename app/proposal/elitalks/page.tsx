@@ -10,15 +10,15 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { EliTalksClient } from "./EliTalksClient";
+import { BOOKING_URL } from "@/lib/booking";
 
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/proposal/elitalks`;
 
-// Stripe link placeholder. The deal is structured as a 6-month
-// commitment so the primary CTA is "Book the partnership call"
-// rather than an instant checkout. If $Mafi wants to wire a $4,500
-// first-month subscription link later, swap this constant.
-const BOOK_CALL_URL = "https://cal.com/omni-ai/15min";
+// Booking destination — shared scheduler from lib/booking.ts. The
+// deal is structured as a 6-month commitment so the primary CTA is
+// "Book the partnership call" rather than an instant checkout.
+const BOOK_CALL_URL = BOOKING_URL;
 
 // What an agency-of-record would invoice for the same deliverables
 // across the 6-month window. The "$100K" headline is conservative —
@@ -116,6 +116,30 @@ const ABOUT_PODCAST = {
     "Eli G has built a podcast with the one thing money cannot buy quickly: trust with an audience that's already there. This partnership doesn't try to manufacture more of that — it builds the surrounding infrastructure (sites, automation, paid distribution, organic SEO/GEO, federation cross-promo) so every episode pays compounding dividends across every channel an audience could find it on.",
 };
 
+// Comparable build — Live Better — On The Drip. Closest analog to
+// the Eli Talks shape: a podcast brand with a live show + community
+// that needed real channel infrastructure (not a stock player
+// widget) plus federation attribution. Already shipping inside the
+// Omni AI portfolio, so Eli can verify the build at
+// livebetterpodcast.com before locking the deal.
+const COMPARABLE = {
+  brand: "Live Better — On The Drip",
+  domain: "livebetterpodcast.com",
+  url: "https://livebetterpodcast.com",
+  role: "Channel partner · podcast + community",
+  tagline:
+    "Custom Next.js channel hub for the show + community + federation attribution — one codebase, one brand surface.",
+  shipped:
+    "Bespoke channel hub with custom design system, full SEO + JSON-LD surface, episode + community pages, federation tracker firing on every page-view, cross-promo embed in rotation, and attribution tied through to operator-brand conversions + brokered sponsor revenue splits.",
+  shippedBullets: [
+    "Custom Next.js codebase, full ownership",
+    "Episode + community pages with SEO + JSON-LD",
+    "Federation tracker — inbound_otd_events live since launch",
+    "Cross-brand referral attribution to operator conversions",
+    "Brokered sponsor revenue splits wired in",
+  ],
+};
+
 export const metadata: Metadata = {
   title: "Omni AI × Eli Talks · 6-Month Partnership Proposal",
   description:
@@ -153,6 +177,7 @@ export default function EliTalksProposalPage(): ReactNode {
       distribution={DISTRIBUTION}
       tracking={TRACKING}
       about={ABOUT_PODCAST}
+      comparable={COMPARABLE}
     />
   );
 }

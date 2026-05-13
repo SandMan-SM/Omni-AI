@@ -15,6 +15,7 @@ import {
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { XIcon } from "@/components/case-study/XIcon";
 import { CASE_STUDY_TIERS } from "@/lib/case-study-tiers";
+import { BOOKING_URL } from "@/lib/booking";
 
 // AssetClient — the visible UI. Hero (with both pay buttons), middle
 // pricing pane (repeated, exactly as Sita asked: "both payment plans
@@ -83,10 +84,9 @@ export function AssetClient({
   }
 
   function onBookCall() {
-    ping("rene", "book_call", "calendly");
-    // Calendly link placeholder — Sita can swap in Rene's actual
-    // 15-min link via env var or by editing this file.
-    window.open("https://cal.com/omni-ai/15min", "_blank", "noopener,noreferrer");
+    ping("rene", "book_call", "google-calendar");
+    // Shared scheduler URL — change in one place via lib/booking.ts.
+    window.open(BOOKING_URL, "_blank", "noopener,noreferrer");
   }
 
   // Share intents. Every branch fires the inbound analytics ping AND
