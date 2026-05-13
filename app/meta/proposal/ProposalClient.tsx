@@ -19,6 +19,7 @@ import {
   Play,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
+import { ProposalBackdrop } from "@/components/proposal-backdrop";
 
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
@@ -82,106 +83,18 @@ export function ProposalClient({
 
   return (
     <div className="relative min-h-screen text-zinc-100 overflow-hidden bg-black proposal-page">
-      {/* ── Background stack (back-to-front) ─────────────────────────
-          1. Aurora mesh — three slowly-drifting radial gradients
-             give the page a sense of depth and motion without being
-             busy. Sized in vw/vh so it scales with the viewport.
-          2. Hex dot grid — adds production-grade texture; tuned at
-             0.04 opacity so it whispers rather than shouts.
-          3. Diagonal light beams — two soft beams from the top
-             corners, framing the hero like proscenium lights.
-          4. GoldSparks canvas — animated particle field (existing).
-          5. Vignette — darkens the edges so the center reads brighter,
-             pulling the eye toward content.
-          6. Top spotlight — concentrated cosmic glow above the fold. */}
+      {/* Cinematic backdrop — deep navy + 4 drifting auroras + 260
+          hash-distributed twinkling stars + amber dotted lattice + top
+          spotlight + edge vignette. Replaces the prior inline 6-layer
+          stack (was aurora-mesh + hex grid + beams + GoldSparks +
+          vignette + spotlight). Pure CSS + 1 SVG, respects
+          prefers-reduced-motion. */}
+      <ProposalBackdrop />
 
-      {/* 1. Aurora mesh */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-20 aurora-mesh"
-        aria-hidden="true"
-      />
-
-      {/* 2. Hex dot grid */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-[18] opacity-[0.07]"
-        aria-hidden="true"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.7) 1px, transparent 0)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-
-      {/* 3. Diagonal proscenium beams */}
-      <div
-        className="pointer-events-none fixed inset-x-0 top-0 h-[100vh] -z-[16]"
-        aria-hidden="true"
-        style={{
-          background:
-            "linear-gradient(115deg, rgba(255,200,80,0.16) 0%, transparent 32%), linear-gradient(245deg, rgba(160,123,255,0.12) 0%, transparent 32%)",
-        }}
-      />
-
-      {/* 4. Animated sparks */}
+      {/* GoldSparks particles still on top of the new backdrop —
+          kept so amber drift continues to read "this is the next
+          $100K of creative". */}
       <GoldSparksBackdrop />
-
-      {/* 5. Edge vignette */}
-      <div
-        className="pointer-events-none fixed inset-0 -z-[11]"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.65) 100%)",
-        }}
-      />
-
-      {/* 6. Top spotlight — the hero focal. Strong enough to be
-          unmistakable on every screen including mobile + over JPEG
-          compression. Three colors stack: amber from the upper-left,
-          violet from the upper-right, cyan rising from below center. */}
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[90vh] -z-[9]"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(1100px 540px at 18% 6%, rgba(255,200,80,0.55), transparent 58%), radial-gradient(1000px 480px at 82% 12%, rgba(160,123,255,0.45), transparent 58%), radial-gradient(1400px 620px at 50% -5%, rgba(56,189,248,0.30), transparent 58%)",
-        }}
-      />
-
-      {/* Aurora animation lives in a global style block so the keyframes
-          can move three radials in parallel without per-element JS.
-          Respects prefers-reduced-motion via the inner @media rule. */}
-      <style jsx global>{`
-        .aurora-mesh {
-          background:
-            radial-gradient(60vw 50vh at 18% 22%, rgba(255,200,80,0.38), transparent 60%),
-            radial-gradient(55vw 48vh at 82% 28%, rgba(160,123,255,0.32), transparent 60%),
-            radial-gradient(70vw 60vh at 50% 80%, rgba(56,189,248,0.22), transparent 60%),
-            radial-gradient(40vw 36vh at 30% 70%, rgba(255,200,80,0.20), transparent 60%);
-          background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%;
-          animation: aurora-drift 28s ease-in-out infinite alternate;
-          filter: saturate(1.25);
-        }
-        @keyframes aurora-drift {
-          0% {
-            background-position:
-              0% 0%, 100% 0%, 50% 100%, 30% 50%;
-          }
-          50% {
-            background-position:
-              30% 40%, 70% 60%, 60% 30%, 10% 80%;
-          }
-          100% {
-            background-position:
-              60% 80%, 30% 100%, 20% 50%, 70% 20%;
-          }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .aurora-mesh {
-            animation: none;
-          }
-        }
-      `}</style>
 
       {/* HERO */}
       <section className="relative">

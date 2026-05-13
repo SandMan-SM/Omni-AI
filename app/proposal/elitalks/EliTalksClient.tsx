@@ -21,6 +21,7 @@ import {
   Play,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
+import { ProposalBackdrop } from "@/components/proposal-backdrop";
 
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
@@ -80,62 +81,16 @@ export function EliTalksClient({
 
   return (
     <div className="relative min-h-screen text-zinc-100 overflow-hidden bg-black elitalks-page">
-      {/* Six-layer background — same composition as /meta/proposal */}
-      <div className="pointer-events-none fixed inset-0 -z-20 elitalks-aurora" aria-hidden="true" />
-      <div
-        className="pointer-events-none fixed inset-0 -z-[18] opacity-[0.07]"
-        aria-hidden="true"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, rgba(255,255,255,0.7) 1px, transparent 0)",
-          backgroundSize: "32px 32px",
-        }}
-      />
-      <div
-        className="pointer-events-none fixed inset-x-0 top-0 h-[100vh] -z-[16]"
-        aria-hidden="true"
-        style={{
-          background:
-            "linear-gradient(115deg, rgba(255,200,80,0.16) 0%, transparent 32%), linear-gradient(245deg, rgba(160,123,255,0.12) 0%, transparent 32%)",
-        }}
-      />
+      {/* Cinematic backdrop — same composition the Meta proposal
+          uses: deep navy + 4 drifting aurora orbs + 260 hash-
+          distributed twinkling stars + amber dotted lattice + top
+          spotlight + edge vignette. Pure CSS + 1 static SVG, respects
+          prefers-reduced-motion. */}
+      <ProposalBackdrop />
+
+      {/* Amber spark particles drifting on top of the cosmic field
+          for an extra layer of "this is a premium asset" feel. */}
       <GoldSparksBackdrop />
-      <div
-        className="pointer-events-none fixed inset-0 -z-[11]"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,0.65) 100%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[90vh] -z-[9]"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(1100px 540px at 18% 6%, rgba(255,200,80,0.55), transparent 58%), radial-gradient(1000px 480px at 82% 12%, rgba(160,123,255,0.45), transparent 58%), radial-gradient(1400px 620px at 50% -5%, rgba(56,189,248,0.30), transparent 58%)",
-        }}
-      />
-      <style jsx global>{`
-        .elitalks-aurora {
-          background:
-            radial-gradient(60vw 50vh at 18% 22%, rgba(255,200,80,0.38), transparent 60%),
-            radial-gradient(55vw 48vh at 82% 28%, rgba(160,123,255,0.32), transparent 60%),
-            radial-gradient(70vw 60vh at 50% 80%, rgba(56,189,248,0.22), transparent 60%),
-            radial-gradient(40vw 36vh at 30% 70%, rgba(255,200,80,0.20), transparent 60%);
-          background-size: 200% 200%, 200% 200%, 200% 200%, 200% 200%;
-          animation: elitalks-drift 28s ease-in-out infinite alternate;
-          filter: saturate(1.25);
-        }
-        @keyframes elitalks-drift {
-          0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 30% 50%; }
-          50%  { background-position: 30% 40%, 70% 60%, 60% 30%, 10% 80%; }
-          100% { background-position: 60% 80%, 30% 100%, 20% 50%, 70% 20%; }
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .elitalks-aurora { animation: none; }
-        }
-      `}</style>
 
       {/* HERO */}
       <section className="relative">
