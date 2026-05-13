@@ -6,6 +6,7 @@
 // background and why what looks unusual is actually working in your
 // favor" — not a pitch.
 
+import { useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -17,9 +18,17 @@ import {
   Users,
   Zap,
   X,
+  Share2,
+  Linkedin,
+  Facebook,
+  Smartphone,
+  Mail,
+  Link2,
+  Check,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
+import { XIcon } from "@/components/case-study/XIcon";
 
 type Props = {
   pageUrl: string;
@@ -46,6 +55,94 @@ export function CpsMarketingClient({
 }: Props) {
   const b2bPct = Math.round((leadMix.b2b / leadMix.total) * 100);
   const b2cPct = 100 - b2bPct;
+
+  // Share row state — visible feedback for every click (X opened,
+  // link copied, popup blocked, etc) so taps never feel inert.
+  const [copied, setCopied] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  function flash(msg: string) {
+    setFeedback(msg);
+    setTimeout(() => setFeedback(null), 2200);
+  }
+
+  // Share intents. Native + SMS gated on coarse-pointer media so
+  // desktop browsers don't render buttons that no-op silently.
+  async function shareIntent(platform: string) {
+    const title = "Inside the build · CPS × Omni AI";
+    const body = `${title}\n\n${pageUrl}`;
+    const openOrFallback = (url: string, label: string) => {
+      const win = window.open(url, "_blank", "noopener,noreferrer");
+      if (!win) {
+        navigator.clipboard?.writeText(url).catch(() => {});
+        flash(`Popup blocked — ${label} link copied`);
+        return false;
+      }
+      flash(`Opened ${label}`);
+      return true;
+    };
+
+    if (platform === "native") {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        try {
+          await navigator.share({ title, url: pageUrl });
+          flash("Shared");
+        } catch {
+          /* user dismissed */
+        }
+      }
+      return;
+    }
+    if (platform === "twitter") {
+      openOrFallback(
+        `https://x.com/intent/post?text=${encodeURIComponent(title)}&url=${encodeURIComponent(pageUrl)}`,
+        "X",
+      );
+      return;
+    }
+    if (platform === "linkedin") {
+      openOrFallback(
+        `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(pageUrl)}`,
+        "LinkedIn",
+      );
+      return;
+    }
+    if (platform === "facebook") {
+      openOrFallback(
+        `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}&quote=${encodeURIComponent(title)}`,
+        "Facebook",
+      );
+      return;
+    }
+    if (platform === "sms") {
+      window.location.href = `sms:?&body=${encodeURIComponent(body)}`;
+      navigator.clipboard?.writeText(body).catch(() => {});
+      flash("Message copied — paste into texts");
+      return;
+    }
+    if (platform === "email") {
+      const subject = encodeURIComponent(title);
+      const encBody = encodeURIComponent(body);
+      const gmail = `https://mail.google.com/mail/?view=cm&fs=1&su=${subject}&body=${encBody}`;
+      try {
+        window.location.href = `mailto:?subject=${subject}&body=${encBody}`;
+      } catch {
+        /* fall through */
+      }
+      window.open(gmail, "_blank", "noopener,noreferrer");
+      flash("Opened email");
+      return;
+    }
+    if (platform === "copy") {
+      try {
+        await navigator.clipboard.writeText(pageUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1800);
+        flash("Link copied");
+      } catch {
+        flash("Couldn't copy — long-press the URL bar instead");
+      }
+    }
+  }
 
   return (
     <div className="relative min-h-screen text-zinc-100 overflow-hidden bg-black cps-marketing-page">
@@ -639,6 +736,129 @@ export function CpsMarketingClient({
               Open your dashboard
               <ArrowRight className="w-4 h-4" />
             </Link>
+          </div>
+
+          {/* SHARE — forward this page to a partner, colleague, or
+              someone evaluating whether this kind of infrastructure
+              makes sense for their own practice. Same channels +
+              feedback pattern as the proposal/asset pages. */}
+          <div className="mt-16 rounded-2xl border border-white/10 bg-white/[0.02] p-6 sm:p-8">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
+              Pass it forward
+            </p>
+            <p className="mt-3 text-base text-zinc-300 leading-relaxed max-w-2xl">
+              Know a behavioral-health practice, family-court attorney,
+              or evaluator who&apos;d benefit from the same federation
+              infrastructure CPS is running on? Send them the page.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              {(() => {
+                const iconClass = "w-4 h-4 flex-shrink-0";
+                const baseBtn =
+                  "inline-flex items-center justify-center gap-2 min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors";
+                const isTouch =
+                  typeof window !== "undefined" &&
+                  window.matchMedia?.("(pointer: coarse)").matches;
+                const hasNative =
+                  isTouch &&
+                  typeof navigator !== "undefined" &&
+                  !!(navigator as Navigator & { share?: unknown }).share;
+                return (
+                  <>
+                    {hasNative && (
+                      <button
+                        type="button"
+                        onClick={() => shareIntent("native")}
+                        className={baseBtn}
+                        aria-label="Share"
+                        data-testid="cps-share-native"
+                      >
+                        <Share2 className={iconClass} />
+                        <span>Share</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("twitter")}
+                      className={baseBtn}
+                      aria-label="Share to X"
+                      data-testid="cps-share-x"
+                    >
+                      <XIcon className={iconClass} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("linkedin")}
+                      className={baseBtn}
+                      aria-label="Share to LinkedIn"
+                      data-testid="cps-share-linkedin"
+                    >
+                      <Linkedin className={iconClass} />
+                      <span>LinkedIn</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("facebook")}
+                      className={baseBtn}
+                      aria-label="Share to Facebook"
+                      data-testid="cps-share-facebook"
+                    >
+                      <Facebook className={iconClass} />
+                      <span>Facebook</span>
+                    </button>
+                    {isTouch && (
+                      <button
+                        type="button"
+                        onClick={() => shareIntent("sms")}
+                        className={baseBtn}
+                        aria-label="Share via SMS"
+                        data-testid="cps-share-sms"
+                      >
+                        <Smartphone className={iconClass} />
+                        <span>SMS</span>
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("email")}
+                      className={baseBtn}
+                      aria-label="Share via email"
+                      data-testid="cps-share-email"
+                    >
+                      <Mail className={iconClass} />
+                      <span>Email</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => shareIntent("copy")}
+                      className={baseBtn}
+                      aria-label="Copy link"
+                      data-testid="cps-share-copy"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className={iconClass} />
+                          <span>Copied</span>
+                        </>
+                      ) : (
+                        <>
+                          <Link2 className={iconClass} />
+                          <span>Copy link</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                );
+              })()}
+            </div>
+            <p
+              className="mt-4 text-xs text-amber-300 transition-opacity"
+              role="status"
+              aria-live="polite"
+              style={{ opacity: feedback ? 1 : 0 }}
+            >
+              {feedback ?? " "}
+            </p>
           </div>
         </div>
       </section>
