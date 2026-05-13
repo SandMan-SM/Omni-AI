@@ -145,7 +145,14 @@ export function CpsMarketingClient({
   }
 
   return (
-    <div className="relative min-h-screen text-zinc-100 overflow-hidden bg-black cps-marketing-page">
+    <>
+      {/* Render the cinematic backdrop layers OUTSIDE the content
+          wrapper. The previous structure put them inside a parent
+          with `bg-black` + negative z-index, which made the bg-black
+          paint on top of the backdrop in the root stacking context.
+          Matches the proven /meta/proposal + /proposal/elitalks
+          structure exactly: backdrops at root, content wrapped in a
+          `relative z-10` div that has NO bg-black. */}
       <ProposalBackdrop />
       <GoldSparksBackdrop />
 
@@ -205,6 +212,11 @@ export function CpsMarketingClient({
           .cps-warm-wash { animation: none; }
         }
       `}</style>
+
+      {/* Content wrapper — z-10 so it stacks above the backdrop without
+          negative-z battles. No bg-black so the cinematic backdrop
+          shows through. Same pattern as /meta/proposal. */}
+      <div className="relative z-10 min-h-screen text-zinc-100 overflow-hidden cps-marketing-page">
 
       {/* HERO */}
       <section className="relative">
@@ -879,6 +891,7 @@ export function CpsMarketingClient({
         </div>
       </footer>
       <p className="sr-only">{pageUrl}</p>
-    </div>
+      </div>
+    </>
   );
 }
