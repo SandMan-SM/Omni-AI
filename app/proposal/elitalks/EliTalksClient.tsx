@@ -384,7 +384,7 @@ export function EliTalksClient({
             Eli Talks doesn&apos;t live in a vacuum. For six months it&apos;s
             wired into a network of 14 federation sites, three Utah
             newsrooms, and every operator newsletter — same audience
-            graph Sita uses to amplify her own portfolio.
+            graph $Mafi uses to amplify her own portfolio.
           </p>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -438,7 +438,7 @@ export function EliTalksClient({
             $4,500/month. Six months. The whole stack.
           </h2>
           <p className="mt-5 text-base text-zinc-400">
-            Partnership terms get locked over a 30-minute call. Sita
+            Partnership terms get locked over a 30-minute call. $Mafi
             walks Eli through the build timeline, the federation map,
             and the dashboard he&apos;ll watch the whole thing from.
           </p>
