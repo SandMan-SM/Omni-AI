@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
+import { BOOKING_URL } from "@/lib/booking";
 
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
@@ -70,8 +71,8 @@ export function ProposalClient({
   }
 
   function onBookCall() {
-    ping("book_call", "calendly");
-    window.open("https://cal.com/omni-ai/15min", "_blank", "noopener,noreferrer");
+    ping("book_call", "google-calendar");
+    window.open(BOOKING_URL, "_blank", "noopener,noreferrer");
   }
 
   const channelIcon = (tag: string) => {
