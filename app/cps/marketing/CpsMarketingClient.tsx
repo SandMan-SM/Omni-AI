@@ -357,6 +357,39 @@ export function CpsMarketingClient({
               </p>
             </div>
           </div>
+
+          {/* Read-the-case-study CTA — same federation case study
+              every other operator + sponsor in the network can read.
+              Gives Korine the public proof artifact for her build. */}
+          <div className="mt-10 rounded-2xl border border-amber-300/40 bg-gradient-to-br from-amber-300/[0.08] via-amber-300/[0.03] to-transparent p-8">
+            <p className="text-[11px] uppercase tracking-[0.28em] text-amber-300">
+              Public case study
+            </p>
+            <p
+              className="mt-3 text-xl sm:text-2xl text-white"
+              style={{ fontFamily: "Georgia, serif" }}
+            >
+              Your build has its own federation case study —
+              live metrics, system stack, pricing.
+            </p>
+            <p className="mt-3 text-sm text-zinc-400 leading-relaxed max-w-2xl">
+              Every node in the Omni AI federation gets a public case
+              study card. CPS&apos;s shows the same numbers your dashboard
+              shows, framed for an outside reader. It&apos;s the page we
+              point sponsors + adjacent operators at when they ask
+              &quot;what does this actually ship?&quot;
+            </p>
+            <Link
+              href="/federation/case-studies/cps"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-6 inline-flex items-center justify-center gap-2 rounded-full border border-amber-300/50 px-6 py-3 text-sm font-semibold text-amber-200 hover:border-amber-300 hover:bg-amber-300/10 hover:text-amber-100 transition-colors"
+              data-testid="cps-marketing-case-study-link"
+            >
+              Read the CPS case study
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
 
