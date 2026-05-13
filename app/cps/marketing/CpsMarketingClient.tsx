@@ -52,6 +52,48 @@ export function CpsMarketingClient({
       <ProposalBackdrop />
       <GoldSparksBackdrop />
 
+      {/* CPS-specific warm wash — sits on top of the shared cinematic
+          backdrop and adds an extra amber + emerald (CPS brand-color
+          adjacent) glow so the page reads as customer-warm rather
+          than prospect-cool. Pure CSS, no JS. */}
+      <div
+        aria-hidden="true"
+        className="cps-warm-wash pointer-events-none fixed inset-0 -z-[10]"
+        style={{
+          background:
+            "radial-gradient(900px 480px at 20% 10%, rgba(252, 211, 77, 0.32), transparent 62%), " +
+            "radial-gradient(800px 420px at 80% 18%, rgba(16, 185, 129, 0.20), transparent 62%), " +
+            "radial-gradient(1200px 560px at 50% -2%, rgba(252, 211, 77, 0.20), transparent 60%)",
+        }}
+      />
+      {/* Soft ambient horizon at hero — reinforces the warm wash with
+          a stronger amber band right where the H1 sits. */}
+      <div
+        aria-hidden="true"
+        className="cps-hero-band pointer-events-none absolute inset-x-0 top-[8vh] h-[40vh] -z-[9]"
+        style={{
+          background:
+            "radial-gradient(800px 280px at 50% 30%, rgba(252, 211, 77, 0.22), transparent 65%)",
+          filter: "blur(4px)",
+        }}
+      />
+      <style jsx global>{`
+        @keyframes cps-warm-pulse {
+          0%, 100% { opacity: 0.85; }
+          50%      { opacity: 1; }
+        }
+        .cps-warm-wash {
+          animation: cps-warm-pulse 14s ease-in-out infinite;
+          mix-blend-mode: screen;
+        }
+        .cps-hero-band {
+          mix-blend-mode: screen;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .cps-warm-wash { animation: none; }
+        }
+      `}</style>
+
       {/* HERO */}
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 pt-20 pb-14 sm:pt-28 sm:pb-20">
@@ -189,9 +231,9 @@ export function CpsMarketingClient({
           </h2>
           <p className="mt-5 max-w-3xl text-base text-zinc-300 leading-relaxed">
             Traditional agencies sell you ads, take a percentage, and
-            stop when you stop paying. This system is structured the
-            opposite way — every dollar builds infrastructure that
-            outlives the campaign, and every new federation node
+            stop the moment a campaign ends. This system is structured
+            the opposite way — every dollar builds infrastructure that
+            compounds month over month, and every new federation node
             amplifies the reach of every existing one.
           </p>
 
@@ -311,25 +353,25 @@ export function CpsMarketingClient({
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-            The asset you already own
+            The asset working for you
           </p>
           <h2
             className="mt-3 text-3xl sm:text-4xl tracking-tight max-w-3xl"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            Your website is already valued at{" "}
+            Your live build is operating at the{" "}
             <span className="text-amber-300">
               {websiteValueLow}–{websiteValueHigh}
             </span>{" "}
-            on retail rates.
+            Tier-3 benchmark.
           </h2>
           <p className="mt-5 max-w-3xl text-base text-zinc-300 leading-relaxed">
-            That&apos;s the Tier-3 bespoke build benchmark — what a Next.js
-            agency would invoice for a custom codebase with full SEO,
-            JSON-LD schema, edge-rendered OG, federation cross-promo
-            wiring, AI CEO layer, and 12-month operational coverage.
-            You have it now. Not on subscription. Not on a license.
-            Owned outright.
+            That&apos;s what a Next.js agency would invoice to spin up a
+            comparable build from scratch: a custom codebase with full
+            SEO, JSON-LD schema, edge-rendered OG, federation cross-promo
+            wiring, AI CEO layer, and 12-month operational coverage. The
+            version running under your brand is already live — routing
+            inbounds, ranking content, and compounding reach every day.
           </p>
 
           <div className="mt-10 grid gap-3 sm:grid-cols-2">
@@ -369,8 +411,8 @@ export function CpsMarketingClient({
               className="mt-3 text-xl sm:text-2xl text-white"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Your build has its own federation case study —
-              live metrics, system stack, pricing.
+              The build running under your brand has its own
+              federation case study — live metrics, system stack, pricing.
             </p>
             <p className="mt-3 text-sm text-zinc-400 leading-relaxed max-w-2xl">
               Every node in the Omni AI federation gets a public case
@@ -452,17 +494,18 @@ export function CpsMarketingClient({
             className="mt-3 text-3xl sm:text-5xl tracking-tight max-w-4xl"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            This isn&apos;t a marketing campaign. It&apos;s an asset stack you
-            own that compounds while you sleep.
+            This isn&apos;t a marketing campaign. It&apos;s an asset stack
+            working for you that compounds while you sleep.
           </h2>
           <p className="mt-6 max-w-3xl text-base text-zinc-300 leading-relaxed">
             That&apos;s the revolution. Every business that joins the
             federation makes your services easier to find. Every B2B
-            relationship we close adds another distribution surface to
-            yours. Every retention sequence + nurturing track + AI CEO
-            interaction adds to a system you own outright — not one you
-            rent. The marketing budget you haven&apos;t spent yet stays
-            yours, because the infrastructure is doing the work.
+            relationship we close adds another distribution surface
+            running for your brand. Every retention sequence + nurturing
+            track + AI CEO interaction adds to a system purpose-built
+            for your practice — running 24/7, refining itself the longer
+            it operates. The marketing budget you haven&apos;t spent stays
+            on the table because the infrastructure is doing the work.
           </p>
 
           <div className="mt-12">

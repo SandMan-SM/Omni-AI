@@ -119,11 +119,11 @@ const AGENCY_VS_FEDERATION: { theirs: string; ours: string }[] = [
   },
   {
     theirs: "Marketing budget = ad spend you burn",
-    ours: "Marketing budget = infrastructure you keep",
+    ours: "Marketing budget = infrastructure that compounds for you",
   },
   {
     theirs: "Stop paying → traffic stops",
-    ours: "Stop paying → assets keep distributing",
+    ours: "Work compounds well past any single campaign window",
   },
   {
     theirs: "Retainer goes to managing tools",
