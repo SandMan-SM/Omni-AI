@@ -69,8 +69,8 @@ export function CpsMarketingClient({
             This page is the inside look. What looks unusual about the
             lead mix right now — heavy on businesses, light on
             individuals — is actually the system working exactly as
-            designed. Here's why, and what's happening in the
-            background that the dashboard doesn't show.
+            designed. Here&apos;s why, and what&apos;s happening in the
+            background that the dashboard doesn&apos;t show.
           </p>
         </div>
       </section>
@@ -407,7 +407,7 @@ export function CpsMarketingClient({
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
             Marketing agencies and the federation both call themselves
-            "marketing." The mechanism is the opposite.
+            &ldquo;marketing.&rdquo; The mechanism is the opposite.
           </p>
 
           <div className="mt-10 grid gap-3">
