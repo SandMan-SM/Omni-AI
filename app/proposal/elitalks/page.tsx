@@ -3,7 +3,7 @@
 // exchange for north of $100K of bespoke digital infrastructure +
 // federation amplification + paid-social distribution.
 //
-// Internal cost split ($500 London/Natalie, $1,000 each Sita/Ben, the
+// Internal cost split ($500 London/Natalie, $1,000 each $Mafi/Ben, the
 // remainder to Eli) is INTENTIONALLY not shown on the page — this is
 // the surface Eli sees, not the operating ledger. That stays internal.
 
@@ -16,7 +16,7 @@ const PAGE_URL = `${SITE_URL}/proposal/elitalks`;
 
 // Stripe link placeholder. The deal is structured as a 6-month
 // commitment so the primary CTA is "Book the partnership call"
-// rather than an instant checkout. If Sita wants to wire a $4,500
+// rather than an instant checkout. If $Mafi wants to wire a $4,500
 // first-month subscription link later, swap this constant.
 const BOOK_CALL_URL = "https://cal.com/omni-ai/15min";
 
@@ -103,7 +103,7 @@ const TRACKING: string[] = [
   "Federation referral attribution — which network sites are driving listens",
   "Paid-social cost-per-subscriber + cost-per-listen",
   "SEO + GEO ranking tracker for every published asset",
-  "Monthly written report from Sita with what shipped, what worked, what to iterate",
+  "Monthly written report from $Mafi with what shipped, what worked, what to iterate",
 ];
 
 // What the partnership stands for, from Eli's perspective. Not a
