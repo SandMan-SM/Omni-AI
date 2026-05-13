@@ -158,29 +158,30 @@ export function CpsMarketingClient({
 
       {/* CPS-specific warm wash — sits on top of the shared cinematic
           backdrop. Uses flat radials (no mix-blend-mode) so the wash
-          renders consistently on every mobile browser; some iOS/Android
-          configurations drop `mix-blend-mode: screen` on stacked fixed
-          layers and the page rendered as plain black. */}
+          renders consistently on every mobile browser. Opacities tuned
+          DOWN from the earlier render-fix-era boost; with the bg-black
+          stacking bug fixed, the page no longer needs cranked alpha
+          to be visible, so a subtler amber + emerald hint reads
+          better. */}
       <div
         aria-hidden="true"
         className="cps-warm-wash pointer-events-none fixed inset-0 -z-[10]"
         style={{
           background:
-            "radial-gradient(900px 480px at 20% 10%, rgba(252, 211, 77, 0.55), transparent 60%), " +
-            "radial-gradient(800px 420px at 80% 18%, rgba(16, 185, 129, 0.35), transparent 60%), " +
-            "radial-gradient(1200px 560px at 50% -2%, rgba(252, 211, 77, 0.45), transparent 60%), " +
-            "radial-gradient(900px 600px at 50% 95%, rgba(167, 139, 250, 0.22), transparent 60%)",
+            "radial-gradient(900px 480px at 20% 10%, rgba(252, 211, 77, 0.18), transparent 65%), " +
+            "radial-gradient(800px 420px at 80% 18%, rgba(16, 185, 129, 0.10), transparent 65%), " +
+            "radial-gradient(1200px 560px at 50% -2%, rgba(252, 211, 77, 0.14), transparent 65%), " +
+            "radial-gradient(900px 600px at 50% 95%, rgba(167, 139, 250, 0.08), transparent 65%)",
         }}
       />
       {/* Soft ambient horizon at hero — reinforces the warm wash with
-          a stronger amber band right where the H1 sits. Sized larger
-          + brighter on mobile so it visibly anchors the hero copy. */}
+          a gentle amber band right where the H1 sits. */}
       <div
         aria-hidden="true"
         className="cps-hero-band pointer-events-none absolute inset-x-0 top-[6vh] h-[55vh] -z-[9]"
         style={{
           background:
-            "radial-gradient(900px 320px at 50% 30%, rgba(252, 211, 77, 0.38), transparent 65%)",
+            "radial-gradient(900px 320px at 50% 30%, rgba(252, 211, 77, 0.12), transparent 70%)",
           filter: "blur(6px)",
         }}
       />
@@ -192,20 +193,20 @@ export function CpsMarketingClient({
         .cps-warm-wash {
           animation: cps-warm-pulse 14s ease-in-out infinite;
         }
-        /* Mobile boost — narrow viewports never get a flat-black hero.
-           Bumps the warm wash sizes and adds a guaranteed amber wash
-           that doesn't depend on blend modes rendering correctly. */
+        /* Mobile tuning — keep the vw-relative radials so the wash
+           scales with the viewport, but match the toned-down desktop
+           alphas so the hero doesn't read as neon-bright. */
         @media (max-width: 768px) {
           .cps-warm-wash {
             background:
-              radial-gradient(180vw 60vh at 30% 0%, rgba(252, 211, 77, 0.55), transparent 65%),
-              radial-gradient(160vw 50vh at 80% 20%, rgba(16, 185, 129, 0.32), transparent 65%),
-              radial-gradient(200vw 70vh at 50% -5%, rgba(252, 211, 77, 0.40), transparent 65%),
-              radial-gradient(180vw 60vh at 50% 100%, rgba(167, 139, 250, 0.28), transparent 65%) !important;
+              radial-gradient(180vw 60vh at 30% 0%, rgba(252, 211, 77, 0.20), transparent 70%),
+              radial-gradient(160vw 50vh at 80% 20%, rgba(16, 185, 129, 0.10), transparent 70%),
+              radial-gradient(200vw 70vh at 50% -5%, rgba(252, 211, 77, 0.14), transparent 70%),
+              radial-gradient(180vw 60vh at 50% 100%, rgba(167, 139, 250, 0.10), transparent 70%) !important;
           }
           .cps-hero-band {
             background:
-              radial-gradient(170vw 35vh at 50% 25%, rgba(252, 211, 77, 0.45), transparent 65%) !important;
+              radial-gradient(170vw 35vh at 50% 25%, rgba(252, 211, 77, 0.14), transparent 70%) !important;
           }
         }
         @media (prefers-reduced-motion: reduce) {
