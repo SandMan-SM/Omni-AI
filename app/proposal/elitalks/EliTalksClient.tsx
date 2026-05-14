@@ -171,15 +171,16 @@ export function EliTalksClient({
               output value Ellie can verify against agency rates. */}
           <p className="mt-6 max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
             By the time the six-month build window closes, Ellie Talks
-            owns over{" "}
+            is operating on over{" "}
             <span className="text-amber-300 font-semibold">
-              $100,000 in bespoke digital assets
+              $100,000 in bespoke digital infrastructure
             </span>{" "}
-            — three custom sites, an AI CEO layer, an organic
-            content engine, and a permanent federation distribution
+            — three custom sites running under the brand, an AI CEO
+            layer routing inbound, an organic content engine ranking
+            every episode, and a permanent federation distribution
             footprint. An agency would invoice north of six figures
-            for the same scope. The partnership delivers it for
-            pennies on the dollar.
+            to spin up the same scope. The partnership delivers it
+            for pennies on the dollar.
           </p>
 
           {/* Soft horizontal divider closes the hero so the eye knows
@@ -398,7 +399,7 @@ export function EliTalksClient({
 
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: <Globe className="w-5 h-5" />, title: "3 bespoke websites", body: "Custom Next.js builds Ellie owns outright." },
+              { icon: <Globe className="w-5 h-5" />, title: "3 bespoke websites", body: "Custom Next.js builds running under the Ellie Talks brand." },
               { icon: <Sparkles className="w-5 h-5" />, title: "AI CEO layer", body: "Autonomous agent per site routing inbounds + booking calls." },
               { icon: <Send className="w-5 h-5" />, title: "Paid social engine", body: "Meta + Instagram + YouTube ads optimized weekly." },
               { icon: <BarChart3 className="w-5 h-5" />, title: "Organic SEO + GEO", body: "Free lead-gen — every show topic gets ranked for its city + niche." },
