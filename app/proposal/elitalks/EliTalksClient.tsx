@@ -18,6 +18,9 @@ import {
   Sparkles,
   Network,
   BarChart3,
+  Facebook,
+  Instagram,
+  Youtube,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
@@ -135,11 +138,14 @@ export function EliTalksClient({
             the whole network.
           </p>
 
-          {/* Hero meta strip — three compact pills under the body
-              paragraph that reinforce the scope without showing
-              price. Sits as visual punctuation to lift the page from
-              "headline + paragraph" to "headline + paragraph +
-              evidence." */}
+          {/* Hero meta strip — four compact pills. The last one
+              communicates the leverage math without naming a price:
+              "$100K+ of bespoke assets" is the OUTPUT value (what
+              gets built); the partnership fee Ben quotes Natalie
+              stays private. Phrase "pennies on the dollar" is
+              Sita's framing — wins on a copy level over saying
+              "X% off retail" because it sells the magnitude
+              without exposing the cost ratio. */}
           <div className="mt-8 flex flex-wrap gap-2">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/30 bg-amber-300/[0.05] px-3 py-1.5 text-[11px] font-medium tracking-wide text-amber-100">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-300" />
@@ -153,7 +159,28 @@ export function EliTalksClient({
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-300/80" />
               16+ federation surfaces
             </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-300/[0.10] px-3 py-1.5 text-[11px] font-semibold tracking-wide text-amber-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-200" />
+              $100K+ built · pennies on the dollar
+            </span>
           </div>
+
+          {/* Leverage callout — separate from the pill strip so it
+              reads as the headline of the deal economics, not
+              another tag. No specific operator price; just the
+              output value Ellie can verify against agency rates. */}
+          <p className="mt-6 max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
+            By the time the six-month build window closes, Ellie Talks
+            owns over{" "}
+            <span className="text-amber-300 font-semibold">
+              $100,000 in bespoke digital assets
+            </span>{" "}
+            — three custom sites, an AI CEO layer, an organic
+            content engine, and a permanent federation distribution
+            footprint. An agency would invoice north of six figures
+            for the same scope. The partnership delivers it for
+            pennies on the dollar.
+          </p>
 
           {/* Soft horizontal divider closes the hero so the eye knows
               the next section is a different beat. */}
@@ -318,6 +345,31 @@ export function EliTalksClient({
               </div>
             ))}
           </div>
+
+          {/* Closing leverage line — restates the value frame after
+              the scope table. Specific dollar amounts for each line
+              stay off the page (per Ben's feedback) but the total
+              retail value is the headline of the deal and belongs
+              right here. */}
+          <div className="mt-8 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-6">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-300">
+              Total built value
+            </p>
+            <p
+              className="mt-3 text-2xl sm:text-3xl text-white"
+              style={{ fontFamily: "Georgia, serif" }}
+            >
+              Over <span className="text-amber-300">$100,000</span> in
+              bespoke digital infrastructure.
+            </p>
+            <p className="mt-3 text-sm text-zinc-400 leading-relaxed max-w-2xl">
+              That&apos;s the agency-equivalent retail value of the
+              full scope above — three Tier-3 builds, the AI CEO
+              layer, the organic engine, the newsletter system, the
+              calendar stack, and federation distribution. The
+              partnership ships all of it for pennies on the dollar.
+            </p>
+          </div>
         </div>
       </section>
 
@@ -355,11 +407,157 @@ export function EliTalksClient({
         </div>
       </section>
 
+      {/* PAID PLATFORMS — Meta + YouTube + Instagram deep dive.
+          Section added per Sita's request to "put a little more about
+          what we're doing with Meta platforms and YouTube." Sits
+          between the federation-distribution section (organic reach)
+          and the federation-amplification section (cross-promo) so
+          the page reads as a complete distribution stack: paid +
+          federation + cross-promo. Each platform card calls out
+          three concrete tactics, not generic ad copy. */}
+      <section className="relative border-t border-white/5">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+            Paid platforms · Meta + YouTube
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-4xl tracking-tight"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            Where Ellie&apos;s next subscribers actually live.
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
+            Three platforms, one attribution stack. Every dollar of
+            paid spend feeds the same retargeting pool, every podcast
+            episode gets repurposed across formats, every conversion
+            lands in the same dashboard Ellie can read live.
+          </p>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            {/* META — Facebook + Instagram bundled because the ad
+                buying surfaces share a Pixel + CAPI infrastructure. */}
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-amber-300/40 transition-colors">
+              <div className="flex items-center gap-2 text-amber-300">
+                <Facebook className="w-4 h-4" />
+                <Instagram className="w-4 h-4" />
+                <span className="text-[10px] uppercase tracking-[0.28em]">Meta</span>
+              </div>
+              <p className="mt-3 text-base font-semibold text-white">
+                Facebook + Instagram
+              </p>
+              <ul className="mt-3 space-y-2 text-xs text-zinc-400 leading-relaxed">
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Full Pixel + Conversions API + retargeting audiences
+                    built off podcast listeners + landing-page visitors
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    30 vertical Reels / Stories per quarter, cut from
+                    Ellie&apos;s best podcast moments
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Weekly creative iteration · optimized against
+                    cost-per-subscriber, not vanity engagement
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* YOUTUBE — the platform Ellie's audience already lives
+                on; growth program builds on the existing channel
+                rather than starting from zero. */}
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-amber-300/40 transition-colors">
+              <div className="flex items-center gap-2 text-amber-300">
+                <Youtube className="w-4 h-4" />
+                <span className="text-[10px] uppercase tracking-[0.28em]">YouTube</span>
+              </div>
+              <p className="mt-3 text-base font-semibold text-white">
+                Long-form authority
+              </p>
+              <ul className="mt-3 space-y-2 text-xs text-zinc-400 leading-relaxed">
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Thumbnail + title A/B testing on every episode +
+                    SEO-tuned descriptions
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    YouTube Shorts loop · 6 shorts/episode cut from the
+                    long-form to feed the algorithm
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Paid push on best-performing episodes — YouTube ads
+                    are where high-trust niches close the 6-week
+                    consideration window
+                  </span>
+                </li>
+              </ul>
+            </div>
+
+            {/* INSTAGRAM (separate from Meta card) — focuses on the
+                DM-automation side: inbound funnel, story sequences,
+                community-building beats. */}
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-amber-300/40 transition-colors">
+              <div className="flex items-center gap-2 text-amber-300">
+                <Instagram className="w-4 h-4" />
+                <span className="text-[10px] uppercase tracking-[0.28em]">Instagram</span>
+              </div>
+              <p className="mt-3 text-base font-semibold text-white">
+                Story + DM funnels
+              </p>
+              <ul className="mt-3 space-y-2 text-xs text-zinc-400 leading-relaxed">
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Story sequences scripted around every episode drop —
+                    poll + question stickers + swipe-up funnels
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    DM auto-responder on keyword triggers · routes warm
+                    inbound straight into the AI CEO intake
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Reels distribution + cross-post automation so every
+                    Meta asset hits Instagram natively
+                  </span>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <p className="mt-6 max-w-3xl text-xs text-zinc-500 leading-relaxed">
+            All three platforms feed the same retargeting pool and the
+            same dashboard. Even a viewer who only watches a 15-second
+            Story becomes part of the audience the next ad campaign
+            converts.
+          </p>
+        </div>
+      </section>
+
       {/* DISTRIBUTION — federation amplification */}
       <section className="relative border-t border-white/5 bg-black/40">
         <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-            Distribution
+            Federation distribution
           </p>
           <h2
             className="mt-3 text-3xl sm:text-4xl tracking-tight"
