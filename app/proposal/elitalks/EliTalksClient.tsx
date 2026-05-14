@@ -183,6 +183,43 @@ export function EliTalksClient({
             for pennies on the dollar.
           </p>
 
+          {/* HERO CTA — primary partnership-activation button. Pink
+              brand pill (matches Ellie's channel palette) with a
+              hollow white triangle right-pointer.
+              TODO: swap href to the $4,500/month × 6-month PayPal
+              subscription URL once Sita creates the subscription plan
+              in PayPal Dashboard. Until then it points at the same
+              NCP link the bottom-of-page activate button uses so the
+              page still has a working payment path. */}
+          <div className="mt-10">
+            <a
+              href="https://www.paypal.com/ncp/payment/J7UZ9ECRSD2KE"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => ping("activate_partnership", "hero")}
+              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-500 hover:bg-pink-400 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-500/20"
+              data-testid="elitalks-activate-partnership-hero"
+            >
+              Activate this partnership
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg>
+            </a>
+            <p className="mt-3 text-[11px] uppercase tracking-[0.28em] text-zinc-500">
+              $4,500/month · 6-month subscription · Secure checkout via PayPal
+            </p>
+          </div>
+
           {/* Soft horizontal divider closes the hero so the eye knows
               the next section is a different beat. */}
           <div className="mt-10 h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
