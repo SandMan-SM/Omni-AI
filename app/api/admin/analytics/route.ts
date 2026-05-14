@@ -38,6 +38,53 @@ const RANGE_CONFIG: Record<Range, { ms: number; bucketUnit: 'hour' | 'day' | 'we
   'all': { ms: 365 * 86_400_000,       bucketUnit: 'week', bucketCount: 53, label: 'All time'   },
 };
 
+// ── Event-type classification ─────────────────────────────────────
+//
+// Today's federation emits a much wider event vocabulary than the
+// strict `['page_view', 'click', 'form_submit']` filter the analytics
+// endpoint used to use. Most newsroom + personal-brand tenants only
+// have the cross-promo widget (`sponsor.js`) mounted — never emits
+// `page_view`, only `sponsor_view` + `sponsor_click`. The strict
+// filter excluded all of that, leaving Beehive / Wasatch / Mainst /
+// Alira with literally 0 rows on the Site Analytics panel.
+//
+// Three buckets matched against the audit of every tenant's actual
+// event vocabulary:
+//
+//   PAGE_VIEW  — sponsor widget impressions count as page-view-
+//   equivalent because for newsroom tenants the cross-promo embed
+//   IS the visible surface.
+//
+//   CLICK      — every click-shaped engagement event, including the
+//   share variants, the proposal/elitalks CTAs, and the cross-promo
+//   sponsor_click. Future suffix variants (e.g. `<foo>_book_call`)
+//   should be added here as Sita ships them.
+//
+//   CONVERSION — form submits + LTB booking/cart events. Counted
+//   on the "Form Submits" KPI card.
+//
+// Engagement-only events (`scroll`, `scroll_depth`, `time_on_page`)
+// and operational pings (`audit_ping`, `test_ping`) are filtered
+// out at the DB query layer — they'd inflate counts without
+// representing meaningful actions.
+const PAGE_VIEW_TYPES = ['page_view', 'sponsor_view'] as const;
+const CLICK_TYPES = [
+  'click', 'sponsor_click', 'cta_click',
+  'share', 'asset_share', 'case_share',
+  'proposal_pay_intent', 'proposal_book_call',
+  'elitalks_book_call',
+  'elitalks_activate_full', 'elitalks_activate_klarna', 'elitalks_activate_alacarte',
+] as const;
+const CONVERSION_TYPES = ['form_submit', 'booking_completed', 'cart_add'] as const;
+const KPI_EVENT_TYPES = [
+  ...PAGE_VIEW_TYPES,
+  ...CLICK_TYPES,
+  ...CONVERSION_TYPES,
+] as readonly string[];
+const PAGE_VIEW_SET = new Set<string>(PAGE_VIEW_TYPES);
+const CLICK_SET = new Set<string>(CLICK_TYPES);
+const CONVERSION_SET = new Set<string>(CONVERSION_TYPES);
+
 function bucketKey(ts: number, unit: 'hour' | 'day' | 'week'): string {
   const d = new Date(ts);
   if (unit === 'hour') {
@@ -119,7 +166,7 @@ export async function GET(req: Request) {
         'event_type,event_category,action,page_url,session_id,visitor_id,target_id,value_text,user_agent,referrer,payload,created_at'
       )
       .gte('created_at', since)
-      .in('event_type', ['page_view', 'click', 'form_submit'])
+      .in('event_type', KPI_EVENT_TYPES as string[])
       .order('created_at', { ascending: false })
       .limit(50000);
     if (error) return serverErrorResponse('admin/analytics.GET', error);
@@ -165,7 +212,7 @@ export async function GET(req: Request) {
         'event_type,event_category,action,page_url,session_id,actor_id,actor_type,target_id,value_text,user_agent,properties,created_at'
       )
       .gte('created_at', since)
-      .in('event_type', ['page_view', 'click', 'form_submit']);
+      .in('event_type', KPI_EVENT_TYPES as string[]);
 
     if (hostParam) {
       q = q.or(
@@ -183,9 +230,14 @@ export async function GET(req: Request) {
     if (error) return serverErrorResponse('admin/analytics.GET', error);
     rows = (data as AnalyticsRow[] | null) ?? [];
   }
-  const pageViews = rows.filter(r => r.event_type === 'page_view');
-  const clicks = rows.filter(r => r.event_type === 'click');
-  const submits = rows.filter(r => r.event_type === 'form_submit');
+  // Classify against the broadened buckets defined at module top.
+  // sponsor_view rolls into page-views so cross-promo-only tenants
+  // (Beehive, Mainst, Wasatch, Alira) don't render as zeros. Every
+  // share/CTA/pay-intent variant rolls into clicks. Booking +
+  // cart-add count as form-submit-equivalent conversions.
+  const pageViews = rows.filter(r => PAGE_VIEW_SET.has(r.event_type ?? ''));
+  const clicks = rows.filter(r => CLICK_SET.has(r.event_type ?? ''));
+  const submits = rows.filter(r => CONVERSION_SET.has(r.event_type ?? ''));
 
   const uniq = (arr: { [k: string]: unknown }[], key: string) =>
     new Set(arr.map(r => r[key]).filter(Boolean)).size;
