@@ -88,6 +88,25 @@
   animation: chrome-shine 3s linear infinite;
 }
 
+/* Pure-white chrome flash — used by the Ellie Talks activate
+   button so the letters shimmer against the translucent pink pill
+   without picking up a gold/silver tint. */
+.chrome-white {
+  background: linear-gradient(
+    90deg,
+    #ffffff 0%,
+    #f3f4f6 25%,
+    #ffffff 50%,
+    #e5e7eb 75%,
+    #ffffff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: chrome-shine 3s linear infinite;
+}
+
 .btn-chrome-gold {
   background: linear-gradient(
     90deg,
