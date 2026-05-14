@@ -195,10 +195,10 @@ export function EliTalksClient({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "hero")}
-              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-200 hover:bg-pink-100 px-8 py-4 text-sm font-bold tracking-wide text-zinc-900 transition-colors shadow-lg shadow-pink-200/30"
+              className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
               data-testid="elitalks-activate-partnership-hero"
             >
-              Activate this partnership
+              <span className="chrome-white">Activate this partnership</span>
               <svg
                 viewBox="0 0 24 24"
                 width="16"
@@ -730,10 +730,10 @@ export function EliTalksClient({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "footer")}
-              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-200 hover:bg-pink-100 px-8 py-4 text-sm font-bold tracking-wide text-zinc-900 transition-colors shadow-lg shadow-pink-200/30"
+              className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
               data-testid="elitalks-activate-partnership"
             >
-              Activate this partnership
+              <span className="chrome-white">Activate this partnership</span>
               {/* Hollow triangle — lucide Play renders as outline by
                   default (no fill="currentColor"), so this is a white
                   stroke triangle facing right per Sita's spec. */}
