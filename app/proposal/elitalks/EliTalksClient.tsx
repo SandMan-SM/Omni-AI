@@ -95,20 +95,38 @@ export function EliTalksClient({
           through. min-h-screen + relative kept so internal sections'
           relative/absolute positioning still works. */}
       <div className="relative z-10 min-h-screen text-zinc-100 overflow-hidden elitalks-page">
-        {/* HERO */}
+        {/* HERO — polished pass: brand chip above the eyebrow, italic
+            accent on "Ellie Talks", colored serif "Six months." for
+            visual hierarchy, hero meta strip under the body paragraph
+            with the three highlights so the page sells itself before
+            the first scroll. */}
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 pt-20 pb-14 sm:pt-28 sm:pb-20">
-          <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
+          {/* Brand chip — small pink/magenta accent that nods to
+              Ellie's actual channel branding without overpowering the
+              cosmic-amber Omni AI palette. */}
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full border border-pink-300/30 bg-pink-300/[0.06] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-pink-200"
+          >
+            <Mic className="w-3 h-3" />
+            Ellie Talks · @ellieetalks
+          </span>
+          <p className="mt-5 text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
             Omni AI × Ellie Talks · 6-month partnership
           </p>
           <h1
             className="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.05]"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            One audience. Six channels. Six months.
+            One audience.{" "}
+            <span className="text-amber-300">Six channels.</span>{" "}
+            <em className="font-normal text-pink-200/90 not-italic sm:italic">
+              Six months.
+            </em>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
-            A strategic partnership between Omni AI and the Ellie Talks
+            A strategic partnership between Omni AI and the{" "}
+            <em className="text-white not-italic">Ellie Talks</em>{" "}
             podcast. Over six months we ship the surrounding
             infrastructure most podcasts spend twelve months and a
             six-figure budget assembling piecemeal — three websites,
@@ -116,6 +134,30 @@ export function EliTalksClient({
             branded newsletter, and federation cross-promotion across
             the whole network.
           </p>
+
+          {/* Hero meta strip — three compact pills under the body
+              paragraph that reinforce the scope without showing
+              price. Sits as visual punctuation to lift the page from
+              "headline + paragraph" to "headline + paragraph +
+              evidence." */}
+          <div className="mt-8 flex flex-wrap gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/30 bg-amber-300/[0.05] px-3 py-1.5 text-[11px] font-medium tracking-wide text-amber-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-300" />
+              3 bespoke websites
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-zinc-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-300/80" />
+              6 distribution channels
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-zinc-200">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300/80" />
+              16+ federation surfaces
+            </span>
+          </div>
+
+          {/* Soft horizontal divider closes the hero so the eye knows
+              the next section is a different beat. */}
+          <div className="mt-10 h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
         </div>
       </section>
 
