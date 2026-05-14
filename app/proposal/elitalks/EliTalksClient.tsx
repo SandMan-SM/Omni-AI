@@ -167,6 +167,118 @@ export function EliTalksClient({
         </div>
       </section>
 
+      {/* DEAL AT A GLANCE — count-based summary. Ben's feedback was
+          "take out costs" — meaning dollar amounts — not "take out
+          all numbers." The scope dimensions (months / sites /
+          channels / federation surfaces) communicate scale without
+          showing money. */}
+      <section className="relative">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+            Scope at a glance
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-4xl tracking-tight"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            The partnership in five numbers.
+          </h2>
+
+          <div className="mt-10 grid grid-cols-2 sm:grid-cols-5 gap-3">
+            <div className="rounded-xl border border-amber-300/30 bg-amber-300/[0.04] p-5">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Duration</p>
+              <p className="mt-2 text-2xl sm:text-3xl text-amber-300" style={{ fontFamily: "Georgia, serif" }}>
+                6 months
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Websites</p>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-white" style={{ fontFamily: "Georgia, serif" }}>
+                3 bespoke
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Channels</p>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-white" style={{ fontFamily: "Georgia, serif" }}>
+                6
+              </p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Federation surfaces</p>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-white" style={{ fontFamily: "Georgia, serif" }}>
+                16+
+              </p>
+            </div>
+            <div className="rounded-xl border border-amber-300/30 bg-amber-300/[0.04] p-5">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Live dashboard</p>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-amber-300" style={{ fontFamily: "Georgia, serif" }}>
+                1
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHAT'S INCLUDED — same line items the retail-breakdown table
+          showed, just with the price column removed per Ben's feedback.
+          Keeps the scope clarity Ellie needs to evaluate the deal
+          without exposing the cost ladder Ben quotes Natalie privately. */}
+      <section id="what-builds" className="relative border-t border-white/5 bg-black/40">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+            What gets built
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-4xl tracking-tight"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            The full scope, line by line.
+          </h2>
+          <p className="mt-3 max-w-2xl text-sm text-zinc-400">
+            Every surface that ships across the six-month build window.
+            Each line is its own deliverable with its own spec — and
+            its own measurable output in the dashboard.
+          </p>
+
+          <div className="mt-10 divide-y divide-white/5 border-y border-white/5">
+            {[
+              {
+                item: "Three bespoke websites",
+                spec: "Three custom Next.js builds — full codebase ownership, JSON-LD schema, edge-rendered OG, federation tracker wired in. Mid-market agencies invoice $25K+ for one site of this spec.",
+              },
+              {
+                item: "AI CEO layer + automation",
+                spec: "Autonomous executive agent per site — lead routing, follow-up sequences, calendar booking, escalation paths.",
+              },
+              {
+                item: "SEO + GEO content engine",
+                spec: "Organic discovery for every show topic — geographic + topical landing pages, schema-rich articles, internal link graph. Built for buyer-intent search.",
+              },
+              {
+                item: "Newsletter system + distribution",
+                spec: "Branded Resend infrastructure, suppression list, engagement tracking, mirrored into the agentic dashboard.",
+              },
+              {
+                item: "Calendar + inbound automation",
+                spec: "Cal.com integration, intake form scoring, slot routing, no-show recovery.",
+              },
+              {
+                item: "Federation cross-promotion",
+                spec: "Featured across all federation-owned newsletters + sites + the Omni AI portfolio for the duration of the deal.",
+              },
+            ].map((line) => (
+              <div
+                key={line.item}
+                className="grid gap-3 sm:grid-cols-[1.4fr_2fr] py-5 items-start"
+              >
+                <p className="text-base font-semibold text-white">{line.item}</p>
+                <p className="text-sm text-zinc-400 leading-relaxed">{line.spec}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* DELIVERABLE ICONS — the eight surfaces */}
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
