@@ -299,37 +299,35 @@ export function EliTalksClient({
             The partnership in five numbers.
           </h2>
 
+          {/* Five uniform stat tiles. Each card is the same height,
+              the value is the visual anchor (big serif, centered)
+              and the label sits as a small caps tag below. Words like
+              "months" / "bespoke" / "federation" are baked into the
+              label so the value column stays a single clean token —
+              no awkward line-wraps, no mismatched x-heights. */}
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Duration</p>
-              <p className="mt-2 text-2xl sm:text-3xl text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
-                6 months
-              </p>
-            </div>
-            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Websites</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
-                3 bespoke
-              </p>
-            </div>
-            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Channels</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
-                6
-              </p>
-            </div>
-            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Federation surfaces</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
-                16+
-              </p>
-            </div>
-            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Built value</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
-                $100K+
-              </p>
-            </div>
+            {[
+              { value: "6",       label: "Months" },
+              { value: "3",       label: "Bespoke sites" },
+              { value: "6",       label: "Channels" },
+              { value: "16+",     label: "Federation surfaces" },
+              { value: "$100K+",  label: "Built value" },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-pink-300/30 bg-pink-300/[0.04] px-3 py-6 text-center"
+              >
+                <p
+                  className="text-3xl sm:text-4xl tabular-nums text-pink-300 leading-none"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  {stat.value}
+                </p>
+                <p className="mt-3 text-[10px] uppercase tracking-[0.28em] text-zinc-400">
+                  {stat.label}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
