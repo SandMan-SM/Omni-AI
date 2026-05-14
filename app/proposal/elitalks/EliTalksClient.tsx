@@ -195,7 +195,7 @@ export function EliTalksClient({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "hero")}
-              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-500 hover:bg-pink-400 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-500/20"
+              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-200 hover:bg-pink-100 px-8 py-4 text-sm font-bold tracking-wide text-zinc-900 transition-colors shadow-lg shadow-pink-200/30"
               data-testid="elitalks-activate-partnership-hero"
             >
               Activate this partnership
@@ -745,7 +745,7 @@ export function EliTalksClient({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "footer")}
-              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-500 hover:bg-pink-400 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-500/20"
+              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-200 hover:bg-pink-100 px-8 py-4 text-sm font-bold tracking-wide text-zinc-900 transition-colors shadow-lg shadow-pink-200/30"
               data-testid="elitalks-activate-partnership"
             >
               Activate this partnership
