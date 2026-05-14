@@ -18,7 +18,7 @@ const DISTRIBUTION: { title: string; body: string }[] = [
   {
     title: "Federation newsroom network",
     body:
-      "Three Utah-based newsrooms (Utah Main Street · Beehive Biz Pulse · The Wasatch Post) feature Ellie Talks episodes inline. Organic + GEO traffic compounds for the duration of the deal.",
+      "Three news outlets feature Ellie Talks episodes inline. Organic + GEO traffic compounds for the duration of the deal.",
   },
   {
     title: "Federation cross-promo embed",

@@ -553,8 +553,8 @@ export function EliTalksClient({
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
             Ellie Talks doesn&apos;t live in a vacuum. For six months it&apos;s
-            wired into a network of 14 federation sites, three Utah
-            newsrooms, and every operator newsletter — same audience
+            wired into a network of 14 federation sites, three news
+            outlets, and every operator newsletter — same audience
             graph $Mafi uses to amplify her own portfolio.
           </p>
 
