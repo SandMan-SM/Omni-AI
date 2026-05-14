@@ -688,9 +688,55 @@ export function EliTalksClient({
         </div>
       </section>
 
-      {/* No pricing block on this surface — Ben handles the number
-          directly with Natalie. Page is the relationship-trust play,
-          not a self-serve checkout. */}
+      {/* ACTIVATE PARTNERSHIP — single pink CTA that drops Ellie into
+          the PayPal checkout flow. No price shown anywhere on the page;
+          the number lives on the PayPal page Ben/Natalie set up. Hollow
+          (outline) Play triangle to the right of the label so the
+          button reads as decisive forward-motion without screaming. */}
+      <section className="relative border-t border-white/5">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20 text-center">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-pink-300/80">
+            Ready when you are
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-5xl tracking-tight"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            One button. Six months of build.
+          </h2>
+          <div className="mt-10 flex justify-center">
+            <a
+              href="https://www.paypal.com/ncp/payment/J7UZ9ECRSD2KE"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => ping("activate_partnership", "footer")}
+              className="inline-flex items-center justify-center gap-3 rounded-full bg-pink-500 hover:bg-pink-400 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-500/20"
+              data-testid="elitalks-activate-partnership"
+            >
+              Activate this partnership
+              {/* Hollow triangle — lucide Play renders as outline by
+                  default (no fill="currentColor"), so this is a white
+                  stroke triangle facing right per Sita's spec. */}
+              <svg
+                viewBox="0 0 24 24"
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <polygon points="6 3 20 12 6 21 6 3" />
+              </svg>
+            </a>
+          </div>
+          <p className="mt-4 text-[11px] uppercase tracking-[0.28em] text-zinc-500">
+            Secure checkout via PayPal
+          </p>
+        </div>
+      </section>
 
       {/* PASS IT FORWARD — share card so Ellie's audience can fan
           this out without us touching their list. Same battle-tested
