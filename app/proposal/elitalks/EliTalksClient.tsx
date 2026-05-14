@@ -356,31 +356,6 @@ export function EliTalksClient({
               </div>
             ))}
           </div>
-
-          {/* Closing leverage line — restates the value frame after
-              the scope table. Specific dollar amounts for each line
-              stay off the page (per Ben's feedback) but the total
-              retail value is the headline of the deal and belongs
-              right here. */}
-          <div className="mt-8 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-6">
-            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-300">
-              Total built value
-            </p>
-            <p
-              className="mt-3 text-2xl sm:text-3xl text-white"
-              style={{ fontFamily: "Georgia, serif" }}
-            >
-              Over <span className="text-amber-300">$100,000</span> in
-              bespoke digital infrastructure.
-            </p>
-            <p className="mt-3 text-sm text-zinc-400 leading-relaxed max-w-2xl">
-              That&apos;s the agency-equivalent retail value of the
-              full scope above — three Tier-3 builds, the AI CEO
-              layer, the organic engine, the newsletter system, the
-              calendar stack, and federation distribution. The
-              partnership ships all of it for pennies on the dollar.
-            </p>
-          </div>
         </div>
       </section>
 
