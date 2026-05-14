@@ -26,6 +26,7 @@ interface AnalyticsResponse {
   range: Range;
   rangeLabel: string;
   bucketUnit: 'hour' | 'day' | 'week';
+  host: string;
   traffic: {
     pageViews: number;
     sessions: number;
@@ -57,7 +58,26 @@ const PALETTE = {
   slate: "#64748b",
 };
 
-export function OmniSiteAnalytics() {
+type OmniSiteAnalyticsProps = {
+  /**
+   * Optional inbound slug (federation tracker partition). When set to
+   * a valid INBOUND_SLUGS member, the API reads from
+   * `inbound_<slug>_events` instead of the central `events` table.
+   * This is the correct source for every workspace except Omni AI —
+   * passing only `host` for those tenants used to read 0 rows out of
+   * `events` and silently fall back to omnileadsagi.com data.
+   */
+  slug?: string;
+  /**
+   * Optional host (domain) to scope analytics to. e.g. "sitanimafi.live".
+   * Used when slug isn't a valid INBOUND_SLUGS entry. When omitted,
+   * the API falls back to omnileadsagi.com so the legacy admin view
+   * keeps its prior behavior.
+   */
+  host?: string;
+};
+
+export function OmniSiteAnalytics({ slug, host }: OmniSiteAnalyticsProps = {}) {
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,7 +91,9 @@ export function OmniSiteAnalytics() {
     setLoading(true);
     setError(null);
     const token = typeof window !== "undefined" ? localStorage.getItem("omni_token") : null;
-    fetch(`/api/admin/analytics?range=${range}`, {
+    const slugQp = slug ? `&slug=${encodeURIComponent(slug)}` : "";
+    const hostQp = host ? `&host=${encodeURIComponent(host)}` : "";
+    fetch(`/api/admin/analytics?range=${range}${slugQp}${hostQp}`, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       cache: "no-store",
     })
@@ -86,7 +108,7 @@ export function OmniSiteAnalytics() {
       .catch((e) => { if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load"); })
       .finally(() => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [reloadAt, range]);
+  }, [reloadAt, range, slug, host]);
 
   const t = data?.traffic;
   const totalDevice = (data?.devices.mobile ?? 0) + (data?.devices.desktop ?? 0);
@@ -140,7 +162,7 @@ export function OmniSiteAnalytics() {
       >
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 11, color: "#10b981", letterSpacing: "1.2px", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>
-            omnileadsagi.com
+            {data?.host ?? host ?? "omnileadsagi.com"}
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.6px", margin: 0 }}>
             Site Analytics
@@ -192,7 +214,7 @@ export function OmniSiteAnalytics() {
             Refresh
           </button>
           <a
-            href="https://omnileadsagi.com"
+            href={`https://${data?.host ?? host ?? "omnileadsagi.com"}`}
             target="_blank"
             rel="noreferrer"
             style={{

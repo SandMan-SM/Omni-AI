@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin-auth';
 import { serverErrorResponse } from '@/lib/api-errors';
+import { INBOUND_SLUGS, type InboundSlug } from '@/lib/inbound-types';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -62,24 +63,126 @@ export async function GET(req: Request) {
   const cfg = RANGE_CONFIG[rangeParam] ?? RANGE_CONFIG['30d'];
   const range: Range = (cfg === RANGE_CONFIG[rangeParam]) ? rangeParam : '30d';
 
+  // Per-tenant scope. Two ways to scope:
+  //
+  //   1. ?slug=<INBOUND_SLUGS member> → reads inbound_<slug>_events
+  //      directly. Used when the dashboard's workspace selector picks
+  //      a federation tenant (Sitani Mafi, CPS, etc) whose site
+  //      doesn't write into the central `events` table — its tracker
+  //      writes into its own inbound_<slug>_events partition. Before
+  //      this, picking those workspaces silently fell back to
+  //      omnileadsagi.com data (the bug Sita kept hitting).
+  //
+  //   2. ?host=<hostname> → filters the central `events` table to
+  //      rows whose page_url matches the host. Used for omnileadsagi.com
+  //      (the only tenant that actually writes into `events`) and
+  //      preserved for backward compatibility.
+  //
+  // Slug wins if both are passed.
+  const slugParam = (url.searchParams.get('slug') || '').trim().toLowerCase() as InboundSlug;
+  const isValidSlug = (INBOUND_SLUGS as readonly string[]).includes(slugParam);
+  const hostParam = (url.searchParams.get('host') || '').trim().toLowerCase();
+  const host = isValidSlug ? slugParam : (hostParam || 'omnileadsagi.com');
+
   const sb = createAdminClient();
   const since = new Date(Date.now() - cfg.ms).toISOString();
 
-  const { data, error } = await sb
-    .from('events')
-    .select(
-      'event_type,event_category,action,page_url,session_id,actor_id,actor_type,target_id,value_text,user_agent,properties,created_at'
-    )
-    .gte('created_at', since)
-    .in('event_type', ['page_view', 'click', 'form_submit'])
-    .order('created_at', { ascending: false })
-    .limit(50000);
+  // Schema map — the inbound tables use slightly different field
+  // names than `events`. We normalize at read time so the rest of the
+  // pipeline (counts / top pages / referrers / devices) stays
+  // unchanged regardless of source.
+  type AnalyticsRow = {
+    event_type?: string;
+    event_category?: string | null;
+    action?: string | null;
+    page_url?: string | null;
+    session_id?: string | null;
+    actor_id?: string | null;
+    actor_type?: string | null;
+    target_id?: string | null;
+    value_text?: string | null;
+    user_agent?: string | null;
+    properties?: Record<string, unknown> | null;
+    created_at?: string | null;
+  };
 
-  if (error) {
-    return serverErrorResponse('admin/analytics.GET', error);
+  let rows: AnalyticsRow[] = [];
+
+  if (isValidSlug) {
+    // Per-tenant: query the inbound_<slug>_events partition. The slug
+    // is allowlist-validated against INBOUND_SLUGS so this can't be
+    // weaponized as table-name injection.
+    const tableName = `inbound_${slugParam}_events`;
+    const { data, error } = await sb
+      .from(tableName)
+      .select(
+        'event_type,event_category,action,page_url,session_id,visitor_id,target_id,value_text,user_agent,referrer,payload,created_at'
+      )
+      .gte('created_at', since)
+      .in('event_type', ['page_view', 'click', 'form_submit'])
+      .order('created_at', { ascending: false })
+      .limit(50000);
+    if (error) return serverErrorResponse('admin/analytics.GET', error);
+    // Map inbound schema -> events schema so the downstream code is
+    // schema-agnostic. visitor_id stands in for actor_id (visitor
+    // uniqueness counts), payload becomes properties (with referrer
+    // merged in so the top-referrers logic still finds it).
+    type InboundRow = {
+      event_type?: string;
+      event_category?: string | null;
+      action?: string | null;
+      page_url?: string | null;
+      session_id?: string | null;
+      visitor_id?: string | null;
+      target_id?: string | null;
+      value_text?: string | null;
+      user_agent?: string | null;
+      referrer?: string | null;
+      payload?: Record<string, unknown> | null;
+      created_at?: string | null;
+    };
+    rows = ((data as InboundRow[] | null) ?? []).map((r) => ({
+      event_type: r.event_type,
+      event_category: r.event_category ?? null,
+      action: r.action ?? null,
+      page_url: r.page_url ?? null,
+      session_id: r.session_id ?? null,
+      actor_id: r.visitor_id ?? null,
+      actor_type: null,
+      target_id: r.target_id ?? null,
+      value_text: r.value_text ?? null,
+      user_agent: r.user_agent ?? null,
+      properties: { ...(r.payload ?? {}), referrer: r.referrer ?? null },
+      created_at: r.created_at ?? null,
+    }));
+  } else {
+    // Central events table (omnileadsagi.com + anything else routed
+    // through the universal SiteTracker). Host filter applies when
+    // ?host= is explicit.
+    let q = sb
+      .from('events')
+      .select(
+        'event_type,event_category,action,page_url,session_id,actor_id,actor_type,target_id,value_text,user_agent,properties,created_at'
+      )
+      .gte('created_at', since)
+      .in('event_type', ['page_view', 'click', 'form_submit']);
+
+    if (hostParam) {
+      q = q.or(
+        `page_url.ilike.https://${hostParam}/%,` +
+        `page_url.ilike.https://${hostParam},` +
+        `page_url.ilike.http://${hostParam}/%,` +
+        `page_url.ilike.http://${hostParam}`
+      );
+    }
+
+    const { data, error } = await q
+      .order('created_at', { ascending: false })
+      .limit(50000);
+
+    if (error) return serverErrorResponse('admin/analytics.GET', error);
+    rows = (data as AnalyticsRow[] | null) ?? [];
   }
-
-  const rows = data || [];
   const pageViews = rows.filter(r => r.event_type === 'page_view');
   const clicks = rows.filter(r => r.event_type === 'click');
   const submits = rows.filter(r => r.event_type === 'form_submit');
@@ -158,6 +261,7 @@ export async function GET(req: Request) {
     bucketMap.set(key, { page_views: 0, sessions: new Set(), clicks: 0 });
   }
   for (const r of pageViews) {
+    if (!r.created_at) continue;
     const key = bucketKey(new Date(r.created_at).getTime(), cfg.bucketUnit);
     const b = bucketMap.get(key);
     if (!b) continue;
@@ -165,6 +269,7 @@ export async function GET(req: Request) {
     if (r.session_id) b.sessions.add(r.session_id);
   }
   for (const r of clicks) {
+    if (!r.created_at) continue;
     const key = bucketKey(new Date(r.created_at).getTime(), cfg.bucketUnit);
     const b = bucketMap.get(key);
     if (!b) continue;
@@ -230,8 +335,7 @@ export async function GET(req: Request) {
   // Track unique session_ids per referrer so the card reads "X sessions"
   // truthfully. The previous version incremented per page_view, which made
   // a single visitor with 10 page-views from Google show as 10 "sessions"
-  // from Google.
-  const host = 'omnileadsagi.com';
+  // from Google. `host` resolved above (per-tenant or default omnileadsagi).
   const refSessions = new Map<string, Set<string>>();
   const addSession = (key: string, sid: string | null | undefined) => {
     if (!sid) return;
@@ -277,6 +381,7 @@ export async function GET(req: Request) {
     range,
     rangeLabel: cfg.label,
     bucketUnit: cfg.bucketUnit,
+    host,
     traffic,
     daily,
     topPages,

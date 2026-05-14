@@ -218,11 +218,19 @@ export default function AnalyticsPage() {
           }
         `}</style>
 
-        {/* Omni AI website analytics — first-party event-stream view of
-            omnileadsagi.com. Lives at the top because this is the most-
-            asked-for view; the per-client InboundAnalytics + agency
-            outbound metrics stay below for drill-down. */}
-        <OmniSiteAnalytics />
+        {/* Site analytics — scoped to the active workspace.
+            We pass BOTH the slug and (when present) the host so the
+            API can pick the right data source: when the slug matches
+            an INBOUND_SLUGS entry the endpoint reads from that
+            tenant's inbound_<slug>_events partition; otherwise it
+            falls back to host-filtering the central `events` table.
+            Sita kept seeing omnileadsagi.com numbers on Sitani Mafi
+            because every tenant except Omni AI writes its tracker
+            data into the inbound partitions, not `events`. */}
+        <OmniSiteAnalytics
+          slug={selectedBiz?.slug ?? undefined}
+          host={hostFromWebsite(selectedBiz?.website)}
+        />
 
         {/* Per-brand inbound (client website) analytics */}
         <InboundAnalytics />
@@ -362,4 +370,23 @@ function KV({ label, value }: { label: string; value: string }) {
 
 function Empty() {
   return <div style={{ fontSize: 12, color: '#444', textAlign: 'center', padding: 16 }}>No data yet</div>;
+}
+
+// Extract the hostname from a Business.website value. The field may be
+// stored as a bare domain ("sitanimafi.live"), a full URL ("https://
+// sitanimafi.live/about?utm=foo"), or null. We strip protocol, path,
+// query, and a leading "www." so the API filter matches what the
+// inbound trackers write into events.page_url. Returns undefined when
+// no usable host is found, so OmniSiteAnalytics falls back to its
+// default (omnileadsagi.com).
+function hostFromWebsite(website: string | null | undefined): string | undefined {
+  if (!website) return undefined;
+  const trimmed = website.trim();
+  if (!trimmed) return undefined;
+  try {
+    const u = new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
+    return u.hostname.toLowerCase().replace(/^www\./, "");
+  } catch {
+    return undefined;
+  }
 }
