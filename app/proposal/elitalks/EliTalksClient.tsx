@@ -448,15 +448,18 @@ export function EliTalksClient({
             Where Ellie&apos;s next subscribers actually live.
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
-            Three platforms, one attribution stack. Every dollar of
-            paid spend feeds the same retargeting pool, every podcast
-            episode gets repurposed across formats, every conversion
-            lands in the same dashboard Ellie can read live.
+            We build the engine that connects every surface — website,
+            social, podcast, newsletter — into one continuous loop.
+            Listeners discover Ellie on one platform and stay nurtured
+            across all of them, so attention never has to be earned
+            from scratch twice.
           </p>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            {/* META — Facebook + Instagram bundled because the ad
-                buying surfaces share a Pixel + CAPI infrastructure. */}
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
+            {/* META — the social asset layer. Reframed away from
+                tactical bullets toward the routing + retention story
+                per Sita's brief: less "what we do", more "how the
+                pieces fit together to compound." */}
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-amber-300/40 transition-colors">
               <div className="flex items-center gap-2 text-amber-300">
                 <Facebook className="w-4 h-4" />
@@ -464,101 +467,84 @@ export function EliTalksClient({
                 <span className="text-[10px] uppercase tracking-[0.28em]">Meta</span>
               </div>
               <p className="mt-3 text-base font-semibold text-white">
-                Facebook + Instagram
+                The social gravity well
               </p>
-              <ul className="mt-3 space-y-2 text-xs text-zinc-400 leading-relaxed">
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
+                Facebook and Instagram become the first touch and the
+                eleventh — the surfaces where new listeners meet Ellie
+                and where existing ones keep choosing to come back.
+              </p>
+              <ul className="mt-4 space-y-2 text-xs text-zinc-400 leading-relaxed">
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    Full Pixel + Conversions API + retargeting audiences
-                    built off podcast listeners + landing-page visitors
+                    A library of social assets built off Ellie&apos;s
+                    best podcast moments — content the audience comes
+                    back for, not noise the algorithm forgets.
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    30 vertical Reels / Stories per quarter, cut from
-                    Ellie&apos;s best podcast moments
+                    Every post routes back to the website, and every
+                    site visit feeds the retargeting pool. The loop
+                    compounds — traffic earned once gets nurtured
+                    twenty times.
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    Weekly creative iteration · optimized against
-                    cost-per-subscriber, not vanity engagement
+                    The result is retention disguised as discovery —
+                    listeners stay inside Ellie&apos;s orbit because
+                    every channel is quietly handing them off to the
+                    next one.
                   </span>
                 </li>
               </ul>
             </div>
 
-            {/* YOUTUBE — the platform Ellie's audience already lives
-                on; growth program builds on the existing channel
-                rather than starting from zero. */}
+            {/* YOUTUBE — the depth layer. Long-form is where trust
+                actually compounds; the framing is about how YouTube
+                anchors the audience back to the rest of the system. */}
             <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-amber-300/40 transition-colors">
               <div className="flex items-center gap-2 text-amber-300">
                 <Youtube className="w-4 h-4" />
                 <span className="text-[10px] uppercase tracking-[0.28em]">YouTube</span>
               </div>
               <p className="mt-3 text-base font-semibold text-white">
-                Long-form authority
+                The trust compounding layer
               </p>
-              <ul className="mt-3 space-y-2 text-xs text-zinc-400 leading-relaxed">
-                <li className="flex gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
-                  <span>
-                    Thumbnail + title A/B testing on every episode +
-                    SEO-tuned descriptions
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
-                  <span>
-                    YouTube Shorts loop · 6 shorts/episode cut from the
-                    long-form to feed the algorithm
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
-                  <span>
-                    Paid push on best-performing episodes — YouTube ads
-                    are where high-trust niches close the 6-week
-                    consideration window
-                  </span>
-                </li>
-              </ul>
-            </div>
-
-            {/* INSTAGRAM (separate from Meta card) — focuses on the
-                DM-automation side: inbound funnel, story sequences,
-                community-building beats. */}
-            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-amber-300/40 transition-colors">
-              <div className="flex items-center gap-2 text-amber-300">
-                <Instagram className="w-4 h-4" />
-                <span className="text-[10px] uppercase tracking-[0.28em]">Instagram</span>
-              </div>
-              <p className="mt-3 text-base font-semibold text-white">
-                Story + DM funnels
+              <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
+                YouTube is where attention turns into belief. Long-form
+                gives the audience a reason to stay, and the system
+                gives them every reason to come back.
               </p>
-              <ul className="mt-3 space-y-2 text-xs text-zinc-400 leading-relaxed">
+              <ul className="mt-4 space-y-2 text-xs text-zinc-400 leading-relaxed">
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    Story sequences scripted around every episode drop —
-                    poll + question stickers + swipe-up funnels
+                    Every episode becomes a hub — clipped, captioned,
+                    and routed outward so a single recording feeds
+                    weeks of social, search, and newsletter touchpoints.
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    DM auto-responder on keyword triggers · routes warm
-                    inbound straight into the AI CEO intake
+                    Viewers don&apos;t just watch — they land back on
+                    Ellie&apos;s site, opt into the newsletter, and
+                    re-enter the social loop. The same person sees the
+                    brand three times in three places without ever
+                    feeling pursued.
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    Reels distribution + cross-post automation so every
-                    Meta asset hits Instagram natively
+                    Trust accrues quietly. By month six the audience
+                    isn&apos;t a list — it&apos;s a community moving
+                    between channels on its own.
                   </span>
                 </li>
               </ul>
@@ -566,10 +552,11 @@ export function EliTalksClient({
           </div>
 
           <p className="mt-6 max-w-3xl text-xs text-zinc-500 leading-relaxed">
-            All three platforms feed the same retargeting pool and the
-            same dashboard. Even a viewer who only watches a 15-second
-            Story becomes part of the audience the next ad campaign
-            converts.
+            Each platform hands the audience to the next. Website to
+            social, social to podcast, podcast to newsletter, newsletter
+            back to website. Massive lifts in retention, traffic, and
+            nurturing follow from the loop itself — not from any single
+            channel doing more.
           </p>
         </div>
       </section>
