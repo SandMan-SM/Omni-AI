@@ -161,7 +161,7 @@ export function EliTalksClient({
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-300/[0.10] px-3 py-1.5 text-[11px] font-semibold tracking-wide text-amber-200">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-200" />
-              $100K+ built · pennies on the dollar
+              $100K+ built
             </span>
           </div>
 
