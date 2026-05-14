@@ -737,7 +737,7 @@ export function EliTalksClient({
             className="mt-3 text-3xl sm:text-5xl tracking-tight"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            One button. Six months of build.
+            One button. $100K+ in digital infrastructure.
           </h2>
           <div className="mt-10 flex justify-center">
             <a
