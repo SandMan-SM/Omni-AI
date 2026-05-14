@@ -198,7 +198,17 @@ export function EliTalksClient({
             className="mt-3 text-3xl sm:text-4xl tracking-tight max-w-3xl"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            {about.headline}
+            {/* Headline rendered with "Ellie Talks" tinted pink to
+                tie back to her channel brand. Split on the phrase so
+                the surrounding copy keeps its default white serif. */}
+            {about.headline.split("Ellie Talks").map((part, i, arr) => (
+              <span key={i}>
+                {part}
+                {i < arr.length - 1 && (
+                  <span className="text-pink-300">Ellie Talks</span>
+                )}
+              </span>
+            ))}
           </h2>
           <p className="mt-5 max-w-3xl text-base text-zinc-300 leading-relaxed">
             {about.body}
@@ -206,7 +216,7 @@ export function EliTalksClient({
 
           <div className="mt-10 grid gap-3 sm:grid-cols-3">
             <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-5">
-              <Mic className="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" />
+              <Mic className="w-5 h-5 text-pink-300 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-white">The asset</p>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
@@ -215,7 +225,7 @@ export function EliTalksClient({
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-5">
-              <Network className="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" />
+              <Network className="w-5 h-5 text-pink-300 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-white">The infrastructure</p>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
@@ -224,7 +234,7 @@ export function EliTalksClient({
               </div>
             </div>
             <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.02] p-5">
-              <Sparkles className="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" />
+              <Sparkles className="w-5 h-5 text-pink-300 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold text-white">The compound</p>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
@@ -254,34 +264,34 @@ export function EliTalksClient({
           </h2>
 
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-5 gap-3">
-            <div className="rounded-xl border border-amber-300/30 bg-amber-300/[0.04] p-5">
+            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
               <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Duration</p>
-              <p className="mt-2 text-2xl sm:text-3xl text-amber-300" style={{ fontFamily: "Georgia, serif" }}>
+              <p className="mt-2 text-2xl sm:text-3xl text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
                 6 months
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
               <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Websites</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-white" style={{ fontFamily: "Georgia, serif" }}>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
                 3 bespoke
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
               <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Channels</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-white" style={{ fontFamily: "Georgia, serif" }}>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
                 6
               </p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/[0.02] p-5">
+            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
               <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Federation surfaces</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-white" style={{ fontFamily: "Georgia, serif" }}>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
                 16+
               </p>
             </div>
-            <div className="rounded-xl border border-amber-300/30 bg-amber-300/[0.04] p-5">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Live dashboard</p>
-              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-amber-300" style={{ fontFamily: "Georgia, serif" }}>
-                1
+            <div className="rounded-xl border border-pink-300/30 bg-pink-300/[0.04] p-5">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">Built value</p>
+              <p className="mt-2 text-2xl sm:text-3xl tabular-nums text-pink-300" style={{ fontFamily: "Georgia, serif" }}>
+                $100K+
               </p>
             </div>
           </div>
