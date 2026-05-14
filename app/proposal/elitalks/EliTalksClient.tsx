@@ -185,15 +185,13 @@ export function EliTalksClient({
 
           {/* HERO CTA — primary partnership-activation button. Pink
               brand pill (matches Ellie's channel palette) with a
-              hollow white triangle right-pointer.
-              TODO: swap href to the $4,500/month × 6-month PayPal
-              subscription URL once Sita creates the subscription plan
-              in PayPal Dashboard. Until then it points at the same
-              NCP link the bottom-of-page activate button uses so the
-              page still has a working payment path. */}
+              hollow white triangle right-pointer. Wires to the live
+              $4,500/month × 6-month PayPal subscription plan
+              (plan_id P-94W86022K0254174LNIDE3YQ). Same URL is
+              reused by the bottom-of-page activate button. */}
           <div className="mt-10">
             <a
-              href="https://www.paypal.com/ncp/payment/J7UZ9ECRSD2KE"
+              href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-94W86022K0254174LNIDE3YQ"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "hero")}
@@ -743,7 +741,7 @@ export function EliTalksClient({
           </h2>
           <div className="mt-10 flex justify-center">
             <a
-              href="https://www.paypal.com/ncp/payment/J7UZ9ECRSD2KE"
+              href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-94W86022K0254174LNIDE3YQ"
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "footer")}
