@@ -195,7 +195,7 @@ export function EliTalksClient({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "hero")}
-              className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
+              className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
               data-testid="elitalks-activate-partnership-hero"
             >
               <span className="chrome-white">Activate this partnership</span>
@@ -730,7 +730,7 @@ export function EliTalksClient({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => ping("activate_partnership", "footer")}
-              className="inline-flex items-center justify-center gap-3 rounded-full border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
+              className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
               data-testid="elitalks-activate-partnership"
             >
               <span className="chrome-white">Activate this partnership</span>
