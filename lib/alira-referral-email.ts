@@ -8,7 +8,7 @@
 // The email is intentionally lean:
 //   1. Confirms payment received
 //   2. Names the wave-of-50 scarcity for social-proof
-//   3. Single CTA button → Cal.com strategy meeting booking
+//   3. Single CTA button → Google Calendar appointment-schedule booking
 //
 // Resend is the existing transactional email rail (also used by
 // lib/agi/resend.ts for outreach sends). We lazy-instantiate the client
@@ -19,13 +19,16 @@ import { Resend } from "resend";
 
 const RESEND_FROM =
   process.env.RESEND_FROM ?? "Omni AI <bookings@omnileadsagi.com>";
-// Cal.com URL for the post-payment strategy meeting. Sita sets the
-// real URL via OMNI_AI_STRATEGY_CAL_URL in Vercel. The placeholder
-// only fires if the env var isn't set — Resend will still send the
-// email, but the button will land on a 404 until Sita configures it.
-const CAL_BOOKING_URL =
+// Google Calendar appointment-schedule URL for the post-payment strategy
+// meeting. Sita sets the real URL via OMNI_AI_BOOKING_URL in Vercel. The
+// placeholder only fires if the env var isn't set — Resend will still send
+// the email, but the button will land on Sita's main Google Calendar
+// public page until OMNI_AI_BOOKING_URL is configured with the actual
+// appointment-schedule share link (`https://calendar.app.google/…`).
+const BOOKING_URL =
+  process.env.OMNI_AI_BOOKING_URL ??
   process.env.OMNI_AI_STRATEGY_CAL_URL ??
-  "https://cal.com/omniai/strategy-30";
+  "https://calendar.google.com/calendar/u/0/appointments";
 
 let _resend: Resend | null = null;
 function getResend(): Resend | null {
@@ -55,7 +58,7 @@ export async function sendAliraReferralWelcomeEmail({
   const subject = "Your spot is secured · Omni AI Tier-3 build";
   const html = renderHtml({
     customerName: customerName ?? "",
-    calUrl: CAL_BOOKING_URL,
+    bookingUrl: BOOKING_URL,
     flow,
   });
   const r = await client.emails.send({
@@ -77,11 +80,11 @@ export async function sendAliraReferralWelcomeEmail({
 // accent, Georgia serif headline.
 function renderHtml({
   customerName,
-  calUrl,
+  bookingUrl,
   flow,
 }: {
   customerName: string;
-  calUrl: string;
+  bookingUrl: string;
   flow: AliraReferralFlow;
 }): string {
   const greeting = customerName ? `Welcome, ${customerName}.` : "Welcome.";
@@ -135,7 +138,7 @@ function renderHtml({
               <table role="presentation" cellspacing="0" cellpadding="0" border="0">
                 <tr>
                   <td style="border-radius:14px;background:linear-gradient(135deg,#facc15 0%,#f59e0b 100%);">
-                    <a href="${escapeAttr(calUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:16px 32px;font-size:15px;font-weight:700;letter-spacing:0.02em;color:#0a0a0a;text-decoration:none;border-radius:14px;">
+                    <a href="${escapeAttr(bookingUrl)}" target="_blank" rel="noopener noreferrer" style="display:inline-block;padding:16px 32px;font-size:15px;font-weight:700;letter-spacing:0.02em;color:#0a0a0a;text-decoration:none;border-radius:14px;">
                       Schedule your strategy meeting &rarr;
                     </a>
                   </td>
