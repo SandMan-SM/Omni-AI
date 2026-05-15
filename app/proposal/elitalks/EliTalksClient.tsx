@@ -170,8 +170,6 @@ export function EliTalksClient({
             </span>
           </div>
 
-<<<<<<< Updated upstream
-=======
           {/* What it's worth — open-market comparables for each bucket
               above. Not what we charge — what the audience would pay
               if they bought each piece à la carte from a mid-market
@@ -234,7 +232,6 @@ export function EliTalksClient({
             </div>
           </div>
 
->>>>>>> Stashed changes
           {/* Soft horizontal divider closes the hero so the eye knows
               the next section is a different beat. */}
           <div className="mt-12 h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
