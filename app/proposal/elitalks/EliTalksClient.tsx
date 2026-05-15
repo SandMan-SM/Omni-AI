@@ -27,29 +27,9 @@ import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
 import ShareRow from "@/components/case-study/ShareRow";
 
-const ANALYTICS_HOST = "https://omnileadsagi.com";
-
-function ping(action: string, target: string) {
-  try {
-    fetch(`${ANALYTICS_HOST}/api/inbound/omnileads/events`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      keepalive: true,
-      body: JSON.stringify({
-        event_type: `elitalks_${action}`,
-        event_category: "proposal",
-        action,
-        target_id: target,
-        target_type: "elitalks_button",
-        page_url:
-          typeof window !== "undefined" ? window.location.href : null,
-        properties: { asset: "elitalks-proposal", target },
-      }),
-    }).catch(() => {});
-  } catch {
-    /* fail open */
-  }
-}
+// Activate-partnership buttons + analytics ping removed per Sita's
+// 2026-05-14 cut: the page is value-pitch only, no on-page CTA. Ben
+// owns the conversion handoff outside the asset.
 
 // Pricing + checkout props removed per Ben's feedback (2026-05-13):
 // "Take out costs from this site and give me costs in a text
@@ -139,33 +119,6 @@ export function EliTalksClient({
             the whole network.
           </p>
 
-          {/* Hero meta strip — four compact pills. The last one
-              communicates the leverage math without naming a price:
-              "$100K+ of bespoke assets" is the OUTPUT value (what
-              gets built); the partnership fee Ben quotes Natalie
-              stays private. Phrase "pennies on the dollar" is
-              Sita's framing — wins on a copy level over saying
-              "X% off retail" because it sells the magnitude
-              without exposing the cost ratio. */}
-          <div className="mt-8 flex flex-wrap gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/30 bg-amber-300/[0.05] px-3 py-1.5 text-[11px] font-medium tracking-wide text-amber-100">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-300" />
-              3 bespoke websites
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-zinc-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-pink-300/80" />
-              6 distribution channels
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-zinc-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-300/80" />
-              16 businesses · 3 news outlets
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-300/[0.10] px-3 py-1.5 text-[11px] font-semibold tracking-wide text-amber-200">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-200" />
-              $100K+ built
-            </span>
-          </div>
-
           {/* Leverage callout — enumerates what the partnership fee
               actually covers in plain language so Ellie can map the
               monthly to specific buckets of work (paid social
@@ -222,41 +175,9 @@ export function EliTalksClient({
             </span>
           </div>
 
-          {/* HERO CTA — primary partnership-activation button. Pink
-              brand pill (matches Ellie's channel palette) with a
-              hollow white triangle right-pointer. Wires to the live
-              $4,500/month × 6-month PayPal subscription plan
-              (plan_id P-94W86022K0254174LNIDE3YQ). Same URL is
-              reused by the bottom-of-page activate button. */}
-          <div className="mt-10">
-            <a
-              href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-94W86022K0254174LNIDE3YQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => ping("activate_partnership", "hero")}
-              className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
-              data-testid="elitalks-activate-partnership-hero"
-            >
-              <span className="chrome-white">Activate this partnership</span>
-              <svg
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <polygon points="6 3 20 12 6 21 6 3" />
-              </svg>
-            </a>
-          </div>
-
           {/* Soft horizontal divider closes the hero so the eye knows
               the next section is a different beat. */}
-          <div className="mt-10 h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
+          <div className="mt-12 h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
         </div>
       </section>
 
