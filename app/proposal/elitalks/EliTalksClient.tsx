@@ -21,6 +21,7 @@ import {
   Facebook,
   Instagram,
   Youtube,
+  Mail,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
@@ -157,7 +158,7 @@ export function EliTalksClient({
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/[0.03] px-3 py-1.5 text-[11px] font-medium tracking-wide text-zinc-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-300/80" />
-              16+ federation surfaces
+              16 businesses · 3 news outlets
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-amber-300/[0.10] px-3 py-1.5 text-[11px] font-semibold tracking-wide text-amber-200">
               <span className="w-1.5 h-1.5 rounded-full bg-amber-200" />
@@ -165,23 +166,61 @@ export function EliTalksClient({
             </span>
           </div>
 
-          {/* Leverage callout — separate from the pill strip so it
-              reads as the headline of the deal economics, not
-              another tag. No specific operator price; just the
-              output value Ellie can verify against agency rates. */}
+          {/* Leverage callout — enumerates what the partnership fee
+              actually covers in plain language so Ellie can map the
+              monthly to specific buckets of work (paid social
+              automation, asset build, retention/sales/nurturing
+              systems, federation features, exposure). No price named
+              on the page; the dollar lives in the PayPal flow. */}
           <p className="mt-6 max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
-            By the time the six-month build window closes, Ellie Talks
-            is operating on over{" "}
+            The partnership covers the whole stack —{" "}
             <span className="text-amber-300 font-semibold">
-              $100,000 in bespoke digital infrastructure
+              automated paid social
             </span>{" "}
-            — three custom sites running under the brand, an AI CEO
-            layer routing inbound, an organic content engine ranking
-            every episode, and a permanent federation distribution
-            footprint. An agency would invoice north of six figures
-            to spin up the same scope. The partnership delivers it
-            for pennies on the dollar.
+            hitting Facebook + Instagram hard every day,{" "}
+            <span className="text-amber-300 font-semibold">
+              $100K+ in bespoke digital assets
+            </span>{" "}
+            (three custom sites, an AI CEO layer, an organic SEO
+            engine ranking every episode),{" "}
+            <span className="text-amber-300 font-semibold">
+              retention, sales, and nurturing systems
+            </span>{" "}
+            wired in behind it, plus consistent feature exposure across{" "}
+            <span className="text-amber-300 font-semibold">
+              16 partner businesses (3 of them news outlets)
+            </span>
+            . An agency would invoice north of six figures to spin up
+            the same scope. The partnership delivers it for pennies
+            on the dollar.
           </p>
+
+          {/* What's-in-the-box strip — five compact chips directly
+              under the leverage callout. Each chip is one bucket of
+              work the monthly fee maps to, so the reader can stop
+              scrolling and still understand what they're paying for. */}
+          <div className="mt-6 flex flex-wrap gap-2 max-w-3xl">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Send className="w-3 h-3" />
+              Paid social automation
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Globe className="w-3 h-3" />
+              $100K+ digital assets
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Sparkles className="w-3 h-3" />
+              Retention &amp; sales systems
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Mail className="w-3 h-3" />
+              Nurturing campaigns
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Network className="w-3 h-3" />
+              16-business federation exposure
+            </span>
+          </div>
 
           {/* HERO CTA — primary partnership-activation button. Pink
               brand pill (matches Ellie's channel palette) with a
@@ -213,9 +252,6 @@ export function EliTalksClient({
                 <polygon points="6 3 20 12 6 21 6 3" />
               </svg>
             </a>
-            <p className="mt-3 text-[11px] uppercase tracking-[0.28em] text-zinc-500">
-              $4,500/month · 6-month subscription · Secure checkout via PayPal
-            </p>
           </div>
 
           {/* Soft horizontal divider closes the hero so the eye knows
@@ -356,12 +392,20 @@ export function EliTalksClient({
           <div className="mt-10 divide-y divide-white/5 border-y border-white/5">
             {[
               {
+                item: "Automated paid social — Meta + Instagram",
+                spec: "We hit Facebook and Instagram hard, every day. 15–20 native assets per week (Reels, carousels, stories, lives), paid spend stacked behind the winners, retargeting pools rebuilt weekly, lookalike audiences fed off Ellie's warmest viewers. The algorithm gets fed; the algorithm pays back.",
+              },
+              {
                 item: "Three bespoke websites",
                 spec: "Three custom Next.js builds — full codebase ownership, JSON-LD schema, edge-rendered OG, federation tracker wired in. Mid-market agencies invoice $25K+ for one site of this spec.",
               },
               {
-                item: "AI CEO layer + automation",
-                spec: "Autonomous executive agent per site — lead routing, follow-up sequences, calendar booking, escalation paths.",
+                item: "AI CEO layer + sales system",
+                spec: "Autonomous executive agent per site — qualifies every inbound, routes hot leads, books calendar slots, hands off to Ellie's pipeline. The sales engine that runs whether or not anyone's at the desk.",
+              },
+              {
+                item: "Retention & nurturing campaigns",
+                spec: "Multi-step drip sequences across email + SMS, win-back flows for cold subscribers, segment-aware nurturing tied to each landing-page journey. Once a listener enters the orbit, the system keeps them warm.",
               },
               {
                 item: "SEO + GEO content engine",
@@ -369,15 +413,15 @@ export function EliTalksClient({
               },
               {
                 item: "Newsletter system + distribution",
-                spec: "Branded Resend infrastructure, suppression list, engagement tracking, mirrored into the agentic dashboard.",
+                spec: "Branded Resend infrastructure, suppression list, engagement tracking, mirrored into the agentic dashboard. Powers the retention layer and the federation cross-promotion in one stack.",
               },
               {
                 item: "Calendar + inbound automation",
-                spec: "Cal.com integration, intake form scoring, slot routing, no-show recovery.",
+                spec: "Cal.com integration, intake form scoring, slot routing, no-show recovery — the whole booking-funnel plumbing wired in and tuned.",
               },
               {
-                item: "Federation cross-promotion",
-                spec: "Featured across all federation-owned newsletters + sites + the Omni AI portfolio for the duration of the deal.",
+                item: "Federation cross-promotion — 16 businesses",
+                spec: "Featured exposure across 16 partner businesses in the Omni AI federation — 3 of them news outlets — every operator newsletter, and the cross-promo widget firing on every federation site for the full six-month window.",
               },
             ].map((line) => (
               <div
@@ -407,14 +451,14 @@ export function EliTalksClient({
 
           <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { icon: <Globe className="w-5 h-5" />, title: "3 bespoke websites", body: "Custom Next.js builds running under the Ellie Talks brand." },
-              { icon: <Sparkles className="w-5 h-5" />, title: "AI CEO layer", body: "Autonomous agent per site routing inbounds + booking calls." },
-              { icon: <Send className="w-5 h-5" />, title: "Paid social engine", body: "Meta + Instagram + YouTube ads optimized weekly." },
-              { icon: <BarChart3 className="w-5 h-5" />, title: "Organic SEO + GEO", body: "Free lead-gen — every show topic gets ranked for its city + niche." },
-              { icon: <Mic className="w-5 h-5" />, title: "Newsletter system", body: "Branded Resend domain, suppression, engagement tracking." },
-              { icon: <Calendar className="w-5 h-5" />, title: "Calendar automation", body: "Cal.com integration, scoring, slot routing, no-show recovery." },
-              { icon: <Network className="w-5 h-5" />, title: "Federation distribution", body: "Featured across every site in the Omni AI portfolio." },
-              { icon: <CheckCircle2 className="w-5 h-5" />, title: "Performance dashboard", body: "Ellie Talks-scoped view inside omnileadsagi.com/dashboard." },
+              { icon: <Send className="w-5 h-5" />, title: "Automated paid social", body: "Facebook + Instagram hammered daily — 15–20 native assets/week, paid spend stacked behind the winners, retargeting + lookalikes tuned weekly." },
+              { icon: <Globe className="w-5 h-5" />, title: "3 bespoke websites", body: "Custom Next.js builds running under the Ellie Talks brand — $100K+ in digital assets owned outright." },
+              { icon: <Sparkles className="w-5 h-5" />, title: "AI CEO + sales system", body: "Autonomous agent qualifying inbounds, booking calls, escalating hot leads on every site." },
+              { icon: <Mail className="w-5 h-5" />, title: "Retention & nurturing", body: "Multi-step drips, win-back flows, segment-aware sequences across email + SMS." },
+              { icon: <BarChart3 className="w-5 h-5" />, title: "Organic SEO + GEO", body: "Every show topic ranked for its city + niche — free buyer-intent lead-gen on autopilot." },
+              { icon: <Mic className="w-5 h-5" />, title: "Newsletter system", body: "Branded Resend domain, suppression, engagement tracking, federation-mirrored." },
+              { icon: <Network className="w-5 h-5" />, title: "16-business federation", body: "Featured exposure across 16 partner businesses (3 news outlets) for the full six months." },
+              { icon: <CheckCircle2 className="w-5 h-5" />, title: "Performance dashboard", body: "Ellie Talks-scoped view inside omnileadsagi.com/dashboard — every metric, live." },
             ].map((d) => (
               <div key={d.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 hover:border-amber-300/40 transition-colors">
                 <div className="text-amber-300">{d.icon}</div>
@@ -446,11 +490,15 @@ export function EliTalksClient({
             Where Ellie&apos;s next subscribers actually live.
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
-            We build the engine that connects every surface — website,
-            social, podcast, newsletter — into one continuous loop.
-            Listeners discover Ellie on one platform and stay nurtured
-            across all of them, so attention never has to be earned
-            from scratch twice.
+            We don&apos;t dabble on these platforms — we flood them.
+            Every week Ellie&apos;s brand fires{" "}
+            <span className="text-amber-300 font-semibold">
+              30+ pieces of native content across Meta and YouTube
+            </span>
+            , paid spend stacked behind the winners, every surface
+            routing back into the loop. Website, social, podcast,
+            newsletter — one continuous engine that earns attention
+            once and nurtures it twenty times.
           </p>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -468,35 +516,43 @@ export function EliTalksClient({
                 The social gravity well
               </p>
               <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
-                Facebook and Instagram become the first touch and the
-                eleventh — the surfaces where new listeners meet Ellie
-                and where existing ones keep choosing to come back.
+                Facebook and Instagram get hit{" "}
+                <span className="text-amber-300 font-semibold">
+                  daily, in multiple formats
+                </span>
+                {" "}— Reels, carousels, stories, threads, lives. The
+                feed never goes quiet. New listeners meet Ellie on the
+                first scroll; existing ones see her on the eleventh.
               </p>
               <ul className="mt-4 space-y-2 text-xs text-zinc-400 leading-relaxed">
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    A library of social assets built off Ellie&apos;s
-                    best podcast moments — content the audience comes
-                    back for, not noise the algorithm forgets.
+                    <span className="text-zinc-200 font-semibold">15–20 native assets per week</span>{" "}
+                    — Reels cut from her best podcast moments,
+                    carousels that explain the framework, stories that
+                    drive the daily conversation, lives that close the
+                    loop. Volume the algorithm can&apos;t ignore.
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    Every post routes back to the website, and every
-                    site visit feeds the retargeting pool. The loop
-                    compounds — traffic earned once gets nurtured
-                    twenty times.
+                    <span className="text-zinc-200 font-semibold">Paid amplification stacked behind every winner</span>{" "}
+                    — Meta Ads dollars chase the organic posts that
+                    pop, retargeting pools rebuilt weekly, lookalike
+                    audiences fed off Ellie&apos;s warmest viewers.
+                    The good content gets pushed; the great content
+                    gets pushed harder.
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    The result is retention disguised as discovery —
-                    listeners stay inside Ellie&apos;s orbit because
-                    every channel is quietly handing them off to the
-                    next one.
+                    <span className="text-zinc-200 font-semibold">Every click routes back to the site</span>
+                    , every site visit feeds the next ad set. Traffic
+                    earned once gets nurtured twenty times — retention
+                    disguised as discovery.
                   </span>
                 </li>
               </ul>
@@ -514,35 +570,43 @@ export function EliTalksClient({
                 The trust compounding layer
               </p>
               <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
-                YouTube is where attention turns into belief. Long-form
-                gives the audience a reason to stay, and the system
-                gives them every reason to come back.
+                Every episode gets turned into{" "}
+                <span className="text-amber-300 font-semibold">
+                  20+ assets
+                </span>
+                {" "}— Shorts, long-form cuts, search-optimized titles,
+                A/B-tested thumbnails, SEO-stacked descriptions. One
+                recording becomes weeks of compounding distribution.
               </p>
               <ul className="mt-4 space-y-2 text-xs text-zinc-400 leading-relaxed">
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    Every episode becomes a hub — clipped, captioned,
-                    and routed outward so a single recording feeds
-                    weeks of social, search, and newsletter touchpoints.
+                    <span className="text-zinc-200 font-semibold">Shorts pipeline running daily</span>{" "}
+                    — 10–15 vertical clips per episode, captioned and
+                    hooked for retention, fed to the algorithm on a
+                    cadence that keeps Ellie inside the recommendation
+                    flywheel even on days she doesn&apos;t post.
                   </span>
                 </li>
                 <li className="flex gap-2">
                   <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
                   <span>
-                    Viewers don&apos;t just watch — they land back on
-                    Ellie&apos;s site, opt into the newsletter, and
-                    re-enter the social loop. The same person sees the
+                    <span className="text-zinc-200 font-semibold">SEO &amp; thumbnail engineering on every upload</span>{" "}
+                    — keyword-mapped titles, multi-variant thumbnails
+                    tested against each other, descriptions stacked to
+                    rank in YouTube and Google search. Discoverability
+                    isn&apos;t left to luck.
+                  </span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
+                  <span>
+                    <span className="text-zinc-200 font-semibold">End-screens, community tab, playlist engineering</span>{" "}
+                    — every viewer gets routed to the next episode, the
+                    site, and the newsletter. The same person sees the
                     brand three times in three places without ever
                     feeling pursued.
-                  </span>
-                </li>
-                <li className="flex gap-2">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-amber-300 flex-shrink-0 mt-0.5" />
-                  <span>
-                    Trust accrues quietly. By month six the audience
-                    isn&apos;t a list — it&apos;s a community moving
-                    between channels on its own.
                   </span>
                 </li>
               </ul>
@@ -572,10 +636,15 @@ export function EliTalksClient({
             The federation amplifies the asset.
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
-            Ellie Talks doesn&apos;t live in a vacuum. For six months it&apos;s
-            wired into a network of 14 federation sites, three news
-            outlets, and every operator newsletter — same audience
-            graph $Mafi uses to amplify her own portfolio.
+            Ellie Talks doesn&apos;t live in a vacuum. For six months
+            it&apos;s wired into a network of{" "}
+            <span className="text-amber-300 font-semibold">
+              16 partner businesses — 3 of them news outlets
+            </span>
+            {" "}— plus every operator newsletter and cross-promo
+            surface in the Omni AI portfolio. Same audience graph
+            $Mafi uses to amplify her own brands. Consistent feature
+            placement, every week, for the full six-month window.
           </p>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -705,56 +774,6 @@ export function EliTalksClient({
               </li>
             ))}
           </ul>
-        </div>
-      </section>
-
-      {/* ACTIVATE PARTNERSHIP — single pink CTA that drops Ellie into
-          the PayPal checkout flow. No price shown anywhere on the page;
-          the number lives on the PayPal page Ben/Natalie set up. Hollow
-          (outline) Play triangle to the right of the label so the
-          button reads as decisive forward-motion without screaming. */}
-      <section className="relative border-t border-white/5">
-        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20 text-center">
-          <p className="text-[11px] uppercase tracking-[0.4em] text-pink-300/80">
-            Ready when you are
-          </p>
-          <h2
-            className="mt-3 text-3xl sm:text-5xl tracking-tight"
-            style={{ fontFamily: "Georgia, serif" }}
-          >
-            One button. $100K+ in digital infrastructure.
-          </h2>
-          <div className="mt-10 flex justify-center">
-            <a
-              href="https://www.paypal.com/webapps/billing/plans/subscribe?plan_id=P-94W86022K0254174LNIDE3YQ"
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => ping("activate_partnership", "footer")}
-              className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-pink-200/20 hover:bg-pink-200/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-pink-200/20 backdrop-blur-sm"
-              data-testid="elitalks-activate-partnership"
-            >
-              <span className="chrome-white">Activate this partnership</span>
-              {/* Hollow triangle — lucide Play renders as outline by
-                  default (no fill="currentColor"), so this is a white
-                  stroke triangle facing right per Sita's spec. */}
-              <svg
-                viewBox="0 0 24 24"
-                width="16"
-                height="16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <polygon points="6 3 20 12 6 21 6 3" />
-              </svg>
-            </a>
-          </div>
-          <p className="mt-4 text-[11px] uppercase tracking-[0.28em] text-zinc-500">
-            Secure checkout via PayPal
-          </p>
         </div>
       </section>
 
