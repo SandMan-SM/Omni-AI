@@ -289,7 +289,7 @@ export function AliraReferralClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               Same{" "}
-              <span className="text-amber-300">$20K+ build.</span>{" "}
+              <span className="text-amber-300">$200K+ build.</span>{" "}
               <em className="font-normal text-purple-200/90 not-italic sm:italic">
                 Federation price.
               </em>
@@ -325,7 +325,7 @@ export function AliraReferralClient({
                 feature exposure across 16 partner businesses
               </span>{" "}
               and GEO/community-tuned distribution. An agency would
-              invoice north of $20K to spin up the same scope.
+              invoice north of $200K to spin up the same scope.
             </p>
 
             {/* What's-in-the-box strip — five compact amber chips
