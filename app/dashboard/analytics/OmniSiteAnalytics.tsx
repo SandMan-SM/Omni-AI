@@ -63,9 +63,10 @@ type OmniSiteAnalyticsProps = {
    * Optional inbound slug (federation tracker partition). When set to
    * a valid INBOUND_SLUGS member, the API reads from
    * `inbound_<slug>_events` instead of the central `events` table.
-   * This is the correct source for every workspace except Omni AI —
-   * passing only `host` for those tenants used to read 0 rows out of
-   * `events` and silently fall back to omnileadsagi.com data.
+   * Special value `"all"` triggers the admin-only federation rollup
+   * (every tenant + omnileadsagi.com aggregated into one view).
+   * Passing only `host` for non-omni tenants used to read 0 rows
+   * out of `events` and silently fall back to omnileadsagi.com data.
    */
   slug?: string;
   /**
@@ -75,9 +76,34 @@ type OmniSiteAnalyticsProps = {
    * keeps its prior behavior.
    */
   host?: string;
+  /**
+   * GA4 measurement ID (e.g. "G-6JZP5C4NMQ") for the active workspace.
+   * When present, the panel header renders a green "GA4: G-…" badge
+   * so $Mafi can see at a glance which sites are GA4-instrumented.
+   * When null/undefined the badge says "GA4 not configured".
+   */
+  ga4MeasurementId?: string | null;
+  /**
+   * Pretty name to show above the panel — defaults to the resolved
+   * host. Used by the "All Businesses" rollup to print "All Businesses
+   * · federation rollup" instead of the literal slug "federation".
+   */
+  displayName?: string | null;
+  /**
+   * True when this panel is rendering the admin-only federation
+   * rollup. Disables the "Visit site" button (no single domain to
+   * visit) and swaps the header copy to a rollup-specific subtitle.
+   */
+  isAllRollup?: boolean;
 };
 
-export function OmniSiteAnalytics({ slug, host }: OmniSiteAnalyticsProps = {}) {
+export function OmniSiteAnalytics({
+  slug,
+  host,
+  ga4MeasurementId,
+  displayName,
+  isAllRollup,
+}: OmniSiteAnalyticsProps = {}) {
   const [data, setData] = useState<AnalyticsResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -162,13 +188,58 @@ export function OmniSiteAnalytics({ slug, host }: OmniSiteAnalyticsProps = {}) {
       >
         <div style={{ minWidth: 0 }}>
           <div style={{ fontSize: 11, color: "#10b981", letterSpacing: "1.2px", textTransform: "uppercase", fontWeight: 700, marginBottom: 6 }}>
-            {data?.host ?? host ?? "omnileadsagi.com"}
+            {isAllRollup
+              ? "All businesses · federation rollup"
+              : (displayName ?? data?.host ?? host ?? "omnileadsagi.com")}
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.6px", margin: 0 }}>
             Site Analytics
           </h2>
-          <div style={{ fontSize: 12, color: "#666", marginTop: 6 }}>
-            First-party tracking · {rangeLabel.toLowerCase()}
+          <div style={{ fontSize: 12, color: "#666", marginTop: 6, display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <span>
+              {isAllRollup
+                ? `Aggregated across every workspace · ${rangeLabel.toLowerCase()}`
+                : `First-party tracking · ${rangeLabel.toLowerCase()}`}
+            </span>
+            {/* GA4 status badge — only on per-tenant view. Green pill
+                when configured, dim slate pill when not. Single source
+                of truth on "is this site instrumented yet?" */}
+            {!isAllRollup && (
+              ga4MeasurementId ? (
+                <span
+                  title={`Google Analytics 4 — ${ga4MeasurementId}`}
+                  style={{
+                    background: "#0d2b1a",
+                    border: "1px solid #14532d",
+                    color: "#34d399",
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.5px",
+                    textTransform: "none",
+                  }}
+                >
+                  GA4 · {ga4MeasurementId}
+                </span>
+              ) : (
+                <span
+                  title="Google Analytics 4 not yet configured for this workspace"
+                  style={{
+                    background: "#1a1a1a",
+                    border: "1px solid #2a2a2a",
+                    color: "#666",
+                    padding: "2px 8px",
+                    borderRadius: 999,
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: "0.5px",
+                  }}
+                >
+                  GA4 not configured
+                </span>
+              )
+            )}
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
@@ -213,20 +284,24 @@ export function OmniSiteAnalytics({ slug, host }: OmniSiteAnalyticsProps = {}) {
             {loading ? <Loader2 size={12} className="animate-spin" /> : <RefreshCw size={12} />}
             Refresh
           </button>
-          <a
-            href={`https://${data?.host ?? host ?? "omnileadsagi.com"}`}
-            target="_blank"
-            rel="noreferrer"
-            style={{
-              background: "#161616", border: "1px solid #262626",
-              color: "#cbd5e1", padding: "7px 12px", borderRadius: 8,
-              fontSize: 12, fontWeight: 600,
-              display: "inline-flex", alignItems: "center", gap: 6,
-              textDecoration: "none",
-            }}
-          >
-            Visit site <ArrowUpRight size={12} />
-          </a>
+          {/* Visit-site link is suppressed in rollup mode — there is no
+              single domain to point at when "All Businesses" is active. */}
+          {!isAllRollup && (
+            <a
+              href={`https://${host ?? data?.host ?? "omnileadsagi.com"}`}
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                background: "#161616", border: "1px solid #262626",
+                color: "#cbd5e1", padding: "7px 12px", borderRadius: 8,
+                fontSize: 12, fontWeight: 600,
+                display: "inline-flex", alignItems: "center", gap: 6,
+                textDecoration: "none",
+              }}
+            >
+              Visit site <ArrowUpRight size={12} />
+            </a>
+          )}
         </div>
       </div>
 
