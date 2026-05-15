@@ -58,42 +58,44 @@ const CASE_STUDY = {
 const MARKET_RATES: { service: string; value: string }[] = [
   {
     service: "Bespoke Next.js website",
-    value: "$10K–25K · custom codebase, SEO, JSON-LD, edge-rendered OG",
+    value: "$25K–50K · custom codebase, SEO, JSON-LD, edge-rendered OG",
   },
   {
     service: "AI CEO + inbound routing layer",
-    value: "$5K–15K to spec + build · $1K–3K/mo retainer",
+    value: "$25K–50K to build · $36K+/yr retainer equivalent",
   },
   {
-    service: "Branded newsletter system",
-    value: "$3K–8K to wire up · $200–500/mo Resend + tooling",
+    service: "Branded newsletter + automation",
+    value: "$15K+/yr · Resend infra, drip sequences, engagement tracking",
   },
   {
-    service: "Federation cross-promo + sponsorship inclusion",
-    value: "$1K–3K per featured placement · $30K+ over a year",
+    service: "Federation cross-promo + sponsorship",
+    value: "$30K+/yr · consistent placements across 16 partner businesses",
   },
   {
-    service: "GEO/community distribution + ranking",
-    value: "$2K–5K per market · $24K+/yr to maintain SEO velocity",
+    service: "GEO + community distribution",
+    value: "$40K+/yr · ranked landing pages per city + niche you operate in",
   },
 ];
-// Headline anchor — sum of midpoint ranges above, rounded down so
-// the figure reads honest, not aspirational.
-const MARKET_TOTAL = "$20,000+";
+// Headline anchor — 12-month-equivalent agency rates sum honestly to
+// ~$200K+ for the full Tier-3 stack + run-state retainers + federation
+// exposure. Not aspirational — what a mid-market agency would actually
+// invoice across the first year.
+const MARKET_TOTAL = "$200,000+";
 
 // Two pricing options revealed by the hero "Activate your assets"
 // CTA. Same Tier-3 build either way — only the cadence differs.
 const PRICING_OPTIONS = [
   {
     id: "deposit",
-    label: "Hold your spot",
+    label: "Secures your spot",
     price: "$333",
     cadenceTop: "down · $333/mo over 9 months",
-    cadenceBottom: "Same scope · low-friction entry · cancel anytime if we don't ship",
+    cadenceBottom: "This wave: only 50 businesses · cancel anytime if we don't ship",
     valueLine:
-      "Reserve a build slot today and we start the kickoff this week. Subscription pauses when the final installment clears (≈ month 9).",
+      "After your $333 clears we send a payment confirmation email with a one-click button to schedule your strategy meeting with our team. Slot is locked the moment payment lands.",
     payUrl: PAY_DEPOSIT_URL,
-    cta: "Hold your spot · $333",
+    cta: "Secure your spot · $333",
     featured: true,
   },
   {
@@ -132,14 +134,14 @@ const DISTRIBUTION_NOTES: { title: string; body: string }[] = [
 ];
 
 export const metadata: Metadata = {
-  title: "Locked in by Alira · $20K+ Build for $3,000 or $333 Down",
+  title: "Locked in by Alira · $200K+ Build for $3,000 or $333 Down",
   description:
-    "Alira's referral — lock in a Tier-3 bespoke website + AI CEO layer + branded newsletter + federation cross-promotion + community-specific distribution for $3,000 in full, or as little as $333 down to hold your spot. Same retail-$20K+ build that runs Alira's own brand.",
+    "Alira's referral — lock in a Tier-3 bespoke website + AI CEO layer + branded newsletter + federation cross-promotion + community-specific distribution for $3,000 in full, or as little as $333 down to secure your spot. Same retail-$200K+ build that runs Alira's own brand.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Locked in by Alira · $20K+ Build for $3,000 or $333 Down",
+    title: "Locked in by Alira · $200K+ Build for $3,000 or $333 Down",
     description:
-      "Bespoke site + AI CEO + newsletter + federation distribution. Pay $3,000 in full or $333 down to hold your spot. Same Tier-3 stack Alira runs on.",
+      "Bespoke site + AI CEO + newsletter + federation distribution. Pay $3,000 in full or $333 down to secure your spot. Same Tier-3 stack Alira runs on. 50 businesses this wave.",
     url: PAGE_URL,
     type: "website",
     images: [{
@@ -150,9 +152,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Locked in by Alira · $20K+ Build for $3,000 or $333 Down",
+    title: "Locked in by Alira · $200K+ Build for $3,000 or $333 Down",
     description:
-      "Bespoke site + AI CEO + newsletter + federation distribution. $3,000 full or $333 down to hold your spot.",
+      "Bespoke site + AI CEO + newsletter + federation distribution. $3,000 full or $333 down to secure your spot.",
     images: [`${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=%243%2C000%20build%20%C2%B7%20%24333%20down%20to%20hold%20your%20spot`],
   },
   // Private referral surface — only people Alira sends here see it.

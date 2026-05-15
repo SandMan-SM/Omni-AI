@@ -204,6 +204,37 @@ async function handleCheckoutComplete(session: Stripe.Checkout.Session) {
   });
 
   console.log(`[Stripe] Checkout complete: ${email}, $${amount}, mode=${session.mode}`);
+
+  // Alira-referral hand-off: one-time $3,000 build (price_1TXNpJE…).
+  // Fires the post-payment welcome email with the Cal.com strategy-
+  // meeting link. Wrapped in try/catch so a Resend hiccup never bubbles
+  // up and short-circuits the rest of the webhook chain — Stripe would
+  // retry and double-count revenue.
+  try {
+    if (session.mode === 'payment') {
+      const items = await stripe.checkout.sessions.listLineItems(session.id, {
+        limit: 10,
+      });
+      const isAliraFull = items.data.some(
+        (li) => li.price?.id === 'price_1TXNpJE1uHPZaaHp4i5kIWsc'
+      );
+      if (isAliraFull) {
+        const { sendAliraReferralWelcomeEmail } = await import(
+          '@/lib/alira-referral-email'
+        );
+        const r = await sendAliraReferralWelcomeEmail({
+          to: email,
+          customerName: session.customer_details?.name ?? null,
+          flow: 'full',
+        });
+        console.log(
+          `[Stripe] Alira-referral welcome (full) → ${email}: ok=${r.ok}${r.error ? ' err=' + r.error : ''}`
+        );
+      }
+    }
+  } catch (err) {
+    console.error('[Stripe] Alira-referral welcome (full) failed:', err);
+  }
 }
 
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
@@ -280,6 +311,51 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   });
 
   console.log(`[Stripe] Invoice paid: ${email}, $${amount}`);
+
+  // Alira-referral hand-off: $333/mo deposit (price_1TXNpME…). We
+  // only send on the very first invoice of the subscription — Stripe
+  // tags that with billing_reason='subscription_create'. Subsequent
+  // monthly renewals stay silent so the customer doesn't get 9 copies
+  // of the welcome email. Wrapped in try/catch for the same reason as
+  // the checkout hand-off.
+  try {
+    // Stripe API 2024-12-18.acacia restructured InvoiceLineItem so
+    // `price` isn't on the typed surface anymore — the price ref
+    // sits on `pricing.price_details.price` for current invoices,
+    // and `plan.id` on legacy subscriptions. Read both for safety
+    // via an `any` cast (same pattern as `(invoice as any).subscription`
+    // earlier in this file).
+    const lineItems = invoice.lines?.data ?? [];
+    const isAliraDeposit = lineItems.some((li) => {
+      const anyLi = li as unknown as {
+        price?: { id?: string };
+        plan?: { id?: string };
+        pricing?: { price_details?: { price?: string } };
+      };
+      const id =
+        anyLi.price?.id ??
+        anyLi.pricing?.price_details?.price ??
+        anyLi.plan?.id ??
+        null;
+      return id === 'price_1TXNpME1uHPZaaHpcCZbCf3l';
+    });
+    const isFirstInvoice = invoice.billing_reason === 'subscription_create';
+    if (isAliraDeposit && isFirstInvoice) {
+      const { sendAliraReferralWelcomeEmail } = await import(
+        '@/lib/alira-referral-email'
+      );
+      const r = await sendAliraReferralWelcomeEmail({
+        to: email,
+        customerName: invoice.customer_name ?? null,
+        flow: 'deposit',
+      });
+      console.log(
+        `[Stripe] Alira-referral welcome (deposit) → ${email}: ok=${r.ok}${r.error ? ' err=' + r.error : ''}`
+      );
+    }
+  } catch (err) {
+    console.error('[Stripe] Alira-referral welcome (deposit) failed:', err);
+  }
 }
 
 async function handleSubscriptionCreated(sub: Stripe.Subscription) {

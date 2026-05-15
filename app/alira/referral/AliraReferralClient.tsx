@@ -22,7 +22,7 @@
 // overflow-hidden paint context. Same rule as /proposal/elitalks —
 // no bg-black on the wrapper, relative z-10 + overflow-hidden only.
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -32,6 +32,8 @@ import {
   Network,
   Send,
   MapPin,
+  Lock,
+  X,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
@@ -118,21 +120,43 @@ export function AliraReferralClient({
   pricingOptions,
   distributionNotes,
 }: Props) {
-  // Pricing cards stay hidden until the user clicks the hero CTA —
-  // matches the "Activate your assets → pulls up two cards" UX Sita
-  // asked for, without needing a modal.
+  // Two reveal surfaces live in parallel:
+  //
+  //   modalOpen  — the centered popup the Activate buttons trigger.
+  //                Pops the two cards on top of the page so the user
+  //                doesn't have to scroll. Sita's spec.
+  //   pricingOpen — the inline #pricing section reveal. Stays as a
+  //                fallback for users who scroll organically, and as
+  //                the persistent surface after they close the modal.
+  //
+  // Both flip true on Activate so closing the modal doesn't strand
+  // the user without pricing context further down the page.
+  const [modalOpen, setModalOpen] = useState(false);
   const [pricingOpen, setPricingOpen] = useState(false);
+
+  const closeModal = useCallback(() => setModalOpen(false), []);
+
+  // Esc-to-close + body scroll lock while the modal is mounted. Pure
+  // useEffect; no external lib. Restores body overflow on unmount so
+  // exiting the page (or closing the modal) doesn't leave scroll stuck.
+  useEffect(() => {
+    if (!modalOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeModal();
+    }
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [modalOpen, closeModal]);
 
   function revealPricing(source: "hero" | "inline" | "bottom") {
     ping("activate_assets", source);
+    setModalOpen(true);
     setPricingOpen(true);
-    if (typeof window !== "undefined") {
-      setTimeout(() => {
-        document
-          .getElementById("pricing")
-          ?.scrollIntoView({ behavior: "smooth", block: "center" });
-      }, 60);
-    }
   }
 
   function onPay(option: PricingOption) {
@@ -161,6 +185,80 @@ export function AliraReferralClient({
         <span className="chrome-white">Activate your assets</span>
         <HollowTriangle />
       </button>
+    );
+  }
+
+  // Pricing card — single source of truth for both the inline
+  // #pricing section AND the popup modal. Extracting it keeps the
+  // two surfaces in lockstep when copy/style changes land. The
+  // `surfaceTestId` prefix lets e2e differentiate which surface
+  // (inline vs. modal) emitted the click.
+  function PricingCard({
+    opt,
+    surfaceTestId,
+  }: {
+    opt: PricingOption;
+    surfaceTestId: string;
+  }) {
+    const featured = opt.featured;
+    return (
+      <div
+        data-testid={`${surfaceTestId}-${opt.id}`}
+        className={
+          "flex flex-col h-full rounded-2xl border p-8 " +
+          (featured
+            ? "border-purple-300/60 bg-purple-300/[0.06]"
+            : "border-white/10 bg-white/[0.02]")
+        }
+      >
+        <div className="flex items-baseline justify-between gap-3">
+          <p
+            className={
+              "text-[11px] uppercase tracking-[0.28em] " +
+              (featured ? "text-purple-200" : "text-amber-300")
+            }
+          >
+            {opt.label}
+          </p>
+          {featured && (
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-[0.22em] uppercase bg-purple-300/20 text-purple-100 border border-purple-300/40">
+              50 seats this wave
+            </span>
+          )}
+        </div>
+        <p
+          className={
+            "mt-4 text-5xl sm:text-6xl tabular-nums leading-none " +
+            (featured ? "text-purple-100" : "text-white")
+          }
+          style={{ fontFamily: "Georgia, serif" }}
+        >
+          {opt.price}
+        </p>
+        <p className="mt-2 text-sm text-zinc-300">{opt.cadenceTop}</p>
+        <p className="mt-1 text-xs text-zinc-500">{opt.cadenceBottom}</p>
+        <p className="mt-6 text-sm text-zinc-300 leading-relaxed">
+          {opt.valueLine}
+        </p>
+        <button
+          type="button"
+          onClick={() => onPay(opt)}
+          className="mt-auto pt-6"
+          data-testid={`${surfaceTestId}-pay-${opt.id}`}
+        >
+          <span
+            className={
+              "inline-flex w-full items-center justify-center gap-3 rounded-2xl border-2 px-6 py-4 text-sm font-bold tracking-wide transition-colors " +
+              (featured
+                ? "border-white/90 bg-purple-300/20 hover:bg-purple-300/30 text-white shadow-lg shadow-purple-300/20 backdrop-blur-sm"
+                : "border-white/30 bg-white/[0.04] hover:bg-white/[0.08] text-white")
+            }
+          >
+            <span className="chrome-white">{opt.cta}</span>
+            <HollowTriangle />
+          </span>
+        </button>
+      </div>
     );
   }
 
@@ -333,7 +431,7 @@ export function AliraReferralClient({
                     {caseStudy.role}
                   </p>
                   <p
-                    className="mt-3 text-2xl sm:text-3xl text-purple-200"
+                    className="mt-3 text-2xl sm:text-3xl text-white"
                     style={{ fontFamily: "Georgia, serif" }}
                   >
                     {caseStudy.brand}
@@ -342,7 +440,7 @@ export function AliraReferralClient({
                     href={caseStudy.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="mt-1 inline-block text-xs text-zinc-400 hover:text-amber-300 transition-colors"
+                    className="mt-1 inline-block text-xs text-amber-400 hover:text-amber-300 transition-colors"
                   >
                     {caseStudy.domain} ↗
                   </a>
@@ -456,73 +554,13 @@ export function AliraReferralClient({
 
             {pricingOpen && (
               <div className="mt-10 grid gap-4 sm:grid-cols-2 items-stretch">
-                {pricingOptions.map((opt) => {
-                  const featured = opt.featured;
-                  return (
-                    <div
-                      key={opt.id}
-                      data-testid={`alira-pricing-${opt.id}`}
-                      className={
-                        "flex flex-col h-full rounded-2xl border p-8 " +
-                        (featured
-                          ? "border-purple-300/60 bg-purple-300/[0.06]"
-                          : "border-white/10 bg-white/[0.02]")
-                      }
-                    >
-                      <div className="flex items-baseline justify-between gap-3">
-                        <p
-                          className={
-                            "text-[11px] uppercase tracking-[0.28em] " +
-                            (featured ? "text-purple-200" : "text-amber-300")
-                          }
-                        >
-                          {opt.label}
-                        </p>
-                        {featured && (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-[0.22em] uppercase bg-purple-300/20 text-purple-100 border border-purple-300/40">
-                            Low friction
-                          </span>
-                        )}
-                      </div>
-                      <p
-                        className={
-                          "mt-4 text-5xl sm:text-6xl tabular-nums leading-none " +
-                          (featured ? "text-purple-100" : "text-white")
-                        }
-                        style={{ fontFamily: "Georgia, serif" }}
-                      >
-                        {opt.price}
-                      </p>
-                      <p className="mt-2 text-sm text-zinc-300">
-                        {opt.cadenceTop}
-                      </p>
-                      <p className="mt-1 text-xs text-zinc-500">
-                        {opt.cadenceBottom}
-                      </p>
-                      <p className="mt-6 text-sm text-zinc-300 leading-relaxed">
-                        {opt.valueLine}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => onPay(opt)}
-                        className="mt-auto pt-6"
-                        data-testid={`alira-pay-${opt.id}`}
-                      >
-                        <span
-                          className={
-                            "inline-flex w-full items-center justify-center gap-3 rounded-2xl border-2 px-6 py-4 text-sm font-bold tracking-wide transition-colors " +
-                            (featured
-                              ? "border-white/90 bg-purple-300/20 hover:bg-purple-300/30 text-white shadow-lg shadow-purple-300/20 backdrop-blur-sm"
-                              : "border-white/30 bg-white/[0.04] hover:bg-white/[0.08] text-white")
-                          }
-                        >
-                          <span className="chrome-white">{opt.cta}</span>
-                          <HollowTriangle />
-                        </span>
-                      </button>
-                    </div>
-                  );
-                })}
+                {pricingOptions.map((opt) => (
+                  <PricingCard
+                    key={opt.id}
+                    opt={opt}
+                    surfaceTestId="alira-pricing-inline"
+                  />
+                ))}
               </div>
             )}
 
@@ -585,22 +623,24 @@ export function AliraReferralClient({
           </div>
         </section>
 
-        {/* FINAL CTA */}
+        {/* FINAL CTA — security-trust framing. Sparkles eyebrow swapped
+            for an AES-256 lock + Stripe-secured strip so the trust
+            signal lands right next to the payment CTA. */}
         <section className="relative bg-black/30">
           <div className="mx-auto max-w-3xl px-6 py-20 sm:py-24 text-center">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-purple-300/90 font-semibold">
-              <Sparkles className="inline w-3 h-3 mr-1" />
-              Alira&apos;s federation referral
+            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold inline-flex items-center gap-1.5">
+              <Lock className="w-3 h-3" />
+              AES-256 bit Advanced Encryption · Stripe-secured
             </p>
             <h2
               className="mt-3 text-3xl sm:text-5xl tracking-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Federation pricing closes when the seats fill.
+              Activate your spot. We start the kickoff this week.
             </h2>
             <p className="mt-5 text-base text-zinc-400">
-              Pick the cadence that fits and we get on the build
-              calendar this week.
+              50 businesses this wave. Pick the cadence that fits and
+              we get on the build calendar today.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
@@ -629,6 +669,70 @@ export function AliraReferralClient({
         </footer>
         <p className="sr-only">{pageUrl}</p>
       </div>
+
+      {/* ACTIVATE MODAL — pops the two pricing cards on top of the page
+          when any Activate-your-assets button fires. Persists alongside
+          the inline #pricing section so closing the modal leaves the
+          user with the cards still visible below. Closes on Esc,
+          backdrop click, and the explicit close button. */}
+      {modalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Activate your assets"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-md"
+          onClick={(e) => {
+            // Backdrop click closes; clicks bubbling up from the panel
+            // children stop at the panel's onClick stopPropagation.
+            if (e.target === e.currentTarget) closeModal();
+          }}
+          data-testid="alira-activate-modal"
+        >
+          <div
+            className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-950/95 p-6 sm:p-8 shadow-2xl shadow-purple-300/10 max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={closeModal}
+              aria-label="Close"
+              className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 hover:text-white hover:border-white/30 hover:bg-white/[0.08] transition-colors"
+              data-testid="alira-activate-modal-close"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <p className="text-[11px] uppercase tracking-[0.32em] text-purple-300/90 font-semibold">
+              Two ways in · pick the cadence
+            </p>
+            <h3
+              className="mt-2 text-2xl sm:text-3xl tracking-tight text-white pr-10"
+              style={{ fontFamily: "Georgia, serif" }}
+            >
+              Activate your assets.
+            </h3>
+            <p className="mt-2 text-sm text-zinc-400">
+              Both prices buy the same {marketTotal} Tier-3 build. Same
+              scope, same federation exposure — just different cadence.
+            </p>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 items-stretch">
+              {pricingOptions.map((opt) => (
+                <PricingCard
+                  key={opt.id}
+                  opt={opt}
+                  surfaceTestId="alira-pricing-modal"
+                />
+              ))}
+            </div>
+
+            <p className="mt-6 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.32em] text-amber-300/80 font-semibold">
+              <Lock className="w-3 h-3" />
+              AES-256 bit Advanced Encryption · Stripe-secured
+            </p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
