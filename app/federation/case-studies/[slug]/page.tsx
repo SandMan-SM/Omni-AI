@@ -292,7 +292,13 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
   return (
     <>
       <CaseCosmicBackground />
-      <main className="min-h-screen text-zinc-100 relative z-10">
+      {/* overflow-x-hidden is a page-level safety net: any long
+          unbreakable token in the case-study data (schema names,
+          slugs, code fragments) gets clipped at the viewport edge
+          instead of triggering horizontal page scroll on mobile.
+          Per-card break-words handles wrapping inside the cards;
+          this catches anything else. */}
+      <main className="min-h-screen text-zinc-100 relative z-10 overflow-x-hidden">
         <section className="border-b border-white/5 relative overflow-hidden">
           <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
             {/* Breadcrumb — replaces the static "Infrastructure ·
@@ -393,10 +399,18 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
             {c.systems.map((row) => (
               <article
                 key={row.layer}
-                className="border border-zinc-800 rounded-lg p-5 grid gap-2 sm:grid-cols-[200px_1fr] sm:items-baseline bg-zinc-900/40"
+                className="border border-zinc-800 rounded-lg p-5 grid gap-2 sm:grid-cols-[200px_minmax(0,1fr)] sm:items-baseline bg-zinc-900/40 min-w-0 overflow-hidden"
               >
-                <p className="text-xs uppercase tracking-[0.3em] text-amber-400">{row.layer}</p>
-                <p className="text-sm text-zinc-300 leading-relaxed">{row.what}</p>
+                <p className="text-xs uppercase tracking-[0.3em] text-amber-400 break-words">{row.layer}</p>
+                {/* break-words + overflow-wrap:anywhere force the long
+                    schema tokens (e.g. inbound_alira_{events,leads,...})
+                    to wrap mid-string on mobile. Without this the
+                    unbreakable token pushes the article wider than the
+                    viewport and the whole page gains a horizontal
+                    scrollbar. min-w-0 on the article + minmax(0,1fr)
+                    on the second track let the grid cell shrink below
+                    its content's intrinsic min-width. */}
+                <p className="text-sm text-zinc-300 leading-relaxed min-w-0 break-words [overflow-wrap:anywhere]">{row.what}</p>
               </article>
             ))}
           </div>
