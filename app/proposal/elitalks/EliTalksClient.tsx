@@ -170,6 +170,71 @@ export function EliTalksClient({
             </span>
           </div>
 
+<<<<<<< Updated upstream
+=======
+          {/* What it's worth — open-market comparables for each bucket
+              above. Not what we charge — what the audience would pay
+              if they bought each piece à la carte from a mid-market
+              agency. Anchors the partnership against real numbers so
+              Ellie can verify the leverage independently. */}
+          <div className="mt-8 max-w-3xl rounded-2xl border border-amber-300/20 bg-amber-300/[0.02] p-6">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-300/90 mb-5 font-semibold">
+              What this is worth on the open market
+            </p>
+            <div className="divide-y divide-amber-300/10">
+              {[
+                {
+                  service: "Paid social automation",
+                  value: "$4K–8K/mo agency retainer · $50K+/yr equivalent",
+                },
+                {
+                  service: "$100K+ in digital assets",
+                  value: "$25K–50K per custom site · $100K+ for the full stack",
+                },
+                {
+                  service: "Retention & sales systems",
+                  value: "$15K–40K to build + $2K–5K/mo to run",
+                },
+                {
+                  service: "Nurturing campaigns",
+                  value: "$8K–20K to build + $2K–4K/mo to run",
+                },
+                {
+                  service: "16-business federation exposure",
+                  value: "$2K–5K per featured placement · $30K+ over six months",
+                },
+              ].map((r) => (
+                <div
+                  key={r.service}
+                  className="grid gap-1 sm:grid-cols-[1fr_1.4fr] sm:items-baseline py-3 first:pt-0 last:pb-0"
+                >
+                  <span className="text-sm font-semibold text-zinc-100">
+                    {r.service}
+                  </span>
+                  <span className="text-xs sm:text-sm text-amber-200/90 font-medium">
+                    {r.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <div className="mt-5 pt-5 border-t border-amber-300/20">
+              <div className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
+                  Comparable six-month spend
+                </span>
+                <span className="text-2xl font-bold text-amber-300 tracking-tight">
+                  $200K+
+                </span>
+              </div>
+              <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
+                That&apos;s what an agency would invoice to assemble the
+                same stack from scratch. Same surfaces, same scope,
+                retail rates.
+              </p>
+            </div>
+          </div>
+
+>>>>>>> Stashed changes
           {/* Soft horizontal divider closes the hero so the eye knows
               the next section is a different beat. */}
           <div className="mt-12 h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
