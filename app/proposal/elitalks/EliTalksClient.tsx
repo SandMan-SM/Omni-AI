@@ -185,22 +185,6 @@ export function EliTalksClient({
                   service: "Paid social automation",
                   value: "$4K–8K/mo agency retainer · $50K+/yr equivalent",
                 },
-                {
-                  service: "$100K+ in digital assets",
-                  value: "$25K–50K per custom site · $100K+ for the full stack",
-                },
-                {
-                  service: "Retention & sales systems",
-                  value: "$15K–40K to build + $2K–5K/mo to run",
-                },
-                {
-                  service: "Nurturing campaigns",
-                  value: "$8K–20K to build + $2K–4K/mo to run",
-                },
-                {
-                  service: "16-business federation exposure",
-                  value: "$2K–5K per featured placement · $30K+ over six months",
-                },
               ].map((r) => (
                 <div
                   key={r.service}
@@ -221,13 +205,14 @@ export function EliTalksClient({
                   Comparable six-month spend
                 </span>
                 <span className="text-2xl font-bold text-amber-300 tracking-tight">
-                  $200K+
+                  $30K+
                 </span>
               </div>
               <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
-                That&apos;s what an agency would invoice to assemble the
-                same stack from scratch. Same surfaces, same scope,
-                retail rates.
+                That&apos;s what an agency would invoice for the paid-
+                social piece alone across the six-month window. Retail
+                rate, before any of the other surfaces (sites, AI CEO,
+                newsletter, federation) get priced in.
               </p>
             </div>
           </div>
