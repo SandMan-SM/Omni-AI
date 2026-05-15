@@ -1,12 +1,14 @@
 // /alira/referral — referral landing for anyone Alira sends to lock
-// in a Tier-3 bespoke build at the federation-discount price. The
-// page positions Alira as the proof artifact (live federation case
-// study), then surfaces two payment options via a reveal-on-click
-// "Lock in your seat" CTA: $2,500 annual OR $1,500 over 4 months.
+// in a Tier-3 bespoke build at the federation-discount price. Mirrors
+// the /proposal/elitalks visual structure (cosmic backdrop, serif
+// headline, amber-chip strip, "What it's worth on the open market"
+// panel) and ends in an "Activate your assets" CTA that reveals two
+// payment options:
 //
-// Both prices buy the same deliverable — a $20,000 retail-equivalent
-// website + newsletter + sponsorship inclusion + distribution across
-// the federation assets, tuned to the recipient's community / city.
+//   1. Pay in full        — $3,000 one-time Stripe checkout
+//   2. Hold your spot     — $333/mo recurring (≈ 9-month payment plan)
+//
+// Both buy the same Tier-3 build that runs Alira's own brand.
 
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -15,84 +17,102 @@ import { AliraReferralClient } from "./AliraReferralClient";
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/alira/referral`;
 
-// Stripe payment-link placeholders. Sita: swap these constants with
-// the real live-mode payment links when ready. Until then the buttons
-// open the placeholder URLs.
-const PAY_ANNUAL_URL = "https://buy.stripe.com/REPLACE_WITH_ANNUAL_2500";
-const PAY_4MONTH_URL = "https://buy.stripe.com/REPLACE_WITH_4MO_1500";
+// Live Stripe payment links (created 2026-05-15 via Stripe MCP):
+//   - $3,000 one-time: price_1TXNpJE1uHPZaaHp4i5kIWsc
+//   - $333/mo recurring: price_1TXNpME1uHPZaaHpcCZbCf3l
+// Linked off Product prod_UWQgOQqLHioU4d. The recurring price runs
+// open-ended; Sita closes the subscription manually at month 9 (or
+// after final payment lands). To convert to a Subscription Schedule
+// with `iterations: 9` later, swap the payment link for a custom
+// /api/stripe/subscribe endpoint that creates the schedule server-
+// side — out of scope for the referral surface itself.
+const PAY_FULL_URL = "https://buy.stripe.com/6oU4gz2j89yU2V90lW9fW0g";
+const PAY_DEPOSIT_URL = "https://buy.stripe.com/aFa8wP6zocL69jx7Oo9fW0h";
 
-// The case study Alira is referring people on the basis of.
+// The case study Alira is referring people on the basis of — i.e.
+// Alira's own live build. Pulled from lib/case-studies.ts so the
+// numbers + bullets stay honest against the federation source of
+// truth.
 const CASE_STUDY = {
   brand: "Alira",
-  domain: "alira.com",
-  url: "https://alira.com",
+  domain: "alira.live",
+  url: "https://alira.live",
   role: "Personal Brand · AI CEO",
-  // Pulled from lib/case-studies.ts to keep the numbers honest.
   tagline:
     "Bespoke Next.js channel hub with the AI CEO layer routing inbound, a federated cross-promo embed, and newsletter distribution wired into the broader Omni AI portfolio.",
   shippedBullets: [
-    "Custom Next.js codebase + design system",
-    "AI CEO layer for inbound routing + scoring",
+    "Custom Next.js codebase + design system, fully owned",
+    "AI CEO layer for inbound routing + lead scoring",
     "Federation cross-promo embed driving organic referral traffic",
-    "Newsletter system on a verified Resend domain",
+    "Branded Resend newsletter on a verified domain",
     "JSON-LD + edge-rendered OG for full search-surface coverage",
   ],
   caseStudyUrl: `${SITE_URL}/federation/case-studies/alira`,
 };
 
-// What the recipient gets if they lock in. Numbers framed as retail-
-// equivalent so the leverage math reads ($20K of work for $1,500 or
-// $2,500).
-const RETAIL_LINES: { item: string; spec: string; rate: string }[] = [
+// Open-market value table — what a mid-market agency would invoice
+// for the same deliverables. Anchors the referral price against
+// real numbers without us ever disclosing margin. Mirrors the
+// "What this is worth on the open market" panel on the Ellie Talks
+// proposal.
+const MARKET_RATES: { service: string; value: string }[] = [
   {
-    item: "Bespoke Next.js website",
-    spec: "Custom codebase, full SEO + JSON-LD schema, edge-rendered OG, sitemap + robots, custom 404/loading.",
-    rate: "$14,000",
+    service: "Bespoke Next.js website",
+    value: "$10K–25K · custom codebase, SEO, JSON-LD, edge-rendered OG",
   },
   {
-    item: "Newsletter system",
-    spec: "Branded Resend domain, suppression list, engagement mirroring into your dashboard.",
-    rate: "$3,000",
+    service: "AI CEO + inbound routing layer",
+    value: "$5K–15K to spec + build · $1K–3K/mo retainer",
   },
   {
-    item: "Sponsorship inclusion",
-    spec: "Featured across federation surfaces — operator newsletters, cross-promo embed, newsroom placements.",
-    rate: "$2,000",
+    service: "Branded newsletter system",
+    value: "$3K–8K to wire up · $200–500/mo Resend + tooling",
   },
   {
-    item: "Distribution across assets",
-    spec: "GEO + community-specific landing pages, ranked for the city + niche you actually operate in.",
-    rate: "$1,000",
+    service: "Federation cross-promo + sponsorship inclusion",
+    value: "$1K–3K per featured placement · $30K+ over a year",
+  },
+  {
+    service: "GEO/community distribution + ranking",
+    value: "$2K–5K per market · $24K+/yr to maintain SEO velocity",
   },
 ];
-const RETAIL_TOTAL = "$20,000";
+// Headline anchor — sum of midpoint ranges above, rounded down so
+// the figure reads honest, not aspirational.
+const MARKET_TOTAL = "$20,000+";
 
-// Two pricing options revealed when the user clicks "Lock in your seat".
+// Two pricing options revealed by the hero "Activate your assets"
+// CTA. Same Tier-3 build either way — only the cadence differs.
 const PRICING_OPTIONS = [
   {
-    id: "annual",
-    label: "Annual",
-    price: "$2,500",
-    cadence: "billed once · 12 months covered",
-    valueLine: "Lowest total · best leverage on a $20K build",
-    payUrl: PAY_ANNUAL_URL,
-    cta: "Lock in · $2,500 / year",
+    id: "deposit",
+    label: "Hold your spot",
+    price: "$333",
+    cadenceTop: "down · $333/mo over 9 months",
+    cadenceBottom: "Same scope · low-friction entry · cancel anytime if we don't ship",
+    valueLine:
+      "Reserve a build slot today and we start the kickoff this week. Subscription pauses when the final installment clears (≈ month 9).",
+    payUrl: PAY_DEPOSIT_URL,
+    cta: "Hold your spot · $333",
     featured: true,
   },
   {
-    id: "4month",
-    label: "4-month split",
-    price: "$1,500",
-    cadence: "billed once · 4-month window",
-    valueLine: "Lower upfront commitment to start ranking + shipping",
-    payUrl: PAY_4MONTH_URL,
-    cta: "Lock in · $1,500 / 4-month",
+    id: "full",
+    label: "Pay in full",
+    price: "$3,000",
+    cadenceTop: "one-time · clean lock-in",
+    cadenceBottom: "Single Stripe checkout · zero recurring billing",
+    valueLine:
+      "Pay the build out in one motion. Same deliverable, no monthly cadence to manage. Slot is locked the moment payment clears.",
+    payUrl: PAY_FULL_URL,
+    cta: "Pay in full · $3,000",
     featured: false,
   },
 ];
 
-// Distribution + community frame — the part that makes this build
-// worth more than a plain website.
+// What it really buys you — the surrounding system, not just a
+// website. Tier-3 build is the launch surface; the federation
+// layer is what compounds it.
 const DISTRIBUTION_NOTES: { title: string; body: string }[] = [
   {
     title: "Natural growth in your community",
@@ -112,28 +132,28 @@ const DISTRIBUTION_NOTES: { title: string; body: string }[] = [
 ];
 
 export const metadata: Metadata = {
-  title: "Locked in by Alira · $20K Build for $1,500 or $2,500",
+  title: "Locked in by Alira · $20K+ Build for $3,000 or $333 Down",
   description:
-    "Alira's referral — lock in a Tier-3 bespoke website + newsletter + federation sponsorship + community-specific distribution for $1,500 (4-month) or $2,500 (annual). Same retail-$20,000 build that runs Alira's own brand.",
+    "Alira's referral — lock in a Tier-3 bespoke website + AI CEO layer + branded newsletter + federation cross-promotion + community-specific distribution for $3,000 in full, or as little as $333 down to hold your spot. Same retail-$20K+ build that runs Alira's own brand.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Locked in by Alira · $20K Build for $1,500 or $2,500",
+    title: "Locked in by Alira · $20K+ Build for $3,000 or $333 Down",
     description:
-      "$20,000 of bespoke infrastructure — site, newsletter, sponsorship, distribution — at the federation-discount price.",
+      "Bespoke site + AI CEO + newsletter + federation distribution. Pay $3,000 in full or $333 down to hold your spot. Same Tier-3 stack Alira runs on.",
     url: PAGE_URL,
     type: "website",
     images: [{
-      url: `${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=%2420K%20build%20%C2%B7%20federation%20pricing`,
+      url: `${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=%243%2C000%20build%20%C2%B7%20%24333%20down%20to%20hold%20your%20spot`,
       width: 1200,
       height: 630,
     }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Locked in by Alira · $20K Build for $1,500 or $2,500",
+    title: "Locked in by Alira · $20K+ Build for $3,000 or $333 Down",
     description:
-      "$20K build at federation-discount pricing. Site + newsletter + sponsorship + distribution.",
-    images: [`${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=%2420K%20build%20%C2%B7%20federation%20pricing`],
+      "Bespoke site + AI CEO + newsletter + federation distribution. $3,000 full or $333 down to hold your spot.",
+    images: [`${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=%243%2C000%20build%20%C2%B7%20%24333%20down%20to%20hold%20your%20spot`],
   },
   // Private referral surface — only people Alira sends here see it.
   robots: { index: false, follow: false },
@@ -144,8 +164,8 @@ export default function AliraReferralPage(): ReactNode {
     <AliraReferralClient
       pageUrl={PAGE_URL}
       caseStudy={CASE_STUDY}
-      retailLines={RETAIL_LINES}
-      retailTotal={RETAIL_TOTAL}
+      marketRates={MARKET_RATES}
+      marketTotal={MARKET_TOTAL}
       pricingOptions={PRICING_OPTIONS}
       distributionNotes={DISTRIBUTION_NOTES}
     />
