@@ -381,19 +381,24 @@ export function AliraReferralClient({
               <div className="mt-5 pt-5 border-t border-amber-300/20">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
-                    Assets you walk away with
+                    Comparable agency build
                   </span>
                   <span className="text-2xl font-bold text-amber-300 tracking-tight">
                     {marketTotal}
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
-                  Five line items. One bespoke stack.{" "}
+                  That&apos;s what a mid-market agency would invoice
+                  to assemble and run the same stack across the year.
+                  You walk away with{" "}
                   <span className="text-amber-300 font-semibold">
                     $100K+
                   </span>{" "}
-                  in digital assets that you own outright when the
-                  build ships.
+                  in actual digital assets when the build ships — for{" "}
+                  <span className="text-amber-300 font-semibold">
+                    $3,000
+                  </span>
+                  .
                 </p>
               </div>
             </div>
@@ -570,9 +575,9 @@ export function AliraReferralClient({
 
             {pricingOpen && (
               <p className="mt-8 max-w-2xl text-xs text-zinc-500 leading-relaxed">
-                Both prices ship the same {marketTotal} in digital
-                assets. Secure checkout via Stripe. Federation pricing
-                only available via Alira&apos;s referral link.
+                Both prices ship the same $100K+ in digital assets.
+                Secure checkout via Stripe. Federation pricing only
+                available via Alira&apos;s referral link.
               </p>
             )}
           </div>
@@ -717,7 +722,7 @@ export function AliraReferralClient({
               Activate your assets.
             </h3>
             <p className="mt-2 text-sm text-zinc-400">
-              Both prices ship the same {marketTotal} in digital assets. Same
+              Both prices ship the same $100K+ in digital assets. Same
               scope, same federation exposure — just different cadence.
             </p>
 

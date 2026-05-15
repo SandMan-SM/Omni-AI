@@ -62,26 +62,33 @@ const MARKET_RATES: { service: string; value: string }[] = [
   },
   {
     service: "AI CEO + inbound routing layer",
-    value: "$25K–50K · qualifying, scoring, calendar booking automation",
+    value: "$25K–50K to build · $36K+/yr retainer equivalent",
   },
   {
-    service: "Branded newsletter system",
-    value: "$5K–10K · Resend infra, suppression, engagement tracking",
+    service: "Branded newsletter + automation",
+    value: "$15K+/yr · Resend infra, drip sequences, engagement tracking",
   },
   {
-    service: "Federation cross-promo + sponsorship seat",
-    value: "$10K+ · featured placements across 16 partner businesses",
+    service: "Federation cross-promo + sponsorship",
+    value: "$30K+/yr · consistent placements across 16 partner businesses",
   },
   {
-    service: "GEO + community distribution buildout",
-    value: "$10K–20K · ranked landing pages per city + niche you operate in",
+    service: "GEO + community distribution",
+    value: "$40K+/yr · ranked landing pages per city + niche you operate in",
   },
 ];
-// Headline anchor — one-time bespoke-build asset values (NOT 12-month
-// runtime). Midpoints sum to ~$110K, so $100K+ is the honest floor on
-// what the buyer literally owns when the build ships. Matches Sita's
-// anti-greed framing: assets-you-walk-away-with, not service-equivalent.
-const MARKET_TOTAL = "$100,000+";
+// Headline anchor — 12-month-equivalent agency rates sum honestly to
+// ~$200K+ for the full Tier-3 stack + run-state retainers + federation
+// exposure. This is the OPEN-MARKET COMPARISON figure: what you'd pay
+// a mid-market agency for the same service stack across the first year.
+//
+// Important: it's intentionally HIGHER than the "$100,000 in digital
+// assets you walk away with" figure on the hero. Two complementary
+// frames:
+//   $100K → what the buyer literally owns when the build ships
+//   $200K+ → what the open market would charge for the same stack
+// The leverage math sits in the gap between the two.
+const MARKET_TOTAL = "$200,000+";
 
 // Two pricing options revealed by the hero "Activate your assets"
 // CTA. Same Tier-3 build either way — only the cadence differs.
