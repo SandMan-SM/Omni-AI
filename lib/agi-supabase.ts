@@ -53,6 +53,11 @@ export type Business = {
   contact_email: string | null;
   partnership_blurb?: string | null;
   brand_logo_url?: string | null;
+  // Google Analytics 4 measurement ID (e.g. "G-6JZP5C4NMQ"). Null until
+  // the tenant site is GA4-instrumented; rendered as a status badge on
+  // the agentic-dashboard analytics panel so $Mafi sees which sites
+  // are wired in at a glance.
+  ga4_measurement_id?: string | null;
   created_at: string;
 };
 

@@ -110,26 +110,34 @@ export async function GET(req: Request) {
   const cfg = RANGE_CONFIG[rangeParam] ?? RANGE_CONFIG['30d'];
   const range: Range = (cfg === RANGE_CONFIG[rangeParam]) ? rangeParam : '30d';
 
-  // Per-tenant scope. Two ways to scope:
+  // Per-tenant scope. Three ways to scope:
   //
-  //   1. ?slug=<INBOUND_SLUGS member> → reads inbound_<slug>_events
+  //   1. ?slug=all → admin-only rollup. Reads every inbound_<slug>_events
+  //      partition AND the central `events` table for omnileadsagi.com,
+  //      sums them into one view. Used by the "All Businesses" option
+  //      in the workspace dropdown (visible only to $Mafi). Returns the
+  //      same JSON shape as a single-tenant query so the dashboard's
+  //      OmniSiteAnalytics renderer doesn't need to branch.
+  //
+  //   2. ?slug=<INBOUND_SLUGS member> → reads inbound_<slug>_events
   //      directly. Used when the dashboard's workspace selector picks
   //      a federation tenant (Sitani Mafi, CPS, etc) whose site
   //      doesn't write into the central `events` table — its tracker
-  //      writes into its own inbound_<slug>_events partition. Before
-  //      this, picking those workspaces silently fell back to
-  //      omnileadsagi.com data (the bug Sita kept hitting).
+  //      writes into its own inbound_<slug>_events partition.
   //
-  //   2. ?host=<hostname> → filters the central `events` table to
+  //   3. ?host=<hostname> → filters the central `events` table to
   //      rows whose page_url matches the host. Used for omnileadsagi.com
   //      (the only tenant that actually writes into `events`) and
   //      preserved for backward compatibility.
   //
-  // Slug wins if both are passed.
+  // slug=all wins over slug=<slug> wins over host=.
   const slugParam = (url.searchParams.get('slug') || '').trim().toLowerCase() as InboundSlug;
-  const isValidSlug = (INBOUND_SLUGS as readonly string[]).includes(slugParam);
+  const isAllRollup = slugParam === ('all' as unknown as InboundSlug);
+  const isValidSlug = !isAllRollup && (INBOUND_SLUGS as readonly string[]).includes(slugParam);
   const hostParam = (url.searchParams.get('host') || '').trim().toLowerCase();
-  const host = isValidSlug ? slugParam : (hostParam || 'omnileadsagi.com');
+  const host = isAllRollup
+    ? 'federation'
+    : (isValidSlug ? slugParam : (hostParam || 'omnileadsagi.com'));
 
   const sb = createAdminClient();
   const since = new Date(Date.now() - cfg.ms).toISOString();
@@ -155,7 +163,77 @@ export async function GET(req: Request) {
 
   let rows: AnalyticsRow[] = [];
 
-  if (isValidSlug) {
+  // Helper: map an inbound_<slug>_events row into the central events
+  // schema so the downstream aggregator can treat both sources
+  // uniformly. visitor_id → actor_id, payload → properties (with
+  // referrer merged in so the top-referrers logic still finds it).
+  type InboundRow = {
+    event_type?: string;
+    event_category?: string | null;
+    action?: string | null;
+    page_url?: string | null;
+    session_id?: string | null;
+    visitor_id?: string | null;
+    target_id?: string | null;
+    value_text?: string | null;
+    user_agent?: string | null;
+    referrer?: string | null;
+    payload?: Record<string, unknown> | null;
+    created_at?: string | null;
+  };
+  const normalizeInbound = (r: InboundRow): AnalyticsRow => ({
+    event_type: r.event_type,
+    event_category: r.event_category ?? null,
+    action: r.action ?? null,
+    page_url: r.page_url ?? null,
+    session_id: r.session_id ?? null,
+    actor_id: r.visitor_id ?? null,
+    actor_type: null,
+    target_id: r.target_id ?? null,
+    value_text: r.value_text ?? null,
+    user_agent: r.user_agent ?? null,
+    properties: { ...(r.payload ?? {}), referrer: r.referrer ?? null },
+    created_at: r.created_at ?? null,
+  });
+
+  if (isAllRollup) {
+    // Federation rollup: fan out to every inbound_<slug>_events
+    // partition + the central `events` table in parallel, then merge.
+    // Per-tenant row caps stay tight (8k each) so the total stays
+    // bounded — INBOUND_SLUGS × 8k + 8k for omnileadsagi ≈ 144k worst
+    // case, well under the 250k Postgrest hard cap. session_ids are
+    // already globally unique (UUID) so cross-tenant uniqueness math
+    // (visitors / sessions) Just Works without re-namespacing.
+    const PER_TENANT_LIMIT = 8000;
+    const tenantFetches = (INBOUND_SLUGS as readonly string[]).map(async (s) => {
+      const { data, error } = await sb
+        .from(`inbound_${s}_events`)
+        .select(
+          'event_type,event_category,action,page_url,session_id,visitor_id,target_id,value_text,user_agent,referrer,payload,created_at'
+        )
+        .gte('created_at', since)
+        .in('event_type', KPI_EVENT_TYPES as string[])
+        .order('created_at', { ascending: false })
+        .limit(PER_TENANT_LIMIT);
+      if (error) return [] as AnalyticsRow[];
+      return ((data as InboundRow[] | null) ?? []).map(normalizeInbound);
+    });
+    const centralFetch = sb
+      .from('events')
+      .select(
+        'event_type,event_category,action,page_url,session_id,actor_id,actor_type,target_id,value_text,user_agent,properties,created_at'
+      )
+      .gte('created_at', since)
+      .in('event_type', KPI_EVENT_TYPES as string[])
+      .order('created_at', { ascending: false })
+      .limit(PER_TENANT_LIMIT)
+      .then(({ data, error }) => {
+        if (error) return [] as AnalyticsRow[];
+        return (data as AnalyticsRow[] | null) ?? [];
+      });
+    const chunks = await Promise.all([...tenantFetches, centralFetch]);
+    rows = chunks.flat();
+  } else if (isValidSlug) {
     // Per-tenant: query the inbound_<slug>_events partition. The slug
     // is allowlist-validated against INBOUND_SLUGS so this can't be
     // weaponized as table-name injection.
@@ -170,38 +248,10 @@ export async function GET(req: Request) {
       .order('created_at', { ascending: false })
       .limit(50000);
     if (error) return serverErrorResponse('admin/analytics.GET', error);
-    // Map inbound schema -> events schema so the downstream code is
-    // schema-agnostic. visitor_id stands in for actor_id (visitor
-    // uniqueness counts), payload becomes properties (with referrer
-    // merged in so the top-referrers logic still finds it).
-    type InboundRow = {
-      event_type?: string;
-      event_category?: string | null;
-      action?: string | null;
-      page_url?: string | null;
-      session_id?: string | null;
-      visitor_id?: string | null;
-      target_id?: string | null;
-      value_text?: string | null;
-      user_agent?: string | null;
-      referrer?: string | null;
-      payload?: Record<string, unknown> | null;
-      created_at?: string | null;
-    };
-    rows = ((data as InboundRow[] | null) ?? []).map((r) => ({
-      event_type: r.event_type,
-      event_category: r.event_category ?? null,
-      action: r.action ?? null,
-      page_url: r.page_url ?? null,
-      session_id: r.session_id ?? null,
-      actor_id: r.visitor_id ?? null,
-      actor_type: null,
-      target_id: r.target_id ?? null,
-      value_text: r.value_text ?? null,
-      user_agent: r.user_agent ?? null,
-      properties: { ...(r.payload ?? {}), referrer: r.referrer ?? null },
-      created_at: r.created_at ?? null,
-    }));
+    // Map inbound schema → events schema via the helper defined at
+    // the top of the rows-fetch block so the all-rollup branch and
+    // single-tenant branch stay in lockstep.
+    rows = ((data as InboundRow[] | null) ?? []).map(normalizeInbound);
   } else {
     // Central events table (omnileadsagi.com + anything else routed
     // through the universal SiteTracker). Host filter applies when

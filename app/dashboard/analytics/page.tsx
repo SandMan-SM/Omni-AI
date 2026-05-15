@@ -29,9 +29,18 @@ type DailyPoint = {
   replied: number;
 };
 
+// Sentinel for the admin-only "All Businesses" rollup option. Treated
+// as a synthetic workspace in the dropdown — passes slug="all" through
+// to /api/admin/analytics which fans out across every inbound_<slug>_
+// events partition + the central `events` table and aggregates server-
+// side. Keeps the rest of the dashboard's state model (selectedBiz)
+// unchanged.
+const ALL_BUSINESSES_ID = "__all__";
+
 export default function AnalyticsPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [bizOpen, setBizOpen] = useState(false);
   const [stats, setStats] = useState({
     totalLeads: 0,
@@ -48,17 +57,21 @@ export default function AnalyticsPage() {
   const [bySource, setBySource] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    loadBusinesses().then(({ data }) => {
+    loadBusinesses().then(({ data, isAdmin: admin }) => {
+      setIsAdmin(admin);
       if (!data?.length) return;
       setBusinesses(data);
       // Honor the pinned workspace from localStorage so Sammy/Jaime/Brent
       // land on their own analytics, not whoever happens to be alphabetical
       // first. Falls back to data[0] only if no pin or pin doesn't match.
+      // Admins can also pin "__all__" to default into the federation rollup.
       let initial: Business | null = null;
       try {
         if (typeof window !== "undefined") {
           const pinned = localStorage.getItem("omni_active_business_id");
-          if (pinned && pinned !== "all") {
+          if (pinned === ALL_BUSINESSES_ID && admin) {
+            initial = makeAllSentinel();
+          } else if (pinned && pinned !== "all") {
             initial = data.find(b => b.id === pinned) ?? null;
           }
         }
@@ -81,8 +94,26 @@ export default function AnalyticsPage() {
     return () => window.removeEventListener('storage', onStorage);
   }, [businesses]);
 
+  // True when the admin has chosen the federation rollup. We skip the
+  // per-business outbound fetch in that mode — leads/assets are scoped
+  // to a single business_id, so the rollup view shows a placeholder
+  // instead. Site analytics still renders (and aggregates) above it.
+  const isAllSelected = selectedBiz?.id === ALL_BUSINESSES_ID;
+
   useEffect(() => {
     if (!selectedBiz) return;
+    if (isAllSelected) {
+      // Reset outbound counters so stale numbers from the previous
+      // workspace don't bleed into the rollup placeholder.
+      setStats({
+        totalLeads: 0, qualifiedLeads: 0, convertedLeads: 0, avgScore: 0,
+        totalAssets: 0, sentAssets: 0, openedAssets: 0, repliedAssets: 0,
+      });
+      setLeadsByStatus([]);
+      setAssetsByStatus([]);
+      setBySource({});
+      return;
+    }
     (async () => {
       // omni_leads_generated is RLS-locked to service_role; the browser
       // anon client silently returns zero rows. Pull leads via the server
@@ -127,17 +158,26 @@ export default function AnalyticsPage() {
       setAssetsByStatus(Object.entries(assetStatusCounts).map(([status, count]) => ({ status, count })));
       setBySource(sourceCounts);
     })();
-  }, [selectedBiz]);
+  }, [selectedBiz, isAllSelected]);
 
   // Privacy: filter businesses dropdown so non-admin client viewers
-  // can't see (or click into) other tenants' workspaces.
-  const visibleBizs = (() => {
+  // can't see (or click into) other tenants' workspaces. Admins get
+  // the synthetic "All Businesses" rollup option at the top of the
+  // list — server-side `isAdmin` from /api/dashboard/businesses is
+  // the canonical signal (localStorage is a fallback for legacy state
+  // where `omni_user.is_admin` was set client-side).
+  const visibleBizs: Business[] = (() => {
+    let baseIsAdmin = isAdmin;
     try {
-      if (typeof window === "undefined") return businesses;
-      const u = JSON.parse(localStorage.getItem("omni_user") || "null");
-      if (u?.is_admin) return businesses;
-      return selectedBiz ? [selectedBiz] : [];
-    } catch { return businesses; }
+      if (typeof window !== "undefined" && !baseIsAdmin) {
+        const u = JSON.parse(localStorage.getItem("omni_user") || "null");
+        if (u?.is_admin) baseIsAdmin = true;
+      }
+    } catch {}
+    if (!baseIsAdmin) {
+      return selectedBiz && selectedBiz.id !== ALL_BUSINESSES_ID ? [selectedBiz] : [];
+    }
+    return [makeAllSentinel(), ...businesses];
   })();
 
   const replyRate = stats.sentAssets > 0 ? Math.round((stats.repliedAssets / stats.sentAssets) * 100) : 0;
@@ -179,11 +219,50 @@ export default function AnalyticsPage() {
           </button>
           {bizOpen && (
             <div style={{ position: 'absolute', top: '100%', left: 0, marginTop: 6, background: '#111', border: '1px solid #222', borderRadius: 10, minWidth: 220, zIndex: 10, overflow: 'hidden' }}>
-              {visibleBizs.map(b => (
-                <button key={b.id} onClick={() => { setSelectedBiz(b); setBizOpen(false); }} style={{ display: 'block', width: '100%', textAlign: 'left', padding: '10px 14px', background: selectedBiz?.id === b.id ? '#191919' : 'transparent', border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13 }}>
-                  <div style={{ fontWeight: 600 }}>{b.name}</div>
-                </button>
-              ))}
+              {visibleBizs.map(b => {
+                const isAllRow = b.id === ALL_BUSINESSES_ID;
+                return (
+                  <button
+                    key={b.id}
+                    onClick={() => {
+                      setSelectedBiz(b);
+                      setBizOpen(false);
+                      // Persist the pick so the next visit lands on the
+                      // same workspace (including the rollup). Skips the
+                      // sentinel id for non-admins — they can't see it.
+                      try {
+                        if (typeof window !== "undefined") {
+                          localStorage.setItem("omni_active_business_id", b.id);
+                        }
+                      } catch {}
+                    }}
+                    style={{
+                      display: 'block', width: '100%', textAlign: 'left',
+                      padding: '10px 14px',
+                      background: selectedBiz?.id === b.id ? '#191919' : 'transparent',
+                      border: 'none', color: '#e8e8e8', cursor: 'pointer', fontSize: 13,
+                      borderBottom: isAllRow ? '1px solid #222' : 'none',
+                    }}
+                  >
+                    <div style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 8 }}>
+                      {b.name}
+                      {isAllRow && (
+                        <span style={{
+                          background: '#0d2b1a', border: '1px solid #14532d',
+                          color: '#34d399', padding: '1px 6px', borderRadius: 4,
+                          fontSize: 9, fontWeight: 700, letterSpacing: '0.4px',
+                          textTransform: 'uppercase',
+                        }}>Admin</span>
+                      )}
+                    </div>
+                    {isAllRow && (
+                      <div style={{ fontSize: 11, color: '#666', marginTop: 2 }}>
+                        Federation rollup · every site combined
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -224,18 +303,26 @@ export default function AnalyticsPage() {
             an INBOUND_SLUGS entry the endpoint reads from that
             tenant's inbound_<slug>_events partition; otherwise it
             falls back to host-filtering the central `events` table.
-            Sita kept seeing omnileadsagi.com numbers on Sitani Mafi
-            because every tenant except Omni AI writes its tracker
-            data into the inbound partitions, not `events`. */}
+            For the admin-only "All Businesses" rollup we pass
+            slug="all" so the endpoint fans out across every inbound
+            partition + the central events table and sums them. */}
         <OmniSiteAnalytics
-          slug={selectedBiz?.slug ?? undefined}
-          host={hostFromWebsite(selectedBiz?.website)}
+          slug={isAllSelected ? "all" : (selectedBiz?.slug ?? undefined)}
+          host={isAllSelected ? undefined : hostFromWebsite(selectedBiz?.website)}
+          ga4MeasurementId={isAllSelected ? null : selectedBiz?.ga4_measurement_id ?? null}
+          displayName={isAllSelected ? null : (selectedBiz?.name ?? null)}
+          isAllRollup={isAllSelected}
         />
 
         {/* Per-brand inbound (client website) analytics */}
         <InboundAnalytics />
 
-        {/* Agency outbound (omni_*) metrics — kept below the per-brand section */}
+        {/* Agency outbound (omni_*) metrics — kept below the per-brand
+            section. Outreach numbers are scoped per-business_id, so the
+            "All Businesses" rollup mode renders a single placeholder
+            instead of cross-tenant-summing leads/assets (would mix
+            apples + oranges across very different ICPs). Site traffic
+            stays aggregated above; this section just goes quiet. */}
         <div style={{ marginBottom: 16 }}>
           <div
             style={{
@@ -250,9 +337,22 @@ export default function AnalyticsPage() {
             Agency Outbound
           </div>
           <h2 style={{ fontSize: 22, fontWeight: 800, color: '#fff', letterSpacing: '-0.6px' }}>
-            Outreach Performance — {selectedBiz?.name ?? 'Select a business'}
+            Outreach Performance — {isAllSelected ? 'Federation rollup' : (selectedBiz?.name ?? 'Select a business')}
           </h2>
         </div>
+
+        {isAllSelected && (
+          <div style={{
+            background: '#0d1b16', border: '1px solid #14532d',
+            color: '#86efac', padding: 16, borderRadius: 10, fontSize: 13,
+            marginBottom: 32, display: 'flex', alignItems: 'center', gap: 10,
+          }}>
+            <CheckCircle2 size={14} />
+            Site-traffic rollup active. Outreach metrics are scoped
+            per-business — pick a single workspace from the dropdown
+            to view leads, emails, opens, and reply rates.
+          </div>
+        )}
 
         {/* Headline metrics */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
@@ -370,6 +470,26 @@ function KV({ label, value }: { label: string; value: string }) {
 
 function Empty() {
   return <div style={{ fontSize: 12, color: '#444', textAlign: 'center', padding: 16 }}>No data yet</div>;
+}
+
+// Synthetic Business row representing the admin-only "All Businesses"
+// option. Carrying it through state as a Business keeps the dropdown
+// logic uniform — selectedBiz?.name still works for the header
+// rendering, and isAllSelected (id === ALL_BUSINESSES_ID) is the
+// canonical "are we in rollup mode" gate.
+function makeAllSentinel(): Business {
+  return {
+    id: ALL_BUSINESSES_ID,
+    name: "All Businesses",
+    slug: "all",
+    industry: null,
+    location: null,
+    website: null,
+    plan: "enterprise",
+    contact_email: null,
+    ga4_measurement_id: null,
+    created_at: new Date(0).toISOString(),
+  };
 }
 
 // Extract the hostname from a Business.website value. The field may be
