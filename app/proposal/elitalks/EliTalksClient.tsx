@@ -86,16 +86,11 @@ export function EliTalksClient({
             the first scroll. */}
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 pt-20 pb-14 sm:pt-28 sm:pb-20">
-          {/* Brand chip — small pink/magenta accent that nods to
-              Ellie's actual channel branding without overpowering the
-              cosmic-amber Omni AI palette. */}
-          <span
-            className="inline-flex items-center gap-1.5 rounded-full border border-pink-300/30 bg-pink-300/[0.06] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-pink-200"
-          >
-            <Mic className="w-3 h-3" />
-            Ellie Talks · @ellieetalks
-          </span>
-          <p className="mt-5 text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
+          {/* Brand chip removed per Sita 2026-05-14 — the "Omni AI ×
+              Ellie Talks" eyebrow below already establishes the brand,
+              and the redundant pink pill was reading as social-handle
+              fluff above the hero. */}
+          <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
             Omni AI × Ellie Talks · 6-month partnership
           </p>
           <h1
