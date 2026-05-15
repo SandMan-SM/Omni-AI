@@ -288,10 +288,9 @@ export function AliraReferralClient({
               className="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.05]"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Same{" "}
-              <span className="text-amber-300">$200K+ build.</span>{" "}
+              <span className="text-amber-300">$100,000 in assets.</span>{" "}
               <em className="font-normal text-purple-200/90 not-italic sm:italic">
-                Federation price.
+                We don&apos;t even want the money.
               </em>
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
@@ -303,29 +302,31 @@ export function AliraReferralClient({
               federation-referral rate.
             </p>
 
-            {/* Leverage callout — same shape as Ellie's. Four
-                gold-highlighted spans enumerate what the build covers
-                so the reader can map dollars to deliverables on first
-                scroll. */}
+            {/* Leverage callout — anti-greed reframe. The fee is a
+                token, not a service charge: we ship $100K worth of
+                assets to prove what we build, and only talk about
+                other systems after if the results land. */}
             <p className="mt-6 max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
-              The referral covers the whole stack —{" "}
+              Honestly, we don&apos;t even want the money — we want to
+              prove what we build. For{" "}
+              <span className="text-amber-300 font-semibold">$3,000</span>{" "}
+              (or{" "}
               <span className="text-amber-300 font-semibold">
-                a bespoke Next.js website
-              </span>{" "}
-              under your brand,{" "}
+                as little as $333 down to secure your seat
+              </span>
+              ) we ship{" "}
               <span className="text-amber-300 font-semibold">
-                an AI CEO + sales system
+                $100,000 worth of digital assets
               </span>{" "}
-              qualifying every inbound,{" "}
+              under your brand: a bespoke Next.js site, an AI CEO +
+              sales system qualifying every inbound, a branded
+              newsletter wired into the federation, and consistent
+              feature exposure across 16 partner businesses. After it
+              ships we talk about other systems —{" "}
               <span className="text-amber-300 font-semibold">
-                a branded newsletter
-              </span>{" "}
-              wired into the federation, plus{" "}
-              <span className="text-amber-300 font-semibold">
-                feature exposure across 16 partner businesses
-              </span>{" "}
-              and GEO/community-tuned distribution. An agency would
-              invoice north of $200K to spin up the same scope.
+                only if you love the results
+              </span>
+              . And everyone loves the results.
             </p>
 
             {/* What's-in-the-box strip — five compact amber chips
@@ -380,16 +381,19 @@ export function AliraReferralClient({
               <div className="mt-5 pt-5 border-t border-amber-300/20">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
-                    Comparable agency build
+                    Assets you walk away with
                   </span>
                   <span className="text-2xl font-bold text-amber-300 tracking-tight">
                     {marketTotal}
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
-                  That&apos;s what a mid-market agency would invoice
-                  to assemble the same stack from scratch. Same
-                  surfaces, same scope, retail rates.
+                  Five line items. One bespoke stack.{" "}
+                  <span className="text-amber-300 font-semibold">
+                    $100K+
+                  </span>{" "}
+                  in digital assets that you own outright when the
+                  build ships.
                 </p>
               </div>
             </div>
@@ -566,9 +570,9 @@ export function AliraReferralClient({
 
             {pricingOpen && (
               <p className="mt-8 max-w-2xl text-xs text-zinc-500 leading-relaxed">
-                Both prices cover the same {marketTotal} deliverable.
-                Secure checkout via Stripe. Federation pricing only
-                available via Alira&apos;s referral link.
+                Both prices ship the same {marketTotal} in digital
+                assets. Secure checkout via Stripe. Federation pricing
+                only available via Alira&apos;s referral link.
               </p>
             )}
           </div>
@@ -639,8 +643,9 @@ export function AliraReferralClient({
               Activate your spot. We start the kickoff this week.
             </h2>
             <p className="mt-5 text-base text-zinc-400">
-              50 businesses this wave. Pick the cadence that fits and
-              we get on the build calendar today.
+              50 businesses this wave. Pick the cadence, we kickoff
+              this week — and we&apos;ll talk about other systems only
+              after you love the results.
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
@@ -712,7 +717,7 @@ export function AliraReferralClient({
               Activate your assets.
             </h3>
             <p className="mt-2 text-sm text-zinc-400">
-              Both prices buy the same {marketTotal} Tier-3 build. Same
+              Both prices ship the same {marketTotal} in digital assets. Same
               scope, same federation exposure — just different cadence.
             </p>
 

@@ -62,26 +62,26 @@ const MARKET_RATES: { service: string; value: string }[] = [
   },
   {
     service: "AI CEO + inbound routing layer",
-    value: "$25K–50K to build · $36K+/yr retainer equivalent",
+    value: "$25K–50K · qualifying, scoring, calendar booking automation",
   },
   {
-    service: "Branded newsletter + automation",
-    value: "$15K+/yr · Resend infra, drip sequences, engagement tracking",
+    service: "Branded newsletter system",
+    value: "$5K–10K · Resend infra, suppression, engagement tracking",
   },
   {
-    service: "Federation cross-promo + sponsorship",
-    value: "$30K+/yr · consistent placements across 16 partner businesses",
+    service: "Federation cross-promo + sponsorship seat",
+    value: "$10K+ · featured placements across 16 partner businesses",
   },
   {
-    service: "GEO + community distribution",
-    value: "$40K+/yr · ranked landing pages per city + niche you operate in",
+    service: "GEO + community distribution buildout",
+    value: "$10K–20K · ranked landing pages per city + niche you operate in",
   },
 ];
-// Headline anchor — 12-month-equivalent agency rates sum honestly to
-// ~$200K+ for the full Tier-3 stack + run-state retainers + federation
-// exposure. Not aspirational — what a mid-market agency would actually
-// invoice across the first year.
-const MARKET_TOTAL = "$200,000+";
+// Headline anchor — one-time bespoke-build asset values (NOT 12-month
+// runtime). Midpoints sum to ~$110K, so $100K+ is the honest floor on
+// what the buyer literally owns when the build ships. Matches Sita's
+// anti-greed framing: assets-you-walk-away-with, not service-equivalent.
+const MARKET_TOTAL = "$100,000+";
 
 // Two pricing options revealed by the hero "Activate your assets"
 // CTA. Same Tier-3 build either way — only the cadence differs.
@@ -134,14 +134,14 @@ const DISTRIBUTION_NOTES: { title: string; body: string }[] = [
 ];
 
 export const metadata: Metadata = {
-  title: "Locked in by Alira · $200K+ Build for $3,000 or $333 Down",
+  title: "Locked in by Alira · $100K+ in Assets for $3,000 or $333 Down",
   description:
-    "Alira's referral — lock in a Tier-3 bespoke website + AI CEO layer + branded newsletter + federation cross-promotion + community-specific distribution for $3,000 in full, or as little as $333 down to secure your spot. Same retail-$200K+ build that runs Alira's own brand.",
+    "Alira's referral — lock in a Tier-3 bespoke website + AI CEO layer + branded newsletter + federation cross-promotion + community-specific distribution for $3,000 in full, or as little as $333 down to secure your spot. $100K+ in digital assets you own when the build ships. We don't even want the money — we want to prove what we build.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Locked in by Alira · $200K+ Build for $3,000 or $333 Down",
+    title: "Locked in by Alira · $100K+ in Assets for $3,000 or $333 Down",
     description:
-      "Bespoke site + AI CEO + newsletter + federation distribution. Pay $3,000 in full or $333 down to secure your spot. Same Tier-3 stack Alira runs on. 50 businesses this wave.",
+      "$100K+ in digital assets you own outright. Pay $3,000 in full or $333 down to secure your spot. We don't even want the money — we want to prove what we build. 50 businesses this wave.",
     url: PAGE_URL,
     type: "website",
     images: [{
@@ -152,9 +152,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Locked in by Alira · $200K+ Build for $3,000 or $333 Down",
+    title: "Locked in by Alira · $100K+ in Assets for $3,000 or $333 Down",
     description:
-      "Bespoke site + AI CEO + newsletter + federation distribution. $3,000 full or $333 down to secure your spot.",
+      "$100K+ in assets. $3,000 full or $333 down to secure your spot. We don't even want the money.",
     images: [`${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=%243%2C000%20build%20%C2%B7%20%24333%20down%20to%20hold%20your%20spot`],
   },
   // Private referral surface — only people Alira sends here see it.
