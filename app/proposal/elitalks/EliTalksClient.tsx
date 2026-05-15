@@ -106,67 +106,48 @@ export function EliTalksClient({
           <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
             A strategic partnership between Omni AI and the{" "}
             <em className="text-white not-italic">Ellie Talks</em>{" "}
-            podcast. Over six months we ship the surrounding
-            infrastructure most podcasts spend twelve months and a
-            six-figure budget assembling piecemeal — three websites,
-            an AI CEO layer, organic SEO + GEO, paid social, a
-            branded newsletter, and federation cross-promotion across
-            the whole network.
+            podcast. For six months we run the paid-social engine —
+            Facebook, Instagram, YouTube — hitting hard every day,
+            scaling whatever performs, and routing the audience back
+            to Ellie&apos;s brand on a cadence the algorithm rewards.
           </p>
 
-          {/* Leverage callout — enumerates what the partnership fee
-              actually covers in plain language so Ellie can map the
-              monthly to specific buckets of work (paid social
-              automation, asset build, retention/sales/nurturing
-              systems, federation features, exposure). No price named
-              on the page; the dollar lives in the PayPal flow. */}
+          {/* Leverage callout — focused tight on the paid-social pitch
+              per Sita's latest cut. The earlier four-bucket enumeration
+              (digital assets, retention, nurturing, federation) is
+              parked in the teaser line so Ellie knows the rest of the
+              Omni AI stack exists without us pre-loading the proposal
+              with everything at once. */}
           <p className="mt-6 max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
-            The partnership covers the whole stack —{" "}
+            The partnership runs a fully{" "}
             <span className="text-amber-300 font-semibold">
-              automated paid social
+              automated paid-social engine
             </span>{" "}
-            hitting Facebook + Instagram hard every day,{" "}
-            <span className="text-amber-300 font-semibold">
-              $100K+ in bespoke digital assets
-            </span>{" "}
-            (three custom sites, an AI CEO layer, an organic SEO
-            engine ranking every episode),{" "}
-            <span className="text-amber-300 font-semibold">
-              retention, sales, and nurturing systems
-            </span>{" "}
-            wired in behind it, plus consistent feature exposure across{" "}
-            <span className="text-amber-300 font-semibold">
-              16 partner businesses (3 of them news outlets)
-            </span>
-            . An agency would invoice north of six figures to spin up
-            the same scope. The partnership delivers it for pennies
-            on the dollar.
+            across Meta + YouTube — daily creative, paid spend stacked
+            behind the winners, retargeting + lookalikes tuned weekly.
+            That&apos;s the lever for the next six months.{" "}
+            <em className="text-white not-italic">
+              And there&apos;s more inside the Omni AI stack
+            </em>{" "}
+            — custom builds, an AI CEO layer, retention &amp; nurturing
+            systems, federation distribution — we can layer those in
+            once the paid-social engine is humming and the numbers
+            speak for themselves.
           </p>
 
-          {/* What's-in-the-box strip — five compact chips directly
-              under the leverage callout. Each chip is one bucket of
-              work the monthly fee maps to, so the reader can stop
-              scrolling and still understand what they're paying for. */}
+          {/* What's-in-the-box strip — single chip now (paid social
+              only) plus a teaser chip that hints at the rest of the
+              stack without spelling each piece out. Keeps the hero
+              focused and lets Ellie ask about the rest in the call
+              instead of pre-reading them on the page. */}
           <div className="mt-6 flex flex-wrap gap-2 max-w-3xl">
             <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
               <Send className="w-3 h-3" />
               Paid social automation
             </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
-              <Globe className="w-3 h-3" />
-              $100K+ digital assets
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-white/[0.02] px-2.5 py-1 text-[11px] font-medium tracking-wide text-zinc-300">
               <Sparkles className="w-3 h-3" />
-              Retention &amp; sales systems
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
-              <Mail className="w-3 h-3" />
-              Nurturing campaigns
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
-              <Network className="w-3 h-3" />
-              16-business federation exposure
+              + more inside the Omni AI stack
             </span>
           </div>
 
