@@ -53,54 +53,43 @@ export function EliTalksClient({ pageUrl }: Props) {
       <GoldSparksBackdrop />
 
       <div className="relative z-10 min-h-screen text-zinc-100 overflow-hidden elitalks-page">
-        {/* HERO BANNER — Ellie Talks neon-on-purple-skyline image as
-            the cinematic background. File lives at
-            public/ellie-talks-hero.jpg (drop the still in). If the
-            file isn't present yet the cosmic backdrop below shows
-            through cleanly — no broken-image icon, no build error.
-            Content positioned in the bottom third via flex
-            justify-end so the visible "Ellie Talks" neon up top
-            stays clear of the partnership headline below. */}
-        <section className="relative flex min-h-screen flex-col justify-end overflow-hidden">
-          {/* Background image layer — CSS background-image so a
-              missing asset degrades silently to transparent.
-              backgroundPosition pinned to "center top" so the Ellie
-              Talks neon hugs the top of the section and the skyline
-              + water + headline get the bottom half of the canvas.
-              Solves the visible-overlap between the neon's "Talks"
-              and the partnership eyebrow that landed when the image
-              was center-aligned. */}
+        {/* HERO IMAGE BANNER — Ellie Talks neon-on-skyline still
+            gets its own dedicated section instead of overlaying the
+            text. Eliminates the neon-vs-headline collision and
+            removes the empty-vertical-void problem from the previous
+            full-viewport overlay attempt. The image fills the banner;
+            a thin bottom fade blends into the cosmic backdrop so the
+            transition into the text section reads as a continuous
+            cinematic. */}
+        <section
+          aria-hidden
+          className="relative h-[58vh] min-h-[380px] sm:h-[62vh] sm:min-h-[460px] overflow-hidden"
+        >
           <div
-            aria-hidden
             className="absolute inset-0"
             style={{
               backgroundImage: "url(/ellie-talks-hero.jpg)",
               backgroundSize: "cover",
-              backgroundPosition: "center top",
+              backgroundPosition: "center",
             }}
           />
-          {/* Tone-down overlay — transparent at the top so the neon
-              + skyline read at full saturation, fades to near-opaque
-              black across the bottom half so the headline + body
-              text stay crisp. Heavier mid-band (black/55) than the
-              previous version so the gap between the neon and the
-              headline reads visually clean even when the image
-              compresses on shorter viewports. */}
-          <div
-            aria-hidden
-            className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/55 to-black/95"
-          />
+          {/* Bottom fade — gradient from transparent to black across
+              the lower 35% so the banner hands off to the text
+              section below without a hard seam. */}
+          <div className="absolute inset-x-0 bottom-0 h-[35%] bg-gradient-to-b from-transparent to-black" />
+        </section>
 
-          {/* Content — sits in the bottom slice of the hero. Extra
-              top buffer via the section's min-h-screen + justify-end,
-              plus heavier bottom padding so the headline never crowds
-              the bottom edge. */}
-          <div className="relative mx-auto max-w-5xl px-6 pb-20 sm:pb-28 w-full">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+        {/* HERO TEXT — sits immediately under the image banner with
+            tight top padding so the eyebrow lands close to where the
+            banner ends. No overlay shenanigans, no wasted vertical
+            space, no drop-shadows fighting the image. */}
+        <section className="relative">
+          <div className="mx-auto max-w-5xl px-6 pt-10 pb-14 sm:pt-14 sm:pb-20">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
               Omni AI × Ellie Talks · 6-month partnership
             </p>
             <h1
-              className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02] drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]"
+              className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02]"
               style={{ fontFamily: "Georgia, serif" }}
             >
               One audience.{" "}
@@ -109,7 +98,7 @@ export function EliTalksClient({ pageUrl }: Props) {
                 Six months.
               </em>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-100 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
+            <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-300 leading-relaxed">
               A paid-social engine running across Meta + YouTube,
               wired into the full Omni AI federation. We hit hard,
               every day, for the next six months.
