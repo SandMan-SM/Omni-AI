@@ -216,40 +216,24 @@ export function EliTalksFullClient({
                 Paid social · six-month agency retainer
               </p>
 
-              {/* Composition-driven number — splitting "$30K+" into
-                  three spans lets the "30K" carry the visual weight
-                  while "$" and "+" read as small flourishes. Solves
-                  the proportion problem from rendering all four glyphs
-                  at the same Georgia-serif size: at huge type sizes
-                  serif fonts vary too much in glyph width and the
-                  chrome-gold gradient was painting the asymmetry.
-                  Each span carries its own chrome-gold class because
-                  -webkit-background-clip:text doesn't cascade —
-                  shimmer animation is the same 3s loop so the spans
-                  stay visually in sync within one render frame. */}
-              <div
-                className="mt-4 inline-flex items-baseline tracking-tighter tabular-nums leading-none"
-                style={{ fontFamily: "Georgia, serif" }}
+              {/* Sans-serif at huge weight reads as one confident
+                  financial-headline unit — Georgia's per-glyph width
+                  variance (especially the K's tall serif arm) was
+                  fighting the chrome-gold shimmer and making the
+                  number look broken. font-black + tracking-tight on
+                  Tailwind's default font-sans (Inter via the project's
+                  font stack) gives uniform stroke weight across $,
+                  digits, K, and + so all four glyphs sit on the same
+                  visual baseline. */}
+              <p
+                className="chrome-gold mt-4 font-sans font-black tracking-tight tabular-nums leading-none text-6xl sm:text-8xl"
+                style={{
+                  color: "transparent",
+                  WebkitTextFillColor: "transparent",
+                }}
               >
-                <span
-                  className="chrome-gold text-4xl sm:text-5xl opacity-90 -mr-1"
-                  style={{ color: "transparent", WebkitTextFillColor: "transparent" }}
-                >
-                  $
-                </span>
-                <span
-                  className="chrome-gold text-7xl sm:text-9xl font-bold"
-                  style={{ color: "transparent", WebkitTextFillColor: "transparent" }}
-                >
-                  30K
-                </span>
-                <span
-                  className="chrome-gold text-4xl sm:text-5xl opacity-90 -ml-1"
-                  style={{ color: "transparent", WebkitTextFillColor: "transparent" }}
-                >
-                  +
-                </span>
-              </div>
+                $30K+
+              </p>
 
               <p className="mt-5 text-sm text-zinc-300 leading-relaxed max-w-xl">
                 <span className="text-amber-300 font-semibold">$4K–8K/mo</span>{" "}
