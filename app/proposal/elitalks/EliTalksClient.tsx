@@ -291,7 +291,7 @@ export function EliTalksClient({
               { value: "3",       label: "Bespoke sites" },
               { value: "6",       label: "Channels" },
               { value: "16+",     label: "Federation surfaces" },
-              { value: "$100K+",  label: "Built value" },
+              { value: "∞",       label: "Infinity potential" },
             ].map((stat) => (
               <div
                 key={stat.label}
