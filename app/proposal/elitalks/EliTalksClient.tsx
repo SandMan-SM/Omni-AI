@@ -156,46 +156,85 @@ export function EliTalksClient({
               if they bought each piece à la carte from a mid-market
               agency. Anchors the partnership against real numbers so
               Ellie can verify the leverage independently. */}
-          <div className="mt-8 max-w-3xl rounded-2xl border border-amber-300/20 bg-amber-300/[0.02] p-6">
-            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-300/90 mb-5 font-semibold">
+          {/* Cinematic trophy-card composition for the open-market
+              value anchor. Hero serif $30K+ uses the chrome-gold
+              shimmer keyframe (defined in app/globals.css) so the
+              number reads as the "trophy" of the panel instead of a
+              flat amber pill. A blurred amber corner glow + pulsing
+              dot indicator keep the card feeling alive on a long
+              static page. Footer line ties the price-anchor to the
+              "everything else throws in" teaser without enumerating
+              the rest of the stack (kept generic per Sita's spec). */}
+          <div className="mt-8 max-w-3xl relative overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.06] via-amber-300/[0.02] to-transparent p-8 sm:p-10">
+            {/* Soft amber glow drifting from the top-right corner —
+                gives the card a "light source" without painting a hard
+                shadow. Pointer-events-none so it never interferes
+                with the divider/text below. */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-amber-300/10 blur-3xl"
+            />
+
+            <p className="relative z-10 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
+              {/* Pulsing dot indicator — Tailwind animate-ping on the
+                  outer ring + a static dot underneath gives a Live
+                  beacon without burning CPU. */}
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+              </span>
               What this is worth on the open market
             </p>
-            <div className="divide-y divide-amber-300/10">
-              {[
-                {
-                  service: "Paid social automation",
-                  value: "$4K–8K/mo agency retainer · $50K+/yr equivalent",
-                },
-              ].map((r) => (
-                <div
-                  key={r.service}
-                  className="grid gap-1 sm:grid-cols-[1fr_1.4fr] sm:items-baseline py-3 first:pt-0 last:pb-0"
-                >
-                  <span className="text-sm font-semibold text-zinc-100">
-                    {r.service}
-                  </span>
-                  <span className="text-xs sm:text-sm text-amber-200/90 font-medium">
-                    {r.value}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="mt-5 pt-5 border-t border-amber-300/20">
-              <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
-                  Comparable six-month spend
-                </span>
-                <span className="text-2xl font-bold text-amber-300 tracking-tight">
-                  $30K+
-                </span>
-              </div>
-              <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
-                That&apos;s what an agency would invoice for the paid-
-                social piece alone across the six-month window. Retail
-                rate, before any of the other surfaces (sites, AI CEO,
-                newsletter, federation) get priced in.
+
+            {/* Centered trophy block — eyebrow label, massive serif
+                $30K+ in chrome-gold shimmer, supporting context line
+                of rate breakdowns. Centered so the eye lands on the
+                number first, then reads outward. */}
+            <div className="relative z-10 mt-8 flex flex-col items-center text-center">
+              <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-400 font-semibold">
+                Paid social · six-month agency retainer
+              </p>
+              <p
+                className="chrome-gold mt-3 text-7xl sm:text-8xl tracking-tight tabular-nums leading-none"
+                style={{
+                  fontFamily: "Georgia, serif",
+                  color: "transparent",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                $30K+
+              </p>
+              <p className="mt-4 text-sm text-zinc-300 leading-relaxed max-w-xl">
+                <span className="text-amber-300 font-semibold">$4K–8K/mo</span>{" "}
+                agency retainer ·{" "}
+                <span className="text-amber-300 font-semibold">$50K+/yr</span>{" "}
+                equivalent · 6-month minimum at retail rates
               </p>
             </div>
+
+            {/* Sparkle divider — gold gradient with a central dot to
+                signal a "punch line" beat below, not just another
+                horizontal rule. */}
+            <div className="relative z-10 mt-8 flex items-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-300/40 to-amber-300/40" />
+              <span className="text-amber-300/80 text-sm" aria-hidden>
+                ✦
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-300/40 to-amber-300/40" />
+            </div>
+
+            <p className="relative z-10 mt-6 text-center text-sm text-zinc-300 leading-relaxed max-w-2xl mx-auto">
+              And that&apos;s{" "}
+              <em className="text-white not-italic font-semibold">
+                just the paid-social piece
+              </em>
+              . The rest of the Omni AI stack comes with the
+              partnership — at zero added cost.
+            </p>
           </div>
 
           {/* Soft horizontal divider closes the hero so the eye knows
