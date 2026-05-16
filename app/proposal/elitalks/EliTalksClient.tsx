@@ -93,23 +93,35 @@ export function EliTalksClient({ pageUrl }: Props) {
                 { value: "3", label: "Bespoke sites" },
                 { value: "6", label: "Channels" },
                 { value: "16+", label: "Federation surfaces" },
-                { value: "∞", label: "Infinity potential" },
-              ].map((stat) => (
-                <div
-                  key={stat.label}
-                  className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-pink-300/30 bg-pink-300/[0.04] px-3 py-6 text-center"
-                >
-                  <p
-                    className="text-3xl sm:text-4xl tabular-nums text-pink-300 leading-none"
-                    style={{ fontFamily: "Georgia, serif" }}
+                { value: "∞", label: "Infinite potential" },
+              ].map((stat) => {
+                // The ∞ glyph reads smaller than digits at the same
+                // font-size because it has no ascenders/descenders.
+                // Bump just the infinity tile up two steps so the
+                // symbol matches the visual weight of "16+" et al.
+                const isInfinity = stat.value === "∞";
+                return (
+                  <div
+                    key={stat.label}
+                    className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-pink-300/30 bg-pink-300/[0.04] px-3 py-6 text-center"
                   >
-                    {stat.value}
-                  </p>
-                  <p className="mt-3 text-[10px] uppercase tracking-[0.28em] text-zinc-400">
-                    {stat.label}
-                  </p>
-                </div>
-              ))}
+                    <p
+                      className={
+                        (isInfinity
+                          ? "text-5xl sm:text-6xl"
+                          : "text-3xl sm:text-4xl") +
+                        " tabular-nums text-pink-300 leading-none"
+                      }
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      {stat.value}
+                    </p>
+                    <p className="mt-3 text-[10px] uppercase tracking-[0.28em] text-zinc-400">
+                      {stat.label}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
         </section>
