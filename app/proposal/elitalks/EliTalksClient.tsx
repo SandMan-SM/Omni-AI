@@ -53,16 +53,42 @@ export function EliTalksClient({ pageUrl }: Props) {
       <GoldSparksBackdrop />
 
       <div className="relative z-10 min-h-screen text-zinc-100 overflow-hidden elitalks-page">
-        {/* HERO — 7-second composition. Eyebrow + serif headline +
-            one-line pitch. No leverage callout, no chip strip, no
-            trophy card — those live on the full breakdown. */}
-        <section className="relative">
-          <div className="mx-auto max-w-5xl px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
+        {/* HERO BANNER — Ellie Talks neon-on-purple-skyline image as
+            the cinematic background. File lives at
+            public/ellie-talks-hero.jpg (drop the still in). If the
+            file isn't present yet the cosmic backdrop below shows
+            through cleanly — no broken-image icon, no build error.
+            Content positioned in the bottom third via flex
+            justify-end so the visible "Ellie Talks" neon up top
+            stays clear of the partnership headline below. */}
+        <section className="relative flex min-h-[88vh] flex-col justify-end overflow-hidden">
+          {/* Background image layer — CSS background-image so a
+              missing asset degrades silently to transparent. */}
+          <div
+            aria-hidden
+            className="absolute inset-0"
+            style={{
+              backgroundImage: "url(/ellie-talks-hero.jpg)",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+            }}
+          />
+          {/* Tone-down overlay — transparent at the top so the neon
+              + skyline read at full saturation, fades to near-opaque
+              black at the bottom so the headline + body text below
+              stay crisp against the busy image. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/90"
+          />
+
+          {/* Content — sits in the bottom slice of the hero. */}
+          <div className="relative mx-auto max-w-5xl px-6 pb-16 sm:pb-20 w-full">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               Omni AI × Ellie Talks · 6-month partnership
             </p>
             <h1
-              className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02]"
+              className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02] drop-shadow-[0_4px_16px_rgba(0,0,0,0.7)]"
               style={{ fontFamily: "Georgia, serif" }}
             >
               One audience.{" "}
@@ -71,7 +97,7 @@ export function EliTalksClient({ pageUrl }: Props) {
                 Six months.
               </em>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-300 leading-relaxed">
+            <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-100 leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.85)]">
               A paid-social engine running across Meta + YouTube,
               wired into the full Omni AI federation. We hit hard,
               every day, for the next six months.
