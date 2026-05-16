@@ -61,29 +61,41 @@ export function EliTalksClient({ pageUrl }: Props) {
             Content positioned in the bottom third via flex
             justify-end so the visible "Ellie Talks" neon up top
             stays clear of the partnership headline below. */}
-        <section className="relative flex min-h-[88vh] flex-col justify-end overflow-hidden">
+        <section className="relative flex min-h-screen flex-col justify-end overflow-hidden">
           {/* Background image layer — CSS background-image so a
-              missing asset degrades silently to transparent. */}
+              missing asset degrades silently to transparent.
+              backgroundPosition pinned to "center top" so the Ellie
+              Talks neon hugs the top of the section and the skyline
+              + water + headline get the bottom half of the canvas.
+              Solves the visible-overlap between the neon's "Talks"
+              and the partnership eyebrow that landed when the image
+              was center-aligned. */}
           <div
             aria-hidden
             className="absolute inset-0"
             style={{
               backgroundImage: "url(/ellie-talks-hero.jpg)",
               backgroundSize: "cover",
-              backgroundPosition: "center",
+              backgroundPosition: "center top",
             }}
           />
           {/* Tone-down overlay — transparent at the top so the neon
               + skyline read at full saturation, fades to near-opaque
-              black at the bottom so the headline + body text below
-              stay crisp against the busy image. */}
+              black across the bottom half so the headline + body
+              text stay crisp. Heavier mid-band (black/55) than the
+              previous version so the gap between the neon and the
+              headline reads visually clean even when the image
+              compresses on shorter viewports. */}
           <div
             aria-hidden
-            className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/40 to-black/90"
+            className="absolute inset-0 bg-gradient-to-b from-black/0 via-black/55 to-black/95"
           />
 
-          {/* Content — sits in the bottom slice of the hero. */}
-          <div className="relative mx-auto max-w-5xl px-6 pb-16 sm:pb-20 w-full">
+          {/* Content — sits in the bottom slice of the hero. Extra
+              top buffer via the section's min-h-screen + justify-end,
+              plus heavier bottom padding so the headline never crowds
+              the bottom edge. */}
+          <div className="relative mx-auto max-w-5xl px-6 pb-20 sm:pb-28 w-full">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               Omni AI × Ellie Talks · 6-month partnership
             </p>
