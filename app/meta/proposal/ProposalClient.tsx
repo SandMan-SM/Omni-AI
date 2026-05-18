@@ -145,7 +145,12 @@ export function ProposalClient({
         </div>
       </section>
 
-      {/* BREAKDOWN — defends the $100K headline */}
+      {/* BREAKDOWN — defends the $100K headline. Same cinematic
+          trophy-card composition as /proposal/elitalks/full and
+          /alira/referral: amber gradient wash + corner glows,
+          pulsing live-beacon dot, line-by-line rate table, sparkle
+          ✦ divider, chrome-gold shimmer on the total. Amber-only
+          palette — matches the rest of the proposal portfolio. */}
       <section className="relative border-t border-white/5 bg-black/40">
         <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
@@ -163,43 +168,74 @@ export function ProposalClient({
             current market rates.
           </p>
 
-          <div className="mt-10 divide-y divide-white/5 border-y border-white/5">
-            {retailLines.map((line) => (
-              <div
-                key={line.item}
-                className="grid gap-3 sm:grid-cols-[1.4fr_1.6fr_auto] py-5 items-start"
-              >
-                <p className="text-base font-semibold text-white">
-                  {line.item}
-                </p>
-                <p className="text-sm text-zinc-400 leading-relaxed">
-                  {line.spec}
-                </p>
-                <p className="text-sm tabular-nums text-amber-300 sm:text-right whitespace-nowrap">
-                  {line.rate}
-                </p>
-              </div>
-            ))}
-          </div>
+          <div className="mt-10 max-w-3xl relative overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.06] via-amber-300/[0.02] to-transparent p-6 sm:p-8">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-amber-300/10 blur-3xl"
+            />
 
-          <div className="mt-6 flex items-baseline justify-between flex-wrap gap-4">
-            <p className="text-xs uppercase tracking-[0.4em] text-zinc-500">
-              Total agency-equivalent value
+            <p className="relative z-10 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+              <span className="relative flex h-2 w-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-70" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+              </span>
+              Open-market rate card
             </p>
-            <p
-              className="text-3xl tabular-nums text-amber-300"
-              style={{ fontFamily: "Georgia, serif" }}
-            >
-              {retailTotal}
+
+            <div className="relative z-10 mt-5 divide-y divide-amber-300/10">
+              {retailLines.map((line) => (
+                <div
+                  key={line.item}
+                  className="grid gap-2 sm:grid-cols-[1.4fr_1.6fr_auto] sm:items-baseline py-3 first:pt-0 last:pb-0"
+                >
+                  <p className="text-sm sm:text-base font-semibold text-white">
+                    {line.item}
+                  </p>
+                  <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed">
+                    {line.spec}
+                  </p>
+                  <p className="text-xs sm:text-sm tabular-nums text-amber-200/90 font-medium sm:text-right whitespace-nowrap">
+                    {line.rate}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            {/* Sparkle divider — gold gradient with central ✦ */}
+            <div className="relative z-10 mt-6 flex items-center gap-3">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-300/40 to-amber-300/40" />
+              <span className="text-amber-300/80 text-sm" aria-hidden>
+                ✦
+              </span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-300/40 to-amber-300/40" />
+            </div>
+
+            {/* Anchor row: total agency-equivalent value in
+                chrome-gold shimmer. */}
+            <div className="relative z-10 mt-6 flex flex-wrap items-baseline justify-between gap-3">
+              <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
+                Total agency-equivalent value
+              </span>
+              <span
+                className="chrome-gold font-sans font-black tracking-tight tabular-nums leading-none text-3xl sm:text-4xl"
+                style={{ color: "transparent", WebkitTextFillColor: "transparent" }}
+              >
+                {retailTotal}
+              </span>
+            </div>
+
+            <p className="relative z-10 mt-3 text-xs text-zinc-400 leading-relaxed">
+              Your price is{" "}
+              <span className="text-amber-300 font-semibold">$1,500</span>{" "}
+              because the production stack is automated end-to-end.
+              You get the same deliverables a Meta-agency would charge
+              six figures for; we get the case study.
             </p>
           </div>
-          <p className="mt-4 max-w-2xl text-sm text-zinc-400">
-            Your price is{" "}
-            <span className="text-white font-semibold">$1,500</span>{" "}
-            because the production stack is automated end-to-end. You
-            get the same deliverables a Meta-agency would charge six
-            figures for; we get the case study.
-          </p>
         </div>
       </section>
 

@@ -3,15 +3,16 @@
 // AliraReferralClient — visible surface for /alira/referral. Mirrors
 // the /proposal/elitalks proposal structure (cosmic backdrop, serif
 // headlines, leverage callout, chip strip, open-market value table,
-// chrome-flash CTAs) with purple as the secondary accent so Alira's
-// referral surface differentiates from Ellie's pink-accented brand.
+// chrome-flash CTAs). Amber-only palette (no pink, no purple) per
+// Sita's 2026-05-16 cut — every proposal page now anchors on the
+// Omni AI master amber accent.
 //
 // Layout:
 //   1. Hero — eyebrow → headline → body → leverage callout →
 //      5 amber chips → open-market value table → Activate CTA
 //   2. Proof — Alira's live build card
 //   3. Distribution + community
-//   4. Pricing reveal (id="pricing") — Activate CTA → 2 purple cards
+//   4. Pricing reveal (id="pricing") — Activate CTA → 2 amber cards
 //   5. Why this isn't a normal website deal
 //   6. Final Activate CTA
 //   7. Footer
@@ -165,9 +166,9 @@ export function AliraReferralClient({
   }
 
   // Activate-your-assets pill — reused in three placements (hero,
-  // inline pre-reveal, final CTA). Purple translucent fill, white
+  // inline pre-reveal, final CTA). Amber translucent fill, white
   // 2px border, chrome-shimmer text, hollow right triangle. Same
-  // visual recipe as Ellie's hero CTA but in purple instead of pink.
+  // visual recipe as Ellie's hero CTA, swapped to amber.
   function ActivateButton({
     source,
     testId,
@@ -179,7 +180,7 @@ export function AliraReferralClient({
       <button
         type="button"
         onClick={() => revealPricing(source)}
-        className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-purple-300/20 hover:bg-purple-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-purple-300/20 backdrop-blur-sm"
+        className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
         data-testid={testId}
       >
         <span className="chrome-white">Activate your assets</span>
@@ -207,7 +208,7 @@ export function AliraReferralClient({
         className={
           "flex flex-col h-full rounded-2xl border p-8 " +
           (featured
-            ? "border-purple-300/60 bg-purple-300/[0.06]"
+            ? "border-amber-400/60 bg-amber-400/[0.08]"
             : "border-white/10 bg-white/[0.02]")
         }
       >
@@ -215,13 +216,13 @@ export function AliraReferralClient({
           <p
             className={
               "text-[11px] uppercase tracking-[0.28em] " +
-              (featured ? "text-purple-200" : "text-amber-300")
+              (featured ? "text-amber-200" : "text-amber-300")
             }
           >
             {opt.label}
           </p>
           {featured && (
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-[0.22em] uppercase bg-purple-300/20 text-purple-100 border border-purple-300/40">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-[0.22em] uppercase bg-amber-300/20 text-amber-100 border border-amber-300/40">
               50 seats this wave
             </span>
           )}
@@ -229,7 +230,7 @@ export function AliraReferralClient({
         <p
           className={
             "mt-4 text-5xl sm:text-6xl tabular-nums leading-none " +
-            (featured ? "text-purple-100" : "text-white")
+            (featured ? "text-amber-100" : "text-white")
           }
           style={{ fontFamily: "Georgia, serif" }}
         >
@@ -250,7 +251,7 @@ export function AliraReferralClient({
             className={
               "inline-flex w-full items-center justify-center gap-3 rounded-2xl border-2 px-6 py-4 text-sm font-bold tracking-wide transition-colors " +
               (featured
-                ? "border-white/90 bg-purple-300/20 hover:bg-purple-300/30 text-white shadow-lg shadow-purple-300/20 backdrop-blur-sm"
+                ? "border-white/90 bg-amber-300/20 hover:bg-amber-300/30 text-white shadow-lg shadow-amber-300/20 backdrop-blur-sm"
                 : "border-white/30 bg-white/[0.04] hover:bg-white/[0.08] text-white")
             }
           >
@@ -289,7 +290,7 @@ export function AliraReferralClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               <span className="text-amber-300">$100,000 in assets.</span>{" "}
-              <em className="font-normal text-purple-200/90 not-italic sm:italic">
+              <em className="font-normal text-amber-200/90 not-italic sm:italic">
                 We don&apos;t even want the money.
               </em>
             </h1>
@@ -355,15 +356,33 @@ export function AliraReferralClient({
               </span>
             </div>
 
-            {/* Open-market value table — anchors the referral price
-                against real numbers without us ever disclosing
-                margin. Mirrors Ellie's "What this is worth on the
-                open market" panel exactly. */}
-            <div className="mt-8 max-w-3xl rounded-2xl border border-amber-300/20 bg-amber-300/[0.02] p-6">
-              <p className="text-[11px] uppercase tracking-[0.32em] text-amber-300/90 mb-5 font-semibold">
+            {/* Open-market value-table panel — cinematic trophy card
+                in the same shape as the elitalks $30K+ panel: amber
+                gradient wash + corner glows, pulsing live-beacon dot
+                in the eyebrow, line-by-line rate table, sparkle ✦
+                divider, and chrome-gold shimmer on the $200K+ anchor.
+                Two-anchor framing kept intact: $200K+ open-market
+                comparison sits in the footer, $100K+ assets-you-walk-
+                away-with sits in the punch-line body. */}
+            <div className="mt-8 max-w-3xl relative overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.06] via-amber-300/[0.02] to-transparent p-6 sm:p-8">
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl"
+              />
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -bottom-20 -left-20 h-48 w-48 rounded-full bg-amber-300/10 blur-3xl"
+              />
+
+              <p className="relative z-10 inline-flex items-center gap-2 text-[11px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-70" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-400" />
+                </span>
                 What this is worth on the open market
               </p>
-              <div className="divide-y divide-amber-300/10">
+
+              <div className="relative z-10 mt-5 divide-y divide-amber-300/10">
                 {marketRates.map((r) => (
                   <div
                     key={r.service}
@@ -378,29 +397,45 @@ export function AliraReferralClient({
                   </div>
                 ))}
               </div>
-              <div className="mt-5 pt-5 border-t border-amber-300/20">
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
-                    Comparable agency build
-                  </span>
-                  <span className="text-2xl font-bold text-amber-300 tracking-tight">
-                    {marketTotal}
-                  </span>
-                </div>
-                <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
-                  That&apos;s what a mid-market agency would invoice
-                  to assemble and run the same stack across the year.
-                  You walk away with{" "}
-                  <span className="text-amber-300 font-semibold">
-                    $100K+
-                  </span>{" "}
-                  in actual digital assets when the build ships — for{" "}
-                  <span className="text-amber-300 font-semibold">
-                    $3,000
-                  </span>
-                  .
-                </p>
+
+              {/* Sparkle divider — gold gradient with a central ✦
+                  signals the punch-line beat below. */}
+              <div className="relative z-10 mt-6 flex items-center gap-3">
+                <div className="h-px flex-1 bg-gradient-to-r from-transparent via-amber-300/40 to-amber-300/40" />
+                <span className="text-amber-300/80 text-sm" aria-hidden>
+                  ✦
+                </span>
+                <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-300/40 to-amber-300/40" />
               </div>
+
+              {/* Anchor row: label + chrome-gold $200K+ shimmer. */}
+              <div className="relative z-10 mt-6 flex flex-wrap items-baseline justify-between gap-3">
+                <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
+                  Comparable agency build
+                </span>
+                <span
+                  className="chrome-gold font-sans font-black tracking-tight tabular-nums leading-none text-3xl sm:text-4xl"
+                  style={{ color: "transparent", WebkitTextFillColor: "transparent" }}
+                >
+                  {marketTotal}
+                </span>
+              </div>
+
+              {/* Punch-line body — names both anchors together so the
+                  leverage math reads without doing the arithmetic. */}
+              <p className="relative z-10 mt-3 text-xs text-zinc-400 leading-relaxed">
+                That&apos;s what a mid-market agency would invoice to
+                assemble and run the same stack across the year. You
+                walk away with{" "}
+                <span className="text-amber-300 font-semibold">
+                  $100K+
+                </span>{" "}
+                in actual digital assets when the build ships — for{" "}
+                <span className="text-amber-300 font-semibold">
+                  $3,000
+                </span>
+                .
+              </p>
             </div>
 
             {/* Hero CTA — primary Activate-your-assets pill. Reveals
@@ -425,7 +460,7 @@ export function AliraReferralClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               The build{" "}
-              <span className="text-purple-300">{caseStudy.brand}</span>{" "}
+              <span className="text-amber-300">{caseStudy.brand}</span>{" "}
               is referring you on.
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
@@ -516,9 +551,9 @@ export function AliraReferralClient({
                 return (
                   <div
                     key={d.title}
-                    className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-purple-300/40 transition-colors"
+                    className="rounded-2xl border border-white/10 bg-white/[0.02] p-6 hover:border-amber-300/40 transition-colors"
                   >
-                    <Icon className="w-5 h-5 text-purple-300" />
+                    <Icon className="w-5 h-5 text-amber-300" />
                     <p
                       className="mt-3 text-lg text-white"
                       style={{ fontFamily: "Georgia, serif" }}
@@ -538,7 +573,7 @@ export function AliraReferralClient({
         {/* PRICING — revealed by the Activate CTA, also reachable via #pricing */}
         <section id="pricing" className="relative bg-black/30">
           <div className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-purple-300/90 font-semibold">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
               Two ways in
             </p>
             <h2
@@ -598,7 +633,7 @@ export function AliraReferralClient({
 
             <div className="mt-10 grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                <Globe className="w-5 h-5 text-purple-300" />
+                <Globe className="w-5 h-5 text-amber-300" />
                 <p className="mt-3 text-sm font-semibold text-white">
                   Bespoke build, not template
                 </p>
@@ -608,7 +643,7 @@ export function AliraReferralClient({
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                <Mail className="w-5 h-5 text-purple-300" />
+                <Mail className="w-5 h-5 text-amber-300" />
                 <p className="mt-3 text-sm font-semibold text-white">
                   Newsletter + sponsorship
                 </p>
@@ -619,7 +654,7 @@ export function AliraReferralClient({
                 </p>
               </div>
               <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
-                <Network className="w-5 h-5 text-purple-300" />
+                <Network className="w-5 h-5 text-amber-300" />
                 <p className="mt-3 text-sm font-semibold text-white">
                   Distribution + community
                 </p>
@@ -699,7 +734,7 @@ export function AliraReferralClient({
           data-testid="alira-activate-modal"
         >
           <div
-            className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-950/95 p-6 sm:p-8 shadow-2xl shadow-purple-300/10 max-h-[92vh] overflow-y-auto"
+            className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-950/95 p-6 sm:p-8 shadow-2xl shadow-amber-300/10 max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -712,7 +747,7 @@ export function AliraReferralClient({
               <X className="w-4 h-4" />
             </button>
 
-            <p className="text-[11px] uppercase tracking-[0.32em] text-purple-300/90 font-semibold">
+            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
               Two ways in · pick the cadence
             </p>
             <h3
