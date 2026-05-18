@@ -1,9 +1,10 @@
 // /meta/proposal — single-page sales asset for a behavioral-health /
 // recovery prospect. Generic on purpose (the prospect's brand name
 // never appears in copy or metadata). Pitches a 60-day Meta + YouTube
-// creative engine that retail-equivalent prices at $100K+ for a $1,500
-// one-time. Re-uses the same Stripe $1,500 price (live mode) as the
-// Rene asset page so all owner-source payments land in one product.
+// creative engine that retail-equivalent prices at $100K+ for
+// $1,500/month subscription. Visual rhythm mirrors the elitalks
+// proposal (leverage callout, scope-at-a-glance tiles, chip strip,
+// trophy-card open-market panel, AES-256 trust strip on final CTA).
 
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -12,25 +13,31 @@ import { ProposalClient } from "./ProposalClient";
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/meta/proposal`;
 
-// Same $1,500 one-time price as the existing Rene asset page so we
-// don't fragment the Stripe product catalog. Source attribution is
-// available via Stripe's referrer/UTM if Sita wants to separate
-// channels later.
+// Stripe payment link — TEMPORARY one-time price kept here until
+// Sita creates the $1,500/month recurring price in the Stripe
+// Dashboard and drops the new payment-link URL here. Steps Sita
+// takes (Stripe MCP is disconnected):
+//   1. Products → existing product → Add price → recurring, $1,500
+//      per month → Save
+//   2. Payment Links → Create payment link → pick the new price →
+//      Copy URL
+//   3. Paste the new URL into PAY_FULL_URL below and ship.
+// Until then the button still works but bills one-time.
 const PAY_FULL_URL = "https://buy.stripe.com/28EcN51f43aw1R52u49fW0b";
 
 export const metadata: Metadata = {
-  title: "Meta + YouTube Growth Proposal · $100K of Creative for $1,500",
+  title: "Meta + YouTube Growth Proposal · $100K of Creative for $1,500/mo",
   description:
-    "A 60-day Meta + YouTube + Instagram creative engine for behavioral-health and recovery centers. 30 short-form ads, 12 long-form videos, full tracking + retargeting infrastructure. Agency retail value $100K+. Operator price $1,500.",
+    "A 60-day Meta + YouTube + Instagram creative engine for behavioral-health and recovery centers. 30 short-form ads, 12 long-form videos, full tracking + retargeting infrastructure. Agency retail value $100K+. Operator price $1,500/month, cancel anytime after month one.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
     title: "Meta + YouTube Growth Proposal",
     description:
-      "30 short-form ads + 12 long-form videos + Meta/YouTube/Instagram infrastructure. $100K of creative for $1,500.",
+      "30 short-form ads + 12 long-form videos + Meta/YouTube/Instagram infrastructure. $100K of creative for $1,500/month.",
     url: PAGE_URL,
     type: "website",
     images: [{
-      url: `${SITE_URL}/api/og?title=Meta%20%2B%20YouTube%20Growth%20Proposal&topic=%24100K%20of%20creative%20for%20%241%2C500`,
+      url: `${SITE_URL}/api/og?title=Meta%20%2B%20YouTube%20Growth%20Proposal&topic=%24100K%20of%20creative%20for%20%241%2C500%2Fmo`,
       width: 1200,
       height: 630,
     }],
@@ -39,7 +46,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Meta + YouTube Growth Proposal",
     description:
-      "$100K of paid-social creative for $1,500. 60-day engine, three channels.",
+      "$100K of paid-social creative for $1,500/month. 60-day engine, three channels.",
   },
   // Discreet pitch — keep it crawlable so Sita can share the link
   // freely but ranking isn't the point.

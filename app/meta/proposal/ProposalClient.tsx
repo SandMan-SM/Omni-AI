@@ -3,11 +3,13 @@
 // ProposalClient — visible surface for /meta/proposal. Same cosmic
 // dark + amber palette as the other operator-facing asset pages so it
 // reads as part of the Omni AI portfolio without explicitly branding
-// itself to the prospect. Two CTAs (pay $1,500, book a 15-min call),
-// a retail-rate breakdown that defends the "$100K of creative"
-// headline, three channel cards, niche-specific reasoning, and a
-// real comparable case study. No prospect-identifying language —
-// generic to the behavioral-health / recovery niche.
+// itself to the prospect. Two CTAs (start $1,500/month, book a
+// 15-min call). Visual rhythm mirrors /proposal/elitalks/full —
+// leverage callout, 5-tile scope-at-a-glance strip, what-ships
+// chip strip, cinematic trophy-card open-market panel, "why this
+// isn't a normal Meta agency deal" 3-card grid, AES-256 trust
+// strip on the final CTA. Amber-only palette (no pink, no purple).
+// Generic to the behavioral-health / recovery niche.
 
 import Link from "next/link";
 import {
@@ -17,6 +19,14 @@ import {
   ArrowRight,
   CheckCircle2,
   Play,
+  Calendar,
+  Film,
+  Tv,
+  Target,
+  Zap,
+  Shield,
+  Lock,
+  Sparkles,
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
@@ -97,11 +107,15 @@ export function ProposalClient({
           $100K of creative". */}
       <GoldSparksBackdrop />
 
-      {/* HERO */}
+      {/* HERO — same cinematic shape as /proposal/elitalks/full.
+          Eyebrow + Georgia serif headline + body paragraph +
+          leverage callout (gold-highlighted spans naming the four
+          deliverable buckets) + 5-tile scope-at-a-glance strip +
+          primary CTA pair. */}
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 pt-20 pb-14 sm:pt-28 sm:pb-20">
           <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
-            Proposal · Meta + YouTube growth program
+            Proposal · Meta + YouTube growth program · 60 days
           </p>
           <h1
             className="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.05]"
@@ -110,7 +124,7 @@ export function ProposalClient({
             Build{" "}
             <span className="text-amber-300">$100,000</span> of paid-social
             creative for{" "}
-            <span className="text-amber-300">$1,500</span>.
+            <span className="text-amber-300">$1,500/month</span>.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
             A 60-day creative engine built for behavioral-health and
@@ -119,6 +133,74 @@ export function ProposalClient({
             at 2am ends up on your phone the next morning.
           </p>
 
+          {/* Leverage callout — gold-highlighted spans naming the
+              four deliverable buckets the monthly fee covers. Closes
+              with the agency-comparison anchor so the math reads
+              before the trophy card below. */}
+          <p className="mt-6 max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
+            The subscription covers{" "}
+            <span className="text-amber-300 font-semibold">
+              30 short-form vertical ads
+            </span>{" "}
+            (Reels, Shorts, Stories — scripted, edited, captioned),{" "}
+            <span className="text-amber-300 font-semibold">
+              12 long-form YouTube videos
+            </span>{" "}
+            built for the 6-week consideration window,{" "}
+            <span className="text-amber-300 font-semibold">
+              full Meta + pixel + CAPI infrastructure
+            </span>{" "}
+            wired into your CRM, plus{" "}
+            <span className="text-amber-300 font-semibold">
+              audience research + funnel
+            </span>{" "}
+            tuned to cost-per-admit. An agency-of-record would invoice
+            over $100K to ship the same scope.
+          </p>
+
+          {/* Scope-at-a-glance 5-tile strip — same shape as elitalks.
+              Amber-300 tile palette (not pink — keeps Meta in the
+              Omni AI master accent). Infinity glyph gets the same
+              size bump as the elitalks tile so the symbol matches
+              the visual weight of the numeric tiles. */}
+          <div className="mt-10">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+              Scope at a glance
+            </p>
+            <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {[
+                { value: "60", label: "Days build" },
+                { value: "30", label: "Short-form ads" },
+                { value: "12", label: "Long-form videos" },
+                { value: "3", label: "Channels" },
+                { value: "∞", label: "Infinite potential" },
+              ].map((stat) => {
+                const isInfinity = stat.value === "∞";
+                return (
+                  <div
+                    key={stat.label}
+                    className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-3 py-6 text-center"
+                  >
+                    <p
+                      className={
+                        (isInfinity
+                          ? "text-5xl sm:text-6xl"
+                          : "text-3xl sm:text-4xl") +
+                        " tabular-nums text-amber-300 leading-none"
+                      }
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      {stat.value}
+                    </p>
+                    <p className="mt-3 text-[10px] uppercase tracking-[0.28em] text-zinc-400">
+                      {stat.label}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div className="mt-10 grid gap-4 sm:grid-cols-[auto_auto] items-start">
             <button
               type="button"
@@ -126,7 +208,7 @@ export function ProposalClient({
               className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 py-4 text-sm font-bold tracking-wide text-black hover:bg-amber-300 transition-colors"
               data-testid="proposal-pay"
             >
-              Start the program · $1,500
+              Start the program · $1,500/mo
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
@@ -140,7 +222,7 @@ export function ProposalClient({
             </button>
           </div>
           <p className="mt-5 text-xs uppercase tracking-[0.28em] text-zinc-500">
-            Secure checkout via Stripe · 50% refundable through day 14
+            Secure checkout via Stripe · cancel anytime after month one
           </p>
         </div>
       </section>
@@ -230,10 +312,13 @@ export function ProposalClient({
 
             <p className="relative z-10 mt-3 text-xs text-zinc-400 leading-relaxed">
               Your price is{" "}
-              <span className="text-amber-300 font-semibold">$1,500</span>{" "}
+              <span className="text-amber-300 font-semibold">
+                $1,500/month
+              </span>{" "}
               because the production stack is automated end-to-end.
-              You get the same deliverables a Meta-agency would charge
-              six figures for; we get the case study.
+              Same deliverables a Meta-agency would charge six figures
+              up-front for, on a cadence you can cancel anytime after
+              month one.
             </p>
           </div>
         </div>
@@ -272,6 +357,41 @@ export function ProposalClient({
                 </p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CHIP STRIP — five compact amber chips naming the bundled
+          scope. Mirrors the elitalks hero chip pattern so the visual
+          rhythm carries through. Sits between Channels and
+          Why-niche so the deliverables land one more time without
+          re-reading the trophy-card rate table. */}
+      <section className="relative">
+        <div className="mx-auto max-w-5xl px-6 pb-12">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500 mb-4">
+            What ships every month
+          </p>
+          <div className="flex flex-wrap gap-2 max-w-3xl">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Calendar className="w-3 h-3" />
+              60-day build window
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Film className="w-3 h-3" />
+              30 short-form vertical ads
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Tv className="w-3 h-3" />
+              12 long-form YouTube videos
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Zap className="w-3 h-3" />
+              Meta pixel + retargeting infrastructure
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Target className="w-3 h-3" />
+              Audience research + funnel
+            </span>
           </div>
         </div>
       </section>
@@ -346,17 +466,77 @@ export function ProposalClient({
         </div>
       </section>
 
-      {/* FINAL CTA */}
+      {/* WHY THIS ISN'T A NORMAL META AGENCY DEAL — three amber-iconed
+          cards mirroring elitalks' "Why this isn't a normal website
+          deal" section. Reads as the structural-differentiation pitch
+          before the final CTA: production stack vs agency layer,
+          compliance-first vs reactive, cost-per-admit vs vanity CPC. */}
+      <section className="relative border-t border-white/5 bg-black/40">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+            Why this isn&rsquo;t a normal Meta agency deal
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-4xl tracking-tight max-w-3xl"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            You&rsquo;re not buying ad ops. You&rsquo;re renting the
+            production stack that runs them.
+          </h2>
+
+          <div className="mt-10 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+              <Sparkles className="w-5 h-5 text-amber-300" />
+              <p className="mt-3 text-sm font-semibold text-white">
+                Automated production stack
+              </p>
+              <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
+                No agency layer eating margin. The same end-to-end
+                pipeline that ships our portfolio brands ships yours
+                — at the operator price, not the retainer price.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+              <Shield className="w-5 h-5 text-amber-300" />
+              <p className="mt-3 text-sm font-semibold text-white">
+                Compliance-first scripting
+              </p>
+              <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
+                HIPAA + ad-platform policy baked in from frame one —
+                so accounts don&rsquo;t get suspended mid-campaign
+                and creative ships without legal rework.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-6">
+              <Target className="w-5 h-5 text-amber-300" />
+              <p className="mt-3 text-sm font-semibold text-white">
+                Cost-per-admit optimization
+              </p>
+              <p className="mt-2 text-xs text-zinc-400 leading-relaxed">
+                We optimize against the metric that pays your bills,
+                not the metric Meta defaults to. Vanity CPC is a
+                proxy; cost-per-admit is the truth.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* FINAL CTA — security-trust framing. AES-256 lock + Stripe
+          strip above the headline so the trust signal lands right
+          next to the payment CTA, exactly like /alira/referral. */}
       <section className="relative border-t border-white/5">
         <div className="mx-auto max-w-3xl px-6 py-20 text-center">
-          <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-            Ready to start?
+          <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold inline-flex items-center gap-1.5">
+            <Lock className="w-3 h-3" />
+            AES-256 bit Advanced Encryption · Stripe-secured
           </p>
           <h2
             className="mt-3 text-3xl sm:text-5xl tracking-tight"
             style={{ fontFamily: "Georgia, serif" }}
           >
-            $1,500 one-time. 60 days of build. Yours forever.
+            $1,500/month. 60 days to first creative ship. Cancel
+            anytime after month one.
           </h2>
           <p className="mt-5 text-base text-zinc-400">
             One operator. No agency layer. The Pantheon production
@@ -370,7 +550,7 @@ export function ProposalClient({
               className="inline-flex items-center justify-center gap-2 rounded-full bg-amber-400 px-7 py-4 text-sm font-bold tracking-wide text-black hover:bg-amber-300 transition-colors"
               data-testid="proposal-pay-bottom"
             >
-              Start · $1,500
+              Start · $1,500/mo
               <ArrowRight className="w-4 h-4" />
             </button>
             <button
@@ -397,7 +577,7 @@ export function ProposalClient({
             {" "}· delivered through the federation
           </p>
           <p className="text-zinc-700">
-            Payment secured via Stripe · 14-day partial refund window
+            Payment secured via Stripe · cancel anytime after month one
           </p>
         </div>
       </footer>
