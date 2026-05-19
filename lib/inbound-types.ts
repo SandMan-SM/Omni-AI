@@ -268,6 +268,12 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'https://www.primeivsandy.com',
     'https://primeivutah.com',
     'https://www.primeivutah.com',
+    // Live Better On The Drip podcast site — Jaime's personal-brand
+    // tracking writes into this same tenancy (the data already lives
+    // in inbound_prime_iv_*). Added 2026-05-19 so the events route
+    // accepts livebetterpodcast.com POSTs without a 403.
+    'https://livebetterpodcast.com',
+    'https://www.livebetterpodcast.com',
     'https://prime-iv.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
