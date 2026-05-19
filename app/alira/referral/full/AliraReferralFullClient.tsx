@@ -306,7 +306,6 @@ export function AliraReferralFullClient({
               className="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.05]"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              <span className="text-amber-300">$100,000 in assets.</span>{" "}
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
                 We don&apos;t even want the money.
               </em>
