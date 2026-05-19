@@ -2,12 +2,13 @@
 
 // MetaProposalFullClient — long-form companion to /meta/proposal.
 // Lives at /meta/proposal/full and carries the entire 90-day
-// breakdown: leverage callout, 5-tile scope-at-a-glance strip,
-// what-ships chip strip, cinematic trophy-card open-market panel,
-// three channel cards, why-niche reasoning, comparable case study,
-// "why this isn't a normal Meta agency deal" 3-card grid, AES-256
-// trust strip, and the final CTA pair (Start + Book a call) with
-// chrome-flash button styling.
+// Meta Growth Program breakdown: leverage callout, 5-tile scope-
+// at-a-glance strip, what-ships chip strip, cinematic trophy-card
+// open-market panel, two channel cards (Facebook + Instagram —
+// YouTube dropped per Sita 2026-05-19), why-niche reasoning,
+// comparable case study, "why this isn't a normal Meta agency
+// deal" 3-card grid, AES-256 trust strip, and the final CTA pair
+// (Start + Book a call) with chrome-flash button styling.
 //
 // The shorter /meta/proposal page is a 7-second teaser that ends
 // in a chrome-flash "More info →" CTA pointing at this URL.
@@ -19,7 +20,6 @@ import Link from "next/link";
 import {
   Facebook,
   Instagram,
-  Youtube,
   CheckCircle2,
   Play,
   Calendar,
@@ -112,7 +112,6 @@ export function MetaProposalFullClient({
 
   const channelIcon = (tag: string) => {
     if (tag === "Meta") return <Facebook className="w-5 h-5" />;
-    if (tag === "YouTube") return <Youtube className="w-5 h-5" />;
     if (tag === "Instagram") return <Instagram className="w-5 h-5" />;
     return null;
   };
@@ -153,7 +152,7 @@ export function MetaProposalFullClient({
             Back to overview
           </Link>
           <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
-            Proposal · Meta + YouTube growth program · 90 days · Full breakdown
+            Proposal · Meta Growth Program · 90 days · Full breakdown
           </p>
           <h1
             className="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.05]"
@@ -164,10 +163,10 @@ export function MetaProposalFullClient({
             <span className="text-amber-300">$1,500/month</span>.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
-            A 90-day creative engine built for behavioral-health and
-            recovery centers. Three channels — Facebook, YouTube,
-            Instagram — wired together so the family member searching
-            at 2am ends up on your phone the next morning.
+            A 90-day Meta creative engine built for behavioral-health
+            and recovery centers. Two channels — Facebook and Instagram
+            — wired together so the family member searching at 2am
+            ends up on your phone the next morning.
           </p>
 
           {/* Leverage callout — gold-highlighted spans naming the
@@ -179,20 +178,21 @@ export function MetaProposalFullClient({
             <span className="text-amber-300 font-semibold">
               30 short-form vertical ads
             </span>{" "}
-            (Reels, Shorts, Stories — scripted, edited, captioned),{" "}
-            <span className="text-amber-300 font-semibold">
-              12 long-form YouTube videos
-            </span>{" "}
-            built for the 6-week consideration window,{" "}
+            (Reels + Stories — scripted, edited, captioned),{" "}
             <span className="text-amber-300 font-semibold">
               full Meta + pixel + CAPI infrastructure
             </span>{" "}
-            wired into your CRM, plus{" "}
+            wired into your CRM,{" "}
             <span className="text-amber-300 font-semibold">
               audience research + funnel
             </span>{" "}
-            tuned to cost-per-admit. An agency-of-record would charge
-            many multiples of this monthly to ship the same scope.
+            tuned to cost-per-admit, plus{" "}
+            <span className="text-amber-300 font-semibold">
+              weekly creative testing
+            </span>{" "}
+            so the winners scale and the losers die. An agency-of-
+            record would charge many multiples of this monthly to
+            ship the same scope.
           </p>
 
           {/* Scope-at-a-glance 5-tile strip — same shape as elitalks.
@@ -208,8 +208,8 @@ export function MetaProposalFullClient({
               {[
                 { value: "90", label: "Days partnership" },
                 { value: "30", label: "Short-form ads" },
-                { value: "12", label: "Long-form videos" },
-                { value: "3", label: "Channels" },
+                { value: "12", label: "Weekly test passes" },
+                { value: "2", label: "Channels" },
                 { value: "∞", label: "Infinite potential" },
               ].map((stat) => {
                 const isInfinity = stat.value === "∞";
@@ -365,11 +365,11 @@ export function MetaProposalFullClient({
         </div>
       </section>
 
-      {/* THREE CHANNELS */}
+      {/* TWO CHANNELS */}
       <section className="relative">
         <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
           <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-            Three channels, one engine
+            Two channels, one engine
           </p>
           <h2
             className="mt-3 text-3xl sm:text-4xl tracking-tight"
@@ -378,7 +378,7 @@ export function MetaProposalFullClient({
             Where the families actually are.
           </h2>
 
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+          <div className="mt-10 grid gap-4 sm:grid-cols-2">
             {channels.map((c) => (
               <div
                 key={c.tag}
@@ -422,12 +422,12 @@ export function MetaProposalFullClient({
               30 short-form vertical ads
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
-              <Tv className="w-3 h-3" />
-              12 long-form YouTube videos
-            </span>
-            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
               <Zap className="w-3 h-3" />
               Meta pixel + retargeting infrastructure
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
+              <Tv className="w-3 h-3" />
+              Weekly creative testing
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
               <Target className="w-3 h-3" />

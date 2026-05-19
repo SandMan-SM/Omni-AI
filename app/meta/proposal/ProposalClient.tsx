@@ -4,9 +4,10 @@
 // Intentionally minimal: eyebrow, serif headline, one-line pitch,
 // the 5-tile scope-at-a-glance strip, and a single chrome-flash
 // "More info →" CTA pointing at /meta/proposal/full where the long-
-// form proposal lives (leverage callout, trophy-card open-market
-// panel, three channels, why-niche, comparable case study, "why this
-// isn't a normal Meta agency deal" grid, AES-256 trust + final CTA pair).
+// form Meta Growth Program proposal lives (leverage callout, trophy-
+// card open-market panel, two channels (Facebook + Instagram),
+// why-niche, comparable case study, "why this isn't a normal Meta
+// agency deal" grid, AES-256 trust + final CTA pair).
 //
 // Per Sita's 2026-05-18 cut: the index page is now an elevator
 // pitch, not a complete proposal. Same teaser/full split as
@@ -60,7 +61,7 @@ export function ProposalClient({ pageUrl }: Props) {
         <section className="relative">
           <div className="mx-auto max-w-5xl px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
-              Proposal · Meta + YouTube growth program · 90 days
+              Proposal · Meta Growth Program · 90 days
             </p>
             <h1
               className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02]"
@@ -70,8 +71,8 @@ export function ProposalClient({ pageUrl }: Props) {
               creative.
             </h1>
             <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-300 leading-relaxed">
-              A 90-day creative engine built for behavioral-health and
-              recovery centers. Three channels — Facebook, YouTube,
+              A 90-day Meta creative engine built for behavioral-
+              health and recovery centers. Two channels — Facebook +
               Instagram — wired together so the family member
               searching at 2am ends up on your phone the next morning.
             </p>
@@ -91,8 +92,8 @@ export function ProposalClient({ pageUrl }: Props) {
               {[
                 { value: "90", label: "Days partnership" },
                 { value: "30", label: "Short-form ads" },
-                { value: "12", label: "Long-form videos" },
-                { value: "3", label: "Channels" },
+                { value: "12", label: "Weekly test passes" },
+                { value: "2", label: "Channels" },
                 { value: "∞", label: "Infinite potential" },
               ].map((stat) => {
                 const isInfinity = stat.value === "∞";

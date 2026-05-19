@@ -1,10 +1,11 @@
 // /meta/proposal/full — long-form companion to /meta/proposal.
 // The shorter index page is a 7-second teaser; this page carries
-// the entire 90-day breakdown (leverage callout, scope-at-a-glance
-// strip, what-ships chip strip, trophy-card open-market panel,
-// three channel cards, why-niche reasoning, comparable case study,
-// "why this isn't a normal Meta agency deal" 3-card grid, AES-256
-// trust strip, final CTA pair).
+// the entire 90-day Meta Growth Program breakdown (leverage
+// callout, scope-at-a-glance strip, what-ships chip strip, trophy-
+// card open-market panel, two channel cards (Facebook + Instagram),
+// why-niche reasoning, comparable case study, "why this isn't a
+// normal Meta agency deal" 3-card grid, AES-256 trust strip, final
+// CTA pair).
 
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -26,13 +27,8 @@ const PAY_FULL_URL = "https://buy.stripe.com/28EcN51f43aw1R52u49fW0b";
 const RETAIL_LINES: { item: string; spec: string; rate: string }[] = [
   {
     item: "30 short-form vertical ads",
-    spec: "Reels / Shorts / Stories — scripted, edited, captioned",
+    spec: "Reels + Stories — scripted, edited, captioned",
     rate: "$2,000/asset · $60,000",
-  },
-  {
-    item: "12 long-form YouTube videos",
-    spec: "Branded interviews + explainers, fully produced",
-    rate: "$2,500/video · $30,000",
   },
   {
     item: "Ad-account infrastructure",
@@ -44,21 +40,20 @@ const RETAIL_LINES: { item: string; spec: string; rate: string }[] = [
     spec: "ICP map, intent keywords, landing-page funnel, lead form copy",
     rate: "$8,000",
   },
+  {
+    item: "Creative testing + iteration",
+    spec: "Weekly winners-and-losers reviews, hook A/B tests, format pivots, retargeting-pool rebuilds",
+    rate: "$2,000/wk · $24,000",
+  },
 ];
 const RETAIL_TOTAL = "$100K+";
 
 const CHANNELS: { tag: string; title: string; body: string }[] = [
   {
     tag: "Meta",
-    title: "Facebook + Instagram",
+    title: "Facebook lead-form engine",
     body:
       "Lead-form ads, lookalike audiences off your CRM, behavioral retargeting to family members of people searching for help. Real testimonials, not stock photos. Optimized weekly against actual cost-per-admit, not vanity engagement.",
-  },
-  {
-    tag: "YouTube",
-    title: "Long-form authority",
-    body:
-      "A branded channel where 12 produced videos answer the questions families type into Google at 2am. YouTube is where high-trust niches close the 6-week consideration window. We script, film direction, edit, thumbnail, SEO.",
   },
   {
     tag: "Instagram",
@@ -70,7 +65,7 @@ const CHANNELS: { tag: string; title: string; body: string }[] = [
 
 const WHY_NICHE: string[] = [
   "The decision-maker is rarely the patient — it's the family. Search alone misses them; Meta's behavioral audiences find them where they already are.",
-  "The buying cycle is 3–6 weeks of quiet research. YouTube is where that research happens. Owning that surface compounds — every new video is a permanent asset.",
+  "The buying cycle is 3–6 weeks of quiet research. The Meta retargeting pool is what keeps your name in front of the family across every scroll of that window — every new ad is a permanent fixture in their feed.",
   "Trust is the gate. Real faces, real outcomes, real licensing badges convert orders of magnitude better than stock-image lead ads.",
   "Cost-per-admit beats cost-per-click. We optimize against the metric that pays your bills, not the metric Meta defaults to.",
   "Compliant creative wins. We script around HIPAA + ad-platform policy from the first frame, so accounts don't get suspended mid-campaign.",
@@ -84,27 +79,27 @@ const CASE_STUDY = {
 };
 
 export const metadata: Metadata = {
-  title: "Meta + YouTube Growth Proposal · Full Breakdown · 90 Days for $1,500/mo",
+  title: "Meta Growth Program · Full Breakdown · 90 Days for $1,500/mo",
   description:
-    "Full deliverable breakdown for the 90-day Meta + YouTube + Instagram creative engine. 30 short-form ads, 12 long-form videos, full Meta + pixel + CAPI infrastructure, audience research + funnel — all on a $1,500/month subscription you can cancel anytime after month one.",
+    "Full deliverable breakdown for the 90-day Meta Growth Program — Facebook + Instagram paid-social engine for behavioral-health and recovery centers. 30 short-form ads, full Meta + pixel + CAPI infrastructure, audience research + funnel, weekly creative testing — all on a $1,500/month subscription you can cancel anytime after month one.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Meta + YouTube Growth Proposal · Full Breakdown",
+    title: "Meta Growth Program · Full Breakdown",
     description:
-      "The deep dive: every deliverable across the 90-day partnership, three channels, comparable case study, and the chrome-flash CTA pair to start.",
+      "The deep dive: every deliverable across the 90-day Meta partnership, two channels, comparable case study, and the chrome-flash CTA pair to start.",
     url: PAGE_URL,
     type: "website",
     images: [{
-      url: `${SITE_URL}/api/og?title=Meta%20%2B%20YouTube%20Growth%20Proposal&topic=Full%20Breakdown%20%C2%B7%2090%20Days`,
+      url: `${SITE_URL}/api/og?title=Meta%20Growth%20Program&topic=Full%20Breakdown%20%C2%B7%2090%20Days`,
       width: 1200,
       height: 630,
     }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Meta + YouTube Growth Proposal · Full Breakdown",
+    title: "Meta Growth Program · Full Breakdown",
     description:
-      "Every deliverable across the 90-day partnership. $1,500/month, cancel anytime after month one.",
+      "Every deliverable across the 90-day Meta partnership. $1,500/month, cancel anytime after month one.",
   },
   robots: { index: false, follow: false },
 };
