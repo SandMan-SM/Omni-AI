@@ -46,7 +46,13 @@ export const INBOUND_SLUG_LABELS: Record<InboundSlug, string> = {
   youngs: 'Youngs',
   phoenix: 'Phoenix',
   niki: 'Niki',
-  prime_iv: 'Prime IV Hydration',
+  // Workspace label flipped 2026-05-19 — the agentic-dashboard
+  // client is Jaime's "Live Better On The Drip" personal-brand
+  // podcast, not the Prime IV Hydration franchise that hosts the
+  // tenancy. The inbound_prime_iv_{leads,events} tables stay as-is
+  // (livebetterpodcast.com writes there); only the display name
+  // changes so the dashboard reads as Jaime's brand.
+  prime_iv: 'Live Better',
   rene: 'Rene Laveau',
   mainst: 'Utah Main Street',
   beehive: 'Beehive Biz Pulse',

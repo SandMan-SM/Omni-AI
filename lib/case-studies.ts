@@ -351,19 +351,25 @@ export const CASE_STUDIES: CaseStudy[] = [
     liveSince: "2026-04",
   },
   {
-    slug: "prime-iv-sandy",
-    brand: "Prime IV — Sandy branch",
-    domain: "primeivsandy.com",
-    url: "https://primeivsandy.com",
+    // Case-study reframed 2026-05-19: the dashboard client on this
+    // tenancy is Jaime's "Live Better On The Drip" personal-brand
+    // podcast, not the Prime IV Hydration franchise that hosts the
+    // tables. The inbound_prime_iv_{leads,events} tenancy stays
+    // (livebetterpodcast.com writes there); the case-study brand /
+    // domain / framing flips to lead with the podcast.
+    slug: "live-better-on-the-drip",
+    brand: "Live Better On The Drip",
+    domain: "livebetterpodcast.com",
+    url: "https://livebetterpodcast.com",
     inboundSlug: "prime_iv",
     realm: 1,
-    role: "Operator · IV intro funnel",
+    role: "Personal-brand podcast · audience engine",
     status: "live",
-    pantheonArchetype: "Operator (mortal tier)",
-    pantheonCEO: "Prime IV CEO",
-    tagline: "$85 IV intro offer. Sandy, Utah location. The conversion URL the operator promotes from On The Drip.",
-    problem: "Franchise location needed a single-purpose conversion URL — no menu, no detour, just the intro offer.",
-    solution: "Federation site optimized for the $85 intro offer. Cross-promoted from the Live Better — On The Drip podcast channel as the canonical channel for show traffic.",
+    pantheonArchetype: "Storyteller (mortal tier)",
+    pantheonCEO: "Live Better CEO",
+    tagline: "Jaime's personal-brand podcast — weekly show, newsletter, and federation distribution wired into the broader Omni AI portfolio.",
+    problem: "Podcast brand needed real channel infrastructure (site, AI CEO routing, branded newsletter, federation cross-promo attribution) so every episode could compound across the federation instead of dying on the platform feed.",
+    solution: "Federation site under the podcast brand. Cross-promo embed routes show audience back into the network. Inbound_prime_iv_ tenancy carries lead capture, page-view events, and source attribution from every CTA placement.",
     systems: STANDARD_SYSTEMS,
     agenticStack: STANDARD_AGENTIC,
     pricing: TIER3_PRICING,
@@ -453,41 +459,12 @@ export const CASE_STUDIES: CaseStudy[] = [
     liveSince: "2026-04",
   },
 
-  // ────────────── Realm I — Channel partner ──────────────
-  {
-    slug: "live-better-on-the-drip",
-    brand: "Live Better — On The Drip",
-    domain: "livebetterpodcast.com",
-    url: "https://livebetterpodcast.com",
-    inboundSlug: "otd",
-    realm: 1,
-    role: "Channel partner · podcast + community",
-    status: "live",
-    pantheonArchetype: "Builder",
-    pantheonCEO: null,
-    tagline: "Live show + community. The channel that drives Prime IV.",
-    problem: "Podcast partner with show + community needed canonical channel attribution flowing into the federation so cross-conversions to Prime IV could be measured + compounded.",
-    solution: "Channel-partner integration: dedicated otd slug, cross-promo creative in rotation, attribution tracked from show audience to Prime IV intro-offer conversions.",
-    systems: [
-      { layer: "Federation tenancy", what: "otd slug registered in INBOUND_SLUGS. inbound_otd_{events,leads,bookings,orders,newsletter_events} tables provisioned." },
-      { layer: "Cross-promo", what: "Sponsor embed lists Live Better Podcast as strategic-tier partner. Federation creative routes show audience → Prime IV intro." },
-      { layer: "Attribution", what: "Cross_brand_referrals captures otd→prime_iv conversions for revenue split." },
-    ],
-    agenticStack: [
-      "otd inbound tables ready for show-driven traffic ingestion.",
-      "Cross-promo creative live in federation-ad rotation.",
-      "Revenue attribution to Prime IV via cross_brand_referrals — base for sponsor revenue split.",
-    ],
-    pricing: [
-      { line: "Federation onboarding", price: "$3,500 one-time", note: "Slug, cross-promo creative, attribution wiring." },
-      { line: "Sponsor revenue split", price: "30% brokered sponsor revenue", note: "On the federation slot we curate." },
-      { line: "Channel attribution", price: "10% federation-referred bookings", note: "Tracked via cross_brand_referrals." },
-    ],
-    marketTier: "themed",
-    marketTierLabel: "Channel partner · attribution-only",
-    buildPriceRange: "$3,500 onboarding",
-    liveSince: "2026-05",
-  },
+  // Channel-partner OTD case-study entry removed 2026-05-19 — it
+  // collided on slug "live-better-on-the-drip" with the renamed
+  // prime_iv entry above, and its inboundSlug pointed at the
+  // empty inbound_otd_* tables (the actual livebetterpodcast.com
+  // data lives in inbound_prime_iv_*). The renamed entry above
+  // is now the single canonical Live Better case-study card.
 
   // ────────────── Realm I — N.3 funnels ──────────────
   {
