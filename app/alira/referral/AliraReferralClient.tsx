@@ -95,11 +95,11 @@ export function AliraReferralClient({ pageUrl }: Props) {
             </p>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { value: "Tier 3", label: "Federation build" },
-                { value: "1", label: "Bespoke site" },
+                { value: "$100K+", label: "Asset value" },
+                { value: "5", label: "Surfaces shipped" },
                 { value: "16", label: "Partner businesses" },
-                { value: "2", label: "Ways to pay" },
-                { value: "∞", label: "Inner-circle access" },
+                { value: "24/7", label: "AI CEO routing" },
+                { value: "∞", label: "Potential" },
               ].map((stat) => {
                 const isInfinity = stat.value === "∞";
                 return (
