@@ -314,8 +314,25 @@ export default function AnalyticsPage() {
           isAllRollup={isAllSelected}
         />
 
-        {/* Per-brand inbound (client website) analytics */}
-        <InboundAnalytics />
+        {/* Per-brand inbound (client website) analytics — defaultSlug
+            follows the active workspace so switching businesses at
+            the top of the page also refreshes this panel (it used to
+            be hard-coded to 'ltb' regardless of which workspace was
+            active, so per-brand viewers saw the wrong tenant's
+            inbound data). When the synthetic "All Businesses"
+            sentinel is selected, no defaultSlug is passed — the
+            panel falls back to its own default and the in-panel
+            dropdown's "All businesses" option still drives the
+            <AggregateAnalytics /> rollup. */}
+        <InboundAnalytics
+          {...(isAllSelected
+            ? {}
+            : { defaultSlug: (selectedBiz?.slug ?? undefined) as
+                | "ltb" | "omnileads" | "alira" | "cps" | "otd"
+                | "leifson" | "youngs" | "phoenix" | "niki"
+                | "prime_iv" | "rene" | "mainst" | "beehive"
+                | "wasatch" | "sitanim" | "imperium" | undefined })}
+        />
 
         {/* Agency outbound (omni_*) metrics — kept below the per-brand
             section. Outreach numbers are scoped per-business_id, so the

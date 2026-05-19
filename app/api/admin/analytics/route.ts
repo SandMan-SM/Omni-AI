@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { requireAdmin } from '@/lib/admin-auth';
+import { requireAdminOrBrandMember } from '@/lib/admin-auth';
 import { serverErrorResponse } from '@/lib/api-errors';
 import { INBOUND_SLUGS, type InboundSlug } from '@/lib/inbound-types';
 
@@ -102,13 +102,23 @@ function bucketKey(ts: number, unit: 'hour' | 'day' | 'week'): string {
 
 export async function GET(req: Request) {
   noStore();
-  const auth = await requireAdmin();
-  if (auth.error) return auth.error;
 
+  // Auth is admin-or-brand-member: platform admins see everything;
+  // per-brand client viewers (Sammy@CPS, Adam@LTB, etc.) get scoped
+  // to their own slug/host via the omni_business_users mapping. The
+  // helper enforces that slug=all (federation rollup) stays admin-
+  // only, so the rollup branch below doesn't need a separate guard.
+  // Resolve scope params BEFORE the auth check so the helper can
+  // authorize against them.
   const url = new URL(req.url);
   const rangeParam = (url.searchParams.get('range') || '30d') as Range;
   const cfg = RANGE_CONFIG[rangeParam] ?? RANGE_CONFIG['30d'];
   const range: Range = (cfg === RANGE_CONFIG[rangeParam]) ? rangeParam : '30d';
+
+  const authSlug = (url.searchParams.get('slug') || '').trim().toLowerCase();
+  const authHost = (url.searchParams.get('host') || '').trim().toLowerCase();
+  const auth = await requireAdminOrBrandMember({ slug: authSlug, host: authHost });
+  if (auth.error) return auth.error;
 
   // Per-tenant scope. Three ways to scope:
   //

@@ -126,6 +126,15 @@ export function OmniSiteAnalytics({
       .then(async (r) => {
         if (!r.ok) {
           const body = await r.json().catch(() => ({}));
+          // Surface 401/403 with a workspace-mapping hint so operators
+          // can self-diagnose. Other errors fall through to the
+          // server's message or a status-only fallback.
+          if (r.status === 401 || r.status === 403) {
+            const msg = body?.error || `HTTP ${r.status}`;
+            throw new Error(
+              `${msg} · Analytics scoped to this workspace require admin or a brand-member mapping. Contact $Mafi if you should have access.`
+            );
+          }
           throw new Error(body?.error || `HTTP ${r.status}`);
         }
         return r.json();
