@@ -67,8 +67,7 @@ export function ProposalClient({ pageUrl }: Props) {
               style={{ fontFamily: "Georgia, serif" }}
             >
               <span className="text-amber-300">90 days</span> of paid-social
-              creative for{" "}
-              <span className="text-amber-300">$1,500/month</span>.
+              creative.
             </h1>
             <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-300 leading-relaxed">
               A 90-day creative engine built for behavioral-health and
