@@ -93,19 +93,23 @@ export function ProposalClient({
   };
 
   return (
-    <div className="relative min-h-screen text-zinc-100 overflow-hidden bg-black proposal-page">
-      {/* Cinematic backdrop — deep navy + 4 drifting auroras + 260
-          hash-distributed twinkling stars + amber dotted lattice + top
-          spotlight + edge vignette. Replaces the prior inline 6-layer
-          stack (was aurora-mesh + hex grid + beams + GoldSparks +
-          vignette + spotlight). Pure CSS + 1 SVG, respects
-          prefers-reduced-motion. */}
+    <>
+      {/* Cinematic backdrop hoisted to Fragment-level siblings of the
+          page wrapper — same fix as /proposal/elitalks/full. With
+          the backdrops INSIDE a wrapper that had bg-black +
+          overflow-hidden, the fixed -z-20 / -z-10 layers were getting
+          eaten by the wrapper's paint context: visible in HTML, dead
+          on screen. As Fragment-level siblings the fixed positioning
+          roots at body, so the deep-navy + auroras + stars + amber
+          lattice all paint through. */}
       <ProposalBackdrop />
-
-      {/* GoldSparks particles still on top of the new backdrop —
-          kept so amber drift continues to read "this is the next
-          $100K of creative". */}
       <GoldSparksBackdrop />
+
+      {/* Wrapper is now bg-transparent (was bg-black). min-h-screen +
+          relative z-10 keep content above the fixed backdrops.
+          overflow-hidden caps any long-token horizontal overflow on
+          mobile. */}
+      <div className="relative z-10 min-h-screen text-zinc-100 overflow-hidden proposal-page">
 
       {/* HERO — same cinematic shape as /proposal/elitalks/full.
           Eyebrow + Georgia serif headline + body paragraph +
@@ -582,6 +586,7 @@ export function ProposalClient({
         </div>
       </footer>
       <p className="sr-only">{pageUrl}</p>
-    </div>
+      </div>
+    </>
   );
 }

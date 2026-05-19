@@ -54,7 +54,7 @@ export const metadata: Metadata = {
 };
 
 // Retail-equivalent line items — what an agency-of-record would
-// invoice for the same deliverables. Sums to $103,000 so the "$100K"
+// invoice for the same deliverables. Sums to ~$100K+ so the headline
 // headline isn't marketing fluff; it's defensible from production
 // rates that any prospect can verify.
 const RETAIL_LINES: { item: string; spec: string; rate: string }[] = [
@@ -79,7 +79,7 @@ const RETAIL_LINES: { item: string; spec: string; rate: string }[] = [
     rate: "$8,000",
   },
 ];
-const RETAIL_TOTAL = "$103,000";
+const RETAIL_TOTAL = "$100K+";
 
 // Three channels — what each one is built to do for the niche.
 const CHANNELS: { tag: string; title: string; body: string }[] = [
