@@ -68,7 +68,6 @@ export function AliraReferralClient({ pageUrl }: Props) {
               className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02]"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              <span className="text-amber-300">The federation seat.</span>{" "}
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
                 We don&apos;t even want the money.
               </em>
@@ -96,9 +95,9 @@ export function AliraReferralClient({ pageUrl }: Props) {
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
                 { value: "$100K+", label: "Asset value" },
-                { value: "5", label: "Surfaces shipped" },
-                { value: "16", label: "Partner businesses" },
-                { value: "24/7", label: "AI CEO routing" },
+                { value: "5", label: "Surfaces" },
+                { value: "16", label: "Businesses" },
+                { value: "24/7", label: "Execution" },
                 { value: "∞", label: "Potential" },
               ].map((stat) => {
                 const isInfinity = stat.value === "∞";
