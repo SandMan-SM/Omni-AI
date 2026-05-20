@@ -203,7 +203,7 @@ export function AliraReferralFullClient({
       <button
         type="button"
         onClick={() => revealPricing(source)}
-        className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
+        className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-10 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
         data-testid={testId}
       >
         <span className="chrome-white">Activate Your Assets</span>
@@ -229,7 +229,7 @@ export function AliraReferralFullClient({
       <div
         data-testid={`${surfaceTestId}-${opt.id}`}
         className={
-          "flex flex-col h-full rounded-2xl border p-8 " +
+          "flex flex-col h-full rounded-2xl border p-5 sm:p-8 " +
           (featured
             ? "border-amber-400/60 bg-amber-400/[0.08]"
             : "border-white/10 bg-white/[0.02]")
@@ -700,27 +700,27 @@ export function AliraReferralFullClient({
         </section>
 
         {/* FINAL CTA — security-trust framing. Sparkles eyebrow swapped
-            for an AES-256 lock + Stripe-secured strip so the trust
-            signal lands right next to the payment CTA. */}
+            for an AES-256 lock strip so the trust signal lands right
+            next to the payment CTA. */}
         <section className="relative bg-black/30">
-          <div className="mx-auto max-w-3xl px-6 py-20 sm:py-24 text-center">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold inline-flex items-center gap-1.5">
+          <div className="mx-auto max-w-3xl px-4 sm:px-6 py-16 sm:py-24 text-center">
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.4em] text-amber-300/90 font-semibold inline-flex items-center gap-1.5">
               <Lock className="w-3 h-3" />
-              AES-256 bit Advanced Encryption · Stripe-secured
+              AES-256 bit Advanced Encryption
             </p>
             <h2
-              className="mt-3 text-3xl sm:text-5xl tracking-tight"
+              className="mt-3 text-2xl sm:text-5xl tracking-tight leading-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
               Activate your spot. We start the kickoff this week.
             </h2>
-            <p className="mt-5 text-base text-zinc-400">
+            <p className="mt-5 text-sm sm:text-base text-zinc-400">
               50 businesses this wave. Pick the cadence, we kickoff
               this week — and we&apos;ll talk about other systems only
               after you love the results.
             </p>
 
-            <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+            <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
               <ActivateButton
                 source="bottom"
                 testId="alira-activate-bottom"
@@ -757,7 +757,7 @@ export function AliraReferralFullClient({
           role="dialog"
           aria-modal="true"
           aria-label="Activate Your Assets"
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-md"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-md"
           onClick={(e) => {
             // Backdrop click closes; clicks bubbling up from the panel
             // children stop at the panel's onClick stopPropagation.
@@ -766,7 +766,7 @@ export function AliraReferralFullClient({
           data-testid="alira-activate-modal"
         >
           <div
-            className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-950/95 p-6 sm:p-8 shadow-2xl shadow-amber-300/10 max-h-[92vh] overflow-y-auto"
+            className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-950/95 p-4 sm:p-8 shadow-2xl shadow-amber-300/10 max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -779,16 +779,16 @@ export function AliraReferralFullClient({
               <X className="w-4 h-4" />
             </button>
 
-            <p className="text-[11px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.24em] sm:tracking-[0.32em] text-amber-300/90 font-semibold">
               Two ways in · pick the cadence
             </p>
             <h3
-              className="mt-2 text-2xl sm:text-3xl tracking-tight text-white pr-10"
+              className="mt-2 text-xl sm:text-3xl tracking-tight text-white pr-10 leading-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
               Activate Your Assets.
             </h3>
-            <p className="mt-2 text-sm text-zinc-400">
+            <p className="mt-2 text-[13px] sm:text-sm text-zinc-400">
               Both prices ship the same $100K+ in digital assets. Same
               scope, same federation exposure — just different cadence.
             </p>
@@ -803,9 +803,9 @@ export function AliraReferralFullClient({
               ))}
             </div>
 
-            <p className="mt-6 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.32em] text-amber-300/80 font-semibold">
+            <p className="mt-6 inline-flex items-center gap-1.5 text-[10px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-amber-300/80 font-semibold">
               <Lock className="w-3 h-3" />
-              AES-256 bit Advanced Encryption · Stripe-secured
+              AES-256 bit Advanced Encryption
             </p>
           </div>
         </div>
