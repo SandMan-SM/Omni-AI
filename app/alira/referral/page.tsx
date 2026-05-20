@@ -14,28 +14,28 @@ const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/alira/referral`;
 
 export const metadata: Metadata = {
-  title: "Locked in by Alira · Federation Referral",
+  title: "Referred by Alira · Federation Referral",
   description:
-    "Alira sent you because the build behind her brand isn't a website — it's an audience engine. The federation seat at the referral rate. Tap through for the full breakdown — every deliverable, the open-market value anchor, the case study, and the two ways to secure your seat.",
+    "Referred by Alira. The build behind her brand isn't a website — it's an audience engine, and you get the same Tier-3 stack at the referral rate. Tap through for the full breakdown — every deliverable, the open-market value anchor, the case study, and the two ways to secure your seat. We don't even want the money.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Locked in by Alira · Federation Referral",
+    title: "Referred by Alira · Federation Referral",
     description:
-      "The federation seat. We don't even want the money. 7-second pitch — one click to the full breakdown.",
+      "Referred by Alira. We don't even want the money. 7-second pitch — one click to the full breakdown.",
     url: PAGE_URL,
     type: "website",
     images: [{
-      url: `${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=Federation%20Referral`,
+      url: `${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=Federation%20Referral`,
       width: 1200,
       height: 630,
     }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Locked in by Alira · Federation Referral",
+    title: "Referred by Alira · Federation Referral",
     description:
-      "The federation seat. We don't even want the money. 7-second pitch — one click to the full breakdown.",
-    images: [`${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=Federation%20Referral`],
+      "Referred by Alira. We don't even want the money. 7-second pitch — one click to the full breakdown.",
+    images: [`${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=Federation%20Referral`],
   },
   // Private referral surface — only people Alira sends here see it.
   robots: { index: false, follow: false },

@@ -107,28 +107,28 @@ const DISTRIBUTION_NOTES: { title: string; body: string }[] = [
 ];
 
 export const metadata: Metadata = {
-  title: "Locked in by Alira · Full Breakdown · $3,000 or $333 Down",
+  title: "Referred by Alira · Full Breakdown · $3,000 or $333 Down",
   description:
-    "Alira's referral — full breakdown. Lock in a Tier-3 bespoke website + AI CEO layer + branded newsletter + federation cross-promotion + community-specific distribution for $3,000 in full, or as little as $333 down to secure your spot. $100K+ in digital assets you own when the build ships. We don't even want the money — we want to prove what we build.",
+    "Referred by Alira — full breakdown. A Tier-3 bespoke website + AI CEO layer + branded newsletter + federation cross-promotion + community-specific distribution for $3,000 in full, or as little as $333 down to secure your spot. $100K+ in digital assets you own when the build ships. We don't even want the money — we want to prove what we build.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Locked in by Alira · Full Breakdown",
+    title: "Referred by Alira · Full Breakdown",
     description:
       "$100K+ in digital assets you own outright. $3,000 in full or $333 down to secure your spot. We don't even want the money — we want to prove what we build.",
     url: PAGE_URL,
     type: "website",
     images: [{
-      url: `${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=Full%20Breakdown%20%C2%B7%20%243%2C000%20or%20%24333%20down`,
+      url: `${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=Full%20Breakdown%20%C2%B7%20%243%2C000%20or%20%24333%20down`,
       width: 1200,
       height: 630,
     }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Locked in by Alira · Full Breakdown",
+    title: "Referred by Alira · Full Breakdown",
     description:
       "$100K+ in assets. $3,000 full or $333 down. We don't even want the money.",
-    images: [`${SITE_URL}/api/og?title=Locked%20in%20by%20Alira&topic=Full%20Breakdown%20%C2%B7%20%243%2C000%20or%20%24333%20down`],
+    images: [`${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=Full%20Breakdown%20%C2%B7%20%243%2C000%20or%20%24333%20down`],
   },
   robots: { index: false, follow: false },
 };
