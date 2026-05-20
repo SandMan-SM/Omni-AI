@@ -161,11 +161,27 @@ export function AliraReferralFullClient({
     };
   }, [modalOpen, closeModal]);
 
-  function revealPricing(source: "hero" | "inline" | "bottom") {
+  function revealPricing(source: "hero" | "inline" | "bottom" | "deeplink") {
     ping("activate_assets", source);
     setModalOpen(true);
     setPricingOpen(true);
   }
+
+  // Auto-open the pricing modal when the user arrives with the
+  // #activate hash (the teaser's "Activate Your Assets" button deep-
+  // links here). Also honor #pricing as an alias so existing share
+  // links continue to work — they reveal the pricing surface even
+  // though the modal was originally only triggerable from in-page
+  // Activate clicks. Runs once on mount; subsequent hash changes
+  // don't re-fire because the modal already reflects the state.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const hash = window.location.hash.toLowerCase();
+    if (hash === "#activate" || hash === "#pricing") {
+      revealPricing("deeplink");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function onPay(option: PricingOption) {
     ping("pay_intent", option.id);
@@ -190,7 +206,7 @@ export function AliraReferralFullClient({
         className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
         data-testid={testId}
       >
-        <span className="chrome-white">Activate your assets</span>
+        <span className="chrome-white">Activate Your Assets</span>
         <HollowTriangle />
       </button>
     );
@@ -740,7 +756,7 @@ export function AliraReferralFullClient({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Activate your assets"
+          aria-label="Activate Your Assets"
           className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-md"
           onClick={(e) => {
             // Backdrop click closes; clicks bubbling up from the panel
@@ -770,7 +786,7 @@ export function AliraReferralFullClient({
               className="mt-2 text-2xl sm:text-3xl tracking-tight text-white pr-10"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Activate your assets.
+              Activate Your Assets.
             </h3>
             <p className="mt-2 text-sm text-zinc-400">
               Both prices ship the same $100K+ in digital assets. Same

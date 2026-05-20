@@ -88,11 +88,11 @@ export function AliraReferralClient({ pageUrl }: Props) {
                 now or read the full deck first. */}
             <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
-                href="/alira/referral/full#pricing"
+                href="/alira/referral/full#activate"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-8 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
                 data-testid="alira-teaser-activate"
               >
-                <span className="chrome-white">Activate your assets</span>
+                <span className="chrome-white">Activate Your Assets</span>
                 <HollowTriangle />
               </Link>
               <Link
