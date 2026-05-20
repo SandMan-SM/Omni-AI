@@ -104,7 +104,7 @@ export function AliraReferralClient({ pageUrl }: Props) {
                 return (
                   <div
                     key={stat.label}
-                    className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-3 py-6 text-center"
+                    className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-3 py-6 text-center [&:nth-child(5)]:col-span-2 sm:[&:nth-child(5)]:col-span-1"
                   >
                     <p
                       className={
@@ -132,30 +132,30 @@ export function AliraReferralClient({ pageUrl }: Props) {
             Same recipe as /proposal/elitalks + /meta/proposal "More
             info" / "See the full breakdown" CTAs. */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-6 py-12 sm:py-16">
-            <div className="rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.05] via-amber-300/[0.02] to-transparent p-8 sm:p-10 text-center relative overflow-hidden">
+          <div className="mx-auto max-w-5xl px-4 sm:px-6 py-12 sm:py-16">
+            <div className="rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.05] via-amber-300/[0.02] to-transparent p-5 sm:p-10 text-center relative overflow-hidden">
               <div
                 aria-hidden
                 className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-amber-300/20 blur-3xl"
               />
-              <p className="relative z-10 text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
+              <p className="relative z-10 text-[10px] sm:text-[11px] uppercase tracking-[0.3em] sm:tracking-[0.4em] text-amber-300/90 font-semibold">
                 Ready when you are
               </p>
               <h2
-                className="relative z-10 mt-3 text-3xl sm:text-4xl tracking-tight"
+                className="relative z-10 mt-3 text-2xl sm:text-4xl tracking-tight leading-tight"
                 style={{ fontFamily: "Georgia, serif" }}
               >
                 See the full breakdown.
               </h2>
-              <p className="relative z-10 mt-3 max-w-xl mx-auto text-sm text-zinc-400 leading-relaxed">
+              <p className="relative z-10 mt-3 max-w-xl mx-auto text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
                 Every deliverable, the open-market value anchor, the
                 proof case study, and the two ways to lock in your
                 seat — one page, one read.
               </p>
-              <div className="relative z-10 mt-8 flex justify-center">
+              <div className="relative z-10 mt-6 sm:mt-8 flex justify-center">
                 <Link
                   href="/alira/referral/full"
-                  className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
+                  className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-10 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
                   data-testid="alira-more-info"
                 >
                   <span className="chrome-white">More info</span>
