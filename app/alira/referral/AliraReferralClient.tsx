@@ -78,6 +78,31 @@ export function AliraReferralClient({ pageUrl }: Props) {
               You get the same Tier-3 stack at the federation-
               referral rate.
             </p>
+
+            {/* Dual CTA — primary "Activate your assets" deep-links
+                into the pricing modal on /full (the #pricing hash
+                auto-reveals it), secondary "Learn more" routes to
+                the long-form breakdown. Same chrome-flash recipe as
+                the /full Activate pills + the bottom More-info card,
+                kept side-by-side so the operator can either commit
+                now or read the full deck first. */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <Link
+                href="/alira/referral/full#pricing"
+                className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-8 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
+                data-testid="alira-teaser-activate"
+              >
+                <span className="chrome-white">Activate your assets</span>
+                <HollowTriangle />
+              </Link>
+              <Link
+                href="/alira/referral/full"
+                className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
+                data-testid="alira-teaser-learn-more"
+              >
+                Learn more
+              </Link>
+            </div>
           </div>
         </section>
 
