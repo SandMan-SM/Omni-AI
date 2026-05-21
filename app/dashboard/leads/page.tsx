@@ -590,6 +590,31 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [bizOpen, setBizOpen] = useState(false);
 
+  // Client-viewer label flip: Sita's stored preference is that the
+  // leads-tab nav label reads "Clients" for the non-admin client
+  // dashboards (Brent/Adam/Sammy/CPS/Jaime) and stays "Leads" for
+  // platform admin. The same `omni_user.is_admin` localStorage flag
+  // already gates the admin-only affordances elsewhere in this
+  // file (see the "Show all businesses" escape hatch around L1033),
+  // so reusing it keeps the detection logic consistent.
+  //
+  // Read inside useEffect so SSR returns the default "Leads" and the
+  // client swaps to "Clients" post-mount when warranted — no
+  // hydration mismatch. The brief flash on first paint is acceptable
+  // (matches every other localStorage-gated affordance on this
+  // page). Server-side `isAdmin` migration is tracked as finding #13
+  // in the dashboard review.
+  const [navLeadsLabel, setNavLeadsLabel] = useState<'Leads' | 'Clients'>('Leads');
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const u = JSON.parse(localStorage.getItem('omni_user') || 'null');
+      setNavLeadsLabel(u?.is_admin ? 'Leads' : 'Clients');
+    } catch {
+      /* keep default */
+    }
+  }, []);
+
   useEffect(() => {
     loadBusinesses().then(({ data }) => {
       if (data?.length) {
@@ -923,7 +948,7 @@ export default function DashboardPage() {
           </div>
           <div className="agi-leads-header-divider" style={{ width: 1, height: 20, background: '#222' }} />
           <nav className="agi-leads-nav" style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
-            <Link href="/dashboard/leads" style={navStyle(true)}>Leads</Link>
+            <Link href="/dashboard/leads" style={navStyle(true)}>{navLeadsLabel}</Link>
             <Link href="/dashboard/autopilot" style={navStyle(false)}><Bot size={11} /> Autopilot</Link>
             <Link href="/dashboard/coach" style={navStyle(false)}><Brain size={11} /> Coach</Link>
             <Link href="/dashboard/inbox" style={navStyle(false)}><Inbox size={11} /> Inbox</Link>
