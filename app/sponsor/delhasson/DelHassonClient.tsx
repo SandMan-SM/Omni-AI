@@ -98,6 +98,13 @@ export function DelHassonClient({ pageUrl }: Props) {
   const [equity, setEquity] = useState<Equity>("discuss");
   const [signerName, setSignerName] = useState<string>("");
   const [signerEmail, setSignerEmail] = useState<string>("");
+
+  // §3 savings chart — segmented-control scale across 4 anchor
+  // points. Math: $50K/yr per receptionist replaced minus $1.2K/yr
+  // per AI agent = ~$48.8K saved per agent. Chart computes both
+  // bars + the savings callout from this single state value so the
+  // view stays consistent at any scale.
+  const [agentScale, setAgentScale] = useState<1 | 10 | 50 | 100>(10);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [signed, setSigned] = useState<{
@@ -246,17 +253,22 @@ export function DelHassonClient({ pageUrl }: Props) {
             of any optional provisions below.
           </p>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="mt-6 grid gap-4 sm:grid-cols-3 items-stretch">
             {TIERS.map((t) => (
               <div
                 key={t.id}
-                className="rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-5"
+                className="flex flex-col h-full rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-5"
               >
                 <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
                   Tier {t.id}
                 </p>
+                {/* Price drops from text-2xl to text-xl so the wider
+                    ranges ($5,000 – $10,000 / $10,000+) fit on one
+                    line. Without this they wrap and push the delivered-
+                    value block down, breaking the cross-card
+                    horizontal alignment Sita flagged. */}
                 <p
-                  className="mt-3 text-2xl text-amber-100 tabular-nums"
+                  className="mt-3 text-xl sm:text-[22px] text-amber-100 tabular-nums whitespace-nowrap"
                   style={{ fontFamily: "Georgia, serif" }}
                 >
                   {t.range}
@@ -272,7 +284,10 @@ export function DelHassonClient({ pageUrl }: Props) {
                     {t.delivered}
                   </p>
                 </div>
-                <ul className="mt-4 space-y-2 text-[13px] text-zinc-300 leading-relaxed">
+                {/* flex-1 pushes the bullet list to fill remaining
+                    vertical space so cards with different bullet
+                    counts (2 / 2 / 3) still line up at the bottom. */}
+                <ul className="mt-4 flex-1 space-y-2 text-[13px] text-zinc-300 leading-relaxed">
                   {t.bullets.map((b, i) => (
                     <li key={i} className="flex gap-2">
                       <span className="text-amber-300/60 mt-1">•</span>
@@ -282,6 +297,64 @@ export function DelHassonClient({ pageUrl }: Props) {
                 </ul>
               </div>
             ))}
+          </div>
+
+          {/* TIER 04 — invitation-only whale row spanning full width
+              below the 3-card grid. Sita's flagship/bespoke option:
+              details intentionally gated behind a "Request access"
+              CTA that opens the phone dialer to the demo line cited
+              in §6. Lock-icon SVG inline so we don't pull a new icon
+              dependency in for one usage. */}
+          <div className="mt-4 rounded-2xl border-2 border-amber-300/40 bg-gradient-to-br from-amber-300/[0.08] via-amber-300/[0.03] to-transparent p-5 sm:p-6 relative overflow-hidden">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-amber-300/15 blur-3xl"
+            />
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-amber-300/90"
+                    aria-hidden="true"
+                  >
+                    <rect x="3" y="11" width="18" height="11" rx="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                  </svg>
+                  <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+                    Tier 04 · Invitation only
+                  </p>
+                </div>
+                <h3
+                  className="mt-2 text-2xl sm:text-3xl text-amber-200 leading-tight"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  Ultimate Power.
+                </h3>
+                <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed max-w-2xl">
+                  Bespoke commitments above the federation cap. Custom
+                  asset builds, exclusive territory, and partnership
+                  terms structured one-on-one.{" "}
+                  <span className="text-amber-200/90 italic">
+                    Details available by invitation only.
+                  </span>
+                </p>
+              </div>
+              <a
+                href="tel:+13855631562"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 py-3 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
+              >
+                <span className="chrome-white">Request access</span>
+                <HollowTriangle />
+              </a>
+            </div>
           </div>
         </Section>
 
@@ -326,6 +399,159 @@ export function DelHassonClient({ pageUrl }: Props) {
             cost from day one, so the value compounds well beyond the
             initial build figure.
           </p>
+
+          {/* SAVINGS CHART — pure Tailwind + math, no chart-library
+              dependency. Two horizontal bars (salary cost vs AI cost),
+              both sized as ratios of the largest visible value, plus
+              a big amber callout showing the dollars saved per year
+              at the selected scale. Math anchored on the §3 claim
+              ($50K/yr replaced per agent for ~$100/mo = $1.2K/yr) so
+              the chart and the bullet list are internally consistent. */}
+          <div className="mt-8 rounded-2xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.05] via-amber-300/[0.02] to-transparent p-5 sm:p-6">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+              The savings at scale
+            </p>
+            <p className="mt-2 text-sm text-zinc-400">
+              Drag the dial — see what businesses save when autonomous
+              agents replace receptionist hours at every scale.
+            </p>
+
+            {/* SCALE SELECTOR — 4 segmented-control buttons */}
+            <div className="mt-5 grid grid-cols-4 gap-2">
+              {([1, 10, 50, 100] as const).map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setAgentScale(n)}
+                  className={
+                    "rounded-xl border-2 px-2 py-2.5 text-sm font-bold tabular-nums transition-colors " +
+                    (agentScale === n
+                      ? "border-amber-300/80 bg-amber-300/15 text-amber-100"
+                      : "border-white/10 bg-white/[0.02] text-zinc-400 hover:border-amber-300/30")
+                  }
+                >
+                  {n}
+                  <span className="ml-1 text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-normal">
+                    {n === 1 ? "agent" : "agents"}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* BARS — salary cost as full width (the larger value
+                always anchors 100%), AI cost as 2.4% of salary cost
+                (the constant ratio at any scale). Stacked layout +
+                tabular-nums on the numbers so the column reads
+                cleanly. */}
+            {(() => {
+              const salaryCost = agentScale * 50_000;
+              const aiCost = agentScale * 1_200;
+              const savings = salaryCost - aiCost;
+              const aiPct = (aiCost / salaryCost) * 100; // always 2.4%
+              const fmt = (n: number) =>
+                `$${n.toLocaleString("en-US")}`;
+              return (
+                <>
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <div className="flex items-baseline justify-between">
+                        <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
+                          Human salaries / year
+                        </p>
+                        <p className="text-sm font-bold text-rose-300 tabular-nums">
+                          {fmt(salaryCost)}
+                        </p>
+                      </div>
+                      <div className="mt-2 h-6 rounded-md bg-white/[0.03] overflow-hidden">
+                        <div
+                          className="h-full rounded-md bg-gradient-to-r from-rose-500/80 via-rose-400/70 to-rose-300/70 transition-all duration-500"
+                          style={{ width: "100%" }}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex items-baseline justify-between">
+                        <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
+                          AI agent cost / year
+                        </p>
+                        <p className="text-sm font-bold text-emerald-300 tabular-nums">
+                          {fmt(aiCost)}
+                        </p>
+                      </div>
+                      <div className="mt-2 h-6 rounded-md bg-white/[0.03] overflow-hidden">
+                        <div
+                          className="h-full rounded-md bg-gradient-to-r from-emerald-500/80 via-emerald-400/70 to-emerald-300/70 transition-all duration-500"
+                          style={{ width: `${Math.max(aiPct, 0.5)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SAVINGS CALLOUT — the headline number. Big serif
+                      amber stamp + 97.6% reduction subline. */}
+                  <div className="mt-6 rounded-xl border border-amber-300/40 bg-amber-300/[0.08] p-4 sm:p-5">
+                    <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+                      Annual savings
+                    </p>
+                    <p
+                      className="mt-2 text-3xl sm:text-4xl text-amber-100 tabular-nums leading-none"
+                      style={{ fontFamily: "Georgia, serif" }}
+                    >
+                      {fmt(savings)}
+                    </p>
+                    <p className="mt-2 text-xs text-amber-200/80 font-semibold tabular-nums">
+                      ~97.6% cost reduction vs. equivalent staffing
+                    </p>
+                    <p className="mt-3 text-sm text-zinc-300 leading-relaxed">
+                      At {agentScale} {agentScale === 1 ? "agent" : "agents"} you&apos;ve
+                      replaced <span className="text-amber-200 font-semibold tabular-nums">{fmt(salaryCost)}</span> in
+                      annual receptionist salaries for{" "}
+                      <span className="text-amber-200 font-semibold tabular-nums">{fmt(aiCost)}</span> in
+                      AI infrastructure — and the math compounds the
+                      same way at any scale.
+                    </p>
+                  </div>
+                </>
+              );
+            })()}
+          </div>
+
+          {/* THE EXTENT OF THESE SYSTEMS — explanation block after
+              the chart so Del understands what he's actually paying
+              for (not just abstract "AI agents" but the specific
+              business surfaces they cover + the qualitative shift
+              from salary hours to leverage hours). */}
+          <div className="mt-8 space-y-4 text-[15px] text-zinc-300 leading-relaxed">
+            <p>
+              Each autonomous agent runs the full surface of a single
+              business function — answering calls, qualifying leads,
+              checking availability, booking appointments, sending
+              confirmations, and reporting outcomes back to the
+              operator&apos;s CRM. The same agent handles inbound
+              messaging across SMS, email, and the website chat, so
+              the customer&apos;s experience is seamless across
+              channels.
+            </p>
+            <p>
+              What we&apos;re really replacing is{" "}
+              <strong className="text-amber-100">
+                rote salary hours with purpose-driven hours
+              </strong>
+              . The owner&apos;s people stop spending their day
+              answering the same five questions and start spending it
+              on the higher-leverage work — closing deals, training
+              new staff, building new offers. That&apos;s the
+              compounding return: the savings number on the chart
+              above is just the visible part. The invisible part is
+              what the team can now do with the hours we gave back.
+            </p>
+            <p className="text-zinc-400">
+              The systems are extensive by design: lead capture,
+              intent scoring, availability sync, booking, confirmation,
+              follow-up, reactivation, and analytics — all wired
+              together so nothing falls through the cracks.
+            </p>
+          </div>
         </Section>
 
         {/* §4 CONTRIBUTION RECOVERY */}
