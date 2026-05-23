@@ -425,7 +425,14 @@ export function DelHassonClient({ pageUrl }: Props) {
               agents replace receptionist hours at every scale.
             </p>
 
-            {/* SCALE SELECTOR — 4 segmented-control buttons */}
+            {/* SCALE SELECTOR — 4 segmented-control buttons. Numbers
+                and the agent/agents label stack vertically at base so
+                "100 AGENTS" doesn't clip on a 360-wide phone (when
+                they were inline with ml-1 + uppercase tracking, the
+                "S" got cut off in every cell). At sm+ the cells are
+                wide enough that the inline layout could come back,
+                but the vertical stack still reads cleanly there, so
+                we keep one rhythm at all breakpoints. */}
             <div className="mt-5 grid grid-cols-4 gap-2">
               {([1, 10, 50, 100] as const).map((n) => (
                 <button
@@ -433,14 +440,16 @@ export function DelHassonClient({ pageUrl }: Props) {
                   type="button"
                   onClick={() => setAgentScale(n)}
                   className={
-                    "rounded-xl border-2 px-2 py-2.5 text-sm font-bold tabular-nums transition-colors " +
+                    "flex flex-col items-center justify-center rounded-xl border-2 px-1 sm:px-2 py-2 sm:py-2.5 transition-colors " +
                     (agentScale === n
                       ? "border-amber-300/80 bg-amber-300/15 text-amber-100"
                       : "border-white/10 bg-white/[0.02] text-zinc-400 hover:border-amber-300/30")
                   }
                 >
-                  {n}
-                  <span className="ml-1 text-[10px] uppercase tracking-[0.2em] text-zinc-500 font-normal">
+                  <span className="text-base sm:text-lg font-bold tabular-nums leading-none">
+                    {n}
+                  </span>
+                  <span className="mt-1 text-[9px] sm:text-[10px] uppercase tracking-[0.15em] sm:tracking-[0.2em] text-zinc-500 font-normal leading-none">
                     {n === 1 ? "agent" : "agents"}
                   </span>
                 </button>
