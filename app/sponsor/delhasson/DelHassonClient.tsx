@@ -300,15 +300,17 @@ export function DelHassonClient({ pageUrl }: Props) {
           </div>
 
           {/* TIER 04 — invitation-only whale row spanning full width
-              below the 3-card grid. Sita's flagship/bespoke option:
-              details intentionally gated behind a "Request access"
-              CTA that opens the phone dialer to the demo line cited
-              in §6. Lock-icon SVG inline so we don't pull a new icon
-              dependency in for one usage. */}
-          <div className="mt-4 rounded-2xl border-2 border-amber-300/40 bg-gradient-to-br from-amber-300/[0.08] via-amber-300/[0.03] to-transparent p-5 sm:p-6 relative overflow-hidden">
+              below the 3-card grid. Re-styled to chrome diamond blue
+              (cyan-300 + sky-400 accents) to break out of the amber
+              palette that owns the rest of the page and visually
+              signal a different tier of offering. CTA now leads to
+              /ultimate-power — the dedicated teaser page that
+              deepens the legacy-model framing without giving the
+              substance away. */}
+          <div className="mt-4 rounded-2xl border-2 border-cyan-300/50 bg-gradient-to-br from-cyan-300/[0.08] via-sky-400/[0.04] to-transparent p-5 sm:p-6 relative overflow-hidden">
             <div
               aria-hidden
-              className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-amber-300/15 blur-3xl"
+              className="pointer-events-none absolute -top-12 -right-12 h-40 w-40 rounded-full bg-cyan-400/20 blur-3xl"
             />
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
               <div className="flex-1">
@@ -322,19 +324,26 @@ export function DelHassonClient({ pageUrl }: Props) {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="text-amber-300/90"
+                    className="text-cyan-200"
                     aria-hidden="true"
                   >
                     <rect x="3" y="11" width="18" height="11" rx="2" />
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
-                  <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+                  <p className="text-[10px] uppercase tracking-[0.32em] text-cyan-300 font-semibold">
                     Tier 04 · Invitation only
                   </p>
                 </div>
                 <h3
-                  className="mt-2 text-2xl sm:text-3xl text-amber-200 leading-tight"
-                  style={{ fontFamily: "Georgia, serif" }}
+                  className="mt-2 text-2xl sm:text-3xl leading-tight"
+                  style={{
+                    fontFamily: "Georgia, serif",
+                    background:
+                      "linear-gradient(135deg, #e0f7ff 0%, #67e8f9 35%, #ffffff 50%, #67e8f9 65%, #e0f7ff 100%)",
+                    WebkitBackgroundClip: "text",
+                    backgroundClip: "text",
+                    color: "transparent",
+                  }}
                 >
                   Ultimate Power.
                 </h3>
@@ -342,18 +351,18 @@ export function DelHassonClient({ pageUrl }: Props) {
                   Bespoke commitments above the federation cap. Custom
                   asset builds, exclusive territory, and partnership
                   terms structured one-on-one.{" "}
-                  <span className="text-amber-200/90 italic">
+                  <span className="text-cyan-200/90 italic">
                     Details available by invitation only.
                   </span>
                 </p>
               </div>
-              <a
-                href="tel:+13855631562"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 py-3 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
+              <Link
+                href="/ultimate-power"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-white/90 bg-cyan-300/20 hover:bg-cyan-300/30 px-6 py-3 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-cyan-300/20 backdrop-blur-sm"
               >
-                <span className="chrome-white">Request access</span>
+                <span className="chrome-white">Learn more</span>
                 <HollowTriangle />
-              </a>
+              </Link>
             </div>
           </div>
         </Section>
@@ -565,6 +574,27 @@ export function DelHassonClient({ pageUrl }: Props) {
             delivered asset value — which you keep in full either way.
             You may also waive recovery in favor of a larger build or a
             stronger position on the partnership track.
+          </p>
+          {/* Equity-trade clarification — Sita's note: choosing the
+              recovery path costs equity participation. Without this
+              callout the recovery looks like free upside, when
+              actually it's the conservative trade for a sponsor who
+              wants cash flow back instead of holding the equity
+              position or taking the maximum asset build. Amber-100
+              bold matches every other strong-element styling on the
+              page. */}
+          <p className="mt-4">
+            <strong className="text-amber-100">The trade:</strong>{" "}
+            electing recovery is offered at the cost of equity
+            participation in the deal. We extend it as a way to
+            showcase trust and start payback early — for the sponsor
+            who would rather see funds flowing back than hold the
+            equity position or take the full asset build. It&apos;s
+            the conservative path, available whenever you&apos;d
+            prefer money-in-hand over a long-horizon position.
+            Waiving recovery stays the right move if you want the{" "}
+            <span className="text-amber-100">maximum asset build</span>{" "}
+            and the strongest seat on the partnership track.
           </p>
         </Section>
 
@@ -785,9 +815,8 @@ export function DelHassonClient({ pageUrl }: Props) {
           <p className="mt-4">
             That&apos;s the larger goal behind the work: helping the
             world adopt this technology to remove a meaningful share of
-            unnecessary, grinding stress from how businesses run. We
-            just happen to get there by building great websites and
-            agents.
+            unnecessary stress from how businesses run. We just happen
+            to get there by building great websites and agents.
           </p>
           {/* Personalized Tier 04 hook — ties this specific
               sponsorship to a named flagship deliverable (Hasson
