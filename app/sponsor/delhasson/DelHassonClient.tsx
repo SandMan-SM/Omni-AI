@@ -789,6 +789,33 @@ export function DelHassonClient({ pageUrl }: Props) {
             just happen to get there by building great websites and
             agents.
           </p>
+          {/* Personalized Tier 04 hook — ties this specific
+              sponsorship to a named flagship deliverable (Hasson
+              Enterprises) and uses it as a teaser for the gated
+              Tier 04 / Human Collective tier sitting at the top of
+              the page. Amber-100 emphasis on the three offer-anchor
+              phrases matches every other strong-element styling on
+              the page so the eye lands on the named pieces. */}
+          <p className="mt-4">
+            <strong className="text-amber-100">For Del specifically:</strong>{" "}
+            one of the assets in this sponsorship will be{" "}
+            <strong className="text-amber-100">
+              Hasson Enterprises
+            </strong>{" "}
+            — a flagship personal-brand build structured as part of
+            our{" "}
+            <strong className="text-amber-100">legacy model</strong>,
+            the long-horizon side of the operation that compounds
+            well past any single tier. It&apos;s an exclusive
+            pre-insight into{" "}
+            <strong className="text-amber-100">
+              Tier 04 · Ultimate Power
+            </strong>{" "}
+            within the{" "}
+            <strong className="text-amber-100">Human Collective</strong>{" "}
+            — a taste of what&apos;s possible when a sponsor sits
+            inside the federation itself rather than alongside it.
+          </p>
         </Section>
 
         {/* §8 TERMS & NEXT STEPS */}
