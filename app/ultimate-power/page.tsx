@@ -430,7 +430,7 @@ export default function UltimatePowerPage(): ReactNode {
                 always live.
               </p>
 
-              <div className="relative z-10 mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+              <div className="relative z-10 mt-8 flex justify-center">
                 <Link
                   href="/sponsor/delhasson"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-cyan-300/20 hover:bg-cyan-300/30 px-6 sm:px-8 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-cyan-300/20 backdrop-blur-sm"
@@ -440,12 +440,6 @@ export default function UltimatePowerPage(): ReactNode {
                   </span>
                   <HollowTriangle />
                 </Link>
-                <a
-                  href="tel:+13855631562"
-                  className="inline-flex items-center justify-center gap-3 rounded-2xl border border-cyan-300/40 bg-cyan-300/[0.04] hover:bg-cyan-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-cyan-200 transition-colors backdrop-blur-sm"
-                >
-                  Or call (385) 563-1562
-                </a>
               </div>
             </div>
           </div>
