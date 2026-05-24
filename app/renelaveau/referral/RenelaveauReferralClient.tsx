@@ -231,7 +231,7 @@ export function RenelaveauReferralClient({
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
                 $60K in assets. <br className="hidden sm:block" />
-                $3,000 in. 20x out.
+                $3,000 in. 20x ROI.
               </em>
             </h1>
             <p className="mt-6 max-w-2xl text-base sm:text-xl text-zinc-300 leading-relaxed">
