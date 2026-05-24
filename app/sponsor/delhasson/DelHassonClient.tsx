@@ -331,7 +331,7 @@ export function DelHassonClient({ pageUrl }: Props) {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                   <p className="text-[10px] uppercase tracking-[0.32em] text-cyan-300 font-semibold">
-                    Tier 04 · Invitation only
+                    Tier 04 · Locked
                   </p>
                 </div>
                 <h3
@@ -356,13 +356,35 @@ export function DelHassonClient({ pageUrl }: Props) {
                   </span>
                 </p>
               </div>
-              <Link
-                href="/ultimate-power"
-                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-white/90 bg-cyan-300/20 hover:bg-cyan-300/30 px-6 py-3 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-cyan-300/20 backdrop-blur-sm"
+              {/* Locked-tier indicator — visually shaped like a
+                  button (matches the chrome-flash pill recipe
+                  used everywhere else on the page) but is a
+                  non-interactive <div>: no href, no onClick, no
+                  hover state, cursor-default. The "Locked" label
+                  + padlock glyph reads as a state, not an
+                  affordance — Tier 04 stays gated per Sita; only
+                  the visual presence carries. */}
+              <div
+                role="presentation"
+                className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl border-2 border-white/90 bg-cyan-300/20 px-6 py-3 text-sm font-bold tracking-wide text-white shadow-lg shadow-cyan-300/20 backdrop-blur-sm cursor-default select-none"
+                aria-label="Tier 04 is locked"
               >
-                <span className="chrome-white">Learn more</span>
-                <HollowTriangle />
-              </Link>
+                <span className="chrome-white">Locked</span>
+                <svg
+                  viewBox="0 0 24 24"
+                  width="16"
+                  height="16"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <rect x="3" y="11" width="18" height="11" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+              </div>
             </div>
           </div>
         </Section>
