@@ -1,14 +1,16 @@
 "use client";
 
-// AliraReferralFullClient — long-form companion to /alira/referral.
-// Lives at /alira/referral/full and carries the entire breakdown:
-// leverage callout, chip strip, open-market value table, Alira's
-// live-build proof card, distribution + community grid, pricing
-// reveal modal (two cards: $333 deposit + $3,000 full), why-this-
-// is-different grid, AES-256 final CTA, and footer.
+// AliraReferralInfoClient — long-form companion to /alira/referral.
+// Lives at /alira/referral/info (was /full pre-2026-05-24; URL
+// renamed for parity with /renelaveau/referral/info). Carries the
+// entire breakdown: leverage callout, chip strip, open-market
+// value table, Alira's live-build proof card, distribution +
+// community grid, pricing reveal modal (two cards: $300 deposit +
+// $3,000 full), why-this-is-different grid, AES-256 final CTA,
+// and footer.
 //
-// The shorter /alira/referral page is a 7-second teaser that ends
-// in a chrome-flash "More info →" CTA pointing at this URL.
+// The shorter /alira/referral page is the teaser that routes here
+// via the "Learn more" CTA.
 //
 // Amber-only palette per Sita 2026-05-16. Same Stripe payment links
 // + same modal behavior as before the teaser split.
@@ -120,7 +122,7 @@ function HollowTriangle() {
   );
 }
 
-export function AliraReferralFullClient({
+export function AliraReferralInfoClient({
   pageUrl,
   caseStudy,
   marketRates,
@@ -190,14 +192,19 @@ export function AliraReferralFullClient({
 
   // Activate-your-assets pill — reused in three placements (hero,
   // inline pre-reveal, final CTA). Amber translucent fill, white
-  // 2px border, chrome-shimmer text, hollow right triangle. Same
-  // visual recipe as Ellie's hero CTA, swapped to amber.
+  // 2px border, chrome-shimmer text, hollow right triangle.
+  // `label` defaults to "Activate Assets" — the hero + inline +
+  // modal-headline placements use that default. The final bottom
+  // CTA pill stays "Activate Your Assets" per Sita (passes the
+  // full label explicitly).
   function ActivateButton({
     source,
     testId,
+    label = "Activate Assets",
   }: {
     source: "hero" | "inline" | "bottom";
     testId: string;
+    label?: string;
   }) {
     return (
       <button
@@ -206,7 +213,7 @@ export function AliraReferralFullClient({
         className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-10 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
         data-testid={testId}
       >
-        <span className="chrome-white">Activate Your Assets</span>
+        <span className="chrome-white">{label}</span>
         <HollowTriangle />
       </button>
     );
@@ -316,51 +323,80 @@ export function AliraReferralFullClient({
               Back to overview
             </Link>
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
-              Alira × Omni AI · Federation referral · Full breakdown
+              Alira × Omni AI · Federation referral
             </p>
             <h1
               className="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.05]"
               style={{ fontFamily: "Georgia, serif" }}
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
-                We don&apos;t even want the money.
+                $60K in assets. <br className="hidden sm:block" />
+                $3,000 in. 20x ROI.
               </em>
             </h1>
-            <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
-              Alira sent you because the build behind her brand isn&apos;t
-              a website — it&apos;s an audience engine. Bespoke Next.js site,
-              AI CEO routing every inbound, a branded newsletter wired
-              into the federation, and consistent feature exposure across
-              the whole Omni AI network. You get the same stack at the
-              federation-referral rate.
-            </p>
 
-            {/* Leverage callout — anti-greed reframe. The fee is a
-                token, not a service charge: we ship $100K worth of
-                assets to prove what we build, and only talk about
-                other systems after if the results land. */}
-            <p className="mt-6 max-w-2xl text-sm sm:text-base text-zinc-300 leading-relaxed">
-              Honestly, we don&apos;t even want the money — we want to
-              prove what we build. For{" "}
+            {/* Consolidated single intro paragraph — was two
+                paragraphs (an "Alira sent you" intro + a separate
+                "Honestly we don't even want the money" leverage
+                callout). Now one continuous beat per Sita. Referrer
+                name is Jana (the featured Alira creator), not the
+                Alira brand itself; dollar values aligned to the
+                $60K stack + $300 down cadence. */}
+            <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
+              Jana sent you because the build behind her brand
+              isn&apos;t a website — it&apos;s an audience engine. For{" "}
               <span className="text-amber-300 font-semibold">$3,000</span>{" "}
               (or{" "}
               <span className="text-amber-300 font-semibold">
-                as little as $333 down to secure your seat
+                $300 down + $300/mo over 9 months
               </span>
-              ) we ship{" "}
-              <span className="text-amber-300 font-semibold">
-                $100,000 worth of digital assets
-              </span>{" "}
-              under your brand: a bespoke Next.js site, an AI CEO +
-              sales system qualifying every inbound, a branded
-              newsletter wired into the federation, and consistent
-              feature exposure across 16 partner businesses. After it
-              ships we talk about other systems —{" "}
+              ) we ship the same federation-grade Tier-3 stack under
+              your brand: bespoke Next.js site, AI CEO + inbound
+              routing layer qualifying every lead, personal AI
+              assistants on SMS / email / chat, a branded newsletter
+              wired into the federation, and consistent feature
+              exposure across 16 partner businesses. After it ships
+              we talk about other systems —{" "}
               <span className="text-amber-300 font-semibold">
                 only if you love the results
               </span>
-              . And everyone loves the results.
+              . We don&apos;t even want the money — we want to prove
+              what we build.
             </p>
+
+            {/* Hero CTA pair — chrome-flash Activate Assets opens
+                the pricing modal; amber-outline Back to Referral
+                routes back to the 7-second teaser. The standalone
+                Activate pill at line ~475 (later in the hero
+                section) is now redundant but kept as the trophy-
+                card outro for the long open-market value panel. */}
+            <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <ActivateButton
+                source="hero"
+                testId="alira-info-activate-hero"
+              />
+              <Link
+                href="/alira/referral"
+                className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
+                data-testid="alira-info-back-hero"
+              >
+                Back to Referral
+              </Link>
+            </div>
+
+            {/* AES-256 + 100% guarantee reassurance strip beneath
+                the hero CTAs — same recipe used on the teaser +
+                Rene referral surfaces. */}
+            <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+              <p className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-amber-300/90 font-semibold">
+                <Lock className="w-3 h-3" />
+                AES-256 bit Advanced Encryption
+              </p>
+              <p className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-emerald-300/90 font-semibold">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                100% delivery guarantee
+              </p>
+            </div>
 
             {/* What's-in-the-box strip — five compact amber chips
                 under the leverage callout. Each chip is one bucket
@@ -440,10 +476,10 @@ export function AliraReferralFullClient({
                 <div className="h-px flex-1 bg-gradient-to-l from-transparent via-amber-300/40 to-amber-300/40" />
               </div>
 
-              {/* Anchor row: label + chrome-gold $200K+ shimmer. */}
+              {/* Anchor row: label + chrome-gold $60K shimmer. */}
               <div className="relative z-10 mt-6 flex flex-wrap items-baseline justify-between gap-3">
                 <span className="text-[11px] uppercase tracking-[0.28em] text-zinc-400 font-semibold">
-                  Comparable agency build
+                  Total open-market value
                 </span>
                 <span
                   className="chrome-gold font-sans font-black tracking-tight tabular-nums leading-none text-3xl sm:text-4xl"
@@ -454,19 +490,20 @@ export function AliraReferralFullClient({
               </div>
 
               {/* Punch-line body — names both anchors together so the
-                  leverage math reads without doing the arithmetic. */}
+                  leverage math reads without doing the arithmetic.
+                  Numbers aligned to the $60K stack + $3,000 entry. */}
               <p className="relative z-10 mt-3 text-xs text-zinc-400 leading-relaxed">
-                That&apos;s what a mid-market agency would invoice to
-                assemble and run the same stack across the year. You
-                walk away with{" "}
+                That&apos;s the fair-market value of the assets a
+                mid-market agency would invoice to assemble. You walk
+                away with{" "}
                 <span className="text-amber-300 font-semibold">
-                  $100K+
+                  $60,000
                 </span>{" "}
                 in actual digital assets when the build ships — for{" "}
                 <span className="text-amber-300 font-semibold">
                   $3,000
                 </span>
-                .
+                . That&apos;s the 20× ROI math.
               </p>
             </div>
 
@@ -492,7 +529,7 @@ export function AliraReferralFullClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               The build{" "}
-              <span className="text-amber-300">{caseStudy.brand}</span>{" "}
+              <span className="text-amber-300">Jana</span>{" "}
               is referring you on.
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
@@ -617,14 +654,24 @@ export function AliraReferralFullClient({
                 : "Click below to activate the two payment options."}
             </h2>
 
-            {/* Inline Activate CTA — only renders pre-reveal, then
-                the cards take over the space below. */}
+            {/* Inline Activate CTA + Back to Referral pair — only
+                renders pre-reveal, then the cards take over the
+                space below. Activate Assets on the left, Back to
+                Referral on the right (stacks below on mobile per
+                Sita's spec — symmetric to the hero pair above). */}
             {!pricingOpen && (
-              <div className="mt-10">
+              <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
                 <ActivateButton
                   source="inline"
                   testId="alira-activate-inline"
                 />
+                <Link
+                  href="/alira/referral"
+                  className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
+                  data-testid="alira-info-back-inline"
+                >
+                  Back to Referral
+                </Link>
               </div>
             )}
 
@@ -721,9 +768,13 @@ export function AliraReferralFullClient({
             </p>
 
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
+              {/* Final CTA keeps the full "Activate Your Assets"
+                  label per Sita — every other Activate pill on the
+                  page uses the shorter "Activate Assets" default. */}
               <ActivateButton
                 source="bottom"
                 testId="alira-activate-bottom"
+                label="Activate Your Assets"
               />
             </div>
           </div>
@@ -756,7 +807,7 @@ export function AliraReferralFullClient({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Activate Your Assets"
+          aria-label="Activate Assets"
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-md"
           onClick={(e) => {
             // Backdrop click closes; clicks bubbling up from the panel
@@ -786,7 +837,7 @@ export function AliraReferralFullClient({
               className="mt-2 text-xl sm:text-3xl tracking-tight text-white pr-10 leading-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Activate Your Assets.
+              Activate Assets.
             </h3>
             <p className="mt-2 text-[13px] sm:text-sm text-zinc-400">
               Both prices ship the same $100K+ in digital assets. Same

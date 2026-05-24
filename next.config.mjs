@@ -42,6 +42,14 @@ const nextConfig = {
         destination: '/federation/case-studies/:slug/opengraph-image',
         permanent: true,
       },
+      // /alira/referral/full → /alira/referral/info (2026-05-24
+      // rename for parity with /renelaveau/referral/info). Keeps
+      // any links already shared via email/DM working.
+      {
+        source: '/alira/referral/full',
+        destination: '/alira/referral/info',
+        permanent: true,
+      },
     ];
   },
   async headers() {

@@ -5,10 +5,10 @@
 // CTAs + 5-tile scope + open-market value table + timeline +
 // proof + performance terms + footer CTA + in-page activate
 // modal). Replaces the older 7-second teaser that bounced
-// everyone out to /alira/referral/full for the pricing
+// everyone out to /alira/referral/info for the pricing
 // reveal.
 //
-// The existing /alira/referral/full deep-dive stays in place —
+// The existing /alira/referral/info deep-dive stays in place —
 // the new Learn more button on this teaser routes there for
 // operators who want the full breakdown. Most flow goes through
 // the in-page modal now.
@@ -24,7 +24,7 @@ import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
 
-// Same live Stripe Payment Links used by /alira/referral/full.
+// Same live Stripe Payment Links used by /alira/referral/info.
 // Both prices sit under the same Alira product so reporting groups
 // them under one engagement line — the client_reference_id
 // distinguishes affiliate attribution when present, not the link
@@ -33,7 +33,11 @@ import { ProposalBackdrop } from "@/components/proposal-backdrop";
 //   Prices:  price_1TXNpJE1uHPZaaHp4i5kIWsc ($3,000 one-time)
 //            price_1TXNpME1uHPZaaHpcCZbCf3l ($333/mo recurring)
 const PAY_FULL_URL = "https://buy.stripe.com/6oU4gz2j89yU2V90lW9fW0g";
-const PAY_DEPOSIT_URL = "https://buy.stripe.com/aFa8wP6zocL69jx7Oo9fW0h";
+// $300/mo recurring price + payment link created 2026-05-24
+// (price_1TaibQE1uHPZaaHpys0KfVfX → plink_1TaibdE1uHPZaaHpeRXx1kfD).
+// Replaces the prior $333/mo link so both Alira surfaces match
+// the aligned $300 numbers + the Rene referral cadence.
+const PAY_DEPOSIT_URL = "https://buy.stripe.com/5kQ3cv7DscL667l3y89fW0m";
 
 // Open-market value table — aligned to the Rene Laveau referral
 // numbers per Sita: 5 rows summing to $60,000 with fixed dollar
@@ -196,7 +200,7 @@ export function AliraReferralClient({
   // #activate) auto-pops the pay modal so the operator doesn't
   // have to click Activate Your Assets again to get back to
   // where they were. Same pattern as /ultimate-power →
-  // /alira/referral/full#activate.
+  // /alira/referral/info#activate.
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (window.location.hash.toLowerCase() === "#activate") {
@@ -249,12 +253,12 @@ export function AliraReferralClient({
               </em>
             </h1>
             <p className="mt-6 max-w-2xl text-base sm:text-xl text-zinc-300 leading-relaxed">
-              Alira sent you because the build behind her brand
+              Jana sent you because the build behind her brand
               isn&apos;t a website — it&apos;s an audience engine.
               You get the same Tier-3 federation stack at the
               referral rate:{" "}
               <span className="text-amber-100 font-semibold tabular-nums">
-                $333 down + $333/mo over 9 months
+                $300 down + $300/mo over 9 months
               </span>{" "}
               (or <span className="tabular-nums">$3,000</span> in
               full). 100% delivery guarantee.
@@ -262,7 +266,7 @@ export function AliraReferralClient({
 
             {/* Dual hero CTAs — chrome-flash Activate Your Assets
                 opens the in-page modal; outlined Learn more routes
-                to the existing /alira/referral/full long-form. */}
+                to the existing /alira/referral/info long-form. */}
             <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button
                 type="button"
@@ -271,12 +275,12 @@ export function AliraReferralClient({
                 data-testid="alira-activate-hero"
               >
                 <span className="chrome-white">
-                  Activate Your Assets
+                  Activate Assets
                 </span>
                 <HollowTriangle />
               </button>
               <Link
-                href="/alira/referral/full"
+                href="/alira/referral/info"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                 data-testid="alira-learn-more-hero"
               >
@@ -355,7 +359,7 @@ export function AliraReferralClient({
         </section>
 
         {/* OPEN-MARKET VALUE TABLE — 5 rows lifted from
-            /alira/referral/full so the value math reconciles
+            /alira/referral/info so the value math reconciles
             across both surfaces. Total: $60,000+. No "You pay"
             row (matches the simplification Sita applied to
             the Rene referral). */}
@@ -521,8 +525,8 @@ export function AliraReferralClient({
                 </span>{" "}
                 Interlinked federation portfolio that powers Live
                 Better On The Drip and 14 other partner brands.
-                When Alira sent you here, she sent you to a stack
-                that&apos;s already proven on her.
+                When Jana sent you here, she sent you to a stack
+                that&apos;s already proven on her brand.
               </p>
             </div>
           </div>
@@ -605,7 +609,7 @@ export function AliraReferralClient({
                 className="relative z-10 mt-2 text-2xl sm:text-4xl tracking-tight leading-tight"
                 style={{ fontFamily: "Georgia, serif" }}
               >
-                $333 starts the build. $60K ships.
+                $300 starts the build. $60K ships.
               </h2>
               <p className="relative z-10 mt-3 max-w-xl mx-auto text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
                 Pick the deposit cadence to start with $333
@@ -627,7 +631,7 @@ export function AliraReferralClient({
                   <HollowTriangle />
                 </button>
                 <Link
-                  href="/alira/referral/full"
+                  href="/alira/referral/info"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                   data-testid="alira-learn-more-footer"
                 >
@@ -661,7 +665,7 @@ export function AliraReferralClient({
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Activate Your Assets"
+          aria-label="Activate Assets"
           className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-md"
           onClick={(e) => {
             if (e.target === e.currentTarget) closeModal();
@@ -689,7 +693,7 @@ export function AliraReferralClient({
               className="mt-2 text-xl sm:text-3xl tracking-tight text-white pr-10 leading-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Activate Your Assets.
+              Activate Assets.
             </h3>
             <p className="mt-2 text-[13px] sm:text-sm text-zinc-400">
               Both options ship the same{" "}
@@ -719,16 +723,16 @@ export function AliraReferralClient({
                   className="mt-4 text-5xl sm:text-6xl tabular-nums leading-none text-amber-100"
                   style={{ fontFamily: "Georgia, serif" }}
                 >
-                  $333
+                  $300
                 </p>
                 <p className="mt-2 text-sm text-zinc-300">
-                  down · $333/mo over 9 months
+                  down · $300/mo over 9 months
                 </p>
                 <p className="mt-1 text-xs text-zinc-500 tabular-nums">
                   Cancel anytime if we don&apos;t ship
                 </p>
                 <p className="mt-6 text-sm text-zinc-300 leading-relaxed flex-1">
-                  Lowest entry point. $333 secures your spot
+                  Lowest entry point. $300 secures your spot
                   today; the build kicks off this week. Sitani
                   will reach out within 24 hours to schedule the
                   4-month build plan.
@@ -741,7 +745,7 @@ export function AliraReferralClient({
                 >
                   <span className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm">
                     <span className="chrome-white">
-                      Secure your spot · $333
+                      Secure your spot · $300
                     </span>
                     <HollowTriangle />
                   </span>
