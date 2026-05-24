@@ -22,6 +22,20 @@ type Props = {
   pageUrl: string;
   payMonthlyUrl: string;
   payFullUrl: string;
+  /**
+   * Optional affiliate / referral code captured from the URL
+   * segment (e.g. `/renelaveau/referral/EMPIRE=G59713666` → code
+   * `EMPIRE=G59713666`). When present, two things change:
+   *   1. A small amber "Referred · <code>" pill renders in the
+   *      hero so the visitor knows they're on a tracked surface
+   *   2. The pay URLs get a `?client_reference_id=<code>`
+   *      query param appended before they open Stripe — Stripe
+   *      writes that value onto the checkout session, the
+   *      webhook reads it back, and Sita can credit the
+   *      referrer when the conversion lands
+   * Undefined when the page is hit at the bare URL.
+   */
+  affiliateCode?: string;
 };
 
 // Inline hollow-triangle CTA arrow — stroke-only via currentColor
@@ -137,6 +151,7 @@ export function RenelaveauReferralClient({
   pageUrl,
   payMonthlyUrl,
   payFullUrl,
+  affiliateCode,
 }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const closeModal = useCallback(() => setModalOpen(false), []);
@@ -179,7 +194,17 @@ export function RenelaveauReferralClient({
       );
       return;
     }
-    window.open(url, "_blank", "noopener,noreferrer");
+    // Append the affiliate / referral code as Stripe's
+    // client_reference_id query param when one is present.
+    // Stripe accepts this on Payment Link URLs, stamps it onto
+    // the checkout session, and surfaces it on the
+    // checkout.session.completed webhook event — so when Sita
+    // wires the conversion webhook she can read the code back
+    // and credit the right referrer automatically.
+    const finalUrl = affiliateCode
+      ? `${url}${url.includes("?") ? "&" : "?"}client_reference_id=${encodeURIComponent(affiliateCode)}`
+      : url;
+    window.open(finalUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -246,16 +271,29 @@ export function RenelaveauReferralClient({
               </Link>
             </div>
 
-            {/* Reassurance strip — trust + guarantee land
-                together right under the CTAs so the biggest two
-                signals (encryption + 100% guarantee) catch the
-                eye immediately after the buttons. */}
-            <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+            {/* Reassurance strip — trust + guarantee + affiliate
+                attribution (when present) land together right
+                under the CTAs. The affiliate pill only renders
+                on the dynamic /[code] route so the bare referral
+                URL stays clean. */}
+            <div className="mt-5 flex flex-col sm:flex-row sm:flex-wrap sm:items-center gap-3 sm:gap-5">
               <TrustStrip />
               <p className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-emerald-300/90 font-semibold">
                 <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
                 100% delivery guarantee
               </p>
+              {affiliateCode && (
+                <p
+                  className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.24em] sm:tracking-[0.28em] text-amber-200/90 font-semibold"
+                  data-testid="rene-ref-affiliate-pill"
+                >
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  Referred ·{" "}
+                  <span className="tabular-nums text-amber-100">
+                    {affiliateCode}
+                  </span>
+                </p>
+              )}
             </div>
           </div>
         </section>
