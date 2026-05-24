@@ -1,10 +1,9 @@
-// /alira/referral — 7-second teaser surface for the Alira federation
-// referral. The long-form breakdown (leverage callout, chip strip,
-// open-market value table, PROOF card, pricing modal with two ways
-// to pay, distribution + community grid, why-this-is-different
-// section, AES-256 final CTA) lives at /alira/referral/full — this
-// page exists to land the elevator pitch and route through a single
-// "More info" click.
+// /alira/referral — full-architecture referral surface matching
+// the Rene Laveau referral page (hero with dual CTAs + 5-tile
+// scope + value table + timeline + proof + performance terms +
+// in-page activate modal). Restructured from the 7-second
+// teaser → /full deep-dive pattern; the /full long-form still
+// lives at /alira/referral/full for the deeper read.
 
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
@@ -13,29 +12,32 @@ import { AliraReferralClient } from "./AliraReferralClient";
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/alira/referral`;
 
+// Branded OG image — emphasizes the deal math ($200K+ in
+// assets / $3,000 / 67× ROI) in the link-preview card when
+// shared in iMessage / Twitter / LinkedIn. Renders via /api/og
+// (Edge route) at request time. Same pattern as the Rene
+// referral OG.
+const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=%24200K%2B%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2067%C3%97%20ROI`;
+
 export const metadata: Metadata = {
   title: "Referred by Alira · Federation Referral",
   description:
-    "Referred by Alira. The build behind her brand isn't a website — it's an audience engine, and you get the same Tier-3 stack at the referral rate. Tap through for the full breakdown — every deliverable, the open-market value anchor, the case study, and the two ways to secure your seat. We don't even want the money.",
+    "$200,000+ in self-generating digital assets for $3,000 — $333 down + $333/mo over 9 months, or $3,000 in full. 67× ROI. 4-month build. 100% delivery guarantee.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
     title: "Referred by Alira · Federation Referral",
     description:
-      "Referred by Alira. We don't even want the money. 7-second pitch — one click to the full breakdown.",
+      "$200K+ in assets for $3,000. 67× ROI. 100% guarantee. The referral-rate Tier-3 build.",
     url: PAGE_URL,
     type: "website",
-    images: [{
-      url: `${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=Federation%20Referral`,
-      width: 1200,
-      height: 630,
-    }],
+    images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Referred by Alira · Federation Referral",
     description:
-      "Referred by Alira. We don't even want the money. 7-second pitch — one click to the full breakdown.",
-    images: [`${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=Federation%20Referral`],
+      "$200K+ in assets for $3,000. 67× ROI. 100% guarantee. We don't even want the money.",
+    images: [OG_IMAGE],
   },
   // Private referral surface — only people Alira sends here see it.
   robots: { index: false, follow: false },
