@@ -507,13 +507,12 @@ export function AliraReferralInfoClient({
               </p>
             </div>
 
-            {/* Hero CTA — primary Activate-your-assets pill. Reveals
-                the two pricing cards in the #pricing section below. */}
-            <div className="mt-10">
-              <ActivateButton source="hero" testId="alira-activate-hero" />
-            </div>
-
-            {/* Soft horizontal divider closes the hero. */}
+            {/* Standalone Activate pill that used to sit here was
+                removed 2026-05-24 per Sita — the new dual hero
+                CTAs (Activate Assets + Back to Referral) higher in
+                the hero already cover this affordance. Keeping
+                just the soft horizontal divider so the hero closes
+                cleanly into the proof section. */}
             <div className="mt-12 h-px bg-gradient-to-r from-transparent via-amber-300/20 to-transparent" />
           </div>
         </section>

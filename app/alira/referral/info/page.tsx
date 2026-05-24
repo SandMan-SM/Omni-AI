@@ -122,15 +122,15 @@ const DISTRIBUTION_NOTES: { title: string; body: string }[] = [
 // 20× ROI) in the link-preview card when shared in iMessage /
 // Twitter / LinkedIn. Same /api/og Edge-route pattern used on
 // every other private referral surface.
-const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Alira%20%C2%B7%20Under%20the%20Hood&topic=%2460K%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2020%C3%97%20ROI`;
+const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Jana%20%C2%B7%20Under%20the%20Hood&topic=%2460K%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2020%C3%97%20ROI`;
 
 export const metadata: Metadata = {
-  title: "Under the Hood · Referred by Alira",
+  title: "Under the Hood · Referred by Jana",
   description:
     "$60,000 in self-generating digital assets for $3,000 — $300 down + $300/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee. The full breakdown of what ships in the federation referral build.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Under the Hood · Referred by Alira",
+    title: "Under the Hood · Referred by Jana",
     description:
       "$60K in assets for $3,000. 20× ROI. 100% guarantee. What's actually under the hood of the federation referral build.",
     url: PAGE_URL,
@@ -139,7 +139,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Under the Hood · Referred by Alira",
+    title: "Under the Hood · Referred by Jana",
     description:
       "$60K in assets for $3,000. 20× ROI. 100% guarantee. We don't even want the money.",
     images: [OG_IMAGE],
