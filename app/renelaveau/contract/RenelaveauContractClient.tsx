@@ -159,7 +159,7 @@ export function RenelaveauContractClient({
                 <HollowTriangle />
               </button>
               <Link
-                href="#details"
+                href="/renelaveau/contract/info"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                 data-testid="rene-learn-more-hero"
               >
