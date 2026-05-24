@@ -19,24 +19,26 @@ import { RenelaveauContractClient } from "./RenelaveauContractClient";
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/renelaveau/contract`;
 
-// ⚠️ Stripe payment links — currently placeholders.
+// Live Stripe payment links — created via Stripe MCP on
+// 2026-05-24 against the Omni AI account (acct_1THX7kE1uHPZaaHp).
+// Both prices sit under a single product so reporting groups them
+// cleanly under one engagement line in the Stripe dashboard.
 //
-// To wire payment for real:
-//   1. In the Stripe dashboard, create a Product (e.g. "Rene
-//      Laveau · Content Engagement · 4-month wave")
-//   2. Add two Prices under it:
-//        a. $300/month recurring (cancel after 4 invoices)
-//        b. $1,200 one-time
-//   3. Open each Price → "Create payment link" → copy the
-//      https://buy.stripe.com/... URL
-//   4. Replace the two constants below with the real URLs
+//   Product:  prod_UZpMlS7YWCnmLm
+//             "Rene Laveau · Content Engagement · 4-month wave"
+//   Prices:   price_1TafhjE1uHPZaaHpIHFvgNYD ($300/mo recurring)
+//             price_1TafhrE1uHPZaaHpPnaMUHTS ($1,200 one-time)
+//   Links:    plink_1Tafi1E1uHPZaaHpQWHWBTCV
+//             plink_1Tafi8E1uHPZaaHpqzg0hWWx
 //
-// While the constants are "#", the modal buttons render but a
-// click pops an alert directing Rene to call Sita. Sita changes
-// two lines once Stripe is configured and the modal goes live
-// with zero other code changes.
-const PAY_MONTHLY_URL = "#"; // TODO: paste Stripe $300/mo recurring payment link here
-const PAY_FULL_URL = "#"; // TODO: paste Stripe $1,200 one-time payment link here
+// Note on the monthly cadence: Stripe Prices don't carry a built-in
+// "cancel after N invoices" knob; the 4-month cap on the recurring
+// option is enforced operationally by Sita canceling Rene's
+// subscription after the 4th successful invoice (or wiring a small
+// webhook handler that auto-cancels on the 4th invoice.paid event —
+// queued as a v2 if Rene chooses monthly).
+const PAY_MONTHLY_URL = "https://buy.stripe.com/eVq5kDg9YdPabrFc4E9fW0i";
+const PAY_FULL_URL = "https://buy.stripe.com/00w6oHbTIh1m8ft2u49fW0j";
 
 export const metadata: Metadata = {
   title: "Content Engagement · Rene Laveau × Interlinked",
