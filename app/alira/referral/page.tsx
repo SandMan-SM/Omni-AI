@@ -17,17 +17,17 @@ const PAGE_URL = `${SITE_URL}/alira/referral`;
 // shared in iMessage / Twitter / LinkedIn. Renders via /api/og
 // (Edge route) at request time. Same pattern as the Rene
 // referral OG.
-const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=%24200K%2B%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2067%C3%97%20ROI`;
+const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Alira&topic=%2460K%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2020%C3%97%20ROI`;
 
 export const metadata: Metadata = {
   title: "Referred by Alira · Federation Referral",
   description:
-    "$200,000+ in self-generating digital assets for $3,000 — $333 down + $333/mo over 9 months, or $3,000 in full. 67× ROI. 4-month build. 100% delivery guarantee.",
+    "$60,000+ in self-generating digital assets for $3,000 — $333 down + $333/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
     title: "Referred by Alira · Federation Referral",
     description:
-      "$200K+ in assets for $3,000. 67× ROI. 100% guarantee. The referral-rate Tier-3 build.",
+      "$60K in assets for $3,000. 20× ROI. 100% guarantee. The referral-rate Tier-3 build.",
     url: PAGE_URL,
     type: "website",
     images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Referred by Alira · Federation Referral",
     description:
-      "$200K+ in assets for $3,000. 67× ROI. 100% guarantee. We don't even want the money.",
+      "$60K in assets for $3,000. 20× ROI. 100% guarantee. We don't even want the money.",
     images: [OG_IMAGE],
   },
   // Private referral surface — only people Alira sends here see it.

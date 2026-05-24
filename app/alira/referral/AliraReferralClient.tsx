@@ -35,29 +35,34 @@ import { ProposalBackdrop } from "@/components/proposal-backdrop";
 const PAY_FULL_URL = "https://buy.stripe.com/6oU4gz2j89yU2V90lW9fW0g";
 const PAY_DEPOSIT_URL = "https://buy.stripe.com/aFa8wP6zocL69jx7Oo9fW0h";
 
-// Open-market value table — same 5 rows used on /alira/referral/
-// full's MARKET_RATES so the value math reconciles across both
-// surfaces. Total: $200,000+.
+// Open-market value table — aligned to the Rene Laveau referral
+// numbers per Sita: 5 rows summing to $60,000 with fixed dollar
+// values per row (vs the old per-line "+/yr" framing). Same row
+// labels + value descriptions as the Rene referral page so the
+// two surfaces tell the same value story. The /alira/referral/
+// full deep-dive still carries the original $200K open-market
+// framing — only the teaser/affiliate route shows the aligned
+// numbers now.
 const ASSET_ROWS: { service: string; value: string }[] = [
   {
-    service: "Bespoke Next.js website",
-    value: "$25K–50K · custom codebase, SEO, JSON-LD, edge-rendered OG",
+    service: "Bespoke Next.js federation site",
+    value: "$15,000 · custom codebase, SEO, JSON-LD, edge OG",
   },
   {
     service: "AI CEO + inbound routing layer",
-    value: "$25K–50K to build · $36K+/yr retainer equivalent",
+    value: "$15,000 · per-tenant intelligence, lead scoring",
+  },
+  {
+    service: "Personal AI assistants",
+    value: "$10,000 · 24/7 SMS / email / chat coverage",
   },
   {
     service: "Branded newsletter + automation",
-    value: "$15K+/yr · Resend infra, drip sequences, engagement",
+    value: "$8,000 · Resend infra, drip sequences, sponsor block",
   },
   {
-    service: "Federation cross-promo + sponsorship",
-    value: "$30K+/yr · placements across 16 partner businesses",
-  },
-  {
-    service: "GEO + community distribution",
-    value: "$40K+/yr · ranked landing pages per city + niche",
+    service: "Federation cross-promo + GEO distribution",
+    value: "$12,000 · placements across 16 partner brands",
   },
 ];
 
@@ -315,8 +320,8 @@ export function AliraReferralClient({
             </p>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { value: "$200K+", label: "Value" },
-                { value: "67x", label: "ROI" },
+                { value: "$60K", label: "Value" },
+                { value: "20x", label: "ROI" },
                 { value: "$3,000", label: "Total" },
                 { value: "10", label: "Month Term" },
                 { value: "∞", label: "Potential" },
@@ -350,7 +355,7 @@ export function AliraReferralClient({
 
         {/* OPEN-MARKET VALUE TABLE — 5 rows lifted from
             /alira/referral/full so the value math reconciles
-            across both surfaces. Total: $200,000+. No "You pay"
+            across both surfaces. Total: $60,000+. No "You pay"
             row (matches the simplification Sita applied to
             the Rene referral). */}
         <section className="relative">
@@ -362,7 +367,7 @@ export function AliraReferralClient({
               className="mt-3 text-2xl sm:text-3xl tracking-tight text-amber-100"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              $200,000+ in self-generating assets.
+              $60,000+ in self-generating assets.
             </h2>
 
             <div className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] overflow-hidden">
@@ -400,7 +405,7 @@ export function AliraReferralClient({
                       Total open-market value
                     </td>
                     <td className="px-4 py-3 text-amber-100 font-bold text-right tabular-nums">
-                      $200,000+
+                      $60,000
                     </td>
                   </tr>
                 </tbody>
@@ -449,7 +454,7 @@ export function AliraReferralClient({
                 <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
                   Tier-3 site shipped, AI CEO layer wired,
                   branded newsletter live, GEO landing pages
-                  indexed. All $200K+ worth of assets delivered
+                  indexed. All $60K worth of assets delivered
                   inside the 4-month window or your money back.
                 </p>
               </div>
@@ -567,12 +572,12 @@ export function AliraReferralClient({
                   className="mt-3 text-xl text-amber-100"
                   style={{ fontFamily: "Georgia, serif" }}
                 >
-                  $200K+ shipped or full refund.
+                  $60K shipped or full refund.
                 </h3>
                 <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
                   If we don&apos;t deliver{" "}
                   <span className="text-amber-100 font-semibold tabular-nums">
-                    $200,000+ in shippable, owned assets
+                    $60,000+ in shippable, owned assets
                   </span>{" "}
                   inside the 4-month build window, you get a full
                   refund of everything paid to date. No
@@ -599,7 +604,7 @@ export function AliraReferralClient({
                 className="relative z-10 mt-2 text-2xl sm:text-4xl tracking-tight leading-tight"
                 style={{ fontFamily: "Georgia, serif" }}
               >
-                $333 starts the build. $200K+ ships.
+                $333 starts the build. $60K ships.
               </h2>
               <p className="relative z-10 mt-3 max-w-xl mx-auto text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
                 Pick the deposit cadence to start with $333
@@ -688,7 +693,7 @@ export function AliraReferralClient({
             <p className="mt-2 text-[13px] sm:text-sm text-zinc-400">
               Both options ship the same{" "}
               <span className="text-amber-200">
-                $200K+ asset stack
+                $60K asset stack
               </span>{" "}
               inside the 4-month build window. Both come with the
               100% delivery guarantee. Pick the cadence that fits.
@@ -791,7 +796,7 @@ export function AliraReferralClient({
               <span className="text-emerald-300/90">
                 100% delivery guarantee.
               </span>{" "}
-              $200K+ in shippable assets inside the 4-month
+              $60K in shippable assets inside the 4-month
               window or full refund of everything paid to date.
             </p>
           </div>
