@@ -579,7 +579,7 @@ export function RenelaveauInfoClient({ pageUrl }: Props) {
                   be shy with it. */}
               <p className="relative z-10 mt-6 inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-amber-300/90 font-semibold">
                 <LockIcon />
-                AES-256 bit Advanced Encryption · Stripe-secured
+                AES-256 bit Advanced Encryption
               </p>
             </div>
           </div>

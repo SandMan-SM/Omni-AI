@@ -83,7 +83,7 @@ function TrustStrip({ className = "" }: { className?: string }) {
       }
     >
       <LockIcon />
-      AES-256 bit Advanced Encryption · Stripe-secured
+      AES-256 bit Advanced Encryption
     </p>
   );
 }
