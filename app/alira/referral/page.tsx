@@ -22,7 +22,7 @@ const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Jana&topic=%2460K%20i
 export const metadata: Metadata = {
   title: "Referred by Jana · Federation Referral",
   description:
-    "$60,000+ in self-generating digital assets for $3,000 — $333 down + $333/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee.",
+    "$60,000+ in self-generating digital assets for $3,000 — $300 down + $300/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
     title: "Referred by Jana · Federation Referral",

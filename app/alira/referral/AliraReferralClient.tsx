@@ -612,7 +612,7 @@ export function AliraReferralClient({
                 $300 starts the build. $60K ships.
               </h2>
               <p className="relative z-10 mt-3 max-w-xl mx-auto text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
-                Pick the deposit cadence to start with $333
+                Pick the deposit cadence to start with $300
                 today, or pay in full to lock the lower lift
                 price. Either path, build begins this week and
                 the full asset stack ships inside 4 months —
@@ -659,7 +659,7 @@ export function AliraReferralClient({
 
       {/* ACTIVATE MODAL — same Esc / backdrop / X / body-scroll-
           lock recipe as the Rene referral modal. Two pay cards:
-          $333 deposit (recommended, featured) vs $3,000 full
+          $300 deposit (recommended, featured) vs $3,000 full
           (secondary). */}
       {modalOpen && (
         <div
