@@ -209,13 +209,17 @@ export function RenelaveauContractClient({
               </Link>
             </div>
 
-            {/* Trust strip beneath the hero CTAs — first of three
-                AES-256 placements on the page. Lands right where
-                the user's eye is after considering the Activate
-                button so the security signal is the immediate
-                next thing they read. */}
-            <div className="mt-5">
+            {/* Trust strip + no-contract pill beneath the hero
+                CTAs — first of three AES-256 placements on the
+                page, paired with the cancel-anytime signal so
+                Rene sees the two biggest reassurances together
+                immediately after considering the Activate button. */}
+            <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
               <TrustStrip />
+              <p className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-emerald-300/90 font-semibold">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                No contract · cancel any time
+              </p>
             </div>
           </div>
         </section>
@@ -359,6 +363,86 @@ export function RenelaveauContractClient({
                 inside the first month. The pipes are already there
                 — this engagement just turns them on for you.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* PERFORMANCE TERMS — two-card block making the two
+            non-obvious commercial terms explicit before the
+            footer Activate button. Per Sita: surface both the
+            cancel-any-time freedom (no contract obligation) AND
+            the surplus-views accountability clause (Rene pays
+            for overdelivery beyond the 30K baseline at $150 per
+            additional 30K views, with asset seizure as the
+            enforcement teeth). The two cards sit side-by-side on
+            desktop — freedom on the left, accountability on the
+            right — so the trade is visually symmetric. */}
+        <section className="relative">
+          <div className="mx-auto max-w-5xl px-5 sm:px-6 py-6 sm:py-10">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
+              Performance terms
+            </p>
+            <h2
+              className="mt-3 text-2xl sm:text-3xl tracking-tight text-amber-100"
+              style={{ fontFamily: "Georgia, serif" }}
+            >
+              No contract. Real accountability.
+            </h2>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {/* Cancel-anytime card — green dot signal so the
+                  reassurance reads emotionally distinct from the
+                  amber accountability card next to it. */}
+              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/[0.04] p-5">
+                <p className="text-[10px] uppercase tracking-[0.32em] text-emerald-300 font-semibold inline-flex items-center gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  No contract obligation
+                </p>
+                <h3
+                  className="mt-3 text-xl text-emerald-100"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  Cancel any time.
+                </h3>
+                <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
+                  Pick monthly and you can stop the engagement
+                  whenever — no lock-in, no cancellation fee, no
+                  paperwork to chase. We earn the next month by
+                  delivering the current one. If we don&apos;t hit
+                  the 30K baseline, you don&apos;t renew.
+                </p>
+              </div>
+
+              {/* Performance accountability card — amber to signal
+                  it's the commercial side of the same coin (the
+                  trade for the no-contract freedom). Uses Sita's
+                  exact framing: $150 per surplus 30K, asset
+                  seizure on non-payment. */}
+              <div className="rounded-2xl border border-amber-300/40 bg-amber-300/[0.06] p-5">
+                <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300 font-semibold inline-flex items-center gap-2">
+                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
+                  Surplus-views accountability
+                </p>
+                <h3
+                  className="mt-3 text-xl text-amber-100"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  When we overdeliver, you settle the surplus.
+                </h3>
+                <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
+                  When the engagement crosses KPI &mdash; for
+                  example views double to{" "}
+                  <span className="tabular-nums">60K</span> or
+                  triple to <span className="tabular-nums">90K</span>{" "}
+                  in a month &mdash; the surplus is invoiced at{" "}
+                  <span className="text-amber-100 font-semibold tabular-nums">
+                    $150 per additional 30,000 views
+                  </span>
+                  . Failure to settle the surplus invoice results
+                  in <em className="text-amber-200">seizure of any and all assets</em>{" "}
+                  delivered under this engagement.
+                </p>
+              </div>
             </div>
           </div>
         </section>
@@ -568,6 +652,12 @@ export function RenelaveauContractClient({
               Once payment clears, text or email Sitani the videos
               of your music &mdash; we handle the rest. Your first
               30K-view month starts within 14 days.
+            </p>
+            <p className="mt-3 text-[11px] text-zinc-500 text-center leading-relaxed">
+              <span className="text-emerald-300/90">No contract · cancel any time.</span>{" "}
+              Surplus views above the 30K baseline are settled at{" "}
+              <span className="text-amber-200 tabular-nums">$150 per 30K</span> &mdash;
+              full terms in the Performance Terms section on the page.
             </p>
           </div>
         </div>
