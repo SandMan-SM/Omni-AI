@@ -240,11 +240,12 @@ export function AliraReferralClient({
               Alira × Omni AI · Federation referral
             </p>
             <h1
-              className="mt-5 text-4xl sm:text-7xl tracking-tight leading-[1.02]"
+              className="mt-5 text-4xl sm:text-7xl tracking-tight leading-[1.05]"
               style={{ fontFamily: "Georgia, serif" }}
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
-                We don&apos;t even want the money.
+                $60K in assets. <br className="hidden sm:block" />
+                $3,000 in. 20x ROI.
               </em>
             </h1>
             <p className="mt-6 max-w-2xl text-base sm:text-xl text-zinc-300 leading-relaxed">
