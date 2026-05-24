@@ -120,8 +120,8 @@ const ASSET_ROWS: { service: string; value: string }[] = [
     value: "$15,000 · per-tenant intelligence, lead scoring",
   },
   {
-    service: "Calling agents + personal assistants",
-    value: "$10,000 · 24/7 voice + SMS / email / chat coverage",
+    service: "Personal AI assistants",
+    value: "$10,000 · 24/7 SMS / email / chat coverage",
   },
   {
     service: "Branded newsletter + automation",
@@ -158,6 +158,19 @@ export function RenelaveauReferralClient({
       document.body.style.overflow = prevOverflow;
     };
   }, [modalOpen, closeModal]);
+
+  // Deep-link support: if the user lands with #activate in the URL
+  // (e.g. from the new /renelaveau/referral/info page's CTAs),
+  // auto-pop the pay modal so they don't have to click Activate
+  // Assets again to get back to where they were. Same pattern used
+  // for /ultimate-power → /alira/referral/full#activate.
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (window.location.hash.toLowerCase() === "#activate") {
+      setModalOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function onPay(url: string) {
     if (!url || url === "#") {
@@ -225,7 +238,7 @@ export function RenelaveauReferralClient({
                 <HollowTriangle />
               </button>
               <Link
-                href="/renelaveau/contract/info"
+                href="/renelaveau/referral/info"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                 data-testid="rene-ref-learn-more-hero"
               >
@@ -260,10 +273,10 @@ export function RenelaveauReferralClient({
             </p>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { value: "$60K", label: "Asset value" },
+                { value: "$60K", label: "Value" },
                 { value: "20x", label: "ROI" },
-                { value: "$3,000", label: "Contract total" },
-                { value: "10mo", label: "Term · 4 build / 6 grow" },
+                { value: "$3,000", label: "Total" },
+                { value: "10", label: "Month Term" },
                 { value: "∞", label: "Potential" },
               ].map((stat) => {
                 const isInfinity = stat.value === "∞";
@@ -348,14 +361,6 @@ export function RenelaveauReferralClient({
                       $60,000
                     </td>
                   </tr>
-                  <tr className="bg-emerald-400/[0.06]">
-                    <td className="px-4 py-3 text-emerald-100 font-semibold text-[13px]">
-                      You pay
-                    </td>
-                    <td className="px-4 py-3 text-emerald-100 font-bold text-right tabular-nums text-[13px]">
-                      $3,000 · 20× return
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>
@@ -421,8 +426,8 @@ export function RenelaveauReferralClient({
                   Federation cross-promo runs continuously across
                   16 partner brands. Your assets compound traffic,
                   leads, and audience without additional cost.
-                  Calling agents and newsletter automation keep
-                  shipping in the background.
+                  Personal AI assistants and newsletter automation
+                  keep shipping in the background.
                 </p>
               </div>
               <div className="rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-5">
@@ -574,7 +579,7 @@ export function RenelaveauReferralClient({
                   <HollowTriangle />
                 </button>
                 <Link
-                  href="/renelaveau/contract/info"
+                  href="/renelaveau/referral/info"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                   data-testid="rene-ref-learn-more-footer"
                 >
