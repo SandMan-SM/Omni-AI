@@ -46,6 +46,48 @@ function HollowTriangle() {
   );
 }
 
+// Inline padlock — used by the AES-256 trust strips scattered
+// across the hero, the activate modal, and the footer CTA. Single
+// path SVG so we don't pull in lucide for one glyph.
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="12"
+      height="12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
+// AES-256 trust strip — extracted because it lands in 3 placements
+// (hero, modal, footer CTA) and the styling drift would be a pain
+// to manage if each was inlined. Sita's note: don't be shy with
+// this — surface it everywhere payment is happening so Rene's eye
+// never has to look far for the security signal.
+function TrustStrip({ className = "" }: { className?: string }) {
+  return (
+    <p
+      className={
+        "inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-amber-300/90 font-semibold " +
+        className
+      }
+    >
+      <LockIcon />
+      AES-256 bit Advanced Encryption · Stripe-secured
+    </p>
+  );
+}
+
 // Inline close-X for the modal — single usage, not worth pulling
 // in lucide for one icon. Matches the visual weight of the X used
 // in /alira/referral/full's modal.
@@ -165,6 +207,15 @@ export function RenelaveauContractClient({
               >
                 Learn more
               </Link>
+            </div>
+
+            {/* Trust strip beneath the hero CTAs — first of three
+                AES-256 placements on the page. Lands right where
+                the user's eye is after considering the Activate
+                button so the security signal is the immediate
+                next thing they read. */}
+            <div className="mt-5">
+              <TrustStrip />
             </div>
           </div>
         </section>
@@ -345,12 +396,19 @@ export function RenelaveauContractClient({
                   <HollowTriangle />
                 </button>
                 <Link
-                  href="#details"
+                  href="/renelaveau/contract/info"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                   data-testid="rene-learn-more-footer"
                 >
                   Learn more
                 </Link>
+              </div>
+
+              {/* Second AES-256 placement — under the footer CTA
+                  buttons. Same trust signal Rene saw in the hero,
+                  reinforced at the bottom of the page. */}
+              <div className="relative z-10 mt-6 flex justify-center">
+                <TrustStrip />
               </div>
             </div>
           </div>
@@ -412,6 +470,14 @@ export function RenelaveauContractClient({
               across the channels we build under your brand. Just
               pick the cadence that fits.
             </p>
+
+            {/* Third AES-256 placement — inside the activate modal,
+                directly above the pay cards. This is the highest-
+                intent surface on the page (Rene's about to click a
+                pay button), so the security signal lands here too. */}
+            <div className="mt-4 flex justify-center sm:justify-start">
+              <TrustStrip />
+            </div>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2 items-stretch">
               {/* PAY MONTHLY — featured card */}

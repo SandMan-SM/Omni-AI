@@ -22,6 +22,29 @@ type Props = {
   pageUrl: string;
 };
 
+// Inline padlock — used by the AES-256 trust strip at the
+// bottom of the page. Single-path SVG so we don't pull lucide
+// in for one glyph.
+function LockIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="12"
+      height="12"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="3" y="11" width="18" height="11" rx="2" />
+      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+    </svg>
+  );
+}
+
 // Inline hollow-triangle CTA arrow — same shape used across the
 // other proposal/contract surfaces. Stroke-only via currentColor
 // so it inherits the button's text color.
@@ -272,8 +295,121 @@ export function RenelaveauInfoClient({ pageUrl }: Props) {
           </div>
         </Section>
 
-        {/* §4 SLIDING SAVINGS CHART — lifted from /sponsor/delhasson */}
-        <Section number="4" title="The savings at scale">
+        {/* §4 YOUR BUILD, TODAY — the Rene Laveau case study
+            featured in his own info page. Unusual framing because
+            the surface is for him, but it works as "here's what we
+            already shipped — the 4-month wave amplifies this, it
+            doesn't replace it." Content lifted inline from
+            lib/case-studies.ts:202-236 (no import — keeps the
+            client bundle from pulling the whole case-study
+            catalog). */}
+        <Section number="4" title="Your build, today">
+          <p>
+            <strong className="text-amber-100">
+              The 4-month wave runs on top of what we already
+              shipped for you.
+            </strong>{" "}
+            Here&apos;s what&apos;s live at{" "}
+            <span className="tabular-nums">renelaveau.com</span>{" "}
+            today — the reference build the content engagement
+            amplifies (not replaces).
+          </p>
+
+          <div className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] p-5 sm:p-6">
+            <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
+              Live federation reference build
+            </p>
+            <h3
+              className="mt-2 text-2xl text-amber-100"
+              style={{ fontFamily: "Georgia, serif" }}
+            >
+              Rene Laveau · renelaveau.com
+            </h3>
+            <p className="mt-1 text-[13px] text-zinc-400 italic">
+              Recording artist · Society of the Silver Line · built
+              end-to-end as a federation reference.
+            </p>
+
+            <div className="mt-5 space-y-4 text-[14px] text-zinc-300 leading-relaxed">
+              <div className="flex flex-col sm:flex-row sm:gap-4 sm:items-baseline">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300/80 font-semibold shrink-0 sm:w-28 pt-0.5">
+                  Engineering
+                </p>
+                <p className="text-zinc-300">
+                  Next 15 + React 19. ~17 bespoke components
+                  including <em>AudioWidget</em>,{" "}
+                  <em>Constellation</em>, <em>StarField</em>,{" "}
+                  <em>SigilEye</em>, <em>SilverLineForm</em>.
+                  Custom RSS + JSON Feed endpoints.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:gap-4 sm:items-baseline">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300/80 font-semibold shrink-0 sm:w-28 pt-0.5">
+                  Design
+                </p>
+                <p className="text-zinc-300">
+                  Bespoke dark cosmic palette. Cinzel + Italianno
+                  typography. Branded star + sigil animation system
+                  threaded through every page.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:gap-4 sm:items-baseline">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300/80 font-semibold shrink-0 sm:w-28 pt-0.5">
+                  Pages
+                </p>
+                <p className="text-zinc-300">
+                  Home, EPK, Tour, Sacred Letter newsletter, May 15
+                  event page, hvnrth, About, Dashboard — each
+                  wired into the federation analytics pipeline.
+                </p>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:gap-4 sm:items-baseline">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-amber-300/80 font-semibold shrink-0 sm:w-28 pt-0.5">
+                  SEO + JSON-LD
+                </p>
+                <p className="text-zinc-300">
+                  Person, MusicGroup, Event, FAQ, MusicRelease,
+                  Breadcrumb. Sitemap, robots, llms.txt, Satori-
+                  safe OG — the search-surface coverage is total.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-amber-300/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-[12px] text-zinc-400">
+                Inbound analytics pipeline live ·{" "}
+                <span className="text-amber-200 font-semibold tabular-nums">
+                  ~315 events
+                </span>{" "}
+                captured to date · sponsor block cycling federation
+                creatives on Sacred Letter posts.
+              </p>
+              <a
+                href="https://renelaveau.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-[13px] font-semibold text-amber-300 hover:text-amber-200 shrink-0"
+              >
+                Visit renelaveau.com
+                <HollowTriangle />
+              </a>
+            </div>
+          </div>
+
+          {/* Build value anchor — small amber-200 stamp tying the
+              case study back to the asset-value framing in §2. */}
+          <p className="mt-5 text-[13px] text-amber-200/90 leading-relaxed">
+            <strong className="text-amber-100">
+              Open-market value of this build:
+            </strong>{" "}
+            $18k–$25k (bespoke Tier 3 range). Yours, shipped, live
+            since <span className="tabular-nums">2026-05</span>.
+            The wave runs on top of it.
+          </p>
+        </Section>
+
+        {/* §5 SLIDING SAVINGS CHART — lifted from /sponsor/delhasson */}
+        <Section number="5" title="The savings at scale">
           <p>
             This is the math that backs every Interlinked
             engagement — including yours. The{" "}
@@ -436,6 +572,15 @@ export function RenelaveauInfoClient({ pageUrl }: Props) {
                   <HollowTriangle />
                 </Link>
               </div>
+
+              {/* AES-256 trust strip under the return-to-contract
+                  CTA — same security signal Rene sees on every
+                  surface that touches payment. Sita's note: don't
+                  be shy with it. */}
+              <p className="relative z-10 mt-6 inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-amber-300/90 font-semibold">
+                <LockIcon />
+                AES-256 bit Advanced Encryption · Stripe-secured
+              </p>
             </div>
           </div>
         </section>
