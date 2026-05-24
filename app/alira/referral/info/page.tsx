@@ -118,36 +118,73 @@ const DISTRIBUTION_NOTES: { title: string; body: string }[] = [
   },
 ];
 
+// Named-referrer whitelist — kept as a closed set so the page
+// can't be hit with arbitrary `?ref=AnythingGoes` text and render
+// it on a public-domain URL. Any value not in this list (or no
+// param at all) falls back to "Jana" — the canonical default.
+//
+// Add new referrers here as Sita onboards them. Each entry should
+// be properly Title-cased; the resolver does a case-insensitive
+// match below.
+const NAMED_REFERRERS = ["Jana", "Jules", "Kimberly"] as const;
+type NamedReferrer = (typeof NAMED_REFERRERS)[number];
+
+function resolveReferrer(raw?: string | string[]): NamedReferrer {
+  const v = Array.isArray(raw) ? raw[0] : raw;
+  if (!v) return "Jana";
+  const cap = v.charAt(0).toUpperCase() + v.slice(1).toLowerCase();
+  return (NAMED_REFERRERS as readonly string[]).includes(cap)
+    ? (cap as NamedReferrer)
+    : "Jana";
+}
+
+type PageProps = {
+  searchParams: { ref?: string | string[] };
+};
+
 // Branded OG image surfaces the aligned numbers ($60K · $3,000 ·
 // 20× ROI) in the link-preview card when shared in iMessage /
 // Twitter / LinkedIn. Same /api/og Edge-route pattern used on
-// every other private referral surface.
-const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Jana%20%C2%B7%20Under%20the%20Hood&topic=%2460K%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2020%C3%97%20ROI`;
+// every other private referral surface; the title interpolates
+// the referrer name so per-referrer share links preview correctly.
+function buildOgImage(name: NamedReferrer): string {
+  const title = `Referred by ${name} · Under the Hood`;
+  return `${SITE_URL}/api/og?title=${encodeURIComponent(title)}&topic=%2460K%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2020%C3%97%20ROI`;
+}
 
-export const metadata: Metadata = {
-  title: "Under the Hood · Referred by Jana",
-  description:
-    "$60,000 in self-generating digital assets for $3,000 — $300 down + $300/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee. The full breakdown of what ships in the federation referral build.",
-  alternates: { canonical: PAGE_URL },
-  openGraph: {
-    title: "Under the Hood · Referred by Jana",
-    description:
-      "$60K in assets for $3,000. 20× ROI. 100% guarantee. What's actually under the hood of the federation referral build.",
-    url: PAGE_URL,
-    type: "website",
-    images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Under the Hood · Referred by Jana",
-    description:
-      "$60K in assets for $3,000. 20× ROI. 100% guarantee. We don't even want the money.",
-    images: [OG_IMAGE],
-  },
-  robots: { index: false, follow: false },
-};
+export function generateMetadata({ searchParams }: PageProps): Metadata {
+  const name = resolveReferrer(searchParams.ref);
+  const ogImage = buildOgImage(name);
+  // Canonical URL doesn't include the ?ref param — the referrer
+  // is rendering metadata only, not a separately-indexed surface.
+  // Robots is noindex anyway so the canonical mostly affects
+  // unfurlers (which read alternates.canonical to decide which
+  // version of the URL to dedupe against).
+  return {
+    title: `Under the Hood · Referred by ${name}`,
+    description: `$60,000 in self-generating digital assets for $3,000 — $300 down + $300/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee. ${name} sent you — here's the full breakdown of what ships.`,
+    alternates: { canonical: PAGE_URL },
+    openGraph: {
+      title: `Under the Hood · Referred by ${name}`,
+      description: `$60K in assets for $3,000. 20× ROI. 100% guarantee. What's actually under the hood of the federation referral ${name} sent you.`,
+      url: PAGE_URL,
+      type: "website",
+      images: [{ url: ogImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Under the Hood · Referred by ${name}`,
+      description: `$60K in assets for $3,000. 20× ROI. 100% guarantee. We don't even want the money. — ${name}`,
+      images: [ogImage],
+    },
+    robots: { index: false, follow: false },
+  };
+}
 
-export default function AliraReferralInfoPage(): ReactNode {
+export default function AliraReferralInfoPage({
+  searchParams,
+}: PageProps): ReactNode {
+  const referrerName = resolveReferrer(searchParams.ref);
   return (
     <AliraReferralInfoClient
       pageUrl={PAGE_URL}
@@ -156,6 +193,7 @@ export default function AliraReferralInfoPage(): ReactNode {
       marketTotal={MARKET_TOTAL}
       pricingOptions={PRICING_OPTIONS}
       distributionNotes={DISTRIBUTION_NOTES}
+      referrerName={referrerName}
     />
   );
 }

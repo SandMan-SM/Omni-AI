@@ -86,6 +86,27 @@ type Props = {
    * Undefined when the page is hit at the bare URL.
    */
   affiliateCode?: string;
+  /**
+   * Named referrer for body-copy interpolation (e.g. "Jules" on
+   * /alira/referral/jules → "Jules sent you because..."). Defaults
+   * to "Jana" — the canonical Alira featured creator who is also
+   * shown on the bare /alira/referral and /[code] surfaces.
+   *
+   * When this differs from the default AND no affiliateCode is
+   * supplied, the pay URLs get `?client_reference_id=REFERRER=
+   * <NAME>` appended so Sita can attribute Jules / Kimberly
+   * conversions distinctly from EMPIRE= affiliate-code
+   * conversions in Stripe.
+   */
+  referrerName?: string;
+  /**
+   * Optional override for the Learn more button hrefs (hero +
+   * footer CTA). Named-referrer routes pass an `?ref=<slug>`
+   * search-param-bearing URL so the /info deep-dive also knows
+   * which referrer to display + attribute. Defaults to the bare
+   * /alira/referral/info.
+   */
+  learnMoreHref?: string;
 };
 
 // Inline hollow-triangle CTA arrow — same shape across every
@@ -173,6 +194,8 @@ function CloseX() {
 export function AliraReferralClient({
   pageUrl,
   affiliateCode,
+  referrerName = "Jana",
+  learnMoreHref = "/alira/referral/info",
 }: Props) {
   const [modalOpen, setModalOpen] = useState(false);
   const closeModal = useCallback(() => setModalOpen(false), []);
@@ -216,12 +239,23 @@ export function AliraReferralClient({
       );
       return;
     }
-    // Append the affiliate code as Stripe's client_reference_id
-    // when present. Stripe stamps that value onto the checkout
-    // session, the webhook reads it back, and Sita can credit
-    // the right referrer when the conversion clears.
-    const finalUrl = affiliateCode
-      ? `${url}${url.includes("?") ? "&" : "?"}client_reference_id=${encodeURIComponent(affiliateCode)}`
+    // Stripe attribution falls through three cases:
+    //   1. affiliateCode set (e.g. EMPIRE=X411 from /[code] route)
+    //      → client_reference_id = the code verbatim
+    //   2. named referrer set + not the Jana default (e.g. Jules
+    //      or Kimberly from /jules + /kimberly static routes)
+    //      → client_reference_id = REFERRER=<NAME UPPERCASED>
+    //   3. neither (bare /alira/referral landing) → no attribution
+    // Stripe stamps the value onto checkout.session.completed; Sita
+    // grep / filters by prefix (EMPIRE= vs REFERRER=) to bucket
+    // conversions per referrer.
+    const stripeRef = affiliateCode
+      ? affiliateCode
+      : referrerName && referrerName !== "Jana"
+        ? `REFERRER=${referrerName.toUpperCase()}`
+        : null;
+    const finalUrl = stripeRef
+      ? `${url}${url.includes("?") ? "&" : "?"}client_reference_id=${encodeURIComponent(stripeRef)}`
       : url;
     window.open(finalUrl, "_blank", "noopener,noreferrer");
   }
@@ -253,10 +287,10 @@ export function AliraReferralClient({
               </em>
             </h1>
             <p className="mt-6 max-w-2xl text-base sm:text-xl text-zinc-300 leading-relaxed">
-              Jana sent you because the build behind her brand
-              isn&apos;t a website — it&apos;s an audience engine.
-              You get the same Tier-3 federation stack at the
-              referral rate:{" "}
+              {referrerName} sent you because the build behind her
+              brand isn&apos;t a website — it&apos;s an audience
+              engine. You get the same Tier-3 federation stack at
+              the referral rate:{" "}
               <span className="text-amber-100 font-semibold tabular-nums">
                 $300 down + $300/mo over 9 months
               </span>{" "}
@@ -280,7 +314,7 @@ export function AliraReferralClient({
                 <HollowTriangle />
               </button>
               <Link
-                href="/alira/referral/info"
+                href={learnMoreHref}
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                 data-testid="alira-learn-more-hero"
               >
@@ -525,8 +559,8 @@ export function AliraReferralClient({
                 </span>{" "}
                 Interlinked federation portfolio that powers Live
                 Better On The Drip and 14 other partner brands.
-                When Jana sent you here, she sent you to a stack
-                that&apos;s already proven on her brand.
+                When {referrerName} sent you here, she sent you
+                to a stack that&apos;s already proven on her brand.
               </p>
             </div>
           </div>
@@ -631,7 +665,7 @@ export function AliraReferralClient({
                   <HollowTriangle />
                 </button>
                 <Link
-                  href="/alira/referral/info"
+                  href={learnMoreHref}
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                   data-testid="alira-learn-more-footer"
                 >

@@ -99,6 +99,17 @@ type Props = {
   marketTotal: string;
   pricingOptions: PricingOption[];
   distributionNotes: { title: string; body: string }[];
+  /**
+   * Named referrer for body-copy interpolation. Defaults to
+   * "Jana" (the canonical Alira featured creator). When the user
+   * lands at /alira/referral/info?ref=jules (or =kimberly), the
+   * /info server component resolves the search param against the
+   * whitelist and passes the matching name through. Used in the
+   * hero intro paragraph + the proof headline, AND folded into
+   * the Stripe client_reference_id attribution when the user
+   * clicks a pay card from the modal (REFERRER=JULES etc.).
+   */
+  referrerName?: string;
 };
 
 // Right-facing hollow triangle SVG used inside every Activate CTA —
@@ -129,6 +140,7 @@ export function AliraReferralInfoClient({
   marketTotal,
   pricingOptions,
   distributionNotes,
+  referrerName = "Jana",
 }: Props) {
   // Two reveal surfaces live in parallel:
   //
@@ -187,7 +199,21 @@ export function AliraReferralInfoClient({
 
   function onPay(option: PricingOption) {
     ping("pay_intent", option.id);
-    window.open(option.payUrl, "_blank", "noopener,noreferrer");
+    // Stripe attribution for named referrers: when the user
+    // landed here via /alira/referral/info?ref=jules (or
+    // =kimberly), the referrerName is non-default and we append
+    // client_reference_id=REFERRER=<NAME> to the Payment Link URL
+    // so the conversion can be credited. Bare /info (or
+    // ?ref=anything-unknown) defaults to "Jana" and stays
+    // unattributed, matching the bare /alira/referral surface.
+    const stripeRef =
+      referrerName && referrerName !== "Jana"
+        ? `REFERRER=${referrerName.toUpperCase()}`
+        : null;
+    const url = stripeRef
+      ? `${option.payUrl}${option.payUrl.includes("?") ? "&" : "?"}client_reference_id=${encodeURIComponent(stripeRef)}`
+      : option.payUrl;
+    window.open(url, "_blank", "noopener,noreferrer");
   }
 
   // Activate-your-assets pill — reused in three placements (hero,
@@ -343,8 +369,9 @@ export function AliraReferralInfoClient({
                 Alira brand itself; dollar values aligned to the
                 $60K stack + $300 down cadence. */}
             <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
-              Jana sent you because the build behind her brand
-              isn&apos;t a website — it&apos;s an audience engine. For{" "}
+              {referrerName} sent you because the build behind her
+              brand isn&apos;t a website — it&apos;s an audience
+              engine. For{" "}
               <span className="text-amber-300 font-semibold">$3,000</span>{" "}
               (or{" "}
               <span className="text-amber-300 font-semibold">
@@ -528,7 +555,7 @@ export function AliraReferralInfoClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               The build{" "}
-              <span className="text-amber-300">Jana</span>{" "}
+              <span className="text-amber-300">{referrerName}</span>{" "}
               is referring you on.
             </h2>
             <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
