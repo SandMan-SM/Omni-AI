@@ -165,18 +165,26 @@ export function DelHassonClient({ pageUrl }: Props) {
           </div>
         </section>
 
-        {/* 5-TILE SCOPE STRIP — the 3 tier delivered-asset values +
-            the Tier 04 locked teaser + ∞ potential. */}
+        {/* SCOPE STRIP — flipped from delivered-asset values
+            ($25K / $50K / $100K) to entry contribution ranges
+            (starting at $1K) per Sita. The big values were reading
+            as asking prices — "Tier 01 · Assets · $25K" looked
+            like Del had to pay $25K to enter Tier 01, which was
+            the opposite of the intent. Showing the contribution
+            entry ("Tier 01 starts at $1K") keeps the teaser
+            approachable. The full delivered-value math + "you
+            walk away with up to $100K in assets" framing stays
+            on /info where it's contextualized properly. */}
         <section className="relative">
           <div className="mx-auto max-w-5xl px-5 sm:px-8 pb-10 sm:pb-12">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-              Scope at a glance
+              How to enter
             </p>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { value: "$25K", label: "Tier 01 · Assets" },
-                { value: "$50K", label: "Tier 02 · Assets" },
-                { value: "$100K", label: "Tier 03 · Assets" },
+                { value: "$1K+", label: "Tier 01 · Entry" },
+                { value: "$5K+", label: "Tier 02 · Entry" },
+                { value: "$10K+", label: "Tier 03 · Entry" },
                 { value: "🔒", label: "Tier 04 · Locked" },
                 { value: "∞", label: "Potential" },
               ].map((stat) => {
@@ -205,6 +213,24 @@ export function DelHassonClient({ pageUrl }: Props) {
                 );
               })}
             </div>
+            {/* Small reassurance line under the strip so the
+                contribution-as-entry framing reads correctly even
+                without anyone reading the /info breakdown. */}
+            <p className="mt-4 text-center text-xs text-zinc-500">
+              Entry is what you contribute. The build values you{" "}
+              <em>walk away with</em> scale from{" "}
+              <span className="text-amber-200 tabular-nums">$25K</span>{" "}
+              up to{" "}
+              <span className="text-amber-200 tabular-nums">$100K+</span>{" "}
+              in owned digital assets — see{" "}
+              <Link
+                href="/sponsor/delhasson/info"
+                className="text-amber-300 hover:text-amber-200 underline decoration-amber-300/40 underline-offset-4"
+              >
+                full breakdown
+              </Link>
+              .
+            </p>
           </div>
         </section>
 
