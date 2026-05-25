@@ -165,26 +165,27 @@ export function DelHassonClient({ pageUrl }: Props) {
           </div>
         </section>
 
-        {/* SCOPE STRIP — flipped from delivered-asset values
-            ($25K / $50K / $100K) to entry contribution ranges
-            (starting at $1K) per Sita. The big values were reading
-            as asking prices — "Tier 01 · Assets · $25K" looked
-            like Del had to pay $25K to enter Tier 01, which was
-            the opposite of the intent. Showing the contribution
-            entry ("Tier 01 starts at $1K") keeps the teaser
-            approachable. The full delivered-value math + "you
-            walk away with up to $100K in assets" framing stays
-            on /info where it's contextualized properly. */}
+        {/* SCOPE STRIP — reframed once more (per Sita) from
+            entry-contribution dollars → ROI multipliers. The
+            ROI number is the best-case return at each tier's
+            entry point (lowest contribution → max delivered
+            asset value):
+              Tier 01: $1K → $25K   = 25×
+              Tier 02: $5K → $50K   = 10×
+              Tier 03: $10K → $100K = 10×
+            Reads as upside-per-tier instead of a price ladder
+            so the strip can't be misread as what Del has to
+            pay. */}
         <section className="relative">
           <div className="mx-auto max-w-5xl px-5 sm:px-8 pb-10 sm:pb-12">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-              How to enter
+              Return on investment
             </p>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { value: "$1K+", label: "Tier 01 · Entry" },
-                { value: "$5K+", label: "Tier 02 · Entry" },
-                { value: "$10K+", label: "Tier 03 · Entry" },
+                { value: "25×", label: "Tier 01 · ROI" },
+                { value: "10×", label: "Tier 02 · ROI" },
+                { value: "10×", label: "Tier 03 · ROI" },
                 { value: "🔒", label: "Tier 04 · Locked" },
                 { value: "∞", label: "Potential" },
               ].map((stat) => {
@@ -213,15 +214,20 @@ export function DelHassonClient({ pageUrl }: Props) {
                 );
               })}
             </div>
-            {/* Small reassurance line under the strip so the
-                contribution-as-entry framing reads correctly even
-                without anyone reading the /info breakdown. */}
+            {/* Reassurance line — keeps the dollar context
+                visible without making the tiles carry it. The
+                ROI math reads: $1K contribution buys $25K in
+                assets, $10K buys $100K, etc. */}
             <p className="mt-4 text-center text-xs text-zinc-500">
-              Entry is what you contribute. The build values you{" "}
-              <em>walk away with</em> scale from{" "}
-              <span className="text-amber-200 tabular-nums">$25K</span>{" "}
-              up to{" "}
-              <span className="text-amber-200 tabular-nums">$100K+</span>{" "}
+              ROI is best-case at each tier&apos;s entry point.
+              Contributions start at{" "}
+              <span className="text-amber-200 tabular-nums">
+                $1K
+              </span>
+              ; you walk away with{" "}
+              <span className="text-amber-200 tabular-nums">
+                $25K – $100K+
+              </span>{" "}
               in owned digital assets — see{" "}
               <Link
                 href="/sponsor/delhasson/info"
