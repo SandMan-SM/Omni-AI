@@ -136,8 +136,6 @@ export function SponsorTeaserClient({
   // brandHook is consumed by the info client — accepted here too
   // so both clients share one prop shape, but the teaser body
   // doesn't reference it.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  brandHook: _brandHook,
   signEndpoint,
   infoHref,
   sitaniSignedDate,
