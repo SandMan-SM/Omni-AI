@@ -1,43 +1,56 @@
 "use client";
 
-// SignModal — the popup the Activate Sponsorship buttons open
-// on both /sponsor/delhasson and /sponsor/delhasson/info. Was an
-// always-on inline form block at the bottom of the original
-// long-form page; refactored into a modal so the teaser surface
-// stays short and the form only renders when the operator
-// commits to the action.
+// SignModal — the popup that every Activate Sponsorship button
+// across every per-sponsor surface opens (Del Hasson, Debbie
+// Biery, the three Mafis, etc.). Was bespoke to Del; lifted to
+// the shared _components/ directory and parameterized so each
+// sponsor's pages can render the same modal with their own
+// sponsor name, sign endpoint, and pre-signed date.
 //
 // Owns:
-//   - Form state (tier / amount / recovery / equity / signerName
-//     / signerEmail / submitting / error / signed)
-//   - onSign POST handler against /api/sponsor/delhasson/sign
-//     (unchanged payload shape — server handler did not move)
-//   - Sitani's pre-signed stamp (Georgia italic 26px, dated
-//     May 22, 2026)
+//   - Form state (tier / amount / signerName / signerEmail /
+//     submitting / error / signed)
+//   - onSign POST handler against the props.signEndpoint URL
+//   - Sitani's pre-signed stamp (Georgia italic 26px, dated per
+//     props.sitaniSignedDate)
 //   - Esc / backdrop / X close + body scroll lock — same
 //     useEffect recipe as the Alira + Rene pricing modals
 //
-// Props are minimal — both pages render <SignModal
-// isOpen={modalOpen} onClose={closeModal} pageUrl={pageUrl} />.
-// pageUrl gets stamped into the POST so the API knows which
-// surface the signer came from.
+// Every sponsor's teaser + info page renders <SignModal ... />
+// at the bottom of its JSX and toggles isOpen from any of its
+// three Activate Sponsorship buttons.
 
 import { useCallback, useEffect, useState } from "react";
 
 type Tier = "01" | "02" | "03";
-type Recovery = "recover" | "waive";
-type Equity = "discuss" | "later";
+
+// Minimum contribution per tier — placeholder copy reads
+// "${TIER_MINIMUMS[tier].toLocaleString()} minimum" so the
+// user sees the floor for their selected tier without
+// guessing. Server-side validation rejects below-min
+// submissions; client-side check provides immediate feedback.
+const TIER_MINIMUMS: Record<Tier, number> = {
+  "01": 1000,
+  "02": 5000,
+  "03": 10000,
+};
 
 type Props = {
   isOpen: boolean;
   onClose: () => void;
   pageUrl: string;
+  /** Sponsor's display name — labels the "Sponsor (X)" form input
+   *  + surfaces in the green success card. */
+  sponsorName: string;
+  /** POST endpoint the modal submits to. Different per sponsor so
+   *  audit trails stay clean (e.g. /api/sponsor/debbiebiery/sign).
+   *  The dynamic /api/sponsor/[slug]/sign route handles them all. */
+  signEndpoint: string;
+  /** Sitani's pre-signed stamp date for this agreement. Each
+   *  sponsor has their own preparation date so the document
+   *  reads as fresh per sponsor. */
+  sitaniSignedDate: string;
 };
-
-// Sitani's pre-signed stamp date — the document is dated as
-// already-prepared on this day. Static so SSR + client render
-// the same string (no hydration mismatch from new Date()).
-const SITANI_SIGNED_DATE = "May 22, 2026";
 
 // Inline hollow-triangle arrow — same shape used across every
 // chrome-flash CTA in the repo. Stroke-only via currentColor.
@@ -80,15 +93,22 @@ function CloseX() {
   );
 }
 
-export function SignModal({ isOpen, onClose, pageUrl }: Props) {
+export function SignModal({
+  isOpen,
+  onClose,
+  pageUrl,
+  sponsorName,
+  signEndpoint,
+  sitaniSignedDate,
+}: Props) {
   // Form state — tier defaults to Tier 02 because the
   // agreement copy explicitly anchors it as the
   // federation-build tier; the operator can switch any time
-  // before signing.
+  // before signing. Recovery + equity-track options were
+  // stripped 2026-05-25 — the offer is just pick a tier, sign,
+  // get assets.
   const [tier, setTier] = useState<Tier>("02");
   const [amount, setAmount] = useState<string>("");
-  const [recovery, setRecovery] = useState<Recovery>("recover");
-  const [equity, setEquity] = useState<Equity>("discuss");
   const [signerName, setSignerName] = useState<string>("");
   const [signerEmail, setSignerEmail] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
@@ -131,20 +151,26 @@ export function SignModal({ isOpen, onClose, pageUrl }: Props) {
       setError("Enter a valid email so we can send you a copy.");
       return;
     }
-    if (!amount.trim() || isNaN(Number(amount.replace(/[$,]/g, "")))) {
+    const amountNum = Number(amount.replace(/[$,]/g, ""));
+    if (!amount.trim() || isNaN(amountNum)) {
       setError("Enter your contribution amount.");
+      return;
+    }
+    const tierMin = TIER_MINIMUMS[tier];
+    if (amountNum < tierMin) {
+      setError(
+        `Tier ${tier} minimum is $${tierMin.toLocaleString()}. Increase your contribution or pick a lower tier.`,
+      );
       return;
     }
     setSubmitting(true);
     try {
-      const res = await fetch("/api/sponsor/delhasson/sign", {
+      const res = await fetch(signEndpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           tier,
-          amount: Number(amount.replace(/[$,]/g, "")),
-          recovery,
-          equity,
+          amount: amountNum,
           signerName: signerName.trim(),
           signerEmail: signerEmail.trim(),
           pageUrl,
@@ -243,7 +269,7 @@ export function SignModal({ isOpen, onClose, pageUrl }: Props) {
               id="del-amount"
               type="text"
               inputMode="decimal"
-              placeholder="5,000"
+              placeholder={`${TIER_MINIMUMS[tier].toLocaleString()} minimum`}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               disabled={!!signed}
@@ -252,53 +278,15 @@ export function SignModal({ isOpen, onClose, pageUrl }: Props) {
           </div>
         </div>
 
-        {/* RECOVERY + EQUITY */}
-        <div className="mt-5 grid sm:grid-cols-2 gap-4">
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">
-              Contribution recovery
-            </p>
-            <div className="mt-2 grid grid-cols-1 gap-2">
-              <OptionPill
-                active={recovery === "recover"}
-                onClick={() => setRecovery("recover")}
-                disabled={!!signed}
-                label="Yes — $200/mo to 50%"
-              />
-              <OptionPill
-                active={recovery === "waive"}
-                onClick={() => setRecovery("waive")}
-                disabled={!!signed}
-                label="Waive recovery"
-              />
-            </div>
-          </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">
-              Equity / partnership track
-            </p>
-            <div className="mt-2 grid grid-cols-1 gap-2">
-              <OptionPill
-                active={equity === "discuss"}
-                onClick={() => setEquity("discuss")}
-                disabled={!!signed}
-                label="Discuss equity track"
-              />
-              <OptionPill
-                active={equity === "later"}
-                onClick={() => setEquity("later")}
-                disabled={!!signed}
-                label="Not now"
-              />
-            </div>
-          </div>
-        </div>
+        {/* Recovery + Equity option pills removed 2026-05-25 per
+            Sita — the offer is just pick a tier, sign, get
+            assets. Form goes from 6 fields to 4. */}
 
-        {/* SITANI'S PRE-SIGNED STAMP + Del's input */}
+        {/* SITANI'S PRE-SIGNED STAMP + signer input */}
         <div className="mt-8 grid sm:grid-cols-2 gap-5 pt-6 border-t border-amber-300/15">
           <div>
             <p className="text-[10px] uppercase tracking-[0.28em] text-zinc-500">
-              Sponsor (Del Hasson)
+              Sponsor ({sponsorName})
             </p>
             <form onSubmit={onSign} className="mt-2 space-y-3">
               <input
@@ -354,7 +342,7 @@ export function SignModal({ isOpen, onClose, pageUrl }: Props) {
                 Sitani Mafi
               </p>
               <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-amber-300/80">
-                Signed {SITANI_SIGNED_DATE}
+                Signed {sitaniSignedDate}
               </p>
             </div>
           </div>
@@ -403,31 +391,7 @@ export function SignModal({ isOpen, onClose, pageUrl }: Props) {
   );
 }
 
-function OptionPill({
-  active,
-  onClick,
-  label,
-  disabled,
-}: {
-  active: boolean;
-  onClick: () => void;
-  label: string;
-  disabled?: boolean;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      disabled={disabled}
-      className={
-        "rounded-xl border px-4 py-2.5 text-left text-sm transition-colors " +
-        (active
-          ? "border-amber-300/70 bg-amber-300/10 text-amber-100"
-          : "border-white/10 bg-white/[0.02] text-zinc-400 hover:border-amber-300/30") +
-        (disabled ? " opacity-60 cursor-not-allowed" : "")
-      }
-    >
-      {label}
-    </button>
-  );
-}
+// OptionPill helper removed 2026-05-25 — was only used by the
+// recovery + equity-track pill groups that got stripped in the
+// same edit. Re-add if any future form clause wants the same
+// pill style.

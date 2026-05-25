@@ -1,14 +1,23 @@
-// POST /api/sponsor/delhasson/sign
+// POST /api/sponsor/[slug]/sign
 //
-// Receives the executed sponsorship agreement from /sponsor/delhasson,
-// timestamps it, persists a notification email to Sita (with the full
-// selected terms + Del's typed signature), and returns 200 so the
-// client surface can swap to the "Agreement executed" success state.
+// Dynamic catch-all for every sponsorship-signing surface. The
+// SignModal on /sponsor/{slug} and /sponsor/{slug}/info posts
+// here with the sponsorship terms; this handler validates,
+// rate-limits, and fires the dual-email notification (Sita's
+// CRM copy + the signer's confirmation copy) via Resend.
 //
-// No DB writes for v1 — Sita asked for the page first, the
-// persistence layer can land in a follow-up if she wants signed
-// agreements indexed in Supabase. Email is the durable record for
-// now.
+// Was a static /api/sponsor/delhasson/sign route bespoke to Del;
+// the original lives at app/api/sponsor/delhasson/sign/route.ts
+// as a safety net (and that file is what Del's modal currently
+// POSTs to — Del's wrapper passes signEndpoint="/api/sponsor/
+// delhasson/sign"). New sponsors (Debbie / Landon / Blake /
+// Joshua / James / Setefano / Supileo / Nele) all POST to this
+// dynamic route with their slug in the URL.
+//
+// The slug is validated against an explicit whitelist below; any
+// other value returns 404 so the route can't be hit with garbage.
+// Each whitelisted entry carries the sponsor's display name + the
+// Sitani-signed date so the email body renders correctly.
 
 import { NextResponse } from "next/server";
 import {
@@ -29,10 +38,54 @@ export const dynamic = "force-dynamic";
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const OWNER_EMAIL = "sitanim8@gmail.com";
 const FROM_EMAIL = "Interlinked <bookings@omnileadsagi.com>";
-// Sitani's pre-signed date — must match the constant in
-// DelHassonClient.tsx so emailed copies cite the same date the
-// signer saw on-screen.
-const SITANI_DATE_LABEL = "May 22, 2026";
+
+// Sponsor whitelist — every slug that the dynamic route accepts.
+// Adding a new sponsor is two lines here + one new app/sponsor/
+// {slug}/page.tsx + one new app/sponsor/{slug}/info/page.tsx.
+// `sitaniSignedDate` must match the prop passed to SignModal on
+// that sponsor's pages so the emailed copy cites the same date
+// the signer saw on-screen.
+const SPONSOR_REGISTRY: Record<
+  string,
+  { displayName: string; sitaniSignedDate: string }
+> = {
+  delhasson: {
+    displayName: "Del Hasson",
+    sitaniSignedDate: "May 22, 2026",
+  },
+  debbiebiery: {
+    displayName: "Debbie Biery",
+    sitaniSignedDate: "May 25, 2026",
+  },
+  landonhasson: {
+    displayName: "Landon Hasson",
+    sitaniSignedDate: "May 25, 2026",
+  },
+  blakehasson: {
+    displayName: "Blake Hasson",
+    sitaniSignedDate: "May 25, 2026",
+  },
+  joshuaelkington: {
+    displayName: "Joshua Elkington",
+    sitaniSignedDate: "May 25, 2026",
+  },
+  jamesball: {
+    displayName: "James Ball",
+    sitaniSignedDate: "May 25, 2026",
+  },
+  setefanomafi: {
+    displayName: "Setefano Mafi",
+    sitaniSignedDate: "May 25, 2026",
+  },
+  supileomafi: {
+    displayName: "Supileo Mafi",
+    sitaniSignedDate: "May 25, 2026",
+  },
+  nelemafi: {
+    displayName: "Nele Mafi",
+    sitaniSignedDate: "May 25, 2026",
+  },
+};
 
 type Body = {
   tier?: unknown;
@@ -63,11 +116,6 @@ async function sendEmail(
   opts: { replyTo?: string } = {},
 ) {
   if (!RESEND_API_KEY) {
-    // Email is the only record path for v1 — surface this explicitly so
-    // a misconfigured RESEND key doesn't silently swallow signed
-    // agreements. The route still returns 200 to the signer (their
-    // signature isn't invalidated by a missing key on our side), but
-    // the response includes a warning the dashboard can show.
     return { ok: false, reason: "RESEND_API_KEY missing" as const };
   }
   const payload: Record<string, unknown> = {
@@ -92,14 +140,23 @@ async function sendEmail(
   return { ok: true };
 }
 
-export async function POST(req: Request) {
-  // Rate-limit identical to the landing-lead route — 5 requests per 5
-  // minutes per IP. Signing isn't a hot path, but the form is public
-  // (anyone with the URL can hit it) and we don't want a spammer to
-  // flood Sita's inbox if the link leaks.
+type RouteContext = { params: { slug: string } };
+
+export async function POST(req: Request, context: RouteContext) {
+  const slug = (context.params.slug || "").toLowerCase();
+  const sponsor = SPONSOR_REGISTRY[slug];
+  if (!sponsor) {
+    return NextResponse.json(
+      { error: "Unknown sponsor" },
+      { status: 404 },
+    );
+  }
+
+  // Rate-limit namespaced per slug so abuse on one sponsor's
+  // surface doesn't lock anyone out of another's.
   const ip = getClientIp(req.headers);
   const rl = rateLimit(
-    `sponsor-delhasson-sign:${ip}`,
+    `sponsor-${slug}-sign:${ip}`,
     5,
     5 * 60 * 1000,
   );
@@ -121,16 +178,14 @@ export async function POST(req: Request) {
     typeof body.signerName === "string" ? body.signerName : "";
 
   if (!isTier(tier)) {
-    return NextResponse.json(
-      { error: "Invalid tier" },
-      { status: 400 },
-    );
+    return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
   }
-  if (typeof amountRaw !== "number" || !Number.isFinite(amountRaw) || amountRaw <= 0) {
-    return NextResponse.json(
-      { error: "Invalid amount" },
-      { status: 400 },
-    );
+  if (
+    typeof amountRaw !== "number" ||
+    !Number.isFinite(amountRaw) ||
+    amountRaw <= 0
+  ) {
+    return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
   }
   const tierMin = TIER_MINIMUMS[tier];
   if (amountRaw < tierMin) {
@@ -148,9 +203,6 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  // Signer email — required so Del receives a confirmation copy of
-  // the executed terms (and so Sita's notification email has a
-  // reply-to that lands in Del's inbox).
   if (!isValidEmail(body.signerEmail)) {
     return NextResponse.json(
       { error: "Enter a valid email so we can send you a copy." },
@@ -159,13 +211,7 @@ export async function POST(req: Request) {
   }
   const signerEmail = body.signerEmail.trim();
 
-  // Honeypot — same isBotSubmission helper the landing-lead form uses.
-  // Defensive even though this form doesn't ship a honeypot input;
-  // future spam mitigations can plug in here without touching the
-  // handler shape.
   if (isBotSubmission({ signerName })) {
-    // 200 OK + silent drop so bots can't probe for the rejection
-    // signature.
     return NextResponse.json({ ok: true });
   }
 
@@ -187,46 +233,35 @@ export async function POST(req: Request) {
   const tierLabels: Record<typeof tier, string> = {
     "01": "Tier 01 ($1K–$5K · up to $25K delivered)",
     "02": "Tier 02 ($5K–$10K · up to $50K delivered)",
-    "03": "Tier 03 ($10K+ · up to $100K delivered + equity track)",
+    "03": "Tier 03 ($10K+ · up to $100K delivered)",
   };
-  const html = `
+
+  const ownerHtml = `
     <div style="font-family: -apple-system, system-ui, Segoe UI, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1f2937;">
       <p style="font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: #b45309; font-weight: 700; margin: 0 0 8px;">Interlinked · Sponsor signature received</p>
-      <h1 style="font-family: Georgia, serif; font-size: 26px; color: #92400e; margin: 0 0 16px; line-height: 1.2;">Del Hasson signed the sponsorship agreement.</h1>
+      <h1 style="font-family: Georgia, serif; font-size: 26px; color: #92400e; margin: 0 0 16px; line-height: 1.2;">${escapeHtml(sponsor.displayName)} signed the sponsorship agreement.</h1>
       <p style="font-size: 14px; line-height: 1.6; color: #374151; margin: 0 0 20px;">Captured at <strong>${escapeHtml(signedAtPretty)}</strong>. Selected terms below — prepare the definitive paperwork and follow up within 24 hours per §8.</p>
 
       <table style="width: 100%; border-collapse: collapse; margin: 0 0 20px; font-size: 14px;">
-        <tr>
-          <td style="padding: 10px 12px; background: #fef3c7; border: 1px solid #fde68a; font-weight: 700; color: #78350f; width: 38%;">Signer</td>
-          <td style="padding: 10px 12px; border: 1px solid #fde68a; color: #1f2937;">${escapeHtml(signerName)}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px 12px; background: #fef3c7; border: 1px solid #fde68a; font-weight: 700; color: #78350f;">Tier</td>
-          <td style="padding: 10px 12px; border: 1px solid #fde68a; color: #1f2937;">${escapeHtml(tierLabels[tier])}</td>
-        </tr>
-        <tr>
-          <td style="padding: 10px 12px; background: #fef3c7; border: 1px solid #fde68a; font-weight: 700; color: #78350f;">Contribution</td>
-          <td style="padding: 10px 12px; border: 1px solid #fde68a; color: #1f2937; font-weight: 700;">${escapeHtml(amountFmt)}</td>
-        </tr>
+        <tr><td style="padding: 10px 12px; background: #fef3c7; border: 1px solid #fde68a; font-weight: 700; color: #78350f; width: 38%;">Signer</td><td style="padding: 10px 12px; border: 1px solid #fde68a; color: #1f2937;">${escapeHtml(signerName)}</td></tr>
+        <tr><td style="padding: 10px 12px; background: #fef3c7; border: 1px solid #fde68a; font-weight: 700; color: #78350f;">Tier</td><td style="padding: 10px 12px; border: 1px solid #fde68a; color: #1f2937;">${escapeHtml(tierLabels[tier])}</td></tr>
+        <tr><td style="padding: 10px 12px; background: #fef3c7; border: 1px solid #fde68a; font-weight: 700; color: #78350f;">Contribution</td><td style="padding: 10px 12px; border: 1px solid #fde68a; color: #1f2937; font-weight: 700;">${escapeHtml(amountFmt)}</td></tr>
       </table>
 
       <p style="font-size: 12px; color: #6b7280; margin: 0 0 6px;">Execution metadata (audit trail):</p>
       <ul style="font-size: 12px; color: #6b7280; margin: 0 0 20px; padding-left: 18px; line-height: 1.6;">
+        <li>Sponsor slug: <code>${escapeHtml(slug)}</code></li>
         <li>Timestamp (UTC): <code>${escapeHtml(signedAtIso)}</code></li>
         <li>Client IP: <code>${escapeHtml(ip4)}</code></li>
         <li>User agent: <code>${escapeHtml(ua.slice(0, 200))}</code></li>
-        <li>Page: <code>${escapeHtml(typeof body.pageUrl === "string" ? body.pageUrl : "/sponsor/delhasson")}</code></li>
+        <li>Page: <code>${escapeHtml(typeof body.pageUrl === "string" ? body.pageUrl : `/sponsor/${slug}`)}</code></li>
       </ul>
 
-      <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; padding-top: 16px; border-top: 1px solid #e5e7eb;">Counter-signed by Sitani Mafi at preparation time (May 22, 2026). This summary is non-binding per §8 — definitive paperwork governs the executed relationship.</p>
+      <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; padding-top: 16px; border-top: 1px solid #e5e7eb;">Counter-signed by Sitani Mafi at preparation time (${escapeHtml(sponsor.sitaniSignedDate)}). This summary is non-binding per §8 — definitive paperwork governs the executed relationship.</p>
     </div>
   `;
 
-  // Del's confirmation copy — same audit-trail rows, but framed for
-  // the signer's records, not Sita's CRM. Buttons explicitly avoided
-  // since the email-side action surface is just "save this for your
-  // records + watch your inbox for the definitive paperwork".
-  const delHtml = `
+  const signerHtml = `
     <div style="font-family: -apple-system, system-ui, Segoe UI, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; color: #1f2937;">
       <p style="font-size: 11px; letter-spacing: 0.32em; text-transform: uppercase; color: #b45309; font-weight: 700; margin: 0 0 8px;">Interlinked · by Sitani Mafi</p>
       <h1 style="font-family: Georgia, serif; font-size: 26px; color: #92400e; margin: 0 0 16px; line-height: 1.2;">Your sponsorship agreement is signed.</h1>
@@ -239,27 +274,21 @@ export async function POST(req: Request) {
       </table>
 
       <p style="font-size: 13px; line-height: 1.6; color: #4b5563; margin: 0 0 14px;">If anything in the selected terms needs to change before the definitive paperwork lands, simply reply to this email — Sitani will pick it up directly.</p>
-      <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; padding-top: 16px; border-top: 1px solid #e5e7eb;">Counter-signed by Sitani Mafi at preparation time (${escapeHtml(SITANI_DATE_LABEL)}). This summary is non-binding per §8 — definitive paperwork will govern the executed relationship.</p>
+      <p style="font-size: 12px; color: #9ca3af; margin: 24px 0 0; padding-top: 16px; border-top: 1px solid #e5e7eb;">Counter-signed by Sitani Mafi at preparation time (${escapeHtml(sponsor.sitaniSignedDate)}). This summary is non-binding per §8 — definitive paperwork will govern the executed relationship.</p>
     </div>
   `;
 
-  // Fire both emails in parallel. We treat Sita's notification as the
-  // canonical "did it land" signal (her copy is the durable record),
-  // but a Del-side delivery failure isn't surfaced as a hard error —
-  // the user just sees the on-screen "Agreement executed" card with
-  // its 24-hour follow-up promise, and Sita can re-send the
-  // confirmation manually if needed.
-  const [ownerResult, delResult] = await Promise.all([
+  const [ownerResult, signerResult] = await Promise.all([
     sendEmail(
       OWNER_EMAIL,
-      `Del Hasson signed · ${tierLabels[tier].split(" (")[0]} · ${amountFmt}`,
-      html,
+      `${sponsor.displayName} signed · ${tierLabels[tier].split(" (")[0]} · ${amountFmt}`,
+      ownerHtml,
       { replyTo: signerEmail },
     ),
     sendEmail(
       signerEmail,
       "Your Interlinked sponsorship agreement · signed copy",
-      delHtml,
+      signerHtml,
       { replyTo: OWNER_EMAIL },
     ),
   ]);
@@ -267,13 +296,13 @@ export async function POST(req: Request) {
   return NextResponse.json({
     ok: true,
     emailDelivered: ownerResult.ok,
-    signerEmailDelivered: delResult.ok,
-    ...(ownerResult.ok && delResult.ok
+    signerEmailDelivered: signerResult.ok,
+    ...(ownerResult.ok && signerResult.ok
       ? {}
       : {
           warning:
             (ownerResult.ok ? null : `owner: ${ownerResult.reason}`) ||
-            (delResult.ok ? null : `signer: ${delResult.reason}`) ||
+            (signerResult.ok ? null : `signer: ${signerResult.reason}`) ||
             "Email partial-failure",
         }),
   });
