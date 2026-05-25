@@ -133,9 +133,7 @@ function ActivateButton({
 export function SponsorTeaserClient({
   pageUrl,
   sponsorName,
-  // brandHook is consumed by the info client — accepted here too
-  // so both clients share one prop shape, but the teaser body
-  // doesn't reference it.
+  brandHook,
   signEndpoint,
   infoHref,
   sitaniSignedDate,
@@ -170,9 +168,9 @@ export function SponsorTeaserClient({
               <span className="text-amber-100 font-semibold tabular-nums">
                 $100K+
               </span>{" "}
-              in owned digital assets. Hasson Enterprises personal-
-              brand build included as part of the legacy model.
-              Pre-signed by Sitani Mafi.
+              in owned digital assets. {brandHook} personal-brand
+              build included as part of the legacy model. Pre-signed
+              by Sitani Mafi.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">

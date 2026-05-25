@@ -194,11 +194,10 @@ export function SponsorInfoClient({
               The sponsorship in full.
             </h1>
             <p className="mt-5 text-base sm:text-lg text-zinc-400 leading-relaxed">
-              Eight sections covering the overview, the 4-tier
-              ladder, what gets built (with the savings-at-scale
-              math), optional contribution recovery + equity track,
-              proof of execution + live case studies, the Hasson
-              Enterprises personal-brand hook, and the terms.
+              Six sections covering the overview, the 4-tier ladder,
+              what gets built (with the savings-at-scale math),
+              proof of execution + live case studies, the {brandHook}{" "}
+              personal-brand hook, and the terms.
             </p>
 
             <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
