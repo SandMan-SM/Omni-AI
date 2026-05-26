@@ -47,6 +47,11 @@ export default function CaseStudyIndex() {
     "imperium",
     "rene-laveau",
     "live-better-on-the-drip",
+    // Prime IV Sandy — Jaime Bond's operator surface, paired with
+    // the Live Better On The Drip podcast as a two-site Jaime-
+    // brand content engine. Sits next to the podcast in the
+    // personal-branding cluster so the pairing reads as one story.
+    "prime-iv-sandy",
     // Alira — spiritual-leadership personal brand. AI CEO layer
     // shipped via Interlinked + the public site is live, so it
     // belongs in the personal-branding cluster, not Pending.

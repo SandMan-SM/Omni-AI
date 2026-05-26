@@ -351,12 +351,60 @@ export const CASE_STUDIES: CaseStudy[] = [
     liveSince: "2026-04",
   },
   {
+    // Prime IV Sandy — the operator surface paired with Jaime's
+    // Live Better On The Drip podcast (entry directly below). Both
+    // ship under the inbound_prime_iv_* tenancy so analytics on
+    // this case study include traffic, events, and leads landing
+    // on either surface — Sandy's $85 intro-offer funnel and the
+    // podcast site both feed the same Pantheon CEO. The two-site
+    // pairing is the moat: most franchise IV brands ship a flat
+    // LeadConnector funnel and never build content infrastructure;
+    // Jaime's operator site embeds the podcast directly so every
+    // local-search visitor lands inside a content engine.
+    slug: "prime-iv-sandy",
+    brand: "Prime IV Sandy",
+    domain: "primeivsandy.com",
+    url: "https://primeivsandy.com",
+    inboundSlug: "prime_iv",
+    realm: 1,
+    role: "Operator · AI CEO + podcast engine",
+    status: "in_progress",
+    pantheonArchetype: "Operator (mortal tier) · Storyteller blend",
+    pantheonCEO: "Prime IV Sandy CEO",
+    tagline: "Jaime Bond's Sandy storefront — a hyper-personalized Next.js 15 site fronting the franchise, paired with the Live Better On The Drip podcast as the federation content engine.",
+    problem: "The live primeivsandy.com was a thin LeadConnector funnel page — no menu depth, no team page, no podcast surface, no Sandy-specific story. Corporate franchise tools optimize for franchisee parity, not local conversion. The podcast existed at livebetterpodcast.com but had no inbound bridge to the local IV business it actually anchors.",
+    solution: "Bespoke Next.js 15 build under primeivsandy.com leading with Jaime as the face (portrait, signature, owner letter, BYU + franchise-mentor backstory, embedded IG reel) and Sandy as the local hook (Snowbird recovery, Hale Centre opening-night glow, Cottonwood Heights lifestyle). Full 25+ drip menu with goal-based filters, 3-tier membership comparison, $85 intro offer above the fold, RN-on-staff trust signals, Booker embed on every page, sticky mobile CTA. Dedicated /podcast route + homepage section embed Live Better On The Drip (Spotify / Apple / YouTube), making the podcast a permanent funnel into the IV business and vice-versa. LocalBusiness + MedicalBusiness JSON-LD covers Sandy local SEO end-to-end.",
+    systems: [
+      ...STANDARD_SYSTEMS,
+      { layer: "Booker integration", what: "go.booker.com/PrimeIVSandy iframe on /book + CTA buttons across every page. Booking source-attribution wired into inbound_prime_iv_events." },
+      { layer: "Podcast surface", what: "/podcast route embeds Live Better On The Drip across Spotify, Apple, YouTube. Homepage podcast card + footer cross-link feed traffic into livebetterpodcast.com and back." },
+      { layer: "Local SEO", what: "LocalBusiness + MedicalBusiness JSON-LD with full NAP, hours, geo, aggregateRating (5★ / 282 reviews). Every page H1 + meta name-checks Sandy / Sandy, UT." },
+    ],
+    agenticStack: [
+      ...STANDARD_AGENTIC,
+      "Booker click-intent capture — every Book-$85 click logs to inbound_prime_iv_events with source page, so the CEO can rank which surface (home / drips / podcast / meet-jaime) drives the most bookings.",
+      "Cross-surface attribution between primeivsandy.com and livebetterpodcast.com — visitors who hit both inside a session collapse to one prime_iv lead with a `dual_surface` tag.",
+      "Sandy-local content prompts (Snowbird recovery / Hale opening night / Cottonwood Heights families) tuned seasonally by the Prime IV Sandy CEO.",
+    ],
+    pricing: TIER3_PRICING,
+    marketTier: "bespoke",
+    marketTierLabel: "Tier 3 · Bespoke Next.js (operator + podcast pair)",
+    buildPriceRange: "$22k – $30k",
+    liveSince: null,
+  },
+  {
     // Case-study reframed 2026-05-19: the dashboard client on this
     // tenancy is Jaime's "Live Better On The Drip" personal-brand
     // podcast, not the Prime IV Hydration franchise that hosts the
     // tables. The inbound_prime_iv_{leads,events} tenancy stays
     // (livebetterpodcast.com writes there); the case-study brand /
     // domain / framing flips to lead with the podcast.
+    //
+    // 2026-05-25: paired with the new prime-iv-sandy operator case
+    // study (entry directly above). The two surfaces share the
+    // inbound_prime_iv_* tenancy so each case-study page shows
+    // combined Jaime-brand analytics. Together they're the Prime
+    // IV story — Sandy is the storefront, this is the audience.
     slug: "live-better-on-the-drip",
     brand: "Live Better On The Drip",
     domain: "livebetterpodcast.com",
@@ -367,9 +415,9 @@ export const CASE_STUDIES: CaseStudy[] = [
     status: "live",
     pantheonArchetype: "Storyteller (mortal tier)",
     pantheonCEO: "Live Better CEO",
-    tagline: "Jaime's personal-brand podcast — weekly show, newsletter, and federation distribution wired into the broader Omni AI portfolio.",
-    problem: "Podcast brand needed real channel infrastructure (site, AI CEO routing, branded newsletter, federation cross-promo attribution) so every episode could compound across the federation instead of dying on the platform feed.",
-    solution: "Federation site under the podcast brand. Cross-promo embed routes show audience back into the network. Inbound_prime_iv_ tenancy carries lead capture, page-view events, and source attribution from every CTA placement.",
+    tagline: "Jaime's personal-brand podcast — weekly show, newsletter, and federation distribution wired into the broader Omni AI portfolio. Paired with the Prime IV Sandy operator site as one Jaime-brand content engine.",
+    problem: "Podcast brand needed real channel infrastructure (site, AI CEO routing, branded newsletter, federation cross-promo attribution) so every episode could compound across the federation instead of dying on the platform feed. And without an operator surface to land podcast traffic back into a paying business, every download was a dead end.",
+    solution: "Federation site under the podcast brand. Cross-promo embed routes show audience back into the network. Inbound_prime_iv_ tenancy carries lead capture, page-view events, and source attribution from every CTA placement. The companion Prime IV Sandy operator build (primeivsandy.com) embeds this podcast directly on the homepage + dedicated /podcast route, so listeners flow into the IV business and IV visitors flow into the show — one funnel, two surfaces.",
     systems: STANDARD_SYSTEMS,
     agenticStack: STANDARD_AGENTIC,
     pricing: TIER3_PRICING,
