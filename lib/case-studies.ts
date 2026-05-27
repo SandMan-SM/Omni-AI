@@ -17,11 +17,23 @@ export type PricingLine = {
   note: string;
 };
 
+export type AdditionalSurface = {
+  label: string;   // human label for the button (e.g. "Podcast site")
+  url: string;     // full canonical URL with protocol
+  domain: string;  // display domain (no protocol)
+};
+
 export type CaseStudy = {
   slug: string;                    // url segment (e.g. "rene-laveau")
   brand: string;                   // display name
-  domain: string;                  // public domain (no protocol)
-  url: string;                     // full canonical URL
+  domain: string;                  // primary public domain (no protocol)
+  url: string;                     // primary full canonical URL
+  /** Optional additional public surfaces this engagement delivered
+   *  (e.g. a paired podcast site, an admin app, a partner microsite).
+   *  Rendered as extra Visit-button pills in the detail-page hero.
+   *  The primary `url` field stays the headline asset; these are
+   *  companion deliverables. */
+  additionalSurfaces?: AdditionalSurface[];
   inboundSlug: string | null;      // matching key in inbound_<slug>_* tables / cross_brand_referrals; null = no analytics
   /** Optional list of OTHER business slugs whose analytics should fold
    *  into this case study's combined view (e.g. an Imperium case study
@@ -374,6 +386,13 @@ export const CASE_STUDIES: CaseStudy[] = [
     brand: "Prime IV Sandy",
     domain: "primeivsandy.com",
     url: "https://primeivsandy.com",
+    additionalSurfaces: [
+      {
+        label: "Podcast site · Live Better On The Drip",
+        url: "https://livebetterpodcast.com",
+        domain: "livebetterpodcast.com",
+      },
+    ],
     inboundSlug: "prime_iv",
     realm: 1,
     role: "Operator · AI CEO + podcast engine",

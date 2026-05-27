@@ -339,9 +339,25 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 font-semibold text-zinc-900 hover:bg-amber-300 transition-colors"
                 >
-                  Visit Website
+                  Visit {c.domain}
                 </a>
               )}
+              {/* Additional companion surfaces (e.g. a paired podcast
+                  site) render as outlined amber pills next to the
+                  primary Visit button so the detail page reflects
+                  every public asset this engagement actually
+                  delivered, not just the headline domain. */}
+              {c.additionalSurfaces?.map((s) => (
+                <a
+                  key={s.url}
+                  href={s.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-amber-400/[0.08] px-6 py-3 font-semibold text-amber-200 hover:bg-amber-400/[0.16] hover:border-amber-300 transition-colors"
+                >
+                  {s.label} · {s.domain}
+                </a>
+              ))}
               <Link
                 href="/federation/case-studies"
                 className="inline-flex items-center gap-2 rounded-full border border-zinc-700 px-6 py-3 font-semibold text-zinc-100 hover:border-amber-400 transition-colors"
