@@ -18,27 +18,39 @@ export interface OmniUser {
 
 export async function login(username: string, password: string): Promise<{ error: string | null }> {
   try {
-    const res = await fetch(EDGE_FUNCTION_URL, {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY
-      },
-      body: JSON.stringify({ username, password }),
-    });
+    const trimmedUsername = username.trim();
+    const fallbackUsername = trimmedUsername.replace(/^[@$]+/, '');
+    const usernamesToTry = fallbackUsername && fallbackUsername !== trimmedUsername
+      ? [trimmedUsername, fallbackUsername]
+      : [trimmedUsername];
+    let lastError = 'Login failed';
 
-    const data = await res.json();
+    for (const candidateUsername of usernamesToTry) {
+      const res = await fetch(EDGE_FUNCTION_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'apikey': SUPABASE_ANON_KEY
+        },
+        body: JSON.stringify({ username: candidateUsername, password }),
+      });
 
-    if (!res.ok) {
-      console.error('Login error:', data);
-      return { error: data.error || 'Login failed: ' + res.status };
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error('Login error:', data);
+        lastError = data.error || 'Login failed: ' + res.status;
+        continue;
+      }
+
+      localStorage.setItem('omni_token', data.access_token);
+      localStorage.setItem('omni_user', JSON.stringify(data.user));
+
+      return { error: null };
     }
 
-    localStorage.setItem('omni_token', data.access_token);
-    localStorage.setItem('omni_user', JSON.stringify(data.user));
-
-    return { error: null };
+    return { error: lastError };
   } catch (err) {
     return { error: 'Connection error. Please try again.' };
   }

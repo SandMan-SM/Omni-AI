@@ -104,7 +104,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
                 if (user) {
                   router.push("/dashboard");
                 } else if (onDashboard) {
-                  onDashboard();
+                  router.push("/login");
                 } else {
                   router.push("/join");
                 }
@@ -171,7 +171,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
                     if (user) {
                       router.push("/dashboard");
                     } else if (onDashboard) {
-                      onDashboard();
+                      router.push("/login");
                     } else {
                       router.push("/join");
                     }

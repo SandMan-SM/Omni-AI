@@ -225,7 +225,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
             size="lg"
             variant="outline"
             className="border-white/15 bg-white/[0.03] backdrop-blur-sm text-white px-10 h-12 sm:h-11 text-[15px] font-medium rounded-xl hover:bg-white/[0.06] active:scale-[0.98] transition-all"
-            onClick={() => { if (user) router.push("/dashboard"); else onSignIn?.(); }}
+            onClick={() => { if (user) router.push("/dashboard"); else router.push("/login"); }}
             data-testid="button-sign-in"
           >
             Sign In
