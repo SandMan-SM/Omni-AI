@@ -51,6 +51,35 @@ function renderText(value: unknown): string {
   return "";
 }
 
+function normalizeInsights(insights: unknown): string[] {
+  if (Array.isArray(insights)) {
+    return insights
+      .map((insight) => {
+        if (typeof insight === "string") return insight.trim();
+        if (insight && typeof insight === "object") {
+          const record = insight as { body?: unknown; text?: unknown; heading?: unknown; title?: unknown };
+          return renderText(record.body || record.text || record.heading || record.title).trim();
+        }
+        return "";
+      })
+      .filter(Boolean);
+  }
+
+  if (typeof insights === "string") {
+    return insights
+      .split(/\n\s*\n+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+
+  if (insights && typeof insights === "object") {
+    const text = renderText(insights).trim();
+    return text ? [text] : [];
+  }
+
+  return [];
+}
+
 // Use admin client so shared links always work — no auth/RLS gating on individual posts.
 // Filter to published rows only: when an admin unpublishes a post (sets
 // published_at = NULL) it should drop out of search-engine indexes AND stop
@@ -229,6 +258,8 @@ export default async function NewsletterPostPage({ params }: Props) {
   const postUrl = `${siteUrl}/newsletter/${slug}`;
   const quoteText = renderText(post.quote);
   const powerMoveText = renderText(post.power_move);
+  const offerText = renderText(post.offer);
+  const insightBodies = normalizeInsights(post.insights);
 
   return (
     // No opaque bg — FireSparksBackdrop (and its dark radial wash) paints
@@ -403,19 +434,7 @@ export default async function NewsletterPostPage({ params }: Props) {
             {isPremium ? "Premium Insights" : "Today\u2019s Key Insights"}
           </h2>
           <div className="space-y-4">
-            {post.insights?.map(
-              (
-                insight: string | { heading?: string | null; body?: string | null },
-                i: number,
-              ) => {
-                // Collapse both shapes to a single body string. Object
-                // insights contribute only their `body`; strings pass
-                // through. Falsy/empty entries are skipped so an
-                // accidentally-empty row never renders a blank <p>.
-                const body =
-                  insight && typeof insight === "object"
-                    ? insight.body?.trim() || ""
-                    : (insight as string) || "";
+            {insightBodies.map((body: string, i: number) => {
                 if (!body) return null;
                 return (
                   <div key={i} className="py-4">
@@ -463,8 +482,8 @@ export default async function NewsletterPostPage({ params }: Props) {
             and your next 90 days. No pitch. Just straight advice from
             operators who run AI systems for a living.
           </p>
-          {post.offer && (
-            <p className="text-gray-400 text-sm italic mb-5">{post.offer}</p>
+          {offerText && (
+            <p className="text-gray-400 text-sm italic mb-5">{offerText}</p>
           )}
           <div className="flex items-center gap-2 mt-6">
             <Link

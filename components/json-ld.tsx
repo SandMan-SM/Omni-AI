@@ -587,6 +587,28 @@ function schemaText(value: unknown): string {
   return "";
 }
 
+function normalizeSchemaInsights(insights: unknown): string[] {
+  if (Array.isArray(insights)) {
+    return insights
+      .map((insight) => schemaText(insight).trim())
+      .filter(Boolean);
+  }
+
+  if (typeof insights === "string") {
+    return insights
+      .split(/\n\s*\n+/)
+      .map((part) => part.trim())
+      .filter(Boolean);
+  }
+
+  if (insights && typeof insights === "object") {
+    const text = schemaText(insights).trim();
+    return text ? [text] : [];
+  }
+
+  return [];
+}
+
 export function newsArticleSchema(post: {
   slug: string;
   subject?: string | null;
@@ -605,9 +627,9 @@ export function newsArticleSchema(post: {
   // wordCount estimate below has to flatten both shapes or structured
   // posts would silently under-count words by ~40% and lose the
   // Google NewsArticle content-quality signal.
-  insights?: Array<string | { heading?: string | null; body?: string | null }> | null;
+  insights?: unknown;
   power_move?: string | Record<string, unknown> | null;
-  offer?: string | null;
+  offer?: unknown;
 }) {
   const siteUrl = "https://omnileadsagi.com";
   const url = `${siteUrl}/newsletter/${post.slug}`;
@@ -630,18 +652,13 @@ export function newsArticleSchema(post: {
   // which both under-counted wordCount and polluted the count with a
   // literal "[object Object]" token.
   const keywords = normalizeSchemaKeywords(post.keywords);
-  const flattenedInsights = (post.insights || []).map((insight) => {
-    if (insight && typeof insight === "object") {
-      return `${insight.heading || ""} ${insight.body || ""}`.trim();
-    }
-    return insight || "";
-  });
+  const flattenedInsights = normalizeSchemaInsights(post.insights);
   const bodyText = [
     post.intro || "",
     schemaText(post.quote),
     ...flattenedInsights,
     schemaText(post.power_move),
-    post.offer || "",
+    schemaText(post.offer),
   ]
     .join(" ")
     .trim();
