@@ -1,5 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Vercel's 2-core build workers can take more than Next's default 60s
+  // static-generation timeout on this large site. Give slow static pages
+  // enough time to finish instead of restarting the worker until deploy fails.
+  staticPageGenerationTimeout: 300,
+
   // Local production builds use a separate dist directory so they never
   // clobber the dev server's `.next/`. Set NEXT_DIST_DIR=.next-prod when
   // running `npm run build:check` to avoid breaking the running dev server.
