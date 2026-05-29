@@ -6,7 +6,7 @@ import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
 import { X } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
-import { createClient } from "@/lib/supabase/client";
+import { getStoredUser } from "@/lib/auth";
 import {
   PREMIUM_FIRST_MONTH_DISCOUNT_PCT,
   PREMIUM_FIRST_MONTH_PRICE_USD,
@@ -18,10 +18,52 @@ interface Post {
   slug: string;
   subject: string;
   intro: string;
-  keywords: string[] | null;
+  keywords: string[] | string | null;
   tier: string;
   published_at: string;
   created_at?: string;
+}
+
+type PremiumCandidate = {
+  is_admin?: boolean;
+  is_premium?: boolean;
+  subscription_status?: string | null;
+  tier?: string | number | null;
+  tier_name?: string | null;
+  role?: string | null;
+};
+
+function normalizeKeywords(keywords: unknown): string[] {
+  if (Array.isArray(keywords)) return keywords.filter((kw): kw is string => typeof kw === "string");
+  if (typeof keywords === "string") {
+    return keywords
+      .split(",")
+      .map((kw) => kw.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function hasPremiumNewsletterAccess(user: PremiumCandidate | null | undefined): boolean {
+  if (!user) return false;
+  const status = String(user.subscription_status || "").toLowerCase();
+  const tier = typeof user.tier === "number" ? user.tier : String(user.tier || "").toLowerCase();
+  const tierName = String(user.tier_name || "").toLowerCase();
+  const role = String(user.role || "").toLowerCase();
+
+  return (
+    user.is_admin === true ||
+    user.is_premium === true ||
+    status === "active" ||
+    status === "trialing" ||
+    tier === "premium" ||
+    tier === "pro" ||
+    tier === "interlinked" ||
+    tier === "2" ||
+    (typeof tier === "number" && tier >= 2) ||
+    tierName.includes("premium") ||
+    ["admin", "owner", "platform"].includes(role)
+  );
 }
 
 // ── Modal that fires AFTER a /newsletter-originated sign-in when the
@@ -113,7 +155,7 @@ export function NewsletterHeader() {
   const [upsellOpen, setUpsellOpen] = useState(false);
 
   useEffect(() => {
-    const user = localStorage.getItem("omni_user");
+    const user = getStoredUser() as PremiumCandidate | null;
     setIsLoggedIn(!!user);
   }, []);
 
@@ -125,24 +167,10 @@ export function NewsletterHeader() {
   const handleSignInSuccess = async () => {
     setIsLoggedIn(true);
     try {
-      const userStr = localStorage.getItem("omni_user");
-      if (!userStr) return;
-      const user = JSON.parse(userStr);
-      const supabase = createClient();
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("is_premium, subscription_status, tier")
-        .eq("id", user.id)
-        .single();
-
-      const isPremium =
-        profile?.is_premium === true ||
-        profile?.subscription_status === "active" ||
-        (profile?.tier !== null && (profile?.tier ?? 0) >= 2);
-
-      if (!isPremium) setUpsellOpen(true);
+      const user = getStoredUser() as PremiumCandidate | null;
+      if (!hasPremiumNewsletterAccess(user)) setUpsellOpen(true);
     } catch {
-      // Fail-soft: if the profile check errors, skip the upsell.
+      // Fail-soft: if the local profile check errors, skip the upsell.
       // Better no popup than a broken-looking popup.
     }
   };
@@ -205,37 +233,8 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
   const [status, setStatus] = useState<"loading" | "premium" | "not-premium">("loading");
 
   useEffect(() => {
-    async function check() {
-      try {
-        const userStr = localStorage.getItem("omni_user");
-        if (!userStr) {
-          setStatus("not-premium");
-          return;
-        }
-        const user = JSON.parse(userStr);
-
-        // Check profile from database for real-time premium status
-        const supabase = createClient();
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("is_premium, subscription_status, tier")
-          .eq("id", user.id)
-          .single();
-
-        if (
-          profile?.is_premium === true ||
-          profile?.subscription_status === "active" ||
-          (profile?.tier !== null && (profile?.tier ?? 0) >= 2)
-        ) {
-          setStatus("premium");
-        } else {
-          setStatus("not-premium");
-        }
-      } catch {
-        setStatus("not-premium");
-      }
-    }
-    check();
+    const user = getStoredUser() as PremiumCandidate | null;
+    setStatus(hasPremiumNewsletterAccess(user) ? "premium" : "not-premium");
   }, []);
 
   if (posts.length === 0) return null;
@@ -291,7 +290,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
                     </h3>
                     <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.intro}</p>
                     {(() => {
-                      const tagsToShow = (post.keywords || []).slice(0, 11);
+                      const tagsToShow = normalizeKeywords(post.keywords).slice(0, 11);
                       return tagsToShow.length > 0 && (
                         <details className="mt-2 group/tags">
                           <summary className="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
