@@ -564,16 +564,39 @@ export function articleSchema(page: {
  * positively up to ~1500, diminishing returns after). articleSection
  * helps retrievers cluster posts by tier (Free vs Premium in our case).
  */
+function normalizeSchemaKeywords(keywords: unknown): string[] {
+  if (Array.isArray(keywords)) return keywords.filter((kw): kw is string => typeof kw === "string");
+  if (typeof keywords === "string") {
+    return keywords
+      .split(",")
+      .map((kw) => kw.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function schemaText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const record = value as { heading?: unknown; body?: unknown; text?: unknown; title?: unknown };
+    return [record.heading, record.title, record.body, record.text]
+      .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+      .join(" ")
+      .trim();
+  }
+  return "";
+}
+
 export function newsArticleSchema(post: {
   slug: string;
   subject?: string | null;
   intro?: string | null;
-  keywords?: string[] | null;
+  keywords?: string[] | string | null;
   published_at?: string | null;
   created_at?: string | null;
   updated_at?: string | null;
   tier?: string | null;
-  quote?: string | null;
+  quote?: string | Record<string, unknown> | null;
   // Two insight shapes are valid — plain string (legacy) or
   // { heading, body } object (structured, introduced on the 2026-04-23
   // vertical-SaaS premium issue). Mixed arrays are allowed so a post
@@ -583,7 +606,7 @@ export function newsArticleSchema(post: {
   // posts would silently under-count words by ~40% and lose the
   // Google NewsArticle content-quality signal.
   insights?: Array<string | { heading?: string | null; body?: string | null }> | null;
-  power_move?: string | null;
+  power_move?: string | Record<string, unknown> | null;
   offer?: string | null;
 }) {
   const siteUrl = "https://omnileadsagi.com";
@@ -606,6 +629,7 @@ export function newsArticleSchema(post: {
   // had their insights stringified to "[object Object]" by Array#join,
   // which both under-counted wordCount and polluted the count with a
   // literal "[object Object]" token.
+  const keywords = normalizeSchemaKeywords(post.keywords);
   const flattenedInsights = (post.insights || []).map((insight) => {
     if (insight && typeof insight === "object") {
       return `${insight.heading || ""} ${insight.body || ""}`.trim();
@@ -614,9 +638,9 @@ export function newsArticleSchema(post: {
   });
   const bodyText = [
     post.intro || "",
-    post.quote || "",
+    schemaText(post.quote),
     ...flattenedInsights,
-    post.power_move || "",
+    schemaText(post.power_move),
     post.offer || "",
   ]
     .join(" ")
@@ -670,7 +694,7 @@ export function newsArticleSchema(post: {
     },
     datePublished,
     dateModified,
-    keywords: (post.keywords || []).join(", "),
+    keywords: keywords.join(", "),
     // mentions: each keyword becomes its own Thing entity, giving the
     // knowledge-graph a walkable edge per topic. `keywords` (comma-string)
     // is what Google's legacy parser reads; `mentions` (typed entity array)
@@ -683,9 +707,9 @@ export function newsArticleSchema(post: {
     // Empty-keywords-array guard: if `post.keywords` is null/empty we
     // omit the `mentions` field entirely rather than ship `mentions: []`
     // — Google's validator flags empty typed arrays as a soft error.
-    ...((post.keywords && post.keywords.length > 0)
+    ...((keywords.length > 0)
       ? {
-          mentions: post.keywords.map((kw) => ({
+          mentions: keywords.map((kw) => ({
             "@type": "Thing",
             name: kw,
           })),

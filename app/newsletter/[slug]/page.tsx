@@ -39,6 +39,18 @@ function normalizeKeywords(keywords: unknown): string[] {
   return [];
 }
 
+function renderText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value && typeof value === "object") {
+    const record = value as { heading?: unknown; title?: unknown; body?: unknown; text?: unknown };
+    return [record.heading, record.title, record.body, record.text]
+      .filter((part): part is string => typeof part === "string" && part.trim().length > 0)
+      .join(" ")
+      .trim();
+  }
+  return "";
+}
+
 // Use admin client so shared links always work — no auth/RLS gating on individual posts.
 // Filter to published rows only: when an admin unpublishes a post (sets
 // published_at = NULL) it should drop out of search-engine indexes AND stop
@@ -215,6 +227,8 @@ export default async function NewsletterPostPage({ params }: Props) {
   // modern desktop). Clipboard-copy fallback lives in the ShareButton.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
+  const quoteText = renderText(post.quote);
+  const powerMoveText = renderText(post.power_move);
 
   return (
     // No opaque bg — FireSparksBackdrop (and its dark radial wash) paints
@@ -329,7 +343,7 @@ export default async function NewsletterPostPage({ params }: Props) {
             edge. Neutral lighter card bg so the quote reads clearly against
             the fire-spark backdrop; accent border stays subtle. Generous
             top/bottom padding so the quote has room to breathe. */}
-        {post.quote && (
+        {quoteText && (
           <figure
             className={`mt-8 mb-12 ml-4 sm:ml-10 rounded-3xl border bg-white/[0.06] px-8 py-12 sm:px-12 sm:py-14 backdrop-blur-sm ${
               isPremium ? "border-amber-500/30" : "border-purple-500/30"
@@ -342,7 +356,7 @@ export default async function NewsletterPostPage({ params }: Props) {
                   here because that puts the closing mark after the
                   attribution, which is grammatically wrong. */}
               <p className="text-lg md:text-xl text-gray-100 italic leading-[1.75] text-left">
-                {post.quote}
+                {quoteText}
               </p>
             </blockquote>
           </figure>
@@ -414,14 +428,16 @@ export default async function NewsletterPostPage({ params }: Props) {
         </div>
 
         {/* Power Move */}
+        {powerMoveText && (
         <div className="mb-10">
           <p className={`text-xs font-bold uppercase tracking-widest mb-4 ${isPremium ? "text-amber-400" : "text-purple-400"}`}>
             Power Move
           </p>
           <p className="text-lg text-gray-200 leading-relaxed">
-            {post.power_move}
+            {powerMoveText}
           </p>
         </div>
+        )}
 
         {/* Shoutout posts (free + slug matches a registered partner) swap
             the generic Schedule-a-Meeting CTA for a website-preview card
