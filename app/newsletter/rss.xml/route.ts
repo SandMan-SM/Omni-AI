@@ -19,6 +19,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
  */
 
 export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const siteUrl = "https://omnileadsagi.com";
 const feedUrl = `${siteUrl}/newsletter/rss.xml`;

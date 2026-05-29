@@ -28,6 +28,17 @@ interface Props {
   params: Promise<{ slug: string }>;
 }
 
+function normalizeKeywords(keywords: unknown): string[] {
+  if (Array.isArray(keywords)) return keywords.filter((kw): kw is string => typeof kw === "string");
+  if (typeof keywords === "string") {
+    return keywords
+      .split(",")
+      .map((kw) => kw.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
 // Use admin client so shared links always work — no auth/RLS gating on individual posts.
 // Filter to published rows only: when an admin unpublishes a post (sets
 // published_at = NULL) it should drop out of search-engine indexes AND stop
@@ -91,13 +102,13 @@ async function getRelatedPosts(
     .limit(50);
   if (!data || data.length === 0) return [] as NonNullable<typeof data>;
 
-  const kwSet = new Set((currentKeywords || []).map((k) => k.toLowerCase()));
+  const kwSet = new Set(normalizeKeywords(currentKeywords).map((k) => k.toLowerCase()));
   if (kwSet.size === 0) return data.slice(0, 3);
 
   // Score each candidate by keyword-intersection size with the current post.
   // Higher score first; recency breaks ties via the upstream DESC order.
   const scored = data.map((p) => {
-    const theirs = (p.keywords || []).map((k: string) => k.toLowerCase());
+    const theirs = normalizeKeywords(p.keywords).map((k) => k.toLowerCase());
     const overlap = theirs.reduce((n: number, k: string) => (kwSet.has(k) ? n + 1 : n), 0);
     return { post: p, overlap };
   });
@@ -113,7 +124,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await getPost(slug);
   if (!post) return { title: "Newsletter Not Found" };
 
-  const keywords = post.keywords?.join(", ") || "AI, business, automation";
+  const keywords = normalizeKeywords(post.keywords).join(", ") || "AI, business, automation";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
   // Dynamic 1200x630 OG image for the social auto-render card (Twitter /
@@ -178,7 +189,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   // card grid and cross-cluster handoff can be inlined into the
   // server-rendered HTML instead of a client-side hydration fetch.
   const [relatedPosts, latestTrend] = await Promise.all([
-    getRelatedPosts(slug, post.keywords),
+    getRelatedPosts(slug, normalizeKeywords(post.keywords)),
     getLatestTrend(),
   ]);
 
@@ -198,7 +209,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   // convert against the post's actual subject.
   const shoutout = getShoutoutForSlug(slug, post.tier, post.published_at);
   // Ensure the counter reflects what actually renders in the list below.
-  const tagsToShow = (post.keywords || []).slice(0, 11);
+  const tagsToShow = normalizeKeywords(post.keywords).slice(0, 11);
 
   // Share metadata for the Web Share API (native share sheet on mobile +
   // modern desktop). Clipboard-copy fallback lives in the ShareButton.

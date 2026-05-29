@@ -56,11 +56,23 @@ export const metadata: Metadata = {
 // force-dynamic — it had a historical stale-tags bug that a separate fix
 // should resolve before it gets ISR'd too.
 export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 function fmtCompact(n: number): string {
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M+`;
   if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}k+`;
   return `${n}`;
+}
+
+function normalizeKeywords(keywords: unknown): string[] {
+  if (Array.isArray(keywords)) return keywords.filter((kw): kw is string => typeof kw === "string");
+  if (typeof keywords === "string") {
+    return keywords
+      .split(",")
+      .map((kw) => kw.trim())
+      .filter(Boolean);
+  }
+  return [];
 }
 
 export default async function NewsletterIndexPage() {
@@ -361,7 +373,7 @@ export default async function NewsletterIndexPage() {
           <div className="space-y-4">
             {freePosts.map((post) => {
               const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-              const tagsToShow = (post.keywords || []).slice(0, 11);
+              const tagsToShow = normalizeKeywords(post.keywords).slice(0, 11);
               return (
                 <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-4 sm:p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all backdrop-blur-sm">
                   <div className="flex items-start justify-between gap-4">
