@@ -21,7 +21,6 @@ import {
   Facebook,
   Instagram,
   CheckCircle2,
-  Play,
   Calendar,
   Film,
   Tv,
@@ -34,7 +33,6 @@ import {
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
-import { BOOKING_URL } from "@/lib/booking";
 
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
@@ -103,11 +101,6 @@ export function MetaProposalFullClient({
   function onPay() {
     ping("pay_intent", "full");
     window.open(payFullUrl, "_blank", "noopener,noreferrer");
-  }
-
-  function onBookCall() {
-    ping("book_call", "google-calendar");
-    window.open(BOOKING_URL, "_blank", "noopener,noreferrer");
   }
 
   const channelIcon = (tag: string) => {
@@ -252,15 +245,13 @@ export function MetaProposalFullClient({
               <span className="chrome-white">Start the program · $1,500/mo</span>
               <HollowTriangle />
             </button>
-            <button
-              type="button"
-              onClick={onBookCall}
+            <Link
+              href="/meta/proposal"
               className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/[0.04] hover:bg-white/[0.08] px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors backdrop-blur-sm"
-              data-testid="proposal-book-call"
+              data-testid="proposal-back-overview"
             >
-              <Play className="w-4 h-4" />
-              Book a 15-min call first
-            </button>
+              Back to overview
+            </Link>
           </div>
           <p className="mt-5 text-xs uppercase tracking-[0.28em] text-zinc-500">
             Secure checkout via Stripe · cancel anytime after month one
@@ -597,15 +588,13 @@ export function MetaProposalFullClient({
               <span className="chrome-white">Start · $1,500/mo</span>
               <HollowTriangle />
             </button>
-            <button
-              type="button"
-              onClick={onBookCall}
+            <Link
+              href="/meta/proposal"
               className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/[0.04] hover:bg-white/[0.08] px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors backdrop-blur-sm"
-              data-testid="proposal-book-call-bottom"
+              data-testid="proposal-back-overview-bottom"
             >
-              <Play className="w-4 h-4" />
-              Book a call first
-            </button>
+              Back to overview
+            </Link>
           </div>
         </div>
       </section>
