@@ -581,7 +581,7 @@ export function LoveThyBarberReferralInfoClient({
                     rel="noopener noreferrer"
                     className="mt-1 inline-block text-xs text-amber-400 hover:text-amber-300 transition-colors"
                   >
-                    {caseStudy.domain} ↗
+                    {caseStudy.domain}
                   </a>
                 </div>
                 <span className="px-2.5 py-1 rounded text-[10px] font-bold tracking-[0.28em] uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
