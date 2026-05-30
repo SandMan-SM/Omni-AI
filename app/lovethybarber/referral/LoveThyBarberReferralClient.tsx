@@ -24,20 +24,17 @@ import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
 
-// Same live Stripe Payment Links used by /lovethybarber/referral/info.
-// Both prices sit under the same Love Thy Barber product so reporting groups
-// them under one engagement line — the client_reference_id
-// distinguishes affiliate attribution when present, not the link
-// itself.
+// Live Stripe Payment Links — dedicated Love Thy Barber product so the
+// checkout reads "…— Love Thy Barber Referral" and conversions report
+// separately from Alira. Both prices sit under product
+// prod_Uc5rpu39zNZ2GF; client_reference_id distinguishes affiliate
+// attribution when present, not the link itself. Same links used by
+// /lovethybarber/referral/info.
 //
-//   Prices:  price_1TXNpJE1uHPZaaHp4i5kIWsc ($3,000 one-time)
-//            price_1TXNpME1uHPZaaHpcCZbCf3l ($333/mo recurring)
-const PAY_FULL_URL = "https://buy.stripe.com/6oU4gz2j89yU2V90lW9fW0g";
-// $300/mo recurring price + payment link created 2026-05-24
-// (price_1TaibQE1uHPZaaHpys0KfVfX → plink_1TaibdE1uHPZaaHpeRXx1kfD).
-// Replaces the prior $333/mo link so both Love Thy Barber surfaces match
-// the aligned $300 numbers + the Rene referral cadence.
-const PAY_DEPOSIT_URL = "https://buy.stripe.com/5kQ3cv7DscL667l3y89fW0m";
+//   $3,000 one-time:   price_1TcrffE1uHPZaaHpkcbYWACq → plink_1TcrfuE1uHPZaaHpsz1okcCY
+const PAY_FULL_URL = "https://buy.stripe.com/3cIdR9e1Q8uQ53h0lW9fW0o";
+//   $300/mo recurring: price_1TcrfaE1uHPZaaHpf9mdFGL4 → plink_1TcrfmE1uHPZaaHp3o9wAaSR
+const PAY_DEPOSIT_URL = "https://buy.stripe.com/5kQeVde1Q3aw7bpgkU9fW0n";
 
 // Open-market value table — aligned to the Rene Laveau referral
 // numbers per Sita: 5 rows summing to $60,000 with fixed dollar

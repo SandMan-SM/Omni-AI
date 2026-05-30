@@ -17,16 +17,13 @@ import { LoveThyBarberReferralInfoClient } from "./LoveThyBarberReferralInfoClie
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/lovethybarber/referral/info`;
 
-// Live Stripe payment links — both prices sit under Love Thy Barber product
-// prod_UWQgOQqLHioU4d so reporting groups cleanly:
-//   - $3,000 one-time:   price_1TXNpJE1uHPZaaHp4i5kIWsc (unchanged)
-//   - $300/mo recurring: price_1TaibQE1uHPZaaHpys0KfVfX (new
-//                         2026-05-24, replaces the prior $333/mo
-//                         link to match the Rene referral cadence
-//                         and the aligned $300 numbers across both
-//                         Love Thy Barber surfaces)
-const PAY_FULL_URL = "https://buy.stripe.com/6oU4gz2j89yU2V90lW9fW0g";
-const PAY_DEPOSIT_URL = "https://buy.stripe.com/5kQ3cv7DscL667l3y89fW0m";
+// Live Stripe payment links — dedicated Love Thy Barber product
+// prod_Uc5rpu39zNZ2GF so the checkout brands as "…— Love Thy Barber
+// Referral" and reporting separates from Alira:
+//   - $3,000 one-time:   price_1TcrffE1uHPZaaHpkcbYWACq → plink_1TcrfuE1uHPZaaHpsz1okcCY
+//   - $300/mo recurring: price_1TcrfaE1uHPZaaHpf9mdFGL4 → plink_1TcrfmE1uHPZaaHp3o9wAaSR
+const PAY_FULL_URL = "https://buy.stripe.com/3cIdR9e1Q8uQ53h0lW9fW0o";
+const PAY_DEPOSIT_URL = "https://buy.stripe.com/5kQeVde1Q3aw7bpgkU9fW0n";
 
 const CASE_STUDY = {
   brand: "Love Thy Barber",
