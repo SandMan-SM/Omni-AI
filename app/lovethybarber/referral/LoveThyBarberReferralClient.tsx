@@ -279,7 +279,7 @@ export function LoveThyBarberReferralClient({
             src="/love-thy-barber-logo.png"
             alt="Love Thy Barber — Teach. Inspire. Elevate."
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center opacity-25"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-center opacity-25"
           />
           <div
             aria-hidden="true"
