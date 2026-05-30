@@ -356,8 +356,7 @@ export function LoveThyBarberReferralInfoClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
-                $60K+ in assets. <br className="hidden sm:block" />
-                $3,000 in. 20x ROI.
+                $60K+ in assets. $3,000 in. 20x ROI.
               </em>
             </h1>
 
