@@ -36,7 +36,9 @@ type FederationHealthResponse = {
     cross_ad_impressions_30d?: number;
     cross_ad_clicks_30d?: number;
     cross_ad_conversions_30d?: number;
+    cross_brand_referrals_30d?: number;
     ctr_pct?: number;
+    pantheon_weights_drifted?: number;
   };
   slugs?: FederationSlugHealth[];
 };
@@ -74,13 +76,27 @@ const federationSlugByAgentSlug: Record<string, string> = {
   'north-peak-roofing': 'north_peak',
 };
 
-function surfaceStatus(agent: AgentCard, key: (typeof commandSurfaces)[number]['key']): 'connected' | 'needs data connection' {
+type AgentDataConnections = ClientAgentRegistryEntry['dataConnections'];
+
+function federationSlugForAgent(agent: Pick<AgentCard, 'slug' | 'businessName'>) {
+  return federationSlugByAgentSlug[agent.slug] ?? normaliseAgentKey(agent.businessName).replace(/-/g, '_');
+}
+
+function effectiveDataConnections(agent: AgentCard, liveHealth?: FederationSlugHealth): AgentDataConnections {
+  return {
+    ...agent.dataConnections,
+    leads: liveHealth ? 'connected' : agent.dataConnections.leads,
+    analytics: liveHealth ? 'connected' : agent.dataConnections.analytics,
+  };
+}
+
+function surfaceStatus(connections: AgentDataConnections, key: (typeof commandSurfaces)[number]['key']): 'connected' | 'needs data connection' {
   if (key === 'command' || key === 'caseStudies' || key === 'autoImprovement') return 'connected';
-  if (key === 'leads') return agent.dataConnections.leads;
-  if (key === 'analytics') return agent.dataConnections.analytics;
-  if (key === 'seoGeo') return agent.dataConnections.seoGeo;
-  if (key === 'contentSocial') return agent.dataConnections.contentSocial;
-  return agent.dataConnections.runLog;
+  if (key === 'leads') return connections.leads;
+  if (key === 'analytics') return connections.analytics;
+  if (key === 'seoGeo') return connections.seoGeo;
+  if (key === 'contentSocial') return connections.contentSocial;
+  return connections.runLog;
 }
 
 function leadConversionLabel(liveHealth?: FederationSlugHealth) {
@@ -210,7 +226,8 @@ export default function AgentFleetPage() {
   }, [federationHealth]);
   const connectedBusinesses = agents.filter((agent) => agent.liveBusinessConnected).length;
   const connectedDataPoints = agents.reduce((count, agent) => {
-    return count + Object.values(agent.dataConnections).filter((status) => status === 'connected').length;
+    const liveHealth = federationBySlug.get(federationSlugForAgent(agent));
+    return count + Object.values(effectiveDataConnections(agent, liveHealth)).filter((status) => status === 'connected').length;
   }, 0);
   const totalDataPoints = agents.length * 5;
 
@@ -250,7 +267,7 @@ export default function AgentFleetPage() {
                 This MVP merges the live dashboard workspace list with a static client-agent registry. Any metric that is not proven live stays marked as <strong>needs data connection</strong> so the fleet can improve without pretending the integrations are finished.
               </p>
               <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, marginTop: 10, marginBottom: 0 }}>
-                Live federation telemetry: {federationHealth?.ok ? `${federationHealth.summary?.slugs_active_24h ?? 0} active / ${federationHealth.summary?.slugs_total ?? 0} tracked slugs · ${federationHealth.summary?.cross_ad_clicks_30d ?? 0} cross-ad clicks in 30d · ${federationHealth.summary?.ctr_pct ?? 0}% CTR` : federationHealthError ? `needs data connection (${federationHealthError})` : 'loading'}.
+                Live federation telemetry: {federationHealth?.ok ? `${federationHealth.summary?.slugs_active_24h ?? 0} active / ${federationHealth.summary?.slugs_total ?? 0} tracked slugs · ${federationHealth.summary?.slugs_stale ?? 0} stale · ${federationHealth.summary?.cross_ad_clicks_30d ?? 0} cross-ad clicks · ${federationHealth.summary?.cross_ad_conversions_30d ?? 0} conversions · ${federationHealth.summary?.ctr_pct ?? 0}% CTR · ${federationHealth.summary?.pantheon_weights_drifted ?? 0} weighted creatives` : federationHealthError ? `needs data connection (${federationHealthError})` : 'loading'}.
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(120px, 1fr))', gap: 12 }}>
@@ -263,8 +280,9 @@ export default function AgentFleetPage() {
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
           {agents.map((agent) => {
-            const federationSlug = federationSlugByAgentSlug[agent.slug] ?? normaliseAgentKey(agent.businessName).replace(/-/g, '_');
+            const federationSlug = federationSlugForAgent(agent);
             const liveHealth = federationBySlug.get(federationSlug);
+            const dataConnections = effectiveDataConnections(agent, liveHealth);
             return (
             <article key={`${agent.slug}-${agent.businessId ?? 'static'}`} style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 16, padding: 20, display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
@@ -299,7 +317,7 @@ export default function AgentFleetPage() {
                 <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800, marginBottom: 10 }}>Command surfaces</div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8 }}>
                   {commandSurfaces.map((surface) => {
-                    const status = surfaceStatus(agent, surface.key);
+                    const status = surfaceStatus(dataConnections, surface.key);
                     return (
                       <Link
                         key={surface.key}
@@ -327,7 +345,7 @@ export default function AgentFleetPage() {
               <div style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: 12, padding: 12 }}>
                 <div style={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 800, marginBottom: 10 }}>Dashboard data</div>
                 <div style={{ display: 'grid', gap: 8 }}>
-                  {Object.entries(agent.dataConnections).map(([key, status]) => (
+                  {Object.entries(dataConnections).map(([key, status]) => (
                     <div key={key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, fontSize: 12 }}>
                       <span style={{ color: '#cbd5e1' }}>{key.replace(/([A-Z])/g, ' $1')}</span>
                       <span style={{ color: connectionColor(status), fontWeight: 800 }}>{status}</span>
