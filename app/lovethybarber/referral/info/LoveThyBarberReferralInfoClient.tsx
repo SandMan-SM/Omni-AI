@@ -368,7 +368,7 @@ export function LoveThyBarberReferralInfoClient({
                 name is Love Thy Barber (the featured Love Thy Barber creator), not the
                 Love Thy Barber brand itself; dollar values aligned to the
                 $60K stack + $300 down cadence. */}
-            <p className="mt-6 max-w-4xl text-lg text-zinc-300 leading-relaxed">
+            <p className="mt-6 text-lg text-zinc-300 leading-relaxed">
               {referrerName} sent you because the build behind the
               brand isn&apos;t a website — it&apos;s an audience
               engine. For{" "}
@@ -428,7 +428,7 @@ export function LoveThyBarberReferralInfoClient({
             {/* What's-in-the-box strip — five compact amber chips
                 under the leverage callout. Each chip is one bucket
                 of work the federation referral price maps to. */}
-            <div className="mt-6 flex flex-wrap gap-2 max-w-5xl">
+            <div className="mt-6 flex flex-wrap gap-2">
               <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
                 <Globe className="w-3 h-3" />
                 Bespoke Next.js website
@@ -459,7 +459,7 @@ export function LoveThyBarberReferralInfoClient({
                 Two-anchor framing kept intact: $200K+ open-market
                 comparison sits in the footer, $100K+ assets-you-walk-
                 away-with sits in the punch-line body. */}
-            <div className="mt-8 max-w-5xl relative overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.06] via-amber-300/[0.02] to-transparent p-6 sm:p-8">
+            <div className="mt-8 relative overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.06] via-amber-300/[0.02] to-transparent p-6 sm:p-8">
               <div
                 aria-hidden
                 className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl"
