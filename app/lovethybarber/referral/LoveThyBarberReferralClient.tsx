@@ -269,19 +269,24 @@ export function LoveThyBarberReferralClient({
         {/* HERO — kept signature "We don't even want the money."
             headline + updated intro paragraph + dual CTAs +
             trust/guarantee/affiliate reassurance strip. */}
-        <section className="relative">
-          {/* Love Thy Barber logo — pinned top-right of the hero.
-              Responsive: smaller on mobile so it clears the top-left
-              eyebrow; the logo's own black background blends into the
-              cosmic page. */}
+        <section className="relative overflow-hidden">
+          {/* Love Thy Barber logo as the hero banner background — the
+              logo's own black field blends into the cosmic page; a
+              dark gradient over it keeps the headline + CTAs legible.
+              Sits behind the content (z-0); content is z-10. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/love-thy-barber-logo.png"
             alt="Love Thy Barber — Teach. Inspire. Elevate."
-            className="absolute top-4 right-4 sm:top-8 sm:right-8 w-20 sm:w-44 h-auto rounded-lg ring-1 ring-white/10 z-20"
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover object-center opacity-25"
           />
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 pt-20 sm:pt-32 pb-10 sm:pb-12">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80 font-semibold pr-24 sm:pr-0">
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-b from-black/50 via-black/40 to-black/85"
+          />
+          <div className="relative z-10 mx-auto max-w-5xl px-5 sm:px-6 pt-20 sm:pt-32 pb-10 sm:pb-12">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80 font-semibold">
               Love Thy Barber × Omni AI · Federation referral
             </p>
             <h1
