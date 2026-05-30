@@ -27,6 +27,8 @@ type FederationSlugHealth = {
 
 type FederationHealthResponse = {
   ok: boolean;
+  data_status?: 'connected' | 'needs_data_connection';
+  warning?: string | null;
   fetched_at: string;
   summary?: {
     slugs_total?: number;
@@ -221,15 +223,52 @@ export default function AgentFleetPage() {
   }, [authLoading, user]);
 
   const agents = useMemo(() => (user ? toAgentCards(businesses) : []), [businesses, user]);
+  const federationDataConnected = federationHealth?.ok && federationHealth.data_status !== 'needs_data_connection';
   const federationBySlug = useMemo(() => {
+    if (!federationDataConnected) return new Map<string, FederationSlugHealth>();
     return new Map((federationHealth?.slugs ?? []).map((slug) => [slug.slug, slug]));
-  }, [federationHealth]);
+  }, [federationDataConnected, federationHealth]);
   const connectedBusinesses = agents.filter((agent) => agent.liveBusinessConnected).length;
   const connectedDataPoints = agents.reduce((count, agent) => {
     const liveHealth = federationBySlug.get(federationSlugForAgent(agent));
     return count + Object.values(effectiveDataConnections(agent, liveHealth)).filter((status) => status === 'connected').length;
   }, 0);
   const totalDataPoints = agents.length * 5;
+  const priorityQueue = agents
+    .map((agent) => {
+      const liveHealth = federationBySlug.get(federationSlugForAgent(agent));
+      if (!liveHealth) {
+        return {
+          agent,
+          severity: agent.priority <= 3 ? 'high' : 'medium',
+          reason: 'Telemetry missing from federation health',
+          action: agent.nextAction,
+        };
+      }
+      if (liveHealth.health === 'stale_7d_plus' || liveHealth.health === 'no_events') {
+        return {
+          agent,
+          severity: 'high',
+          reason: `Last signal is ${liveHealth.health.replace(/_/g, ' ')}`,
+          action: 'Restore inbound event tracking before optimizing creative or traffic.',
+        };
+      }
+      if (agent.priority <= 3 && liveHealth.leads_30d === 0) {
+        return {
+          agent,
+          severity: 'high',
+          reason: 'Priority account has 0 tracked leads in 30 days',
+          action: 'Verify form capture, CTA path, and conversion attribution for the next revenue run.',
+        };
+      }
+      return null;
+    })
+    .filter((item): item is { agent: AgentCard; severity: string; reason: string; action: string } => Boolean(item))
+    .sort((a, b) => {
+      const severityRank = (value: string) => (value === 'high' ? 0 : 1);
+      return severityRank(a.severity) - severityRank(b.severity) || a.agent.priority - b.agent.priority;
+    })
+    .slice(0, 5);
 
   if (authLoading || !user) {
     return (
@@ -267,7 +306,7 @@ export default function AgentFleetPage() {
                 This MVP merges the live dashboard workspace list with a static client-agent registry. Any metric that is not proven live stays marked as <strong>needs data connection</strong> so the fleet can improve without pretending the integrations are finished.
               </p>
               <p style={{ color: '#94a3b8', fontSize: 12, lineHeight: 1.6, marginTop: 10, marginBottom: 0 }}>
-                Live federation telemetry: {federationHealth?.ok ? `${federationHealth.summary?.slugs_active_24h ?? 0} active / ${federationHealth.summary?.slugs_total ?? 0} tracked slugs · ${federationHealth.summary?.slugs_stale ?? 0} stale · ${federationHealth.summary?.cross_ad_clicks_30d ?? 0} cross-ad clicks · ${federationHealth.summary?.cross_ad_conversions_30d ?? 0} conversions · ${federationHealth.summary?.ctr_pct ?? 0}% CTR · ${federationHealth.summary?.pantheon_weights_drifted ?? 0} weighted creatives` : federationHealthError ? `needs data connection (${federationHealthError})` : 'loading'}.
+                Live federation telemetry: {federationDataConnected ? `${federationHealth.summary?.slugs_active_24h ?? 0} active / ${federationHealth.summary?.slugs_total ?? 0} tracked slugs · ${federationHealth.summary?.slugs_stale ?? 0} stale · ${federationHealth.summary?.cross_ad_clicks_30d ?? 0} cross-ad clicks · ${federationHealth.summary?.cross_ad_conversions_30d ?? 0} conversions · ${federationHealth.summary?.ctr_pct ?? 0}% CTR · ${federationHealth.summary?.pantheon_weights_drifted ?? 0} weighted creatives` : federationHealth?.data_status === 'needs_data_connection' ? `needs data connection (${federationHealth.warning ?? 'federation health unavailable'})` : federationHealthError ? `needs data connection (${federationHealthError})` : 'loading'}.
               </p>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(120px, 1fr))', gap: 12 }}>
@@ -277,6 +316,27 @@ export default function AgentFleetPage() {
             </div>
           </div>
         </section>
+
+        {priorityQueue.length > 0 && (
+          <section style={{ background: '#120b0b', border: '1px solid #7f1d1d', borderRadius: 18, padding: 20, marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#fca5a5', fontSize: 12, fontWeight: 900, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 14 }}>
+              <ShieldAlert size={15} /> Autonomous priority queue
+            </div>
+            <div style={{ display: 'grid', gap: 10 }}>
+              {priorityQueue.map((item) => (
+                <div key={item.agent.slug} style={{ display: 'grid', gridTemplateColumns: 'minmax(160px, 0.8fr) minmax(220px, 1fr) minmax(260px, 1.4fr)', gap: 12, alignItems: 'start', background: '#0a0a0a', border: '1px solid #27272a', borderRadius: 12, padding: 12 }}>
+                  <div>
+                    <Badge color={item.severity === 'high' ? '#ef4444' : '#f59e0b'} label={item.severity} />
+                    <div style={{ color: '#fff', fontSize: 13, fontWeight: 900, marginTop: 8 }}>{item.agent.businessName}</div>
+                    <div style={{ color: '#94a3b8', fontSize: 11, marginTop: 2 }}>priority {item.agent.priority} · {tierLabel[item.agent.tier]}</div>
+                  </div>
+                  <div style={{ color: '#fecaca', fontSize: 12, lineHeight: 1.55 }}>{item.reason}</div>
+                  <div style={{ color: '#cbd5e1', fontSize: 12, lineHeight: 1.55 }}>{item.action}</div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
           {agents.map((agent) => {

@@ -320,10 +320,14 @@ export async function GET() {
       stale_7d_plus: slugChecks.filter((s) => s.health === "stale_7d_plus").map((s) => s.slug),
       no_events: slugChecks.filter((s) => s.health === "no_events").map((s) => s.slug),
     };
+    const totalCounts = [refCount, impCount, clkCount, cvrCount, agentsActive, directivesActive, creativesActive];
+    const dataUnavailable = totalCounts.every((count) => count === null) && slugsByHealth.no_events.length === INBOUND_SLUGS.length;
 
     return NextResponse.json(
       {
         ok: true,
+        data_status: dataUnavailable ? "needs_data_connection" : "connected",
+        warning: dataUnavailable ? "supabase_select_unavailable_or_timed_out" : null,
         fetched_at: new Date().toISOString(),
         elapsed_ms: Date.now() - t0,
         window: "30d",
