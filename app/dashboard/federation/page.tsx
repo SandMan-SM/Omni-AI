@@ -102,6 +102,11 @@ export default async function FederationDashboard() {
     { imp: 0, clk: 0, cvr: 0 },
   );
 
+  const creativesWithTrafficNoClicks = funnel.filter((r) => r.impressions >= 50 && r.clicks === 0).length;
+  const creativesWithClicksNoConversions = funnel.filter((r) => r.clicks > 0 && r.conversions === 0).length;
+  const pantheonAdjusted = funnel.filter((r) => r.pantheon_weight !== 1).length;
+  const topClickTarget = [...funnel].sort((a, b) => b.clicks - a.clicks)[0]?.target_slug ?? "needs data";
+
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-100">
       <div className="mx-auto max-w-6xl px-6 py-12 space-y-12">
@@ -119,6 +124,26 @@ export default async function FederationDashboard() {
           <Stat label="Clicks" value={totals.clk.toLocaleString()} />
           <Stat label="CTR" value={pct(totals.clk, totals.imp)} />
           <Stat label="Conversions" value={totals.cvr.toLocaleString()} />
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-3">
+          <InsightCard
+            label="Revenue leak"
+            value={totals.cvr === 0 && totals.clk > 0 ? `${totals.clk.toLocaleString()} clicks · 0 conversions` : "No hard leak detected"}
+            detail={totals.cvr === 0 && totals.clk > 0
+              ? "Route clicked visitors into destination forms and verify conversion attribution on every Tier 1 client page."
+              : "Federation has at least one tracked conversion in the 30-day window."}
+          />
+          <InsightCard
+            label="Creative action"
+            value={`${creativesWithTrafficNoClicks.toLocaleString()} cold · ${creativesWithClicksNoConversions.toLocaleString()} warm`}
+            detail="Cold = 50+ impressions with no clicks. Warm = clicks with no tracked conversion. Review these before adding more traffic."
+          />
+          <InsightCard
+            label="AI CEO priority"
+            value={topClickTarget}
+            detail={`Pantheon-adjusted creatives: ${pantheonAdjusted.toLocaleString()}. Keep Hermes/OmniClaw operator influence advisory-only; revenue proof wins.`}
+          />
         </section>
 
         <section>
@@ -216,6 +241,16 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-zinc-800 px-5 py-4">
       <p className="text-xs uppercase tracking-[0.3em] text-zinc-500">{label}</p>
       <p className="mt-2 text-2xl font-semibold tabular-nums text-zinc-100">{value}</p>
+    </div>
+  );
+}
+
+function InsightCard({ label, value, detail }: { label: string; value: string; detail: string }) {
+  return (
+    <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 px-5 py-4">
+      <p className="text-xs uppercase tracking-[0.3em] text-amber-300">{label}</p>
+      <p className="mt-2 text-xl font-semibold text-zinc-100">{value}</p>
+      <p className="mt-3 text-sm leading-6 text-zinc-400">{detail}</p>
     </div>
   );
 }
