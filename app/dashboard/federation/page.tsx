@@ -158,7 +158,7 @@ export default async function FederationDashboard() {
                   <th className="text-right px-4 py-3">Clicks</th>
                   <th className="text-right px-4 py-3">CTR</th>
                   <th className="text-right px-4 py-3">Conv.</th>
-                  <th className="text-right px-4 py-3">CVR</th>
+                  <th className="text-right px-4 py-3">Click CVR</th>
                   <th className="text-right px-4 py-3">Weight</th>
                 </tr>
               </thead>
@@ -182,7 +182,7 @@ export default async function FederationDashboard() {
                     <td className="px-4 py-3 text-right tabular-nums">{r.clicks.toLocaleString()}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{pct(r.clicks, r.impressions)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.conversions.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right tabular-nums">{pct(r.conversions, r.impressions)}</td>
+                    <td className="px-4 py-3 text-right tabular-nums">{pct(r.conversions, r.clicks)}</td>
                     <td className="px-4 py-3 text-right tabular-nums">
                       {(r.base_weight * r.pantheon_weight).toFixed(2)}
                     </td>
