@@ -197,7 +197,7 @@ export default function OraclePage() {
               { name: "Prometheus", domain: "Innovation · breakthrough features", source: "Hesiod · Aeschylus", ask: "What gift can we hand humans that they cannot yet imagine?" },
               { name: "Ares", domain: "Execution · breaking bottlenecks", source: "Iliad Book V", ask: "What is shipping today, no excuses?" },
               { name: "Hephaestus", domain: "Tooling · build infra · dev experience", source: "Iliad Book XVIII", ask: "Is the forge sharp enough to make the next thing easy?" },
-              { name: "Hermes", domain: "APIs · integrations · protocols", source: "Homeric Hymn to Hermes", ask: "Does this interface let two minds meet cleanly?" },
+              { name: "OmniClaw", domain: "APIs · integrations · protocols", source: "OmniClaw operating doctrine", ask: "Does this interface let two minds meet cleanly?" },
             ]}
           />
 

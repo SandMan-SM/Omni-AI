@@ -59,9 +59,24 @@ function fmtDate(iso: string | null): string {
   });
 }
 
+// Federation-row shape — different from ClientPost; we adapt in the
+// merge step below so the unified list can render in the same table.
+type FederationListItem = {
+  id: string;
+  site: string;
+  slug: string;
+  title: string;
+  kind: string;
+  status: "draft" | "approved" | "published" | "rejected";
+  published_at: string | null;
+  created_at: string;
+};
+
 export function ClientNewsletterStudio() {
   const [businessId, setBusinessId] = useState<string | null>(null);
   const [posts, setPosts] = useState<ClientPost[]>([]);
+  const [federationPosts, setFederationPosts] = useState<FederationListItem[]>([]);
+  const [federationSite, setFederationSite] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -82,6 +97,8 @@ export function ClientNewsletterStudio() {
   useEffect(() => {
     if (!businessId || businessId === "all") {
       setPosts([]);
+      setFederationPosts([]);
+      setFederationSite(null);
       setLoading(false);
       return;
     }
@@ -94,20 +111,38 @@ export function ClientNewsletterStudio() {
     const headers: HeadersInit = token
       ? { Authorization: `Bearer ${token}` }
       : {};
-    fetch(`/api/newsletter/scoped-posts?business_id=${businessId}`, { headers })
-      .then(async (r) => {
-        if (!r.ok) {
-          const body = await r.json().catch(() => ({ error: r.statusText }));
-          throw new Error(body.error || `HTTP ${r.status}`);
-        }
-        return r.json();
-      })
-      .then((d: { posts?: ClientPost[] }) => {
-        setPosts(d.posts || []);
-      })
-      .catch((e: Error) => {
-        setError(e.message || "Failed to load");
-        setPosts([]);
+
+    // Parallel: legacy Omni-AI-own posts + federation pipeline posts
+    // for this workspace. Federation read is unauth (returns only
+    // published) so it never blocks on session. Each promise's
+    // failure is contained — a federation outage doesn't blank the
+    // legacy list and vice versa.
+    Promise.all([
+      fetch(`/api/newsletter/scoped-posts?business_id=${businessId}`, { headers })
+        .then(async (r) => {
+          if (!r.ok) {
+            const body = await r.json().catch(() => ({ error: r.statusText }));
+            throw new Error(body.error || `HTTP ${r.status}`);
+          }
+          return r.json();
+        })
+        .then((d: { posts?: ClientPost[] }) => d.posts || [])
+        .catch((e: Error) => {
+          setError(e.message || "Failed to load");
+          return [] as ClientPost[];
+        }),
+      fetch(`/api/federation-newsletter/by-business?business_id=${businessId}`)
+        .then(async (r) => (r.ok ? r.json() : { posts: [], site: null }))
+        .then((d: { posts?: FederationListItem[]; site?: string | null }) => ({
+          posts: d.posts || [],
+          site: d.site ?? null,
+        }))
+        .catch(() => ({ posts: [] as FederationListItem[], site: null })),
+    ])
+      .then(([legacy, federation]) => {
+        setPosts(legacy);
+        setFederationPosts(federation.posts);
+        setFederationSite(federation.site);
       })
       .finally(() => setLoading(false));
   }, [businessId]);
@@ -231,6 +266,77 @@ export function ClientNewsletterStudio() {
           )}
         </CardContent>
       </Card>
+
+      {/* Federation dispatches — daily auto-generated, operator-approved.
+          Mounted separately from the legacy table above so the two
+          publication paths read as distinct surfaces; sites without
+          federation posts hide this card automatically. */}
+      {federationPosts.length > 0 && (
+        <Card className="border-amber-500/30 bg-amber-500/[0.04]">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base text-zinc-200">
+              <FileText className="h-4 w-4 text-amber-300" />
+              Federation dispatches
+              <Badge className="ml-1 bg-amber-500/20 text-[10px] uppercase tracking-wider text-amber-200">
+                Federation
+              </Badge>
+              {federationSite && (
+                <span className="ml-2 text-[11px] text-zinc-500 font-normal normal-case tracking-normal">
+                  · {federationSite}
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="min-w-full text-sm">
+                <thead>
+                  <tr className="border-b border-zinc-800 text-left text-xs uppercase tracking-wider text-zinc-500">
+                    <th className="px-3 py-2 font-medium">Title</th>
+                    <th className="px-3 py-2 font-medium">Kind</th>
+                    <th className="px-3 py-2 font-medium">Published</th>
+                    <th className="px-3 py-2 font-medium" aria-label="Actions" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-800/60">
+                  {federationPosts.map((p) => (
+                    <tr key={p.id} className="text-zinc-200">
+                      <td className="px-3 py-3">
+                        <span className="block truncate max-w-[28rem]">
+                          {p.title || "(untitled)"}
+                        </span>
+                        <span className="block truncate max-w-[28rem] text-xs text-zinc-500">
+                          /{p.slug}
+                        </span>
+                      </td>
+                      <td className="px-3 py-3 text-xs uppercase tracking-wider text-zinc-400">
+                        {p.kind}
+                      </td>
+                      <td className="px-3 py-3 text-zinc-400">
+                        {fmtDate(p.published_at)}
+                      </td>
+                      <td className="px-3 py-3 text-right">
+                        {p.slug ? (
+                          <Link
+                            href={`/newsletter/${p.slug}`}
+                            target="_blank"
+                            className="inline-flex items-center gap-1 text-xs text-amber-300 hover:text-amber-200"
+                          >
+                            View
+                            <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        ) : (
+                          <span className="text-xs text-zinc-600">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Edit-by-request notice */}
       <Card className="border-zinc-800 bg-zinc-950/30">

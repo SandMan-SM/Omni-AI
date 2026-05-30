@@ -18,6 +18,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { FederationNewsletterPanel } from "@/components/newsletter-studio/FederationNewsletterPanel";
 
 interface Subscriber {
   id: string;
@@ -246,6 +247,11 @@ export function NewsletterStudio() {
 
   return (
     <div className="space-y-6">
+      {/* Federation drafts pending approval — sits ABOVE the legacy
+          Omni-AI-own newsletter controls so the operator's daily
+          triage queue is the first thing they see. */}
+      <FederationNewsletterPanel />
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>

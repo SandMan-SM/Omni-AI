@@ -6,6 +6,7 @@ import { COMPARISON_SLUGS } from "@/lib/comparison-data";
 // but the sitemap is a discovery manifest — per-request DB hits are wasteful
 // and rebuild-on-publish is good enough for the daily posting cadence.
 export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 const baseUrl = "https://omnileadsagi.com";
 

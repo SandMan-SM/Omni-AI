@@ -3,6 +3,7 @@ import { cookies, headers } from 'next/headers';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createServerClient } from '@supabase/ssr';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { hasPlatformDashboardAccess } from '@/lib/mafi-access';
 import { ptStartOfDayIso } from '@/lib/tz';
 import {
   INBOUND_SLUGS,
@@ -104,18 +105,11 @@ export async function GET() {
   // client logins must not see other tenants.
   const { data: profile } = await sb
     .from('profiles')
-    .select('role, is_admin')
+    .select('email, username, name, role, is_admin')
     .eq('id', callerId)
     .single();
 
-  const profileRow = profile as { role?: unknown; is_admin?: unknown } | null;
-  const isPlatformAdmin =
-    !!profileRow &&
-    (profileRow.is_admin === true ||
-      (typeof profileRow.role === 'string' &&
-        ['admin', 'owner', 'platform'].includes(
-          (profileRow.role || '').toLowerCase(),
-        )));
+  const isPlatformAdmin = hasPlatformDashboardAccess(profile);
 
   if (!isPlatformAdmin) {
     return NextResponse.json(

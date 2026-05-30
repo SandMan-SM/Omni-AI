@@ -96,8 +96,8 @@ function leadsZero(t: Trigger) {
     },
     {
       agent_name: "Athena",
-      to_agent_name: "Hermes",
-      message_md: `Form endpoint first. Hermes, can you confirm \`/api/inbound/${(t.meta?.slug as string) || "[slug]"}/leads\` is returning 200 from the deployed brand site, and that CORS origin is whitelisted?`,
+      to_agent_name: "OmniClaw",
+      message_md: `Form endpoint first. OmniClaw, can you confirm \`/api/inbound/${(t.meta?.slug as string) || "[slug]"}/leads\` is returning 200 from the deployed brand site, and that CORS origin is whitelisted?`,
     },
     {
       agent_name: "Sun Tzu",
@@ -166,11 +166,11 @@ function pageViewsDrop(t: Trigger) {
   const lines: DialogueLine[] = [
     {
       agent_name: "Horus",
-      to_agent_name: "Hermes",
-      message_md: `**${brand(t)}** page views down ${drop}. Traffic side, not funnel side. Hermes — UTM source breakdown for the lost ${pct(t.delta_pct)}?`,
+      to_agent_name: "OmniClaw",
+      message_md: `**${brand(t)}** page views down ${drop}. Traffic side, not funnel side. OmniClaw — UTM source breakdown for the lost ${pct(t.delta_pct)}?`,
     },
     {
-      agent_name: "Hermes",
+      agent_name: "OmniClaw",
       to_agent_name: "Sun Tzu",
       message_md: `Will pull. Most often it's organic search ranking slipping or a paid channel pausing. Sun Tzu — competitive index move?`,
     },
@@ -186,7 +186,7 @@ function pageViewsDrop(t: Trigger) {
       rationale_md: `Group last 14d page_view events by referrer_kind / utm_source. Identify which channel dropped.`,
       confidence: 0.65,
       payload: { window_days: 14 },
-      proposed_by: "Hermes",
+      proposed_by: "OmniClaw",
       business_label: t.business_label,
     },
   ];

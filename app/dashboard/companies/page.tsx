@@ -33,6 +33,7 @@ type CompanyIntel = {
 export default function CompaniesPage() {
   const [businesses, setBusinesses] = useState<Business[]>([]);
   const [selectedBiz, setSelectedBiz] = useState<Business | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [companies, setCompanies] = useState<CompanyIntel[]>([]);
   const [bizOpen, setBizOpen] = useState(false);
   const [domain, setDomain] = useState('');
@@ -41,7 +42,8 @@ export default function CompaniesPage() {
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
-    loadBusinesses().then(({ data }) => {
+    loadBusinesses().then(({ data, isAdmin: admin }) => {
+      setIsAdmin(admin);
       if (data?.length) {
         setBusinesses(data);
         const stored = typeof window !== 'undefined' ? localStorage.getItem('omni_active_business_id') : null;
@@ -102,6 +104,7 @@ export default function CompaniesPage() {
   // can't see (or click into) other tenants' workspaces.
   const visibleBizs = (() => {
     try {
+      if (isAdmin) return businesses;
       if (typeof window === "undefined") return businesses;
       const u = JSON.parse(localStorage.getItem("omni_user") || "null");
       if (u?.is_admin) return businesses;

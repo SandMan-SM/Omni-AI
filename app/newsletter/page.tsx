@@ -10,6 +10,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // /about, /faq, /campaigns, /interlinked are one hop away from the content
 // hub. Matches the pattern added to /about and /faq in the same cycle.
 import { Footer } from "@/components/footer";
+import { getNewsletterFallbackSummaries } from "@/lib/newsletter-fallback";
 
 export const metadata: Metadata = {
   title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
@@ -75,6 +76,13 @@ function normalizeKeywords(keywords: unknown): string[] {
   return [];
 }
 
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]);
+}
+
 export default async function NewsletterIndexPage() {
   const supabase = createAdminClient();
 
@@ -84,27 +92,50 @@ export default async function NewsletterIndexPage() {
   // come straight from `newsletter_sends.recipients_total`. NO manual
   // floors — the page shows the real number.
   const [postsRes, profileSubRes, newsletterSubRes, sendsRes] = await Promise.all([
-    supabase
-      .from("newsletter_posts")
-      .select("slug, subject, intro, keywords, tier, published_at, created_at")
-      .not("published_at", "is", null)
-      .lte("published_at", new Date().toISOString())
-      .order("published_at", { ascending: false })
-      .limit(50),
-    supabase
-      .from("profiles")
-      .select("email")
-      .eq("newsletter_subscribed", true)
-      .not("email", "is", null),
-    supabase
-      .from("newsletter_subscriptions")
-      .select("email")
-      .eq("subscribed", true)
-      .not("email", "is", null),
-    supabase.from("newsletter_sends").select("recipients_total"),
+    withTimeout(
+      supabase
+        .from("newsletter_posts")
+        .select("slug, subject, intro, keywords, tier, published_at, created_at")
+        .not("published_at", "is", null)
+        .order("published_at", { ascending: false })
+        .limit(50),
+      8000
+    ),
+    withTimeout(
+      supabase
+        .from("profiles")
+        .select("email")
+        .eq("newsletter_subscribed", true)
+        .not("email", "is", null)
+        .limit(1000),
+      3500
+    ),
+    withTimeout(
+      supabase
+        .from("newsletter_subscriptions")
+        .select("email")
+        .eq("subscribed", true)
+        .not("email", "is", null)
+        .limit(1000),
+      3500
+    ),
+    withTimeout(supabase.from("newsletter_sends").select("recipients_total").limit(1000), 3500),
   ]);
 
-  const posts = postsRes.data || [];
+  const supabasePosts = (postsRes as { data?: Array<{ slug: string | null; subject: string | null; intro: string | null; keywords: unknown; tier: string | null; published_at: string | null; created_at: string | null }> } | null)?.data || [];
+  const rawPosts = supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries();
+  const posts = rawPosts
+    .filter((p) => p.slug && p.subject && p.published_at)
+    .map((p) => ({
+      slug: p.slug!,
+      subject: p.subject!,
+      intro: p.intro || "",
+      keywords: Array.isArray(p.keywords) || typeof p.keywords === "string" ? p.keywords : null,
+      tier: p.tier || "free",
+      published_at: p.published_at!,
+      created_at: p.created_at || p.published_at!,
+    }));
+  const postsUnavailable = !postsRes || Boolean((postsRes as { error?: unknown }).error);
   const premiumPosts = posts.filter(p => p.tier === "premium");
   const freePosts = posts.filter(p => p.tier !== "premium");
 
@@ -114,16 +145,16 @@ export default async function NewsletterIndexPage() {
   // (logged-in) AND in newsletter_subscriptions (signed up via the form)
   // counts once.
   const subEmails = new Set<string>();
-  for (const row of (profileSubRes.data || []) as Array<{ email: string | null }>) {
+  for (const row of ((profileSubRes as { data?: Array<{ email: string | null }> } | null)?.data || [])) {
     if (row.email) subEmails.add(row.email.trim().toLowerCase());
   }
-  for (const row of (newsletterSubRes.data || []) as Array<{ email: string | null }>) {
+  for (const row of ((newsletterSubRes as { data?: Array<{ email: string | null }> } | null)?.data || [])) {
     if (row.email) subEmails.add(row.email.trim().toLowerCase());
   }
   const subscribersCount = subEmails.size;
 
   // Real recipient totals from logged sends (no inflation factors).
-  const viewersCount = (sendsRes.data || []).reduce(
+  const viewersCount = ((sendsRes as { data?: Array<{ recipients_total?: number | null }> } | null)?.data || []).reduce(
     (sum, r: { recipients_total?: number | null }) => sum + (r.recipients_total || 0),
     0
   );
@@ -402,9 +433,13 @@ export default async function NewsletterIndexPage() {
 
             {freePosts.length === 0 && (
               <div className="text-center py-20 text-gray-600">
-                <p className="text-lg mb-2">No issues yet.</p>
+                <p className="text-lg mb-2">
+                  {postsUnavailable ? "Newsletter issues are reconnecting." : "No issues yet."}
+                </p>
                 <p className="text-sm">
-                  The first newsletter will be published tomorrow at 8:00 AM ET.
+                  {postsUnavailable
+                    ? "The archive is live, but the newsletter database did not return posts on this request. Please refresh shortly."
+                    : "The first newsletter will be published tomorrow at 8:00 AM ET."}
                 </p>
               </div>
             )}

@@ -100,7 +100,10 @@ export function ProposalClient({ pageUrl }: Props) {
                 return (
                   <div
                     key={stat.label}
-                    className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-3 py-6 text-center"
+                    className={
+                      "flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-3 py-6 text-center " +
+                      (isInfinity ? "col-span-2 sm:col-span-1" : "")
+                    }
                   >
                     <p
                       className={
@@ -138,7 +141,7 @@ export function ProposalClient({ pageUrl }: Props) {
                 Ready when you are
               </p>
               <h2
-                className="relative z-10 mt-3 text-3xl sm:text-4xl tracking-tight"
+                className="relative z-10 mt-3 whitespace-nowrap text-[clamp(1.75rem,7.2vw,2.25rem)] sm:text-4xl tracking-tight"
                 style={{ fontFamily: "Georgia, serif" }}
               >
                 See the full breakdown.

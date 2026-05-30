@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getNewsletterFallbackSummaries } from "@/lib/newsletter-fallback";
 
 /**
  * RSS 2.0 feed for the Interlinked newsletter at /newsletter/rss.xml.
@@ -24,6 +25,13 @@ export const dynamic = "force-dynamic";
 const siteUrl = "https://omnileadsagi.com";
 const feedUrl = `${siteUrl}/newsletter/rss.xml`;
 
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]);
+}
+
 // RSS 2.0 is conservative about which characters must be escaped inside
 // text nodes. XML requires &, <, > at minimum; attributes also need " and '.
 // We're only writing into <title>/<description>/<category> text nodes,
@@ -40,15 +48,18 @@ function escapeXml(str: string): string {
 
 export async function GET() {
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("newsletter_posts")
-    .select("slug, subject, intro, published_at, tier")
-    .not("published_at", "is", null)
-    .lte("published_at", new Date().toISOString())
-    .order("published_at", { ascending: false })
-    .limit(50);
+  const result = await withTimeout(
+    supabase
+      .from("newsletter_posts")
+      .select("slug, subject, intro, published_at, tier")
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(50),
+    8000
+  );
 
-  const posts = data || [];
+  const supabasePosts = (result as { data?: Array<{ slug?: string | null; subject?: string | null; intro?: string | null; published_at?: string | null; tier?: string | null }> } | null)?.data || [];
+  const posts = supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries();
   const latestPub = posts[0]?.published_at
     ? new Date(posts[0].published_at).toUTCString()
     : new Date().toUTCString();

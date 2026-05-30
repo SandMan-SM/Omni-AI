@@ -8,6 +8,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
+const SELECT_BUDGET_MS = 4500;
+
 function cors(): HeadersInit {
   return {
     "Access-Control-Allow-Origin": "*",
@@ -35,6 +37,8 @@ type Row = {
 export async function GET() {
   try {
     const sb = createAdminClient();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), SELECT_BUDGET_MS);
     const { data, error } = await sb
       .from("council_agents")
       .select(
@@ -42,13 +46,15 @@ export async function GET() {
       )
       .eq("status", "active")
       .order("elo", { ascending: false })
-      .limit(60);
+      .limit(60)
+      .abortSignal(controller.signal);
+    clearTimeout(timer);
 
     if (error) {
       console.error("[council/leaderboard] select", error);
       return NextResponse.json(
-        { ok: false, error: "select_failed" },
-        { status: 500, headers: cors() },
+        { ok: true, fetched_at: new Date().toISOString(), count: 0, agents: [], data_status: "needs_data_connection", warning: "select_failed" },
+        { headers: cors() },
       );
     }
 

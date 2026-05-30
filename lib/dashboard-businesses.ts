@@ -16,13 +16,18 @@ import type { Business } from "@/lib/agi-supabase";
  * when RLS quietly returned zero rows.
  */
 export async function loadBusinesses(): Promise<{ data: Business[]; isAdmin: boolean }> {
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => controller.abort(), 12_000);
+
   try {
-    const r = await authFetch("/api/dashboard/businesses");
+    const r = await authFetch("/api/dashboard/businesses", { signal: controller.signal });
     if (!r.ok) return { data: [], isAdmin: false };
     const j = (await r.json()) as { businesses?: Business[]; isAdmin?: boolean };
     return { data: j?.businesses ?? [], isAdmin: j?.isAdmin === true };
   } catch {
     return { data: [], isAdmin: false };
+  } finally {
+    globalThis.clearTimeout(timeout);
   }
 }
 

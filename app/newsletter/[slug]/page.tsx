@@ -15,6 +15,7 @@ import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
+import { getNewsletterFallbackPost, getNewsletterFallbackSummaries } from "@/lib/newsletter-fallback";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -80,6 +81,13 @@ function normalizeInsights(insights: unknown): string[] {
   return [];
 }
 
+function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
+  ]);
+}
+
 // Use admin client so shared links always work — no auth/RLS gating on individual posts.
 // Filter to published rows only: when an admin unpublishes a post (sets
 // published_at = NULL) it should drop out of search-engine indexes AND stop
@@ -88,14 +96,21 @@ function normalizeInsights(insights: unknown): string[] {
 // 404 cleanly here.
 async function getPost(slug: string) {
   noStore();
+  const fallbackPost = getNewsletterFallbackPost(slug);
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("newsletter_posts")
-    .select("*")
-    .eq("slug", slug)
-    .not("published_at", "is", null)
-    .maybeSingle();
-  return data;
+  const result = await withTimeout(
+    supabase
+      .from("newsletter_posts")
+      .select("*")
+      .eq("slug", slug)
+      .not("published_at", "is", null)
+      .maybeSingle(),
+    2500
+  );
+
+  if (!result) return fallbackPost;
+  const { data, error } = result as { data: ReturnType<typeof getNewsletterFallbackPost>; error?: unknown };
+  return data || (error ? fallbackPost : fallbackPost);
 }
 
 // Cross-cluster handoff. /newsletter/[slug] readers are deep-reader
@@ -108,14 +123,17 @@ async function getPost(slug: string) {
 async function getLatestTrend() {
   noStore();
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("landing_pages")
-    .select("slug, topic, title, date")
-    .not("slug", "is", null)
-    .order("date", { ascending: false })
-    .limit(1)
-    .single();
-  return data;
+  const result = await withTimeout(
+    supabase
+      .from("landing_pages")
+      .select("slug, topic, title, date")
+      .not("slug", "is", null)
+      .order("date", { ascending: false })
+      .limit(1)
+      .single(),
+    2000
+  );
+  return (result as { data?: { slug?: string | null; topic?: string | null; title?: string | null; date?: string | null } } | null)?.data || null;
 }
 
 // Pick 3 related posts for the "Related issues" section. Logic:
@@ -132,16 +150,21 @@ async function getRelatedPosts(
   currentKeywords: string[] | null | undefined
 ) {
   noStore();
+  const fallbackRelated = getNewsletterFallbackSummaries().filter((p) => p.slug !== currentSlug).slice(0, 3);
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("newsletter_posts")
-    .select("slug, subject, intro, published_at, tier, keywords")
-    .neq("slug", currentSlug)
-    .not("slug", "is", null)
-    .not("published_at", "is", null)
-    .order("published_at", { ascending: false })
-    .limit(50);
-  if (!data || data.length === 0) return [] as NonNullable<typeof data>;
+  const result = await withTimeout(
+    supabase
+      .from("newsletter_posts")
+      .select("slug, subject, intro, published_at, tier, keywords")
+      .neq("slug", currentSlug)
+      .not("slug", "is", null)
+      .not("published_at", "is", null)
+      .order("published_at", { ascending: false })
+      .limit(50),
+    2500
+  );
+  const data = (result as { data?: typeof fallbackRelated | null; error?: unknown } | null)?.data;
+  if (!data || data.length === 0) return fallbackRelated;
 
   const kwSet = new Set(normalizeKeywords(currentKeywords).map((k) => k.toLowerCase()));
   if (kwSet.size === 0) return data.slice(0, 3);

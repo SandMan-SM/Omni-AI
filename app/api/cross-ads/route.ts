@@ -14,6 +14,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const ALLOWED_SLOTS: CrossAdSlot[] = ["header", "footer", "content-end", "sidebar-card"];
+const SELECT_BUDGET_MS = 4500;
+const IMPRESSION_BUDGET_MS = 1500;
 
 function corsHeaders(): HeadersInit {
   return {
@@ -40,17 +42,24 @@ export async function GET(req: NextRequest) {
 
   try {
     const sb = createAdminClient();
+    const selectController = new AbortController();
+    const selectTimer = setTimeout(() => selectController.abort(), SELECT_BUDGET_MS);
     const { data, error } = await sb
       .from("cross_ad_creatives")
       .select(
         "id, source_slug, target_slug, slot, eyebrow, headline_md, blurb_md, cta_text, cta_url_template, base_weight, pantheon_weight, status, audience_tags",
       )
       .eq("status", "active")
-      .eq("slot", slot);
+      .eq("slot", slot)
+      .abortSignal(selectController.signal);
+    clearTimeout(selectTimer);
 
     if (error) {
       console.error("[cross-ads] select error", error);
-      return NextResponse.json({ ok: false, error: "select_failed" }, { status: 500, headers: corsHeaders() });
+      return NextResponse.json(
+        { ok: true, creative: null, data_status: "needs_data_connection", warning: "select_failed" },
+        { headers: corsHeaders() },
+      );
     }
 
     const creatives = (data || []) as CrossAdCreative[];
@@ -61,18 +70,28 @@ export async function GET(req: NextRequest) {
 
     // Impression log — fire-and-forget. We swallow errors to keep the
     // hot path snappy; the dashboard funnel tolerates missing logs.
-    sb.from("cross_ad_impressions")
-      .insert({
-        creative_id: chosen.id,
-        visitor_id: visitor,
-        session_id: session,
-        originating_slug: slug,
-        page_path: page,
-        slot: slot,
-        user_agent: req.headers.get("user-agent")?.slice(0, 500) || null,
-      })
+    const impressionController = new AbortController();
+    const impressionTimer = setTimeout(() => impressionController.abort(), IMPRESSION_BUDGET_MS);
+    Promise.resolve(
+      sb.from("cross_ad_impressions")
+        .insert({
+          creative_id: chosen.id,
+          visitor_id: visitor,
+          session_id: session,
+          originating_slug: slug,
+          page_path: page,
+          slot: slot,
+          user_agent: req.headers.get("user-agent")?.slice(0, 500) || null,
+        })
+        .abortSignal(impressionController.signal),
+    )
       .then(({ error: e }: { error: unknown }) => {
+        clearTimeout(impressionTimer);
         if (e) console.warn("[cross-ads] impression insert failed", e);
+      })
+      .catch((e: unknown) => {
+        clearTimeout(impressionTimer);
+        console.warn("[cross-ads] impression insert aborted/failed", e);
       });
 
     return NextResponse.json(

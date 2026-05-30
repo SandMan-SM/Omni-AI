@@ -32,13 +32,15 @@ const SUN_TZU = "Sun Tzu";
 const NAVAL = "Naval";
 const ATHENA = "Athena";
 const ISIS = "Isis";
+const OMNICLAW = "OmniClaw";
 
 // Weight per lens — sum doesn't have to equal 1; we average at the end.
 const LENS_BLEND: Record<string, number> = {
-  [SUN_TZU]: 0.4,
+  [SUN_TZU]: 0.35,
   [NAVAL]: 0.3,
-  [ATHENA]: 0.2,
+  [ATHENA]: 0.15,
   [ISIS]: 0.1,
+  [OMNICLAW]: 0.1,
 };
 
 const MIN_WEIGHT = 0.2;
@@ -87,6 +89,118 @@ function isis(s: CreativeStat): LensProposal {
     return { lens: ISIS, delta: -0.2, reasoning: "Cold reception — give the slot to a creative with empathy." };
   }
   return { lens: ISIS, delta: 0, reasoning: "No clear warmth signal." };
+}
+
+type OmniClawLensReview = {
+  omniclaw_score: number;
+  note: string;
+};
+
+function neutralOmniClawReview(): OmniClawLensReview {
+  return {
+    omniclaw_score: 0.5,
+    note: "Neutral operator score; OmniClaw proxy not configured or unavailable.",
+  };
+}
+
+function omniclaw(s: CreativeStat, review: OmniClawLensReview): LensProposal {
+  const score = Math.max(0, Math.min(1, review.omniclaw_score));
+  const delta = (score - 0.5) * 0.6;
+  return {
+    lens: OMNICLAW,
+    delta,
+    reasoning: `Operator clarity ${(score * 100).toFixed(0)}% — ${review.note}`,
+  };
+}
+
+function extractJsonObject(text: string): unknown {
+  try {
+    return JSON.parse(text);
+  } catch {
+    const match = text.match(/\{[\s\S]*\}/);
+    if (!match) return null;
+    try {
+      return JSON.parse(match[0]);
+    } catch {
+      return null;
+    }
+  }
+}
+
+async function fetchOmniClawLensReviews(stats: CreativeStat[]): Promise<Record<string, OmniClawLensReview>> {
+  if (process.env.OMNICLAW_ENABLED !== "true") {
+    return {};
+  }
+  const proxyUrl = process.env.OMNICLAW_PROXY_URL;
+  if (!proxyUrl) {
+    return {};
+  }
+
+  const url = `${proxyUrl.replace(/\/$/, "")}/chat/completions`;
+  const token = process.env.OMNICLAW_PROXY_TOKEN || "omniclaw-local";
+  const model = process.env.OMNICLAW_MODEL || "gpt-5.5";
+  const payload = stats.map((s) => ({
+    proposal_id: s.id,
+    target_slug: s.target_slug,
+    current_weight: s.pantheon_weight,
+    impressions_7d: s.impressions_7d,
+    clicks_7d: s.clicks_7d,
+    conversions_7d: s.conversions_7d,
+  }));
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const response = await fetch(url, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          {
+            role: "system",
+            content: "Return strict JSON only. Score each proposal for operator clarity and single-human executability.",
+          },
+          {
+            role: "user",
+            content: `Return {"reviews":[{"proposal_id":"...","omniclaw_score":0.0,"note":"one line"}]} for these proposals:\n${JSON.stringify(payload)}`,
+          },
+        ],
+        temperature: 0.2,
+      }),
+    });
+    clearTimeout(timer);
+    if (!response.ok) {
+      console.warn("[pantheon-decision] OmniClaw proxy review failed", response.status);
+      return {};
+    }
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+    if (typeof content !== "string") return {};
+    const parsed = extractJsonObject(content);
+    const reviews = (parsed as { reviews?: unknown[] } | null)?.reviews;
+    if (!Array.isArray(reviews)) return {};
+
+    const byId: Record<string, OmniClawLensReview> = {};
+    for (const item of reviews) {
+      if (!item || typeof item !== "object") continue;
+      const row = item as { proposal_id?: unknown; omniclaw_score?: unknown; note?: unknown };
+      if (typeof row.proposal_id !== "string") continue;
+      if (typeof row.omniclaw_score !== "number") continue;
+      byId[row.proposal_id] = {
+        omniclaw_score: row.omniclaw_score,
+        note: typeof row.note === "string" ? row.note.slice(0, 240) : "OmniClaw returned no note.",
+      };
+    }
+    return byId;
+  } catch (e) {
+    console.warn("[pantheon-decision] OmniClaw proxy review unavailable", e);
+    return {};
+  }
 }
 
 function blend(proposals: LensProposal[]): number {
@@ -154,10 +268,17 @@ export async function rebalanceCreativeWeights(sb: SupabaseClient): Promise<Reba
   const total = stats.reduce((a, s) => a + s.impressions_7d, 0);
   const byTarget: Record<string, number> = {};
   for (const s of stats) byTarget[s.target_slug] = (byTarget[s.target_slug] || 0) + s.impressions_7d;
+  const omniclawReviews = await fetchOmniClawLensReviews(stats);
 
   const results: RebalanceResult[] = [];
   for (const s of stats) {
-    const proposals = [sunTzu(s), naval(s), athena(s, byTarget, total), isis(s)];
+    const proposals = [
+      sunTzu(s),
+      naval(s),
+      athena(s, byTarget, total),
+      isis(s),
+      omniclaw(s, omniclawReviews[s.id] ?? neutralOmniClawReview()),
+    ];
     const delta = blend(proposals);
     const newWeight = clamp(s.pantheon_weight * (1 + delta));
     results.push({

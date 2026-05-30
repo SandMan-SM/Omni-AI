@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { hasPlatformDashboardAccess } from "@/lib/mafi-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -130,19 +131,13 @@ export async function GET() {
 
   const { data: profile } = await sb
     .from("profiles")
-    .select("id, role, is_admin")
+    .select("id, email, username, name, role, is_admin")
     .eq("id", callerId)
     .single();
   if (!profile) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
-  const profileRow = profile as { role?: unknown; is_admin?: unknown };
-  const isPlatformAdmin =
-    profileRow.is_admin === true ||
-    (typeof profileRow.role === "string" &&
-      ["admin", "owner", "platform"].includes(
-        (profileRow.role || "").toLowerCase(),
-      ));
+  const isPlatformAdmin = hasPlatformDashboardAccess(profile);
 
   if (isPlatformAdmin) {
     const { data, error } = await sb

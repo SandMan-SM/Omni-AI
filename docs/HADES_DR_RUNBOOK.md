@@ -14,7 +14,7 @@ broken.
 | Database | Supabase project `odvxtychuxxsudfpcqqs` (Interlinked) | Hades |
 | Web app | Vercel project `omni-ai` | Hades + Hephaestus |
 | Email sending | Resend (`agent@omnileadsagi.com`) | Hades |
-| DNS | Domain registrar of record for `omnileadsagi.com` | Hermes |
+| DNS | Domain registrar of record for `omnileadsagi.com` | OmniClaw |
 | Per-client tracker | Their Vercel projects (4× client repos) | Each client + Hephaestus |
 
 ## Backup posture

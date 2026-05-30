@@ -700,7 +700,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     realm: 1,
     role: "Branded short-link redirect",
     status: "live",
-    pantheonArchetype: "Hermes (integrations lens)",
+    pantheonArchetype: "OmniClaw (integrations lens)",
     pantheonCEO: null,
     tagline: "Branded short-link directory. Every hop appends full attribution before 302-ing to canonical.",
     problem: "Paid traffic + agent outreach needed memorable short URLs that preserved attribution through the redirect.",

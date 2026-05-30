@@ -32,6 +32,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
  */
 
 export const revalidate = 1800;
+export const dynamic = "force-dynamic";
 
 const siteUrl = "https://omnileadsagi.com";
 const publicationName = "Omni AI — Interlinked";
