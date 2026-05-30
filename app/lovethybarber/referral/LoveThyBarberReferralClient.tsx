@@ -285,19 +285,19 @@ export function LoveThyBarberReferralClient({
             aria-hidden="true"
             className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-b from-black/50 via-black/40 to-black/85"
           />
-          <div className="relative z-10 mx-auto max-w-5xl px-5 sm:px-6 pt-20 sm:pt-32 pb-10 sm:pb-12">
+          <div className="relative z-10 mx-auto max-w-7xl px-5 sm:px-6 pt-20 sm:pt-32 pb-10 sm:pb-12">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80 font-semibold">
               Love Thy Barber × Omni AI · Federation referral
             </p>
             <h1
-              className="mt-5 text-4xl sm:text-7xl tracking-tight leading-[1.05]"
+              className="mt-5 text-4xl sm:text-5xl lg:text-6xl tracking-tight leading-[1.05] xl:whitespace-nowrap"
               style={{ fontFamily: "Georgia, serif" }}
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
                 $60K+ in assets. $3,000 in. 20x ROI.
               </em>
             </h1>
-            <p className="mt-6 max-w-2xl text-base sm:text-xl text-zinc-300 leading-relaxed">
+            <p className="mt-6 text-base sm:text-xl text-zinc-300 leading-relaxed">
               {referrerName} sent you because the build behind the
               brand isn&apos;t a website — it&apos;s an audience
               engine. You get the same Tier-3 federation stack at
@@ -364,7 +364,7 @@ export function LoveThyBarberReferralClient({
             so the orphan row centers) as every other referral
             surface. */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 pb-10 sm:pb-12">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 pb-10 sm:pb-12">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
               Scope at a glance
             </p>
@@ -409,7 +409,7 @@ export function LoveThyBarberReferralClient({
             row (matches the simplification Sita applied to
             the Rene referral). */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 py-6 sm:py-8">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 py-6 sm:py-8">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
               What you get
             </p>
@@ -479,7 +479,7 @@ export function LoveThyBarberReferralClient({
             months into build / grow / forever. Same shape as
             the Rene referral timeline. */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 py-6 sm:py-8">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 py-6 sm:py-8">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
               The timeline
             </p>
@@ -554,7 +554,7 @@ export function LoveThyBarberReferralClient({
         {/* PROOF strip — anchors credibility on lovethybarber.shop + the
             $350K+ Interlinked portfolio framing. */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 py-6 sm:py-8">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 py-6 sm:py-8">
             <div className="rounded-2xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.05] via-amber-300/[0.02] to-transparent p-5 sm:p-6">
               <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300/90 font-semibold">
                 Proof
@@ -582,7 +582,7 @@ export function LoveThyBarberReferralClient({
             guarantee on the right. Same visual rhythm as the
             Rene referral page. */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 py-6 sm:py-10">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 py-6 sm:py-10">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
               Performance terms
             </p>
@@ -641,7 +641,7 @@ export function LoveThyBarberReferralClient({
 
         {/* FOOTER CTA — both buttons + AES-256 strip */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 py-10 sm:py-16">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 py-10 sm:py-16">
             <div className="rounded-3xl border-2 border-amber-300/30 bg-gradient-to-br from-amber-300/[0.05] via-amber-300/[0.02] to-transparent p-5 sm:p-10 text-center relative overflow-hidden">
               <div
                 aria-hidden
@@ -693,7 +693,7 @@ export function LoveThyBarberReferralClient({
 
         {/* SITE FOOTER */}
         <footer className="border-t border-white/5 relative mt-4">
-          <div className="mx-auto max-w-5xl px-5 sm:px-6 py-8 text-xs text-zinc-700 text-center">
+          <div className="mx-auto max-w-7xl px-5 sm:px-6 py-8 text-xs text-zinc-700 text-center">
             <Link href="/" className="hover:text-amber-300">
               omnileadsagi.com · Interlinked by Sitani Mafi
             </Link>
