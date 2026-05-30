@@ -667,12 +667,12 @@ export function LoveThyBarberReferralInfoClient({
 
         {/* PRICING — revealed by the Activate CTA, also reachable via #pricing */}
         <section id="pricing" className="relative bg-black/30">
-          <div className="mx-auto max-w-5xl px-6 py-20 sm:py-24">
+          <div className="mx-auto max-w-5xl px-6 py-20 sm:py-24 text-center">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
               Two ways in
             </p>
             <h2
-              className="mt-3 text-3xl sm:text-5xl tracking-tight max-w-3xl leading-[1.1]"
+              className="mt-3 text-3xl sm:text-5xl tracking-tight max-w-3xl mx-auto leading-[1.1]"
               style={{ fontFamily: "Georgia, serif" }}
             >
               {pricingOpen
@@ -686,7 +686,7 @@ export function LoveThyBarberReferralInfoClient({
                 Referral on the right (stacks below on mobile per
                 Sita's spec — symmetric to the hero pair above). */}
             {!pricingOpen && (
-              <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
+              <div className="mt-10 flex flex-col sm:flex-row gap-3 sm:gap-4 items-center justify-center">
                 <ActivateButton
                   source="inline"
                   testId="ltb-activate-inline"
@@ -702,7 +702,7 @@ export function LoveThyBarberReferralInfoClient({
             )}
 
             {pricingOpen && (
-              <div className="mt-10 grid gap-4 sm:grid-cols-2 items-stretch">
+              <div className="mt-10 grid gap-4 sm:grid-cols-2 items-stretch max-w-3xl mx-auto text-left">
                 {pricingOptions.map((opt) => (
                   <PricingCard
                     key={opt.id}
@@ -714,7 +714,7 @@ export function LoveThyBarberReferralInfoClient({
             )}
 
             {pricingOpen && (
-              <p className="mt-8 max-w-2xl text-xs text-zinc-500 leading-relaxed">
+              <p className="mt-8 max-w-2xl mx-auto text-xs text-zinc-500 leading-relaxed">
                 Both prices ship the same $100K+ in digital assets.
                 Secure checkout via Stripe. Federation pricing only
                 available via Love Thy Barber&apos;s referral link.
@@ -785,12 +785,11 @@ export function LoveThyBarberReferralInfoClient({
               className="mt-3 text-2xl sm:text-5xl tracking-tight leading-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Activate your spot. We start the kickoff this week.
+              Activate your spot. We&apos;ll start this week.
             </h2>
             <p className="mt-5 text-sm sm:text-base text-zinc-400">
-              50 businesses this wave. Pick the cadence, we kickoff
-              this week — and we&apos;ll talk about other systems only
-              after you love the results.
+              We&apos;ll talk about other systems only after you love
+              the results.
             </p>
 
             <div className="mt-8 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center">
