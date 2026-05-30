@@ -337,7 +337,7 @@ export function LoveThyBarberReferralInfoClient({
       <div className="relative z-10 min-h-screen text-zinc-100 overflow-hidden alira-referral-page">
         {/* HERO */}
         <section className="relative">
-          <div className="mx-auto max-w-5xl px-6 pt-20 pb-14 sm:pt-28 sm:pb-20">
+          <div className="mx-auto max-w-7xl px-6 pt-20 pb-14 sm:pt-28 sm:pb-20">
             {/* Back-to-overview link — same pattern as the elitalks
                 and meta full breakdowns. Navigates back to the
                 7-second teaser without forcing browser-back. */}
@@ -356,7 +356,7 @@ export function LoveThyBarberReferralInfoClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
-                $60K in assets. <br className="hidden sm:block" />
+                $60K+ in assets. <br className="hidden sm:block" />
                 $3,000 in. 20x ROI.
               </em>
             </h1>
@@ -368,7 +368,7 @@ export function LoveThyBarberReferralInfoClient({
                 name is Love Thy Barber (the featured Love Thy Barber creator), not the
                 Love Thy Barber brand itself; dollar values aligned to the
                 $60K stack + $300 down cadence. */}
-            <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
+            <p className="mt-6 max-w-4xl text-lg text-zinc-300 leading-relaxed">
               {referrerName} sent you because the build behind the
               brand isn&apos;t a website — it&apos;s an audience
               engine. For{" "}
@@ -428,7 +428,7 @@ export function LoveThyBarberReferralInfoClient({
             {/* What's-in-the-box strip — five compact amber chips
                 under the leverage callout. Each chip is one bucket
                 of work the federation referral price maps to. */}
-            <div className="mt-6 flex flex-wrap gap-2 max-w-3xl">
+            <div className="mt-6 flex flex-wrap gap-2 max-w-5xl">
               <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300/30 bg-amber-300/[0.04] px-2.5 py-1 text-[11px] font-medium tracking-wide text-amber-100">
                 <Globe className="w-3 h-3" />
                 Bespoke Next.js website
@@ -459,7 +459,7 @@ export function LoveThyBarberReferralInfoClient({
                 Two-anchor framing kept intact: $200K+ open-market
                 comparison sits in the footer, $100K+ assets-you-walk-
                 away-with sits in the punch-line body. */}
-            <div className="mt-8 max-w-3xl relative overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.06] via-amber-300/[0.02] to-transparent p-6 sm:p-8">
+            <div className="mt-8 max-w-5xl relative overflow-hidden rounded-3xl border border-amber-300/30 bg-gradient-to-br from-amber-300/[0.06] via-amber-300/[0.02] to-transparent p-6 sm:p-8">
               <div
                 aria-hidden
                 className="pointer-events-none absolute -top-16 -right-16 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl"
@@ -524,7 +524,7 @@ export function LoveThyBarberReferralInfoClient({
                 mid-market agency would invoice to assemble. You walk
                 away with{" "}
                 <span className="text-amber-300 font-semibold">
-                  $60,000
+                  $60K+
                 </span>{" "}
                 in actual digital assets when the build ships — for{" "}
                 <span className="text-amber-300 font-semibold">
@@ -546,7 +546,7 @@ export function LoveThyBarberReferralInfoClient({
 
         {/* PROOF — Love Thy Barber's live build */}
         <section className="relative bg-black/30">
-          <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
               The proof
             </p>
@@ -623,7 +623,7 @@ export function LoveThyBarberReferralInfoClient({
 
         {/* DISTRIBUTION + COMMUNITY */}
         <section className="relative border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
               The growth layer
             </p>
@@ -667,7 +667,7 @@ export function LoveThyBarberReferralInfoClient({
 
         {/* PRICING — revealed by the Activate CTA, also reachable via #pricing */}
         <section id="pricing" className="relative bg-black/30">
-          <div className="mx-auto max-w-5xl px-6 py-20 sm:py-24 text-center">
+          <div className="mx-auto max-w-7xl px-6 py-20 sm:py-24 text-center">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
               Two ways in
             </p>
@@ -715,7 +715,7 @@ export function LoveThyBarberReferralInfoClient({
 
             {pricingOpen && (
               <p className="mt-8 max-w-2xl mx-auto text-xs text-zinc-500 leading-relaxed">
-                Both prices ship the same $100K+ in digital assets.
+                Both prices ship the same $60K+ in digital assets.
                 Secure checkout via Stripe. Federation pricing only
                 available via Love Thy Barber&apos;s referral link.
               </p>
@@ -725,7 +725,7 @@ export function LoveThyBarberReferralInfoClient({
 
         {/* WHY THIS IS DIFFERENT */}
         <section className="relative border-t border-white/5">
-          <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
+          <div className="mx-auto max-w-7xl px-6 py-16 sm:py-20">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
               Why this isn&apos;t a normal website deal
             </p>
@@ -807,7 +807,7 @@ export function LoveThyBarberReferralInfoClient({
 
         {/* FOOTER */}
         <footer className="border-t border-white/5 relative">
-          <div className="mx-auto max-w-5xl px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-600">
+          <div className="mx-auto max-w-7xl px-6 py-10 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-zinc-600">
             <p>
               Referral delivered by{" "}
               <Link href="/" className="hover:text-amber-300">
@@ -865,7 +865,7 @@ export function LoveThyBarberReferralInfoClient({
               Activate Assets.
             </h3>
             <p className="mt-2 text-[13px] sm:text-sm text-zinc-400">
-              Both prices ship the same $100K+ in digital assets. Same
+              Both prices ship the same $60K+ in digital assets. Same
               scope, same federation exposure — just different cadence.
             </p>
 

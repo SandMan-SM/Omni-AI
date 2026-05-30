@@ -37,7 +37,7 @@ const PAY_FULL_URL = "https://buy.stripe.com/3cIdR9e1Q8uQ53h0lW9fW0o";
 const PAY_DEPOSIT_URL = "https://buy.stripe.com/5kQeVde1Q3aw7bpgkU9fW0n";
 
 // Open-market value table — aligned to the Rene Laveau referral
-// numbers per Sita: 5 rows summing to $60,000 with fixed dollar
+// numbers per Sita: 5 rows summing to $60K+ with fixed dollar
 // values per row (vs the old per-line "+/yr" framing). Same row
 // labels + value descriptions as the Rene referral page so the
 // two surfaces tell the same value story. The /lovethybarber/referral/
@@ -289,7 +289,7 @@ export function LoveThyBarberReferralClient({
               style={{ fontFamily: "Georgia, serif" }}
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
-                $60K in assets. <br className="hidden sm:block" />
+                $60K+ in assets. <br className="hidden sm:block" />
                 $3,000 in. 20x ROI.
               </em>
             </h1>
@@ -366,7 +366,7 @@ export function LoveThyBarberReferralClient({
             </p>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { value: "$60K", label: "Value" },
+                { value: "$60K+", label: "Value" },
                 { value: "20x", label: "ROI" },
                 { value: "$3,000", label: "Total" },
                 { value: "10", label: "Month Term" },
@@ -451,7 +451,7 @@ export function LoveThyBarberReferralClient({
                       Total open-market value
                     </td>
                     <td className="px-4 py-3 text-amber-100 font-bold text-right tabular-nums">
-                      $60,000
+                      $60K+
                     </td>
                   </tr>
                 </tbody>
@@ -500,7 +500,7 @@ export function LoveThyBarberReferralClient({
                 <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
                   Tier-3 site shipped, AI CEO layer wired,
                   branded newsletter live, GEO landing pages
-                  indexed. All $60K worth of assets delivered
+                  indexed. All $60K+ worth of assets delivered
                   inside the 4-month window or your money back.
                 </p>
               </div>
@@ -618,7 +618,7 @@ export function LoveThyBarberReferralClient({
                   className="mt-3 text-xl text-amber-100"
                   style={{ fontFamily: "Georgia, serif" }}
                 >
-                  $60K shipped or full refund.
+                  $60K+ shipped or full refund.
                 </h3>
                 <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
                   If we don&apos;t deliver{" "}
@@ -650,7 +650,7 @@ export function LoveThyBarberReferralClient({
                 className="relative z-10 mt-2 text-2xl sm:text-4xl tracking-tight leading-tight"
                 style={{ fontFamily: "Georgia, serif" }}
               >
-                $300 starts the build. $60K ships.
+                $300 starts the build. $60K+ ships.
               </h2>
               <p className="relative z-10 mt-3 max-w-xl mx-auto text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
                 Pick the deposit cadence to start with $300
@@ -739,7 +739,7 @@ export function LoveThyBarberReferralClient({
             <p className="mt-2 text-[13px] sm:text-sm text-zinc-400">
               Both options ship the same{" "}
               <span className="text-amber-200">
-                $60K asset stack
+                $60K+ asset stack
               </span>{" "}
               inside the 4-month build window. Both come with the
               100% delivery guarantee. Pick the cadence that fits.
@@ -842,7 +842,7 @@ export function LoveThyBarberReferralClient({
               <span className="text-emerald-300/90">
                 100% delivery guarantee.
               </span>{" "}
-              $60K in shippable assets inside the 4-month
+              $60K+ in shippable assets inside the 4-month
               window or full refund of everything paid to date.
             </p>
           </div>

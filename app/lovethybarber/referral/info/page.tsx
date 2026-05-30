@@ -68,7 +68,7 @@ const MARKET_RATES: { service: string; value: string }[] = [
     value: "$12,000 · placements across 16 partner brands",
   },
 ];
-const MARKET_TOTAL = "$60,000";
+const MARKET_TOTAL = "$60K+";
 
 const PRICING_OPTIONS = [
   {
@@ -146,7 +146,7 @@ type PageProps = {
 // the referrer name so per-referrer share links preview correctly.
 function buildOgImage(name: NamedReferrer): string {
   const title = `Referred by ${name} · Under the Hood`;
-  return `${SITE_URL}/api/og?title=${encodeURIComponent(title)}&topic=%2460K%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2020%C3%97%20ROI`;
+  return `${SITE_URL}/api/og?title=${encodeURIComponent(title)}&topic=%2460K%2B%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%2020%C3%97%20ROI`;
 }
 
 export function generateMetadata({ searchParams }: PageProps): Metadata {
@@ -159,11 +159,11 @@ export function generateMetadata({ searchParams }: PageProps): Metadata {
   // version of the URL to dedupe against).
   return {
     title: `Under the Hood · Referred by ${name}`,
-    description: `$60,000 in self-generating digital assets for $3,000 — $300 down + $300/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee. ${name} sent you — here's the full breakdown of what ships.`,
+    description: `$60K+ in self-generating digital assets for $3,000 — $300 down + $300/mo over 9 months, or $3,000 in full. 20× ROI. 4-month build. 100% delivery guarantee. ${name} sent you — here's the full breakdown of what ships.`,
     alternates: { canonical: PAGE_URL },
     openGraph: {
       title: `Under the Hood · Referred by ${name}`,
-      description: `$60K in assets for $3,000. 20× ROI. 100% guarantee. What's actually under the hood of the federation referral ${name} sent you.`,
+      description: `$60K+ in assets for $3,000. 20× ROI. 100% guarantee. What's actually under the hood of the federation referral ${name} sent you.`,
       url: PAGE_URL,
       type: "website",
       images: [{ url: ogImage, width: 1200, height: 630 }],
@@ -171,7 +171,7 @@ export function generateMetadata({ searchParams }: PageProps): Metadata {
     twitter: {
       card: "summary_large_image",
       title: `Under the Hood · Referred by ${name}`,
-      description: `$60K in assets for $3,000. 20× ROI. 100% guarantee. We don't even want the money. — ${name}`,
+      description: `$60K+ in assets for $3,000. 20× ROI. 100% guarantee. We don't even want the money. — ${name}`,
       images: [ogImage],
     },
     robots: { index: false, follow: false },
