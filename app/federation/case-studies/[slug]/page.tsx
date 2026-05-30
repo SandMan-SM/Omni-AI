@@ -339,7 +339,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 rounded-full bg-amber-400 px-6 py-3 font-semibold text-zinc-900 hover:bg-amber-300 transition-colors"
                 >
-                  Visit {c.domain}
+                  {c.primaryCtaLabel ?? `Visit ${c.domain}`}
                 </a>
               )}
               {/* Additional companion surfaces (e.g. a paired podcast
@@ -381,12 +381,51 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
           <h2 className="mt-3 text-3xl sm:text-4xl" style={{ fontFamily: "Georgia, serif" }}>
             What this node has actually done.
           </h2>
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Stat label="Tasks completed" value="888+" accent="#fbbf24" />
-            <Stat label="Leads generated" value="300+" accent="#fbbf24" />
-            <Stat label="Posts sent" value="1,000+" accent="#fbbf24" />
-            <Stat label="Views" value="50K+" accent="#fbbf24" />
-          </div>
+          {/* Studies whose story is one outcome (c.headlineMetric) render a
+              single large stat instead of the shared 4-stat grid. */}
+          {c.headlineMetric ? (
+            <div className="mt-8 rounded-2xl border border-amber-400/20 bg-amber-400/[0.04] px-8 py-12 text-center">
+              <div
+                className="text-6xl sm:text-7xl font-bold tabular-nums"
+                style={{ color: "#fbbf24", fontFamily: "Georgia, serif" }}
+              >
+                {c.headlineMetric.value}
+              </div>
+              <div className="mt-3 text-sm uppercase tracking-[0.32em] text-zinc-400">
+                {c.headlineMetric.label}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat label="Tasks completed" value="888+" accent="#fbbf24" />
+              <Stat label="Leads generated" value="300+" accent="#fbbf24" />
+              <Stat label="Posts sent" value="1,000+" accent="#fbbf24" />
+              <Stat label="Views" value="50K+" accent="#fbbf24" />
+            </div>
+          )}
+
+          {/* Optional companion-asset card — a secondary deliverable that
+              isn't the headline asset (e.g. the operator site when the
+              podcast is the headline). */}
+          {c.featuredAssetCard && (
+            <div className="mt-8 rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-sm p-6 sm:p-8">
+              <p className="text-xs uppercase tracking-[0.32em] text-zinc-500">Also delivered</p>
+              <p className="mt-3 text-2xl" style={{ fontFamily: "Georgia, serif" }}>
+                {c.featuredAssetCard.title}
+              </p>
+              <p className="mt-3 text-sm text-zinc-400 leading-relaxed">
+                {c.featuredAssetCard.description}
+              </p>
+              <a
+                href={c.featuredAssetCard.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-6 inline-flex items-center gap-2 rounded-full border border-amber-400/60 bg-amber-400/[0.08] px-6 py-3 font-semibold text-amber-200 hover:bg-amber-400/[0.16] hover:border-amber-300 transition-colors"
+              >
+                {c.featuredAssetCard.buttonLabel}
+              </a>
+            </div>
+          )}
         </section>
 
         {/* Problem + Solution */}

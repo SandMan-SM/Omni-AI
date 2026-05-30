@@ -34,6 +34,19 @@ export type CaseStudy = {
    *  The primary `url` field stays the headline asset; these are
    *  companion deliverables. */
   additionalSurfaces?: AdditionalSurface[];
+  /** Optional override for the hero primary-button label. Defaults to
+   *  `Visit {domain}`. Use when the headline asset reads better as
+   *  something other than a domain visit (e.g. "View Asset"). */
+  primaryCtaLabel?: string;
+  /** Optional single headline result metric. When set, the
+   *  "What this node has actually done" section renders this one large
+   *  stat INSTEAD of the shared 4-stat grid — for studies whose story is
+   *  one outcome (e.g. "70% reduction in lost leads"). */
+  headlineMetric?: { value: string; label: string };
+  /** Optional companion-asset card rendered under the metrics section.
+   *  Use for a secondary deliverable that isn't the headline asset
+   *  (e.g. the operator site when the podcast is the headline). */
+  featuredAssetCard?: { title: string; description: string; buttonLabel: string; url: string };
   inboundSlug: string | null;      // matching key in inbound_<slug>_* tables / cross_brand_referrals; null = no analytics
   /** Optional list of OTHER business slugs whose analytics should fold
    *  into this case study's combined view (e.g. an Imperium case study
@@ -384,15 +397,22 @@ export const CASE_STUDIES: CaseStudy[] = [
     // view; this entry is the combined dual-surface story.
     slug: "prime-iv-sandy",
     brand: "Prime IV Sandy",
-    domain: "primeivsandy.com",
-    url: "https://primeivsandy.com",
-    additionalSurfaces: [
-      {
-        label: "Podcast site · Live Better On The Drip",
-        url: "https://livebetterpodcast.com",
-        domain: "livebetterpodcast.com",
-      },
-    ],
+    // Headline asset is the LIVE personal-brand podcast, not the operator
+    // site (which is still on its Vercel preview ahead of the
+    // primeivsandy.com cutover). domain/url point at the podcast so the
+    // hero "View Asset" button + the index "Visit Now" both open the live
+    // surface. The operator site is surfaced as featuredAssetCard below.
+    domain: "livebetterpodcast.com",
+    url: "https://livebetterpodcast.com",
+    primaryCtaLabel: "View Asset",
+    headlineMetric: { value: "70%", label: "Reduction in lost leads" },
+    featuredAssetCard: {
+      title: "Prime IV Sandy — operator storefront",
+      description:
+        "The companion build: a hyper-personalized Next.js 15 site fronting the Sandy franchise. Jaime Bond as the face (portrait, signature, owner letter), the full 25+ drip menu with goal-based filters, a 3-tier membership comparison, the $85 intro offer above the fold, RN-on-staff trust signals, Booker on every page, and Sandy-local SEO (LocalBusiness + MedicalBusiness JSON-LD). Currently on its Vercel preview ahead of the primeivsandy.com cutover.",
+      buttonLabel: "Visit Asset",
+      url: "https://prime-iv-sandy.vercel.app",
+    },
     inboundSlug: "prime_iv",
     realm: 1,
     role: "Operator · AI CEO + podcast engine",
