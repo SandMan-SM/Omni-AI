@@ -1,4 +1,5 @@
 export type MafiIdentityLike = {
+  id?: unknown;
   email?: unknown;
   username?: unknown;
   name?: unknown;
@@ -15,6 +16,10 @@ const MAFI_USERNAMES = new Set([
   'mafi',
 ]);
 
+const MAFI_PROFILE_IDS = new Set([
+  'e55721b4-db12-4aa7-a434-156f8a1895b6',
+]);
+
 function normalise(value: unknown): string {
   return typeof value === 'string' ? value.trim().toLowerCase() : '';
 }
@@ -29,11 +34,13 @@ function normalise(value: unknown): string {
  */
 export function isMafiIdentity(identity: MafiIdentityLike | null | undefined): boolean {
   if (!identity) return false;
+  const id = normalise(identity.id);
   const email = normalise(identity.email);
   const username = normalise(identity.username);
   const name = normalise(identity.name);
 
   return Boolean(
+    (id && MAFI_PROFILE_IDS.has(id)) ||
     (email && MAFI_EMAILS.has(email)) ||
     (username && MAFI_USERNAMES.has(username)) ||
     (name && MAFI_USERNAMES.has(name))

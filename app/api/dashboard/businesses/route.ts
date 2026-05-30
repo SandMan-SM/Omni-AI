@@ -50,11 +50,37 @@ type BusinessRow = {
   name?: unknown;
   website?: unknown;
   ga4_measurement_id?: unknown;
+  display_order?: unknown;
   [key: string]: unknown;
 };
 
+const BUSINESS_SELECT = [
+  "id",
+  "name",
+  "slug",
+  "industry",
+  "location",
+  "website",
+  "plan",
+  "contact_email",
+  "partnership_blurb",
+  "brand_logo_url",
+  "ga4_measurement_id",
+  "created_at",
+  "display_order",
+].join(",");
+
+function sortBusinesses(rows: BusinessRow[]): BusinessRow[] {
+  return [...rows].sort((a, b) => {
+    const aOrder = typeof a.display_order === "number" ? a.display_order : Number.POSITIVE_INFINITY;
+    const bOrder = typeof b.display_order === "number" ? b.display_order : Number.POSITIVE_INFINITY;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return String(a.name ?? "").localeCompare(String(b.name ?? ""));
+  });
+}
+
 function applyLiveBetterOverrides(rows: BusinessRow[]): BusinessRow[] {
-  return rows
+  return sortBusinesses(rows)
     .filter((row) => row?.slug !== "otd")
     .map((row) => {
       if (row?.slug !== "prime_iv") return row;
@@ -129,11 +155,15 @@ export async function GET() {
 
   const sb = createAdminClient();
 
-  const { data: profile } = await sb
-    .from("profiles")
-    .select("id, email, username, name, role, is_admin")
-    .eq("id", callerId)
-    .single();
+  const callerIsCanonicalMafi = hasPlatformDashboardAccess({ id: callerId });
+
+  const { data: profile } = callerIsCanonicalMafi
+    ? { data: { id: callerId, role: "admin", is_admin: true } }
+    : await sb
+        .from("profiles")
+        .select("id, email, username, name, role, is_admin")
+        .eq("id", callerId)
+        .single();
   if (!profile) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -142,14 +172,17 @@ export async function GET() {
   if (isPlatformAdmin) {
     const { data, error } = await sb
       .from("omni_businesses")
-      .select("*")
-      .order("display_order", { ascending: true, nullsFirst: false })
-      .order("name");
+      .select(BUSINESS_SELECT)
+      // Avoid database-side sorting here. Production PostgREST has returned
+      // statement timeouts on ordered omni_businesses reads, which blocks the
+      // whole dashboard before leads can load. This route fetches a tiny
+      // workspace list and sorts it in process instead.
+      .limit(100);
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({
-      businesses: applyLiveBetterOverrides((data ?? []) as BusinessRow[]),
+      businesses: applyLiveBetterOverrides((data ?? []) as unknown as BusinessRow[]),
       isAdmin: true,
     });
   }
@@ -172,15 +205,14 @@ export async function GET() {
   }
   const { data, error } = await sb
     .from("omni_businesses")
-    .select("*")
+    .select(BUSINESS_SELECT)
     .in("id", ids)
-    .order("display_order", { ascending: true, nullsFirst: false })
-    .order("name");
+    .limit(100);
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   return NextResponse.json({
-    businesses: applyLiveBetterOverrides((data ?? []) as BusinessRow[]),
+    businesses: applyLiveBetterOverrides((data ?? []) as unknown as BusinessRow[]),
     isAdmin: false,
   });
 }
