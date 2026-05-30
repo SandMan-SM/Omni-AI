@@ -281,10 +281,10 @@ export function LoveThyBarberReferralClient({
           <img
             src="/love-thy-barber-logo.png"
             alt="Love Thy Barber — Teach. Inspire. Elevate."
-            className="absolute top-5 right-5 sm:top-8 sm:right-8 w-28 sm:w-44 h-auto rounded-lg ring-1 ring-white/10 z-20"
+            className="absolute top-4 right-4 sm:top-8 sm:right-8 w-20 sm:w-44 h-auto rounded-lg ring-1 ring-white/10 z-20"
           />
           <div className="mx-auto max-w-5xl px-5 sm:px-6 pt-20 sm:pt-32 pb-10 sm:pb-12">
-            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80 font-semibold">
+            <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80 font-semibold pr-24 sm:pr-0">
               Love Thy Barber × Omni AI · Federation referral
             </p>
             <h1
