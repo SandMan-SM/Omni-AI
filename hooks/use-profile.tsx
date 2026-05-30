@@ -1,6 +1,40 @@
 import { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { getSupabase } from '@/lib/supabase';
 import { useAuth } from '@/hooks/use-auth';
+import { applyMafiFullAccess, isMafiIdentity } from '@/lib/mafi-access';
+
+// Race the profile query against a timer. When the DB stalls (the exact
+// failure that pinned the whole dashboard on its purple spinner), the
+// query never resolves; this lets fetchProfile fall into its catch,
+// install a degraded fallback profile, and ALWAYS release the gate.
+function withProfileTimeout<T>(p: PromiseLike<T>, ms: number): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`profile fetch timed out after ${ms}ms`)), ms),
+    ),
+  ]);
+}
+
+// Build a minimal usable profile from the localStorage user when the DB
+// can't be reached. Passes through applyMafiFullAccess so $Mafi/admin
+// still unlocks the dashboard during an outage instead of being locked
+// out. Everyone else gets a safe, low-privilege shell.
+function fallbackProfileFromUser(user: { id: string; email?: string | null; username?: string | null }): Profile {
+  const elevated = applyMafiFullAccess(user as any);
+  const isMafi = isMafiIdentity(elevated as any);
+  return normaliseProfile({
+    id: user.id,
+    email: user.email || '',
+    username: user.username ?? null,
+    role: isMafi ? 'admin' : 'user',
+    is_admin: isMafi,
+    is_sponsor: isMafi,
+    tier: isMafi ? 99 : 0,
+    onboarding_completed: true,
+    metadata: { degraded: true },
+  });
+}
 
 // ── Real DB columns (as of migration 014) ──────────────────────────────────
 export interface Profile {
@@ -78,7 +112,7 @@ interface ProfileContextType {
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined);
 
 function normaliseProfile(data: any): Profile {
-  return {
+  const normalized = {
     ...data,
     name: data.name || (data.first_name ? `${data.first_name} ${data.last_name || ''}`.trim() : null),
     is_sponsor: data.is_sponsor ?? false,
@@ -86,6 +120,18 @@ function normaliseProfile(data: any): Profile {
     onboarding_completed: data.onboarding_completed ?? false,
     crm_status: data.crm_status ?? 'lead',
     lead_score: data.lead_score ?? 'cold',
+  };
+
+  if (!isMafiIdentity(normalized)) return normalized;
+
+  return {
+    ...normalized,
+    role: 'admin',
+    is_admin: true,
+    is_sponsor: true,
+    tier: 99,
+    crm_status: 'client',
+    lead_score: 'hot',
   };
 }
 
@@ -103,11 +149,14 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const supabase = await getSupabase();
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+      const { data, error } = await withProfileTimeout(
+        supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single(),
+        8000,
+      );
 
 
       if (error && error.code === 'PGRST116') {
@@ -148,8 +197,8 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
             tier: isMafi ? 99 : isFray ? 3 : 0,
             crm_status: (isFray || isMafi) ? 'client' : 'lead',
             lead_score: (isFray || isMafi) ? 'hot' : 'cold',
-            sponsor_activated: isFray,
-            sponsor_insights_paid: isFray,
+            sponsor_activated: isFray || isMafi,
+            sponsor_insights_paid: isFray || isMafi,
           };
 
           const { data: created } = await supabase.from('profiles').insert(newProfile).select().single();
@@ -161,7 +210,12 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
         setProfile(normaliseProfile(data));
       }
     } catch (err) {
-      console.error('Profile fetch error:', err);
+      // Timeout or thrown DB error. Don't leave the dashboard empty (or,
+      // worse, hung) — install a degraded fallback profile from the
+      // localStorage user so $Mafi/admin still gets in during a DB
+      // outage. Only set it if we don't already have a real profile.
+      console.error('Profile fetch error (using degraded fallback):', err);
+      setProfile((prev) => prev ?? fallbackProfileFromUser(user));
     } finally {
       setProfileLoading(false);
     }
@@ -245,12 +299,13 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true || user?.is_admin === true;
-  const isSponsor = profile?.role === 'sponsor' || profile?.is_sponsor === true || user?.is_sponsor === true;
-  const isVIPSponsor = profile?.sponsor_tier === 'vip' || user?.sponsor_tier === 'VIP Sponsor';
-  const tier = Number(profile?.tier ?? user?.tier ?? 0);
+  const elevatedUser = user ? applyMafiFullAccess(user) : null;
+  const isAdmin = profile?.role === 'admin' || profile?.is_admin === true || elevatedUser?.is_admin === true;
+  const isSponsor = profile?.role === 'sponsor' || profile?.is_sponsor === true || elevatedUser?.is_sponsor === true || isMafiIdentity(elevatedUser);
+  const isVIPSponsor = profile?.sponsor_tier === 'vip' || elevatedUser?.sponsor_tier === 'VIP Sponsor';
+  const tier = Number(profile?.tier ?? elevatedUser?.tier ?? 0);
   const onboardingComplete = profile?.onboarding_completed ?? false;
-  const displayName = profile?.name || profile?.username || profile?.first_name || user?.username || '';
+  const displayName = profile?.name || profile?.username || profile?.first_name || elevatedUser?.username || '';
 
   return (
     <ProfileContext.Provider value={{

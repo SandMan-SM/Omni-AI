@@ -120,17 +120,35 @@ export function CommandCenter() {
   // dashboard renders a re-login prompt instead of empty cards — that's the
   // visible symptom of "dashboard not working" the owner kept hitting.
   const [authExpired, setAuthExpired] = useState(false);
+  // Transient state: the API returned 503 (DB slow) or the fetch threw.
+  // This is NOT an expired session — show a "retrying" card, not a
+  // re-login prompt. A slow database must never read as "logged out".
+  const [transientError, setTransientError] = useState(false);
+  // Re-run trigger for the auto-retry on transient failures.
+  const [retryTick, setRetryTick] = useState(0);
 
   useEffect(() => {
+    let cancelled = false;
     const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
     const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+    setLoading(true);
+    setTransientError(false);
     Promise.all([
       fetch("/api/dashboard/metrics", { headers: authHeaders }),
       fetch(`/api/admin/newsletter-history?_t=${Date.now()}`, { cache: 'no-store', headers: authHeaders }).catch(() => null),
     ]).then(async ([metricsRes, nlRes]) => {
-      // 401 from EITHER endpoint → session is stale. Show the prompt.
+      if (cancelled) return;
+      // 401 from EITHER endpoint → session is genuinely stale. Prompt re-login.
       if (metricsRes.status === 401 || (nlRes && nlRes.status === 401)) {
         setAuthExpired(true);
+        setLoading(false);
+        return;
+      }
+      // 503 from EITHER endpoint → the DB is slow/unavailable. This is
+      // transient — surface a "retrying" state and schedule one retry,
+      // NEVER the "session expired" banner.
+      if (metricsRes.status === 503 || (nlRes && nlRes.status === 503)) {
+        setTransientError(true);
         setLoading(false);
         return;
       }
@@ -149,8 +167,22 @@ export function CommandCenter() {
       if (nlData?.summary) setNlSummary(nlData.summary);
       if (nlData?.emailLogs?.length) setEmailLogs(nlData.emailLogs);
       setLoading(false);
-    }).catch(() => setLoading(false));
-  }, []);
+    }).catch(() => {
+      if (cancelled) return;
+      // Network error / abort → transient, not an auth failure.
+      setTransientError(true);
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, [retryTick]);
+
+  // Auto-retry once after a short delay whenever we land in the transient
+  // state — covers a brief DB blip without any user action.
+  useEffect(() => {
+    if (!transientError) return;
+    const t = setTimeout(() => setRetryTick((n) => n + 1), 4000);
+    return () => clearTimeout(t);
+  }, [transientError]);
 
   if (loading) {
     return (
@@ -158,6 +190,27 @@ export function CommandCenter() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div key={i} className="h-32 rounded-xl bg-white/[0.03] border border-white/[0.06] animate-pulse" />
         ))}
+      </div>
+    );
+  }
+
+  if (transientError) {
+    return (
+      <div className="rounded-2xl border border-purple-500/30 bg-purple-500/[0.04] p-8 text-center max-w-2xl mx-auto">
+        <div className="flex items-center justify-center gap-2 text-base font-semibold text-purple-200 mb-2">
+          <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          Dashboard data is temporarily unavailable
+        </div>
+        <div className="text-sm text-gray-300 mb-6 leading-relaxed">
+          The database is responding slowly right now — your session is fine
+          and nothing is lost. Retrying automatically…
+        </div>
+        <button
+          onClick={() => setRetryTick((n) => n + 1)}
+          className="inline-block px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 to-blue-500 text-white font-bold text-sm"
+        >
+          Retry now
+        </button>
       </div>
     );
   }

@@ -4,13 +4,48 @@ import { cookies, headers } from 'next/headers';
 import { createAdminClient } from './supabase/admin';
 
 /**
+ * Thrown when a DB lookup inside an auth guard exceeds its time budget.
+ * A timeout is a TRANSIENT infrastructure problem, NOT an auth failure —
+ * the caller must surface it as 503 (retryable), never 401 ("session
+ * expired"). Conflating the two is what made a slow database read as a
+ * logged-out admin on the dashboard.
+ */
+class TransientDbError extends Error {}
+
+/** 503 — the request was well-formed and may be authorized; the database
+ *  just didn't answer in time. Clients should retry, not re-login. */
+function serviceUnavailable(): NextResponse {
+  return NextResponse.json(
+    { error: 'Service temporarily unavailable — database slow, retry shortly', transient: true },
+    { status: 503 },
+  );
+}
+
+/** Race a Supabase query against a timer. On timeout, reject with a
+ *  TransientDbError so the guard can return 503 instead of hanging the
+ *  whole request (which is what pinned the dashboard on its spinner). */
+function withDbTimeout<T>(p: PromiseLike<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    Promise.resolve(p),
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new TransientDbError(`${label} timed out after ${ms}ms`)), ms),
+    ),
+  ]);
+}
+
+/**
  * Admin Auth Guard — verifies the request comes from an authenticated admin user.
  * Supports two auth schemes:
  *   1. Supabase cookie session (server actions / SSR flows)
  *   2. Bearer token in the Authorization header — the custom base64(JSON) `omni_token`
  *      minted by the `auth-login` edge function (localStorage-based client auth).
  *
- * Returns { user, profile } on success, or a NextResponse 401/403 on failure.
+ * Status contract (read this before changing return codes):
+ *   200  → { user, profile }      caller is an authenticated admin
+ *   401  → token/session missing, malformed, or expired (genuine re-login)
+ *   403  → valid identity, but not an admin
+ *   503  → the DB lookup timed out or errored (TRANSIENT — retry, do NOT
+ *          tell the user their session expired)
  */
 export async function requireAdmin(): Promise<
   | { user: any; profile: any; error?: never }
@@ -23,23 +58,72 @@ export async function requireAdmin(): Promise<
     const bearer = authz.replace(/^Bearer\s+/i, '').trim();
 
     if (bearer) {
+      // Decode the token structurally. A malformed token is NOT a valid
+      // session → fall through to the cookie path. A well-formed,
+      // unexpired token IS a genuine session → from here on, DB failures
+      // are transient (503), never auth failures (401).
+      let payload: { sub?: string; exp?: number } | null = null;
       try {
-        const json = Buffer.from(bearer, 'base64').toString('utf8');
-        const payload = JSON.parse(json);
-        if (payload?.sub && (typeof payload.exp !== 'number' || payload.exp >= Date.now())) {
+        payload = JSON.parse(Buffer.from(bearer, 'base64').toString('utf8'));
+      } catch {
+        payload = null;
+      }
+
+      const tokenValid =
+        !!payload?.sub && (typeof payload.exp !== 'number' || payload.exp >= Date.now());
+
+      if (tokenValid && payload) {
+        try {
           const sb = createAdminClient();
-          const { data: profile } = await sb
-            .from('profiles')
-            .select('id, role, is_admin, tier_label, email')
-            .eq('id', payload.sub)
-            .single();
-          if (profile && (profile.is_admin === true || profile.role === 'admin' || profile.tier_label === 'admin')) {
+          const { data: profile, error } = await withDbTimeout(
+            sb
+              .from('profiles')
+              .select('id, role, is_admin, tier_label, email')
+              .eq('id', payload.sub)
+              .single(),
+            6000,
+            'admin profile lookup (bearer)',
+          );
+
+          if (error) {
+            // PGRST116 = no row found → the token's subject genuinely has
+            // no profile (real auth problem). Any other PostgREST error
+            // is a database fault → transient.
+            if ((error as { code?: string }).code === 'PGRST116') {
+              return {
+                error: NextResponse.json(
+                  { error: 'Unauthorized — profile not found' },
+                  { status: 401 },
+                ),
+              };
+            }
+            return { error: serviceUnavailable() };
+          }
+
+          if (
+            profile &&
+            (profile.is_admin === true ||
+              profile.role === 'admin' ||
+              profile.tier_label === 'admin')
+          ) {
             return { user: { id: profile.id, email: profile.email }, profile };
           }
+
+          // Valid token, profile resolved, but not an admin.
+          return {
+            error: NextResponse.json(
+              { error: 'Forbidden — admin access required' },
+              { status: 403 },
+            ),
+          };
+        } catch (e) {
+          // Timeout or thrown DB error on a VALID token → transient.
+          // Never downgrade a valid session to 401 because the DB stalled.
+          if (e instanceof TransientDbError) return { error: serviceUnavailable() };
+          return { error: serviceUnavailable() };
         }
-      } catch {
-        // fall through to cookie check
       }
+      // Token present but malformed/expired → fall through to cookie path.
     }
 
     // ── 2. Fallback: Supabase cookie session ────────────────────────────
@@ -60,51 +144,80 @@ export async function requireAdmin(): Promise<
       }
     );
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
-
-    if (authError || !user) {
-      return {
-        error: NextResponse.json(
-          { error: 'Unauthorized — no valid session' },
-          { status: 401 }
-        ),
-      };
+    let user: { id: string; email?: string | null } | null = null;
+    try {
+      const { data, error: authError } = await withDbTimeout(
+        supabase.auth.getUser(),
+        6000,
+        'cookie session getUser',
+      );
+      if (authError || !data?.user) {
+        return {
+          error: NextResponse.json(
+            { error: 'Unauthorized — no valid session' },
+            { status: 401 }
+          ),
+        };
+      }
+      user = data.user;
+    } catch (e) {
+      // getUser timed out → transient, not a missing session.
+      if (e instanceof TransientDbError) return { error: serviceUnavailable() };
+      return { error: serviceUnavailable() };
     }
 
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, role, is_admin')
-      .eq('id', user.id)
-      .single();
+    try {
+      const { data: profile, error: profileError } = await withDbTimeout(
+        supabase
+          .from('profiles')
+          .select('id, role, is_admin')
+          .eq('id', user.id)
+          .single(),
+        6000,
+        'admin profile lookup (cookie)',
+      );
 
-    if (profileError || !profile) {
-      return {
-        error: NextResponse.json(
-          { error: 'Unauthorized — profile not found' },
-          { status: 401 }
-        ),
-      };
+      if (profileError) {
+        if ((profileError as { code?: string }).code === 'PGRST116') {
+          return {
+            error: NextResponse.json(
+              { error: 'Unauthorized — profile not found' },
+              { status: 401 }
+            ),
+          };
+        }
+        return { error: serviceUnavailable() };
+      }
+
+      if (!profile) {
+        return {
+          error: NextResponse.json(
+            { error: 'Unauthorized — profile not found' },
+            { status: 401 }
+          ),
+        };
+      }
+
+      const isAdmin = profile.is_admin === true || profile.role === 'admin';
+      if (!isAdmin) {
+        return {
+          error: NextResponse.json(
+            { error: 'Forbidden — admin access required' },
+            { status: 403 }
+          ),
+        };
+      }
+
+      return { user, profile };
+    } catch (e) {
+      if (e instanceof TransientDbError) return { error: serviceUnavailable() };
+      return { error: serviceUnavailable() };
     }
-
-    const isAdmin = profile.is_admin === true || profile.role === 'admin';
-
-    if (!isAdmin) {
-      return {
-        error: NextResponse.json(
-          { error: 'Forbidden — admin access required' },
-          { status: 403 }
-        ),
-      };
-    }
-
-    return { user, profile };
   } catch (err) {
-    return {
-      error: NextResponse.json(
-        { error: 'Authentication failed' },
-        { status: 401 }
-      ),
-    };
+    // Anything that reaches here is an unexpected fault in the guard
+    // itself, not a deliberate auth decision (those all return above).
+    // Treat as transient so a hiccup never reads as "session expired".
+    return { error: serviceUnavailable() };
   }
 }
 

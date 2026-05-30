@@ -96,6 +96,12 @@ export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
   const { profile, profileLoading, isAdmin, isSponsor, tier, onboardingComplete, displayName, fetchProfile } = useProfile();
   const router = useRouter();
+  // Belt-and-suspenders: if the auth/profile hooks somehow never resolve
+  // (e.g. a stalled DB pinning profileLoading), force the gate open after
+  // 10s so the dashboard can never again hang forever on the purple
+  // spinner. The hook-level timeout in use-profile is the primary fix;
+  // this is the floor that guarantees a render.
+  const [forceReady, setForceReady] = useState(false);
   const [campaignFilter, setCampaignFilter] = useState<"all" | CampaignStatus>("all");
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -279,6 +285,12 @@ export default function Dashboard() {
     }
   }, [user, loading, router]);
 
+  // Hard floor on the loading gate — releases after 10s no matter what.
+  useEffect(() => {
+    const t = setTimeout(() => setForceReady(true), 10_000);
+    return () => clearTimeout(t);
+  }, []);
+
   // Pull live workspace-scoped lead counts for the signed-in client viewer
   // (CPS, Youngs/Brent, Leifson/Adam, LTB/Sammy). Replaces hardcoded zeros
   // in the metrics array so "Leads This Week" reflects reality. Re-uses the
@@ -342,7 +354,7 @@ export default function Dashboard() {
     return () => { cancelled = true; };
   }, [clientWorkspaceName]);
 
-  if (loading || profileLoading) {
+  if ((loading || profileLoading) && !forceReady) {
     return (
       <div className="min-h-screen bg-[#050505] flex items-center justify-center">
         <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
@@ -529,6 +541,35 @@ export default function Dashboard() {
                   </p>
                 </div>
                 <ArrowRight className="w-6 h-6 text-amber-400 group-hover:translate-x-1 transition-transform flex-shrink-0" />
+              </div>
+            </div>
+          </Link>
+        )}
+
+        {/* Client-Agent Fleet — admin-only control surface for one AI CEO per business. */}
+        {isAdmin && (
+          <Link
+            href="/dashboard/agents"
+            className="block group"
+            data-testid="banner-client-agent-fleet"
+          >
+            <div className="relative overflow-hidden rounded-2xl border border-violet-500/30 bg-gradient-to-br from-violet-500/10 via-blue-500/10 to-emerald-500/10 hover:border-violet-400/60 transition-all p-5 sm:p-6">
+              <div className="flex items-center gap-4">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-violet-500/20 border border-violet-400/30 text-[10px] font-bold uppercase tracking-wider text-violet-300">
+                      <Bot className="w-3 h-3" /> Client-Agent Fleet
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-gray-400">one AI CEO per business</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">
+                    Inspect every client CEO, data gap, and next revenue move
+                  </h2>
+                  <p className="text-xs sm:text-sm text-gray-400 mt-1">
+                    Opens the portfolio command layer with CPS, Omni AI, Leifson, Youngs, Imperium, and Tier 2 upgrade surfaces.
+                  </p>
+                </div>
+                <ArrowRight className="w-6 h-6 text-violet-400 group-hover:translate-x-1 transition-transform flex-shrink-0" />
               </div>
             </div>
           </Link>
