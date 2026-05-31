@@ -1287,19 +1287,13 @@ export async function generateDrafts(supabase: any) {
     console.log(`[generateDrafts] DB connected OK, found ${testData?.length ?? 0} posts`);
   }
 
-  // Clean up ALL existing drafts (unpublished) before generating fresh ones
-  const { data: deleted, error: delErr } = await supabase
-    .from('newsletter_posts')
-    .delete()
-    .is('published_at', null)
-    .select('id');
-  if (delErr) {
-    const msg = `[generateDrafts] Draft cleanup error: ${JSON.stringify(delErr)}`;
-    console.error(msg);
-    errors.push(msg);
-  } else {
-    console.log(`[generateDrafts] Cleaned up ${deleted?.length || 0} old drafts`);
-  }
+  // Never hard-delete newsletter_posts from automation. Older versions of
+  // this cron deleted every row with published_at = null, which is unsafe:
+  // admin-unpublished posts, per-client seeded posts, and operator drafts can
+  // all be represented that way. Keep history intact and let the studio show
+  // drafts/archives explicitly.
+  const deleted: Array<{ id: string }> = [];
+  console.log('[generateDrafts] Draft cleanup skipped; newsletter posts are append-only from cron');
 
   // Fetch recent subjects + snippets to avoid duplicates (last 30 days).
   // We pull `insights` too so every individual paragraph from the last 30
@@ -1401,7 +1395,7 @@ export async function generateDrafts(supabase: any) {
   return {
     free: { subject: freeContent.subject, slug: freeSlug, saved: !freeErr, id: freeData?.[0]?.id },
     premium: { subject: premiumContent.subject, slug: premiumSlug, saved: !premiumErr, id: premData?.[0]?.id },
-    deleted: deleted?.length || 0,
+    deleted: 0,
     errors: errors.length > 0 ? errors : undefined,
   };
 }

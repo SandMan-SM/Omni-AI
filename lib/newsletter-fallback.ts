@@ -1,3 +1,5 @@
+import snapshotPosts from './newsletter-fallback.generated.json';
+
 export type NewsletterFallbackPost = {
   id: string;
   slug: string;
@@ -15,9 +17,13 @@ export type NewsletterFallbackPost = {
 
 // Emergency static cache for Interlinked. This keeps the public archive,
 // RSS feed, and per-issue routes useful when Supabase/PostgREST is degraded
-// (for example PGRST002 schema-cache failures). The database remains the
-// source of truth; these rows are only used as a public-read fallback.
-export const newsletterFallbackPosts: NewsletterFallbackPost[] = [
+// (for example PGRST002 schema-cache failures or very slow archive reads).
+// The database remains the source of truth; these rows are only used as a
+// public-read fallback. `newsletter-fallback.generated.json` is a protected
+// snapshot of real rows, refreshed manually after newsletter recovery work.
+const generatedFallbackPosts = snapshotPosts as NewsletterFallbackPost[];
+
+const emergencyFallbackPosts: NewsletterFallbackPost[] = [
   {
     id: 'fallback-2026-05-29-free',
     slug: 'your-business-needs-a-nervous-system-2026-05-29',
@@ -83,6 +89,9 @@ export const newsletterFallbackPosts: NewsletterFallbackPost[] = [
     created_at: '2026-05-28T13:30:00.000Z',
   },
 ];
+
+export const newsletterFallbackPosts: NewsletterFallbackPost[] =
+  generatedFallbackPosts.length > 0 ? generatedFallbackPosts : emergencyFallbackPosts;
 
 export function getNewsletterFallbackPost(slug: string) {
   return newsletterFallbackPosts.find((post) => post.slug === slug) || null;

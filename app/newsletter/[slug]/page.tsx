@@ -103,7 +103,7 @@ async function getPost(slug: string) {
       .from("newsletter_posts")
       .select("*")
       .eq("slug", slug)
-      .not("published_at", "is", null)
+      .or("published_at.not.is.null,status.eq.published")
       .maybeSingle(),
     2500
   );
@@ -155,10 +155,10 @@ async function getRelatedPosts(
   const result = await withTimeout(
     supabase
       .from("newsletter_posts")
-      .select("slug, subject, intro, published_at, tier, keywords")
+      .select("slug, subject, intro, published_at, created_at, tier, keywords")
       .neq("slug", currentSlug)
       .not("slug", "is", null)
-      .not("published_at", "is", null)
+      .or("published_at.not.is.null,status.eq.published")
       .order("published_at", { ascending: false })
       .limit(50),
     2500

@@ -62,7 +62,7 @@ export async function GET() {
     supabase
       .from("newsletter_posts")
       .select("slug, subject, published_at")
-      .not("published_at", "is", null)
+      .or("published_at.not.is.null,status.eq.published")
       .gte("published_at", cutoff)
       .lte("published_at", new Date().toISOString())
       .order("published_at", { ascending: false })

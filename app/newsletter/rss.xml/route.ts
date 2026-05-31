@@ -51,15 +51,18 @@ export async function GET() {
   const result = await withTimeout(
     supabase
       .from("newsletter_posts")
-      .select("slug, subject, intro, published_at, tier")
-      .not("published_at", "is", null)
+      .select("slug, subject, intro, published_at, created_at, tier")
+      .or("published_at.not.is.null,status.eq.published")
       .order("published_at", { ascending: false })
       .limit(50),
     8000
   );
 
-  const supabasePosts = (result as { data?: Array<{ slug?: string | null; subject?: string | null; intro?: string | null; published_at?: string | null; tier?: string | null }> } | null)?.data || [];
-  const posts = supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries();
+  const supabasePosts = (result as { data?: Array<{ slug?: string | null; subject?: string | null; intro?: string | null; published_at?: string | null; created_at?: string | null; tier?: string | null }> } | null)?.data || [];
+  const posts = (supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries()).map((p) => ({
+    ...p,
+    published_at: p.published_at || p.created_at || new Date().toISOString(),
+  }));
   const latestPub = posts[0]?.published_at
     ? new Date(posts[0].published_at).toUTCString()
     : new Date().toUTCString();

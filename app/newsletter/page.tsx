@@ -96,7 +96,7 @@ export default async function NewsletterIndexPage() {
       supabase
         .from("newsletter_posts")
         .select("slug, subject, intro, keywords, tier, published_at, created_at")
-        .not("published_at", "is", null)
+        .or("published_at.not.is.null,status.eq.published")
         .order("published_at", { ascending: false })
         .limit(50),
       8000
@@ -125,14 +125,14 @@ export default async function NewsletterIndexPage() {
   const supabasePosts = (postsRes as { data?: Array<{ slug: string | null; subject: string | null; intro: string | null; keywords: unknown; tier: string | null; published_at: string | null; created_at: string | null }> } | null)?.data || [];
   const rawPosts = supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries();
   const posts = rawPosts
-    .filter((p) => p.slug && p.subject && p.published_at)
+    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at))
     .map((p) => ({
       slug: p.slug!,
       subject: p.subject!,
       intro: p.intro || "",
       keywords: Array.isArray(p.keywords) || typeof p.keywords === "string" ? p.keywords : null,
       tier: p.tier || "free",
-      published_at: p.published_at!,
+      published_at: p.published_at || p.created_at!,
       created_at: p.created_at || p.published_at!,
     }));
   const postsUnavailable = !postsRes || Boolean((postsRes as { error?: unknown }).error);

@@ -18,6 +18,7 @@ type NewsletterPostSummary = {
   subject: string | null;
   tier: string | null;
   published_at: string | null;
+  created_at?: string | null;
 };
 
 async function withAbortTimeout<T>(
@@ -60,8 +61,8 @@ export async function GET() {
         // Some legacy newsletter tables were created before later admin `id`
         // references were standardized; selecting `id` made the endpoint 500
         // even when public posts existed. Slug is the stable public key.
-        .select("slug, subject, tier, published_at")
-        .not("published_at", "is", null)
+        .select("slug, subject, tier, published_at, created_at")
+        .or("published_at.not.is.null,status.eq.published")
         .order("published_at", { ascending: false })
         .limit(100)
         .abortSignal(signal),
@@ -103,10 +104,17 @@ export async function GET() {
     return res;
   }
 
+  const normalizedPosts = (posts || [])
+    .filter((p) => p.slug && p.subject)
+    .map((p) => ({
+      ...p,
+      published_at: p.published_at || p.created_at || new Date().toISOString(),
+    }));
+
   const res = NextResponse.json({
-    posts: posts?.length ? posts : getNewsletterFallbackSummaries(),
-    source: posts?.length ? "supabase" : "fallback",
-    count: posts?.length ?? 0,
+    posts: normalizedPosts.length ? normalizedPosts : getNewsletterFallbackSummaries(),
+    source: normalizedPosts.length ? "supabase" : "fallback",
+    count: normalizedPosts.length,
   });
   // Real data: 60s edge cache + 10min stale-while-revalidate. Repeats
   // come from CDN, single slow hit doesn't break the next 600s of loads.
