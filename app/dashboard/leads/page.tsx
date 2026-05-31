@@ -588,6 +588,7 @@ export default function DashboardPage() {
   const [generating, setGenerating] = useState(false);
   const [scoringAll, setScoringAll] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [dataError, setDataError] = useState<string | null>(null);
   const [bizOpen, setBizOpen] = useState(false);
 
   // Client-viewer label flip: Sita's stored preference is that the
@@ -618,6 +619,7 @@ export default function DashboardPage() {
   useEffect(() => {
     loadBusinesses().then(({ data }) => {
       if (data?.length) {
+        setDataError(null);
         setBusinesses(data);
         // Honor the global business switcher (set on /assets via localStorage).
         // null and "all" both mean "All Businesses" — matches the AgiAdminPanel
@@ -632,6 +634,11 @@ export default function DashboardPage() {
           const found = data.find(b => b.id === stored);
           setSelectedBiz(found ?? null);
         }
+      } else {
+        const hasToken = typeof window !== 'undefined' && !!localStorage.getItem('omni_token');
+        setDataError(hasToken
+          ? 'Dashboard businesses returned no accessible workspaces. Data connection needs attention.'
+          : 'Sign in to load dashboard businesses and leads. No authenticated Omni token is present in this browser.');
       }
       setLoading(false);
     });
@@ -673,11 +680,28 @@ export default function DashboardPage() {
     // rows in the browser. Route both through service-role endpoints.
     const leadsUrl = `/api/dashboard/leads?business_id=${encodeURIComponent(bizId ?? 'all')}&limit=5000`;
     const campsUrl = `/api/dashboard/campaigns?business_id=${encodeURIComponent(bizId ?? 'all')}`;
+    async function loadDashboardJson<T extends Record<string, unknown>>(url: string, fallbackKey: 'leads' | 'campaigns'): Promise<T & { __error?: string }> {
+      try {
+        const r = await authFetch(url);
+        const body = await r.json().catch(() => ({}));
+        if (!r.ok) {
+          const message = typeof body?.error === 'string' ? body.error : `HTTP ${r.status}`;
+          return { [fallbackKey]: [], __error: message } as T & { __error: string };
+        }
+        return body as T;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Request failed';
+        return { [fallbackKey]: [], __error: message } as T & { __error: string };
+      }
+    }
+
     const [leadsRes, campsRes] = await Promise.all([
-      authFetch(leadsUrl).then(r => (r.ok ? r.json() : { leads: [] })).catch(() => ({ leads: [] })),
-      authFetch(campsUrl).then(r => (r.ok ? r.json() : { campaigns: [] })).catch(() => ({ campaigns: [] })),
+      loadDashboardJson<{ leads?: Lead[] }>(leadsUrl, 'leads'),
+      loadDashboardJson<{ campaigns?: Campaign[] }>(campsUrl, 'campaigns'),
     ]);
     if (activeBizKeyRef.current !== requestedKey) return;
+    const errors = [leadsRes.__error && `leads: ${leadsRes.__error}`, campsRes.__error && `campaigns: ${campsRes.__error}`].filter(Boolean);
+    setDataError(errors.length ? `Dashboard data connection issue — ${errors.join('; ')}` : null);
     setLeads((leadsRes?.leads as Lead[] | undefined) ?? []);
     setCampaigns((campsRes?.campaigns as Campaign[] | undefined) ?? []);
   }, []);
@@ -1003,6 +1027,20 @@ export default function DashboardPage() {
       </header>
 
       <div className="agi-leads-content" style={{ padding: '32px', maxWidth: 1400, margin: '0 auto' }}>
+        {dataError && (
+          <div style={{
+            background: 'rgba(251, 146, 60, 0.10)',
+            border: '1px solid rgba(251, 146, 60, 0.35)',
+            color: '#fdba74',
+            borderRadius: 12,
+            padding: '12px 16px',
+            marginBottom: 16,
+            fontSize: 13,
+            lineHeight: 1.5,
+          }}>
+            <strong style={{ color: '#fed7aa' }}>Dashboard data needs attention:</strong> {dataError}
+          </div>
+        )}
         <div className="agi-kpi-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 32 }}>
           <KpiCard icon={Users} label="Total Leads" value={total} sub={`${filtered.length} shown`} color="#818cf8" />
           <KpiCard icon={Star} label="Qualified" value={qualified} sub={`${total > 0 ? Math.round((qualified/total)*100) : 0}% of total`} color="#10b981" />

@@ -20,24 +20,31 @@ type NewsletterPostSummary = {
   published_at: string | null;
 };
 
-function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
-  return Promise.race([
-    Promise.resolve(promise),
-    new Promise<null>((resolve) => setTimeout(() => resolve(null), ms)),
-  ]);
+async function withAbortTimeout<T>(
+  factory: (signal: AbortSignal) => PromiseLike<T>,
+  ms: number,
+): Promise<T | null> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+
+  try {
+    return await Promise.resolve(factory(controller.signal));
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // GET /api/newsletter/posts — public endpoint for published newsletter posts
 // Returns minimal fields (slug, subject, tier, published_at) for dashboard display.
 //
-// 2026-05-29 fix: raised client timeout 8000 → 25000ms because cold/loaded
-// Supabase was hitting 8.5s execution time on a fully indexed query (the
-// idx_newsletter_posts_published index exists; the wall-clock time was just
-// Supabase Pro tier capacity). The old 8s cap masked the real data behind
-// a 3-row hardcoded fallback — operator reported "only 2 of my 60 posts."
-// Real fix is at the DB tier (raise compute, or migrate to a faster cache),
-// but raising this timeout while we sort that surfaces real data when the
-// DB is just slow rather than truly down.
+// 2026-05-30 fix: use AbortController with a 6.5s budget instead of a
+// plain 25s Promise.race. The prior race returned a fallback to JS but left
+// the underlying Supabase HTTP request alive, so Vercel could still pin the
+// function long enough for public clients to time out. This endpoint is used
+// by dashboard/newsletter surfaces; it must answer quickly with real data
+// when Supabase is healthy and an explicitly flagged fallback when it is not.
 //
 // Edge cache: `Cache-Control: s-maxage=60, stale-while-revalidate=600`
 // lets Vercel's CDN serve a cached copy for 60s while reasking Supabase
@@ -45,18 +52,20 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> 
 export async function GET() {
   const sb = createAdminClient();
 
-  const result = await withTimeout(
-    sb
-      .from("newsletter_posts")
-      // Keep this public endpoint aligned with the archive/RSS fields only.
-      // Some legacy newsletter tables were created before later admin `id`
-      // references were standardized; selecting `id` made the endpoint 500
-      // even when public posts existed. Slug is the stable public key.
-      .select("slug, subject, tier, published_at")
-      .not("published_at", "is", null)
-      .order("published_at", { ascending: false })
-      .limit(100),
-    25000
+  const result = await withAbortTimeout(
+    (signal) =>
+      sb
+        .from("newsletter_posts")
+        // Keep this public endpoint aligned with the archive/RSS fields only.
+        // Some legacy newsletter tables were created before later admin `id`
+        // references were standardized; selecting `id` made the endpoint 500
+        // even when public posts existed. Slug is the stable public key.
+        .select("slug, subject, tier, published_at")
+        .not("published_at", "is", null)
+        .order("published_at", { ascending: false })
+        .limit(100)
+        .abortSignal(signal),
+    6500
   );
 
   if (!result) {
