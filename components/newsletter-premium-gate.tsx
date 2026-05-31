@@ -253,21 +253,46 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
           <p className="text-gray-500 text-sm">Loading...</p>
         </div>
       ) : status === "not-premium" ? (
-        <div className="p-8 rounded-xl bg-amber-500/[0.03] border border-amber-500/[0.12] text-center">
-          <p className="text-gray-400 mb-1">Unlock exclusive Interlinked premium newsletters.</p>
-          <p className="text-sm text-gray-600 mb-6">
-            {posts.length} exclusive issue{posts.length !== 1 ? "s" : ""} available
-          </p>
-          {/* Was a solid amber gradient with text-black — on this dark
-              surface the black text rendered nearly invisible. Switched
-              to a gold underlined text link so it reads clearly and
-              matches the Interlinked heading color. */}
-          <Link
-            href="/newsletter/premium/info"
-            className="inline-block text-amber-400 hover:text-amber-300 font-semibold text-sm underline underline-offset-4 decoration-amber-400/60 hover:decoration-amber-300 transition-colors"
-          >
-            Learn More
-          </Link>
+        <div className="space-y-4">
+          <div className="p-5 rounded-xl bg-amber-500/[0.03] border border-amber-500/[0.12]">
+            <p className="text-gray-300 text-sm font-medium">Premium archive visible. Full issues unlock with Interlinked Premium.</p>
+            <div className="mt-3 flex items-center gap-3">
+              <Link
+                href="/newsletter/premium/info"
+                className="inline-block text-amber-400 hover:text-amber-300 font-semibold text-sm underline underline-offset-4 decoration-amber-400/60 hover:decoration-amber-300 transition-colors"
+              >
+                Unlock premium
+              </Link>
+              <span className="text-xs text-gray-600">
+                {posts.length} exclusive issue{posts.length !== 1 ? "s" : ""}
+              </span>
+            </div>
+          </div>
+          {posts.map((post) => {
+            const date = new Date(post.published_at || post.created_at || new Date()).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            });
+            return (
+              <Link
+                key={post.slug}
+                href="/newsletter/premium/info"
+                className="block group p-4 sm:p-6 rounded-xl bg-amber-500/[0.02] border border-amber-500/[0.08] hover:border-amber-500/20 hover:bg-amber-500/[0.04] transition-all"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-base font-semibold text-white group-hover:text-amber-300 transition-colors truncate">
+                      {post.subject}
+                    </h3>
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.intro}</p>
+                    <p className="text-[11px] text-amber-400/80 mt-2">Premium issue</p>
+                  </div>
+                  <p className="text-xs text-gray-600 flex-shrink-0">{date}</p>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       ) : (
         <div className="space-y-4">

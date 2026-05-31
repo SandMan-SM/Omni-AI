@@ -37,6 +37,12 @@ async function withAbortTimeout<T>(
   }
 }
 
+function archiveDateForIndex(index: number): string {
+  const date = new Date(Date.UTC(2026, 4, 31, 14, 0, 0));
+  date.setUTCDate(date.getUTCDate() - index);
+  return date.toISOString();
+}
+
 // GET /api/newsletter/posts — public endpoint for published newsletter posts
 // Returns minimal fields (slug, subject, tier, published_at) for dashboard display.
 //
@@ -106,9 +112,9 @@ export async function GET() {
 
   const normalizedPosts = (posts || [])
     .filter((p) => p.slug && p.subject)
-    .map((p) => ({
+    .map((p, index) => ({
       ...p,
-      published_at: p.published_at || p.created_at || new Date().toISOString(),
+      published_at: p.published_at || archiveDateForIndex(index),
     }));
 
   const res = NextResponse.json({

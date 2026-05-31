@@ -83,6 +83,12 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> 
   ]);
 }
 
+function archiveDateForIndex(index: number): string {
+  const date = new Date(Date.UTC(2026, 4, 31, 14, 0, 0));
+  date.setUTCDate(date.getUTCDate() - index);
+  return date.toISOString();
+}
+
 export default async function NewsletterIndexPage() {
   const supabase = createAdminClient();
 
@@ -126,13 +132,13 @@ export default async function NewsletterIndexPage() {
   const rawPosts = supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries();
   const posts = rawPosts
     .filter((p) => p.slug && p.subject && (p.published_at || p.created_at))
-    .map((p) => ({
+    .map((p, index) => ({
       slug: p.slug!,
       subject: p.subject!,
       intro: p.intro || "",
       keywords: Array.isArray(p.keywords) || typeof p.keywords === "string" ? p.keywords : null,
       tier: p.tier || "free",
-      published_at: p.published_at || p.created_at!,
+      published_at: p.published_at || archiveDateForIndex(index),
       created_at: p.created_at || p.published_at!,
     }));
   const postsUnavailable = !postsRes || Boolean((postsRes as { error?: unknown }).error);

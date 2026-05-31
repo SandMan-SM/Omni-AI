@@ -46,6 +46,12 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
+function archiveDateForIndex(index: number): string {
+  const date = new Date(Date.UTC(2026, 4, 31, 14, 0, 0));
+  date.setUTCDate(date.getUTCDate() - index);
+  return date.toISOString();
+}
+
 export async function GET() {
   const supabase = createAdminClient();
   const result = await withTimeout(
@@ -59,9 +65,9 @@ export async function GET() {
   );
 
   const supabasePosts = (result as { data?: Array<{ slug?: string | null; subject?: string | null; intro?: string | null; published_at?: string | null; created_at?: string | null; tier?: string | null }> } | null)?.data || [];
-  const posts = (supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries()).map((p) => ({
+  const posts = (supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries()).map((p, index) => ({
     ...p,
-    published_at: p.published_at || p.created_at || new Date().toISOString(),
+    published_at: p.published_at || archiveDateForIndex(index),
   }));
   const latestPub = posts[0]?.published_at
     ? new Date(posts[0].published_at).toUTCString()
