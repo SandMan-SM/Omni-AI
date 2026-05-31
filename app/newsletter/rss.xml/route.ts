@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getNewsletterFallbackSummaries } from "@/lib/newsletter-fallback";
+import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 
 /**
  * RSS 2.0 feed for the Interlinked newsletter at /newsletter/rss.xml.
@@ -65,10 +65,12 @@ export async function GET() {
   );
 
   const supabasePosts = (result as { data?: Array<{ slug?: string | null; subject?: string | null; intro?: string | null; published_at?: string | null; created_at?: string | null; tier?: string | null }> } | null)?.data || [];
-  const posts = (supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries()).map((p, index) => ({
-    ...p,
-    published_at: p.published_at || archiveDateForIndex(index),
-  }));
+  const posts = (supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries())
+    .filter(isOmniAiNewsletterPost)
+    .map((p, index) => ({
+      ...p,
+      published_at: p.published_at || archiveDateForIndex(index),
+    }));
   const latestPub = posts[0]?.published_at
     ? new Date(posts[0].published_at).toUTCString()
     : new Date().toUTCString();

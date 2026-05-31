@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getNewsletterFallbackSummaries } from "@/lib/newsletter-fallback";
+import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 
 // Route config: serve from cache for 60s, edge-revalidate in the background
 // for another 10min. This is a public list of published posts that changes
@@ -111,7 +111,7 @@ export async function GET() {
   }
 
   const normalizedPosts = (posts || [])
-    .filter((p) => p.slug && p.subject)
+    .filter((p) => p.slug && p.subject && isOmniAiNewsletterPost(p))
     .map((p, index) => ({
       ...p,
       published_at: p.published_at || archiveDateForIndex(index),

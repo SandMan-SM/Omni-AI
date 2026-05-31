@@ -15,7 +15,7 @@ import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
-import { getNewsletterFallbackPost, getNewsletterFallbackSummaries } from "@/lib/newsletter-fallback";
+import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -110,7 +110,8 @@ async function getPost(slug: string) {
 
   if (!result) return fallbackPost;
   const { data, error } = result as { data: ReturnType<typeof getNewsletterFallbackPost>; error?: unknown };
-  return data || (error ? fallbackPost : fallbackPost);
+  const post = data || (error ? fallbackPost : fallbackPost);
+  return post && isOmniAiNewsletterPost(post) ? post : null;
 }
 
 // Cross-cluster handoff. /newsletter/[slug] readers are deep-reader
@@ -163,7 +164,7 @@ async function getRelatedPosts(
       .limit(50),
     2500
   );
-  const data = (result as { data?: typeof fallbackRelated | null; error?: unknown } | null)?.data;
+  const data = (result as { data?: typeof fallbackRelated | null; error?: unknown } | null)?.data?.filter(isOmniAiNewsletterPost);
   if (!data || data.length === 0) return fallbackRelated;
 
   const kwSet = new Set(normalizeKeywords(currentKeywords).map((k) => k.toLowerCase()));

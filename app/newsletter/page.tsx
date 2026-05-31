@@ -10,7 +10,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // /about, /faq, /campaigns, /interlinked are one hop away from the content
 // hub. Matches the pattern added to /about and /faq in the same cycle.
 import { Footer } from "@/components/footer";
-import { getNewsletterFallbackSummaries } from "@/lib/newsletter-fallback";
+import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 
 export const metadata: Metadata = {
   title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
@@ -131,7 +131,7 @@ export default async function NewsletterIndexPage() {
   const supabasePosts = (postsRes as { data?: Array<{ slug: string | null; subject: string | null; intro: string | null; keywords: unknown; tier: string | null; published_at: string | null; created_at: string | null }> } | null)?.data || [];
   const rawPosts = supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries();
   const posts = rawPosts
-    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at))
+    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
     .map((p, index) => ({
       slug: p.slug!,
       subject: p.subject!,

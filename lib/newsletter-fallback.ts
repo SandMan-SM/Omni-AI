@@ -90,11 +90,64 @@ const emergencyFallbackPosts: NewsletterFallbackPost[] = [
   },
 ];
 
+const CLIENT_NICHE_SLUG_PREFIXES = [
+  "ltb-",
+  "prime_iv-",
+  "prime-iv-",
+  "youngs-",
+  "leifson-",
+  "otd-",
+  "cps-",
+  "imperium-",
+  "alira-",
+] as const;
+
+export function isOmniAiNewsletterPost(post: {
+  slug?: string | null;
+  subject?: string | null;
+  intro?: string | null;
+  keywords?: unknown;
+}): boolean {
+  const slug = String(post.slug || "").toLowerCase();
+  if (!slug) return false;
+  if (CLIENT_NICHE_SLUG_PREFIXES.some((prefix) => slug.startsWith(prefix))) {
+    return false;
+  }
+
+  const subject = String(post.subject || "").toLowerCase();
+  const intro = String(post.intro || "").toLowerCase();
+  const keywords = Array.isArray(post.keywords)
+    ? post.keywords.join(" ").toLowerCase()
+    : String(post.keywords || "").toLowerCase();
+  const haystack = `${slug} ${subject} ${intro} ${keywords}`;
+
+  return [
+    "ai",
+    "agent",
+    "automation",
+    "interlinked",
+    "omni",
+    "operator",
+    "revenue",
+    "business",
+    "model",
+    "openai",
+    "anthropic",
+    "nvidia",
+    "microsoft",
+    "salesforce",
+    "google",
+    "cursor",
+    "saas",
+  ].some((token) => haystack.includes(token));
+}
+
 export const newsletterFallbackPosts: NewsletterFallbackPost[] =
-  generatedFallbackPosts.length > 0 ? generatedFallbackPosts : emergencyFallbackPosts;
+  (generatedFallbackPosts.length > 0 ? generatedFallbackPosts : emergencyFallbackPosts)
+    .filter(isOmniAiNewsletterPost);
 
 export function getNewsletterFallbackPost(slug: string) {
-  return newsletterFallbackPosts.find((post) => post.slug === slug) || null;
+  return newsletterFallbackPosts.find((post) => post.slug === slug && isOmniAiNewsletterPost(post)) || null;
 }
 
 export function getNewsletterFallbackSummaries() {
