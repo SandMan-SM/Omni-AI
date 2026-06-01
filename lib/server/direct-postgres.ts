@@ -52,136 +52,47 @@ function getPool() {
   return global.__omniPgPool;
 }
 
-function splitName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  return {
-    firstName: parts[0] || null,
-    lastName: parts.length > 1 ? parts.slice(1).join(" ") : null,
-  };
-}
-
-async function ensureBookingSubmissionsTable(pool: Pool) {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS public.booking_submissions (
-      id UUID PRIMARY KEY,
-      name TEXT NOT NULL,
-      email TEXT NOT NULL,
-      phone TEXT,
-      business_name TEXT,
-      purpose TEXT,
-      requested_date TEXT,
-      requested_time TEXT,
-      scheduled_at TIMESTAMPTZ,
-      raw_payload JSONB NOT NULL DEFAULT '{}'::jsonb,
-      crm_lead_id UUID,
-      crm_status TEXT NOT NULL DEFAULT 'captured',
-      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    );
-  `);
-
-  await pool.query(`
-    CREATE INDEX IF NOT EXISTS idx_booking_submissions_email_created
-      ON public.booking_submissions (email, created_at DESC);
-  `);
-}
-
 async function persistBookingNow(input: BookingInput): Promise<BookingPersistResult> {
   const pool = getPool();
-  await ensureBookingSubmissionsTable(pool);
-
-  await pool.query("SET statement_timeout TO '2500ms'");
-
-  await pool.query(
-    `
-      INSERT INTO public.booking_submissions (
-        id, name, email, phone, business_name, purpose,
-        requested_date, requested_time, scheduled_at, raw_payload
-      )
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)
-      ON CONFLICT (id) DO UPDATE SET
-        name = EXCLUDED.name,
-        email = EXCLUDED.email,
-        phone = EXCLUDED.phone,
-        business_name = EXCLUDED.business_name,
-        purpose = EXCLUDED.purpose,
-        requested_date = EXCLUDED.requested_date,
-        requested_time = EXCLUDED.requested_time,
-        scheduled_at = EXCLUDED.scheduled_at,
-        raw_payload = EXCLUDED.raw_payload,
-        updated_at = NOW()
-    `,
-    [
-      input.id,
-      input.name,
-      input.email,
-      input.phone || null,
-      input.businessName || null,
-      input.purpose || null,
-      input.date,
-      input.time,
-      input.scheduledAt,
-      JSON.stringify(input.raw),
-    ],
-  );
+  const client = await pool.connect();
 
   try {
-    await pool.query("SET statement_timeout TO '1500ms'");
-    const business = await pool.query<{ id: string }>(
-      "SELECT id FROM public.omni_businesses WHERE name = 'Omni AI' LIMIT 1",
-    );
-    const businessId = business.rows[0]?.id;
-    if (!businessId) {
-      return { persisted: true, leadId: null, crmStatus: "direct-postgres-captured" };
-    }
-
-    const { firstName, lastName } = splitName(input.name);
-    const notes = [
-      `Strategy call booked for ${input.date || "TBD"} ${input.time || ""}`.trim(),
-      input.purpose ? `Purpose: ${input.purpose}` : null,
-      input.businessName ? `Business: ${input.businessName}` : null,
-      `Booking submission id: ${input.id}`,
-    ].filter(Boolean).join("\n");
-
-    const lead = await pool.query<{ id: string }>(
+    await client.query(
       `
-        INSERT INTO public.omni_leads_generated (
-          business_id, source_table, source_record_id,
-          first_name, last_name, email, phone, company,
-          source, status, score, deal_stage, notes, tags, created_at
+        INSERT INTO public.booking_submissions (
+          id, name, email, phone, business_name, purpose,
+          requested_date, requested_time, scheduled_at, raw_payload
         )
-        VALUES (
-          $1, 'booking_submissions', $2,
-          $3, $4, $5, $6, $7,
-          'web', 'qualified', 85, 'demo', $8, $9::text[], NOW()
-        )
-        RETURNING id
+        VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10::jsonb)
+        ON CONFLICT (id) DO UPDATE SET
+          name = EXCLUDED.name,
+          email = EXCLUDED.email,
+          phone = EXCLUDED.phone,
+          business_name = EXCLUDED.business_name,
+          purpose = EXCLUDED.purpose,
+          requested_date = EXCLUDED.requested_date,
+          requested_time = EXCLUDED.requested_time,
+          scheduled_at = EXCLUDED.scheduled_at,
+          raw_payload = EXCLUDED.raw_payload,
+          updated_at = NOW()
       `,
       [
-        businessId,
         input.id,
-        firstName,
-        lastName,
+        input.name,
         input.email,
         input.phone || null,
         input.businessName || null,
-        notes,
-        ["book-now", "strategy-call", "direct-postgres"],
+        input.purpose || null,
+        input.date,
+        input.time,
+        input.scheduledAt,
+        JSON.stringify(input.raw),
       ],
     );
 
-    const leadId = lead.rows[0]?.id ?? null;
-    if (leadId) {
-      await pool.query(
-        "UPDATE public.booking_submissions SET crm_lead_id = $1, crm_status = 'crm_created', updated_at = NOW() WHERE id = $2",
-        [leadId, input.id],
-      );
-    }
-
-    return { persisted: true, leadId, crmStatus: "direct-postgres-crm-created" };
-  } catch (error) {
-    console.error("[direct-postgres] CRM mirror failed after capture:", error);
     return { persisted: true, leadId: null, crmStatus: "direct-postgres-captured" };
+  } finally {
+    client.release();
   }
 }
 
