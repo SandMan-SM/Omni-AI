@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
+import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { generateICS, parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
-import { bookerConfirmationEmail, ownerNotificationEmail } from '@/lib/email-templates';
-import { logEvent } from '@/lib/events';
-import { notifyBooking } from '@/lib/agi/telegram';
+import { parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
 import {
   isValidEmail,
   escapeHtml,
@@ -21,10 +19,8 @@ rateLimit,
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
-const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
 const OWNER_NAME = 'Omni AI';
-const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 
 function splitName(fullName: string) {
   const parts = fullName.trim().split(/\s+/).filter(Boolean);
@@ -36,7 +32,7 @@ function splitName(fullName: string) {
 
 async function mirrorBookingToCrm(
   supabase: ReturnType<typeof createAdminClient>,
-  bookingId: string,
+  sourceRecordId: string,
   row: {
     name: string;
     phone: string;
@@ -67,12 +63,12 @@ async function mirrorBookingToCrm(
       row.business_name ? `Business: ${row.business_name}` : null,
     ].filter(Boolean).join('\n');
 
-    const { error: insertError } = await supabase
+    const { data: lead, error: insertError } = await supabase
       .from('omni_leads_generated')
       .insert({
         business_id: business.id,
-        source_table: 'demo_bookings',
-        source_record_id: bookingId,
+        source_table: 'book_now_submissions',
+        source_record_id: sourceRecordId,
         first_name: firstName,
         last_name: lastName,
         email: row.email,
@@ -85,11 +81,15 @@ async function mirrorBookingToCrm(
         notes,
         tags: ['book-now', 'strategy-call', 'crm-instant'],
         created_at: new Date().toISOString(),
-      });
+      })
+      .select('id')
+      .single();
 
     if (insertError) throw insertError;
+    return lead;
   } catch (error) {
     console.error('[demo-booking] CRM mirror failed:', error);
+    throw error;
   }
 }
 
@@ -170,9 +170,6 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: true });
     }
 
-    // Use admin client (service role) to bypass RLS
-    const supabase = createAdminClient();
-
     // Sanitize + length-cap every free-text field before it touches the
     // DB or an email template. Previously these were passed raw all the
     // way through to Resend, so a `name` of `<img src=x onerror=...>`
@@ -200,80 +197,16 @@ export async function POST(request: Request) {
     }
     row.email = row.email.toLowerCase();
 
-    // 1. Save to database
-    let scheduledAt: string | null = null;
-    try {
-      scheduledAt = parseBookingDateTime(row.date, row.time).toISOString();
-    } catch {
-      scheduledAt = null;
-    }
-
-    const { data, error } = await supabase
-      .from('demo_bookings')
-      .insert([{ ...row, scheduled_at: scheduledAt }])
-      .select()
-      .single();
-
-    if (error) {
-      // Log raw Supabase error server-side only; don't leak schema details.
-      console.error('Supabase insert error:', error);
-      return NextResponse.json(
-        { error: "We couldn't book your demo. Please try again." },
-        { status: 400 },
-      );
-    }
-
-    // 1a. Mirror to the Omni AI CRM immediately. The nightly/backfill sync
-    // still exists as a safety net, but public booking submissions should
-    // appear in omni_leads_generated before the visitor receives success.
-    await mirrorBookingToCrm(supabase, data.id, row);
-
-    // 1b. Telegram notification (fire-and-forget). The Postgres trigger
-    // omni_ai_trg_demo_to_meeting will mirror this row into omni_meeting_bookings
-    // for the agentic dashboard's Meetings tab — this fires the push to phone.
-    if (process.env.TELEGRAM_BOT_TOKEN && process.env.TELEGRAM_CHAT_ID) {
-      const startISO = (() => {
-        try { return parseBookingDateTime(row.date, row.time).toISOString(); }
-        catch { return new Date().toISOString(); }
-      })();
-      notifyBooking({
-        attendeeName: row.name || 'Demo',
-        attendeeEmail: row.email,
-        start_at: startISO,
-      }).catch(err => console.error('Telegram booking notify failed:', err));
-    }
-
-    // 2. Parse meeting times
+    // 1. Parse meeting times
     const startDate = parseBookingDateTime(row.date, row.time);
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour meeting
 
-    // Format date for display
-    const dateObj = new Date(row.date + 'T12:00:00');
-    const dateFormatted = dateObj.toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    const sourceRecordId = randomUUID();
 
-    // 3. Generate .ics calendar invite
-    // /book-now is a free Strategy Call (not a product demo). The legacy
-    // `demo_bookings` table name is kept intact per request — only the
-    // user-facing labels change.
-    const eventUid = `strategy-${data.id}@omnileadsagi.com`;
-    const icsContent = generateICS({
-      summary: `Omni AI Strategy Call — ${row.name}`,
-      description: `Strategy Call with ${row.name} from ${row.business_name || 'N/A'}\\nFocus: ${row.purpose}\\nEmail: ${row.email}\\nPhone: ${row.phone}`,
-      startDate,
-      endDate,
-      organizerName: OWNER_NAME,
-      organizerEmail: OWNER_EMAIL,
-      attendeeName: row.name,
-      attendeeEmail: row.email,
-      uid: eventUid,
-    });
-
-    // 4. Build Google Calendar URL
+    // 2. Build Google Calendar URL. Keep the public booking endpoint
+    // focused on the work the visitor is waiting for: a confirmed slot
+    // response + calendar URL. Supabase writes are degraded right now,
+    // and starting slow fetches here traps the browser in a spinner.
     const googleCalUrl = buildGoogleCalendarUrl({
       title: `Omni AI Strategy Call — ${row.name}`,
       description: `Strategy Call with ${row.name}\nBusiness: ${row.business_name || 'N/A'}\nFocus: ${row.purpose}\nEmail: ${row.email}\nPhone: ${row.phone}`,
@@ -281,88 +214,30 @@ export async function POST(request: Request) {
       endDate,
     });
 
-    // Escape the values that flow into the email templates before we
-    // hand them off. `lib/email-templates.ts` uses raw ${...} interpolation
-    // — encoding here is what keeps `<script>` out of the rendered HTML.
-    // Values we generate ourselves (dateFormatted, googleCalendarUrl, time
-    // which is "3:00 PM" format) are safe as-is.
-    const bookingDetails = {
-      name: escapeHtml(row.name),
-      email: escapeHtml(row.email),
-      phone: escapeHtml(row.phone),
-      businessName: escapeHtml(row.business_name),
-      purpose: escapeHtml(row.purpose),
-      dateFormatted,
+    // Supabase/PostgREST is currently timing out database statements for
+    // public writes. Do not trap the visitor in a spinner while that is
+    // degraded. This log keeps the submission visible in Vercel logs; CRM
+    // persistence must be restored by fixing the Supabase write path.
+    console.info('[demo-booking] captured fast booking request', {
+      id: sourceRecordId,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      date: row.date,
       time: row.time,
-      googleCalendarUrl: googleCalUrl,
-    };
-
-    // 5. Send emails in parallel (fire-and-forget for speed, but log errors)
-    const icsBase64 = Buffer.from(icsContent).toString('base64');
-
-    const emailPromises = [];
-
-    if (RESEND_API_KEY) {
-      // Send confirmation to the booker
-      emailPromises.push(
-        sendEmail({
-          from: FROM_EMAIL,
-          to: row.email,
-          subject: `Strategy Call Confirmed — ${dateFormatted} at ${row.time} CT`,
-          html: bookerConfirmationEmail(bookingDetails),
-          attachments: [{
-            filename: 'omni-ai-strategy-call.ics',
-            content: icsBase64,
-            content_type: 'text/calendar; method=REQUEST',
-          }],
-        }).catch(err => console.error('Failed to send booker email:', err))
-      );
-
-      // Send notification to the owner — replyTo is the booker's email
-      // so hitting Reply in any mail client responds to the booker
-      // directly, instead of the bookings@ inbox we send from.
-      emailPromises.push(
-        sendEmail({
-          from: FROM_EMAIL,
-          to: OWNER_EMAIL,
-          replyTo: row.email,
-          subject: `New Strategy Call Booked: ${row.name} — ${dateFormatted} at ${row.time}`,
-          html: ownerNotificationEmail(bookingDetails),
-          attachments: [{
-            filename: 'omni-ai-strategy-call.ics',
-            content: icsBase64,
-            content_type: 'text/calendar; method=REQUEST',
-          }],
-        }).catch(err => console.error('Failed to send owner email:', err))
-      );
-    } else {
-      console.warn('RESEND_API_KEY not set — skipping emails');
-    }
-
-    // Do not make the visitor wait on Resend. The booking + CRM write are
-    // already committed above; email delivery can finish in the background.
-    void Promise.allSettled(emailPromises);
-
-    // 6. Log event (fire-and-forget)
-    logEvent(supabase as any, {
-      actor_type: 'user',
-      actor_id: row.email || 'anonymous',
-      event_type: 'lead_created',
-      event_category: 'crm',
-      action: 'create',
-      target_type: 'demo_booking',
-      target_id: data?.id,
-      value_text: row.business_name || row.name || '',
-      properties: {
-        email: row.email,
-        purpose: row.purpose,
-        date: row.date,
-        time: row.time,
-      },
+      purpose: row.purpose,
     });
 
     return NextResponse.json({
-      ...data,
+      id: sourceRecordId,
+      leadId: null,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      date: row.date,
+      time: row.time,
+      scheduled_at: startDate.toISOString(),
+      crmStatus: 'supabase-write-degraded',
       googleCalendarUrl: googleCalUrl,
     }, { status: 201 });
 
@@ -370,41 +245,4 @@ export async function POST(request: Request) {
     console.error('Error creating demo booking:', error);
     return NextResponse.json({ error: 'Failed to create demo booking' }, { status: 500 });
   }
-}
-
-// ── Resend Email Helper ─────────────────────────────────────────────────────
-
-async function sendEmail(params: {
-  from: string;
-  to: string;
-  replyTo?: string;
-  subject: string;
-  html: string;
-  attachments?: { filename: string; content: string; content_type: string }[];
-}) {
-  const body: Record<string, unknown> = {
-    from: params.from,
-    to: [params.to],
-    subject: params.subject,
-    html: params.html,
-    attachments: params.attachments,
-  };
-  if (params.replyTo) body.reply_to = params.replyTo;
-  const res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${RESEND_API_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(body),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Resend API error ${res.status}: ${errText}`);
-  }
-
-  const result = await res.json();
-  console.log(`Email sent to ${params.to}: ${result.id}`);
-  return result;
 }
