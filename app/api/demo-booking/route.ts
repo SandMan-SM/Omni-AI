@@ -88,6 +88,7 @@ export async function POST(request: Request) {
     if (!rl.ok) return rateLimitResponse(rl.resetMs);
 
     const body = await request.json();
+    const debugPersistence = new URL(request.url).searchParams.get('debug') === '1';
 
     // Bot check — honeypot field. Spambots auto-fill every input; real
     // users never see it. Silent 200 OK (not 4xx) so the bot thinks the
@@ -174,6 +175,7 @@ export async function POST(request: Request) {
       scheduled_at: startDate.toISOString(),
       persisted: persistence.persisted,
       crmStatus: persistence.crmStatus,
+      ...(debugPersistence ? { persistenceError: persistence.error ?? null } : {}),
       googleCalendarUrl: googleCalUrl,
     }, { status: 201 });
 
