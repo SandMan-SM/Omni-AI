@@ -55,7 +55,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
-  const backgroundUrl = `${siteUrl}/newsletter/generated/${encodeURIComponent(slug)}.jpg?v=20260531`;
+  const backgroundUrl = `${siteUrl}/newsletter/generated/${encodeURIComponent(slug)}.jpg?v=20260601`;
   const date = post?.published_at
     ? new Date(post.published_at).toLocaleDateString("en-US", {
         month: "long",

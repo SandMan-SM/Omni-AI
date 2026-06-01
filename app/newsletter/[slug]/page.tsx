@@ -53,6 +53,14 @@ function renderText(value: unknown): string {
   return "";
 }
 
+function normalizeQuoteText(value: unknown): string {
+  return renderText(value)
+    .trim()
+    .replace(/^[\s"'“”‘’]+/, "")
+    .replace(/["“”‘’]+(\s+[—-]\s+)/, "$1")
+    .replace(/[\s"'“”‘’]+$/, "");
+}
+
 function normalizeInsights(insights: unknown): string[] {
   if (Array.isArray(insights)) {
     return insights
@@ -269,7 +277,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
   const heroImage = newsletterIssueBackgroundImage(post.slug);
-  const quoteText = renderText(post.quote);
+  const quoteText = normalizeQuoteText(post.quote);
   const powerMoveText = renderText(post.power_move);
   const offerText = renderText(post.offer);
   const insightBodies = normalizeInsights(post.insights);
@@ -298,7 +306,7 @@ export default async function NewsletterPostPage({ params }: Props) {
 
       {/* Header — logo + wordmark, sits above the sparks. */}
       <header className="relative z-10 border-b border-white/5 backdrop-blur-md bg-black/40">
-        <div className="max-w-3xl mx-auto px-5 py-4 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
             <Image
               src="/omni-logo.svg"
@@ -325,7 +333,7 @@ export default async function NewsletterPostPage({ params }: Props) {
           obviously navigable (Home → Newsletter → post). Positioned in
           the seam between the header and the article meta so it doesn't
           crowd the hero date/tier line. */}
-      <div className="relative z-10 max-w-3xl mx-auto px-5 pt-6">
+      <div className="relative z-10 max-w-5xl mx-auto px-5 pt-6">
         <Breadcrumb
           items={[
             { name: "Home", href: "/" },
@@ -337,7 +345,7 @@ export default async function NewsletterPostPage({ params }: Props) {
       </div>
 
       {/* Article */}
-      <article className="relative z-10 max-w-3xl mx-auto px-5 pt-6 pb-12 md:pb-20">
+      <article className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-12 md:pb-20">
         {/* Hero image — same 1200x630 generated asset used for social sharing. */}
         <div className="relative mb-10 overflow-hidden rounded-3xl border border-amber-500/20 bg-black shadow-[0_0_40px_rgba(245,158,11,0.08)]">
           <div
@@ -347,7 +355,7 @@ export default async function NewsletterPostPage({ params }: Props) {
           />
           <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.88)_0%,rgba(0,0,0,0.68)_48%,rgba(0,0,0,0.30)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
-          <div className="relative flex min-h-[360px] flex-col justify-end p-6 sm:p-8 md:p-10">
+          <div className="relative flex min-h-[240px] flex-col justify-end p-5 sm:min-h-[320px] sm:p-8 md:min-h-[380px] md:p-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-amber-300"}`}>
               {isPremium ? "Interlinked Premium" : "Interlinked Free"}
@@ -355,7 +363,7 @@ export default async function NewsletterPostPage({ params }: Props) {
               <span className="text-xs text-gray-600">·</span>
             <span className="text-xs text-gray-500">{date}</span>
           </div>
-            <h1 className="max-w-2xl text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
+            <h1 className="max-w-3xl text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
             {post.subject}
           </h1>
           {/* Founder byline — visible E-E-A-T signal for Google, and the
@@ -403,13 +411,8 @@ export default async function NewsletterPostPage({ params }: Props) {
             }`}
           >
             <blockquote>
-              {/* Render the quote field VERBATIM. The DB stores the
-                  closing curly quote BEFORE the attribution (— Name, Title)
-                  so the punctuation reads naturally. We don't auto-wrap
-                  here because that puts the closing mark after the
-                  attribution, which is grammatically wrong. */}
               <p className="text-center text-lg md:text-xl text-gray-100 italic leading-[1.75]">
-                {quoteText}
+                &ldquo;{quoteText}&rdquo;
               </p>
             </blockquote>
           </figure>
