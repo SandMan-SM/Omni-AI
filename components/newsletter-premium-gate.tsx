@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
 import { getStoredUser } from "@/lib/auth";
 import {
@@ -167,8 +167,8 @@ export function NewsletterHeader() {
 
   return (
     <>
-      <header className="border-b border-white/5">
-        <div className="max-w-4xl mx-auto px-5 py-4 flex items-center justify-between">
+      <header className="border-b border-white/[0.07] bg-black/25 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
             <Image
               src="/omni-logo.svg"
@@ -183,7 +183,7 @@ export function NewsletterHeader() {
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-400/[0.07] px-3 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-300/40 hover:bg-violet-400/[0.10]"
             >
               Dashboard
             </Link>
@@ -191,7 +191,7 @@ export function NewsletterHeader() {
             <button
               type="button"
               onClick={() => setAuthOpen(true)}
-              className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-400/[0.07] px-3 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-300/40 hover:bg-violet-400/[0.10]"
               data-testid="button-newsletter-subscribe"
             >
               Subscribe
@@ -231,11 +231,20 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
 
   return (
     <div className="mb-12">
-      <div className="flex items-center gap-4 mb-6">
-        <h2 className="text-xl font-bold text-amber-400">Interlinked</h2>
-        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-          Interlinked Premium
-        </span>
+      <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.08] pb-4">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+            Interlinked Premium
+          </p>
+          <h2 className="mt-1 text-xl font-bold text-white">Premium Intelligence</h2>
+        </div>
+        <Link
+          href="/newsletter/premium/info"
+          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 text-xs font-semibold text-amber-200 transition-colors hover:border-amber-300/50 hover:bg-amber-400/[0.10]"
+        >
+          Premium access
+          <ArrowRight className="h-3.5 w-3.5" />
+        </Link>
       </div>
 
       {status === "loading" ? (

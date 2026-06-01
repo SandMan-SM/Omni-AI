@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
-import { Rss } from "lucide-react";
+import { Archive, ArrowRight, Clock3, Newspaper, Rss } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -309,67 +309,128 @@ export default async function NewsletterIndexPage() {
       )}
       <NewsletterHeader />
 
-      <main className="relative z-10 max-w-4xl mx-auto px-5 py-12 md:py-20">
+      <main className="relative z-10 max-w-6xl mx-auto px-5 py-8 md:py-12">
         {/* Visible breadcrumb — pairs with breadcrumbSchema above so the
             SERP breadcrumb chip renders reliably on the archive (which
             receives heavy LLM-citation-driven deep landings), and gives
             feed-discovery visitors a one-click path back to the home
             page without having to scroll to the footer. */}
-        <Breadcrumb
-          items={[
-            { name: "Home", href: "/" },
-            { name: "Newsletter", href: "/newsletter" },
-          ]}
-          className="mb-6"
-        />
+        <section className="mb-8 border-y border-white/[0.07] py-6 md:mb-12 md:py-10">
+          <Breadcrumb
+            items={[
+              { name: "Home", href: "/" },
+              { name: "Newsletter", href: "/newsletter" },
+            ]}
+            className="mb-5 md:mb-8"
+          />
 
-        <div className="text-center mb-10">
-          <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-4">
-            Omni AI Newsletter
-          </h1>
-          {/* data-speakable="intro" activates the SpeakableSpecification
-              declared on the Blog + Periodical JSON-LD above. Voice
-              assistants (Google Assistant, Siri read-aloud, Alexa)
-              concatenate h1 + this paragraph as the natural reply to
-              "what is the Omni AI newsletter?" / "what does Interlinked
-              cover?" voice queries. */}
-          <p
-            className="text-gray-400 text-lg max-w-xl mx-auto"
-            data-speakable="intro"
-          >
-            The businesses that move with AI don&apos;t just survive — they become
-            untouchable. Stories, strategies, and the signals that matter.
-            Daily intelligence briefs delivered every morning at 8:00 AM.
-          </p>
-          {/* Visible RSS affordance — pairs with the sitewide
-              <link rel="alternate" type="application/rss+xml"> tag added in
-              an earlier cycle. The alternate tag handles feed-reader auto-
-              discovery, but auto-discovery only fires when the reader is
-              already on the page; a visible link lets a power user hand the
-              URL to a different reader, paste it into a bookmarklet, or
-              share it with a colleague without hunting through <head>. The
-              link is intentionally muted (gray-500, small, icon-led) so it
-              reads as a utility affordance, not a primary CTA competing with
-              the post list below. */}
-          <a
-            href="/newsletter/rss.xml"
-            className="mt-4 inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-orange-400 transition-colors"
-            aria-label="Subscribe to the Omni AI newsletter via RSS"
-          >
-            <Rss className="w-3.5 h-3.5" />
-            Subscribe via RSS
-          </a>
-        </div>
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+            <div>
+              <div className="mb-4 flex flex-wrap items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-300 md:mb-5 md:text-[11px]">
+                <span>Interlinked</span>
+                <span className="h-px w-8 bg-amber-400/40" />
+                <span className="text-sky-300">By Omni AI</span>
+              </div>
+              <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-normal text-white sm:text-4xl md:text-6xl md:leading-[0.98]">
+                Omni AI Newsletter
+              </h1>
+              {/* data-speakable="intro" activates the SpeakableSpecification
+                  declared on the Blog + Periodical JSON-LD above. Voice
+                  assistants (Google Assistant, Siri read-aloud, Alexa)
+                  concatenate h1 + this paragraph as the natural reply to
+                  "what is the Omni AI newsletter?" / "what does Interlinked
+                  cover?" voice queries. */}
+              <p
+                className="mt-4 max-w-3xl text-base leading-relaxed text-gray-300 md:mt-5 md:text-xl"
+                data-speakable="intro"
+              >
+                The businesses that move with AI don&apos;t just survive. They
+                compound. Interlinked tracks the stories, strategies, and
+                operator signals that matter before the market catches up.
+              </p>
 
-        <div className="mb-12 flex flex-wrap items-center justify-center gap-3">
-          <span className="rounded-full border border-amber-500/20 bg-amber-500/[0.06] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
-            Latest 10
-          </span>
+              <div className="mt-5 flex flex-wrap gap-2.5 md:mt-7 md:gap-3">
+                <a
+                  href="#latest"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 text-sm font-semibold text-amber-200 transition-colors hover:border-amber-300/60 hover:bg-amber-400/15 md:h-11 md:px-4"
+                >
+                  Latest issues
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <Link
+                  href="/newsletter/archive"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-200 transition-colors hover:border-amber-400/30 hover:text-amber-200 md:h-11 md:px-4"
+                >
+                  <Archive className="h-4 w-4" />
+                  Full archive
+                </Link>
+                <a
+                  href="/newsletter/rss.xml"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-semibold text-gray-400 transition-colors hover:border-sky-400/30 hover:text-sky-200 md:h-11 md:px-4"
+                  aria-label="Subscribe to the Omni AI newsletter via RSS"
+                >
+                  <Rss className="h-4 w-4" />
+                  RSS
+                </a>
+              </div>
+            </div>
+
+            <div className="hidden gap-3 md:grid md:grid-cols-3 lg:grid-cols-1">
+              <div className="rounded-lg border border-white/[0.08] bg-black/30 p-4">
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-amber-400/25 bg-amber-400/10 text-amber-300">
+                  <Clock3 className="h-4 w-4" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  Cadence
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  Daily at 8:00 AM
+                </p>
+              </div>
+              <div className="rounded-lg border border-white/[0.08] bg-black/30 p-4">
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-sky-400/25 bg-sky-400/10 text-sky-300">
+                  <Newspaper className="h-4 w-4" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  Front shelf
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  5 premium + 5 free
+                </p>
+              </div>
+              <div className="rounded-lg border border-white/[0.08] bg-black/30 p-4">
+                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-violet-400/25 bg-violet-400/10 text-violet-300">
+                  <Archive className="h-4 w-4" />
+                </div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
+                  Library
+                </p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  Full archive available
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div
+          id="latest"
+          className="mb-8 flex flex-wrap items-end justify-between gap-4 scroll-mt-24"
+        >
+          <div>
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-300">
+              Latest 10
+            </p>
+            <h2 className="mt-2 text-2xl font-bold text-white md:text-3xl">
+              Newest Interlinked Issues
+            </h2>
+          </div>
           <Link
             href="/newsletter/archive"
-            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-gray-300 transition-colors hover:border-amber-500/30 hover:text-amber-300"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-300 transition-colors hover:border-amber-400/30 hover:text-amber-200"
           >
-            View full archive
+            View archive
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
@@ -378,10 +439,15 @@ export default async function NewsletterIndexPage() {
 
         {/* Daily Intelligence — Free */}
         <div>
-          <div className="flex items-center gap-4 mb-6">
-            <h2 className="text-xl font-bold text-amber-400">Daily Intelligence</h2>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-              Interlinked Free
+          <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.08] pb-4">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                Interlinked Free
+              </p>
+              <h2 className="mt-1 text-xl font-bold text-white">Daily Intelligence</h2>
+            </div>
+            <span className="text-xs text-gray-500">
+              Public operator briefings
             </span>
           </div>
           <div className="space-y-4">
