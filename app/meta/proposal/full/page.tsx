@@ -14,11 +14,11 @@ import { MetaProposalFullClient } from "./MetaProposalFullClient";
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/meta/proposal/full`;
 
-// Stripe payment link — same TEMPORARY one-time price that the
-// teaser route uses. Sita's manual swap to the $1,500/month
-// recurring price applies to both routes; update PAY_FULL_URL
-// here and on /meta/proposal/page.tsx when the new link lands.
-const PAY_FULL_URL = "https://buy.stripe.com/28EcN51f43aw1R52u49fW0b";
+// Stripe payment link — Meta Growth Program · 90-Day Paid-Social Creative
+// Product:  prod_UctZ2gTDbou1lE
+// Price:    price_1Tddm3E1uHPZaaHpXPIspjhN  ($1,500/mo recurring)
+// Plink:    plink_1Tddn8E1uHPZaaHpkGa042R8
+const PAY_FULL_URL = "https://buy.stripe.com/00w28rf5U26s9jxgkU9fW0p";
 
 // Retail-equivalent line items — what an agency-of-record would
 // invoice for the same deliverables. Re-declared here so the full
