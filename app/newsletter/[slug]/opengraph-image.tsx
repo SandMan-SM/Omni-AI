@@ -133,10 +133,6 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
             <div
               style={{
                 display: "flex",
-                padding: "8px 16px",
-                borderRadius: "999px",
-                background: "rgba(245,158,11,0.12)",
-                border: "1px solid rgba(245,158,11,0.30)",
                 color: "#fbbf24",
                 fontSize: "12px",
                 fontWeight: 800,
@@ -144,7 +140,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
                 textTransform: "uppercase",
               }}
             >
-              {isPremium ? "Premium" : "Free"}
+              {isPremium ? "Interlinked Premium" : "Interlinked Free"}
             </div>
           </div>
 

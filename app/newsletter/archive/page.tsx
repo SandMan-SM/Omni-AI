@@ -193,8 +193,8 @@ export default async function NewsletterArchivePage() {
         <section className="mb-14">
           <div className="mb-6 flex items-center gap-4">
             <h2 className="text-xl font-bold text-amber-400">Interlinked</h2>
-            <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
-              PREMIUM
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+              Interlinked Premium
             </span>
           </div>
           <div className="grid gap-5">
@@ -207,8 +207,8 @@ export default async function NewsletterArchivePage() {
         <section>
           <div className="mb-6 flex items-center gap-4">
             <h2 className="text-xl font-bold text-amber-400">Daily Intelligence</h2>
-            <span className="rounded-full border border-amber-500/20 bg-amber-500/10 px-2 py-0.5 text-[10px] font-semibold text-amber-400">
-              FREE
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+              Interlinked Free
             </span>
           </div>
           <div className="grid gap-5">

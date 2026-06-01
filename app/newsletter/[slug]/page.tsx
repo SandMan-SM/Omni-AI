@@ -350,7 +350,7 @@ export default async function NewsletterPostPage({ params }: Props) {
           <div className="relative flex min-h-[360px] flex-col justify-end p-6 sm:p-8 md:p-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-amber-300"}`}>
-              {isPremium ? "Interlinked Premium" : "Daily Intelligence"}
+              {isPremium ? "Interlinked Premium" : "Interlinked Free"}
             </span>
               <span className="text-xs text-gray-600">·</span>
             <span className="text-xs text-gray-500">{date}</span>

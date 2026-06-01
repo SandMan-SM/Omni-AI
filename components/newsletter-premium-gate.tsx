@@ -233,8 +233,8 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
     <div className="mb-12">
       <div className="flex items-center gap-4 mb-6">
         <h2 className="text-xl font-bold text-amber-400">Interlinked</h2>
-        <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-semibold">
-          PREMIUM
+        <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+          Interlinked Premium
         </span>
       </div>
 

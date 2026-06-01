@@ -43,9 +43,10 @@ export function NewsletterIssueCard({
     day: "numeric",
     year: "numeric",
   });
-  const tagsToShow = normalizeNewsletterKeywords(post.keywords).slice(0, 4);
+  const tagsToShow = normalizeNewsletterKeywords(post.keywords).slice(0, 3);
   const isPremium = post.tier === "premium";
   const targetHref = href || `/newsletter/${post.slug}`;
+  const tierLabel = isPremium ? "Interlinked Premium" : "Interlinked Free";
 
   return (
     <Link
@@ -62,14 +63,14 @@ export function NewsletterIssueCard({
         <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
         <div className="relative flex h-full min-w-0 flex-col justify-between p-5 sm:p-7">
           <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
-            <span className="shrink-0 rounded-full border border-amber-400/30 bg-amber-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-300">
-              {isPremium ? "Premium" : "Free"}
+            <span className="max-w-[70%] shrink truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+              {tierLabel}
             </span>
             <span className="text-xs text-gray-400">{date}</span>
           </div>
 
           <div className="min-w-0 max-w-full sm:max-w-2xl">
-            <h3 className="max-w-full whitespace-normal break-words text-[1.35rem] font-bold leading-tight text-amber-300 transition-colors group-hover:text-amber-200 sm:text-2xl">
+            <h3 className="line-clamp-3 max-w-full whitespace-normal break-words text-[1.35rem] font-bold leading-tight text-amber-300 transition-colors group-hover:text-amber-200 sm:line-clamp-2 sm:text-2xl">
               {post.subject}
             </h3>
             <p className="mt-3 line-clamp-3 max-w-full break-words text-sm leading-relaxed text-gray-300 sm:line-clamp-2 sm:text-base">
@@ -77,14 +78,14 @@ export function NewsletterIssueCard({
             </p>
             <div className="mt-4 flex max-w-full flex-wrap gap-2 overflow-hidden">
               {locked && (
-                <span className="max-w-full rounded-full border border-amber-400/25 bg-amber-500/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-amber-300">
+                <span className="max-w-full truncate rounded-md border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] text-gray-300 backdrop-blur-sm">
                   Preview
                 </span>
               )}
               {tagsToShow.map((kw) => (
                 <span
                   key={kw}
-                  className="max-w-full truncate rounded-full border border-white/10 bg-black/30 px-2.5 py-1 text-[10px] text-gray-300 backdrop-blur-sm"
+                  className="max-w-full truncate rounded-md border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] text-gray-300 backdrop-blur-sm"
                 >
                   {kw}
                 </span>

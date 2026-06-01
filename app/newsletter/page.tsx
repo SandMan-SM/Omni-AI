@@ -380,8 +380,8 @@ export default async function NewsletterIndexPage() {
         <div>
           <div className="flex items-center gap-4 mb-6">
             <h2 className="text-xl font-bold text-amber-400">Daily Intelligence</h2>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-semibold">
-              FREE
+            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+              Interlinked Free
             </span>
           </div>
           <div className="space-y-4">
