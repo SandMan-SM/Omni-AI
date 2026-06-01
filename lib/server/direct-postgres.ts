@@ -36,10 +36,12 @@ function shouldUseSsl(url: string) {
 function getPool() {
   const url = databaseUrl();
   if (!url) throw new Error("DATABASE_URL is not configured");
+  const parsed = new URL(url);
+  parsed.searchParams.delete("sslmode");
 
   if (!global.__omniPgPool) {
     global.__omniPgPool = new Pool({
-      connectionString: url,
+      connectionString: parsed.toString(),
       max: 2,
       idleTimeoutMillis: 10_000,
       connectionTimeoutMillis: 2_500,
