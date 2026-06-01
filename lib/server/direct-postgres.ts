@@ -16,7 +16,7 @@ type BookingInput = {
 type BookingPersistResult = {
   persisted: boolean;
   leadId: string | null;
-  crmStatus: "direct-postgres-crm-created" | "direct-postgres-captured" | "direct-postgres-unavailable";
+  crmStatus: "direct-postgres-crm-created" | "direct-postgres-captured" | "direct-postgres-queued" | "direct-postgres-unavailable";
   error?: string;
 };
 
@@ -104,9 +104,9 @@ export async function persistBookingSubmission(input: BookingInput): Promise<Boo
         setTimeout(() => resolve({
           persisted: false,
           leadId: null,
-          crmStatus: "direct-postgres-unavailable",
-          error: "direct postgres persistence timed out",
-        }), 4_500),
+          crmStatus: "direct-postgres-queued",
+          error: "direct postgres persistence still running",
+        }), 1_000),
       ),
     ]);
   } catch (error) {
