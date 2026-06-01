@@ -16,6 +16,7 @@ import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCa
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { newsletterIssueBackgroundImage } from "@/components/newsletter-issue-card";
 
 // HARD RESET — every layer of Next's caching is turned off on this route so
 // the "N tags" counter and the post body always read live Supabase. Without
@@ -192,20 +193,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const keywords = normalizeKeywords(post.keywords).join(", ") || "AI, business, automation";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
-  // Dynamic 1200x630 OG image for the social auto-render card (Twitter /
-  // LinkedIn / Slack). Before this, newsletter posts fell back to the
-  // site-wide opengraph-image.tsx — every issue shared the same generic
-  // "Omni AI / Lead Generation on Autopilot" art regardless of subject.
-  // Now each shared link previews with the post's own headline and intro
-  // using the same /api/og edge route the daily landing pages use, with
-  // an Interlinked eyebrow so readers can tell newsletter cards from
-  // trending-topic cards at a glance.
-  const ogTopic = (post.intro || keywords).slice(0, 140);
-  const ogImage =
-    `${siteUrl}/api/og?slug=${slug}` +
-    `&title=${encodeURIComponent(post.subject)}` +
-    `&topic=${encodeURIComponent(ogTopic)}` +
-    `&eyebrow=${encodeURIComponent("Omni AI · Interlinked")}`;
+  const ogImage = `${siteUrl}/newsletter/${encodeURIComponent(slug)}/opengraph-image`;
   return {
     title: `${post.subject} | Interlinked by Omni AI`,
     description: post.intro?.slice(0, 160),
@@ -280,6 +268,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   // modern desktop). Clipboard-copy fallback lives in the ShareButton.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
+  const heroImage = newsletterIssueBackgroundImage(post.slug);
   const quoteText = renderText(post.quote);
   const powerMoveText = renderText(post.power_move);
   const offerText = renderText(post.offer);
@@ -349,34 +338,42 @@ export default async function NewsletterPostPage({ params }: Props) {
 
       {/* Article */}
       <article className="relative z-10 max-w-3xl mx-auto px-5 pt-6 pb-12 md:pb-20">
-        {/* Meta */}
-        <div className="mb-8">
-          <div className="flex items-center gap-4 mb-4">
-            <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-purple-400"}`}>
+        {/* Hero image — same 1200x630 generated asset used for social sharing. */}
+        <div className="relative mb-10 overflow-hidden rounded-3xl border border-amber-500/20 bg-black shadow-[0_0_40px_rgba(245,158,11,0.08)]">
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-cover bg-center opacity-70"
+            style={{ backgroundImage: heroImage }}
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.88)_0%,rgba(0,0,0,0.68)_48%,rgba(0,0,0,0.30)_100%)]" />
+          <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
+          <div className="relative flex min-h-[360px] flex-col justify-end p-6 sm:p-8 md:p-10">
+            <div className="mb-4 flex flex-wrap items-center gap-3">
+              <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-amber-300"}`}>
               {isPremium ? "Interlinked Premium" : "Daily Intelligence"}
             </span>
-            <span className="text-xs text-gray-600">·</span>
+              <span className="text-xs text-gray-600">·</span>
             <span className="text-xs text-gray-500">{date}</span>
           </div>
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
+            <h1 className="max-w-2xl text-3xl font-bold leading-tight text-white md:text-4xl lg:text-5xl">
             {post.subject}
           </h1>
           {/* Founder byline — visible E-E-A-T signal for Google, and the
               anchor LLMs use when asked "who wrote this?". Links to /about
               so the attribution resolves to a real Person entity. */}
-          <p className="text-sm text-gray-400 mb-6">
+            <p className="mt-4 text-sm text-gray-300">
             By{" "}
             <Link
               href="/about"
-              className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60 transition-colors"
+                className="text-gray-100 underline underline-offset-2 decoration-white/20 transition-colors hover:text-white hover:decoration-white/60"
             >
               Alfred Belvedere
             </Link>{" "}
             — Founder, Omni AI
           </p>
           {tagsToShow.length > 0 && (
-            <details className="mb-6 group/tags">
-              <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-300 transition-colors list-none flex items-center gap-1.5">
+              <details className="mt-5 group/tags">
+                <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-gray-200">
                 <svg className="w-3.5 h-3.5 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                 {tagsToShow.length} tags
               </summary>
@@ -384,7 +381,7 @@ export default async function NewsletterPostPage({ params }: Props) {
                 {tagsToShow.map((kw: string) => (
                   <span
                     key={kw}
-                    className="text-[10px] sm:text-[11px] px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full bg-white/[0.04] border border-white/[0.08] text-gray-400 whitespace-nowrap"
+                      className="whitespace-nowrap rounded-full border border-white/10 bg-black/30 px-2 py-0.5 text-[10px] text-gray-300 backdrop-blur-sm sm:px-2.5 sm:py-1 sm:text-[11px]"
                   >
                     {kw}
                   </span>
@@ -392,15 +389,16 @@ export default async function NewsletterPostPage({ params }: Props) {
               </div>
             </details>
           )}
+          </div>
         </div>
 
-        {/* Quote — left-aligned blockquote indented past the paragraph
-            edge. Neutral lighter card bg so the quote reads clearly against
-            the fire-spark backdrop; accent border stays subtle. Generous
-            top/bottom padding so the quote has room to breathe. */}
+        {/* Quote — centered in the article column so every issue uses the
+            same balanced pull-quote treatment. Neutral lighter card bg
+            keeps it readable against the fire-spark backdrop; accent
+            border stays subtle. */}
         {quoteText && (
           <figure
-            className={`mt-8 mb-12 ml-4 sm:ml-10 rounded-3xl border bg-white/[0.06] px-8 py-12 sm:px-12 sm:py-14 backdrop-blur-sm ${
+            className={`mx-auto mt-8 mb-12 max-w-2xl rounded-3xl border bg-white/[0.06] px-8 py-12 sm:px-12 sm:py-14 backdrop-blur-sm ${
               isPremium ? "border-amber-500/30" : "border-purple-500/30"
             }`}
           >
@@ -410,7 +408,7 @@ export default async function NewsletterPostPage({ params }: Props) {
                   so the punctuation reads naturally. We don't auto-wrap
                   here because that puts the closing mark after the
                   attribution, which is grammatically wrong. */}
-              <p className="text-lg md:text-xl text-gray-100 italic leading-[1.75] text-left">
+              <p className="text-center text-lg md:text-xl text-gray-100 italic leading-[1.75]">
                 {quoteText}
               </p>
             </blockquote>

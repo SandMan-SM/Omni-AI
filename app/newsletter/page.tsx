@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
-import { Mail, Users, Eye, Rss } from "lucide-react";
+import { Rss } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -11,6 +11,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // hub. Matches the pattern added to /about and /faq in the same cycle.
 import { Footer } from "@/components/footer";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsletter-issue-card";
 
 export const metadata: Metadata = {
   title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
@@ -48,33 +49,10 @@ export const metadata: Metadata = {
   },
 };
 
-// ISR every 5 minutes. The listing needs to reflect new daily posts (dropped
-// at 8am ET) and growing subscriber counts, but doesn't need to be real-time.
-// Previously this was `force-dynamic` + `revalidate = 0` + `noStore()` — every
-// visit hit Supabase for 4 parallel queries. At 5-min ISR the page is cached
-// at the edge and one regeneration amortizes across every visitor in that
-// window. The per-slug page `app/newsletter/[slug]/page.tsx` stays
-// force-dynamic — it had a historical stale-tags bug that a separate fix
-// should resolve before it gets ISR'd too.
+// Fast front shelf: only the latest 5 premium + 5 free posts render here.
+// The full library lives at /newsletter/archive so the main page does not
+// block on full-list reads, subscriber counts, or send analytics.
 export const revalidate = 300;
-export const dynamic = "force-dynamic";
-
-function fmtCompact(n: number): string {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1).replace(/\.0$/, "")}M+`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1).replace(/\.0$/, "")}k+`;
-  return `${n}`;
-}
-
-function normalizeKeywords(keywords: unknown): string[] {
-  if (Array.isArray(keywords)) return keywords.filter((kw): kw is string => typeof kw === "string");
-  if (typeof keywords === "string") {
-    return keywords
-      .split(",")
-      .map((kw) => kw.trim())
-      .filter(Boolean);
-  }
-  return [];
-}
 
 function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
   return Promise.race([
@@ -89,87 +67,84 @@ function archiveDateForIndex(index: number): string {
   return date.toISOString();
 }
 
+type RawNewsletterSummary = {
+  slug: string | null;
+  subject: string | null;
+  intro: string | null;
+  keywords: unknown;
+  tier: string | null;
+  published_at: string | null;
+  created_at: string | null;
+};
+
+function normalizePost(p: RawNewsletterSummary, index: number): NewsletterCardPost {
+  return {
+    slug: p.slug!,
+    subject: p.subject!,
+    intro: p.intro || "",
+    keywords: Array.isArray(p.keywords) || typeof p.keywords === "string" ? p.keywords : null,
+    tier: p.tier || "free",
+    published_at: p.published_at || archiveDateForIndex(index),
+    created_at: p.created_at || p.published_at || archiveDateForIndex(index),
+  };
+}
+
+function fallbackFrontShelf() {
+  const fallbackPosts = getNewsletterFallbackSummaries()
+    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
+    .map((p, index) => normalizePost(p as RawNewsletterSummary, index));
+
+  return {
+    premiumPosts: fallbackPosts.filter((p) => p.tier === "premium").slice(0, 5),
+    freePosts: fallbackPosts.filter((p) => p.tier !== "premium").slice(0, 5),
+  };
+}
+
 export default async function NewsletterIndexPage() {
   const supabase = createAdminClient();
 
-  // Pull posts + live data in parallel. Subscriber count is computed from
-  // the actual list of email addresses (deduped across the two sources)
-  // rather than naive counts that double-count every overlap. Sends totals
-  // come straight from `newsletter_sends.recipients_total`. NO manual
-  // floors — the page shows the real number.
-  const [postsRes, profileSubRes, newsletterSubRes, sendsRes] = await Promise.all([
+  const [premiumRes, freeRes] = await Promise.all([
     withTimeout(
       supabase
         .from("newsletter_posts")
         .select("slug, subject, intro, keywords, tier, published_at, created_at")
+        .eq("tier", "premium")
         .or("published_at.not.is.null,status.eq.published")
         .order("published_at", { ascending: false })
-        .limit(50),
-      8000
+        .limit(5),
+      2500
     ),
     withTimeout(
       supabase
-        .from("profiles")
-        .select("email")
-        .eq("newsletter_subscribed", true)
-        .not("email", "is", null)
-        .limit(1000),
-      3500
+        .from("newsletter_posts")
+        .select("slug, subject, intro, keywords, tier, published_at, created_at")
+        .neq("tier", "premium")
+        .or("published_at.not.is.null,status.eq.published")
+        .order("published_at", { ascending: false })
+        .limit(5),
+      2500
     ),
-    withTimeout(
-      supabase
-        .from("newsletter_subscriptions")
-        .select("email")
-        .eq("subscribed", true)
-        .not("email", "is", null)
-        .limit(1000),
-      3500
-    ),
-    withTimeout(supabase.from("newsletter_sends").select("recipients_total").limit(1000), 3500),
   ]);
 
-  const supabasePosts = (postsRes as { data?: Array<{ slug: string | null; subject: string | null; intro: string | null; keywords: unknown; tier: string | null; published_at: string | null; created_at: string | null }> } | null)?.data || [];
-  const rawPosts = supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries();
-  const posts = rawPosts
-    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
-    .map((p, index) => ({
-      slug: p.slug!,
-      subject: p.subject!,
-      intro: p.intro || "",
-      keywords: Array.isArray(p.keywords) || typeof p.keywords === "string" ? p.keywords : null,
-      tier: p.tier || "free",
-      published_at: p.published_at || archiveDateForIndex(index),
-      created_at: p.created_at || p.published_at!,
-    }));
-  const postsUnavailable = !postsRes || Boolean((postsRes as { error?: unknown }).error);
-  const premiumPosts = posts.filter(p => p.tier === "premium");
-  const freePosts = posts.filter(p => p.tier !== "premium");
-
-  const postsSent = posts.length;
-
-  // Dedup subscribers by lowercased email. A user who's both a profile
-  // (logged-in) AND in newsletter_subscriptions (signed up via the form)
-  // counts once.
-  const subEmails = new Set<string>();
-  for (const row of ((profileSubRes as { data?: Array<{ email: string | null }> } | null)?.data || [])) {
-    if (row.email) subEmails.add(row.email.trim().toLowerCase());
-  }
-  for (const row of ((newsletterSubRes as { data?: Array<{ email: string | null }> } | null)?.data || [])) {
-    if (row.email) subEmails.add(row.email.trim().toLowerCase());
-  }
-  const subscribersCount = subEmails.size;
-
-  // Real recipient totals from logged sends (no inflation factors).
-  const viewersCount = ((sendsRes as { data?: Array<{ recipients_total?: number | null }> } | null)?.data || []).reduce(
-    (sum, r: { recipients_total?: number | null }) => sum + (r.recipients_total || 0),
-    0
-  );
-
-  const stats = [
-    { icon: Mail, value: String(postsSent), label: "Issues Sent" },
-    { icon: Users, value: String(subscribersCount), label: "Subscribers" },
-    { icon: Eye, value: fmtCompact(viewersCount), label: "Viewers" },
-  ];
+  const fallback = fallbackFrontShelf();
+  const rawPremium = (premiumRes as { data?: RawNewsletterSummary[]; error?: unknown } | null)?.data || [];
+  const rawFree = (freeRes as { data?: RawNewsletterSummary[]; error?: unknown } | null)?.data || [];
+  const premiumPosts = rawPremium.length > 0
+    ? rawPremium
+        .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
+        .map((p, index) => normalizePost(p, index))
+        .slice(0, 5)
+    : fallback.premiumPosts;
+  const freePosts = rawFree.length > 0
+    ? rawFree
+        .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
+        .map((p, index) => normalizePost(p, index + premiumPosts.length))
+        .slice(0, 5)
+    : fallback.freePosts;
+  const postsUnavailable =
+    (!premiumRes || Boolean((premiumRes as { error?: unknown }).error)) &&
+    (!freeRes || Boolean((freeRes as { error?: unknown }).error));
+  const frontShelfPosts = [...premiumPosts, ...freePosts];
 
   return (
     // No opaque bg here — root layout's <SpaceBackdrop /> drifts behind.
@@ -297,14 +272,14 @@ export default async function NewsletterIndexPage() {
           Interlinked issues" get a typed answer with walkable per-issue
           URLs. Cap at 20 so the schema stays focused on the most-relevant
           recent items instead of diluting rank across 50+. */}
-      {freePosts.length > 0 && (
+      {frontShelfPosts.length > 0 && (
         <JsonLd
           data={itemListSchema({
             name: "Interlinked — Daily AI Intelligence by Omni AI",
             description:
               "Daily newsletter issues published every morning at 8 AM ET covering AI, automation, and business strategy signals.",
             url: "https://omnileadsagi.com/newsletter",
-            items: freePosts.slice(0, 20).map((p) => ({
+            items: frontShelfPosts.map((p) => ({
               name: p.subject,
               url: `https://omnileadsagi.com/newsletter/${p.slug}`,
               description: (p.intro || "").slice(0, 160) || undefined,
@@ -366,34 +341,16 @@ export default async function NewsletterIndexPage() {
           </a>
         </div>
 
-        {/* Stats row — same visual pattern as the home page hero metrics:
-            purple icon, white→purple→cyan gradient number, small label.
-            No card frame; the space backdrop shows through behind it. */}
-        <div className="mb-12 grid grid-cols-3 gap-4 sm:gap-14 md:gap-20 w-full max-w-xl mx-auto px-2">
-          {stats.map((s) => (
-            <div
-              key={s.label}
-              className="flex flex-col items-center text-center gap-2"
-              data-testid={`metric-${s.label.toLowerCase().replace(/\s+/g, "-")}`}
-            >
-              <s.icon className="w-5 h-5 text-purple-400" />
-              <span
-                className="text-2xl md:text-3xl font-bold tabular-nums"
-                style={{
-                  backgroundImage:
-                    "linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #67e8f9 100%)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {s.value}
-              </span>
-              <span className="text-[11px] sm:text-xs text-gray-500 tracking-wide">
-                {s.label}
-              </span>
-            </div>
-          ))}
+        <div className="mb-12 flex flex-wrap items-center justify-center gap-3">
+          <span className="rounded-full border border-amber-500/20 bg-amber-500/[0.06] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
+            Latest 10
+          </span>
+          <Link
+            href="/newsletter/archive"
+            className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-gray-300 transition-colors hover:border-amber-500/30 hover:text-amber-300"
+          >
+            View full archive
+          </Link>
         </div>
 
         {/* Interlinked — Premium (client-side auth gate) */}
@@ -402,38 +359,15 @@ export default async function NewsletterIndexPage() {
         {/* Daily Intelligence — Free */}
         <div>
           <div className="flex items-center gap-4 mb-6">
-            <h2 className="text-xl font-bold text-purple-400">Daily Intelligence</h2>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-400 font-semibold">
+            <h2 className="text-xl font-bold text-amber-400">Daily Intelligence</h2>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 font-semibold">
               FREE
             </span>
           </div>
           <div className="space-y-4">
             {freePosts.map((post) => {
-              const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-              const tagsToShow = normalizeKeywords(post.keywords).slice(0, 11);
               return (
-                <Link key={post.slug} href={`/newsletter/${post.slug}`} className="block group p-4 sm:p-6 rounded-xl bg-white/[0.02] border border-white/[0.06] hover:border-purple-500/20 hover:bg-white/[0.04] transition-all backdrop-blur-sm">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <h3 className="text-base font-semibold text-white group-hover:text-purple-300 transition-colors truncate">{post.subject}</h3>
-                      <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.intro}</p>
-                      {tagsToShow.length > 0 && (
-                        <details className="mt-2 group/tags">
-                          <summary className="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
-                            <svg className="w-3 h-3 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                            {tagsToShow.length} tags
-                          </summary>
-                          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5">
-                            {tagsToShow.map((kw: string) => (
-                              <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500 whitespace-nowrap">{kw}</span>
-                            ))}
-                          </div>
-                        </details>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-600 flex-shrink-0">{date}</p>
-                  </div>
-                </Link>
+                <NewsletterIssueCard key={post.slug} post={post} />
               );
             })}
 
@@ -450,6 +384,15 @@ export default async function NewsletterIndexPage() {
               </div>
             )}
           </div>
+        </div>
+
+        <div className="mt-10 text-center">
+          <Link
+            href="/newsletter/archive"
+            className="inline-flex h-11 items-center justify-center rounded-xl border border-amber-500/25 bg-amber-500/[0.06] px-5 text-sm font-semibold text-amber-300 transition-colors hover:border-amber-400/50 hover:bg-amber-500/[0.10]"
+          >
+            View full archive
+          </Link>
         </div>
       </main>
       <Footer />

@@ -13,6 +13,7 @@ import {
   PREMIUM_MONTHLY_PRICE_USD,
   PREMIUM_PAYMENT_LINK,
 } from "@/lib/premium";
+import { NewsletterIssueCard } from "@/components/newsletter-issue-card";
 
 interface Post {
   slug: string;
@@ -32,17 +33,6 @@ type PremiumCandidate = {
   tier_name?: string | null;
   role?: string | null;
 };
-
-function normalizeKeywords(keywords: unknown): string[] {
-  if (Array.isArray(keywords)) return keywords.filter((kw): kw is string => typeof kw === "string");
-  if (typeof keywords === "string") {
-    return keywords
-      .split(",")
-      .map((kw) => kw.trim())
-      .filter(Boolean);
-  }
-  return [];
-}
 
 function hasPremiumNewsletterAccess(user: PremiumCandidate | null | undefined): boolean {
   if (!user) return false;
@@ -269,80 +259,25 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
             </div>
           </div>
           {posts.map((post) => {
-            const date = new Date(post.published_at || post.created_at || new Date()).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            });
             return (
-              <Link
+              <NewsletterIssueCard
                 key={post.slug}
+                post={post}
                 href="/newsletter/premium/info"
-                className="block group p-4 sm:p-6 rounded-xl bg-amber-500/[0.02] border border-amber-500/[0.08] hover:border-amber-500/20 hover:bg-amber-500/[0.04] transition-all"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-semibold text-white group-hover:text-amber-300 transition-colors truncate">
-                      {post.subject}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.intro}</p>
-                    <p className="text-[11px] text-amber-400/80 mt-2">Premium issue</p>
-                  </div>
-                  <p className="text-xs text-gray-600 flex-shrink-0">{date}</p>
-                </div>
-              </Link>
+                locked
+              />
             );
           })}
         </div>
       ) : (
         <div className="space-y-4">
           {posts.map((post) => {
-            const date = new Date(post.published_at || post.created_at || new Date()).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            });
             return (
-              <Link
+              <NewsletterIssueCard
                 key={post.slug}
+                post={post}
                 href={`/newsletter/${post.slug}`}
-                className="block group p-4 sm:p-6 rounded-xl bg-amber-500/[0.02] border border-amber-500/[0.08] hover:border-amber-500/20 hover:bg-amber-500/[0.04] transition-all"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-semibold text-white group-hover:text-amber-300 transition-colors truncate">
-                      {post.subject}
-                    </h3>
-                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{post.intro}</p>
-                    {(() => {
-                      const tagsToShow = normalizeKeywords(post.keywords).slice(0, 11);
-                      return tagsToShow.length > 0 && (
-                        <details className="mt-2 group/tags">
-                          <summary className="text-[10px] text-gray-600 cursor-pointer hover:text-gray-400 transition-colors list-none flex items-center gap-1">
-                            <svg
-                              className="w-3 h-3 transition-transform group-open/tags:rotate-180"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                            {tagsToShow.length} tags
-                          </summary>
-                          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-1.5">
-                            {tagsToShow.map((kw: string) => (
-                              <span key={kw} className="text-[10px] px-2 py-0.5 rounded-full bg-white/[0.04] text-gray-500 whitespace-nowrap">
-                                {kw}
-                              </span>
-                            ))}
-                          </div>
-                        </details>
-                      );
-                    })()}
-                  </div>
-                  <p className="text-xs text-gray-600 flex-shrink-0">{date}</p>
-                </div>
-              </Link>
+              />
             );
           })}
         </div>
