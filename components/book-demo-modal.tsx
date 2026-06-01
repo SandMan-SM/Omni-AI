@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Calendar, User, Phone, Mail, Building2, Check, Loader2, ChevronLeft, ChevronRight, Clock } from "lucide-react";
+import { X, Calendar, User, Phone, Mail, Check, Loader2, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
@@ -18,12 +18,6 @@ interface BookDemoModalProps {
   heading?: string;
   subheading?: string;
 }
-
-const purposeOptions = [
-  "Strategic Alignment & Vision Roadmap",
-  "Implementation & Execution Planning",
-  "Performance Review & Optimization Strategy",
-];
 
 const timeSlots = [
   "12:00 AM", "1:00 AM", "2:00 AM", "3:00 AM", "4:00 AM", "5:00 AM",
@@ -94,8 +88,6 @@ export function BookDemoModal({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [businessName, setBusinessName] = useState("");
-  const [purpose, setPurpose] = useState("");
   // Honeypot — rendered off-screen, aria-hidden, non-tabbable. Server
   // returns silent 200 when this is non-empty (bot signal).
   const [website, setWebsite] = useState("");
@@ -117,8 +109,6 @@ export function BookDemoModal({
       setName("");
       setEmail("");
       setPhone("");
-      setBusinessName("");
-      setPurpose("");
       setWebsite("");
       setSelectedDate("");
       setSelectedTime("");
@@ -137,7 +127,7 @@ export function BookDemoModal({
   }, [onClose]);
 
   const validateEmail = (val: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
-  const isFormValid = name.trim() && validateEmail(email) && phone.trim() && businessName.trim() && purpose;
+  const isFormValid = name.trim() && validateEmail(email) && phone.trim();
 
   const navigateCalendar = (direction: "prev" | "next") => {
     setCalendarMonth((prev) => {
@@ -164,18 +154,20 @@ export function BookDemoModal({
     setModalStep("schedule");
   };
 
-  const handleComplete = async () => {
-    if (!selectedDate || !selectedTime) return;
+  const handleComplete = async (timeOverride = selectedTime) => {
+    const bookingTime = timeOverride.trim();
+    if (!selectedDate || !bookingTime || isSubmitting) return;
+    setSelectedTime(bookingTime);
     setIsSubmitting(true);
     try {
       const res = await apiRequest("POST", "/api/demo-booking", {
         name: name.trim(),
         phone: phone.trim(),
         email: email.trim(),
-        businessName: businessName.trim(),
-        purpose,
+        businessName: "Omni AI prospect",
+        purpose: "Free 30-minute strategy session",
         date: selectedDate,
-        time: selectedTime,
+        time: bookingTime,
         website, // honeypot
       });
       const data = await res.json();
@@ -226,7 +218,7 @@ export function BookDemoModal({
       action: "TEMPLATE",
       text: "Omni AI Demo",
       dates: `${fmt(start)}/${fmt(end)}`,
-      details: `Demo with Omni AI\nPurpose: ${purpose}\nBusiness: ${businessName}`,
+      details: "Free 30-minute strategy session with Omni AI",
     });
 
     return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -366,55 +358,13 @@ export function BookDemoModal({
                     />
                   </div>
 
-                  <div className="relative">
-                    <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-                    <Input
-                      placeholder="Business Name"
-                      value={businessName}
-                      onChange={(e) => setBusinessName(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
-                      required
-                      data-testid="input-demo-business"
-                    />
-                  </div>
-
-                  <div>
-                    <p className="text-sm text-gray-400 mb-2">Purpose</p>
-                    <div className="space-y-2">
-                      {purposeOptions.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => setPurpose(option)}
-                          className={`w-full flex items-center gap-4 p-4 rounded-lg border text-left transition-all ${
-                            purpose === option
-                              ? "border-purple-500/50 bg-purple-500/10"
-                              : "border-white/10 bg-white/5"
-                          }`}
-                          data-testid={`button-purpose-${option.split(" ")[0].toLowerCase()}`}
-                        >
-                          <div
-                            className={`w-4 h-4 rounded border flex-shrink-0 flex items-center justify-center transition-all ${
-                              purpose === option
-                                ? "border-purple-500 bg-purple-500"
-                                : "border-white/30"
-                            }`}
-                          >
-                            {purpose === option && <Check className="w-3 h-3 text-white" />}
-                          </div>
-                          <span className="text-sm text-gray-200">{option}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
                   <Button
                     type="submit"
                     disabled={!isFormValid}
                     className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg mt-2"
                     data-testid="button-submit-demo"
                   >
-                    Submit Request
+                    Pick Date & Time
                   </Button>
                 </form>
               </motion.div>
@@ -508,7 +458,11 @@ export function BookDemoModal({
                       {timeSlots.map((time) => (
                         <button
                           key={time}
-                          onClick={() => setSelectedTime(time)}
+                          onClick={() => {
+                            setSelectedTime(time);
+                            void handleComplete(time);
+                          }}
+                          disabled={isSubmitting}
                           className={`p-2 rounded-lg text-xs font-medium transition-all ${
                             selectedTime === time
                               ? "bg-purple-500 text-white"
@@ -524,7 +478,7 @@ export function BookDemoModal({
                 )}
 
                 <Button
-                  onClick={handleComplete}
+                  onClick={() => handleComplete()}
                   disabled={!selectedDate || !selectedTime || isSubmitting}
                   className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg mt-2"
                   data-testid="button-complete-booking"
@@ -532,7 +486,7 @@ export function BookDemoModal({
                   {isSubmitting ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    "Complete"
+                    "Book Selected Time"
                   )}
                 </Button>
               </motion.div>

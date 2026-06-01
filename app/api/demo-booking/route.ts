@@ -26,6 +26,73 @@ const OWNER_EMAIL = 'sitanim8@gmail.com';
 const OWNER_NAME = 'Omni AI';
 const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
 
+function splitName(fullName: string) {
+  const parts = fullName.trim().split(/\s+/).filter(Boolean);
+  return {
+    firstName: parts[0] || null,
+    lastName: parts.length > 1 ? parts.slice(1).join(' ') : null,
+  };
+}
+
+async function mirrorBookingToCrm(
+  supabase: ReturnType<typeof createAdminClient>,
+  bookingId: string,
+  row: {
+    name: string;
+    phone: string;
+    email: string;
+    business_name: string;
+    purpose: string;
+    date: string;
+    time: string;
+  },
+) {
+  try {
+    const { data: business, error: businessError } = await supabase
+      .from('omni_businesses')
+      .select('id')
+      .eq('name', 'Omni AI')
+      .maybeSingle();
+
+    if (businessError) throw businessError;
+    if (!business?.id) {
+      console.warn('[demo-booking] Omni AI business row not found; CRM mirror skipped');
+      return;
+    }
+
+    const { firstName, lastName } = splitName(row.name);
+    const notes = [
+      `Strategy call booked for ${row.date || 'TBD'} ${row.time || ''}`.trim(),
+      row.purpose ? `Purpose: ${row.purpose}` : null,
+      row.business_name ? `Business: ${row.business_name}` : null,
+    ].filter(Boolean).join('\n');
+
+    const { error: insertError } = await supabase
+      .from('omni_leads_generated')
+      .insert({
+        business_id: business.id,
+        source_table: 'demo_bookings',
+        source_record_id: bookingId,
+        first_name: firstName,
+        last_name: lastName,
+        email: row.email,
+        phone: row.phone || null,
+        company: row.business_name || null,
+        source: 'web',
+        status: 'qualified',
+        score: 85,
+        deal_stage: 'demo',
+        notes,
+        tags: ['book-now', 'strategy-call', 'crm-instant'],
+        created_at: new Date().toISOString(),
+      });
+
+    if (insertError) throw insertError;
+  } catch (error) {
+    console.error('[demo-booking] CRM mirror failed:', error);
+  }
+}
+
 // ── GET: Fetch all bookings + webinar registrations ─────────────────────────
 
 export async function GET() {
@@ -134,9 +201,16 @@ export async function POST(request: Request) {
     row.email = row.email.toLowerCase();
 
     // 1. Save to database
+    let scheduledAt: string | null = null;
+    try {
+      scheduledAt = parseBookingDateTime(row.date, row.time).toISOString();
+    } catch {
+      scheduledAt = null;
+    }
+
     const { data, error } = await supabase
       .from('demo_bookings')
-      .insert([row])
+      .insert([{ ...row, scheduled_at: scheduledAt }])
       .select()
       .single();
 
@@ -148,6 +222,11 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
+
+    // 1a. Mirror to the Omni AI CRM immediately. The nightly/backfill sync
+    // still exists as a safety net, but public booking submissions should
+    // appear in omni_leads_generated before the visitor receives success.
+    await mirrorBookingToCrm(supabase, data.id, row);
 
     // 1b. Telegram notification (fire-and-forget). The Postgres trigger
     // omni_ai_trg_demo_to_meeting will mirror this row into omni_meeting_bookings
@@ -260,8 +339,9 @@ export async function POST(request: Request) {
       console.warn('RESEND_API_KEY not set — skipping emails');
     }
 
-    // Wait for emails (don't block response for too long)
-    await Promise.allSettled(emailPromises);
+    // Do not make the visitor wait on Resend. The booking + CRM write are
+    // already committed above; email delivery can finish in the background.
+    void Promise.allSettled(emailPromises);
 
     // 6. Log event (fire-and-forget)
     logEvent(supabase as any, {
