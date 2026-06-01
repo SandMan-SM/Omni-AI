@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
-import { createAdminClient } from '@/lib/supabase/admin';
 import { parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
+import { persistBookingSubmission } from '@/lib/server/direct-postgres';
 import {
   isValidEmail,
-  escapeHtml,
   isBotSubmission,
   sanitizeText,
 } from '@/lib/validation';
@@ -19,79 +18,6 @@ rateLimit,
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
-const OWNER_EMAIL = 'sitanim8@gmail.com';
-const OWNER_NAME = 'Omni AI';
-
-function splitName(fullName: string) {
-  const parts = fullName.trim().split(/\s+/).filter(Boolean);
-  return {
-    firstName: parts[0] || null,
-    lastName: parts.length > 1 ? parts.slice(1).join(' ') : null,
-  };
-}
-
-async function mirrorBookingToCrm(
-  supabase: ReturnType<typeof createAdminClient>,
-  sourceRecordId: string,
-  row: {
-    name: string;
-    phone: string;
-    email: string;
-    business_name: string;
-    purpose: string;
-    date: string;
-    time: string;
-  },
-) {
-  try {
-    const { data: business, error: businessError } = await supabase
-      .from('omni_businesses')
-      .select('id')
-      .eq('name', 'Omni AI')
-      .maybeSingle();
-
-    if (businessError) throw businessError;
-    if (!business?.id) {
-      console.warn('[demo-booking] Omni AI business row not found; CRM mirror skipped');
-      return;
-    }
-
-    const { firstName, lastName } = splitName(row.name);
-    const notes = [
-      `Strategy call booked for ${row.date || 'TBD'} ${row.time || ''}`.trim(),
-      row.purpose ? `Purpose: ${row.purpose}` : null,
-      row.business_name ? `Business: ${row.business_name}` : null,
-    ].filter(Boolean).join('\n');
-
-    const { data: lead, error: insertError } = await supabase
-      .from('omni_leads_generated')
-      .insert({
-        business_id: business.id,
-        source_table: 'book_now_submissions',
-        source_record_id: sourceRecordId,
-        first_name: firstName,
-        last_name: lastName,
-        email: row.email,
-        phone: row.phone || null,
-        company: row.business_name || null,
-        source: 'web',
-        status: 'qualified',
-        score: 85,
-        deal_stage: 'demo',
-        notes,
-        tags: ['book-now', 'strategy-call', 'crm-instant'],
-        created_at: new Date().toISOString(),
-      })
-      .select('id')
-      .single();
-
-    if (insertError) throw insertError;
-    return lead;
-  } catch (error) {
-    console.error('[demo-booking] CRM mirror failed:', error);
-    throw error;
-  }
-}
 
 // ── GET: Fetch all bookings + webinar registrations ─────────────────────────
 
@@ -202,6 +128,18 @@ export async function POST(request: Request) {
     const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour meeting
 
     const sourceRecordId = randomUUID();
+    const persistence = await persistBookingSubmission({
+      id: sourceRecordId,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      businessName: row.business_name,
+      purpose: row.purpose,
+      date: row.date,
+      time: row.time,
+      scheduledAt: startDate.toISOString(),
+      raw: body,
+    });
 
     // 2. Build Google Calendar URL. Keep the public booking endpoint
     // focused on the work the visitor is waiting for: a confirmed slot
@@ -214,11 +152,7 @@ export async function POST(request: Request) {
       endDate,
     });
 
-    // Supabase/PostgREST is currently timing out database statements for
-    // public writes. Do not trap the visitor in a spinner while that is
-    // degraded. This log keeps the submission visible in Vercel logs; CRM
-    // persistence must be restored by fixing the Supabase write path.
-    console.info('[demo-booking] captured fast booking request', {
+    console.info('[demo-booking] captured booking request', {
       id: sourceRecordId,
       name: row.name,
       email: row.email,
@@ -226,18 +160,20 @@ export async function POST(request: Request) {
       date: row.date,
       time: row.time,
       purpose: row.purpose,
+      crmStatus: persistence.crmStatus,
     });
 
     return NextResponse.json({
       id: sourceRecordId,
-      leadId: null,
+      leadId: persistence.leadId,
       name: row.name,
       email: row.email,
       phone: row.phone,
       date: row.date,
       time: row.time,
       scheduled_at: startDate.toISOString(),
-      crmStatus: 'supabase-write-degraded',
+      persisted: persistence.persisted,
+      crmStatus: persistence.crmStatus,
       googleCalendarUrl: googleCalUrl,
     }, { status: 201 });
 
