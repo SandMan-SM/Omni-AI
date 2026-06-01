@@ -58,20 +58,24 @@ export function ProposalClient({ pageUrl }: Props) {
         {/* HERO — 7-second composition. Eyebrow + serif headline (no
             $100K) + one-line pitch. No leverage callout, no chip
             strip, no trophy card — those live on /meta/proposal/full. */}
-        <section className="relative">
-          <div className="mx-auto max-w-5xl px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
-            {/* Client brand banner — Utah Trauma & Addiction Centers.
-                The logo is a light mark (black text on white), so it
-                sits on a clean white rounded card to stay crisp +
-                legible against the dark proposal page. */}
-            <div className="mb-8 inline-flex items-center justify-center rounded-2xl bg-white px-6 py-4 sm:px-8 sm:py-5 shadow-xl shadow-black/40 ring-1 ring-white/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/utahaddictioncenterlogo.png"
-                alt="Utah Trauma & Addiction Centers"
-                className="h-20 sm:h-24 w-auto"
-              />
-            </div>
+        <section className="relative overflow-hidden">
+          {/* Utah Trauma & Addiction Centers — faint brand watermark
+              anchored top-right, behind the content. It's a light mark,
+              so it sits at low opacity with a corner-to-center mask that
+              fades its white field into the dark page (reads as a clean
+              watermark, not a hard box). Content sits above it (z-10). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/utahaddictioncenterlogo.png"
+            alt=""
+            aria-hidden="true"
+            className="pointer-events-none absolute -top-4 right-0 z-0 w-64 sm:w-[26rem] opacity-[0.14] select-none"
+            style={{
+              maskImage: "linear-gradient(225deg, #000 22%, transparent 70%)",
+              WebkitMaskImage: "linear-gradient(225deg, #000 22%, transparent 70%)",
+            }}
+          />
+          <div className="relative z-10 mx-auto max-w-5xl px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
               Proposal · Meta Growth Program · 90 days
             </p>
