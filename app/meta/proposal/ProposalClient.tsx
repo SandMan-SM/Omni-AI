@@ -60,6 +60,18 @@ export function ProposalClient({ pageUrl }: Props) {
             strip, no trophy card — those live on /meta/proposal/full. */}
         <section className="relative">
           <div className="mx-auto max-w-5xl px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
+            {/* Client brand banner — Utah Trauma & Addiction Centers.
+                The logo is a light mark (black text on white), so it
+                sits on a clean white rounded card to stay crisp +
+                legible against the dark proposal page. */}
+            <div className="mb-8 inline-flex items-center justify-center rounded-2xl bg-white px-6 py-4 sm:px-8 sm:py-5 shadow-xl shadow-black/40 ring-1 ring-white/10">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/utahaddictioncenterlogo.png"
+                alt="Utah Trauma & Addiction Centers"
+                className="h-20 sm:h-24 w-auto"
+              />
+            </div>
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
               Proposal · Meta Growth Program · 90 days
             </p>
