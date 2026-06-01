@@ -64,10 +64,35 @@ function normalizePost(p: RawNewsletterSummary, index: number): NewsletterCardPo
     subject: p.subject!,
     intro: p.intro || "",
     keywords: Array.isArray(p.keywords) || typeof p.keywords === "string" ? p.keywords : null,
-    tier: p.tier || "free",
+    tier: (p.tier || "free").toLowerCase(),
     published_at: p.published_at || fallbackDateForIndex(index),
     created_at: p.created_at || p.published_at || fallbackDateForIndex(index),
   };
+}
+
+function sortNewsletterPosts(posts: NewsletterCardPost[]): NewsletterCardPost[] {
+  return posts.sort(
+    (a, b) =>
+      new Date(b.published_at || b.created_at || 0).getTime() -
+      new Date(a.published_at || a.created_at || 0).getTime()
+  );
+}
+
+function normalizeFilteredPosts(rows: RawNewsletterSummary[], indexOffset = 0): NewsletterCardPost[] {
+  return rows
+    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
+    .map((p, index) => normalizePost(p, index + indexOffset));
+}
+
+function mergeNewsletterPosts(
+  primary: NewsletterCardPost[],
+  fallback: NewsletterCardPost[]
+): NewsletterCardPost[] {
+  const bySlug = new Map<string, NewsletterCardPost>();
+  for (const post of [...primary, ...fallback]) {
+    if (!bySlug.has(post.slug)) bySlug.set(post.slug, post);
+  }
+  return sortNewsletterPosts(Array.from(bySlug.values()));
 }
 
 async function getArchivePosts(): Promise<{ posts: NewsletterCardPost[]; unavailable: boolean }> {
@@ -78,14 +103,13 @@ async function getArchivePosts(): Promise<{ posts: NewsletterCardPost[]; unavail
       .select("slug, subject, intro, keywords, tier, published_at, created_at")
       .or("published_at.not.is.null,status.eq.published")
       .order("published_at", { ascending: false })
-      .limit(200),
+      .limit(500),
     4000
   );
   const rows = (result as { data?: RawNewsletterSummary[]; error?: unknown } | null)?.data || [];
-  const source = rows.length > 0 ? rows : getNewsletterFallbackSummaries();
-  const posts = source
-    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
-    .map((p, index) => normalizePost(p as RawNewsletterSummary, index));
+  const fallbackPosts = normalizeFilteredPosts(getNewsletterFallbackSummaries() as RawNewsletterSummary[]);
+  const livePosts = normalizeFilteredPosts(rows);
+  const posts = mergeNewsletterPosts(livePosts, fallbackPosts);
 
   return {
     posts,

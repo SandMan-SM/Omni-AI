@@ -83,21 +83,43 @@ function normalizePost(p: RawNewsletterSummary, index: number): NewsletterCardPo
     subject: p.subject!,
     intro: p.intro || "",
     keywords: Array.isArray(p.keywords) || typeof p.keywords === "string" ? p.keywords : null,
-    tier: p.tier || "free",
+    tier: (p.tier || "free").toLowerCase(),
     published_at: p.published_at || archiveDateForIndex(index),
     created_at: p.created_at || p.published_at || archiveDateForIndex(index),
   };
 }
 
-function fallbackFrontShelf() {
+function sortNewsletterPosts(posts: NewsletterCardPost[]): NewsletterCardPost[] {
+  return posts.sort(
+    (a, b) =>
+      new Date(b.published_at || b.created_at || 0).getTime() -
+      new Date(a.published_at || a.created_at || 0).getTime()
+  );
+}
+
+function mergeNewsletterPosts(
+  primary: NewsletterCardPost[],
+  fallback: NewsletterCardPost[]
+): NewsletterCardPost[] {
+  const bySlug = new Map<string, NewsletterCardPost>();
+  for (const post of [...primary, ...fallback]) {
+    if (!bySlug.has(post.slug)) bySlug.set(post.slug, post);
+  }
+  return sortNewsletterPosts(Array.from(bySlug.values()));
+}
+
+function fallbackFrontShelfPosts() {
   const fallbackPosts = getNewsletterFallbackSummaries()
     .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
     .map((p, index) => normalizePost(p as RawNewsletterSummary, index));
 
-  return {
-    premiumPosts: fallbackPosts.filter((p) => p.tier === "premium").slice(0, 5),
-    freePosts: fallbackPosts.filter((p) => p.tier !== "premium").slice(0, 5),
-  };
+  return sortNewsletterPosts(fallbackPosts);
+}
+
+function normalizeFilteredPosts(rows: RawNewsletterSummary[], indexOffset = 0): NewsletterCardPost[] {
+  return rows
+    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
+    .map((p, index) => normalizePost(p, index + indexOffset));
 }
 
 export default async function NewsletterIndexPage() {
@@ -111,7 +133,7 @@ export default async function NewsletterIndexPage() {
         .eq("tier", "premium")
         .or("published_at.not.is.null,status.eq.published")
         .order("published_at", { ascending: false })
-        .limit(5),
+        .limit(50),
       2500
     ),
     withTimeout(
@@ -121,26 +143,24 @@ export default async function NewsletterIndexPage() {
         .neq("tier", "premium")
         .or("published_at.not.is.null,status.eq.published")
         .order("published_at", { ascending: false })
-        .limit(5),
+        .limit(50),
       2500
     ),
   ]);
 
-  const fallback = fallbackFrontShelf();
+  const fallbackPosts = fallbackFrontShelfPosts();
   const rawPremium = (premiumRes as { data?: RawNewsletterSummary[]; error?: unknown } | null)?.data || [];
   const rawFree = (freeRes as { data?: RawNewsletterSummary[]; error?: unknown } | null)?.data || [];
-  const premiumPosts = rawPremium.length > 0
-    ? rawPremium
-        .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
-        .map((p, index) => normalizePost(p, index))
-        .slice(0, 5)
-    : fallback.premiumPosts;
-  const freePosts = rawFree.length > 0
-    ? rawFree
-        .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
-        .map((p, index) => normalizePost(p, index + premiumPosts.length))
-        .slice(0, 5)
-    : fallback.freePosts;
+  const livePremium = normalizeFilteredPosts(rawPremium);
+  const liveFree = normalizeFilteredPosts(rawFree, livePremium.length);
+  const premiumPosts = mergeNewsletterPosts(
+    livePremium,
+    fallbackPosts.filter((p) => p.tier === "premium")
+  ).slice(0, 5);
+  const freePosts = mergeNewsletterPosts(
+    liveFree,
+    fallbackPosts.filter((p) => p.tier !== "premium")
+  ).slice(0, 5);
   const postsUnavailable =
     (!premiumRes || Boolean((premiumRes as { error?: unknown }).error)) &&
     (!freeRes || Boolean((freeRes as { error?: unknown }).error));
