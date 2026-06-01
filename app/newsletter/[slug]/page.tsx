@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { unstable_noStore as noStore } from "next/cache";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { ShareButton } from "@/components/share-button";
 import { JsonLd, newsArticleSchema, breadcrumbSchema } from "@/components/json-ld";
@@ -15,19 +14,22 @@ import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
-import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 import { newsletterIssueBackgroundImage } from "@/components/newsletter-issue-card";
 
-// HARD RESET — every layer of Next's caching is turned off on this route so
-// the "N tags" counter and the post body always read live Supabase. Without
-// all three of these + noStore() inside the query, Vercel kept serving the
-// old 7-tag markup even after we padded rows to 11 in the DB.
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
-export const fetchCache = "force-no-store";
+// Per-issue pages are public content and must be fast from shared links.
+// Known issues are generated from the protected fallback snapshot at build
+// time, then ISR keeps the shell warm. Supabase is only used for brand-new
+// slugs that are not in the snapshot yet.
+export const revalidate = 300;
+export const dynamicParams = true;
 
 interface Props {
   params: Promise<{ slug: string }>;
+}
+
+export function generateStaticParams() {
+  return newsletterFallbackPosts.map((post) => ({ slug: post.slug }));
 }
 
 function normalizeKeywords(keywords: unknown): string[] {
@@ -104,8 +106,9 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> 
 // content the operator explicitly took down. Drafts and removed issues now
 // 404 cleanly here.
 async function getPost(slug: string) {
-  noStore();
   const fallbackPost = getNewsletterFallbackPost(slug);
+  if (fallbackPost) return fallbackPost;
+
   const supabase = createAdminClient();
   const result = await withTimeout(
     supabase
@@ -123,65 +126,28 @@ async function getPost(slug: string) {
   return post && isOmniAiNewsletterPost(post) ? post : null;
 }
 
-// Cross-cluster handoff. /newsletter/[slug] readers are deep-reader
-// subscribers; linking to the most recent /[slug] daily trending topic
-// gives them a quick-read adjacent next-read and closes the loop on
-// cross-cluster internal-link density. Previously the newsletter and
-// daily clusters had zero mutual links; combined with the reverse
-// direction (daily → newsletter), this lets Google treat the two
-// clusters as a coherent topic hub.
-async function getLatestTrend() {
-  noStore();
-  const supabase = createAdminClient();
-  const result = await withTimeout(
-    supabase
-      .from("landing_pages")
-      .select("slug, topic, title, date")
-      .not("slug", "is", null)
-      .order("date", { ascending: false })
-      .limit(1)
-      .single(),
-    2000
-  );
-  return (result as { data?: { slug?: string | null; topic?: string | null; title?: string | null; date?: string | null } } | null)?.data || null;
-}
-
 // Pick 3 related posts for the "Related issues" section. Logic:
 //   1. Pull the 50 most recent posts (excluding the current one).
 //   2. Score each by keyword-intersection count with the current post.
 //   3. Tie-break by recency.
 //   4. If the current post has no keywords (rare), fall back to the
 //      3 most recent posts.
-// Runs on every request — the page is force-dynamic so there's no ISR
-// cache to warm. A single Supabase query over 50 rows is <50ms so the
-// extra hit is fine on a page that already makes one query for the post.
+// Related issues must not block the article. Use the fallback snapshot so
+// post pages can be statically generated/served from ISR without waiting on
+// a live Supabase query for a footer shelf.
 async function getRelatedPosts(
   currentSlug: string,
   currentKeywords: string[] | null | undefined
 ) {
-  noStore();
-  const fallbackRelated = getNewsletterFallbackSummaries().filter((p) => p.slug !== currentSlug).slice(0, 3);
-  const supabase = createAdminClient();
-  const result = await withTimeout(
-    supabase
-      .from("newsletter_posts")
-      .select("slug, subject, intro, published_at, created_at, tier, keywords")
-      .neq("slug", currentSlug)
-      .not("slug", "is", null)
-      .or("published_at.not.is.null,status.eq.published")
-      .order("published_at", { ascending: false })
-      .limit(50),
-    2500
-  );
-  const data = (result as { data?: typeof fallbackRelated | null; error?: unknown } | null)?.data?.filter(isOmniAiNewsletterPost);
-  if (!data || data.length === 0) return fallbackRelated;
+  const fallbackCandidates = getNewsletterFallbackSummaries().filter((p) => p.slug !== currentSlug);
+  const fallbackRelated = fallbackCandidates.slice(0, 3);
 
   const kwSet = new Set(normalizeKeywords(currentKeywords).map((k) => k.toLowerCase()));
-  if (kwSet.size === 0) return data.slice(0, 3);
+  if (kwSet.size === 0) return fallbackRelated;
 
   // Score each candidate by keyword-intersection size with the current post.
   // Higher score first; recency breaks ties via the upstream DESC order.
-  const scored = data.map((p) => {
+  const scored = fallbackCandidates.map((p) => {
     const theirs = normalizeKeywords(p.keywords).map((k) => k.toLowerCase());
     const overlap = theirs.reduce((n: number, k: string) => (kwSet.has(k) ? n + 1 : n), 0);
     return { post: p, overlap };
@@ -241,18 +207,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function NewsletterPostPage({ params }: Props) {
-  noStore();
   const { slug } = await params;
   const post = await getPost(slug);
   if (!post) notFound();
 
-  // Related issues + latest daily trend — both run in parallel so the
-  // card grid and cross-cluster handoff can be inlined into the
-  // server-rendered HTML instead of a client-side hydration fetch.
-  const [relatedPosts, latestTrend] = await Promise.all([
-    getRelatedPosts(slug, normalizeKeywords(post.keywords)),
-    getLatestTrend(),
-  ]);
+  const relatedPosts = await getRelatedPosts(slug, normalizeKeywords(post.keywords));
 
   const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
     weekday: "long",
@@ -617,35 +576,6 @@ export default async function NewsletterPostPage({ params }: Props) {
               </Link>
               .
             </p>
-          </section>
-        )}
-
-        {/* Cross-cluster handoff to today's trending daily landing page.
-            Single editorial card (not a grid) so it reads as "one more
-            thing" rather than a second shelf of related content. Pairs
-            with the reverse-direction card on /[slug] pages shipped last
-            cycle to close the cluster loop in both directions. */}
-        {latestTrend && latestTrend.slug && (
-          <section className="mt-10">
-            <Link
-              href={`/${latestTrend.slug}`}
-              className="group block rounded-2xl border border-white/10 bg-gradient-to-br from-amber-500/[0.05] to-purple-500/[0.04] p-6 sm:p-7 hover:border-amber-500/30 transition-colors"
-            >
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-amber-400 mb-3">
-                Today&apos;s trending · Omni AI
-              </p>
-              <h3 className="text-lg sm:text-xl font-bold text-white leading-snug mb-2 group-hover:text-amber-100 transition-colors">
-                {latestTrend.title || latestTrend.topic}
-              </h3>
-              {latestTrend.topic && latestTrend.title && latestTrend.topic !== latestTrend.title && (
-                <p className="text-xs text-gray-400 uppercase tracking-wider mb-3">
-                  {latestTrend.topic}
-                </p>
-              )}
-              <p className="text-xs font-semibold text-amber-400 group-hover:text-amber-300 transition-colors">
-                See the trending brief →
-              </p>
-            </Link>
           </section>
         )}
 
