@@ -57,6 +57,11 @@ export function NewsletterStudio() {
   const [newTier, setNewTier] = useState<'subscribed' | 'premium'>('subscribed');
   const [addLoading, setAddLoading] = useState(false);
 
+  const getAuthHeaders = (): HeadersInit => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const fetchAll = async () => {
     setLoading(true);
     try {
@@ -64,8 +69,7 @@ export function NewsletterStudio() {
       // cookie session OR the `omni_token` bearer minted by the auth-login
       // edge function. Admin panel visitors hit the latter path, so always
       // forward the token when it's in localStorage.
-      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
-      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const authHeaders = getAuthHeaders();
       const [subRes, statRes] = await Promise.all([
         fetch('/api/newsletter/subscribers', { headers: authHeaders }),
         fetch('/api/newsletter/stats', { headers: authHeaders }),
@@ -91,7 +95,10 @@ export function NewsletterStudio() {
     if (!confirm('Send the newsletter now to all channels?')) return;
     setSending(true);
     try {
-      const res = await fetch('/api/newsletter/send', { method: 'POST' });
+      const res = await fetch('/api/newsletter/send', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
       const data = await res.json();
       if (res.ok) {
         toast({
@@ -110,7 +117,7 @@ export function NewsletterStudio() {
 
   const handleExport = async () => {
     try {
-      const res = await fetch('/api/newsletter/export');
+      const res = await fetch('/api/newsletter/export', { headers: getAuthHeaders() });
       if (!res.ok) throw new Error();
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
@@ -130,7 +137,11 @@ export function NewsletterStudio() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const res = await fetch('/api/newsletter/import', { method: 'POST', body: formData });
+      const res = await fetch('/api/newsletter/import', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: formData,
+      });
       const data = await res.json();
       if (res.ok) {
         toast({ title: '✅ Import Complete', description: `${data.added} added, ${data.skipped} skipped` });
@@ -147,7 +158,10 @@ export function NewsletterStudio() {
   const handleCreatePaymentLink = async () => {
     setCreatingLink(true);
     try {
-      const res = await fetch('/api/newsletter/payment-link', { method: 'POST' });
+      const res = await fetch('/api/newsletter/payment-link', {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
       const data = await res.json();
       if (res.ok) {
         setPaymentUrl(data.payment_url);
@@ -166,12 +180,11 @@ export function NewsletterStudio() {
     setUpdatingId(sub.id);
     const newTier = sub.subscription_tier === 'premium' ? 'subscribed' : 'premium';
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
       const res = await fetch(`/api/newsletter/subscribers/${sub.id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...getAuthHeaders(),
         },
         body: JSON.stringify({ subscription_tier: newTier }),
       });
@@ -195,11 +208,9 @@ export function NewsletterStudio() {
     if (!confirm(`Remove ${sub.email}?`)) return;
     setUpdatingId(sub.id);
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
-      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
       const res = await fetch(`/api/newsletter/subscribers/${sub.id}`, {
         method: 'DELETE',
-        headers: authHeaders,
+        headers: getAuthHeaders(),
       });
       if (res.ok) {
         setSubscribers(prev => prev.filter(s => s.id !== sub.id));

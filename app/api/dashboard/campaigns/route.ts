@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,6 +19,14 @@ export const fetchCache = "force-no-store";
  * return zero rows).
  */
 
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/campaigns] ${reason}:`, error);
+  return NextResponse.json(
+    { error: "Dashboard data unavailable", reason },
+    { status: 503 },
+  );
+}
+
 async function resolveCallerProfileId(): Promise<string | null> {
   try {
     const hdrs = await headers();
@@ -25,13 +34,8 @@ async function resolveCallerProfileId(): Promise<string | null> {
       .replace(/^Bearer\s+/i, "")
       .trim();
     if (bearer) {
-      const json = Buffer.from(bearer, "base64").toString("utf8");
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === "string" &&
-        (typeof payload.exp !== "number" || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
         return payload.sub;
       }
     }
@@ -95,7 +99,7 @@ export async function GET(req: Request) {
       );
     }
     const { data, error } = await sb.from("omni_lead_campaigns").select("*");
-    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return dashboardDataUnavailable("campaigns_lookup_failed", error);
     return NextResponse.json({ campaigns: data ?? [] });
   }
   if (!isAdmin) {
@@ -116,6 +120,6 @@ export async function GET(req: Request) {
     .from("omni_lead_campaigns")
     .select("*")
     .eq("business_id", bizParam);
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return dashboardDataUnavailable("campaigns_lookup_failed", error);
   return NextResponse.json({ campaigns: data ?? [] });
 }

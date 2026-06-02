@@ -4,10 +4,22 @@ import { headers, cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { INBOUND_SLUGS, INBOUND_SLUG_LABELS } from "@/lib/inbound-types";
+import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
+
+type QueryCount = { count: number | null; error?: unknown };
+type QueryRows<T> = { data: T[] | null; error?: unknown };
+
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/command-center] ${reason}:`, error);
+  return NextResponse.json(
+    { error: "Dashboard data unavailable", reason },
+    { status: 503 },
+  );
+}
 
 /**
  * GET /api/dashboard/command-center
@@ -39,13 +51,8 @@ async function resolveAdminProfileId(): Promise<string | null> {
       .replace(/^Bearer\s+/i, "")
       .trim();
     if (bearer) {
-      const json = Buffer.from(bearer, "base64").toString("utf8");
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === "string" &&
-        (typeof payload.exp !== "number" || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
         return payload.sub;
       }
     }
@@ -85,11 +92,14 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
   const sb = createAdminClient();
-  const { data: profile } = await sb
+  const { data: profile, error: profileError } = await sb
     .from("profiles")
     .select("id, role, is_admin")
     .eq("id", callerId)
     .single();
+  if (profileError) {
+    return dashboardDataUnavailable("profile_lookup_failed", profileError);
+  }
   if (!profile) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
@@ -128,29 +138,43 @@ export async function GET() {
       const newsletterTable = `inbound_${slug}_newsletter_events`;
 
       const [
-        { count: leads7d },
-        { count: leads28d },
-        { count: pv7d },
-        { count: pv28d },
-        { count: nlOpens7d },
-        { data: lastLeadRow },
+        leads7dRes,
+        leads28dRes,
+        pv7dRes,
+        pv28dRes,
+        nlOpens7dRes,
+        lastLeadRes,
         // session-id rows in the last 30 min — we de-dupe in JS so the
         // headline KPI counts unique visitors, not raw event rows. With
         // head:true + count:"exact" Postgres returns the row count, which
         // would inflate "active sessions" to the volume of fired events.
-        { data: recentSessionRows },
+        recentSessionRowsRes,
       ] = await Promise.all([
-        sb.from(leadsTable).select("id", { count: "exact", head: true }).gte("created_at", since7d),
-        sb.from(leadsTable).select("id", { count: "exact", head: true }).gte("created_at", since28d),
-        sb.from(eventsTable).select("id", { count: "exact", head: true }).eq("event_type", "page_view").gte("created_at", since7d),
-        sb.from(eventsTable).select("id", { count: "exact", head: true }).eq("event_type", "page_view").gte("created_at", since28d),
-        sb.from(newsletterTable).select("id", { count: "exact", head: true }).eq("event_type", "open").gte("created_at", since7d),
-        sb.from(leadsTable).select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle(),
-        sb.from(eventsTable).select("session_id").gte("created_at", since30min).limit(2000),
+        sb.from(leadsTable).select("id", { count: "exact", head: true }).gte("created_at", since7d) as unknown as Promise<QueryCount>,
+        sb.from(leadsTable).select("id", { count: "exact", head: true }).gte("created_at", since28d) as unknown as Promise<QueryCount>,
+        sb.from(eventsTable).select("id", { count: "exact", head: true }).eq("event_type", "page_view").gte("created_at", since7d) as unknown as Promise<QueryCount>,
+        sb.from(eventsTable).select("id", { count: "exact", head: true }).eq("event_type", "page_view").gte("created_at", since28d) as unknown as Promise<QueryCount>,
+        sb.from(newsletterTable).select("id", { count: "exact", head: true }).eq("event_type", "open").gte("created_at", since7d) as unknown as Promise<QueryCount>,
+        sb.from(leadsTable).select("created_at").order("created_at", { ascending: false }).limit(1).maybeSingle() as unknown as Promise<QueryRows<{ created_at: string }>>,
+        sb.from(eventsTable).select("session_id").gte("created_at", since30min).limit(2000) as unknown as Promise<QueryRows<{ session_id: string | null }>>,
       ]);
 
+      const queryFailures = [
+        [`${slug}_leads_7d_count_failed`, leads7dRes],
+        [`${slug}_leads_28d_count_failed`, leads28dRes],
+        [`${slug}_page_views_7d_count_failed`, pv7dRes],
+        [`${slug}_page_views_28d_count_failed`, pv28dRes],
+        [`${slug}_newsletter_opens_7d_count_failed`, nlOpens7dRes],
+        [`${slug}_last_lead_lookup_failed`, lastLeadRes],
+        [`${slug}_recent_sessions_lookup_failed`, recentSessionRowsRes],
+      ] as const;
+      const failure = queryFailures.find(([, result]) => result.error);
+      if (failure) {
+        throw { reason: failure[0], error: failure[1].error };
+      }
+
       const uniqueSessions = new Set(
-        ((recentSessionRows ?? []) as { session_id: string | null }[])
+        ((recentSessionRowsRes.data ?? []) as { session_id: string | null }[])
           .map(r => r.session_id)
           .filter((s): s is string => !!s),
       );
@@ -158,17 +182,21 @@ export async function GET() {
       return {
         slug,
         label: INBOUND_SLUG_LABELS[slug],
-        leads_7d: leads7d || 0,
-        leads_28d: leads28d || 0,
-        page_views_7d: pv7d || 0,
-        page_views_28d: pv28d || 0,
-        newsletter_opens_7d: nlOpens7d || 0,
+        leads_7d: leads7dRes.count || 0,
+        leads_28d: leads28dRes.count || 0,
+        page_views_7d: pv7dRes.count || 0,
+        page_views_28d: pv28dRes.count || 0,
+        newsletter_opens_7d: nlOpens7dRes.count || 0,
         active_sessions_30min: uniqueSessions.size,
         last_lead_at:
-          (lastLeadRow as { created_at?: string } | null)?.created_at || null,
+          (lastLeadRes.data as { created_at?: string } | null)?.created_at || null,
       };
     }),
-  );
+  ).catch((error) => {
+    const reason = typeof error?.reason === "string" ? error.reason : "command_center_query_failed";
+    return dashboardDataUnavailable(reason, error?.error ?? error);
+  });
+  if (perClient instanceof NextResponse) return perClient;
 
   const totals = perClient.reduce(
     (acc, c) => ({
@@ -205,6 +233,13 @@ export async function GET() {
       .order("created_at", { ascending: false })
       .limit(3),
   ]);
+
+  if (stewardsRes.error) {
+    return dashboardDataUnavailable("leadership_runs_lookup_failed", stewardsRes.error);
+  }
+  if (findingsRes.error) {
+    return dashboardDataUnavailable("system_findings_lookup_failed", findingsRes.error);
+  }
 
   const stewards = ((stewardsRes.data || []) as Array<{
     domain: string;

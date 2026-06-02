@@ -31,9 +31,6 @@ const CampaignsSection = dynamic(
 const EcosystemSection = dynamic(
   () => import("@/components/ecosystem-section").then((m) => ({ default: m.EcosystemSection })),
 );
-const SeoContentSection = dynamic(
-  () => import("@/components/seo-content-section").then((m) => ({ default: m.SeoContentSection })),
-);
 const TestimonialsSection = dynamic(
   () => import("@/components/testimonials-section").then((m) => ({ default: m.TestimonialsSection })),
 );
@@ -273,7 +270,6 @@ export default function HomePage() {
         <CampaignsSection />
         <LegacySection />
         <EcosystemSection />
-        <SeoContentSection />
         <TestimonialsSection />
         <ContactSection />
       </main>

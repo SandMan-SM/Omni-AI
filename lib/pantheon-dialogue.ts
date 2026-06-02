@@ -281,16 +281,63 @@ function morning(t: Trigger) {
       agent_name: "Lao Tzu",
       message_md: `What can be removed today instead of added? Begin there.`,
     },
+    {
+      agent_name: "OmniClaw",
+      to_agent_name: "Athena",
+      message_md:
+        "Run the Messy-to-Motion pass today: find the thing in the operator logs, separate dashboard-service errors, client queue, public-site issues, or latest prompts that feels too vague, tedious, or under-defined to start. Convert it into one reversible 30-minute move and execute if it is safe.",
+      proposed_action: messyToMotionProposal(t),
+    },
   ];
-  return { lines, proposals: [] };
+  return { lines, proposals: [messyToMotionProposal(t)] };
 }
 
 function adHoc(t: Trigger) {
   const lines: DialogueLine[] = [
     {
       agent_name: "Osirus",
-      message_md: `Ad-hoc thread opened on **${t.topic}**. Standing by for council voices.`,
+      message_md: `Ad-hoc thread opened on **${t.topic}**. Use the Messy-to-Motion protocol: clarify the real objective, name what is messy or avoided, identify the hidden dependency, and produce the smallest reversible next action.`,
     },
   ];
   return { lines, proposals: [] };
+}
+
+function messyToMotionProposal(t: Trigger): ProposedAction {
+  return {
+    kind: "investigate",
+    target: "operator_friction_to_motion",
+    rationale_md:
+      "Identify one vague, tedious, emotionally loaded, or under-defined operator/client issue from recent prompts, logs, separate dashboard-service errors, public-site defects, newsletter defects, analytics gaps, or client queues. Convert it into a 30-minute reversible action. Execute if safe; otherwise queue the exact blocker.",
+    confidence: 0.8,
+    payload: {
+      protocol: "messy_to_motion",
+      trigger_topic: t.topic,
+      questions: [
+        "What are we trying to accomplish?",
+        "What feels messy, annoying, unclear, or emotionally loaded?",
+        "What are we avoiding because it feels too big or undefined?",
+        "What would moved-forward look like in the next 30 minutes?",
+        "What is the smallest useful version of progress?",
+        "What hidden dependency, risk, or decision might be ignored?",
+        "What would a sharper operator ask right now?",
+        "What should stop being overcomplicated?",
+        "What should not be rushed?",
+        "What is the next concrete action?",
+      ],
+      council_roles: {
+        Athena: "clarify system shape, ownership, and source of truth",
+        "Sun Tzu": "identify leverage, threat, and timing",
+        Naval: "identify compounding reusable infrastructure",
+        Isis: "identify trust and adoption friction",
+        Carmack: "identify technical risk and verification",
+        "Lao Tzu": "identify what to remove or slow down",
+        OmniClaw: "execute, verify, log, and queue the next move",
+      },
+      execution_boundary:
+        "Execute reversible scoped work without permission; pause for money, secrets, destructive data, legal/client-binding sends, paid ad spend, migrations, or unapproved outbound messages.",
+      routing_boundary:
+        "Do not build the main client-agent dashboard on omnileadsagi.com/dashboard. OmniLeadsAGI is the public revenue site; dashboard work belongs in the separate dashboard service once mapped.",
+    },
+    proposed_by: "OmniClaw",
+  };
 }

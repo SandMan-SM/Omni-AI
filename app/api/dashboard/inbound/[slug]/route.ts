@@ -3,6 +3,8 @@ import { cookies, headers } from 'next/headers';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createServerClient } from '@supabase/ssr';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { decodeOmniToken, isOmniTokenPayloadFresh } from '@/lib/omni-token';
+import { hasPlatformDashboardAccess } from '@/lib/mafi-access';
 import { ptStartOfDayIso } from '@/lib/tz';
 import {
   INBOUND_SLUG_LABELS,
@@ -51,13 +53,8 @@ async function resolveCallerProfileId(): Promise<string | null> {
     const hdrs = await headers();
     const bearer = (hdrs.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
     if (bearer) {
-      const json = Buffer.from(bearer, 'base64').toString('utf8');
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === 'string' &&
-        (typeof payload.exp !== 'number' || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
         return payload.sub;
       }
     }
@@ -170,6 +167,14 @@ function buildTimeSeries(
   return points;
 }
 
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/inbound] ${reason}:`, error);
+  return NextResponse.json(
+    { error: 'Dashboard data unavailable', reason },
+    { status: 503 },
+  );
+}
+
 function refererDomain(raw: string | null): string | null {
   if (!raw) return null;
   try {
@@ -229,11 +234,14 @@ export async function GET(
   // This makes the route safe to expose per-brand client logins (Sammy
   // sees LTB, Alira owner sees Alira, etc.) without leaking cross-tenant
   // data, while platform operators retain full visibility.
-  const { data: profile } = await sb
-    .from('profiles')
-    .select('id, role, is_admin')
-    .eq('id', callerId)
-    .single();
+  const callerIsCanonicalAdmin = hasPlatformDashboardAccess({ id: callerId });
+  const { data: profile } = callerIsCanonicalAdmin
+    ? { data: { id: callerId, role: 'admin', is_admin: true } }
+    : await sb
+        .from('profiles')
+        .select('id, role, is_admin')
+        .eq('id', callerId)
+        .single();
   if (!profile) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -241,6 +249,7 @@ export async function GET(
   const typedSlug = slug as InboundSlug;
   const profileRow = profile as { role?: unknown; is_admin?: unknown };
   const isPlatformAdmin =
+    callerIsCanonicalAdmin ||
     profileRow.is_admin === true ||
     (typeof profileRow.role === 'string' &&
       ['admin', 'owner', 'platform'].includes(
@@ -341,10 +350,10 @@ export async function GET(
     .limit(EVENT_FETCH_LIMIT);
 
   const [
-    { count: leadsToday },
-    { count: leads7d },
-    { count: leads30d },
-    { count: bookings30d },
+    leadsTodayResult,
+    leads7dResult,
+    leads30dCountResult,
+    bookings30dCountResult,
     ordersCountResult,
     ordersRowsResult,
     recentLeadsResult,
@@ -360,6 +369,28 @@ export async function GET(
     bookings30dPromise,
     events30dPromise,
   ]);
+
+  const queryFailures = [
+    ['leads_today_count_failed', leadsTodayResult],
+    ['leads_7d_count_failed', leads7dResult],
+    ['leads_30d_count_failed', leads30dCountResult],
+    ['bookings_30d_count_failed', bookings30dCountResult],
+    ['orders_30d_count_failed', ordersCountResult],
+    ['orders_rows_failed', ordersRowsResult],
+    ['recent_leads_failed', recentLeadsResult],
+    ['leads_30d_rows_failed', leads30dResult],
+    ['bookings_30d_rows_failed', bookings30dResult],
+    ['events_30d_rows_failed', events30dResult],
+  ] as const;
+  const failure = queryFailures.find(([, result]) => 'error' in result && result.error);
+  if (failure) {
+    return dashboardDataUnavailable(failure[0], failure[1].error);
+  }
+
+  const leadsToday = leadsTodayResult.count;
+  const leads7d = leads7dResult.count;
+  const leads30d = leads30dCountResult.count;
+  const bookings30d = bookings30dCountResult.count;
 
   const recentLeads = (recentLeadsResult.data ?? []) as InboundRecentLead[];
   const leads30dRows = (leads30dResult.data ?? []) as LeadRow[];

@@ -65,8 +65,13 @@ export async function POST(request: Request) {
       keywords: result.content.keywords?.slice(0, 5),
     });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Newsletter send error:', msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    console.error('Newsletter send error:', error);
+    return NextResponse.json(
+      {
+        error: 'Newsletter send is temporarily unavailable.',
+        reason: 'send_failed',
+      },
+      { status: 500 },
+    );
   }
 }

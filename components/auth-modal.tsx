@@ -68,6 +68,11 @@ export function AuthModal({
     }
   }, [isOpen, user, onClose]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch("/api/auth/login", { cache: "no-store" }).catch(() => undefined);
+  }, [isOpen]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);

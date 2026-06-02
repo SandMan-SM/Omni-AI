@@ -13,6 +13,7 @@ import {
   type InboundAggregateTenantRow,
   type InboundSlug,
 } from '@/lib/inbound-types';
+import { authFetch } from '@/lib/auth';
 
 type Props = {
   /** Click a leaderboard row to switch the parent dropdown back to a
@@ -52,7 +53,7 @@ export default function AggregateAnalytics({ onTenantClick }: Props) {
     let cancelled = false;
     setLoading(true);
     setError(null);
-    fetch('/api/dashboard/aggregate-analytics', {
+    authFetch('/api/dashboard/aggregate-analytics', {
       method: 'GET',
       cache: 'no-store',
       credentials: 'same-origin',

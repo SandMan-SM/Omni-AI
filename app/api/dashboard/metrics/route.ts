@@ -7,6 +7,14 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/metrics] ${reason}:`, error);
+  return NextResponse.json(
+    { error: "Dashboard data unavailable", reason },
+    { status: 503 },
+  );
+}
+
 /**
  * Admin command-center metrics — revenue, pipeline, lead scores, client
  * health, newsletter counts.
@@ -32,22 +40,25 @@ export async function GET() {
   // which is filtered by business_id = Omni AI. Anything else (admin
   // profiles, sponsors, sub-tenant pipelines) is excluded from the count
   // so the KPI cards match the Clients-tab numbers exactly.
-  const { data: omniBiz } = await supabase
+  const { data: omniBiz, error: omniBizError } = await supabase
     .from("omni_businesses")
     .select("id")
     .eq("name", "Omni AI")
     .maybeSingle();
+  if (omniBizError) {
+    return dashboardDataUnavailable("omni_business_lookup_failed", omniBizError);
+  }
   const omniId: string | null = omniBiz?.id ?? null;
 
   const [
-    { data: profiles },
-    { data: campaigns },
-    { data: newsletterSends },
-    { data: newsletterPosts },
-    { data: activities },
-    { data: newsletterSubs },
-    { data: agiLeads },
-    { data: agiBookings },
+    profilesResult,
+    campaignsResult,
+    newsletterSendsResult,
+    newsletterPostsResult,
+    activitiesResult,
+    newsletterSubsResult,
+    agiLeadsResult,
+    agiBookingsResult,
   ] = await Promise.all([
     // Profiles still pull `total_spent` for the lifetime-revenue card and
     // `last_contacted` for follow-up health, but they NO LONGER drive the
@@ -66,14 +77,27 @@ export async function GET() {
     supabase.from("omni_meeting_bookings").select("id,status,created_at"),
   ]);
 
-  const allProfiles = profiles || [];
-  const allCampaigns = campaigns || [];
-  const allSends = newsletterSends || [];
-  const allPosts = newsletterPosts || [];
-  const allActivities = activities || [];
-  const allSubs = newsletterSubs || [];
-  const allAgiLeads = agiLeads || [];
-  const allAgiBookings = agiBookings || [];
+  const queryFailures = [
+    ["profiles_lookup_failed", profilesResult],
+    ["campaigns_lookup_failed", campaignsResult],
+    ["newsletter_sends_lookup_failed", newsletterSendsResult],
+    ["newsletter_posts_lookup_failed", newsletterPostsResult],
+    ["activity_log_lookup_failed", activitiesResult],
+    ["newsletter_subscriptions_lookup_failed", newsletterSubsResult],
+    ["agi_leads_lookup_failed", agiLeadsResult],
+    ["meeting_bookings_lookup_failed", agiBookingsResult],
+  ] as const;
+  const failure = queryFailures.find(([, result]) => "error" in result && result.error);
+  if (failure) {
+    return dashboardDataUnavailable(failure[0], failure[1].error);
+  }
+
+  const allProfiles = profilesResult.data || [];
+  const allCampaigns = campaignsResult.data || [];
+  const allSends = newsletterSendsResult.data || [];
+  const allPosts = newsletterPostsResult.data || [];
+  const allSubs = newsletterSubsResult.data || [];
+  const allAgiLeads = agiLeadsResult.data || [];
 
   // --- Revenue Engine — Omni AI Clients-tab parity ---
   // Source of truth: omni_leads_generated rows where business_id = Omni AI.

@@ -2,341 +2,346 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
-import type { ElementType } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   ArrowRight,
-  BarChart3,
-  Bot,
-  BriefcaseBusiness,
-  Building2,
-  CalendarDays,
+  BookOpen,
+  Brain,
   CheckCircle2,
-  CircleDollarSign,
-  Clock3,
-  Crown,
-  Database,
-  FileText,
-  Flame,
-  Gauge,
-  Inbox,
+  Compass,
+  Eye,
   Layers3,
+  Loader2,
   LogOut,
-  Mail,
-  Megaphone,
-  MessageSquare,
-  Search,
-  Send,
-  Settings,
+  Orbit,
+  PenLine,
   Shield,
   Sparkles,
   Target,
-  Trophy,
-  Users,
-  Zap,
+  Workflow,
 } from "lucide-react";
+import { authFetch } from "@/lib/auth";
 import { useAuth } from "@/hooks/use-auth";
-import { useProfile } from "@/hooks/use-profile";
 
-type ModuleTone = "emerald" | "amber" | "sky" | "violet" | "rose" | "blue";
-
-type DashboardModule = {
-  title: string;
-  label: string;
-  description: string;
-  href: string;
-  icon: ElementType;
-  tone: ModuleTone;
-  adminOnly?: boolean;
-};
-
-const toneClasses: Record<ModuleTone, {
-  border: string;
-  bg: string;
-  text: string;
-  icon: string;
-  glow: string;
-}> = {
-  emerald: {
-    border: "border-emerald-400/20 hover:border-emerald-300/45",
-    bg: "from-emerald-500/[0.13]",
-    text: "text-emerald-200",
-    icon: "text-emerald-300 bg-emerald-400/10 border-emerald-300/20",
-    glow: "shadow-[0_0_28px_rgba(16,185,129,0.10)]",
-  },
-  amber: {
-    border: "border-amber-400/20 hover:border-amber-300/45",
-    bg: "from-amber-500/[0.14]",
-    text: "text-amber-200",
-    icon: "text-amber-300 bg-amber-400/10 border-amber-300/20",
-    glow: "shadow-[0_0_28px_rgba(245,158,11,0.10)]",
-  },
-  sky: {
-    border: "border-sky-400/20 hover:border-sky-300/45",
-    bg: "from-sky-500/[0.13]",
-    text: "text-sky-200",
-    icon: "text-sky-300 bg-sky-400/10 border-sky-300/20",
-    glow: "shadow-[0_0_28px_rgba(14,165,233,0.10)]",
-  },
-  violet: {
-    border: "border-violet-400/20 hover:border-violet-300/45",
-    bg: "from-violet-500/[0.13]",
-    text: "text-violet-200",
-    icon: "text-violet-300 bg-violet-400/10 border-violet-300/20",
-    glow: "shadow-[0_0_28px_rgba(139,92,246,0.10)]",
-  },
-  rose: {
-    border: "border-rose-400/20 hover:border-rose-300/45",
-    bg: "from-rose-500/[0.13]",
-    text: "text-rose-200",
-    icon: "text-rose-300 bg-rose-400/10 border-rose-300/20",
-    glow: "shadow-[0_0_28px_rgba(244,63,94,0.10)]",
-  },
-  blue: {
-    border: "border-blue-400/20 hover:border-blue-300/45",
-    bg: "from-blue-500/[0.13]",
-    text: "text-blue-200",
-    icon: "text-blue-300 bg-blue-400/10 border-blue-300/20",
-    glow: "shadow-[0_0_28px_rgba(59,130,246,0.10)]",
-  },
-};
-
-const primaryModules: DashboardModule[] = [
+const definitions = [
   {
-    title: "Contacts CRM",
-    label: "Pipeline",
-    description: "Work leads, sponsors, affiliates, and client contacts without waiting on the old overview panel.",
-    href: "/dashboard/leads",
-    icon: Users,
-    tone: "emerald",
+    term: "Program",
+    body: "A chosen pattern repeated until it becomes automatic. If you do not choose it, the world will choose one for you.",
   },
   {
-    title: "Outreach",
-    label: "Revenue",
-    description: "Draft, send, and review follow-ups from the outbound command surface.",
-    href: "/dashboard/outreach",
-    icon: Send,
-    tone: "sky",
+    term: "Signal",
+    body: "A piece of reality asking for attention. Signal is usually quiet, specific, and inconvenient.",
   },
   {
-    title: "Meetings",
-    label: "Booking",
-    description: "Review scheduled calls and route new appointments from the booking flow.",
-    href: "/dashboard/meetings",
-    icon: CalendarDays,
-    tone: "violet",
+    term: "Noise",
+    body: "Anything that consumes attention without improving perception, decision, action, or love.",
   },
   {
-    title: "Newsletter",
-    label: "Interlinked",
-    description: "Manage publication workflow, premium/free issues, and the public archive.",
-    href: "/dashboard/marketing",
-    icon: Mail,
-    tone: "amber",
+    term: "Loop",
+    body: "A recurring sequence of thought, emotion, behavior, and consequence. Most people call loops personality.",
+  },
+  {
+    term: "Agency",
+    body: "The ability to interrupt a loop, choose a direction, and move before the old self negotiates you back down.",
+  },
+  {
+    term: "Integration",
+    body: "When knowledge stops being information and becomes behavior. The body knows it, not just the mind.",
+  },
+  {
+    term: "Leverage",
+    body: "A force multiplier. Tools, systems, memory, capital, code, reputation, and people are leverage when they compound judgment.",
+  },
+  {
+    term: "The Library",
+    body: "The total archive of lived experience, pattern, language, failure, recovery, and wisdom that the Program learns from.",
   },
 ];
 
-const operatingModules: DashboardModule[] = [
-  {
-    title: "Client CEOs",
-    label: "Fleet",
-    description: "Inspect each client agent, data gaps, and the next revenue action per business.",
-    href: "/dashboard/agents",
-    icon: Bot,
-    tone: "violet",
-    adminOnly: true,
-  },
-  {
-    title: "Companies",
-    label: "Accounts",
-    description: "Open company records, enrichment status, and account-level moves.",
-    href: "/dashboard/companies",
-    icon: Building2,
-    tone: "blue",
-    adminOnly: true,
-  },
-  {
-    title: "Analytics",
-    label: "Signal",
-    description: "Open analytics only when you need the heavier charts and attribution reads.",
-    href: "/dashboard/analytics",
-    icon: BarChart3,
-    tone: "sky",
-    adminOnly: true,
-  },
-  {
-    title: "Campaigns",
-    label: "Execution",
-    description: "Create and manage marketing campaigns without loading them into the homepage.",
-    href: "/dashboard/campaigns",
-    icon: Megaphone,
-    tone: "rose",
-    adminOnly: true,
-  },
-  {
-    title: "Pipeline",
-    label: "Deals",
-    description: "Switch between contacts, sponsors, affiliates, and high-value opportunities.",
-    href: "/dashboard/pipeline",
-    icon: BriefcaseBusiness,
-    tone: "emerald",
-  },
-  {
-    title: "Inbox",
-    label: "Messages",
-    description: "Centralize inbound conversations and follow-up decisions.",
-    href: "/dashboard/inbox",
-    icon: Inbox,
-    tone: "blue",
-  },
-  {
-    title: "Council",
-    label: "Pantheon",
-    description: "Open the council roster, decision context, and operator intelligence surfaces.",
-    href: "/dashboard/council",
-    icon: Crown,
-    tone: "amber",
-  },
-  {
-    title: "Settings",
-    label: "Control",
-    description: "Account, billing, workspace, and system controls.",
-    href: "/dashboard/settings",
-    icon: Settings,
-    tone: "violet",
-  },
+const practices = [
+  "Tell the truth quickly.",
+  "Protect your attention like it is your bloodstream.",
+  "Do the thing that makes tomorrow lighter.",
+  "Treat fear as a messenger, not a king.",
+  "Build systems around the behavior you want repeated.",
+  "Make your calendar prove your values.",
+  "Let data correct your story.",
+  "Leave every room clearer than you found it.",
 ];
-
-const statusItems = [
-  { label: "Dashboard shell", value: "Instant", icon: Gauge, tone: "emerald" as ModuleTone },
-  { label: "Booking capture", value: "Postgres", icon: Database, tone: "sky" as ModuleTone },
-  { label: "Newsletter", value: "Live", icon: FileText, tone: "amber" as ModuleTone },
-  { label: "Agent fleet", value: "Ready", icon: Bot, tone: "violet" as ModuleTone },
-];
-
-const executionQueue = [
-  {
-    title: "Capture and route new booked calls",
-    detail: "Booking submissions now land in Postgres first, then can be mirrored into the heavier CRM layer.",
-    href: "/dashboard/meetings",
-    icon: CalendarDays,
-    tone: "sky" as ModuleTone,
-  },
-  {
-    title: "Review newest Interlinked issues",
-    detail: "Newsletter production, archive polish, and premium/free shelves are live.",
-    href: "/newsletter",
-    icon: Mail,
-    tone: "amber" as ModuleTone,
-  },
-  {
-    title: "Open client CEO fleet",
-    detail: "Inspect which client systems have data gaps, next moves, and upgrade opportunities.",
-    href: "/dashboard/agents",
-    icon: Bot,
-    tone: "violet" as ModuleTone,
-  },
-];
-
-function classNames(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(" ");
-}
-
-function ModuleCard({ module }: { module: DashboardModule }) {
-  const Icon = module.icon;
-  const tone = toneClasses[module.tone];
-
-  return (
-    <Link
-      href={module.href}
-      className={classNames(
-        "group block rounded-lg border bg-gradient-to-br via-white/[0.025] to-white/[0.015] p-4 transition-all hover:-translate-y-0.5",
-        tone.border,
-        tone.bg,
-        tone.glow,
-      )}
-    >
-      <div className="mb-5 flex items-start justify-between gap-3">
-        <div className={classNames("flex h-10 w-10 items-center justify-center rounded-md border", tone.icon)}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <span className={classNames("rounded-md border border-white/10 bg-black/20 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]", tone.text)}>
-          {module.label}
-        </span>
-      </div>
-      <h3 className="text-base font-semibold text-white">{module.title}</h3>
-      <p className="mt-2 min-h-[44px] text-sm leading-relaxed text-gray-400">{module.description}</p>
-      <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-gray-300 transition-colors group-hover:text-white">
-        Open
-        <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-      </div>
-    </Link>
-  );
-}
-
-function StatusCard({
-  label,
-  value,
-  icon: Icon,
-  tone,
-}: {
-  label: string;
-  value: string;
-  icon: ElementType;
-  tone: ModuleTone;
-}) {
-  const styles = toneClasses[tone];
-
-  return (
-    <div className={classNames("rounded-lg border bg-black/25 p-3 sm:p-4", styles.border)}>
-      <div className="flex items-center justify-between gap-3">
-        <div className={classNames("flex h-8 w-8 items-center justify-center rounded-md border sm:h-9 sm:w-9", styles.icon)}>
-          <Icon className="h-4 w-4" />
-        </div>
-        <CheckCircle2 className={classNames("h-4 w-4", styles.text)} />
-      </div>
-      <p className="mt-3 text-[9px] font-semibold uppercase tracking-[0.16em] text-gray-500 sm:mt-4 sm:text-[10px] sm:tracking-[0.18em]">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-white sm:text-xl">{value}</p>
-    </div>
-  );
-}
 
 function SkeletonGate() {
   return (
-    <div className="min-h-screen bg-[#050507] text-white">
-      <div className="mx-auto max-w-7xl px-5 py-6">
+    <main className="min-h-screen bg-[#050506] px-4 py-6 text-white sm:px-6 sm:py-8">
+      <div className="mx-auto max-w-4xl">
         <div className="h-10 w-36 rounded-lg bg-white/[0.06]" />
-        <div className="mt-10 grid gap-4 md:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-28 rounded-lg border border-white/10 bg-white/[0.03]" />
-          ))}
-        </div>
+        <div className="mt-12 h-72 rounded-lg border border-white/10 bg-white/[0.03] sm:mt-20" />
+      </div>
+    </main>
+  );
+}
+
+function OmniLoopVisual() {
+  const steps = [
+    { label: "Observe", icon: Eye },
+    { label: "Discern", icon: Compass },
+    { label: "Act", icon: Target },
+    { label: "Integrate", icon: Brain },
+  ];
+
+  return (
+    <div className="relative overflow-hidden rounded-lg border border-amber-300/20 bg-black/35 p-4 sm:p-7">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(251,191,36,0.16),transparent_45%)]" />
+      <div className="relative grid gap-3 sm:grid-cols-4">
+        {steps.map((step, index) => {
+          const Icon = step.icon;
+          return (
+            <div key={step.label} className="relative rounded-lg border border-white/10 bg-white/[0.04] p-3.5 sm:p-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-amber-300/30 bg-amber-300/10 text-amber-200">
+                <Icon className="h-5 w-5" />
+              </div>
+              <p className="mt-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-200/70 sm:tracking-[0.2em]">
+                Step {index + 1}
+              </p>
+              <h3 className="mt-1 text-lg font-semibold text-white">{step.label}</h3>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-export default function Dashboard() {
+function HumanStackVisual() {
+  const layers = [
+    "Environment",
+    "Behavior",
+    "Decision",
+    "Attention",
+    "Belief",
+    "Body",
+  ];
+
+  return (
+    <div className="rounded-lg border border-sky-300/20 bg-sky-300/[0.04] p-4 sm:p-7">
+      <div className="mx-auto flex max-w-xl flex-col gap-2">
+        {layers.map((layer, index) => (
+          <div
+            key={layer}
+            className="rounded-md border border-white/10 bg-black/35 px-3.5 py-3 sm:px-4"
+            style={{ marginInline: `${Math.min(index * 8, 28)}px` }}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <span className="text-sm font-semibold text-white">{layer}</span>
+              <span className="text-[10px] uppercase tracking-[0.12em] text-sky-200/60 sm:tracking-[0.18em]">
+                Layer {layers.length - index}
+              </span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function LibraryVisual() {
+  const paths = ["Experience", "Pattern", "Memory", "Wisdom", "Execution"];
+  return (
+    <div className="rounded-lg border border-violet-300/20 bg-violet-300/[0.04] p-4 sm:p-7">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        {paths.map((path, index) => (
+          <div key={path} className="rounded-lg border border-white/10 bg-black/35 p-3.5 sm:p-4">
+            <div className="mb-6 flex items-center justify-between sm:mb-8">
+              <BookOpen className="h-5 w-5 text-violet-200" />
+              <span className="font-mono text-xs text-violet-200/50">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+            </div>
+            <p className="text-sm font-semibold text-white">{path}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Section({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="border-t border-white/[0.08] py-11 sm:py-20">
+      <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/70 sm:text-[11px] sm:tracking-[0.28em]">
+        {eyebrow}
+      </p>
+      <h2 className="max-w-3xl font-serif text-[clamp(2rem,10vw,3rem)] leading-tight text-white sm:text-5xl">
+        {title}
+      </h2>
+      <div className="mt-7 space-y-5 text-[15px] leading-8 text-zinc-300 sm:mt-8 sm:text-lg">
+        {children}
+      </div>
+    </section>
+  );
+}
+
+function DocumentSignatureBlock({ userEmail }: { userEmail?: string | null }) {
+  const [signerName, setSignerName] = useState("");
+  const [signerEmail, setSignerEmail] = useState(userEmail || "");
+  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    if (userEmail && !signerEmail) setSignerEmail(userEmail);
+  }, [signerEmail, userEmail]);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setStatus("submitting");
+    setMessage("");
+
+    try {
+      const res = await authFetch("/api/omni-program/sign", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          signerName,
+          signerEmail,
+          pageUrl: typeof window !== "undefined" ? window.location.href : "/dashboard",
+          website: "",
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setStatus("error");
+        setMessage(data.error || "Could not capture the signature yet.");
+        return;
+      }
+
+      setStatus("success");
+      setMessage(
+        data.message ||
+          "Acknowledgement received. The Omni ledger has advanced by +10 credits.",
+      );
+    } catch {
+      setStatus("error");
+      setMessage("Could not reach the signature service. Try again.");
+    }
+  };
+
+  return (
+    <section id="signature" className="border-t border-white/[0.08] py-11 sm:py-20">
+      <div className="relative overflow-hidden rounded-lg border border-amber-300/25 bg-black/40 p-5 sm:p-8">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(251,191,36,0.18),transparent_34%),radial-gradient(circle_at_18%_86%,rgba(56,189,248,0.11),transparent_36%)]" />
+        <div className="relative grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-200/70">
+              Electronic acknowledgement
+            </p>
+            <h2 className="mt-3 font-serif text-[clamp(2rem,10vw,3.75rem)] leading-tight text-white">
+              I have read the document.
+            </h2>
+            <p className="mt-5 max-w-xl text-[15px] leading-8 text-zinc-300 sm:text-lg">
+              Type your name and email to acknowledge that you read The Omni Program.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input
+              aria-hidden="true"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              className="hidden"
+            />
+            <label className="block">
+              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Signature
+              </span>
+              <div className="relative overflow-hidden border-b border-amber-200/35 bg-transparent transition-colors focus-within:border-amber-100/70">
+                <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 font-serif text-4xl italic text-white/[0.06] sm:text-5xl">
+                  Sign here
+                </span>
+                <input
+                  value={signerName}
+                  onChange={(event) => {
+                    setSignerName(event.target.value);
+                    if (status !== "idle") setStatus("idle");
+                  }}
+                  required
+                  minLength={2}
+                  maxLength={160}
+                  placeholder="Type your full name"
+                  className="relative h-16 w-full bg-transparent px-0 font-serif text-2xl italic text-white outline-none placeholder:text-zinc-500 sm:h-20 sm:text-3xl"
+                />
+              </div>
+            </label>
+
+            <label className="block">
+              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
+                Email
+              </span>
+              <input
+                type="email"
+                value={signerEmail}
+                onChange={(event) => {
+                  setSignerEmail(event.target.value);
+                  if (status !== "idle") setStatus("idle");
+                }}
+                required
+                maxLength={254}
+                placeholder="you@example.com"
+                className="h-12 w-full border-b border-white/20 bg-transparent px-0 text-sm text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-amber-100/70"
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={status === "submitting"}
+              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md border border-amber-200/30 bg-amber-200/10 px-4 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-100/60 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+            >
+              {status === "submitting" ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : status === "success" ? (
+                <CheckCircle2 className="h-4 w-4" />
+              ) : (
+                <PenLine className="h-4 w-4" />
+              )}
+              Submit acknowledgement
+            </button>
+
+            {message ? (
+              <p
+                className={`text-sm leading-6 ${
+                  status === "error" ? "text-rose-300" : "text-emerald-300"
+                }`}
+                role="status"
+              >
+                {message}
+              </p>
+            ) : (
+              <p className="text-xs leading-6 text-zinc-500">
+                Electronic acknowledgement is recorded with timestamp, signer metadata, and a +10 Omni credit event.
+              </p>
+            )}
+          </form>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+export default function OmniProgramPage() {
   const router = useRouter();
   const { user, loading, signOut } = useAuth();
-  const { profile, isAdmin: profileIsAdmin, displayName } = useProfile();
-
-  const isAdmin = user?.is_admin === true || profileIsAdmin === true;
-  const shownName =
-    displayName ||
-    profile?.first_name ||
-    profile?.name ||
-    user?.username ||
-    "Operator";
-
-  const visibleOperatingModules = useMemo(
-    () => operatingModules.filter((module) => !module.adminOnly || isAdmin),
-    [isAdmin],
-  );
 
   useEffect(() => {
     if (!loading && !user) {
-      const timer = window.setTimeout(() => router.push("/"), 300);
+      const timer = window.setTimeout(() => router.push("/login"), 250);
       return () => window.clearTimeout(timer);
     }
   }, [loading, router, user]);
@@ -345,13 +350,13 @@ export default function Dashboard() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#050507] px-5 text-white">
+      <main className="flex min-h-screen items-center justify-center bg-[#050506] px-6 text-white">
         <div className="max-w-md rounded-lg border border-white/10 bg-white/[0.04] p-6 text-center">
-          <Shield className="mx-auto h-8 w-8 text-violet-300" />
-          <h1 className="mt-4 text-xl font-semibold">Dashboard access required</h1>
-          <p className="mt-2 text-sm text-gray-400">Redirecting you back to sign in.</p>
+          <Shield className="mx-auto h-8 w-8 text-amber-200" />
+          <h1 className="mt-4 text-xl font-semibold">Sign in required</h1>
+          <p className="mt-2 text-sm text-zinc-400">Redirecting to the private entry.</p>
         </div>
-      </div>
+      </main>
     );
   }
 
@@ -361,239 +366,204 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-[#050507] text-white noise-overlay">
-      <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/75 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5">
+    <main className="min-h-screen overflow-x-hidden bg-[#050506] text-white noise-overlay">
+      <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:h-16 sm:gap-4 sm:px-5">
           <Link href="/" className="flex items-center gap-2.5">
-            <Sparkles className="h-5 w-5 text-sky-300" />
-            <span className="text-lg font-bold text-gradient">Omni AI</span>
+            <Sparkles className="h-5 w-5 text-amber-200" />
+            <span className="text-base font-bold text-white">Omni AI</span>
           </Link>
-
-          <div className="flex items-center gap-2">
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className="hidden h-9 items-center justify-center gap-2 rounded-lg border border-violet-400/20 bg-violet-400/[0.08] px-3 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-300/45 sm:inline-flex"
-              >
-                <Shield className="h-4 w-4" />
-                Admin
-              </Link>
-            )}
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-300 transition-colors hover:border-rose-300/35 hover:text-rose-200"
-            >
-              <LogOut className="h-4 w-4" />
-              <span className="hidden sm:inline">Sign out</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-zinc-300 transition-colors hover:border-amber-200/40 hover:text-amber-100"
+          >
+            <LogOut className="h-4 w-4" />
+            <span>Sign out</span>
+          </button>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-5 py-6 md:py-8">
-        <section className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-          <div className="rounded-lg border border-white/[0.08] bg-gradient-to-br from-white/[0.06] via-white/[0.025] to-emerald-500/[0.06] p-5 md:p-7">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="inline-flex items-center gap-2 rounded-md border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-emerald-200">
-                <Zap className="h-3.5 w-3.5" />
-                Instant Command Center
-              </span>
-              {isAdmin && (
-                <span className="inline-flex items-center gap-2 rounded-md border border-violet-300/20 bg-violet-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-200">
-                  <Crown className="h-3.5 w-3.5" />
-                  Admin Mode
-                </span>
-              )}
-            </div>
-            <p className="mt-8 text-sm text-gray-500">Welcome back, {shownName}</p>
-            <h1 className="mt-2 max-w-4xl text-3xl font-bold leading-tight tracking-normal text-white md:text-5xl">
-              Your Omni AI operating console
-            </h1>
-            <p className="mt-4 max-w-3xl text-base leading-relaxed text-gray-300 md:text-lg">
-              A clean first screen for action: CRM, bookings, newsletter,
-              client agents, analytics, and execution systems. Heavy data
-              modules stay behind focused links so this page loads immediately.
+      <article className="mx-auto max-w-5xl px-3 pt-28 pb-10 sm:px-5 sm:py-20">
+        <section className="relative overflow-hidden rounded-lg border border-amber-300/20 bg-black/35 p-6 sm:p-10">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(251,191,36,0.18),transparent_35%),radial-gradient(circle_at_20%_80%,rgba(56,189,248,0.12),transparent_35%)]" />
+          <div className="relative">
+            <p className="mb-5 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-200/75 sm:text-[11px] sm:tracking-[0.32em]">
+              Private Document
             </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <Link
-                href="/dashboard/leads"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-emerald-300/30 bg-emerald-400/10 px-4 text-sm font-semibold text-emerald-100 transition-colors hover:border-emerald-200/60 hover:bg-emerald-400/15"
+            <h1 className="max-w-4xl whitespace-nowrap font-serif text-[clamp(1.95rem,9.4vw,4.5rem)] leading-[0.98] tracking-normal text-white sm:text-7xl">
+              The Omni Program
+            </h1>
+            <p className="mt-6 max-w-3xl text-[15px] leading-8 text-zinc-300 sm:mt-7 sm:text-xl">
+              A signed-in operating manual for living with more perception,
+              cleaner agency, and fewer unconscious loops. Not a dashboard.
+              A document you return to until the pattern lives in you.
+            </p>
+            <div className="mt-8 grid grid-cols-[1.45fr_1fr] gap-3 max-[340px]:grid-cols-1 sm:flex sm:flex-wrap">
+              <a
+                href="#definitions"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-md border border-amber-200/30 bg-amber-200/10 px-3 text-[13px] font-semibold text-amber-100 transition-colors hover:border-amber-100/60 sm:w-auto sm:px-4 sm:text-sm"
               >
-                <Target className="h-4 w-4" />
-                Open CRM
-              </Link>
-              <Link
-                href="/dashboard/agents"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-violet-300/25 bg-violet-400/10 px-4 text-sm font-semibold text-violet-100 transition-colors hover:border-violet-200/55 hover:bg-violet-400/15"
+                Read the definitions
+                <ArrowRight className="h-4 w-4" />
+              </a>
+              <a
+                href="#practice"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-md border border-white/10 bg-white/[0.04] px-3 text-[13px] font-semibold text-zinc-200 transition-colors hover:border-white/30 sm:w-auto sm:px-4 sm:text-sm"
               >
-                <Bot className="h-4 w-4" />
-                Client CEOs
-              </Link>
-              <Link
-                href="/newsletter"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-amber-300/25 bg-amber-400/10 px-4 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-200/55 hover:bg-amber-400/15"
-              >
-                <Mail className="h-4 w-4" />
-                Newsletter
-              </Link>
+                Open the practice
+              </a>
             </div>
           </div>
+        </section>
 
-          <div className="hidden grid-cols-2 gap-3 md:grid lg:grid-cols-1">
-            {statusItems.map((item) => (
-              <StatusCard key={item.label} {...item} />
+        <Section eyebrow="01 / What Life Is" title="Life is the training ground for attention.">
+          <p>
+            Most people think their life is made of events. It is not. It is
+            made of attention, interpretation, reaction, and repetition. What
+            you repeat becomes your operating system. What you refuse to see
+            becomes your constraint.
+          </p>
+          <p>
+            The Omni Program starts with a simple idea: a person is not broken.
+            A person is running programs. Some were inherited. Some were
+            installed by fear. Some were built for survival and never retired.
+            The work is not to hate the old program. The work is to see it,
+            rewrite it, and live from something cleaner.
+          </p>
+        </Section>
+
+        <OmniLoopVisual />
+
+        <Section eyebrow="02 / The Operating System" title="Your life changes when your loop changes.">
+          <p>
+            The loop is observe, discern, act, integrate. Observation without
+            action becomes rumination. Action without observation becomes
+            chaos. Integration is where the lesson becomes a new default.
+          </p>
+          <p>
+            The Program is not motivation. Motivation rises and disappears.
+            The Program is architecture. It makes the right action easier to
+            repeat than the old escape.
+          </p>
+        </Section>
+
+        <HumanStackVisual />
+
+        <Section eyebrow="03 / The Stack" title="Every human carries a stack.">
+          <p>
+            Body, belief, attention, decision, behavior, environment. Change
+            one layer and the others begin to move. Ignore one layer and it
+            will quietly govern the rest.
+          </p>
+          <p>
+            This is why information alone rarely changes a life. A person can
+            know the truth and still live the old loop. The body must feel
+            safety. The attention must stabilize. The environment must stop
+            rewarding the pattern you claim to be done with.
+          </p>
+        </Section>
+
+        <section id="definitions" className="border-t border-white/[0.08] py-11 sm:py-20">
+          <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/70 sm:text-[11px] sm:tracking-[0.28em]">
+            04 / Definitions
+          </p>
+          <h2 className="max-w-3xl font-serif text-[clamp(2rem,10vw,3rem)] leading-tight text-white sm:text-5xl">
+            Words become tools when they are defined cleanly.
+          </h2>
+          <div className="mt-8 grid gap-3 md:grid-cols-2">
+            {definitions.map((item) => (
+              <div key={item.term} className="rounded-lg border border-white/10 bg-white/[0.035] p-4 sm:p-5">
+                <h3 className="text-lg font-semibold text-amber-100">{item.term}</h3>
+                <p className="mt-3 text-sm leading-7 text-zinc-300">{item.body}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-          {primaryModules.map((module) => (
-            <ModuleCard key={module.title} module={module} />
-          ))}
-        </section>
+        <LibraryVisual />
 
-        <section className="mt-6 grid gap-5 lg:grid-cols-[minmax(0,1fr)_390px]">
-          <div className="rounded-lg border border-white/[0.08] bg-black/25 p-5">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-3 border-b border-white/[0.08] pb-4">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-sky-300">Execution Queue</p>
-                <h2 className="mt-1 text-xl font-semibold text-white">Best next actions</h2>
-              </div>
-              <Link
-                href="/dashboard/runs"
-                className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-300 transition-colors hover:border-sky-300/35 hover:text-sky-100"
-              >
-                Run log
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+        <Section eyebrow="05 / The Library" title="Everything you live becomes reference material.">
+          <p>
+            The Library is not a place. It is the archive of every pattern you
+            have survived, every truth you have earned, and every move you
+            have watched work in reality. You are not meant to carry it as
+            pain. You are meant to convert it into wisdom.
+          </p>
+          <p>
+            The highest use of memory is not nostalgia or regret. It is
+            pattern recognition. The Library teaches you what repeats, what
+            collapses, what compounds, and what was never yours to carry.
+          </p>
+        </Section>
+
+        <section id="practice" className="border-t border-white/[0.08] py-11 sm:py-20">
+          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+            <div>
+              <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/70 sm:text-[11px] sm:tracking-[0.28em]">
+                06 / Practice
+              </p>
+              <h2 className="font-serif text-[clamp(2rem,10vw,3rem)] leading-tight text-white sm:text-5xl">
+                How to live inside the Omni Program.
+              </h2>
+              <p className="mt-6 text-[15px] leading-8 text-zinc-300 sm:mt-7 sm:text-lg">
+                The practice is not complicated. It is repeated until it
+                becomes hard to lie to yourself, hard to waste your attention,
+                and hard to abandon the future you said you wanted.
+              </p>
             </div>
             <div className="grid gap-3">
-              {executionQueue.map((item) => {
-                const Icon = item.icon;
-                const tone = toneClasses[item.tone];
-                return (
-                  <Link
-                    key={item.title}
-                    href={item.href}
-                    className={classNames("group rounded-lg border bg-white/[0.025] p-4 transition-colors", tone.border)}
-                  >
-                    <div className="flex gap-3">
-                      <div className={classNames("flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border", tone.icon)}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center justify-between gap-3">
-                          <h3 className="text-sm font-semibold text-white">{item.title}</h3>
-                          <ArrowRight className="h-4 w-4 flex-shrink-0 text-gray-500 transition-transform group-hover:translate-x-1 group-hover:text-white" />
-                        </div>
-                        <p className="mt-1 text-sm leading-relaxed text-gray-400">{item.detail}</p>
-                      </div>
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="rounded-lg border border-white/[0.08] bg-black/25 p-5">
-            <div className="mb-5 border-b border-white/[0.08] pb-4">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">System Notes</p>
-              <h2 className="mt-1 text-xl font-semibold text-white">What changed</h2>
-            </div>
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <Clock3 className="mt-0.5 h-5 w-5 flex-shrink-0 text-emerald-300" />
-                <p className="text-sm leading-relaxed text-gray-300">
-                  Homepage dashboard no longer waits on lead tables, campaign queries, analytics, or embedded AGI tabs.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Database className="mt-0.5 h-5 w-5 flex-shrink-0 text-sky-300" />
-                <p className="text-sm leading-relaxed text-gray-300">
-                  Booking intake uses the fast Postgres capture path, while the older CRM mirror can be repaired separately.
-                </p>
-              </div>
-              <div className="flex gap-3">
-                <Layers3 className="mt-0.5 h-5 w-5 flex-shrink-0 text-violet-300" />
-                <p className="text-sm leading-relaxed text-gray-300">
-                  Specialist dashboards still exist, but load only when opened.
-                </p>
-              </div>
+              {practices.map((practice, index) => (
+                <div key={practice} className="flex gap-3 rounded-lg border border-white/10 bg-black/30 p-3.5 sm:gap-4 sm:p-4">
+                  <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border border-amber-200/25 bg-amber-200/10 text-sm font-semibold text-amber-100">
+                    {index + 1}
+                  </div>
+                  <p className="text-sm font-medium leading-7 text-zinc-200">{practice}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="mt-6">
-          <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-violet-300">Operations Library</p>
-              <h2 className="mt-1 text-xl font-semibold text-white">Dashboard tools</h2>
+        <section className="border-t border-white/[0.08] py-11 sm:py-20">
+          <div className="rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.07] via-white/[0.025] to-amber-300/[0.08] p-5 sm:p-8">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-amber-200/30 bg-amber-200/10">
+                <Orbit className="h-5 w-5 text-amber-100" />
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-200/70 sm:tracking-[0.22em]">
+                  Closing Doctrine
+                </p>
+                <h2 className="mt-1 text-xl font-semibold leading-tight text-white sm:text-2xl">The Program is lived, not consumed.</h2>
+              </div>
             </div>
-            <Link
-              href="/dashboard/command-center"
-              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-300 transition-colors hover:border-violet-300/35 hover:text-violet-100"
-            >
-              Command center
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-            {visibleOperatingModules.map((module) => (
-              <ModuleCard key={module.title} module={module} />
-            ))}
+            <p className="mt-6 max-w-3xl text-[15px] leading-8 text-zinc-300 sm:text-lg">
+              Do not confuse reading with transformation. Read, then choose one
+              loop. Observe it honestly. Interrupt it once. Repeat the new
+              motion until your life starts proving the document true.
+            </p>
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <Link
+                href="/oracle"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-black/25 px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/30 sm:w-auto"
+              >
+                <Workflow className="h-4 w-4" />
+                Read The Oracle
+              </Link>
+              <Link
+                href="/manifesto"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-black/25 px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/30 sm:w-auto"
+              >
+                <Layers3 className="h-4 w-4" />
+                Read The Manifesto
+              </Link>
+            </div>
           </div>
         </section>
 
-        <section className="mt-6 grid gap-4 md:grid-cols-3">
-          <Link
-            href="/dashboard/coach"
-            className="group rounded-lg border border-white/[0.08] bg-black/25 p-5 transition-colors hover:border-emerald-300/35"
-          >
-            <MessageSquare className="h-5 w-5 text-emerald-300" />
-            <h3 className="mt-4 font-semibold text-white">AI Coach</h3>
-            <p className="mt-2 text-sm text-gray-400">Ask for the next move, objection handling, or account strategy.</p>
-          </Link>
-          <Link
-            href="/dashboard/templates"
-            className="group rounded-lg border border-white/[0.08] bg-black/25 p-5 transition-colors hover:border-amber-300/35"
-          >
-            <FileText className="h-5 w-5 text-amber-300" />
-            <h3 className="mt-4 font-semibold text-white">Templates</h3>
-            <p className="mt-2 text-sm text-gray-400">Open saved campaign, outreach, and client delivery templates.</p>
-          </Link>
-          <Link
-            href="/dashboard/heatmap"
-            className="group rounded-lg border border-white/[0.08] bg-black/25 p-5 transition-colors hover:border-rose-300/35"
-          >
-            <Flame className="h-5 w-5 text-rose-300" />
-            <h3 className="mt-4 font-semibold text-white">Heatmap</h3>
-            <p className="mt-2 text-sm text-gray-400">Scan priority surfaces when you need deeper performance views.</p>
-          </Link>
-        </section>
-
-        <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.08] py-5 text-sm text-gray-500">
-          <span>Omni AI command surface</span>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/dashboard/billing" className="inline-flex items-center gap-1.5 hover:text-white">
-              <CircleDollarSign className="h-4 w-4" />
-              Billing
-            </Link>
-            <Link href="/dashboard/settings" className="inline-flex items-center gap-1.5 hover:text-white">
-              <Settings className="h-4 w-4" />
-              Settings
-            </Link>
-            <Link href="/arena" className="inline-flex items-center gap-1.5 hover:text-white">
-              <Trophy className="h-4 w-4" />
-              Arena
-            </Link>
-            <Link href="/search" className="inline-flex items-center gap-1.5 hover:text-white">
-              <Search className="h-4 w-4" />
-              Search
-            </Link>
-          </div>
-        </footer>
-      </main>
-    </div>
+        <DocumentSignatureBlock userEmail={user.email} />
+      </article>
+    </main>
   );
 }

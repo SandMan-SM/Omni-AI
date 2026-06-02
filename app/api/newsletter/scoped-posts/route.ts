@@ -3,6 +3,7 @@ import { headers, cookies } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,13 +35,8 @@ async function resolveCallerProfileId(): Promise<string | null> {
       .replace(/^Bearer\s+/i, "")
       .trim();
     if (bearer) {
-      const json = Buffer.from(bearer, "base64").toString("utf8");
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === "string" &&
-        (typeof payload.exp !== "number" || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
         return payload.sub;
       }
     }

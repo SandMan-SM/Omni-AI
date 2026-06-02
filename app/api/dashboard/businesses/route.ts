@@ -4,6 +4,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasPlatformDashboardAccess } from "@/lib/mafi-access";
+import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -99,6 +100,14 @@ function applyLiveBetterOverrides(rows: BusinessRow[]): BusinessRow[] {
     });
 }
 
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/businesses] ${reason}:`, error);
+  return NextResponse.json(
+    { error: "Dashboard data unavailable", reason },
+    { status: 503 },
+  );
+}
+
 async function resolveCallerProfileId(): Promise<string | null> {
   try {
     const hdrs = await headers();
@@ -106,13 +115,8 @@ async function resolveCallerProfileId(): Promise<string | null> {
       .replace(/^Bearer\s+/i, "")
       .trim();
     if (bearer) {
-      const json = Buffer.from(bearer, "base64").toString("utf8");
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === "string" &&
-        (typeof payload.exp !== "number" || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
         return payload.sub;
       }
     }
@@ -179,7 +183,7 @@ export async function GET() {
       // workspace list and sorts it in process instead.
       .limit(100);
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return dashboardDataUnavailable("businesses_lookup_failed", error);
     }
     return NextResponse.json({
       businesses: applyLiveBetterOverrides((data ?? []) as unknown as BusinessRow[]),
@@ -193,7 +197,7 @@ export async function GET() {
     .select("business_id")
     .eq("user_id", callerId);
   if (mapErr) {
-    return NextResponse.json({ error: mapErr.message }, { status: 500 });
+    return dashboardDataUnavailable("business_membership_lookup_failed", mapErr);
   }
   const ids = (mappings ?? [])
     .map((m: { business_id?: unknown }) =>
@@ -209,7 +213,7 @@ export async function GET() {
     .in("id", ids)
     .limit(100);
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return dashboardDataUnavailable("businesses_lookup_failed", error);
   }
   return NextResponse.json({
     businesses: applyLiveBetterOverrides((data ?? []) as unknown as BusinessRow[]),

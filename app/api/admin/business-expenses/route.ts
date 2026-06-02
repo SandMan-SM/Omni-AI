@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { serverErrorResponse } from "@/lib/api-errors";
+import { normalizeTokenExpiry } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -40,7 +41,8 @@ async function requireFinanceAdmin(
   if (!payload?.sub) {
     return { error: NextResponse.json({ error: "Unauthorized — invalid token" }, { status: 401 }) };
   }
-  if (typeof payload.exp === "number" && payload.exp < Date.now()) {
+  const expMs = normalizeTokenExpiry(payload.exp);
+  if (expMs !== null && expMs < Date.now()) {
     return { error: NextResponse.json({ error: "Unauthorized — token expired" }, { status: 401 }) };
   }
 

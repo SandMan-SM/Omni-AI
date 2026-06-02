@@ -25,8 +25,20 @@ import { usePathname, useSearchParams } from "next/navigation";
 // Paths we never track (admin, API calls themselves, Next internals).
 const IGNORED_PREFIXES = ["/api/", "/_next/"];
 
+type EventType =
+  | "page_view"
+  | "click"
+  | "cta_click"
+  | "phone_click"
+  | "email_click"
+  | "form_start"
+  | "form_submit"
+  | "newsletter_subscribe"
+  | "partner_click"
+  | "booking_click";
+
 type Payload = {
-  event_type: "page_view" | "click" | "form_submit";
+  event_type: EventType;
   event_category: string;
   action: string;
   page_url?: string;
@@ -162,6 +174,21 @@ function labelFor(el: HTMLElement): string {
   return `${el.tagName.toLowerCase()}`;
 }
 
+function classifyClick(el: HTMLElement, label: string, href: string | null): EventType {
+  const normalized = `${label} ${href || ""}`.toLowerCase();
+  if (href?.startsWith("tel:")) return "phone_click";
+  if (href?.startsWith("mailto:")) return "email_click";
+  if (normalized.includes("book") || normalized.includes("calendar") || normalized.includes("demo")) return "booking_click";
+  if (normalized.includes("partner") || normalized.includes("sponsor") || href?.startsWith("/partners/")) return "partner_click";
+  if (el.dataset?.track || el.tagName === "BUTTON" || el.getAttribute("role") === "button") return "cta_click";
+  return "click";
+}
+
+function classifyFormEvent(form: HTMLFormElement): EventType {
+  const label = `${form.getAttribute("data-track") || ""} ${form.getAttribute("name") || ""} ${form.getAttribute("id") || ""} ${window.location.pathname}`.toLowerCase();
+  return label.includes("newsletter") ? "newsletter_subscribe" : "form_submit";
+}
+
 export function SiteTracker() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -221,10 +248,12 @@ export function SiteTracker() {
       const isOutbound = href ? /^https?:\/\//i.test(href) &&
         !href.includes(window.location.host) : false;
 
+      const eventType = classifyClick(el, label, href);
+
       send(
         {
-          event_type: "click",
-          event_category: "interaction",
+          event_type: eventType,
+          event_category: eventType === "click" ? "interaction" : "conversion",
           action: "click",
           page_url:
             window.location.pathname +
@@ -245,19 +274,45 @@ export function SiteTracker() {
       );
     }
 
+    function formLabel(form: HTMLFormElement): string {
+      return (
+        form.getAttribute("data-track") ||
+        form.getAttribute("name") ||
+        form.getAttribute("id") ||
+        "form"
+      ).slice(0, 120);
+    }
+
+    function onFocusIn(ev: FocusEvent) {
+      const target = ev.target;
+      if (!(target instanceof HTMLElement)) return;
+      const form = target.closest("form");
+      if (!form || form.dataset.omniFormStarted === "true") return;
+      form.dataset.omniFormStarted = "true";
+      const label = formLabel(form);
+      send({
+        event_type: "form_start",
+        event_category: "conversion",
+        action: "start",
+        page_url:
+          window.location.pathname +
+          (window.location.search ? window.location.search : ""),
+        target_type: "form",
+        target_id: label,
+        value_text: label,
+      });
+    }
+
     // Capture form submits too — valuable signal for CTA conversions.
     function onSubmit(ev: SubmitEvent) {
       const form = ev.target as HTMLFormElement | null;
       if (!form || !(form instanceof HTMLFormElement)) return;
-      const label =
-        form.getAttribute("data-track") ||
-        form.getAttribute("name") ||
-        form.getAttribute("id") ||
-        "form";
+      const label = formLabel(form);
+      const eventType = classifyFormEvent(form);
       send({
-        event_type: "form_submit",
-        event_category: "interaction",
-        action: "submit",
+        event_type: eventType,
+        event_category: "conversion",
+        action: eventType === "newsletter_subscribe" ? "subscribe" : "submit",
         page_url:
           window.location.pathname +
           (window.location.search ? window.location.search : ""),
@@ -268,9 +323,11 @@ export function SiteTracker() {
     }
 
     document.addEventListener("click", onClick, { capture: true });
+    document.addEventListener("focusin", onFocusIn, { capture: true });
     document.addEventListener("submit", onSubmit, { capture: true });
     return () => {
       document.removeEventListener("click", onClick, { capture: true });
+      document.removeEventListener("focusin", onFocusIn, { capture: true });
       document.removeEventListener("submit", onSubmit, { capture: true });
     };
   }, []);

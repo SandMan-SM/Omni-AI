@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 import { cookies, headers } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -61,10 +62,9 @@ export async function GET() {
     const hdrs = await headers();
     const bearer = (hdrs.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
     if (bearer) {
-      const json = Buffer.from(bearer, 'base64').toString('utf8');
-      const payload = JSON.parse(json);
-      if (payload?.sub && (typeof payload.exp !== 'number' || payload.exp >= Date.now())) {
-        callerProfileId = String(payload.sub);
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
+        callerProfileId = payload.sub;
       }
     }
   } catch {

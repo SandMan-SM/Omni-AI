@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies, headers } from 'next/headers';
 import { createAdminClient } from './supabase/admin';
+import { decodeOmniToken, isOmniTokenPayloadFresh, type OmniTokenPayload } from './omni-token';
+import { hasPlatformDashboardAccess } from './mafi-access';
 
 /**
  * Thrown when a DB lookup inside an auth guard exceeds its time budget.
@@ -19,6 +21,25 @@ function serviceUnavailable(): NextResponse {
     { error: 'Service temporarily unavailable — database slow, retry shortly', transient: true },
     { status: 503 },
   );
+}
+
+function tokenString(payload: OmniTokenPayload, key: string): string | undefined {
+  const value = payload[key];
+  return typeof value === 'string' ? value : undefined;
+}
+
+function tokenEmail(payload: OmniTokenPayload): string | null {
+  return tokenString(payload, 'email') ?? null;
+}
+
+function tokenIdentity(payload: OmniTokenPayload) {
+  return {
+    id: tokenString(payload, 'sub'),
+    email: tokenString(payload, 'email'),
+    username: tokenString(payload, 'username'),
+    role: tokenString(payload, 'role'),
+    is_admin: payload.is_admin === true,
+  };
 }
 
 /** Race a Supabase query against a timer. On timeout, reject with a
@@ -62,17 +83,23 @@ export async function requireAdmin(): Promise<
       // session → fall through to the cookie path. A well-formed,
       // unexpired token IS a genuine session → from here on, DB failures
       // are transient (503), never auth failures (401).
-      let payload: { sub?: string; exp?: number } | null = null;
-      try {
-        payload = JSON.parse(Buffer.from(bearer, 'base64').toString('utf8'));
-      } catch {
-        payload = null;
-      }
-
-      const tokenValid =
-        !!payload?.sub && (typeof payload.exp !== 'number' || payload.exp >= Date.now());
+      const payload = decodeOmniToken(bearer);
+      const tokenValid = isOmniTokenPayloadFresh(payload);
 
       if (tokenValid && payload) {
+        if (hasPlatformDashboardAccess(tokenIdentity(payload))) {
+          return {
+            user: { id: payload.sub, email: tokenEmail(payload) },
+            profile: {
+              id: payload.sub,
+              email: tokenEmail(payload),
+              role: 'admin',
+              is_admin: true,
+              tier_label: 'admin',
+            },
+          };
+        }
+
         try {
           const sb = createAdminClient();
           const { data: profile, error } = await withDbTimeout(
@@ -243,13 +270,18 @@ async function resolveCallerProfile(): Promise<
     const authz = hdrs.get('authorization') || '';
     const bearer = authz.replace(/^Bearer\s+/i, '').trim();
     if (bearer) {
-      const json = Buffer.from(bearer, 'base64').toString('utf8');
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === 'string' &&
-        (typeof payload.exp !== 'number' || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
+        if (hasPlatformDashboardAccess(tokenIdentity(payload))) {
+          return {
+            id: payload.sub,
+            email: tokenEmail(payload),
+            role: 'admin',
+            is_admin: true,
+            tier_label: 'admin',
+          };
+        }
+
         const sb = createAdminClient();
         const { data: profile } = await sb
           .from('profiles')

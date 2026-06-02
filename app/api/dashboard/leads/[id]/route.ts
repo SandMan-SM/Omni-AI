@@ -3,6 +3,7 @@ import { cookies, headers } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,6 +26,14 @@ export const fetchCache = "force-no-store";
  * mapping; platform admins can touch any lead.
  */
 
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/leads/id] ${reason}:`, error);
+  return NextResponse.json(
+    { error: "Dashboard data unavailable", reason },
+    { status: 503 },
+  );
+}
+
 async function resolveCallerProfileId(): Promise<string | null> {
   try {
     const hdrs = await headers();
@@ -32,13 +41,8 @@ async function resolveCallerProfileId(): Promise<string | null> {
       .replace(/^Bearer\s+/i, "")
       .trim();
     if (bearer) {
-      const json = Buffer.from(bearer, "base64").toString("utf8");
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === "string" &&
-        (typeof payload.exp !== "number" || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
         return payload.sub;
       }
     }
@@ -135,7 +139,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> 
     .select("*")
     .eq("id", id)
     .maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return dashboardDataUnavailable("lead_lookup_failed", error);
   return NextResponse.json({ lead: data });
 }
 
@@ -177,6 +181,6 @@ export async function PATCH(req: Request, ctx: { params: Promise<{ id: string }>
     .eq("id", id)
     .select()
     .maybeSingle();
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) return dashboardDataUnavailable("lead_update_failed", error);
   return NextResponse.json({ lead: data });
 }

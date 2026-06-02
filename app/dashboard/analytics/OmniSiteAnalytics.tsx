@@ -19,6 +19,7 @@ import {
   Users, Eye, Activity, MousePointerClick, Send, BarChart3,
   Smartphone, Monitor, Globe, ArrowUpRight, RefreshCw, Loader2,
 } from "lucide-react";
+import { authFetch } from "@/lib/auth";
 
 type Range = '24h' | '7d' | '30d' | 'all';
 
@@ -116,11 +117,9 @@ export function OmniSiteAnalytics({
     let cancelled = false;
     setLoading(true);
     setError(null);
-    const token = typeof window !== "undefined" ? localStorage.getItem("omni_token") : null;
     const slugQp = slug ? `&slug=${encodeURIComponent(slug)}` : "";
     const hostQp = host ? `&host=${encodeURIComponent(host)}` : "";
-    fetch(`/api/admin/analytics?range=${range}${slugQp}${hostQp}`, {
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    authFetch(`/api/admin/analytics?range=${range}${slugQp}${hostQp}`, {
       cache: "no-store",
     })
       .then(async (r) => {

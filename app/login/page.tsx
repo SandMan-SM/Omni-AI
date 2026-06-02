@@ -17,6 +17,10 @@ export default function LoginPage() {
     }
   }, [loading, user]);
 
+  useEffect(() => {
+    fetch("/api/auth/login", { cache: "no-store" }).catch(() => undefined);
+  }, []);
+
   return (
     <main className="min-h-screen text-white flex items-center justify-center px-5 py-24">
       <div className="relative z-10 max-w-lg text-center space-y-6">

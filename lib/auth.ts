@@ -1,8 +1,10 @@
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
+import { decodeOmniToken, isOmniTokenPayloadFresh } from '@/lib/omni-token';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/auth-login`;
+const LOCAL_LOGIN_URL = '/api/auth/login';
 
 export interface OmniUser {
   id: string;
@@ -26,27 +28,26 @@ export async function login(username: string, password: string): Promise<{ error
     let lastError = 'Login failed';
 
     for (const candidateUsername of usernamesToTry) {
-      const res = await fetch(EDGE_FUNCTION_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          'apikey': SUPABASE_ANON_KEY
-        },
-        body: JSON.stringify({ username: candidateUsername, password }),
-      });
+      const local = await postLogin(LOCAL_LOGIN_URL, candidateUsername, password, {}, 8_500);
+      if (local.ok) {
+        storeLoginPayload(local.data);
+        return { error: null };
+      }
+      lastError = local.error || lastError;
+      if (local.status === 401 || local.status === 400) continue;
 
-      const data = await res.json();
+      const edge = await postLogin(EDGE_FUNCTION_URL, candidateUsername, password, {
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'apikey': SUPABASE_ANON_KEY
+      }, 5_500);
 
-      if (!res.ok) {
-        console.error('Login error:', data);
-        lastError = data.error || 'Login failed: ' + res.status;
+      if (!edge.ok) {
+        console.error('Login error:', edge.error);
+        lastError = edge.error || 'Login failed';
         continue;
       }
 
-      localStorage.setItem('omni_token', data.access_token);
-      localStorage.setItem('omni_user', JSON.stringify(data.user));
-
+      storeLoginPayload(edge.data);
       return { error: null };
     }
 
@@ -54,6 +55,48 @@ export async function login(username: string, password: string): Promise<{ error
   } catch (err) {
     return { error: 'Connection error. Please try again.' };
   }
+}
+
+async function postLogin(
+  url: string,
+  username: string,
+  password: string,
+  extraHeaders: Record<string, string>,
+  timeoutMs: number,
+): Promise<{ ok: true; data: any } | { ok: false; status: number; error: string }> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        ...extraHeaders,
+        },
+      body: JSON.stringify({ username, password }),
+      signal: controller.signal,
+      });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        error: data.error || `Login failed: ${res.status}`,
+      };
+    }
+    return { ok: true, data };
+  } catch {
+    return { ok: false, status: 0, error: 'Login service timed out' };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function storeLoginPayload(data: any) {
+  localStorage.setItem('omni_token', data.access_token);
+  localStorage.setItem('omni_user', JSON.stringify(data.user));
 }
 
 export async function logout(): Promise<void> {
@@ -75,20 +118,17 @@ function decodeStoredTokenPayload(): { sub?: string; exp?: number } | null {
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem('omni_token');
   if (!raw) return null;
-  try {
-    const json = atob(raw);
-    const payload = JSON.parse(json) as { sub?: string; exp?: number };
-    if (typeof payload.exp === 'number' && payload.exp < Date.now()) {
-      // Token expired — purge it so subsequent reads don't keep returning a
-      // user that the server has stopped accepting.
-      localStorage.removeItem('omni_token');
-      localStorage.removeItem('omni_user');
-      return null;
-    }
-    return payload;
-  } catch {
+  const payload = decodeOmniToken(raw);
+  if (!isOmniTokenPayloadFresh(payload)) {
+    // Token expired or malformed — purge it so subsequent reads don't keep
+    // returning a user that the server has stopped accepting. The helper
+    // accepts both current millisecond expirations and legacy second-based
+    // expirations, so older valid sessions don't get falsely evicted.
+    localStorage.removeItem('omni_token');
+    localStorage.removeItem('omni_user');
     return null;
   }
+  return payload as { sub?: string; exp?: number };
 }
 
 export function getStoredUser(): OmniUser | null {
@@ -140,7 +180,7 @@ export function authHeaders(extra: Record<string, string> = {}): HeadersInit {
  */
 export function authFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
   const extra = (init.headers as Record<string, string>) || {};
-  return fetch(input, { ...init, headers: authHeaders(extra) });
+  return fetch(input, { credentials: 'include', ...init, headers: authHeaders(extra) });
 }
 
 export async function createLead(name: string, email: string, phone: string): Promise<{ error: string | null }> {

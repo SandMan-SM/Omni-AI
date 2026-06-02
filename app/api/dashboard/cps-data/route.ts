@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { ptStartOfDayIso } from "@/lib/tz";
+import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -25,16 +26,23 @@ export const fetchCache = "force-no-store";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/cps-data] ${reason}:`, error);
+  return NextResponse.json(
+    { error: "Dashboard data unavailable", reason },
+    { status: 503 },
+  );
+}
+
 async function resolveCallerProfileId(): Promise<string | null> {
   // Bearer token first (dashboard clients mint omni_token into localStorage).
   try {
     const hdrs = await headers();
     const bearer = (hdrs.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
     if (bearer) {
-      const json = Buffer.from(bearer, "base64").toString("utf8");
-      const payload = JSON.parse(json);
-      if (payload?.sub && (typeof payload.exp !== "number" || payload.exp >= Date.now())) {
-        return String(payload.sub);
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
+        return payload.sub;
       }
     }
   } catch {
@@ -94,18 +102,18 @@ export async function GET() {
   const sinceToday = ptStartOfDayIso();
 
   const [
-    { data: recentLeads },
-    { count: leadsToday },
-    { count: leads7d },
-    { count: leads30d },
-    { data: recentEvents },
-    { count: pageViews7d },
-    { count: clicks7d },
-    { count: phoneClicksToday },
-    { count: phoneClicks7d },
-    { data: topPagesRaw },
-    { data: topClicksRaw },
-    { data: phoneClickRows },
+    recentLeadsResult,
+    leadsTodayResult,
+    leads7dResult,
+    leads30dResult,
+    recentEventsResult,
+    pageViews7dResult,
+    clicks7dResult,
+    phoneClicksTodayResult,
+    phoneClicks7dResult,
+    topPagesResult,
+    topClicksResult,
+    phoneClickRowsResult,
   ] = await Promise.all([
     sb
       .from("cps_leads")
@@ -178,6 +186,38 @@ export async function GET() {
       .order("created_at", { ascending: false })
       .limit(50),
   ]);
+
+  const queryFailures = [
+    ["recent_leads_failed", recentLeadsResult],
+    ["leads_today_count_failed", leadsTodayResult],
+    ["leads_7d_count_failed", leads7dResult],
+    ["leads_30d_count_failed", leads30dResult],
+    ["recent_events_failed", recentEventsResult],
+    ["page_views_7d_count_failed", pageViews7dResult],
+    ["clicks_7d_count_failed", clicks7dResult],
+    ["phone_clicks_today_count_failed", phoneClicksTodayResult],
+    ["phone_clicks_7d_count_failed", phoneClicks7dResult],
+    ["top_pages_failed", topPagesResult],
+    ["top_clicks_failed", topClicksResult],
+    ["phone_click_rows_failed", phoneClickRowsResult],
+  ] as const;
+  const failure = queryFailures.find(([, result]) => "error" in result && result.error);
+  if (failure) {
+    return dashboardDataUnavailable(failure[0], failure[1].error);
+  }
+
+  const recentLeads = recentLeadsResult.data;
+  const leadsToday = leadsTodayResult.count;
+  const leads7d = leads7dResult.count;
+  const leads30d = leads30dResult.count;
+  const recentEvents = recentEventsResult.data;
+  const pageViews7d = pageViews7dResult.count;
+  const clicks7d = clicks7dResult.count;
+  const phoneClicksToday = phoneClicksTodayResult.count;
+  const phoneClicks7d = phoneClicks7dResult.count;
+  const topPagesRaw = topPagesResult.data;
+  const topClicksRaw = topClicksResult.data;
+  const phoneClickRows = phoneClickRowsResult.data;
 
   // Tally top pages.
   const pageTally = new Map<string, number>();

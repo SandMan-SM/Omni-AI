@@ -4,6 +4,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { createServerClient } from '@supabase/ssr';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { hasPlatformDashboardAccess } from '@/lib/mafi-access';
+import { decodeOmniToken, isOmniTokenPayloadFresh } from '@/lib/omni-token';
 import { ptStartOfDayIso } from '@/lib/tz';
 import {
   INBOUND_SLUGS,
@@ -41,18 +42,24 @@ export const fetchCache = 'force-no-store';
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EVENT_FETCH_LIMIT = 5000;
 
+type QueryCount = { count: number | null; error?: unknown };
+type QueryRows<T> = { data: T[] | null; error?: unknown };
+
+function dashboardDataUnavailable(reason: string, error: unknown) {
+  console.error(`[dashboard/aggregate-analytics] ${reason}:`, error);
+  return NextResponse.json(
+    { error: 'Dashboard data unavailable', reason },
+    { status: 503 },
+  );
+}
+
 async function resolveCallerProfileId(): Promise<string | null> {
   try {
     const hdrs = await headers();
     const bearer = (hdrs.get('authorization') || '').replace(/^Bearer\s+/i, '').trim();
     if (bearer) {
-      const json = Buffer.from(bearer, 'base64').toString('utf8');
-      const payload = JSON.parse(json) as { sub?: unknown; exp?: unknown };
-      if (
-        payload &&
-        typeof payload.sub === 'string' &&
-        (typeof payload.exp !== 'number' || payload.exp >= Date.now())
-      ) {
+      const payload = decodeOmniToken(bearer);
+      if (isOmniTokenPayloadFresh(payload)) {
         return payload.sub;
       }
     }
@@ -103,11 +110,14 @@ export async function GET() {
 
   // Platform-admin gate. The aggregate view is cross-tenant; per-brand
   // client logins must not see other tenants.
-  const { data: profile } = await sb
+  const { data: profile, error: profileError } = await sb
     .from('profiles')
     .select('email, username, name, role, is_admin')
     .eq('id', callerId)
     .single();
+  if (profileError) {
+    return dashboardDataUnavailable('profile_lookup_failed', profileError);
+  }
 
   const isPlatformAdmin = hasPlatformDashboardAccess(profile);
 
@@ -128,15 +138,15 @@ export async function GET() {
   // into the daily series. We fan out all bundles in one Promise.all.
   type Bundle = {
     slug: InboundSlug;
-    leadsToday: Promise<{ count: number | null }>;
-    leads7d: Promise<{ count: number | null }>;
-    leads30d: Promise<{ count: number | null }>;
-    bookings30d: Promise<{ count: number | null }>;
-    newsletterSubs30d: Promise<{ count: number | null }>;
-    eventsTotal30d: Promise<{ count: number | null }>;
-    pageViews30d: Promise<{ count: number | null }>;
-    eventsTypeRows: Promise<{ data: EventTypeRow[] | null }>;
-    leadsCreatedAt: Promise<{ data: { created_at: string }[] | null }>;
+    leadsToday: Promise<QueryCount>;
+    leads7d: Promise<QueryCount>;
+    leads30d: Promise<QueryCount>;
+    bookings30d: Promise<QueryCount>;
+    newsletterSubs30d: Promise<QueryCount>;
+    eventsTotal30d: Promise<QueryCount>;
+    pageViews30d: Promise<QueryCount>;
+    eventsTypeRows: Promise<QueryRows<EventTypeRow>>;
+    leadsCreatedAt: Promise<QueryRows<{ created_at: string }>>;
   };
 
   const bundles: Bundle[] = (INBOUND_SLUGS as readonly InboundSlug[]).map(
@@ -146,32 +156,25 @@ export async function GET() {
       const bookingsTable = `inbound_${slug}_bookings`;
       const newsletterTable = `inbound_${slug}_newsletter_events`;
 
+
       return {
         slug,
         leadsToday: sb
           .from(leadsTable)
           .select('*', { count: 'exact', head: true })
-          .gte('created_at', sinceToday) as unknown as Promise<{
-          count: number | null;
-        }>,
+          .gte('created_at', sinceToday) as unknown as Promise<QueryCount>,
         leads7d: sb
           .from(leadsTable)
           .select('*', { count: 'exact', head: true })
-          .gte('created_at', since7d) as unknown as Promise<{
-          count: number | null;
-        }>,
+          .gte('created_at', since7d) as unknown as Promise<QueryCount>,
         leads30d: sb
           .from(leadsTable)
           .select('*', { count: 'exact', head: true })
-          .gte('created_at', since30d) as unknown as Promise<{
-          count: number | null;
-        }>,
+          .gte('created_at', since30d) as unknown as Promise<QueryCount>,
         bookings30d: sb
           .from(bookingsTable)
           .select('*', { count: 'exact', head: true })
-          .gte('created_at', since30d) as unknown as Promise<{
-          count: number | null;
-        }>,
+          .gte('created_at', since30d) as unknown as Promise<QueryCount>,
         // Newsletter table is "subscribe" + "open" + "click" + "unsub" —
         // count subscribe rows only for "subs". Use an event-type filter
         // when the column exists; otherwise fall back to total count.
@@ -179,38 +182,28 @@ export async function GET() {
           .from(newsletterTable)
           .select('*', { count: 'exact', head: true })
           .gte('created_at', since30d)
-          .eq('event_type', 'subscribe') as unknown as Promise<{
-          count: number | null;
-        }>,
+          .eq('event_type', 'subscribe') as unknown as Promise<QueryCount>,
         eventsTotal30d: sb
           .from(eventsTable)
           .select('*', { count: 'exact', head: true })
-          .gte('created_at', since30d) as unknown as Promise<{
-          count: number | null;
-        }>,
+          .gte('created_at', since30d) as unknown as Promise<QueryCount>,
         pageViews30d: sb
           .from(eventsTable)
           .select('*', { count: 'exact', head: true })
           .gte('created_at', since30d)
-          .eq('event_type', 'page_view') as unknown as Promise<{
-          count: number | null;
-        }>,
+          .eq('event_type', 'page_view') as unknown as Promise<QueryCount>,
         eventsTypeRows: sb
           .from(eventsTable)
           .select('event_type, created_at')
           .gte('created_at', since30d)
           .order('created_at', { ascending: false })
-          .limit(EVENT_FETCH_LIMIT) as unknown as Promise<{
-          data: EventTypeRow[] | null;
-        }>,
+          .limit(EVENT_FETCH_LIMIT) as unknown as Promise<QueryRows<EventTypeRow>>,
         leadsCreatedAt: sb
           .from(leadsTable)
           .select('created_at')
           .gte('created_at', since30d)
           .order('created_at', { ascending: false })
-          .limit(EVENT_FETCH_LIMIT) as unknown as Promise<{
-          data: { created_at: string }[] | null;
-        }>,
+          .limit(EVENT_FETCH_LIMIT) as unknown as Promise<QueryRows<{ created_at: string }>>,
       };
     },
   );
@@ -242,6 +235,23 @@ export async function GET() {
         b.eventsTypeRows,
         b.leadsCreatedAt,
       ]);
+
+      const queryFailures = [
+        [`${b.slug}_leads_today_count_failed`, leadsTodayRes],
+        [`${b.slug}_leads_7d_count_failed`, leads7dRes],
+        [`${b.slug}_leads_30d_count_failed`, leads30dRes],
+        [`${b.slug}_bookings_30d_count_failed`, bookings30dRes],
+        [`${b.slug}_newsletter_subs_30d_count_failed`, newsletterSubs30dRes],
+        [`${b.slug}_events_total_30d_count_failed`, eventsTotal30dRes],
+        [`${b.slug}_page_views_30d_count_failed`, pageViews30dRes],
+        [`${b.slug}_events_type_rows_failed`, eventsTypeRowsRes],
+        [`${b.slug}_leads_created_at_failed`, leadsCreatedAtRes],
+      ] as const;
+      const failure = queryFailures.find(([, result]) => result.error);
+      if (failure) {
+        throw { reason: failure[0], error: failure[1].error };
+      }
+
       return {
         slug: b.slug,
         leadsToday: leadsTodayRes.count ?? 0,
@@ -257,7 +267,11 @@ export async function GET() {
         }[]).map((r) => r.created_at),
       };
     }),
-  );
+  ).catch((error) => {
+    const reason = typeof error?.reason === 'string' ? error.reason : 'aggregate_query_failed';
+    return dashboardDataUnavailable(reason, error?.error ?? error);
+  });
+  if (resolved instanceof NextResponse) return resolved;
 
   // Per-tenant leaderboard rows.
   const by_tenant: InboundAggregateTenantRow[] = resolved.map((r) => ({

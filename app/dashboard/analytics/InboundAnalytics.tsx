@@ -19,6 +19,7 @@ import {
   type InboundAnalyticsResponse,
   type InboundSlug,
 } from '@/lib/inbound-types';
+import { authFetch } from '@/lib/auth';
 import AggregateAnalytics from './AggregateAnalytics';
 
 // Synthetic dropdown option representing the cross-portfolio rollup.
@@ -109,13 +110,7 @@ export default function InboundAnalytics({ defaultSlug = 'ltb' }: Props) {
     setLoading(true);
     setError(null);
 
-    const token =
-      typeof window !== 'undefined' ? window.localStorage.getItem('omni_token') : null;
-    const headers: Record<string, string> = {};
-    if (token) headers['Authorization'] = `Bearer ${token}`;
-
-    fetch(`/api/dashboard/inbound/${slug}`, {
-      headers,
+    authFetch(`/api/dashboard/inbound/${slug}`, {
       credentials: 'include',
       cache: 'no-store',
     })
