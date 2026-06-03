@@ -1,5 +1,6 @@
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { decodeOmniToken, isOmniTokenPayloadFresh } from '@/lib/omni-token';
+import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -17,6 +18,8 @@ export interface OmniUser {
   sponsor_tier?: string;
   sponsor_activated?: boolean;
 }
+
+export type OAuthProvider = 'google' | 'apple';
 
 export async function login(username: string, password: string): Promise<{ error: string | null }> {
   try {
@@ -102,6 +105,11 @@ function storeLoginPayload(data: any) {
 export async function logout(): Promise<void> {
   localStorage.removeItem('omni_token');
   localStorage.removeItem('omni_user');
+  try {
+    await createBrowserClient().auth.signOut();
+  } catch {
+    // Local logout should still clear the Omni token even if Supabase is slow.
+  }
 }
 
 /**
@@ -154,6 +162,73 @@ export function getToken(): string | null {
 
 export function isAuthenticated(): boolean {
   return !!getToken() && !!getStoredUser();
+}
+
+export function omniUserFromSupabaseUser(user: SupabaseUser): OmniUser {
+  const metadata = user.user_metadata || {};
+  const metadataName =
+    typeof metadata.full_name === 'string' && metadata.full_name.trim()
+      ? metadata.full_name.trim()
+      : typeof metadata.name === 'string' && metadata.name.trim()
+        ? metadata.name.trim()
+        : '';
+  const email = user.email || '';
+  const username = metadataName || email.split('@')[0] || 'member';
+
+  return {
+    id: user.id,
+    username,
+    email,
+    tier: '0',
+    tier_name: 'Apprentice',
+    is_admin: false,
+    is_sponsor: false,
+  };
+}
+
+export async function getSupabaseUser(): Promise<OmniUser | null> {
+  try {
+    const supabase = createBrowserClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user ? omniUserFromSupabaseUser(user) : null;
+  } catch {
+    return null;
+  }
+}
+
+function currentClientPath() {
+  if (typeof window === 'undefined') return '/dashboard';
+  return `${window.location.pathname}${window.location.search}${window.location.hash}` || '/dashboard';
+}
+
+export async function loginWithOAuth(
+  provider: OAuthProvider,
+  redirectTo?: string | null,
+): Promise<{ error: string | null }> {
+  try {
+    if (typeof window === 'undefined') {
+      return { error: 'OAuth sign-in is only available in the browser.' };
+    }
+
+    const next =
+      typeof redirectTo === 'string' && redirectTo.startsWith('/') && !redirectTo.startsWith('//')
+        ? redirectTo
+        : currentClientPath();
+    const callback = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    const supabase = createBrowserClient();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: callback,
+      },
+    });
+
+    return { error: error?.message || null };
+  } catch {
+    return { error: 'Connection error. Please try again.' };
+  }
 }
 
 /**

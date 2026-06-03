@@ -58,6 +58,7 @@ export default function LoginPage() {
           setIsOpen(false);
           if (!user) router.push("/");
         }}
+        redirectTo={nextPath || "/dashboard"}
       />
     </main>
   );

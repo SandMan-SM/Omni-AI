@@ -18,12 +18,20 @@ export default function Join() {
   const { user, signUp } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
+  const [nextPath, setNextPath] = useState("/dashboard");
+
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("next");
+    if (requested && requested.startsWith("/") && !requested.startsWith("//")) {
+      setNextPath(requested);
+    }
+  }, []);
 
   useEffect(() => {
     if (user) {
-      router.push("/dashboard");
+      router.push(nextPath);
     }
-  }, [user, router]);
+  }, [nextPath, user, router]);
 
   const [step, setStep] = useState<"form" | "success">("form");
   const [isLoading, setIsLoading] = useState(false);
@@ -87,7 +95,7 @@ export default function Join() {
               You&apos;ll receive login credentials once approved.
             </p>
             <Button
-              onClick={() => router.push("/?signin=true")}
+              onClick={() => router.push(`/login?next=${encodeURIComponent(nextPath)}`)}
               className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5"
             >
               Go to Sign In
@@ -202,7 +210,7 @@ export default function Join() {
             <p className="text-gray-500 text-sm">
               Already have an account?{" "}
               <button
-                onClick={() => router.push("/?signin=true")}
+                onClick={() => router.push(`/login?next=${encodeURIComponent(nextPath)}`)}
                 className="text-purple-400 hover:text-purple-300 font-medium transition-colors"
               >
                 Sign In

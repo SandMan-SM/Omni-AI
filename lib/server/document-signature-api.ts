@@ -6,11 +6,10 @@ import {
   getDocumentSignatureDefinition,
   type DocumentSignatureDefinition,
 } from "@/lib/document-signatures";
-import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
+import { resolveAccountUser } from "@/lib/server/account-user";
 import {
   findDocumentSignature,
   persistDocumentSignature,
-  resolveDocumentSignerProfile,
   updateDocumentSignatureEmailResult,
   type DocumentSignatureEmailResult,
   type DocumentSignatureRecord,
@@ -46,28 +45,9 @@ type Body = {
   hp?: unknown;
 };
 
-type ResolvedUser = {
-  id: string;
-  username?: string;
-};
-
 type HandlerOptions = {
   fallbackDocumentSlug?: string;
 };
-
-function resolveUser(req: Request): ResolvedUser | null {
-  const bearer = (req.headers.get("authorization") || "")
-    .replace(/^Bearer\s+/i, "")
-    .trim();
-  if (!bearer) return null;
-  const payload = decodeOmniToken(bearer);
-  if (!isOmniTokenPayloadFresh(payload)) return null;
-  return {
-    id: payload.sub,
-    username:
-      typeof payload.username === "string" ? payload.username : undefined,
-  };
-}
 
 function uniqueCcList(to: string) {
   const toLower = to.toLowerCase();
@@ -243,7 +223,7 @@ export async function handleDocumentSignatureGet(
     );
   }
 
-  const user = resolveUser(req);
+  const user = await resolveAccountUser(req);
   if (!user) {
     return NextResponse.json(
       {
@@ -274,7 +254,7 @@ export async function handleDocumentSignaturePost(
 ) {
   noStore();
 
-  const user = resolveUser(req);
+  const user = await resolveAccountUser(req);
   if (!user) {
     return NextResponse.json(
       { error: "Sign in before signing the document." },
@@ -325,12 +305,11 @@ export async function handleDocumentSignaturePost(
   }
 
   const signerName = sanitizeText(
-    body.signerName || body.signatureName || user.username || "",
+    body.signerName || body.signatureName || user.name || user.username || "",
     160,
   );
-  const profile = await resolveDocumentSignerProfile(user.id);
   const signerEmail = sanitizeText(
-    profile.email || body.signerEmail || body.email,
+    user.email || body.signerEmail || body.email,
     254,
   ).toLowerCase();
   const pageUrl = sanitizeText(body.pageUrl || definition.path, 500);

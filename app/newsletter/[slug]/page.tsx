@@ -12,6 +12,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // path back into the site (FAQ, About, Campaigns, Newsletter index).
 import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
+import { NewsletterStarCredit } from "@/components/newsletter/NewsletterStarCredit";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
@@ -578,6 +579,11 @@ export default async function NewsletterPostPage({ params }: Props) {
             </p>
           </section>
         )}
+
+        <NewsletterStarCredit
+          newsletterSlug={post.slug}
+          newsletterTitle={post.subject}
+        />
 
       </article>
       <Footer />
