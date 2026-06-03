@@ -380,26 +380,7 @@ export default async function NewsletterIndexPage() {
           </div>
         </section>
 
-        <div
-          id="latest"
-          className="mb-8 flex flex-wrap items-end justify-between gap-4 scroll-mt-24"
-        >
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-amber-300">
-              Latest 10
-            </p>
-            <h2 className="mt-2 text-2xl font-bold text-white md:text-3xl">
-              Newest Interlinked Issues
-            </h2>
-          </div>
-          <Link
-            href="/newsletter/archive"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-300 transition-colors hover:border-amber-400/30 hover:text-amber-200"
-          >
-            View archive
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </div>
+        <div id="latest" className="scroll-mt-24" />
 
         {/* Interlinked — Premium (client-side auth gate) */}
         <PremiumSection posts={premiumPosts} />
