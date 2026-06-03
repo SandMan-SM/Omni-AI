@@ -236,7 +236,7 @@ export function BookDemoModal({
         // top of Safari's bottom toolbar on iOS instead of extending behind
         // it. Without this, flex centering is relative to the full 100vh
         // and the modal's bottom edge ends up hidden behind the toolbar.
-        className="fixed inset-0 h-[100dvh] z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 h-[100dvh] z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md"
         onClick={onClose}
       >
         <motion.div
@@ -261,18 +261,18 @@ export function BookDemoModal({
           // old 85dvh floor was added before the structural fix to
           // hide the border clip; with the clip gone we can use the
           // extra height to keep the form on one screen on most phones.
-          className="relative w-full max-w-md glass-card neon-border rounded-2xl max-h-[90dvh] flex flex-col overflow-hidden"
+          className="relative w-full max-w-md rounded-[1.75rem] border border-amber-300/20 bg-[#05070d]/95 shadow-[0_24px_80px_rgba(0,0,0,0.65),0_0_0_1px_rgba(251,191,36,0.08)] max-h-[90dvh] flex flex-col overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 z-20 text-gray-500 hover:text-white transition-colors"
+            className="absolute right-4 top-4 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition-colors hover:border-amber-300/30 hover:bg-amber-300/10 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300/40"
             data-testid="button-close-modal"
           >
             <X className="w-5 h-5" />
           </button>
 
-          <div className="overflow-y-auto p-8 md:p-10 flex-1">
+          <div className="flex-1 overflow-y-auto px-6 py-7 sm:px-8 sm:py-9 md:px-10">
           <AnimatePresence mode="wait">
             {modalStep === "form" && (
               <motion.div
@@ -282,19 +282,19 @@ export function BookDemoModal({
                 exit={{ opacity: 0, x: -20 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="flex items-center justify-center gap-4 mb-2">
-                  <div className="w-10 h-10 rounded-lg bg-purple-500/20 border border-purple-500/30 flex items-center justify-center">
-                    <Calendar className="w-5 h-5 text-purple-400" />
+                <div className="mb-4 flex items-center justify-center gap-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-300/25 bg-amber-300/10 shadow-[0_0_30px_rgba(251,191,36,0.12)]">
+                    <Calendar className="h-5 w-5 text-amber-200" />
                   </div>
                 </div>
-                <h2 className="text-xl md:text-2xl font-bold text-white text-center mb-1" data-testid="text-demo-heading">
+                <h2 className="mb-2 text-center text-2xl font-semibold tracking-tight text-white md:text-[1.7rem]" data-testid="text-demo-heading">
                   {heading}
                 </h2>
-                <p className="text-gray-400 text-sm text-center mb-6">
+                <p className="mx-auto mb-7 max-w-sm text-center text-sm leading-6 text-white/58">
                   {subheading}
                 </p>
 
-                <form onSubmit={handleFormSubmit} className="space-y-4">
+                <form onSubmit={handleFormSubmit} className="space-y-3.5">
                   {/* Honeypot — real users never see this; bots auto-fill
                       every input they find. Server 200s silently when it
                       comes back with a value. */}
@@ -321,38 +321,38 @@ export function BookDemoModal({
                     />
                   </div>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-200/45" />
                     <Input
                       placeholder="Full Name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
                       required
                       data-testid="input-demo-name"
                     />
                   </div>
 
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-200/45" />
                     <Input
                       type="email"
                       placeholder="Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
                       required
                       data-testid="input-demo-email"
                     />
                   </div>
 
                   <div className="relative">
-                    <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
+                    <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-200/45" />
                     <Input
                       type="tel"
                       placeholder="Phone Number"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500"
+                      className="h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
                       required
                       data-testid="input-demo-phone"
                     />
@@ -361,7 +361,7 @@ export function BookDemoModal({
                   <Button
                     type="submit"
                     disabled={!isFormValid}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg mt-2"
+                    className="mt-3 h-12 w-full rounded-xl border-0 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 text-sm font-semibold tracking-wide text-black shadow-[0_14px_35px_rgba(251,191,36,0.22)] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
                     data-testid="button-submit-demo"
                   >
                     Pick Date & Time
@@ -381,12 +381,12 @@ export function BookDemoModal({
                 <div className="flex items-center gap-2 mb-4">
                   <button
                     onClick={() => setModalStep("form")}
-                    className="text-gray-500 hover:text-white transition-colors"
+                    className="rounded-full p-1 text-white/45 transition-colors hover:bg-white/[0.06] hover:text-amber-100"
                     data-testid="button-back-to-form"
                   >
                     <ChevronLeft className="w-5 h-5" />
                   </button>
-                  <h2 className="text-lg font-semibold text-white" data-testid="text-schedule-heading">
+                  <h2 className="text-lg font-semibold tracking-tight text-white" data-testid="text-schedule-heading">
                     Pick a Date & Time
                   </h2>
                 </div>
@@ -394,7 +394,7 @@ export function BookDemoModal({
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={() => navigateCalendar("prev")}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                    className="rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors hover:border-amber-300/25 hover:bg-amber-300/10"
                     data-testid="button-prev-month"
                   >
                     <ChevronLeft className="w-4 h-4 text-white" />
@@ -404,7 +404,7 @@ export function BookDemoModal({
                   </span>
                   <button
                     onClick={() => navigateCalendar("next")}
-                    className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+                    className="rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors hover:border-amber-300/25 hover:bg-amber-300/10"
                     data-testid="button-next-month"
                   >
                     <ChevronRight className="w-4 h-4 text-white" />
@@ -430,12 +430,12 @@ export function BookDemoModal({
                         disabled={isDisabled}
                         className={`p-1.5 rounded-lg text-center transition-all text-sm ${
                           isSelected
-                            ? "bg-purple-500 text-white"
+                            ? "bg-amber-300 text-black shadow-[0_0_18px_rgba(251,191,36,0.22)]"
                             : !day.isCurrentMonth
                             ? "text-gray-700"
                             : isDisabled
                             ? "text-gray-600 cursor-not-allowed"
-                            : "text-white hover:bg-purple-500/30"
+                            : "text-white hover:bg-amber-300/15"
                         } ${day.isCurrentMonth && !isDisabled && !isSelected ? "bg-white/5" : ""}`}
                         data-testid={`button-calendar-${day.date}`}
                       >
@@ -465,8 +465,8 @@ export function BookDemoModal({
                           disabled={isSubmitting}
                           className={`p-2 rounded-lg text-xs font-medium transition-all ${
                             selectedTime === time
-                              ? "bg-purple-500 text-white"
-                              : "bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10"
+                              ? "bg-amber-300 text-black shadow-[0_0_18px_rgba(251,191,36,0.2)]"
+                              : "border border-white/10 bg-white/[0.05] text-gray-300 hover:border-amber-300/25 hover:bg-amber-300/10"
                           }`}
                           data-testid={`button-time-${time.replace(/\s/g, "-")}`}
                         >
@@ -480,7 +480,7 @@ export function BookDemoModal({
                 <Button
                   onClick={() => handleComplete()}
                   disabled={!selectedDate || !selectedTime || isSubmitting}
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg mt-2"
+                  className="mt-3 h-12 w-full rounded-xl border-0 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 text-sm font-semibold tracking-wide text-black shadow-[0_14px_35px_rgba(251,191,36,0.22)] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
                   data-testid="button-complete-booking"
                 >
                   {isSubmitting ? (

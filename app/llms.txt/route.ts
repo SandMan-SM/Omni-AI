@@ -115,7 +115,7 @@ Omni AI was founded in 2024 by Alfred Belvedere, a solo operator who built the p
 Yes. The free tier at ${siteUrl}/join unlocks campaign generation, the AI Agent Arena for head-to-head agent benchmarking, daily trending content, and community support. Most operators validate the platform on the free tier before upgrading to paid outbound.
 
 **How long until I see leads?**
-Most operators see their first qualified leads within the first week on the free tier. Full revenue lift typically shows within 30 days once the system has enough cycle data to self-optimize. Book a 30-minute strategy call at ${siteUrl}/book-now for a timeline mapped to your specific revenue target.
+Lead timing depends on the market, offer, audience quality, data access, and whether outbound/inbound channels are already connected. The right expectation is not a fixed guarantee; it is a measured launch plan with tracking, CRM capture, follow-up, and weekly optimization. Book a 30-minute strategy call at ${siteUrl}/book-now for a timeline mapped to your specific revenue target.
 
 **What integrations does Omni AI support?**
 Omni AI integrates with HubSpot, Salesforce, Google Workspace, Microsoft 365, LinkedIn, Meta Ads, Google Ads, Stripe, and Calendar (Google / Microsoft / Calendly). Custom integrations are available on paid tiers. The platform is API-first — if your stack speaks REST or webhooks, it connects.
@@ -124,7 +124,7 @@ Omni AI integrates with HubSpot, Salesforce, Google Workspace, Microsoft 365, Li
 Omni AI is industry-agnostic — the platform runs for B2B SaaS, marketing agencies, local service businesses (HVAC, med spa, roofing, contracting), fitness and wellness, real estate, consulting, and professional services. Any business that needs qualified leads and outbound at volume is a fit.
 
 **How is Omni AI different from hiring an agency?**
-An agency charges $5K–$25K per month, caps at its team's bandwidth, and takes weeks to adjust when strategy shifts. Omni AI runs 24/7 at a fixed cost, adjusts in hours not weeks, and never has turnover. For most sub-$5M ARR operations Omni AI delivers the agency workflow autonomously at a fraction of the cost; agencies remain better when a team specifically needs human-in-the-loop creative.
+A traditional agency usually sells human team capacity; Omni AI sells an operating system that can capture demand, route work, automate follow-up, and keep improving the process. The right choice depends on how much strategic human creative direction the business needs versus how much repeatable operations work should become software.
 
 Full FAQ with additional questions on GDPR, AI-model routing, and autopilot safety: ${siteUrl}/faq
 

@@ -12,6 +12,7 @@ import {
 } from "@/components/json-ld";
 import { SpaceBackdrop } from "@/components/space-backdrop";
 import { SiteTracker } from "@/components/analytics/site-tracker";
+import { GoogleAnalytics } from "@/components/analytics/google-analytics";
 
 // display:swap — render fallback font immediately and swap to Inter
 // once it loads. Prevents FOIT (flash of invisible text) on slow
@@ -106,6 +107,7 @@ export default function RootLayout({
           <SiteTracker />
         </Suspense>
         <Providers>{children}</Providers>
+        <GoogleAnalytics measurementId={process.env.NEXT_PUBLIC_GA4_ID} sendPageView />
       </body>
     </html>
   );

@@ -34,7 +34,7 @@ export const fetchCache = "force-no-store";
  *     platform-admin.
  */
 
-const PAGE_LIMIT_DEFAULT = 1000;
+const PAGE_LIMIT_DEFAULT = 250;
 const PAGE_LIMIT_MAX = 1000;
 
 const LEAD_SELECT = [

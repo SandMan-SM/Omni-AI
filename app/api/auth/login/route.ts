@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Login failed";
     if (message === "Wrong password" || message === "User not found") {
-      return NextResponse.json({ error: message }, { status: 401 });
+      return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
     }
     console.error("[auth/login] local login failed:", error);
     return NextResponse.json(

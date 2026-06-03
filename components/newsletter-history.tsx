@@ -210,12 +210,16 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   const [editTier, setEditTier] = useState<'deactivated' | 'subscriber' | 'premium'>('subscriber');
   const [editSaving, setEditSaving] = useState(false);
 
+  const getAuthHeaders = (): HeadersInit => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+    return token ? { Authorization: `Bearer ${token}` } : {};
+  };
+
   const load = async () => {
     setLoading(true);
     try {
       const bust = `_t=${Date.now()}`;
-      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
-      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const authHeaders = getAuthHeaders();
       const [historyRes, analyticsRes] = await Promise.all([
         fetch(`/api/admin/newsletter-history?${bust}`, { cache: 'no-store', headers: authHeaders }),
         fetch(`/api/newsletter/analytics?${bust}`, { cache: 'no-store', headers: authHeaders }),
@@ -244,8 +248,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
-        const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+        const authHeaders = getAuthHeaders();
         const res = await fetch("/api/newsletter/analytics", { headers: authHeaders });
         if (res.ok) setAnalytics(await res.json());
       } catch {}
@@ -259,7 +262,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     try {
       const res = await fetch("/api/admin/newsletter-toggle", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ profileId, subscribed }),
       });
       if (res.ok) {
@@ -282,7 +285,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     try {
       const res = await fetch("/api/newsletter/subscribers", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", ...getAuthHeaders() },
         body: JSON.stringify({ email: newSubEmail, first_name: newSubName || null }),
       });
       if (res.ok) {
@@ -299,8 +302,20 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   };
 
   // Export CSV
-  const handleExport = () => {
-    window.open("/api/admin/newsletter-export", "_blank");
+  const handleExport = async () => {
+    try {
+      const res = await fetch("/api/admin/newsletter-export", { headers: getAuthHeaders() });
+      if (!res.ok) throw new Error("export failed");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `omni_newsletter_admin_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Export error:", err);
+    }
   };
 
   // Import CSV
@@ -311,6 +326,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
       const text = await file.text();
       const res = await fetch("/api/admin/newsletter-import", {
         method: "POST",
+        headers: getAuthHeaders(),
         body: text,
       });
       if (res.ok) {
@@ -328,8 +344,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
   // Delete website subscriber
   const handleDeleteSub = async (id: string) => {
     try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
-      const authHeaders: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+      const authHeaders = getAuthHeaders();
       const res = await fetch(`/api/newsletter/subscribers/${id}`, {
         method: "DELETE",
         headers: authHeaders,
@@ -362,25 +377,20 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         // Update name/email on profile first
         await fetch(`/api/admin/users/${editingSub.id}`, {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ name: editName, email: editEmail }),
         });
         // Then sync tier + subscription state to both tables in one call
         await fetch("/api/admin/newsletter-toggle", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ profileId: editingSub.id, subscribed: tierToSave !== 'deactivated', tier: tierToSave }),
         });
       } else {
         // Website subscriber — update newsletter_subscriptions directly.
-        // Admin-only route: forward the omni_token bearer if present.
-        const token = typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
         await fetch(`/api/newsletter/subscribers/${editingSub.id}`, {
           method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
+          headers: { "Content-Type": "application/json", ...getAuthHeaders() },
           body: JSON.stringify({ first_name: editName, email: editEmail, subscription_tier: subTier, subscribed: tierToSave !== 'deactivated' }),
         });
       }
@@ -426,7 +436,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
         Array.from(selectedUserIds).map(id =>
           fetch("/api/admin/newsletter-toggle", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...getAuthHeaders() },
             body: JSON.stringify({ profileId: id, subscribed: true }),
           })
         )

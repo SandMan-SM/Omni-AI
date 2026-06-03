@@ -15,10 +15,13 @@
     "preview": "git push origin HEAD:dev --force && echo '\\n→ Preview building at: https://omni-ai-git-dev-sandman-sms-projects.vercel.app\\n  (refresh in 60-90s for the new build)'",
     "preview:open": "open 'https://omni-ai-git-dev-sandman-sms-projects.vercel.app'",
     "build": "next build",
-    "build:check": "NEXT_DIST_DIR=.next-prod next build && rm -rf .next-prod",
+    "build:check": "node scripts/ensure-clean-worktree.mjs --phase before-build-check && npm run build:check:dirty && node scripts/ensure-clean-worktree.mjs --phase after-build-check",
+    "build:check:dirty": "NEXT_DIST_DIR=.next-prod next build && rm -rf .next-prod",
     "start": "next start",
     "lint": "next lint",
-    "check": "tsc"
+    "check": "node scripts/ensure-clean-worktree.mjs --phase before-check && npm run check:dirty && node scripts/ensure-clean-worktree.mjs --phase after-check",
+    "check:dirty": "tsc",
+    "worktree:clean": "node scripts/ensure-clean-worktree.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

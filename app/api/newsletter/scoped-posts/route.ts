@@ -137,8 +137,11 @@ export async function GET(request: Request) {
     .limit(200);
 
   if (error) {
+    // Raw PostgREST/provider details stay server-side. This route is
+    // authenticated, but it is still multi-tenant dashboard surface area.
+    console.error("[newsletter/scoped-posts] lookup failed:", error);
     return NextResponse.json(
-      { error: "Failed to fetch posts", detail: error.message },
+      { error: "Failed to fetch posts", reason: "posts_lookup_failed" },
       { status: 500 },
     );
   }

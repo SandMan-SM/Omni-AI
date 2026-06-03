@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
-import { Archive, ArrowRight, Clock3, Newspaper, Rss } from "lucide-react";
+import { Archive, ArrowRight, Rss } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -133,7 +133,7 @@ export default async function NewsletterIndexPage() {
         .eq("tier", "premium")
         .or("published_at.not.is.null,status.eq.published")
         .order("published_at", { ascending: false })
-        .limit(50),
+        .limit(5),
       2500
     ),
     withTimeout(
@@ -143,7 +143,7 @@ export default async function NewsletterIndexPage() {
         .neq("tier", "premium")
         .or("published_at.not.is.null,status.eq.published")
         .order("published_at", { ascending: false })
-        .limit(50),
+        .limit(5),
       2500
     ),
   ]);
@@ -165,6 +165,9 @@ export default async function NewsletterIndexPage() {
     (!premiumRes || Boolean((premiumRes as { error?: unknown }).error)) &&
     (!freeRes || Boolean((freeRes as { error?: unknown }).error));
   const frontShelfPosts = [...premiumPosts, ...freePosts];
+  const latestPremiumHref = premiumPosts[0]?.slug
+    ? `/newsletter/${premiumPosts[0].slug}`
+    : "#latest";
 
   return (
     // No opaque bg here — root layout's <SpaceBackdrop /> drifts behind.
@@ -350,13 +353,13 @@ export default async function NewsletterIndexPage() {
               </p>
 
               <div className="mt-5 flex flex-wrap gap-2.5 md:mt-7 md:gap-3">
-                <a
-                  href="#latest"
+                <Link
+                  href={latestPremiumHref}
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 text-sm font-semibold text-amber-200 transition-colors hover:border-amber-300/60 hover:bg-amber-400/15 md:h-11 md:px-4"
                 >
-                  Latest issues
+                  Latest issue
                   <ArrowRight className="h-4 w-4" />
-                </a>
+                </Link>
                 <Link
                   href="/newsletter/archive"
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-200 transition-colors hover:border-amber-400/30 hover:text-amber-200 md:h-11 md:px-4"
@@ -372,42 +375,6 @@ export default async function NewsletterIndexPage() {
                   <Rss className="h-4 w-4" />
                   RSS
                 </a>
-              </div>
-            </div>
-
-            <div className="hidden gap-3 md:grid md:grid-cols-3 lg:grid-cols-1">
-              <div className="rounded-lg border border-white/[0.08] bg-black/30 p-4">
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-amber-400/25 bg-amber-400/10 text-amber-300">
-                  <Clock3 className="h-4 w-4" />
-                </div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Cadence
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  Daily at 8:00 AM
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/[0.08] bg-black/30 p-4">
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-sky-400/25 bg-sky-400/10 text-sky-300">
-                  <Newspaper className="h-4 w-4" />
-                </div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Front shelf
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  5 premium + 5 free
-                </p>
-              </div>
-              <div className="rounded-lg border border-white/[0.08] bg-black/30 p-4">
-                <div className="mb-3 flex h-9 w-9 items-center justify-center rounded-md border border-violet-400/25 bg-violet-400/10 text-violet-300">
-                  <Archive className="h-4 w-4" />
-                </div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-500">
-                  Library
-                </p>
-                <p className="mt-1 text-sm font-semibold text-white">
-                  Full archive available
-                </p>
               </div>
             </div>
           </div>

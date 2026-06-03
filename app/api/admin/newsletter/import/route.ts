@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
+
+const MAX_IMPORT_BYTES = 1_000_000;
+const MAX_IMPORT_ROWS = 5_000;
 
 // POST /api/admin/newsletter/import
 //
@@ -11,6 +17,7 @@ export const dynamic = "force-dynamic";
 // silently drop rows. Accepts columns: email (required), first_name | name
 // (optional), subscription_tier | tier (optional, default "subscribed").
 export async function POST(request: Request) {
+  noStore();
   const auth = await requireAdmin();
   if ("error" in auth && auth.error) return auth.error;
 
@@ -23,6 +30,12 @@ export async function POST(request: Request) {
   }
 
   if (!file) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+  if (file.size > MAX_IMPORT_BYTES) {
+    return NextResponse.json(
+      { error: "CSV import is too large. Upload 1MB or less." },
+      { status: 413 },
+    );
+  }
 
   const text = await file.text();
   const lines = text
@@ -33,6 +46,12 @@ export async function POST(request: Request) {
     return NextResponse.json(
       { error: "CSV needs a header row and at least one data row" },
       { status: 400 },
+    );
+  }
+  if (lines.length - 1 > MAX_IMPORT_ROWS) {
+    return NextResponse.json(
+      { error: `CSV import is too large. Upload ${MAX_IMPORT_ROWS} rows or fewer.` },
+      { status: 413 },
     );
   }
 

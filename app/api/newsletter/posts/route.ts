@@ -93,18 +93,14 @@ export async function GET() {
   const { data: posts, error } = result as { data: NewsletterPostSummary[] | null; error: unknown };
 
   if (error) {
-    // Surface the underlying Supabase error message so dashboard debug
-    // shows WHY the fallback fired — was it a 503 from PostgREST, a
-    // statement timeout from Postgres, a connection pool error, etc.
-    const errMsg =
-      typeof error === "object" && error !== null && "message" in error
-        ? String((error as { message?: unknown }).message ?? "unknown")
-        : String(error ?? "unknown");
+    // Keep raw provider/database detail server-side only. This public
+    // endpoint is consumed by pages and dashboards; returning PostgREST
+    // messages can leak schema/table details or transient provider state.
+    console.error("[newsletter/posts] Supabase lookup failed:", error);
     const res = NextResponse.json({
       posts: getNewsletterFallbackSummaries(),
       source: "fallback",
       reason: "supabase_error",
-      debug_error: errMsg.slice(0, 300),
     });
     res.headers.set("Cache-Control", "no-store, no-cache, must-revalidate");
     return res;

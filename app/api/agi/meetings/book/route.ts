@@ -3,6 +3,8 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@supabase/supabase-js';
 import { notifyBooking } from '@/lib/agi/telegram';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { requireAdminOrBrandMember } from '@/lib/admin-auth';
+import { createAdminClient } from '@/lib/supabase/admin';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -17,11 +19,32 @@ export async function GET(req: NextRequest) {
   noStore();
   // Auth-gate. GET joins booking attendee PII to lead PII; the
   // public booking widget posts new rows but doesn't need to read
-  // the dashboard's full booking list.
-  const denied = await authorizeCronOrAdmin(req);
-  if (denied) return denied;
+  // the dashboard's full booking list. Platform admins can read all;
+  // per-brand users can read only a scoped business_id they belong to.
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
+  if (business_id) {
+    const adminSupabase = createAdminClient();
+    const { data: biz, error: bizError } = await adminSupabase
+      .from('omni_businesses')
+      .select('slug')
+      .eq('id', business_id)
+      .maybeSingle();
+    if (bizError) {
+      console.error('[meetings/book GET] business lookup failed:', bizError);
+      return NextResponse.json({ error: 'Meeting data unavailable' }, { status: 503 });
+    }
+    const scopedAuth = await requireAdminOrBrandMember({ slug: biz?.slug ?? null });
+    if ('error' in scopedAuth && scopedAuth.error) {
+      // Preserve ops/cron automation compatibility while allowing mapped
+      // client users to read only their own business's bookings.
+      const denied = await authorizeCronOrAdmin(req);
+      if (denied) return scopedAuth.error;
+    }
+  } else {
+    const denied = await authorizeCronOrAdmin(req);
+    if (denied) return denied;
+  }
   let query = supabase
     .from('omni_meeting_bookings')
     .select('*, lead:omni_leads_generated(first_name, last_name, company)')
@@ -29,7 +52,10 @@ export async function GET(req: NextRequest) {
   if (business_id) query = query.eq('business_id', business_id);
 
   const { data, error } = await query;
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (error) {
+    console.error('[meetings/book GET] query failed:', error);
+    return NextResponse.json({ error: 'Meeting data unavailable' }, { status: 503 });
+  }
   return NextResponse.json({ bookings: data });
 }
 
@@ -114,7 +140,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('[meetings/book]', err);
     return NextResponse.json({
-      error: err instanceof Error ? err.message : 'Internal server error',
+      error: 'Failed to create booking',
     }, { status: 500 });
   }
 }
@@ -159,7 +185,7 @@ export async function PATCH(req: NextRequest) {
   } catch (err) {
     console.error('[meetings/book PATCH]', err);
     return NextResponse.json({
-      error: err instanceof Error ? err.message : 'Internal server error',
+      error: 'Failed to update booking',
     }, { status: 500 });
   }
 }
@@ -250,7 +276,7 @@ export async function DELETE(req: NextRequest) {
   } catch (err) {
     console.error('[meetings/book DELETE]', err);
     return NextResponse.json({
-      error: err instanceof Error ? err.message : 'Internal server error',
+      error: 'Failed to cancel booking',
     }, { status: 500 });
   }
 }

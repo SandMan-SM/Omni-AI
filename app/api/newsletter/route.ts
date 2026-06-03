@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { logEvent } from "@/lib/events";
+import { requireAdmin } from "@/lib/admin-auth";
 import { isValidEmail, isBotSubmission, sanitizeText } from "@/lib/validation";
 import {
   rateLimit,
@@ -130,9 +131,12 @@ export async function POST(request: Request) {
 
 export async function GET() {
   noStore();
-  // Authenticated read — GET still goes through the RLS client because
-  // only logged-in users should see the subscriber list. Admins with
-  // service-role access use /api/admin/newsletter/audience instead.
+  // Subscriber-list reads are explicitly admin-only. Do not rely on RLS
+  // returning zero rows for anonymous callers — if a future policy changes,
+  // this route must still not become an email-enumeration surface.
+  const auth = await requireAdmin();
+  if ('error' in auth && auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
     const { data, error } = await supabase

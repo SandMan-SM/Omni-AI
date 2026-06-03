@@ -22,8 +22,15 @@
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
-// Paths we never track (admin, API calls themselves, Next internals).
-const IGNORED_PREFIXES = ["/api/", "/_next/"];
+// Paths we never track. Keep first-party analytics focused on public
+// conversion surfaces; private/admin dashboards can contain client names,
+// internal labels, and operational actions that should not be mirrored into
+// the generic events table by a global click listener.
+const IGNORED_PREFIXES = ["/api/", "/_next/", "/admin", "/dashboard"];
+
+function isIgnoredPath(pathname: string): boolean {
+  return IGNORED_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+}
 
 type EventType =
   | "page_view"
@@ -197,7 +204,7 @@ export function SiteTracker() {
   // ── page_view ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!pathname) return;
-    if (IGNORED_PREFIXES.some(p => pathname.startsWith(p))) return;
+    if (isIgnoredPath(pathname)) return;
 
     const qs = searchParams?.toString() || "";
     const full = qs ? `${pathname}?${qs}` : pathname;
@@ -237,6 +244,7 @@ export function SiteTracker() {
   // ── click delegation ───────────────────────────────────────────────
   useEffect(() => {
     function onClick(ev: MouseEvent) {
+      if (isIgnoredPath(window.location.pathname)) return;
       const el = findTrackTarget(ev.target);
       if (!el) return;
       // Don't record clicks on analytics-hostile elements.
@@ -284,6 +292,7 @@ export function SiteTracker() {
     }
 
     function onFocusIn(ev: FocusEvent) {
+      if (isIgnoredPath(window.location.pathname)) return;
       const target = ev.target;
       if (!(target instanceof HTMLElement)) return;
       const form = target.closest("form");
@@ -305,6 +314,7 @@ export function SiteTracker() {
 
     // Capture form submits too — valuable signal for CTA conversions.
     function onSubmit(ev: SubmitEvent) {
+      if (isIgnoredPath(window.location.pathname)) return;
       const form = ev.target as HTMLFormElement | null;
       if (!form || !(form instanceof HTMLFormElement)) return;
       const label = formLabel(form);

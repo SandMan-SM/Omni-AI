@@ -230,7 +230,10 @@ export function NewsletterStudio() {
     try {
       const res = await fetch('/api/newsletter/subscribers', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeaders(),
+        },
         body: JSON.stringify({ email: newEmail, first_name: newName || null, subscription_tier: newTier }),
       });
       const data = await res.json();

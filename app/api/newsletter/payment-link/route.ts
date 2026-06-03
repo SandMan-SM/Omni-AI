@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-auth';
+import { serverErrorResponse } from '@/lib/api-errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -84,8 +85,11 @@ export async function POST() {
       product_id: product.id,
     });
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Stripe error:', msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+    return serverErrorResponse(
+      'newsletter/payment-link.POST',
+      error,
+      500,
+      'Premium newsletter checkout is temporarily unavailable.',
+    );
   }
 }

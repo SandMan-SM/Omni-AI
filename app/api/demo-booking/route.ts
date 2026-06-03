@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { randomUUID } from 'crypto';
 import { createClient } from '@/lib/supabase/server';
+import { requireAdmin } from '@/lib/admin-auth';
 import { parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
 import { persistBookingSubmission } from '@/lib/server/direct-postgres';
 import {
@@ -23,6 +24,9 @@ export const fetchCache = "force-no-store";
 
 export async function GET() {
   noStore();
+  const auth = await requireAdmin();
+  if ('error' in auth && auth.error) return auth.error;
+
   try {
     const supabase = await createClient();
 
@@ -175,7 +179,9 @@ export async function POST(request: Request) {
       scheduled_at: startDate.toISOString(),
       persisted: persistence.persisted,
       crmStatus: persistence.crmStatus,
-      ...(debugPersistence ? { persistenceError: persistence.error ?? null } : {}),
+      ...(debugPersistence
+        ? { persistenceDebug: { status: persistence.crmStatus, persisted: persistence.persisted } }
+        : {}),
       googleCalendarUrl: googleCalUrl,
     }, { status: 201 });
 
