@@ -17,7 +17,13 @@ import {
 import { authFetch } from "@/lib/auth";
 import { useAuth } from "@/hooks/use-auth";
 
-type SignatureStatus = "idle" | "loading" | "submitting" | "signed" | "error";
+type SignatureStatus =
+  | "idle"
+  | "loading"
+  | "submitting"
+  | "signed"
+  | "check-error"
+  | "form-error";
 
 type SignatureSnapshot = {
   signatureId: string | null;
@@ -42,6 +48,87 @@ type SignatureApiResponse = {
   error?: string;
 };
 
+const SIGNATURE_CACHE_VERSION = 1;
+
+type CachedSignatureSnapshot = SignatureSnapshot & {
+  version: number;
+  userId: string;
+  documentSlug: DocumentSignatureSlug;
+};
+
+function signatureCacheKey(userId: string, documentSlug: DocumentSignatureSlug) {
+  return `omni_document_signature:${userId}:${documentSlug}`;
+}
+
+function readCachedSignature(
+  userId: string,
+  documentSlug: DocumentSignatureSlug,
+): SignatureSnapshot | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(signatureCacheKey(userId, documentSlug));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<CachedSignatureSnapshot>;
+    if (
+      parsed.version !== SIGNATURE_CACHE_VERSION ||
+      parsed.userId !== userId ||
+      parsed.documentSlug !== documentSlug ||
+      typeof parsed.signedAt !== "string" ||
+      !parsed.signedAt
+    ) {
+      return null;
+    }
+
+    return {
+      signatureId: parsed.signatureId || null,
+      signerName: parsed.signerName || "Signed account",
+      signerEmail: parsed.signerEmail || "",
+      signedAt: parsed.signedAt,
+      creditAwarded:
+        typeof parsed.creditAwarded === "number"
+          ? parsed.creditAwarded
+          : DOCUMENT_SIGNATURE_CREDIT,
+      creditAwardedNow: 0,
+      alreadySigned: true,
+    };
+  } catch {
+    return null;
+  }
+}
+
+function writeCachedSignature(
+  userId: string,
+  documentSlug: DocumentSignatureSlug,
+  snapshot: SignatureSnapshot,
+) {
+  if (typeof window === "undefined") return;
+  try {
+    const cached: CachedSignatureSnapshot = {
+      ...snapshot,
+      version: SIGNATURE_CACHE_VERSION,
+      userId,
+      documentSlug,
+      creditAwardedNow: 0,
+      alreadySigned: true,
+    };
+    window.localStorage.setItem(
+      signatureCacheKey(userId, documentSlug),
+      JSON.stringify(cached),
+    );
+  } catch {
+    // A full or unavailable localStorage should not block the source of truth.
+  }
+}
+
+function clearCachedSignature(userId: string, documentSlug: DocumentSignatureSlug) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.removeItem(signatureCacheKey(userId, documentSlug));
+  } catch {
+    // Ignore storage cleanup failures.
+  }
+}
+
 export function DocumentSignature({
   documentSlug,
 }: {
@@ -55,8 +142,13 @@ export function DocumentSignature({
   const [status, setStatus] = useState<SignatureStatus>("idle");
   const [snapshot, setSnapshot] = useState<SignatureSnapshot | null>(null);
   const [message, setMessage] = useState("");
+  const [checkedKey, setCheckedKey] = useState("");
+  const [retryNonce, setRetryNonce] = useState(0);
 
   const accountEmail = user?.email || "";
+  const activeSignatureKey = user?.id
+    ? signatureCacheKey(user.id, documentSlug)
+    : "";
   const defaultName = useMemo(() => {
     const username = user?.username?.replace(/^[@$]+/, "").trim();
     return username || "";
@@ -74,10 +166,18 @@ export function DocumentSignature({
       if (!user) {
         setStatus("idle");
         setSnapshot(null);
+        setCheckedKey("");
         return;
       }
 
-      setStatus("loading");
+      const cached = readCachedSignature(user.id, documentSlug);
+      if (cached) {
+        setSnapshot(cached);
+        setStatus("signed");
+        setCheckedKey(signatureCacheKey(user.id, documentSlug));
+      } else {
+        setStatus("loading");
+      }
       setMessage("");
 
       try {
@@ -89,13 +189,23 @@ export function DocumentSignature({
         if (cancelled) return;
 
         if (!res.ok) {
-          setStatus("error");
-          setMessage(data.error || "Could not check this signature yet.");
+          if (cached) {
+            setStatus("signed");
+            setMessage("");
+          } else if (res.status === 401) {
+            setStatus("check-error");
+            setMessage(
+              "Sign in to seal this document and claim your +10 Omni credits.",
+            );
+          } else {
+            setStatus("check-error");
+            setMessage(data.error || "Could not check this signature yet.");
+          }
           return;
         }
 
         if (data.signed && data.signedAt) {
-          setSnapshot({
+          const nextSnapshot = {
             signatureId: data.signatureId || null,
             signerName: data.signerName || defaultName || "Signed account",
             signerEmail: data.signerEmail || accountEmail,
@@ -103,16 +213,27 @@ export function DocumentSignature({
             creditAwarded: data.creditAwarded || DOCUMENT_SIGNATURE_CREDIT,
             creditAwardedNow: data.creditAwardedNow || 0,
             alreadySigned: true,
-          });
+          };
+          setSnapshot(nextSnapshot);
+          writeCachedSignature(user.id, documentSlug, nextSnapshot);
+          setCheckedKey(signatureCacheKey(user.id, documentSlug));
           setStatus("signed");
           return;
         }
 
+        clearCachedSignature(user.id, documentSlug);
+        setSnapshot(null);
+        setCheckedKey(signatureCacheKey(user.id, documentSlug));
         setStatus("idle");
       } catch {
         if (!cancelled) {
-          setStatus("error");
-          setMessage("Could not reach the signature service yet.");
+          if (cached) {
+            setStatus("signed");
+            setMessage("");
+          } else {
+            setStatus("check-error");
+            setMessage("Could not reach the signature service yet.");
+          }
         }
       }
     }
@@ -122,7 +243,7 @@ export function DocumentSignature({
     return () => {
       cancelled = true;
     };
-  }, [accountEmail, defaultName, documentSlug, loading, user]);
+  }, [accountEmail, defaultName, documentSlug, loading, retryNonce, user]);
 
   const loginHref = useMemo(() => {
     const target = `${pathname || definition.path}#signature`;
@@ -144,7 +265,7 @@ export function DocumentSignature({
 
     const cleanName = signerName.trim();
     if (cleanName.length < 2) {
-      setStatus("error");
+      setStatus("form-error");
       setMessage("Type your name to sign.");
       return;
     }
@@ -173,18 +294,18 @@ export function DocumentSignature({
           handleSignedOutClick();
           return;
         }
-        setStatus("error");
+        setStatus("form-error");
         setMessage(data.error || "Could not capture the signature yet.");
         return;
       }
 
       if (!data.signedAt) {
-        setStatus("error");
+        setStatus("form-error");
         setMessage("The signature response was incomplete. Try again.");
         return;
       }
 
-      setSnapshot({
+      const nextSnapshot = {
         signatureId: data.signatureId || null,
         signerName: data.signerName || cleanName,
         signerEmail: data.signerEmail || accountEmail,
@@ -192,14 +313,17 @@ export function DocumentSignature({
         creditAwarded: data.creditAwarded || DOCUMENT_SIGNATURE_CREDIT,
         creditAwardedNow: data.creditAwardedNow || 0,
         alreadySigned: Boolean(data.alreadySigned),
-      });
+      };
+      setSnapshot(nextSnapshot);
+      writeCachedSignature(user.id, documentSlug, nextSnapshot);
+      setCheckedKey(signatureCacheKey(user.id, documentSlug));
       setStatus("signed");
       setMessage(
         data.message ||
           `Acknowledgement recorded. +${DOCUMENT_SIGNATURE_CREDIT} Omni credits have been added.`,
       );
     } catch {
-      setStatus("error");
+      setStatus("form-error");
       setMessage("Could not reach the signature service. Try again.");
     }
   };
@@ -246,13 +370,66 @@ export function DocumentSignature({
     );
   }
 
-  if (status === "loading" || loading) {
+  const needsInitialCheck =
+    Boolean(user) &&
+    !snapshot &&
+    checkedKey !== activeSignatureKey &&
+    status !== "check-error";
+
+  if (status === "loading" || loading || needsInitialCheck) {
     return (
       <section id="signature" className="border-t border-white/[0.08] py-12 sm:py-16">
         <div className="rounded-lg border border-white/10 bg-white/[0.035] p-6 sm:p-8">
           <div className="flex items-center gap-3 text-zinc-300">
             <Loader2 className="h-5 w-5 animate-spin text-amber-200" />
             <span className="text-sm font-semibold">Checking signature status</span>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (status === "check-error") {
+    return (
+      <section id="signature" className="border-t border-white/[0.08] py-12 sm:py-16">
+        <div className="relative overflow-hidden rounded-lg border border-amber-300/25 bg-black/50 p-5 sm:p-8">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(251,191,36,0.16),transparent_34%),radial-gradient(circle_at_18%_86%,rgba(56,189,248,0.10),transparent_36%)]" />
+          <div className="relative max-w-2xl">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md border border-amber-200/30 bg-amber-200/10 text-amber-100">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <p className="mt-5 text-xs font-semibold uppercase text-amber-200/80">
+              Acknowledgement status
+            </p>
+            <h2 className="mt-3 font-serif text-[clamp(2rem,9vw,3.6rem)] leading-tight text-white">
+              Checking {definition.title}.
+            </h2>
+            <p className="mt-5 text-[15px] leading-8 text-zinc-300 sm:text-lg">
+              {message ||
+                "The signature service did not answer cleanly. Retry before signing so we can avoid duplicate attempts."}
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <button
+                type="button"
+                onClick={() => {
+                  setStatus("loading");
+                  setMessage("");
+                  setRetryNonce((value) => value + 1);
+                }}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-amber-200/30 bg-amber-200/10 px-4 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-100/60"
+              >
+                <Loader2 className="h-4 w-4" />
+                Check again
+              </button>
+              <button
+                type="button"
+                onClick={handleSignedOutClick}
+                className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.035] px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/25"
+              >
+                <Lock className="h-4 w-4" />
+                Sign in again
+              </button>
+            </div>
           </div>
         </div>
       </section>
@@ -409,7 +586,7 @@ export function DocumentSignature({
             {message ? (
               <p
                 className={`text-sm leading-6 ${
-                  status === "error" ? "text-rose-300" : "text-emerald-300"
+                  status === "form-error" ? "text-rose-300" : "text-emerald-300"
                 }`}
                 role="status"
               >
