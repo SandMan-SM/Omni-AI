@@ -2,25 +2,22 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect } from "react";
 import {
   ArrowRight,
   BookOpen,
   Brain,
-  CheckCircle2,
   Compass,
   Eye,
   Layers3,
-  Loader2,
   LogOut,
   Orbit,
-  PenLine,
   Shield,
   Sparkles,
   Target,
   Workflow,
 } from "lucide-react";
-import { authFetch } from "@/lib/auth";
+import { DocumentSignature } from "@/components/document-signature";
 import { useAuth } from "@/hooks/use-auth";
 
 const definitions = [
@@ -188,147 +185,43 @@ function Section({
   );
 }
 
-function DocumentSignatureBlock({ userEmail }: { userEmail?: string | null }) {
-  const [signerName, setSignerName] = useState("");
-  const [signerEmail, setSignerEmail] = useState(userEmail || "");
-  const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    if (userEmail && !signerEmail) setSignerEmail(userEmail);
-  }, [signerEmail, userEmail]);
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setStatus("submitting");
-    setMessage("");
-
-    try {
-      const res = await authFetch("/api/omni-program/sign", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          signerName,
-          signerEmail,
-          pageUrl: typeof window !== "undefined" ? window.location.href : "/dashboard",
-          website: "",
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        setStatus("error");
-        setMessage(data.error || "Could not capture the signature yet.");
-        return;
-      }
-
-      setStatus("success");
-      setMessage(
-        data.message ||
-          "Acknowledgement received. The Omni ledger has advanced by +10 credits.",
-      );
-    } catch {
-      setStatus("error");
-      setMessage("Could not reach the signature service. Try again.");
-    }
-  };
-
+function ClosingDoctrine() {
   return (
-    <section id="signature" className="border-t border-white/[0.08] py-11 sm:py-20">
-      <div className="relative overflow-hidden rounded-lg border border-amber-300/25 bg-black/40 p-5 sm:p-8">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(251,191,36,0.18),transparent_34%),radial-gradient(circle_at_18%_86%,rgba(56,189,248,0.11),transparent_36%)]" />
-        <div className="relative grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
-          <div>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-amber-200/70">
-              Electronic acknowledgement
-            </p>
-            <h2 className="mt-3 font-serif text-[clamp(2rem,10vw,3.75rem)] leading-tight text-white">
-              I have read the document.
-            </h2>
-            <p className="mt-5 max-w-xl text-[15px] leading-8 text-zinc-300 sm:text-lg">
-              Type your name and email to acknowledge that you read The Omni Program.
-            </p>
+    <section className="border-t border-white/[0.08] py-8 sm:py-12">
+      <div className="rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.07] via-white/[0.025] to-amber-300/[0.08] p-5 sm:p-8">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-md border border-amber-200/30 bg-amber-200/10">
+            <Orbit className="h-5 w-5 text-amber-100" />
           </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <input
-              aria-hidden="true"
-              name="website"
-              tabIndex={-1}
-              autoComplete="off"
-              className="hidden"
-            />
-            <label className="block">
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                Signature
-              </span>
-              <div className="relative overflow-hidden border-b border-amber-200/35 bg-transparent transition-colors focus-within:border-amber-100/70">
-                <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 font-serif text-4xl italic text-white/[0.06] sm:text-5xl">
-                  Sign here
-                </span>
-                <input
-                  value={signerName}
-                  onChange={(event) => {
-                    setSignerName(event.target.value);
-                    if (status !== "idle") setStatus("idle");
-                  }}
-                  required
-                  minLength={2}
-                  maxLength={160}
-                  placeholder="Type your full name"
-                  className="relative h-16 w-full bg-transparent px-0 font-serif text-2xl italic text-white outline-none placeholder:text-zinc-500 sm:h-20 sm:text-3xl"
-                />
-              </div>
-            </label>
-
-            <label className="block">
-              <span className="mb-2 block text-[10px] font-semibold uppercase tracking-[0.22em] text-zinc-500">
-                Email
-              </span>
-              <input
-                type="email"
-                value={signerEmail}
-                onChange={(event) => {
-                  setSignerEmail(event.target.value);
-                  if (status !== "idle") setStatus("idle");
-                }}
-                required
-                maxLength={254}
-                placeholder="you@example.com"
-                className="h-12 w-full border-b border-white/20 bg-transparent px-0 text-sm text-white outline-none transition-colors placeholder:text-zinc-500 focus:border-amber-100/70"
-              />
-            </label>
-
-            <button
-              type="submit"
-              disabled={status === "submitting"}
-              className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-md border border-amber-200/30 bg-amber-200/10 px-4 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-100/60 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
-            >
-              {status === "submitting" ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : status === "success" ? (
-                <CheckCircle2 className="h-4 w-4" />
-              ) : (
-                <PenLine className="h-4 w-4" />
-              )}
-              Submit acknowledgement
-            </button>
-
-            {message ? (
-              <p
-                className={`text-sm leading-6 ${
-                  status === "error" ? "text-rose-300" : "text-emerald-300"
-                }`}
-                role="status"
-              >
-                {message}
-              </p>
-            ) : (
-              <p className="text-xs leading-6 text-zinc-500">
-                Electronic acknowledgement is recorded with timestamp, signer metadata, and a +10 Omni credit event.
-              </p>
-            )}
-          </form>
+          <div>
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-200/70 sm:tracking-[0.22em]">
+              Closing Doctrine
+            </p>
+            <h2 className="mt-1 text-xl font-semibold leading-tight text-white sm:text-2xl">
+              The Program is lived, not consumed.
+            </h2>
+          </div>
+        </div>
+        <p className="mt-6 max-w-3xl text-[15px] leading-8 text-zinc-300 sm:text-lg">
+          Do not confuse reading with transformation. Read, then choose one
+          loop. Observe it honestly. Interrupt it once. Repeat the new
+          motion until your life starts proving the document true.
+        </p>
+        <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+          <Link
+            href="/oracle"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-black/25 px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/30 sm:w-auto"
+          >
+            <Workflow className="h-4 w-4" />
+            Read The Oracle
+          </Link>
+          <Link
+            href="/manifesto"
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-black/25 px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/30 sm:w-auto"
+          >
+            <Layers3 className="h-4 w-4" />
+            Read The Manifesto
+          </Link>
         </div>
       </div>
     </section>
@@ -525,44 +418,8 @@ export default function OmniProgramPage() {
           </div>
         </section>
 
-        <section className="border-t border-white/[0.08] py-11 sm:py-20">
-          <div className="rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.07] via-white/[0.025] to-amber-300/[0.08] p-5 sm:p-8">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-md border border-amber-200/30 bg-amber-200/10">
-                <Orbit className="h-5 w-5 text-amber-100" />
-              </div>
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-amber-200/70 sm:tracking-[0.22em]">
-                  Closing Doctrine
-                </p>
-                <h2 className="mt-1 text-xl font-semibold leading-tight text-white sm:text-2xl">The Program is lived, not consumed.</h2>
-              </div>
-            </div>
-            <p className="mt-6 max-w-3xl text-[15px] leading-8 text-zinc-300 sm:text-lg">
-              Do not confuse reading with transformation. Read, then choose one
-              loop. Observe it honestly. Interrupt it once. Repeat the new
-              motion until your life starts proving the document true.
-            </p>
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <Link
-                href="/oracle"
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-black/25 px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/30 sm:w-auto"
-              >
-                <Workflow className="h-4 w-4" />
-                Read The Oracle
-              </Link>
-              <Link
-                href="/manifesto"
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-black/25 px-4 text-sm font-semibold text-zinc-200 transition-colors hover:border-white/30 sm:w-auto"
-              >
-                <Layers3 className="h-4 w-4" />
-                Read The Manifesto
-              </Link>
-            </div>
-          </div>
-        </section>
-
-        <DocumentSignatureBlock userEmail={user.email} />
+        <DocumentSignature documentSlug="omni-program" />
+        <ClosingDoctrine />
       </article>
     </main>
   );

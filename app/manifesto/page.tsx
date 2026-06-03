@@ -13,6 +13,7 @@ import Link from "next/link";
 import { SpaceFieldBackdrop } from "@/components/space-field-backdrop";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AtomOrb } from "@/components/atom-orb";
+import { DocumentSignature } from "@/components/document-signature";
 import {
   JsonLd,
   organizationSchema,
@@ -424,6 +425,8 @@ export default function ManifestoPage() {
             .
           </div>
         </div>
+
+        <DocumentSignature documentSlug="manifesto" />
       </article>
     </main>
   );

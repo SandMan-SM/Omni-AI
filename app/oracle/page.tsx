@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
+import { DocumentSignature } from "@/components/document-signature";
 import { OracleSectionTracker } from "./section-tracker";
 import { OracleBackdrop } from "./oracle-backdrop";
 
@@ -687,6 +688,9 @@ export default function OraclePage() {
           </p>
         </div>
       </section>
+      <div className="mx-auto max-w-5xl px-6">
+        <DocumentSignature documentSlug="oracle" />
+      </div>
       </div>{/* /relative z-10 — content wrapper */}
     </main>
   );

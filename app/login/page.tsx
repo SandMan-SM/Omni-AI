@@ -8,14 +8,24 @@ import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
   const [isOpen, setIsOpen] = useState(true);
+  const [nextPath, setNextPath] = useState<string | null>(null);
   const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && user) {
-      window.location.href = "/dashboard";
+    const requested = new URLSearchParams(window.location.search).get("next");
+    if (requested && requested.startsWith("/") && !requested.startsWith("//")) {
+      setNextPath(requested);
+    } else {
+      setNextPath("/dashboard");
     }
-  }, [loading, user]);
+  }, []);
+
+  useEffect(() => {
+    if (!loading && user && nextPath) {
+      window.location.href = nextPath;
+    }
+  }, [loading, nextPath, user]);
 
   useEffect(() => {
     fetch("/api/auth/login", { cache: "no-store" }).catch(() => undefined);

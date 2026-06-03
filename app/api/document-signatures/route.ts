@@ -9,13 +9,9 @@ export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 export async function GET(req: Request) {
-  return handleDocumentSignatureGet(req, {
-    fallbackDocumentSlug: "omni-program",
-  });
+  return handleDocumentSignatureGet(req);
 }
 
 export async function POST(req: Request) {
-  return handleDocumentSignaturePost(req, {
-    fallbackDocumentSlug: "omni-program",
-  });
+  return handleDocumentSignaturePost(req);
 }
