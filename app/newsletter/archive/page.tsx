@@ -5,7 +5,11 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { NewsletterHeader } from "@/components/newsletter-premium-gate";
-import { NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsletter-issue-card";
+import {
+  NewsletterIssueCard,
+  normalizeNewsletterKeywords,
+  type NewsletterCardPost,
+} from "@/components/newsletter-issue-card";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 
 export const revalidate = 300;
@@ -43,6 +47,12 @@ type RawNewsletterSummary = {
   tier: string | null;
   published_at: string | null;
   created_at: string | null;
+};
+
+type Props = {
+  searchParams?: {
+    tag?: string | string[];
+  };
 };
 
 function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
@@ -95,6 +105,48 @@ function mergeNewsletterPosts(
   return sortNewsletterPosts(Array.from(bySlug.values()));
 }
 
+function normalizeTagSlug(tag: string): string {
+  return tag.trim().toLowerCase();
+}
+
+function resolveSelectedTag(value: string | string[] | undefined): string | null {
+  const raw = Array.isArray(value) ? value[0] : value;
+  if (!raw || typeof raw !== "string") return null;
+  const trimmed = raw.trim().slice(0, 80);
+  return trimmed || null;
+}
+
+function postHasTag(post: NewsletterCardPost, tag: string): boolean {
+  const selected = normalizeTagSlug(tag);
+  return normalizeNewsletterKeywords(post.keywords).some(
+    (kw) => normalizeTagSlug(kw) === selected,
+  );
+}
+
+function archiveTagHref(tag: string | null): string {
+  return tag ? `/newsletter/archive?tag=${encodeURIComponent(tag)}` : "/newsletter/archive";
+}
+
+function buildTagFilters(posts: NewsletterCardPost[]) {
+  const counts = new Map<string, { label: string; count: number }>();
+  for (const post of posts) {
+    for (const keyword of normalizeNewsletterKeywords(post.keywords)) {
+      const label = keyword.trim();
+      if (!label) continue;
+      const key = normalizeTagSlug(label);
+      const current = counts.get(key);
+      counts.set(key, {
+        label: current?.label || label,
+        count: (current?.count || 0) + 1,
+      });
+    }
+  }
+
+  return Array.from(counts.values())
+    .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))
+    .slice(0, 18);
+}
+
 async function getArchivePosts(): Promise<{ posts: NewsletterCardPost[]; unavailable: boolean }> {
   const supabase = createAdminClient();
   const result = await withTimeout(
@@ -117,10 +169,15 @@ async function getArchivePosts(): Promise<{ posts: NewsletterCardPost[]; unavail
   };
 }
 
-export default async function NewsletterArchivePage() {
+export default async function NewsletterArchivePage({ searchParams }: Props) {
   const { posts, unavailable } = await getArchivePosts();
-  const premiumPosts = posts.filter((p) => p.tier === "premium");
-  const freePosts = posts.filter((p) => p.tier !== "premium");
+  const selectedTag = resolveSelectedTag(searchParams?.tag);
+  const tagFilters = buildTagFilters(posts);
+  const visiblePosts = selectedTag
+    ? posts.filter((post) => postHasTag(post, selectedTag))
+    : posts;
+  const premiumPosts = visiblePosts.filter((p) => p.tier === "premium");
+  const freePosts = visiblePosts.filter((p) => p.tier !== "premium");
 
   return (
     <div className="min-h-screen text-white relative">
@@ -138,7 +195,7 @@ export default async function NewsletterArchivePage() {
             description:
               "Full archive of Interlinked newsletter issues from Omni AI.",
             url: "https://omnileadsagi.com/newsletter/archive",
-            items: posts.slice(0, 50).map((p) => ({
+            items: visiblePosts.slice(0, 50).map((p) => ({
               name: p.subject,
               url: `https://omnileadsagi.com/newsletter/${p.slug}`,
               description: (p.intro || "").slice(0, 160) || undefined,
@@ -168,20 +225,39 @@ export default async function NewsletterArchivePage() {
           <p className="max-w-2xl text-lg leading-relaxed text-gray-400">
             Every Omni AI intelligence issue in one place. The front page stays fast; the full library lives here.
           </p>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <Link
-              href="/newsletter"
-              className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-gray-300 transition-colors hover:border-amber-500/30 hover:text-amber-300"
-            >
-              Latest issues
-            </Link>
-            <a
-              href="/newsletter/rss.xml"
-              className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-gray-300 transition-colors hover:border-amber-500/30 hover:text-amber-300"
-            >
-              RSS
-            </a>
-          </div>
+          {tagFilters.length > 0 && (
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link
+                href={archiveTagHref(null)}
+                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                  selectedTag
+                    ? "border-white/10 bg-white/[0.04] text-gray-300 hover:border-amber-500/30 hover:text-amber-300"
+                    : "border-amber-400/45 bg-amber-400/12 text-amber-200"
+                }`}
+              >
+                All
+              </Link>
+              {tagFilters.map((tag) => {
+                const isActive =
+                  selectedTag &&
+                  normalizeTagSlug(selectedTag) === normalizeTagSlug(tag.label);
+                return (
+                  <Link
+                    key={tag.label}
+                    href={archiveTagHref(tag.label)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                      isActive
+                        ? "border-amber-400/45 bg-amber-400/12 text-amber-200"
+                        : "border-white/10 bg-white/[0.04] text-gray-300 hover:border-amber-500/30 hover:text-amber-300"
+                    }`}
+                  >
+                    {tag.label}
+                    <span className="ml-1 text-[10px] opacity-60">{tag.count}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {unavailable && (
@@ -190,37 +266,43 @@ export default async function NewsletterArchivePage() {
           </div>
         )}
 
-        <section className="mb-14">
-          <div className="mb-6 flex items-center gap-4">
-            <h2 className="text-xl font-bold text-amber-400">Interlinked</h2>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-              Interlinked Premium
-            </span>
-          </div>
-          <div className="grid gap-5">
-            {premiumPosts.map((post) => (
-              <NewsletterIssueCard key={post.slug} post={post} />
-            ))}
-          </div>
-        </section>
+        {premiumPosts.length > 0 && (
+          <section className="mb-14">
+            <div className="mb-6 flex items-center gap-4">
+              <h2 className="text-xl font-bold text-amber-400">Interlinked</h2>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                Interlinked Premium
+              </span>
+            </div>
+            <div className="grid gap-5">
+              {premiumPosts.map((post) => (
+                <NewsletterIssueCard key={post.slug} post={post} />
+              ))}
+            </div>
+          </section>
+        )}
 
-        <section>
-          <div className="mb-6 flex items-center gap-4">
-            <h2 className="text-xl font-bold text-amber-400">Daily Intelligence</h2>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
-              Interlinked Free
-            </span>
-          </div>
-          <div className="grid gap-5">
-            {freePosts.map((post) => (
-              <NewsletterIssueCard key={post.slug} post={post} />
-            ))}
-          </div>
-        </section>
+        {freePosts.length > 0 && (
+          <section>
+            <div className="mb-6 flex items-center gap-4">
+              <h2 className="text-xl font-bold text-amber-400">Daily Intelligence</h2>
+              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                Interlinked Free
+              </span>
+            </div>
+            <div className="grid gap-5">
+              {freePosts.map((post) => (
+                <NewsletterIssueCard key={post.slug} post={post} />
+              ))}
+            </div>
+          </section>
+        )}
 
-        {posts.length === 0 && (
+        {visiblePosts.length === 0 && (
           <div className="rounded-xl border border-white/10 bg-white/[0.03] p-10 text-center text-gray-500">
-            No newsletter issues are available right now.
+            {selectedTag
+              ? `No newsletter issues match "${selectedTag}" yet.`
+              : "No newsletter issues are available right now."}
           </div>
         )}
       </main>
