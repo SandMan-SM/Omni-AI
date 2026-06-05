@@ -4,11 +4,11 @@
 // useEffect on the client, so the shell can be statically prerendered
 // and edge-cached. No server data.
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, Clock, Mail, Shield, Brain, Zap, AlertTriangle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { BookDemoModal, WebinarRegistrationModal } from "@/components/modals/lazy";
+import { BookDemoModal } from "@/components/modals/lazy";
 import { Footer } from "@/components/footer";
 import { Navbar } from "@/components/navbar";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
@@ -93,30 +93,100 @@ function BulletList({ items, icon: Icon = CheckCircle }: { items: string[]; icon
   );
 }
 
-function CTAButton({ label, onClick }: { label: string; onClick: () => void }) {
+function NewsletterSignupForm() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [message, setMessage] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setStatus("loading");
+    setMessage("");
+
+    try {
+      const response = await fetch("/api/newsletter", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, source: "interlinked" }),
+      });
+
+      const payload = (await response.json().catch(() => ({}))) as {
+        error?: string;
+        reactivated?: boolean;
+      };
+
+      if (!response.ok) {
+        throw new Error(payload?.error || "We couldn't save your email. Please try again.");
+      }
+
+      setStatus("success");
+      setEmail("");
+      setMessage(
+        payload?.reactivated
+          ? "Welcome back — you're back on the Interlinked list."
+          : "You're in. Watch your inbox for the next Interlinked update.",
+      );
+    } catch (error) {
+      setStatus("error");
+      setMessage(error instanceof Error ? error.message : "We couldn't save your email. Please try again.");
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
       viewport={{ once: true }}
-      className="flex justify-center py-8"
+      className="py-8"
     >
-      <Button
-        onClick={onClick}
-        className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white text-lg px-10 py-7 rounded-md neon-glow"
-        data-testid="button-cta-register"
+      <form
+        onSubmit={handleSubmit}
+        className="mx-auto flex w-full max-w-xl flex-col gap-4 rounded-md border border-purple-500/30 bg-white/[0.04] p-4 shadow-[0_0_40px_rgba(124,58,237,0.18)] sm:flex-row"
+        data-testid="form-interlinked-newsletter"
       >
-        {label}
-        <ArrowRight className="ml-2 w-5 h-5" />
-      </Button>
+        <label htmlFor="interlinked-newsletter-email" className="sr-only">
+          Email address for Interlinked newsletter updates
+        </label>
+        <input
+          id="interlinked-newsletter-email"
+          name="email"
+          type="email"
+          autoComplete="email"
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="Enter your email"
+          className="min-h-14 flex-1 rounded-md border border-white/10 bg-white/[0.08] px-4 text-base text-white placeholder:text-gray-500 outline-none transition-colors focus:border-purple-400 focus:bg-white/[0.12]"
+          data-testid="input-interlinked-newsletter-email"
+        />
+        <Button
+          type="submit"
+          disabled={status === "loading"}
+          className="min-h-14 shrink-0 bg-gradient-to-r from-purple-600 to-blue-600 px-6 text-base font-semibold text-white neon-glow disabled:cursor-not-allowed disabled:opacity-70"
+          data-testid="button-interlinked-newsletter-submit"
+        >
+          {status === "loading" ? "Subscribing..." : "Stay Updated"}
+          <ArrowRight className="ml-2 h-5 w-5" />
+        </Button>
+      </form>
+      {message && (
+        <p
+          className={`mt-3 text-center text-sm ${status === "success" ? "text-emerald-300" : "text-red-300"}`}
+          role="status"
+        >
+          {message}
+        </p>
+      )}
+      <p className="mt-3 text-center text-xs text-gray-500">
+        Get the Interlinked operator notes and Omni AI build updates. No spam.
+      </p>
     </motion.div>
   );
 }
 
 export default function Interlinked() {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
-  const [isRegistrationOpen, setIsRegistrationOpen] = useState(false);
 
   return (
     <div className="min-h-screen text-white noise-overlay">
@@ -204,7 +274,7 @@ export default function Interlinked() {
           </p>
         </motion.div>
 
-        <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />
+        <NewsletterSignupForm />
 
         <div className="border-t border-white/5 my-12" />
 
@@ -421,11 +491,11 @@ export default function Interlinked() {
           className="mb-4"
         >
           <p className="text-gray-300 text-lg">
-            Claim your seat in this free training and see how to implement a centralized AI CEO inside your business.
+            Join the Interlinked newsletter to stay updated on the AI CEO playbook, operator notes, and upcoming Omni AI training.
           </p>
         </motion.div>
 
-        <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />
+        <NewsletterSignupForm />
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -546,22 +616,18 @@ export default function Interlinked() {
           <p className="text-gray-400 mb-2">Online training begins shortly.</p>
           <p className="text-gray-300 mb-1">If you want to scale intelligently instead of chaotically...</p>
           <p className="text-gray-300 mb-4">If you want leverage instead of burnout...</p>
-          <p className="text-white font-bold text-lg mb-2">Reserve your seat now.</p>
+          <p className="text-white font-bold text-lg mb-2">Stay updated as Interlinked evolves.</p>
           <p className="text-gray-400 mb-1">Omni AI isn&apos;t about working harder.</p>
           <p className="text-purple-400 font-semibold text-lg">It&apos;s about building an AI CEO that works for you.</p>
         </motion.div>
 
-        <CTAButton label="Grab Your Free Spot" onClick={() => setIsRegistrationOpen(true)} />
+        <NewsletterSignupForm />
       </div>
 
       <Footer />
       <BookDemoModal
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}
-      />
-      <WebinarRegistrationModal
-        isOpen={isRegistrationOpen}
-        onClose={() => setIsRegistrationOpen(false)}
       />
     </div>
   );
