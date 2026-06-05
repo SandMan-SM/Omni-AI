@@ -64,16 +64,43 @@ function normalizeQuoteText(value: unknown): string {
     .replace(/[\s"'“”‘’]+$/, "");
 }
 
+function splitNumberedInsightText(text: string): string[] {
+  const normalized = text.replace(/\s+/g, " ").trim();
+  if (!normalized) return [];
+
+  const markers = Array.from(normalized.matchAll(/(?:^|\s)(\d{1,2})[.)]\s+/g));
+  const startsWithNumber = /^\d{1,2}[.)]\s+/.test(normalized);
+
+  // Some generated posts store insights as one string like:
+  // "1. First insight. 2. Second insight." Rendering that verbatim collapses
+  // the whole section into one ugly paragraph on mobile. If a paragraph is
+  // clearly a numbered insight list, strip the transient numbers and render
+  // each item as the same standard paragraph block used everywhere else.
+  if (startsWithNumber && markers.length >= 2) {
+    return markers
+      .map((marker, index) => {
+        const markerIndex = marker.index ?? 0;
+        const start = markerIndex + (marker[0].startsWith(" ") ? 1 : 0);
+        const endMarker = markers[index + 1];
+        const end = endMarker ? (endMarker.index ?? normalized.length) : normalized.length;
+        return normalized.slice(start, end).replace(/^\d{1,2}[.)]\s+/, "").trim();
+      })
+      .filter(Boolean);
+  }
+
+  return [normalized];
+}
+
 function normalizeInsights(insights: unknown): string[] {
   if (Array.isArray(insights)) {
     return insights
-      .map((insight) => {
-        if (typeof insight === "string") return insight.trim();
+      .flatMap((insight) => {
+        if (typeof insight === "string") return splitNumberedInsightText(insight);
         if (insight && typeof insight === "object") {
           const record = insight as { body?: unknown; text?: unknown; heading?: unknown; title?: unknown };
-          return renderText(record.body || record.text || record.heading || record.title).trim();
+          return splitNumberedInsightText(renderText(record.body || record.text || record.heading || record.title));
         }
-        return "";
+        return [];
       })
       .filter(Boolean);
   }
@@ -81,13 +108,12 @@ function normalizeInsights(insights: unknown): string[] {
   if (typeof insights === "string") {
     return insights
       .split(/\n\s*\n+/)
-      .map((part) => part.trim())
+      .flatMap((part) => splitNumberedInsightText(part))
       .filter(Boolean);
   }
 
   if (insights && typeof insights === "object") {
-    const text = renderText(insights).trim();
-    return text ? [text] : [];
+    return splitNumberedInsightText(renderText(insights));
   }
 
   return [];
