@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { reportBrowserError } from "@/components/error-telemetry";
 
 /**
  * Root error boundary — catches uncaught exceptions in any page segment
@@ -25,6 +26,13 @@ export default function RootError({
     // Log the raw error server-side so it surfaces in Vercel logs.
     // eslint-disable-next-line no-console
     console.error("[root] segment error:", error);
+    reportBrowserError({
+      source: "next-root-error-boundary",
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      digest: error.digest,
+    });
   }, [error]);
 
   return (

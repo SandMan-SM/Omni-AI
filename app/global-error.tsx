@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+
 /**
  * Last-resort error boundary. Fires when the root layout itself throws
  * — at that point no provider, no navbar, no font is safe to use, so
@@ -16,6 +18,28 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  useEffect(() => {
+    const body = JSON.stringify({
+      action: "runtime_error",
+      category: "website",
+      severity: "critical",
+      source: "next-global-error-boundary",
+      name: error.name,
+      message: error.message,
+      stack: error.stack,
+      digest: error.digest,
+      path: typeof window !== "undefined" ? window.location.href : null,
+      ts: new Date().toISOString(),
+    });
+
+    void fetch("/api/admin/log-error", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+      keepalive: true,
+    }).catch(() => undefined);
+  }, [error]);
+
   return (
     <html lang="en">
       <body
