@@ -198,13 +198,42 @@ function smartQuotes(text: string | null | undefined): string {
  *   3. Smart-quote conversion.
  *   4. Trim to exactly NEWSLETTER_RUBRIC.insightsCount items.
  */
-function cleanInsights(insights: string[]): string[] {
-  return (insights || [])
+function splitGeneratedInsightText(text: string): string[] {
+  const normalized = (text ?? '')
+    .replace(/\r\n/g, '\n')
+    .replace(/^[\s]*[-*•]\s+/gm, '')
+    .trim();
+
+  if (!normalized) return [];
+
+  // New posts must never ship as "1. first 2. second 3. third" inside
+  // a single insight paragraph. Split numbered-list output before it ever
+  // reaches the DB/email renderer so every issue keeps the same visual format.
+  const compact = normalized.replace(/\s+/g, ' ').trim();
+  const markers = Array.from(compact.matchAll(/(?:^|\s)(\d{1,2})[.)]\s+/g));
+  if (/^\d{1,2}[.)]\s+/.test(compact) && markers.length >= 2) {
+    return markers
+      .map((marker, index) => {
+        const markerIndex = marker.index ?? 0;
+        const start = markerIndex + (marker[0].startsWith(' ') ? 1 : 0);
+        const next = markers[index + 1];
+        const end = next ? (next.index ?? compact.length) : compact.length;
+        return compact.slice(start, end).replace(/^\d{1,2}[.)]\s+/, '').trim();
+      })
+      .filter(Boolean);
+  }
+
+  return [compact.replace(/^\d{1,2}[.)]\s+/, '').trim()];
+}
+
+function cleanInsights(insights: unknown): string[] {
+  const rawInsights = Array.isArray(insights) ? insights : [insights];
+
+  return rawInsights
+    .flatMap(ins => splitGeneratedInsightText(String(ins ?? '')))
     .map(ins =>
       smartQuotes(
         (ins ?? '')
-          // bullet markers
-          .replace(/^[\s]*[-*•]\s+/, '')
           // **Bold header.** lead (any punctuation after the bold)
           .replace(/^\s*\*\*[^*]+\*\*[\s]*/, '')
           .trim()
@@ -462,6 +491,7 @@ Include:
 
 FORMATTING RUBRIC (HARD CONSTRAINTS — non-negotiable):
 - insights: array of EXACTLY 3 plain-text strings. Never 4. Never 5. No bold/italic/markdown. No leading "**Header.**" patterns.
+- Each insight array item is one standalone paragraph. Never combine numbered items inside one string, and never prefix insights with "1.", "2.", "3.", bullets, or labels.
 - All prose uses curly typographic quotes — “double” and ’single’ — never straight ASCII quotes.
 - Brand tone: visionary, cinematic, empowering. Like a mentor who makes you feel the future before explaining it.
 
@@ -606,6 +636,7 @@ Include:
 
 FORMATTING RUBRIC (HARD CONSTRAINTS — non-negotiable, will be auto-rejected if violated):
 - insights: array of EXACTLY 3 plain-text strings. Never 4. Never 5. No bold/italic/markdown. No leading "**Header.**" patterns.
+- Each insight array item is one standalone paragraph. Never combine numbered items inside one string, and never prefix insights with "1.", "2.", "3.", bullets, or labels.
 - All prose (intro, insights, power_move, closing, quote, offer, exclusive_insight, ai_recommendation) uses curly typographic quotes — “double” and ’single’ — never straight ASCII quotes.
 
 Respond ONLY with valid JSON:
