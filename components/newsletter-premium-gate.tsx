@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { X } from "lucide-react";
+import { ArrowRight, X } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
 import { getStoredUser } from "@/lib/auth";
 import {
@@ -243,7 +243,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
           className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 text-xs font-semibold text-amber-200 transition-colors hover:border-amber-300/50 hover:bg-amber-400/[0.10]"
         >
           Premium access
-          <span aria-hidden="true" className="text-sm leading-none text-amber-200">▷</span>
+          <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
         </Link>
       </div>
 
