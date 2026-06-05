@@ -243,6 +243,19 @@ function cleanInsights(insights: unknown): string[] {
     .slice(0, NEWSLETTER_RUBRIC.insightsCount);
 }
 
+function normalizeNewsletterContentForPublish<T extends NewsletterContent>(content: T): T {
+  return {
+    ...content,
+    intro: cleanIntro(content.intro),
+    insights: cleanInsights(content.insights),
+    power_move: smartQuotes(content.power_move),
+    closing: smartQuotes(content.closing),
+    quote: content.quote ? smartQuotes(content.quote) : content.quote,
+    offer: content.offer ? smartQuotes(content.offer) : content.offer,
+    keywords: padKeywords(content.keywords),
+  };
+}
+
 /**
  * Pad/trim a keyword array to exactly NEWSLETTER_RUBRIC.keywordsCount items.
  * Brand-safe defaults are appended only when the post is short — duplicates
@@ -1482,6 +1495,8 @@ export async function runDailyNewsletter(supabase: any = null) {
     content = await generateFreeContent();
   }
 
+  content = normalizeNewsletterContentForPublish(content);
+
   // Skip the entire send for off-schedule partner content. Sending the
   // email/telegram with the post landing as draft would leave recipients
   // clicking a 404 link (drafts return notFound()). Better to no-op the
@@ -1644,6 +1659,8 @@ export async function runPremiumNewsletter(supabase: any = null) {
   } else {
     content = await generatePremiumContent();
   }
+
+  content = normalizeNewsletterContentForPublish(content);
 
   // Premium tier is partner-free by policy. If the generator hands us a
   // partner-prefixed slug, skip the entire send — recipients shouldn't
