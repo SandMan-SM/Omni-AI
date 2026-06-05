@@ -1,7 +1,7 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
-import { Archive, ArrowRight, Rss } from "lucide-react";
+import { Archive, Rss } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -358,7 +358,7 @@ export default async function NewsletterIndexPage() {
                   className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 text-sm font-semibold text-amber-200 transition-colors hover:border-amber-300/60 hover:bg-amber-400/15 md:h-11 md:px-4"
                 >
                   Latest issue
-                  <ArrowRight className="h-4 w-4" />
+                  <span aria-hidden="true" className="text-base leading-none text-amber-200">▷</span>
                 </Link>
                 <Link
                   href="/newsletter/archive"
