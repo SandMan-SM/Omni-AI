@@ -34,7 +34,11 @@ export function GoldSparksBackdrop() {
     if (!ctx) return;
 
     const isMobile = window.matchMedia("(max-width: 768px)").matches;
-    const count = Math.round(160 * (isMobile ? 0.4 : 1));
+    // Perf: 100 desktop sparks (was 160). Each spark draws two arcs
+    // per frame, so trimming the count is the cheapest way to cut the
+    // per-frame canvas cost without losing the ember texture. Mobile
+    // keeps the 0.4× multiplier.
+    const count = Math.round(100 * (isMobile ? 0.4 : 1));
     const dpr = Math.min(window.devicePixelRatio || 1, isMobile ? 1.5 : 2);
 
     let width = 0;

@@ -27,7 +27,11 @@ function hash01(i: number, seed: number): number {
   return (h >>> 0) / 4294967295;
 }
 
-const STAR_COUNT = 280;
+// Perf: 200 stars (was 280) — trims SVG node count + the number of
+// twinkle/glow-filtered nodes the compositor tracks each frame, with
+// no perceptible loss of star density. (The lone constellation pair
+// referencing index 200 is null-guarded below, so it no-ops cleanly.)
+const STAR_COUNT = 200;
 
 // Hand-picked constellation pairs — indices into the star array.
 // Drawn first so they sit behind the stars themselves.
