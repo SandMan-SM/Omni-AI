@@ -13,7 +13,8 @@ import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/use-profile";
 import {
   Sparkles, ArrowLeft, Key, Bot, Zap, Calendar, Database,
-  ExternalLink, Lock, RefreshCw, Loader2, BarChart3,
+  ExternalLink, Lock, RefreshCw, Loader2, BarChart3, Activity,
+  AlertTriangle, CheckCircle2, Target,
 } from "lucide-react";
 import { AgiTodaysFocus } from "@/components/agi/AgiTodaysFocus";
 import { AgiCommandPalette } from "@/components/agi/AgiCommandPalette";
@@ -43,6 +44,41 @@ interface StatsPayload {
   total_rows: number;
   groups: Record<string, StatsRow[]>;
   fetched_at: string;
+}
+
+interface AssetIntelligenceRow {
+  slug: string;
+  name: string;
+  agentName: string;
+  tier: string;
+  score: number;
+  status: "compounding" | "ready-to-upgrade" | "attention-needed" | "leaking";
+  revenueMove: string;
+  nextAction: string;
+  currentArrUsd: number;
+  currentMrrUsd: number;
+  progressPct: number;
+  connectedConnections: number;
+  missingConnections: string[];
+  openRisks: { red: number; yellow: number; total: number };
+  recentDefects: number;
+  lastShip: { title: string | null; kind: string | null; createdAt: string; ageDays: number | null } | null;
+}
+
+interface AssetIntelligencePayload {
+  fetched_at: string;
+  source_errors: string[];
+  summary: {
+    total_assets: number;
+    average_score: number;
+    compounding: number;
+    ready_to_upgrade: number;
+    attention_needed: number;
+    leaking: number;
+    missing_connections: number;
+    recent_defects: number;
+  };
+  assets: AssetIntelligenceRow[];
 }
 
 const GROUP_LABEL: Record<string, string> = {
@@ -99,6 +135,8 @@ export default function AssetsPage() {
   const [auditLoading, setAuditLoading] = useState(true);
   const [stats, setStats] = useState<StatsPayload | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
+  const [assetIntel, setAssetIntel] = useState<AssetIntelligencePayload | null>(null);
+  const [assetIntelLoading, setAssetIntelLoading] = useState(true);
   const [businesses, setBusinesses] = useState<Array<{ id: string; name: string; plan: string }>>([]);
   const [activeBizId, setActiveBizId] = useState<string | null>(null);
 
@@ -125,6 +163,11 @@ export default function AssetsPage() {
       .then(r => r.ok ? r.json() : null)
       .then(d => setStats(d))
       .finally(() => setStatsLoading(false));
+
+    fetch("/api/portfolio/asset-intelligence", { cache: "no-store" })
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setAssetIntel(d))
+      .finally(() => setAssetIntelLoading(false));
 
     let cancelled = false;
 
@@ -268,6 +311,48 @@ export default function AssetsPage() {
             Setting persists across page loads · applies to leads, pipeline, meetings, outreach.
           </span>
         </div>
+
+        <Section title="Asset intelligence matrix" icon={Activity}>
+          {assetIntelLoading || !assetIntel ? (
+            <div style={{ padding: 24, textAlign: "center", color: "#444", fontSize: 12 }}>
+              <Loader2 size={14} className="animate-spin" style={{ display: "inline-block" }} /> Mapping asset health…
+            </div>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 8 }}>
+                <AssetIntelStat label="Average score" value={`${assetIntel.summary.average_score}`} tone={assetIntel.summary.average_score >= 80 ? "green" : assetIntel.summary.average_score >= 65 ? "yellow" : "red"} />
+                <AssetIntelStat label="Compounding" value={assetIntel.summary.compounding.toString()} tone="green" />
+                <AssetIntelStat label="Needs attention" value={(assetIntel.summary.attention_needed + assetIntel.summary.leaking).toString()} tone={assetIntel.summary.leaking > 0 ? "red" : "yellow"} />
+                <AssetIntelStat label="Data gaps" value={assetIntel.summary.missing_connections.toString()} tone={assetIntel.summary.missing_connections > 0 ? "yellow" : "green"} />
+                <AssetIntelStat label="Recent defects" value={assetIntel.summary.recent_defects.toString()} tone={assetIntel.summary.recent_defects > 0 ? "red" : "green"} />
+              </div>
+
+              {assetIntel.source_errors.length > 0 && (
+                <div style={{
+                  border: "1px solid rgba(251,191,36,0.28)",
+                  background: "rgba(251,191,36,0.08)",
+                  color: "#fef3c7",
+                  borderRadius: 8,
+                  padding: "10px 12px",
+                  fontSize: 11,
+                  lineHeight: 1.5,
+                }}>
+                  Some intelligence sources are degraded: {assetIntel.source_errors.join("; ")}
+                </div>
+              )}
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 10 }}>
+                {assetIntel.assets.slice(0, 12).map(asset => (
+                  <AssetIntelCard key={asset.slug} asset={asset} />
+                ))}
+              </div>
+
+              <div style={{ fontSize: 10, color: "#444", textAlign: "right" }}>
+                Last mapped {new Date(assetIntel.fetched_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+              </div>
+            </div>
+          )}
+        </Section>
 
         {/* Embedded agentic dashboard — same tabbed experience as /dashboard
             but here the global switcher above feeds the active business.
@@ -414,6 +499,136 @@ export default function AssetsPage() {
           </div>
         </Section>
       </div>
+    </div>
+  );
+}
+
+function AssetIntelStat({ label, value, tone }: { label: string; value: string; tone: "green" | "yellow" | "red" }) {
+  const color = tone === "green" ? "#10b981" : tone === "yellow" ? "#fbbf24" : "#f87171";
+  return (
+    <div style={{
+      background: "#0a0a0a",
+      border: `1px solid ${color}30`,
+      borderRadius: 8,
+      padding: "12px 14px",
+      minHeight: 74,
+    }}>
+      <div style={{ fontSize: 24, fontWeight: 800, color, lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 8, textTransform: "uppercase", letterSpacing: 0.7, fontWeight: 700 }}>
+        {label}
+      </div>
+    </div>
+  );
+}
+
+function statusMeta(status: AssetIntelligenceRow["status"]) {
+  if (status === "compounding") return { label: "Compounding", color: "#10b981", icon: CheckCircle2 };
+  if (status === "ready-to-upgrade") return { label: "Ready to upgrade", color: "#38bdf8", icon: Target };
+  if (status === "attention-needed") return { label: "Attention needed", color: "#fbbf24", icon: AlertTriangle };
+  return { label: "Leaking", color: "#f87171", icon: AlertTriangle };
+}
+
+function AssetIntelCard({ asset }: { asset: AssetIntelligenceRow }) {
+  const meta = statusMeta(asset.status);
+  const Icon = meta.icon;
+  const arr = asset.currentArrUsd > 0 ? `$${Math.round(asset.currentArrUsd).toLocaleString()} ARR` : "ARR not wired";
+  const lastShip = asset.lastShip
+    ? `${asset.lastShip.ageDays === 0 ? "Today" : `${asset.lastShip.ageDays ?? "?"}d ago`} · ${asset.lastShip.title ?? "Ship logged"}`
+    : "No ship logged";
+
+  return (
+    <div style={{
+      ...cardStyle,
+      borderColor: `${meta.color}35`,
+      background: `linear-gradient(135deg, ${meta.color}10 0%, #0a0a0a 46%)`,
+      minHeight: 234,
+      display: "flex",
+      flexDirection: "column",
+      gap: 12,
+    }}>
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 10 }}>
+        <div style={{ minWidth: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 800, color: "#fff", lineHeight: 1.2 }}>{asset.name}</div>
+          <div style={{ fontSize: 10, color: "#94a3b8", marginTop: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+            {asset.agentName}
+          </div>
+        </div>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+          color: meta.color,
+          background: `${meta.color}14`,
+          border: `1px solid ${meta.color}28`,
+          borderRadius: 999,
+          padding: "5px 8px",
+          fontSize: 10,
+          fontWeight: 800,
+          whiteSpace: "nowrap",
+        }}>
+          <Icon size={11} />
+          {meta.label}
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "72px 1fr", gap: 12, alignItems: "center" }}>
+        <div style={{
+          width: 72,
+          height: 72,
+          borderRadius: "50%",
+          border: `1px solid ${meta.color}45`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          color: meta.color,
+          fontSize: 22,
+          fontWeight: 900,
+          background: `${meta.color}10`,
+        }}>
+          {asset.score}
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 5, minWidth: 0 }}>
+          <MiniMetric label="Revenue" value={arr} />
+          <MiniMetric label="Progress" value={`${asset.progressPct}% to target`} />
+          <MiniMetric label="Last ship" value={lastShip} />
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+        <MiniMetric label="Signals" value={`${asset.connectedConnections}/5`} centered />
+        <MiniMetric label="Risks" value={`${asset.openRisks.total}`} centered tone={asset.openRisks.red > 0 ? "#f87171" : asset.openRisks.yellow > 0 ? "#fbbf24" : "#10b981"} />
+        <MiniMetric label="Defects" value={`${asset.recentDefects}`} centered tone={asset.recentDefects > 0 ? "#f87171" : "#10b981"} />
+      </div>
+
+      <div style={{ marginTop: "auto", borderTop: "1px solid #1e1e1e", paddingTop: 10 }}>
+        <div style={{ fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: 0.7, fontWeight: 800, marginBottom: 4 }}>
+          Next best action
+        </div>
+        <div style={{ fontSize: 12, color: "#cbd5e1", lineHeight: 1.45 }}>
+          {asset.nextAction}
+        </div>
+        {asset.missingConnections.length > 0 && (
+          <div style={{ fontSize: 10, color: "#fbbf24", marginTop: 7 }}>
+            Missing: {asset.missingConnections.join(", ")}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function MiniMetric({ label, value, centered = false, tone = "#e8e8e8" }: { label: string; value: string; centered?: boolean; tone?: string }) {
+  return (
+    <div style={{
+      minWidth: 0,
+      textAlign: centered ? "center" : "left",
+      background: centered ? "rgba(255,255,255,0.025)" : "transparent",
+      border: centered ? "1px solid #1e1e1e" : "none",
+      borderRadius: centered ? 6 : 0,
+      padding: centered ? "7px 6px" : 0,
+    }}>
+      <div style={{ fontSize: 9, color: "#666", textTransform: "uppercase", letterSpacing: 0.6, fontWeight: 800 }}>{label}</div>
+      <div style={{ fontSize: 11, color: tone, marginTop: 2, fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{value}</div>
     </div>
   );
 }
