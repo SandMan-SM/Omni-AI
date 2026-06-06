@@ -77,11 +77,10 @@ export function NewsletterIssueCard({
               {post.intro}
             </p>
             <div className="mt-4 flex max-w-full flex-wrap gap-2 overflow-hidden">
-              {locked && (
-                <span className="max-w-full truncate rounded-md border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] text-gray-300 backdrop-blur-sm">
-                  Preview
-                </span>
-              )}
+              {/* Keep the tag row identical for premium and free cards.
+                  The lock state only changes the destination URL; it must not
+                  add a transient “Preview” pill or alter card formatting when
+                  new posts are generated. */}
               {tagsToShow.map((kw) => (
                 <span
                   key={kw}
