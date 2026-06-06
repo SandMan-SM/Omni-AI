@@ -237,7 +237,7 @@ export function RenelaveauContractClient({
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
                 { value: "30K", label: "Views / month" },
-                { value: "360K", label: "Views / year" },
+                { value: "4", label: "Month term" },
                 { value: "$300", label: "Monthly rate" },
                 { value: "$1,200", label: "Contract total" },
                 { value: "∞", label: "Potential" },
@@ -367,16 +367,16 @@ export function RenelaveauContractClient({
           </div>
         </section>
 
-        {/* PERFORMANCE TERMS — two-card block making the two
-            non-obvious commercial terms explicit before the
-            footer Activate button. Per Sita: surface both the
-            cancel-any-time freedom (no contract obligation) AND
-            the surplus-views accountability clause (Rene pays
-            for overdelivery beyond the 30K baseline at $150 per
-            additional 30K views, with asset seizure as the
-            enforcement teeth). The two cards sit side-by-side on
-            desktop — freedom on the left, accountability on the
-            right — so the trade is visually symmetric. */}
+        {/* PERFORMANCE TERMS — two-card block, aligned to the
+            signed Content Engagement & Audience Development
+            Agreement (§5 Scaling & Surplus Performance, §6 Revenue
+            Sharing on Exceptional Scale, §17 Termination). Left
+            card: cancel-any-time freedom (no contract obligation,
+            no cancellation penalty). Right card: how scaling works
+            — surplus performance valued at $100 per additional
+            100,000 views, exceptional-scale monetization split
+            50/50 in good faith. The agreement explicitly forbids
+            asset seizure, so this page must NOT claim it. */}
         <section className="relative">
           <div className="mx-auto max-w-5xl px-5 sm:px-6 py-6 sm:py-10">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
@@ -386,7 +386,7 @@ export function RenelaveauContractClient({
               className="mt-3 text-2xl sm:text-3xl tracking-tight text-amber-100"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              No contract. Real accountability.
+              No contract. Shared upside.
             </h2>
 
             <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -413,34 +413,36 @@ export function RenelaveauContractClient({
                 </p>
               </div>
 
-              {/* Performance accountability card — amber to signal
-                  it's the commercial side of the same coin (the
-                  trade for the no-contract freedom). Uses Sita's
-                  exact framing: $150 per surplus 30K, asset
-                  seizure on non-payment. */}
+              {/* Scaling / shared-upside card — amber to signal the
+                  commercial side. Mirrors the signed agreement:
+                  §5 surplus = $100 per additional 100,000 views
+                  ($1,000 per 1,000,000); §6 exceptional-scale
+                  monetization split 50/50 in good faith; and the
+                  agreement's explicit no-seizure guarantee. */}
               <div className="rounded-2xl border border-amber-300/40 bg-amber-300/[0.06] p-5">
                 <p className="text-[10px] uppercase tracking-[0.32em] text-amber-300 font-semibold inline-flex items-center gap-2">
                   <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
-                  Surplus-views accountability
+                  Scaling &amp; shared upside
                 </p>
                 <h3
                   className="mt-3 text-xl text-amber-100"
                   style={{ fontFamily: "Georgia, serif" }}
                 >
-                  When we overdeliver, you settle the surplus.
+                  When it scales, we share it.
                 </h3>
                 <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
-                  When the engagement crosses KPI &mdash; for
-                  example views double to{" "}
-                  <span className="tabular-nums">60K</span> or
-                  triple to <span className="tabular-nums">90K</span>{" "}
-                  in a month &mdash; the surplus is invoiced at{" "}
+                  If we blow past the 30K target, surplus performance
+                  is valued at{" "}
                   <span className="text-amber-100 font-semibold tabular-nums">
-                    $150 per additional 30,000 views
-                  </span>
-                  . Failure to settle the surplus invoice results
-                  in <em className="text-amber-200">seizure of any and all assets</em>{" "}
-                  delivered under this engagement.
+                    $100 per additional 100,000 views
+                  </span>{" "}
+                  (about <span className="tabular-nums">$1,000 per 1,000,000</span>).
+                  And if the campaign creates real monetization
+                  opportunities at exceptional scale, those are split{" "}
+                  <span className="text-amber-100 font-semibold tabular-nums">50 / 50</span>,
+                  negotiated in good faith. We never seize or take
+                  possession of your assets &mdash; everything we
+                  build stays yours.
                 </p>
               </div>
             </div>
@@ -655,8 +657,9 @@ export function RenelaveauContractClient({
             </p>
             <p className="mt-3 text-[11px] text-zinc-500 text-center leading-relaxed">
               <span className="text-emerald-300/90">No contract · cancel any time.</span>{" "}
-              Surplus views above the 30K baseline are settled at{" "}
-              <span className="text-amber-200 tabular-nums">$150 per 30K</span> &mdash;
+              Surplus performance is valued at{" "}
+              <span className="text-amber-200 tabular-nums">$100 per 100K views</span>;
+              exceptional-scale monetization is split 50/50 &mdash;
               full terms in the Performance Terms section on the page.
             </p>
           </div>
