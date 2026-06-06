@@ -16,6 +16,13 @@ import { RenelaveauInfoClient } from "./RenelaveauInfoClient";
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/renelaveau/contract/info`;
 
+// Same live Stripe payment links the contract page uses — the
+// Activate Assets buttons on this page open the same pricing modal,
+// so they point at the identical monthly / pay-in-full links. Keep
+// in sync with /renelaveau/contract/page.tsx if they change.
+const PAY_MONTHLY_URL = "https://buy.stripe.com/eVq5kDg9YdPabrFc4E9fW0i";
+const PAY_FULL_URL = "https://buy.stripe.com/00w6oHbTIh1m8ft2u49fW0j";
+
 // Branded OG image — distinct from the contract page so when
 // Rene shares either link separately the preview reads as the
 // right surface. Both feed /api/og which renders a 1200×630 PNG
@@ -46,5 +53,11 @@ export const metadata: Metadata = {
 };
 
 export default function RenelaveauContractInfoPage(): ReactNode {
-  return <RenelaveauInfoClient pageUrl={PAGE_URL} />;
+  return (
+    <RenelaveauInfoClient
+      pageUrl={PAGE_URL}
+      payMonthlyUrl={PAY_MONTHLY_URL}
+      payFullUrl={PAY_FULL_URL}
+    />
+  );
 }

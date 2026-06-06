@@ -13,13 +13,15 @@
 // surface. Math is identical: $50K/yr human salary cost per
 // agent vs $1.2K/yr AI cost = ~97.6% reduction at every scale.
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
 
 type Props = {
   pageUrl: string;
+  payMonthlyUrl: string;
+  payFullUrl: string;
 };
 
 // Inline padlock — used by the AES-256 trust strip at the
@@ -66,6 +68,83 @@ function HollowTriangle() {
   );
 }
 
+// Inline close-X for the activate modal — matches the weight of the
+// X used in the contract page's modal.
+function CloseX() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      width="16"
+      height="16"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
+// AES-256 trust strip — shared between the activate modal and the
+// footer CTA so the security signal lands on every payment surface.
+function TrustStrip({ className = "" }: { className?: string }) {
+  return (
+    <p
+      className={
+        "inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-amber-300/90 font-semibold " +
+        className
+      }
+    >
+      <LockIcon />
+      AES-256 bit Advanced Encryption
+    </p>
+  );
+}
+
+// Either/or CTA pair — "Activate Assets" (opens the in-page pricing
+// modal) beside "Return to overview" (back to the 7-second contract
+// page). Used in three placements: top (under the hero), middle
+// (after the stack), and the footer CTA. testId keeps each pair's
+// buttons individually targetable.
+function ActivateCTA({
+  onActivate,
+  testId,
+  className = "",
+}: {
+  onActivate: () => void;
+  testId: string;
+  className?: string;
+}) {
+  return (
+    <div
+      className={
+        "flex flex-col sm:flex-row gap-3 sm:gap-4 " + className
+      }
+    >
+      <button
+        type="button"
+        onClick={onActivate}
+        className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-8 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
+        data-testid={`rene-info-activate-${testId}`}
+      >
+        <span className="chrome-white">Activate Assets</span>
+        <HollowTriangle />
+      </button>
+      <Link
+        href="/renelaveau/contract"
+        className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
+        data-testid={`rene-info-return-${testId}`}
+      >
+        Return to overview
+      </Link>
+    </div>
+  );
+}
+
 // Open-market value table — same pattern as the Alira referral
 // breakdown. Rows show fair-market value for each asset class in
 // the stack so the >$100K claim has line-item evidence behind it.
@@ -94,11 +173,45 @@ const MARKET_ROWS: { service: string; value: string }[] = [
 ];
 const MARKET_TOTAL = "$140,000+";
 
-export function RenelaveauInfoClient({ pageUrl }: Props) {
+export function RenelaveauInfoClient({
+  pageUrl,
+  payMonthlyUrl,
+  payFullUrl,
+}: Props) {
   // Scale selector for the §4 savings chart — 4 anchor points
   // matching the Del Hasson chart so the same math backs both
   // surfaces. Default to 10 (the comfortable middle of the dial).
   const [agentScale, setAgentScale] = useState<1 | 10 | 50 | 100>(10);
+
+  // Activate Assets pricing modal — same recipe as the contract
+  // page so "Activate Assets" pays in-page instead of bouncing the
+  // reader back to the overview. Esc / backdrop / X close; body
+  // scroll locks while open.
+  const [modalOpen, setModalOpen] = useState(false);
+  const closeModal = useCallback(() => setModalOpen(false), []);
+  useEffect(() => {
+    if (!modalOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeModal();
+    }
+    document.addEventListener("keydown", onKey);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [modalOpen, closeModal]);
+
+  function onPay(url: string) {
+    if (!url || url === "#") {
+      alert(
+        "Payment link is still being configured. Please text Sitani at (385) 563-1562 and she'll send the invoice directly.",
+      );
+      return;
+    }
+    window.open(url, "_blank", "noopener,noreferrer");
+  }
 
   return (
     <>
@@ -129,6 +242,15 @@ export function RenelaveauInfoClient({ pageUrl }: Props) {
               single freelance editor, and how the same agent
               infrastructure powers every other engagement we ship.
             </p>
+
+            {/* TOP CTA — Activate Assets (opens pricing modal) or
+                Return to overview. Sits directly under the hero
+                pitch so the reader can decide before scrolling. */}
+            <ActivateCTA
+              onActivate={() => setModalOpen(true)}
+              testId="hero"
+              className="mt-8"
+            />
           </div>
         </section>
 
@@ -294,6 +416,19 @@ export function RenelaveauInfoClient({ pageUrl }: Props) {
             </div>
           </div>
         </Section>
+
+        {/* MIDDLE CTA — same either/or pair, centered, breaking up
+            the long body roughly halfway down so an already-sold
+            reader doesn't have to scroll to the footer to act. */}
+        <section className="relative">
+          <div className="mx-auto max-w-3xl px-5 sm:px-8 py-4 sm:py-6">
+            <ActivateCTA
+              onActivate={() => setModalOpen(true)}
+              testId="mid"
+              className="sm:justify-center"
+            />
+          </div>
+        </section>
 
         {/* §4 YOUR BUILD, TODAY — the Rene Laveau case study
             featured in his own info page. Unusual framing because
@@ -556,31 +691,27 @@ export function RenelaveauInfoClient({ pageUrl }: Props) {
                 The wave starts the moment you activate.
               </h2>
               <p className="relative z-10 mt-3 max-w-xl mx-auto text-[13px] sm:text-sm text-zinc-400 leading-relaxed">
-                Head back to the contract page and pick your
-                cadence — monthly or all-in. Either way the first
-                30K-view month starts within 14 days of payment.
+                Pick your cadence — monthly or all-in — and the first
+                30K-view month starts within 14 days of payment. Or
+                head back to the overview if you want another look.
               </p>
+              {/* BOTTOM CTA — same either/or pair, centered. Activate
+                  Assets opens the pricing modal in-page; Return to
+                  overview goes back to the 7-second contract page. */}
               <div className="relative z-10 mt-6 sm:mt-8 flex justify-center">
-                <Link
-                  href="/renelaveau/contract"
-                  className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-10 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
-                  data-testid="rene-info-return"
-                >
-                  <span className="chrome-white">
-                    Return to contract
-                  </span>
-                  <HollowTriangle />
-                </Link>
+                <ActivateCTA
+                  onActivate={() => setModalOpen(true)}
+                  testId="footer"
+                  className="sm:justify-center"
+                />
               </div>
 
-              {/* AES-256 trust strip under the return-to-contract
-                  CTA — same security signal Rene sees on every
-                  surface that touches payment. Sita's note: don't
-                  be shy with it. */}
-              <p className="relative z-10 mt-6 inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-amber-300/90 font-semibold">
-                <LockIcon />
-                AES-256 bit Advanced Encryption
-              </p>
+              {/* AES-256 trust strip under the footer CTA — same
+                  security signal Rene sees on every surface that
+                  touches payment. */}
+              <div className="relative z-10 mt-6 flex justify-center">
+                <TrustStrip />
+              </div>
             </div>
           </div>
         </section>
@@ -595,6 +726,154 @@ export function RenelaveauInfoClient({ pageUrl }: Props) {
         </footer>
         <p className="sr-only">{pageUrl}</p>
       </div>
+
+      {/* ACTIVATE MODAL — same two-card pricing reveal as the
+          contract page so "Activate Assets" pays in-page. Esc /
+          backdrop / X close; body scroll locks while open. */}
+      {modalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Activate Assets"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/70 backdrop-blur-md"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) closeModal();
+          }}
+          data-testid="rene-info-activate-modal"
+        >
+          <div
+            className="relative w-full max-w-3xl rounded-3xl border border-white/10 bg-zinc-950/95 p-4 sm:p-8 shadow-2xl shadow-amber-300/10 max-h-[92vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={closeModal}
+              aria-label="Close"
+              className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 hover:text-white hover:border-white/30 hover:bg-white/[0.08] transition-colors"
+              data-testid="rene-info-activate-modal-close"
+            >
+              <CloseX />
+            </button>
+
+            <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.24em] sm:tracking-[0.32em] text-amber-300/90 font-semibold">
+              Pick your cadence
+            </p>
+            <h3
+              className="mt-2 text-xl sm:text-3xl tracking-tight text-white pr-10 leading-tight"
+              style={{ fontFamily: "Georgia, serif" }}
+            >
+              Activate Assets.
+            </h3>
+            <p className="mt-2 text-[13px] sm:text-sm text-zinc-400">
+              Both options ship the same 4-month engagement &mdash;
+              <span className="text-amber-200">~30,000 views per month</span>{" "}
+              across the channels we build under your brand. Just
+              pick the cadence that fits.
+            </p>
+
+            <div className="mt-4 flex justify-center sm:justify-start">
+              <TrustStrip />
+            </div>
+
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 items-stretch">
+              {/* PAY MONTHLY — featured card */}
+              <div className="flex flex-col h-full rounded-2xl border border-amber-400/60 bg-amber-400/[0.08] p-5 sm:p-8">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-amber-200">
+                    Pay monthly
+                  </p>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold tracking-[0.22em] uppercase bg-amber-300/20 text-amber-100 border border-amber-300/40">
+                    Recommended
+                  </span>
+                </div>
+                <p
+                  className="mt-4 text-5xl sm:text-6xl tabular-nums leading-none text-amber-100"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  $300
+                </p>
+                <p className="mt-2 text-sm text-zinc-300">
+                  /month · 4 months
+                </p>
+                <p className="mt-1 text-xs text-zinc-500 tabular-nums">
+                  $1,200 total · billed monthly · cancel anytime
+                </p>
+                <p className="mt-6 text-sm text-zinc-300 leading-relaxed flex-1">
+                  Spreads the engagement across the 4-month wave.
+                  Once your first payment clears, just send Sitani
+                  the videos of your music — first 30K-view month
+                  starts within 14 days.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onPay(payMonthlyUrl)}
+                  className="mt-auto pt-6"
+                  data-testid="rene-info-pay-monthly"
+                >
+                  <span className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm">
+                    <span className="chrome-white">
+                      Start monthly · $300
+                    </span>
+                    <HollowTriangle />
+                  </span>
+                </button>
+              </div>
+
+              {/* PAY IN FULL — secondary card */}
+              <div className="flex flex-col h-full rounded-2xl border border-white/10 bg-white/[0.02] p-5 sm:p-8">
+                <div className="flex items-baseline justify-between gap-3">
+                  <p className="text-[11px] uppercase tracking-[0.28em] text-amber-300">
+                    Pay in full
+                  </p>
+                </div>
+                <p
+                  className="mt-4 text-5xl sm:text-6xl tabular-nums leading-none text-white"
+                  style={{ fontFamily: "Georgia, serif" }}
+                >
+                  $1,200
+                </p>
+                <p className="mt-2 text-sm text-zinc-300">
+                  one-time · 4-month engagement
+                </p>
+                <p className="mt-1 text-xs text-zinc-500 tabular-nums">
+                  $300/mo equivalent · no recurring billing
+                </p>
+                <p className="mt-6 text-sm text-zinc-300 leading-relaxed flex-1">
+                  One payment, four months of distribution. Same
+                  scope, same deliverables &mdash; just settled up
+                  in one move so there&apos;s nothing on your
+                  calendar to remember.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => onPay(payFullUrl)}
+                  className="mt-auto pt-6"
+                  data-testid="rene-info-pay-full"
+                >
+                  <span className="inline-flex w-full items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/[0.04] hover:bg-white/[0.08] px-6 py-4 text-sm font-bold tracking-wide text-white transition-colors">
+                    <span className="chrome-white">
+                      Pay in full · $1,200
+                    </span>
+                    <HollowTriangle />
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <p className="mt-6 text-[12px] text-zinc-500 text-center leading-relaxed">
+              Once payment clears, text or email Sitani the videos
+              of your music &mdash; we handle the rest. Your first
+              30K-view month starts within 14 days.
+            </p>
+            <p className="mt-3 text-[11px] text-zinc-500 text-center leading-relaxed">
+              <span className="text-emerald-300/90">No contract · cancel any time.</span>{" "}
+              Surplus performance is valued at{" "}
+              <span className="text-amber-200 tabular-nums">$100 per 100K views</span>;
+              exceptional-scale monetization is split 50/50.
+            </p>
+          </div>
+        </div>
+      )}
     </>
   );
 }
