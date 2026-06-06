@@ -209,17 +209,10 @@ export function RenelaveauContractClient({
               </Link>
             </div>
 
-            {/* Trust strip + no-contract pill beneath the hero
-                CTAs — first of three AES-256 placements on the
-                page, paired with the cancel-anytime signal so
-                Rene sees the two biggest reassurances together
-                immediately after considering the Activate button. */}
-            <div className="mt-5 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-5">
+            {/* AES-256 trust strip beneath the hero CTAs — first of
+                three placements on the page. */}
+            <div className="mt-5">
               <TrustStrip />
-              <p className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] uppercase tracking-[0.28em] sm:tracking-[0.32em] text-emerald-300/90 font-semibold">
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                No contract · cancel any time
-              </p>
             </div>
           </div>
         </section>
@@ -367,16 +360,14 @@ export function RenelaveauContractClient({
           </div>
         </section>
 
-        {/* PERFORMANCE TERMS — two-card block, aligned to the
-            signed Content Engagement & Audience Development
-            Agreement (§5 Scaling & Surplus Performance, §6 Revenue
-            Sharing on Exceptional Scale, §17 Termination). Left
-            card: cancel-any-time freedom (no contract obligation,
-            no cancellation penalty). Right card: how scaling works
-            — surplus performance valued at $100 per additional
-            100,000 views, exceptional-scale monetization split
-            50/50 in good faith. The agreement explicitly forbids
-            asset seizure, so this page must NOT claim it. */}
+        {/* PERFORMANCE TERMS — single card on how scaling works,
+            aligned to the signed Content Engagement & Audience
+            Development Agreement (§5 Scaling & Surplus Performance,
+            §6 Revenue Sharing on Exceptional Scale): surplus
+            performance valued at $100 per additional 100,000 views,
+            exceptional-scale monetization split 50/50 in good faith.
+            The agreement explicitly forbids asset seizure, so this
+            page must NOT claim it. */}
         <section className="relative">
           <div className="mx-auto max-w-5xl px-5 sm:px-6 py-6 sm:py-10">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
@@ -386,33 +377,10 @@ export function RenelaveauContractClient({
               className="mt-3 text-2xl sm:text-3xl tracking-tight text-amber-100"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              No contract. Shared upside.
+              Shared upside.
             </h2>
 
-            <div className="mt-6 grid gap-4 sm:grid-cols-2">
-              {/* Cancel-anytime card — green dot signal so the
-                  reassurance reads emotionally distinct from the
-                  amber accountability card next to it. */}
-              <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/[0.04] p-5">
-                <p className="text-[10px] uppercase tracking-[0.32em] text-emerald-300 font-semibold inline-flex items-center gap-2">
-                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  No contract obligation
-                </p>
-                <h3
-                  className="mt-3 text-xl text-emerald-100"
-                  style={{ fontFamily: "Georgia, serif" }}
-                >
-                  Cancel any time.
-                </h3>
-                <p className="mt-3 text-[14px] text-zinc-300 leading-relaxed">
-                  Pick monthly and you can stop the engagement
-                  whenever — no lock-in, no cancellation fee, no
-                  paperwork to chase. We earn the next month by
-                  delivering the current one. If we don&apos;t hit
-                  the 30K baseline, you don&apos;t renew.
-                </p>
-              </div>
-
+            <div className="mt-6">
               {/* Scaling / shared-upside card — amber to signal the
                   commercial side. Mirrors the signed agreement:
                   §5 surplus = $100 per additional 100,000 views
@@ -586,7 +554,7 @@ export function RenelaveauContractClient({
                   /month · 4 months
                 </p>
                 <p className="mt-1 text-xs text-zinc-500 tabular-nums">
-                  $1,200 total · billed monthly · cancel anytime
+                  $1,200 total · billed monthly
                 </p>
                 <p className="mt-6 text-sm text-zinc-300 leading-relaxed flex-1">
                   Spreads the engagement across the 4-month wave.
@@ -656,7 +624,6 @@ export function RenelaveauContractClient({
               30K-view month starts within 14 days.
             </p>
             <p className="mt-3 text-[11px] text-zinc-500 text-center leading-relaxed">
-              <span className="text-emerald-300/90">No contract · cancel any time.</span>{" "}
               Surplus performance is valued at{" "}
               <span className="text-amber-200 tabular-nums">$100 per 100K views</span>;
               exceptional-scale monetization is split 50/50 &mdash;
