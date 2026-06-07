@@ -68,7 +68,12 @@ export async function GET() {
         // references were standardized; selecting `id` made the endpoint 500
         // even when public posts existed. Slug is the stable public key.
         .select("slug, subject, tier, published_at, created_at")
-        .or("published_at.not.is.null,status.eq.published")
+        // Keep the public archive query on baseline columns only. Some
+        // production newsletter tables do not have a `status` column; adding
+        // `status.eq.published` makes PostgREST reject the entire OR filter
+        // and forces this endpoint into fallback even while published posts
+        // exist. `published_at` is the canonical public-publish marker.
+        .not("published_at", "is", null)
         .order("published_at", { ascending: false })
         .limit(100)
         .abortSignal(signal),
