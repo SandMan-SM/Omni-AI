@@ -4,7 +4,7 @@
 // useEffect on the client, so the shell can be statically prerendered
 // and edge-cached. No server data.
 
-import { useState, useEffect, useMemo, type FormEvent } from "react";
+import { useState, useEffect, type FormEvent } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight, CheckCircle, Clock, Mail, Shield, Brain, Zap, AlertTriangle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,20 +19,30 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { getNextSessionDate } from "./next-session";
 
 function CountdownTimer() {
-  const nextSession = useMemo(() => getNextSessionDate(), []);
-
-  const [remaining, setRemaining] = useState(() => {
-    const diff = Math.max(0, Math.floor((nextSession.getTime() - Date.now()) / 1000));
-    return diff;
-  });
+  const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    const nextSession = getNextSessionDate();
+    const updateRemaining = () => {
       const diff = Math.max(0, Math.floor((nextSession.getTime() - Date.now()) / 1000));
       setRemaining(diff);
-    }, 1000);
+    };
+
+    updateRemaining();
+    const interval = setInterval(updateRemaining, 1000);
     return () => clearInterval(interval);
-  }, [nextSession]);
+  }, []);
+
+  if (remaining === null) {
+    return (
+      <div className="flex items-center justify-center gap-4" data-testid="countdown-timer" aria-label="Loading training countdown">
+        <Clock className="w-5 h-5 text-purple-400" />
+        <div className="flex items-center gap-1 font-mono text-lg md:text-xl text-white font-bold">
+          --:--:--
+        </div>
+      </div>
+    );
+  }
 
   const days = Math.floor(remaining / 86400);
   const hours = Math.floor((remaining % 86400) / 3600);

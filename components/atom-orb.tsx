@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 // AtomOrb — glowing atomic nucleus suspended inside a glass sphere
 // with three orbital rings, traveling electrons, and a warm core.
 // Visual metaphor for the Omni AI "control tower" idea: one center
@@ -84,8 +86,11 @@ export function AtomOrb({
   const palette = PALETTES[variant];
   // Stable IDs so multiple instances on the same page don't clash on
   // gradient + filter references. SVG ID lookups are global per
-  // document.
-  const id = `atom-${Math.random().toString(36).slice(2, 9)}`;
+  // document. React renders this component on the server before
+  // hydration; Math.random() here produced different SVG IDs between
+  // server HTML and client render, causing production hydration errors.
+  const reactId = useId();
+  const id = `atom-${reactId.replace(/:/g, "")}`;
 
   // Total height includes the optional reflection strip below the orb.
   const reflectionHeight = reflection ? Math.round(size * 0.32) : 0;
