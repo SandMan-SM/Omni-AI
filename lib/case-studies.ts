@@ -379,7 +379,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     // Prime IV Sandy — combined Jaime build. Two delivered sites
     // under one engagement: the operator storefront at
     // primeivsandy.com AND the full Live Better On The Drip
-    // podcast website + infrastructure at livebetterpodcast.com
+    // podcast website + infrastructure at livebetteronthedrip.com
     // (its own Next.js codebase, episode CMS, transcript pipeline,
     // newsletter, distribution to Spotify / Apple / YouTube). Both
     // share the inbound_prime_iv_* tenancy so analytics roll up
@@ -402,8 +402,8 @@ export const CASE_STUDIES: CaseStudy[] = [
     // primeivsandy.com cutover). domain/url point at the podcast so the
     // hero "View Asset" button + the index "Visit Now" both open the live
     // surface. The operator site is surfaced as featuredAssetCard below.
-    domain: "livebetterpodcast.com",
-    url: "https://livebetterpodcast.com",
+    domain: "livebetteronthedrip.com",
+    url: "https://livebetteronthedrip.com",
     primaryCtaLabel: "View Asset",
     headlineMetric: { value: "70%", label: "Reduction in lost leads" },
     featuredAssetCard: {
@@ -419,13 +419,13 @@ export const CASE_STUDIES: CaseStudy[] = [
     status: "live",
     pantheonArchetype: "Operator (mortal tier) · Storyteller blend",
     pantheonCEO: "Prime IV Sandy CEO",
-    tagline: "Two sites, one Jaime brand — primeivsandy.com (Sandy operator storefront) + livebetterpodcast.com (Live Better On The Drip podcast + full audience-engine infrastructure) shipped as one combined federation engagement.",
+    tagline: "Two sites, one Jaime brand — primeivsandy.com (Sandy operator storefront) + livebetteronthedrip.com (Live Better On The Drip podcast + full audience-engine infrastructure) shipped as one combined federation engagement.",
     problem: "Three deficits to close at once. (1) The live primeivsandy.com was a thin LeadConnector funnel — no menu depth, no team page, no Sandy-specific story; corporate franchise tools optimize for franchisee parity, not local conversion. (2) Live Better On The Drip existed as a podcast feed but had no production website, no episode CMS, no transcript surface, no newsletter, no owned distribution layer — every download was downstream of platform algorithms and died on the feed. (3) Even if both surfaces existed, there was no cross-attribution between the IV business and the show, so podcast audience couldn't be measured as a paying-customer pipeline and IV walk-ins couldn't be measured as a listener pipeline.",
-    solution: "Combined dual-surface federation build delivered as one engagement. SURFACE 1 — primeivsandy.com: bespoke Next.js 15 site leading with Jaime as the face (portrait, signature, owner letter, BYU + franchise-mentor backstory, embedded IG reel) and Sandy as the local hook (Snowbird recovery, Hale Centre opening-night glow, Cottonwood Heights lifestyle). Full 25+ drip menu with goal-based filters, 3-tier membership comparison, $85 intro offer above the fold, RN-on-staff trust signals, Booker embed on every page, sticky mobile CTA, LocalBusiness + MedicalBusiness JSON-LD. SURFACE 2 — livebetterpodcast.com: full podcast website with its own Next.js codebase, episode CMS, transcript indexing pipeline, branded newsletter infrastructure, Spotify / Apple / YouTube distribution wiring, guest pipeline, sponsor-slot scaffold. CROSS-LAYER: inbound_prime_iv_* tenancy carries lead capture + events from both surfaces; dual-surface attribution collapses listener + walk-in into one Jaime-brand lead; the Pantheon CEO routes audience between the two (podcast listener → $85 intro / IV walk-in → episode subscribe) and tunes seasonal Sandy-local content prompts.",
+    solution: "Combined dual-surface federation build delivered as one engagement. SURFACE 1 — primeivsandy.com: bespoke Next.js 15 site leading with Jaime as the face (portrait, signature, owner letter, BYU + franchise-mentor backstory, embedded IG reel) and Sandy as the local hook (Snowbird recovery, Hale Centre opening-night glow, Cottonwood Heights lifestyle). Full 25+ drip menu with goal-based filters, 3-tier membership comparison, $85 intro offer above the fold, RN-on-staff trust signals, Booker embed on every page, sticky mobile CTA, LocalBusiness + MedicalBusiness JSON-LD. SURFACE 2 — livebetteronthedrip.com: full podcast website with its own Next.js codebase, episode CMS, transcript indexing pipeline, branded newsletter infrastructure, Spotify / Apple / YouTube distribution wiring, guest pipeline, sponsor-slot scaffold. CROSS-LAYER: inbound_prime_iv_* tenancy carries lead capture + events from both surfaces; dual-surface attribution collapses listener + walk-in into one Jaime-brand lead; the Pantheon CEO routes audience between the two (podcast listener → $85 intro / IV walk-in → episode subscribe) and tunes seasonal Sandy-local content prompts.",
     systems: [
       ...STANDARD_SYSTEMS,
       { layer: "Booker integration", what: "go.booker.com/PrimeIVSandy iframe on /book + CTA buttons across every page. Booking source-attribution wired into inbound_prime_iv_events with per-source-page granularity." },
-      { layer: "Podcast site (own codebase)", what: "livebetterpodcast.com — its own Next.js 15 production site with bespoke design, episode list, individual episode pages, About / Guest / Sponsor surfaces, OG + Twitter cards per episode. Not a YouTube channel page or a Squarespace template — a real production site that the show owns." },
+      { layer: "Podcast site (own codebase)", what: "livebetteronthedrip.com — its own Next.js 15 production site with bespoke design, episode list, individual episode pages, About / Guest / Sponsor surfaces, OG + Twitter cards per episode. Not a YouTube channel page or a Squarespace template — a real production site that the show owns." },
       { layer: "Episode CMS + transcript pipeline", what: "Per-episode content model (title, show notes, transcript, guest, links, art). Audio pulled via RSS; transcripts indexed for on-site search and for AI-CEO ingestion so episodes become a permanent retrieval corpus the Sandy CEO can quote from." },
       { layer: "Newsletter infrastructure", what: "Branded newsletter capture on both sites, episode-drop send templates, federation cross-promo slot, double-opt-in flow. Subscriber list is owned by Jaime, not rented from a platform." },
       { layer: "Cross-surface attribution", what: "Universal tracker present on both domains writes to inbound_prime_iv_events with a `surface` field (sandy / podcast). Sessions that hit both within a window collapse to one lead with a `dual_surface` tag, so the operator side can measure podcast-driven bookings and the podcast side can measure IV-driven listens." },
@@ -434,15 +434,15 @@ export const CASE_STUDIES: CaseStudy[] = [
     agenticStack: [
       ...STANDARD_AGENTIC,
       "Booker click-intent capture — every Book-$85 click logs to inbound_prime_iv_events with source page, so the CEO can rank which surface (home / drips / podcast / meet-jaime) drives the most bookings.",
-      "Cross-surface attribution between primeivsandy.com and livebetterpodcast.com — visitors who hit both inside a session collapse to one prime_iv lead with a `dual_surface` tag, exposing the podcast→IV and IV→podcast funnels.",
+      "Cross-surface attribution between primeivsandy.com and livebetteronthedrip.com — visitors who hit both inside a session collapse to one prime_iv lead with a `dual_surface` tag, exposing the podcast→IV and IV→podcast funnels.",
       "Sandy-local content prompts (Snowbird recovery / Hale opening night / Cottonwood Heights families) tuned seasonally by the Prime IV Sandy CEO.",
       "Episode-prep agent — pulls upcoming guest context, drafts show notes, generates social cuts, and writes the episode-drop newsletter ahead of each release.",
       "Transcript-indexed retrieval — every episode's transcript is embedded into the Sandy CEO's corpus so the AI can quote Jaime's own words back to local visitors asking IV-related questions.",
       "Guest pipeline — inbound guest pitches land in a structured Supabase table; the CEO scores fit, drafts the reply, and queues calendar holds for confirmed bookings.",
     ],
     pricing: TIER3_PRICING,
-    marketTier: "bespoke",
-    marketTierLabel: "Federation tier · Dual-surface build (operator + podcast)",
+    marketTier: "federation",
+    marketTierLabel: "Ultimate Power · Sovereign Empire",
     buildPriceRange: "$50k – $80k+",
     liveSince: "2026-05",
   },
@@ -451,7 +451,7 @@ export const CASE_STUDIES: CaseStudy[] = [
     // tenancy is Jaime's "Live Better On The Drip" personal-brand
     // podcast, not the Prime IV Hydration franchise that hosts the
     // tables. The inbound_prime_iv_{leads,events} tenancy stays
-    // (livebetterpodcast.com writes there); the case-study brand /
+    // (livebetteronthedrip.com writes there); the case-study brand /
     // domain / framing flips to lead with the podcast.
     //
     // 2026-05-25: paired with the new prime-iv-sandy operator case
@@ -461,8 +461,8 @@ export const CASE_STUDIES: CaseStudy[] = [
     // IV story — Sandy is the storefront, this is the audience.
     slug: "live-better-on-the-drip",
     brand: "Live Better On The Drip",
-    domain: "livebetterpodcast.com",
-    url: "https://livebetterpodcast.com",
+    domain: "livebetteronthedrip.com",
+    url: "https://livebetteronthedrip.com",
     inboundSlug: "prime_iv",
     realm: 1,
     role: "Personal-brand podcast · audience engine",
@@ -564,7 +564,7 @@ export const CASE_STUDIES: CaseStudy[] = [
   // Channel-partner OTD case-study entry removed 2026-05-19 — it
   // collided on slug "live-better-on-the-drip" with the renamed
   // prime_iv entry above, and its inboundSlug pointed at the
-  // empty inbound_otd_* tables (the actual livebetterpodcast.com
+  // empty inbound_otd_* tables (the actual livebetteronthedrip.com
   // data lives in inbound_prime_iv_*). The renamed entry above
   // is now the single canonical Live Better case-study card.
 
