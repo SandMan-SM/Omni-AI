@@ -214,7 +214,14 @@ export function MetaProposalFullClient({
                 return (
                   <div
                     key={stat.label}
-                    className="flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-3 py-6 text-center"
+                    className={
+                      "flex min-h-[140px] flex-col items-center justify-center rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-3 py-6 text-center " +
+                      // 5th tile (∞) is an orphan in the 2-col mobile
+                      // grid — span both columns on mobile so it goes
+                      // full width, like the overview page. Reverts to a
+                      // single column at sm+ (5-col row).
+                      (isInfinity ? "col-span-2 sm:col-span-1" : "")
+                    }
                   >
                     <p
                       className={
