@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
+import { PayPalSubscribeButton } from "@/components/paypal-subscribe-button";
 
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
@@ -60,6 +61,8 @@ function ping(action: string, target: string) {
 
 type Props = {
   payFullUrl: string;
+  paypalClientId: string;
+  paypalPlanId: string;
   pageUrl: string;
   retailLines: { item: string; spec: string; rate: string }[];
   retailTotal: string;
@@ -91,6 +94,8 @@ function HollowTriangle() {
 
 export function MetaProposalFullClient({
   payFullUrl,
+  paypalClientId,
+  paypalPlanId,
   pageUrl,
   retailLines,
   retailTotal,
@@ -253,8 +258,20 @@ export function MetaProposalFullClient({
               Back to overview
             </Link>
           </div>
+
+          {/* PayPal subscription — $1,500/mo recurring via PayPal,
+              alternative to the Stripe button above. Renders only when
+              the PayPal client-id is configured (graceful no-op
+              otherwise). */}
+          <div className="mt-5 max-w-[260px]">
+            <p className="mb-2 text-[11px] uppercase tracking-[0.28em] text-zinc-500">
+              Or subscribe with PayPal
+            </p>
+            <PayPalSubscribeButton clientId={paypalClientId} planId={paypalPlanId} />
+          </div>
+
           <p className="mt-5 text-xs uppercase tracking-[0.28em] text-zinc-500">
-            Secure checkout via Stripe · cancel anytime after month one
+            Secure checkout via Stripe or PayPal · cancel anytime after month one
           </p>
         </div>
       </section>
@@ -595,6 +612,14 @@ export function MetaProposalFullClient({
             >
               Back to overview
             </Link>
+          </div>
+
+          {/* PayPal subscription — bottom placement, mirrors the hero. */}
+          <div className="mt-6 mx-auto max-w-[260px]">
+            <p className="mb-2 text-[11px] uppercase tracking-[0.28em] text-zinc-500 text-center">
+              Or subscribe with PayPal
+            </p>
+            <PayPalSubscribeButton clientId={paypalClientId} planId={paypalPlanId} />
           </div>
         </div>
       </section>

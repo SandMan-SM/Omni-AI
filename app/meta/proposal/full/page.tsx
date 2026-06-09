@@ -108,6 +108,8 @@ export default function MetaProposalFullPage(): ReactNode {
   return (
     <MetaProposalFullClient
       payFullUrl={PAY_FULL_URL}
+      paypalClientId={process.env.PAYPAL_CLIENT_ID ?? ""}
+      paypalPlanId="P-0CW08001LU923782MNIUHR6I"
       pageUrl={PAGE_URL}
       retailLines={RETAIL_LINES}
       retailTotal={RETAIL_TOTAL}
