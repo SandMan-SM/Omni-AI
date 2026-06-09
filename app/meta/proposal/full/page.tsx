@@ -14,6 +14,11 @@ import { MetaProposalFullClient } from "./MetaProposalFullClient";
 const SITE_URL = "https://omnileadsagi.com";
 const PAGE_URL = `${SITE_URL}/meta/proposal/full`;
 
+// PayPal public Client ID (publishable — safe in the browser/repo, like a
+// Stripe publishable key). Baked in so the live deploy works without a
+// Vercel env var. Pairs with plan P-0CW08001LU923782MNIUHR6I.
+const PAYPAL_CLIENT_ID = "AW72P6A-yKEg77Tkh866rDoce2DKYU2EUhGKQp-401eIFKpSERKCOETvqtcSYTVTN4rnFbvBt6vP6Lf4";
+
 // Stripe payment link — Meta Growth Program · 90-Day Paid-Social Creative
 // Product:  prod_UctZ2gTDbou1lE
 // Price:    price_1Tddm3E1uHPZaaHpXPIspjhN  ($1,500/mo recurring)
@@ -108,7 +113,7 @@ export default function MetaProposalFullPage(): ReactNode {
   return (
     <MetaProposalFullClient
       payFullUrl={PAY_FULL_URL}
-      paypalClientId={process.env.PAYPAL_CLIENT_ID ?? ""}
+      paypalClientId={PAYPAL_CLIENT_ID}
       paypalPlanId="P-0CW08001LU923782MNIUHR6I"
       pageUrl={PAGE_URL}
       retailLines={RETAIL_LINES}

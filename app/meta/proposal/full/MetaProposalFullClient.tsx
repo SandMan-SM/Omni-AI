@@ -236,20 +236,13 @@ export function MetaProposalFullClient({
             </div>
           </div>
 
-          {/* Hero CTA pair — chrome-flash pattern matching the
-              elitalks "See the full breakdown" + Alira "Activate
-              your assets" buttons. Primary fills amber-translucent,
-              secondary keeps a neutral white-border outline. */}
-          <div className="mt-10 grid gap-4 sm:grid-cols-[auto_auto] items-start">
-            <button
-              type="button"
-              onClick={onPay}
-              className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
-              data-testid="proposal-pay"
-            >
-              <span className="chrome-white">Start the program · $1,500/mo</span>
-              <HollowTriangle />
-            </button>
+          {/* Hero CTA — PayPal $1,500/mo subscription (the payment
+              method for this program) beside the Back-to-overview
+              link. */}
+          <div className="mt-10 flex flex-col sm:flex-row gap-4 sm:items-center">
+            <div className="w-full sm:w-auto sm:min-w-[280px]">
+              <PayPalSubscribeButton clientId={paypalClientId} planId={paypalPlanId} />
+            </div>
             <Link
               href="/meta/proposal"
               className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/[0.04] hover:bg-white/[0.08] px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors backdrop-blur-sm"
@@ -259,19 +252,8 @@ export function MetaProposalFullClient({
             </Link>
           </div>
 
-          {/* PayPal subscription — $1,500/mo recurring via PayPal,
-              alternative to the Stripe button above. Renders only when
-              the PayPal client-id is configured (graceful no-op
-              otherwise). */}
-          <div className="mt-5 max-w-[260px]">
-            <p className="mb-2 text-[11px] uppercase tracking-[0.28em] text-zinc-500">
-              Or subscribe with PayPal
-            </p>
-            <PayPalSubscribeButton clientId={paypalClientId} planId={paypalPlanId} />
-          </div>
-
           <p className="mt-5 text-xs uppercase tracking-[0.28em] text-zinc-500">
-            Secure checkout via Stripe or PayPal · cancel anytime after month one
+            Secure subscription via PayPal · $1,500/mo · cancel anytime after month one
           </p>
         </div>
       </section>
@@ -592,19 +574,12 @@ export function MetaProposalFullClient({
             stack handles the rest.
           </p>
 
-          {/* Final CTA pair — same chrome-flash recipe as the hero
-              CTAs above. Primary fills amber-translucent with the
-              hollow triangle; secondary keeps neutral outline. */}
-          <div className="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              type="button"
-              onClick={onPay}
-              className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
-              data-testid="proposal-pay-bottom"
-            >
-              <span className="chrome-white">Start · $1,500/mo</span>
-              <HollowTriangle />
-            </button>
+          {/* Final CTA — PayPal $1,500/mo subscription, centered,
+              mirrors the hero. */}
+          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center sm:items-center">
+            <div className="w-full sm:w-auto sm:min-w-[280px]">
+              <PayPalSubscribeButton clientId={paypalClientId} planId={paypalPlanId} />
+            </div>
             <Link
               href="/meta/proposal"
               className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/30 bg-white/[0.04] hover:bg-white/[0.08] px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors backdrop-blur-sm"
@@ -612,14 +587,6 @@ export function MetaProposalFullClient({
             >
               Back to overview
             </Link>
-          </div>
-
-          {/* PayPal subscription — bottom placement, mirrors the hero. */}
-          <div className="mt-6 mx-auto max-w-[260px]">
-            <p className="mb-2 text-[11px] uppercase tracking-[0.28em] text-zinc-500 text-center">
-              Or subscribe with PayPal
-            </p>
-            <PayPalSubscribeButton clientId={paypalClientId} planId={paypalPlanId} />
           </div>
         </div>
       </section>
