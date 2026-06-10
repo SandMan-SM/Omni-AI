@@ -58,13 +58,32 @@ export async function GET() {
     supabase
       .from("newsletter_posts")
       .select("slug, subject, intro, published_at, created_at, tier")
-      .or("published_at.not.is.null,status.eq.published")
+      // Keep this aligned with /api/newsletter/posts. `published_at` is
+      // the stable public-publish marker; adding newer/optional columns to
+      // the public RSS query can make PostgREST reject the whole request and
+      // produce a false-green empty feed while the API/archive still have rows.
+      .not("published_at", "is", null)
       .order("published_at", { ascending: false })
       .limit(50),
     8000
   );
 
-  const supabasePosts = (result as { data?: Array<{ slug?: string | null; subject?: string | null; intro?: string | null; published_at?: string | null; created_at?: string | null; tier?: string | null }> } | null)?.data || [];
+  const queryResult = result as {
+    data?: Array<{
+      slug?: string | null;
+      subject?: string | null;
+      intro?: string | null;
+      published_at?: string | null;
+      created_at?: string | null;
+      tier?: string | null;
+    }> | null;
+    error?: unknown;
+  } | null;
+  if (queryResult?.error) {
+    console.error("[newsletter/rss] Supabase lookup failed:", queryResult.error);
+  }
+
+  const supabasePosts = queryResult?.data || [];
   const posts = (supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries())
     .filter(isOmniAiNewsletterPost)
     .map((p, index) => ({
