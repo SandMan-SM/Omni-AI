@@ -616,12 +616,12 @@ export function SponsorInfoClient({
                   page-view events flow into the live dashboard.
                 </p>
                 <a
-                  href="https://livebetterpodcast.com"
+                  href="https://livebetteronthedrip.com"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-amber-300 hover:text-amber-200"
                 >
-                  Visit livebetterpodcast.com
+                  Visit livebetteronthedrip.com
                   <HollowTriangle />
                 </a>
               </div>

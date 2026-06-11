@@ -8,7 +8,7 @@
 // the operator's dashboard can see "share count by post by platform"
 // without each tenant site needing its own analytics pipeline.
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 interface ShareControlsProps {
   url: string;
@@ -55,8 +55,11 @@ export function ShareControls({
   platforms = ["native", "twitter", "linkedin", "sms", "email", "copy"],
 }: ShareControlsProps) {
   const [copied, setCopied] = useState(false);
+  const [supportsNative, setSupportsNative] = useState(false);
 
-  const supportsNative = typeof navigator !== "undefined" && typeof navigator.share === "function";
+  useEffect(() => {
+    setSupportsNative(typeof navigator !== "undefined" && typeof navigator.share === "function");
+  }, []);
 
   const onNative = useCallback(async () => {
     ping(slug, target, "native", url);

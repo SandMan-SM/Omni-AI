@@ -770,7 +770,7 @@ function normalizeOperatorBusinesses(rows: OperatorBusinessRow[]): OperatorBusin
       name: row.slug === "prime_iv" ? "Live Better" : row.name || "Workspace",
       slug: row.slug,
       website: row.slug === "prime_iv"
-        ? row.website || "livebetterpodcast.com"
+        ? row.website || "livebetteronthedrip.com"
         : row.website,
     }));
 }

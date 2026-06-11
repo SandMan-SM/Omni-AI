@@ -110,11 +110,15 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
   const statusFilter = url.searchParams.get('status');
+  const hoursParam = parseInt(url.searchParams.get('hours') || '', 10);
+  const hours = Number.isFinite(hoursParam) && hoursParam > 0 ? Math.min(hoursParam, 24 * 30) : 24;
+  const since = url.searchParams.get('since') || new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 
   const sb = createAdminClient();
   let q = sb
     .from('cron_runs')
-    .select('*')
+    .select('id,job_id,job_name,source,status,started_at,finished_at,duration_ms,summary,error,created_at')
+    .gte('created_at', since)
     .order('created_at', { ascending: false })
     .limit(limit);
   if (statusFilter) q = q.eq('status', statusFilter);

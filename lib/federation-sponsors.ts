@@ -61,7 +61,7 @@ export const FEDERATION_SPONSORS: SponsorSlot[] = [
     tagline: "Show + community.",
     blurb:
       "The conversations that the Interlinked manifesto puts in public. Honest interviews about reassembling a life that was never meant to be split.",
-    hrefBase: "https://livebetterpodcast.com",
+    hrefBase: "https://livebetteronthedrip.com",
     badge: "Partner",
   },
 ];

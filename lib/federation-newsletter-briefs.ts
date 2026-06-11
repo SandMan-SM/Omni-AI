@@ -83,7 +83,7 @@ export const FEDERATION_NEWSLETTER_BRIEFS: FederationNewsletterBrief[] = [
   {
     site: 'live-better-on-the-drip',
     brandName: 'Live Better · On The Drip',
-    domain: 'livebetterpodcast.com',
+    domain: 'livebetteronthedrip.com',
     voice: 'Conversational, vulnerable, show-host. Like a podcast cold-open in text.',
     audience: 'Listeners who came in through one of the show episodes; people reassembling a life.',
     niche: 'Mind-body integration, real interviews, the back-story to a guest, the manifesto in motion.',

@@ -50,7 +50,7 @@ export const INBOUND_SLUG_LABELS: Record<InboundSlug, string> = {
   // client is Jaime's "Live Better On The Drip" personal-brand
   // podcast, not the Prime IV Hydration franchise that hosts the
   // tenancy. The inbound_prime_iv_{leads,events} tables stay as-is
-  // (livebetterpodcast.com writes there); only the display name
+  // (livebetteronthedrip.com writes there); only the display name
   // changes so the dashboard reads as Jaime's brand.
   prime_iv: 'Live Better',
   rene: 'Rene Laveau',
@@ -271,9 +271,9 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     // Live Better On The Drip podcast site — Jaime's personal-brand
     // tracking writes into this same tenancy (the data already lives
     // in inbound_prime_iv_*). Added 2026-05-19 so the events route
-    // accepts livebetterpodcast.com POSTs without a 403.
-    'https://livebetterpodcast.com',
-    'https://www.livebetterpodcast.com',
+    // accepts livebetteronthedrip.com POSTs without a 403.
+    'https://livebetteronthedrip.com',
+    'https://www.livebetteronthedrip.com',
     'https://prime-iv.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',

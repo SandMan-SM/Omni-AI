@@ -1,0 +1,556 @@
+"use client";
+
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { CheckCircle2, Circle, Phone, MessageSquare, Clock } from "lucide-react";
+import type {
+  AdsReport,
+  DemoMetrics,
+  DemoTask,
+  LeadSourceRow,
+  PipelineStage,
+  ValueBar,
+} from "@/lib/portal-demo-clients";
+
+// ── shared helpers ───────────────────────────────────────────────────
+
+export function formatMoney(value: number) {
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`;
+  if (value >= 10_000) return `$${Math.round(value / 1_000)}K`;
+  if (value >= 1_000) return `$${(value / 1_000).toFixed(2)}K`;
+  return `$${value.toLocaleString()}`;
+}
+
+export function formatCompact(value: number) {
+  if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
+  if (value >= 10_000) return `${Math.round(value / 1_000)}K`;
+  if (value >= 1_000) return `${(value / 1_000).toFixed(2)}K`;
+  return value.toLocaleString();
+}
+
+const DONUT_PALETTE = [
+  "#a78bfa", // violet
+  "#38bdf8", // sky
+  "#34d399", // emerald
+  "#fbbf24", // amber
+  "#fb7185", // rose
+  "#e879f9", // fuchsia
+  "#22d3ee", // cyan
+  "#a3e635", // lime
+  "#fb923c", // orange
+  "#94a3b8", // slate
+];
+
+function WidgetCard({
+  title,
+  action,
+  fullWidth,
+  children,
+}: {
+  title: string;
+  action?: React.ReactNode;
+  fullWidth?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section
+      className={`rounded-xl border border-white/[0.06] bg-white/[0.03] p-5 ${
+        fullWidth ? "sm:col-span-2 xl:col-span-3" : ""
+      }`}
+    >
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-sm font-medium text-white/70">{title}</h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+// ── donuts ───────────────────────────────────────────────────────────
+
+function Donut({
+  slices,
+  centerTop,
+  centerBottom,
+}: {
+  slices: { name: string; value: number; color: string }[];
+  centerTop: string;
+  centerBottom?: string;
+}) {
+  const data = slices.filter((s) => s.value > 0);
+  // All-zero datasets still need a visible ring.
+  const chartData = data.length
+    ? data
+    : [{ name: "empty", value: 1, color: "rgba(255,255,255,0.08)" }];
+  return (
+    <div className="relative h-[180px]">
+      <ResponsiveContainer width="100%" height={180}>
+        <PieChart>
+          <Pie
+            data={chartData}
+            dataKey="value"
+            innerRadius={58}
+            outerRadius={76}
+            stroke="none"
+            paddingAngle={data.length > 1 ? 2 : 0}
+            isAnimationActive={false}
+          >
+            {chartData.map((entry, i) => (
+              <Cell key={i} fill={entry.color} />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+      <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+        <span className="text-2xl font-bold text-white">{centerTop}</span>
+        {centerBottom ? (
+          <span className="text-[11px] text-white/50">{centerBottom}</span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+export function OpportunityStatusWidget({
+  data,
+}: {
+  data: DemoMetrics["opportunities"];
+}) {
+  const slices = [
+    { name: "Won", value: data.won, color: "#34d399" },
+    { name: "Lost", value: data.lost, color: "#fb7185" },
+    { name: "Open", value: data.open, color: "#38bdf8" },
+  ];
+  return (
+    <WidgetCard title="Opportunity Status">
+      <Donut
+        slices={slices}
+        centerTop={formatCompact(data.total)}
+        centerBottom="opportunities"
+      />
+      <div className="mt-3 space-y-1.5">
+        {slices
+          .filter((s) => s.value > 0)
+          .map((s) => (
+            <div key={s.name} className="flex items-center gap-2 text-sm">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: s.color }}
+              />
+              <span className="text-white/60">{s.name}</span>
+              <span className="ml-auto tabular-nums text-white/80">
+                {s.value}
+              </span>
+            </div>
+          ))}
+      </div>
+    </WidgetCard>
+  );
+}
+
+export function ConversionRateWidget({
+  data,
+}: {
+  data: DemoMetrics["conversion"];
+}) {
+  const slices = [
+    { name: "Won", value: data.ratePct, color: "#38bdf8" },
+    {
+      name: "Rest",
+      value: Math.max(0, 100 - data.ratePct),
+      color: "rgba(255,255,255,0.08)",
+    },
+  ];
+  return (
+    <WidgetCard title="Conversion Rate">
+      <Donut slices={slices} centerTop={`${data.ratePct}%`} />
+      <p className="mt-3 text-center text-sm text-white/50">
+        Won revenue{" "}
+        <span className="font-medium text-emerald-300">
+          {formatMoney(data.wonRevenue)}
+        </span>
+      </p>
+    </WidgetCard>
+  );
+}
+
+export function StageDistributionWidget({
+  data,
+}: {
+  data: DemoMetrics["stageDistribution"];
+}) {
+  const slices = data.stages.map((s, i) => ({
+    name: s.stage,
+    value: s.count,
+    color: DONUT_PALETTE[i % DONUT_PALETTE.length],
+  }));
+  return (
+    <WidgetCard title="Stage Distribution">
+      <div className="flex flex-col items-center gap-4 sm:flex-row">
+        <div className="w-full sm:w-1/2">
+          <Donut slices={slices} centerTop={formatCompact(data.total)} />
+        </div>
+        <div className="max-h-[180px] w-full space-y-1.5 overflow-y-auto pr-1 sm:w-1/2">
+          {slices.map((s) => (
+            <div key={s.name} className="flex items-center gap-2 text-xs">
+              <span
+                className="h-2 w-2 shrink-0 rounded-full"
+                style={{ backgroundColor: s.color }}
+              />
+              <span className="truncate text-white/60">{s.name}</span>
+              <span className="ml-auto shrink-0 tabular-nums text-white/80">
+                {s.value}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </WidgetCard>
+  );
+}
+
+// ── bars ─────────────────────────────────────────────────────────────
+
+export function OpportunityValueWidget({
+  data,
+}: {
+  data: DemoMetrics["opportunityValue"];
+}) {
+  const max = Math.max(...data.bars.map((b) => b.value), 1);
+  return (
+    <WidgetCard title="Opportunity Value">
+      <p className="mb-4 text-3xl font-bold text-white">
+        {formatMoney(data.total)}
+      </p>
+      <div className="space-y-2.5">
+        {data.bars.map((bar: ValueBar) => (
+          <div key={bar.label}>
+            <div className="mb-1 flex items-center justify-between text-xs">
+              <span className="truncate pr-2 text-white/60">{bar.label}</span>
+              <span className="shrink-0 tabular-nums text-white/80">
+                {formatMoney(bar.value)}
+              </span>
+            </div>
+            <div className="h-2 rounded-full bg-white/[0.06]">
+              <div
+                className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-sky-400"
+                style={{ width: `${(bar.value / max) * 100}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </WidgetCard>
+  );
+}
+
+export function FunnelWidget({ data }: { data: DemoMetrics["funnel"] }) {
+  const total = data.stages.reduce((sum, s) => sum + s.count, 0) || 1;
+  const max = Math.max(...data.stages.map((s) => s.count), 1);
+  let remaining = total;
+  const rows = data.stages.map((s: PipelineStage) => {
+    const cumulativePct = (remaining / total) * 100;
+    remaining -= s.count;
+    return { ...s, cumulativePct };
+  });
+  return (
+    <WidgetCard title={`Funnel · ${data.pipelineName}`} fullWidth>
+      <div className="space-y-2.5">
+        {rows.map((row) => (
+          <div key={row.stage} className="flex items-center gap-3">
+            <span className="w-32 shrink-0 truncate text-xs text-white/60 sm:w-48">
+              {row.stage}
+            </span>
+            <div className="h-2.5 flex-1 rounded-full bg-white/[0.06]">
+              <div
+                className="h-2.5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-400"
+                style={{ width: `${(row.count / max) * 100}%` }}
+              />
+            </div>
+            <span className="w-8 shrink-0 text-right text-xs tabular-nums text-white/80">
+              {row.count}
+            </span>
+            <span className="hidden w-14 shrink-0 text-right text-xs tabular-nums text-white/40 sm:block">
+              {row.cumulativePct.toFixed(1)}%
+            </span>
+          </div>
+        ))}
+      </div>
+    </WidgetCard>
+  );
+}
+
+// ── stat grids ───────────────────────────────────────────────────────
+
+function StatGrid({
+  stats,
+}: {
+  stats: { label: string; value: string; accent?: string }[];
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      {stats.map((s) => (
+        <div
+          key={s.label}
+          className="rounded-lg border border-white/[0.06] bg-black/25 p-3"
+        >
+          <p className="text-xs text-white/50">{s.label}</p>
+          <p
+            className={`mt-1 text-xl font-semibold ${s.accent ?? "text-white"}`}
+          >
+            {s.value}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+export function AdsReportWidget({
+  title,
+  data,
+  accent,
+}: {
+  title: string;
+  data: AdsReport;
+  accent: string;
+}) {
+  return (
+    <WidgetCard title={title}>
+      <StatGrid
+        stats={[
+          { label: "Total Clicks", value: formatCompact(data.clicks), accent },
+          { label: "Total Spent", value: formatMoney(data.spend), accent },
+          { label: "CPC", value: `$${data.cpc.toFixed(2)}` },
+          { label: "CTR", value: `${data.ctrPct}%` },
+        ]}
+      />
+    </WidgetCard>
+  );
+}
+
+export function GoogleAnalyticsWidget({
+  data,
+}: {
+  data: DemoMetrics["googleAnalytics"];
+}) {
+  return (
+    <WidgetCard title="Google Analytics Report">
+      <StatGrid
+        stats={[
+          { label: "Total Visitors", value: formatCompact(data.visitors) },
+          { label: "Sessions", value: formatCompact(data.sessions) },
+          { label: "Page Views", value: formatCompact(data.pageViews) },
+          { label: "Bounce Rate", value: `${data.bounceRatePct}%` },
+        ]}
+      />
+    </WidgetCard>
+  );
+}
+
+export function GoogleBusinessProfileWidget({
+  data,
+}: {
+  data: DemoMetrics["googleBusinessProfile"];
+}) {
+  return (
+    <WidgetCard title="Google Business Profile">
+      <StatGrid
+        stats={[
+          { label: "Profile Views", value: formatCompact(data.views) },
+          { label: "Searches", value: formatCompact(data.searches) },
+          { label: "Website Clicks", value: formatCompact(data.clicks) },
+          { label: "Bookings", value: formatCompact(data.bookings) },
+        ]}
+      />
+    </WidgetCard>
+  );
+}
+
+export function SalesEfficiencyWidget({
+  data,
+}: {
+  data: DemoMetrics["salesEfficiency"];
+}) {
+  const days = (n: number) => (n === 0 ? "0s" : `${n}d`);
+  return (
+    <WidgetCard title="Sales Efficiency">
+      <StatGrid
+        stats={[
+          {
+            label: "Avg Sales Duration",
+            value: days(data.avgSalesDurationDays),
+          },
+          { label: "Time to Won", value: days(data.avgTimeToWonDays) },
+          {
+            label: "Sales Velocity",
+            value: `${formatMoney(data.salesVelocityPerMonth)}/M`,
+            accent: "text-emerald-300",
+          },
+        ]}
+      />
+    </WidgetCard>
+  );
+}
+
+export function ManualActionsWidget({
+  data,
+}: {
+  data: DemoMetrics["manualActions"];
+}) {
+  const items = [
+    {
+      label: "Phone",
+      value: data.phone,
+      Icon: Phone,
+      tone: "border-sky-300/20 bg-sky-400/[0.08] text-sky-200",
+      iconTone: "text-sky-300",
+    },
+    {
+      label: "SMS",
+      value: data.sms,
+      Icon: MessageSquare,
+      tone: "border-violet-300/20 bg-violet-400/[0.08] text-violet-200",
+      iconTone: "text-violet-300",
+    },
+    {
+      label: "Total Pending",
+      value: data.pending,
+      Icon: Clock,
+      tone: "border-amber-300/20 bg-amber-400/[0.08] text-amber-200",
+      iconTone: "text-amber-300",
+    },
+  ];
+  return (
+    <WidgetCard title="Manual Actions">
+      <div className="grid grid-cols-3 gap-3">
+        {items.map(({ label, value, Icon, tone, iconTone }) => (
+          <div
+            key={label}
+            className={`flex flex-col items-center rounded-lg border p-3 ${tone}`}
+          >
+            <Icon className={`mb-1.5 h-4 w-4 ${iconTone}`} />
+            <span className="text-xl font-semibold text-white">{value}</span>
+            <span className="mt-0.5 text-center text-[10px] uppercase tracking-wide text-white/50">
+              {label}
+            </span>
+          </div>
+        ))}
+      </div>
+    </WidgetCard>
+  );
+}
+
+// ── tasks ────────────────────────────────────────────────────────────
+
+export function TasksWidget({ tasks }: { tasks: DemoTask[] }) {
+  return (
+    <WidgetCard title="Tasks">
+      {tasks.length === 0 ? (
+        <p className="text-sm text-white/40">No open tasks.</p>
+      ) : (
+        <ul className="space-y-2.5">
+          {tasks.map((task) => (
+            <li key={task.title} className="flex items-start gap-2.5 text-sm">
+              {task.status === "completed" ? (
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-300" />
+              ) : (
+                <Circle className="mt-0.5 h-4 w-4 shrink-0 text-white/30" />
+              )}
+              <span
+                className={
+                  task.status === "completed"
+                    ? "text-white/40 line-through"
+                    : "text-white/80"
+                }
+              >
+                {task.title}
+              </span>
+              {task.due ? (
+                <span className="ml-auto shrink-0 rounded-full border border-white/10 px-2 py-0.5 text-[10px] text-white/50">
+                  {task.due}
+                </span>
+              ) : null}
+            </li>
+          ))}
+        </ul>
+      )}
+    </WidgetCard>
+  );
+}
+
+// ── lead source table ────────────────────────────────────────────────
+
+export function LeadSourceWidget({
+  data,
+}: {
+  data: DemoMetrics["leadSources"];
+}) {
+  return (
+    <WidgetCard
+      title="Lead Source Report"
+      fullWidth
+      action={
+        data.trendPct != null ? (
+          <span className="rounded-full border border-emerald-300/20 bg-emerald-400/[0.08] px-2 py-0.5 text-xs font-medium text-emerald-300">
+            +{data.trendPct}% vs previous period
+          </span>
+        ) : undefined
+      }
+    >
+      <p className="mb-3 text-3xl font-bold text-white">
+        {formatCompact(data.total)}
+        <span className="ml-2 text-sm font-normal text-white/40">
+          total leads
+        </span>
+      </p>
+      <div className="-mx-5 overflow-x-auto px-5">
+        <table className="w-full min-w-[640px] text-sm">
+          <thead>
+            <tr className="border-b border-white/[0.06] text-left text-xs uppercase tracking-wide text-white/40">
+              <th className="py-2 pr-3 font-medium">Source</th>
+              <th className="py-2 pr-3 text-right font-medium">Leads</th>
+              <th className="py-2 pr-3 text-right font-medium">Value</th>
+              <th className="py-2 pr-3 text-right font-medium">Open</th>
+              <th className="py-2 pr-3 text-right font-medium">Won</th>
+              <th className="py-2 pr-3 text-right font-medium">Lost</th>
+              <th className="py-2 pr-3 text-right font-medium">Abandoned</th>
+              <th className="py-2 text-right font-medium">Win %</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.rows.map((row: LeadSourceRow) => (
+              <tr
+                key={row.source}
+                className="border-b border-white/[0.04] last:border-0"
+              >
+                <td className="py-2.5 pr-3 text-white/80">{row.source}</td>
+                <td className="py-2.5 pr-3 text-right tabular-nums text-white/70">
+                  {row.totalLeads}
+                </td>
+                <td className="py-2.5 pr-3 text-right tabular-nums text-white/70">
+                  {formatMoney(row.totalValue)}
+                </td>
+                <td className="py-2.5 pr-3 text-right tabular-nums text-white/70">
+                  {row.open}
+                </td>
+                <td className="py-2.5 pr-3 text-right tabular-nums text-emerald-300">
+                  {row.won}
+                </td>
+                <td className="py-2.5 pr-3 text-right tabular-nums text-rose-300">
+                  {row.lost}
+                </td>
+                <td className="py-2.5 pr-3 text-right tabular-nums text-white/70">
+                  {row.abandoned}
+                </td>
+                <td className="py-2.5 text-right tabular-nums text-white/80">
+                  {row.winPct.toFixed(2)}%
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </WidgetCard>
+  );
+}

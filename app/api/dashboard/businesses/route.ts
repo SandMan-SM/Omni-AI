@@ -30,7 +30,7 @@ export const fetchCache = "force-no-store";
  * workspace dropdown to (a) drop the empty "On The Drip" row and (b)
  * stop calling the remaining row "Prime IV Hydration". The actual
  * client behind the prime_iv tenancy is Jaime's "Live Better On The
- * Drip" personal-brand podcast — livebetterpodcast.com writes every
+ * Drip" personal-brand podcast — livebetteronthedrip.com writes every
  * lead and event into inbound_prime_iv_*. Renaming the row in
  * omni_businesses requires SQL (RLS-locked, can't be done from this
  * Node process autonomously per the CLAUDE.md "don't run migrations
@@ -39,7 +39,7 @@ export const fetchCache = "force-no-store";
  *
  *   UPDATE omni_businesses
  *      SET name = 'Live Better',
- *          website = 'livebetterpodcast.com',
+ *          website = 'livebetteronthedrip.com',
  *          ga4_measurement_id = 'G-6JZP5C4NMQ'
  *    WHERE slug = 'prime_iv';
  *   DELETE FROM omni_businesses WHERE slug = 'otd';
@@ -94,7 +94,7 @@ function applyLiveBetterOverrides(rows: BusinessRow[]): BusinessRow[] {
       return {
         ...row,
         name: "Live Better",
-        website: websiteRaw || "livebetterpodcast.com",
+        website: websiteRaw || "livebetteronthedrip.com",
         ga4_measurement_id: ga4Raw || "G-6JZP5C4NMQ",
       };
     });

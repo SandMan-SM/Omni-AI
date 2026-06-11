@@ -35,7 +35,7 @@ const LBP: Creative = {
   title: "Live Better Podcast",
   blurb: "Show + community from our podcast partner.",
   cta: "Listen",
-  href: "https://livebetterpodcast.com",
+  href: "https://livebetteronthedrip.com",
   utm: { source: "omni-sponsor", medium: "newsletter", campaign: "live-better-podcast" },
 };
 

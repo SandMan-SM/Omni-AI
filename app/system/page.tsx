@@ -129,7 +129,7 @@ const PORTFOLIO_SITES: PortfolioSite[] = [
   {
     name: "Live Better Podcast",
     slug: "prime_iv",
-    url: "https://livebetterpodcast.com",
+    url: "https://livebetteronthedrip.com",
     preview: "https://on-the-drip-deploy.vercel.app",
     blurb:
       "Show + community in partnership with Omni AI. The on-air channel for Prime IV.",

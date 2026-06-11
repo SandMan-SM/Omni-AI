@@ -60,8 +60,8 @@ const ABOUT_PODCAST = {
 
 const COMPARABLE = {
   brand: "Live Better — On The Drip",
-  domain: "livebetterpodcast.com",
-  url: "https://livebetterpodcast.com",
+  domain: "livebetteronthedrip.com",
+  url: "https://livebetteronthedrip.com",
   role: "Case study · podcast + community",
   caseStudyUrl: "/federation/case-studies/live-better-on-the-drip",
   tagline:

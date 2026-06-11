@@ -67,7 +67,7 @@ const html = `<!doctype html><html><body style="margin:0;background:#0a0a0a;colo
   <h2 style="font-size:14px;color:#f59e0b;margin:24px 0 6px;letter-spacing:.08em;text-transform:uppercase;">3 · Live Better Podcast (Jaime / GoDaddy)</h2>
   <ul style="font-size:14px;line-height:1.8;color:#e4e4e7;padding-left:20px;margin:0 0 16px 0;">
     <li>Domain is at GoDaddy under Jaime&apos;s account (per your direction — leave hosting alone).</li>
-    <li>The on-the-drip-deploy Vercel project IS serving livebetterpodcast.com — fully wired.</li>
+    <li>The on-the-drip-deploy Vercel project IS serving livebetteronthedrip.com — fully wired.</li>
     <li>Open the on-the-drip-deploy repo and add this one-liner to the homepage <code>&lt;body&gt;</code> or footer:<br>
       <code style="display:block;background:#1a1a1a;color:#a1a1aa;padding:10px 14px;border-radius:6px;margin-top:8px;font-size:12px;">&lt;div id="omni-sponsor" data-slug="prime_iv"&gt;&lt;/div&gt;<br>&lt;script src="https://omnileadsagi.com/embed/sponsor.js" defer&gt;&lt;/script&gt;</code>
       That&apos;s the embed — Fred&apos;s sponsor card + Live Better Podcast partnership card render automatically. Analytics flow back to <a href="https://omnileadsagi.com/dashboard" style="color:#f59e0b;">/dashboard</a>.
@@ -119,7 +119,7 @@ const text = `Omni AI · Portfolio audit · personal action items
 
 3. LIVE BETTER PODCAST
 - Domain GoDaddy/Jaime — leave hosting alone (per your direction).
-- on-the-drip-deploy Vercel is serving livebetterpodcast.com OK.
+- on-the-drip-deploy Vercel is serving livebetteronthedrip.com OK.
 - Drop into the homepage:
     <div id="omni-sponsor" data-slug="prime_iv"></div>
     <script src="https://omnileadsagi.com/embed/sponsor.js" defer></script>

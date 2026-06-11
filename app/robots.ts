@@ -25,6 +25,9 @@ export default function robots(): MetadataRoute.Robots {
         //                    request before the crawler fetches the HTML
         //                    at all. Exact-match (no trailing slash)
         //                    because /fray has no sub-routes.
+        //   /portal        — client demo-dashboard portal behind a simple
+        //                    sign-in. Layout sets noindex,nofollow; exact-
+        //                    match because /portal has no sub-routes.
         disallow: [
           "/api/",
           "/admin/",
@@ -33,6 +36,7 @@ export default function robots(): MetadataRoute.Robots {
           "/command/",
           "/void-preview/",
           "/fray",
+          "/portal",
         ],
       },
       {

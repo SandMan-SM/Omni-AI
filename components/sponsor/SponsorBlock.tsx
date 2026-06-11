@@ -31,7 +31,7 @@ interface SponsorBlockProps {
 }
 
 const FRED_LINK = "https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc";
-const LBP_LINK = "https://livebetterpodcast.com";
+const LBP_LINK = "https://livebetteronthedrip.com";
 const CPS_LINK = "https://psychandcustodyevaluations.com";
 
 // Where the embed pings analytics. Always the central dashboard so the

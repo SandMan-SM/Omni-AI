@@ -701,7 +701,7 @@ export function EliTalksFullClient({
           {/* Whole-card Link → federation case study. The previous inline
               <a> for the live domain was removed — nested anchors are
               invalid HTML, and the case study itself has a "Visit
-              livebetterpodcast.com →" CTA at the top of its hero. The
+              livebetteronthedrip.com →" CTA at the top of its hero. The
               domain now reads as static text inside the card header.
               hover:border-amber-300/60 + group:hover affordance signal
               clickability. */}

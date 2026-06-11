@@ -127,7 +127,7 @@ This site serves daily AI/business trending-topic landing pages at `omnileadsagi
 - Premium/paid issues are **Omni-AI-only** — no other-business shoutouts.
 - Free issues get **exactly ONE business shoutout per week**, alternating businesses every Wednesday (recent order: Prime IV, then Love Thy Barber). Never stack multiple shoutouts in a week — the owner is emphatic about not cluttering content (one shoutout/week for maximum conversion).
 - Shoutout = iMessage-style preview card (`components/newsletter/FeaturedBusinessCard.tsx`) with site preview + share button + a sharable description like a forwarded text. Deals baked in: **Prime IV** = new-client deal in image (~$85 intro); **Love Thy Barber** = "$5 off your first visit" (as the end of the sharable description).
-- Always feature sponsor links without crowding the primary one: **Fred's** `https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc` (main sponsor) and **livebetterpodcast.com** (Jaime Bond / Prime IV, "in partnership with omnileadsagi.com"). Lead-gen should route back to sponsors.
+- Always feature sponsor links without crowding the primary one: **Fred's** `https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc` (main sponsor) and **livebetteronthedrip.com** (Jaime Bond / Prime IV, "in partnership with omnileadsagi.com"). Lead-gen should route back to sponsors.
 - Newsroom voice: dry, clear-eyed, skeptical of marketing, generous to operators who deliver. **No invented quotes** — write around quotes you don't have. Every claim sourceable; don't fabricate Utah-business facts. 700–1100 words. Rotate the cast; increment "Vol. I · No. N".
 - **Idempotent publishing:** before posting, `ls <repo>/posts/ | grep <today>` — if today's file exists, skip, never overwrite.
 

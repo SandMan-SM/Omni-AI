@@ -5,7 +5,7 @@
 // Each click pings /api/inbound/omnileads/events with
 // `event_type=case_share` so we can see which channels move the page.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Share2,
   Linkedin,
@@ -46,6 +46,11 @@ function ping(platform: string, url: string) {
 
 export default function ShareRow({ url, title, caption }: Props) {
   const [copied, setCopied] = useState(false);
+  const [hasNative, setHasNative] = useState(false);
+
+  useEffect(() => {
+    setHasNative(typeof navigator !== "undefined" && typeof navigator.share === "function");
+  }, []);
 
   function shareNative() {
     ping("native", url);
@@ -92,10 +97,6 @@ export default function ShareRow({ url, title, caption }: Props) {
       setTimeout(() => setCopied(false), 1800);
     } catch {}
   }
-
-  const hasNative =
-    typeof navigator !== "undefined" &&
-    !!(navigator as Navigator & { share?: unknown }).share;
 
   const baseBtn =
     "inline-flex items-center justify-center gap-2 min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors";
