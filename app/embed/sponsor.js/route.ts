@@ -1,61 +1,64 @@
-// Cross-domain sponsor banner. Drop in:
+// Cross-domain Partner Network banner. Drop in:
 //   <div id="omni-sponsor" data-slug="cps"></div>
 //   <script src="https://omnileadsagi.com/embed/sponsor.js" defer></script>
 //
+// v4 — the banner now rotates the FULL Omni Partner Network (see
+// lib/partner-network.ts, the single source of truth) instead of a
+// fixed 3-creative list. The host's data-slug drives mesh rules
+// client-side: a site never promotes itself, clinical hosts only see
+// audience-appropriate categories, and Fred Circle keeps the paid
+// primary weight everywhere. Server can change the network without a
+// client redeploy; sites cache one shared script.
+//
 // Renders ONE slim, host-adaptive banner per mount point. Uses
 // `currentColor` and `color-mix` so the banner blends with whatever
-// site it's dropped into — light, dark, branded, anything. No bulky
-// stacked cards, no newsletter form, no three-row share strips. One
-// banner. One CTA. Server can rotate creatives without a client
-// redeploy.
+// site it's dropped into — light, dark, branded, anything.
 
 import { NextResponse } from "next/server";
+import { PARTNER_NETWORK } from "@/lib/partner-network";
 
 const CACHE_HEADER = "public, max-age=300, s-maxage=300, stale-while-revalidate=3600";
 const ANALYTICS_HOST = "https://omnileadsagi.com";
+const NETWORK_PAGE = "https://omnileadsagi.com/network";
 
-const FRED_LINK = "https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc";
-const LBP_LINK = "https://livebetteronthedrip.com";
-const CPS_LINK = "https://psychandcustodyevaluations.com";
-
-const CREATIVES = [
-  // weight = relative show-rate. Fred wins most rotations as the paid primary.
-  {
-    id: "fred",
-    weight: 5,
-    eyebrow: "Sponsor",
-    title: "Fred — Live with the Host",
-    blurb: "Tap in to Fred's circle. Compound the days.",
-    cta: "Open",
-    href: FRED_LINK,
-    utm: { source: "omni-sponsor", medium: "embed", campaign: "fred-circle" },
-  },
-  {
-    id: "lbp",
-    weight: 2,
-    eyebrow: "Partner",
-    title: "Live Better Podcast",
-    blurb: "Show + community from our podcast partner.",
-    cta: "Listen",
-    href: LBP_LINK,
-    utm: { source: "omni-sponsor", medium: "embed", campaign: "live-better-podcast" },
-  },
-  {
-    id: "cps",
-    weight: 2,
-    eyebrow: "Featured",
-    title: "Psych & Custody Evaluations",
-    blurb: "Trusted forensic evaluations across Utah.",
-    cta: "Learn",
-    href: CPS_LINK,
-    utm: { source: "omni-sponsor", medium: "embed", campaign: "cps-feature" },
-  },
-];
+// Compact creative payload for the client (keeps script small).
+const CREATIVES = PARTNER_NETWORK.map((m) => ({
+  id: m.slug,
+  weight: m.weight,
+  eyebrow: m.eyebrow,
+  title: m.name,
+  blurb: m.tagline,
+  cta: m.cta,
+  href: m.href,
+  category: m.category,
+  utm: { source: "omni-sponsor", medium: "embed", campaign: m.utmCampaign },
+}));
 
 const SCRIPT = /* js */ `(function(){
   var ANALYTICS_HOST = ${JSON.stringify(ANALYTICS_HOST)};
+  var NETWORK_PAGE = ${JSON.stringify(NETWORK_PAGE)};
   var CREATIVES = ${JSON.stringify(CREATIVES)};
-  var SESSION_KEY = "omni_sponsor_pick_v3";
+  var SESSION_KEY = "omni_sponsor_pick_v4";
+
+  // Mesh rules — mirror of lib/partner-network.ts creativesForHost().
+  var CLINICAL_HOSTS = { cps: 1 };
+  var CLINICAL_ALLOWED = { professional: 1, media: 1, community: 1 };
+  var HOST_TO_MEMBER = {
+    cps: "cps", leifson: "leifson", youngs: "youngs", ltb: "ltb",
+    alira: "alira", prime_iv: "prime_iv", rene: "rene",
+    omnileads: "omnileads", omni: "omnileadsagi"
+  };
+
+  function poolForHost(slug) {
+    var self = HOST_TO_MEMBER[slug] || slug;
+    var pool = CREATIVES.filter(function(c){ return c.id !== self; });
+    if (CLINICAL_HOSTS[slug]) {
+      pool = pool.filter(function(c){
+        return c.id === "fred-circle" || CLINICAL_ALLOWED[c.category];
+      });
+    }
+    return pool.length ? pool : CREATIVES;
+  }
 
   function trackedHref(c, slug) {
     try {
@@ -82,28 +85,29 @@ const SCRIPT = /* js */ `(function(){
           target_id: creativeId,
           target_type: "sponsor_banner",
           page_url: location.href,
-          properties: { creative: creativeId, embed_version: "v3" }
+          properties: { creative: creativeId, embed_version: "v4" }
         })
       }).catch(function(){});
     } catch (e) {}
   }
 
-  function pickCreative() {
+  function pickCreative(slug) {
+    var pool = poolForHost(slug);
     // Stable for the session so the visitor doesn't see a different
-    // sponsor every navigation. Fresh per session.
+    // partner every navigation. Fresh per session.
     try {
       var cached = sessionStorage.getItem(SESSION_KEY);
       if (cached) {
-        var found = CREATIVES.filter(function(c){ return c.id === cached; })[0];
+        var found = pool.filter(function(c){ return c.id === cached; })[0];
         if (found) return found;
       }
     } catch (e) {}
-    var totalWeight = CREATIVES.reduce(function(a,c){ return a + (c.weight || 1); }, 0);
+    var totalWeight = pool.reduce(function(a,c){ return a + (c.weight || 1); }, 0);
     var roll = Math.random() * totalWeight;
-    var picked = CREATIVES[0];
-    for (var i = 0; i < CREATIVES.length; i++) {
-      roll -= (CREATIVES[i].weight || 1);
-      if (roll <= 0) { picked = CREATIVES[i]; break; }
+    var picked = pool[0];
+    for (var i = 0; i < pool.length; i++) {
+      roll -= (pool[i].weight || 1);
+      if (roll <= 0) { picked = pool[i]; break; }
     }
     try { sessionStorage.setItem(SESSION_KEY, picked.id); } catch (e) {}
     return picked;
@@ -114,12 +118,15 @@ const SCRIPT = /* js */ `(function(){
     host.dataset.omniSponsorRendered = "1";
 
     var slug = host.dataset.slug || "omni";
-    var creative = pickCreative();
+    var creative = pickCreative(slug);
     var href = trackedHref(creative, slug);
 
     // Single slim banner. Inherits font + color so it adapts to host
     // site styling. Border + accent use color-mix on currentColor —
     // looks right on dark, light, and branded backgrounds.
+    var wrap = document.createElement("span");
+    wrap.style.cssText = "display:block;margin:18px 0;";
+
     var a = document.createElement("a");
     a.href = href;
     a.target = "_blank";
@@ -133,7 +140,6 @@ const SCRIPT = /* js */ `(function(){
       "max-width:100%",
       "box-sizing:border-box",
       "padding:12px 18px",
-      "margin:18px 0",
       "border-radius:10px",
       "border:1px solid color-mix(in srgb, currentColor 18%, transparent)",
       "background:color-mix(in srgb, currentColor 4%, transparent)",
@@ -213,8 +219,32 @@ const SCRIPT = /* js */ `(function(){
 
     a.addEventListener("click", function(){ ping(slug, creative.id, "click"); });
 
+    // "Omni Partner Network" micro-label — the partnership's public
+    // face. Gives every host site a shareable proof point and every
+    // visitor the full network in one click.
+    var label = document.createElement("a");
+    label.href = NETWORK_PAGE + "?ref=" + encodeURIComponent(slug);
+    label.target = "_blank";
+    label.rel = "noopener noreferrer";
+    label.textContent = "Omni Partner Network";
+    label.style.cssText = [
+      "display:inline-block",
+      "margin-top:4px",
+      "font-size:10px",
+      "letter-spacing:.14em",
+      "text-transform:uppercase",
+      "opacity:.45",
+      "color:inherit",
+      "text-decoration:none"
+    ].join(";");
+    label.addEventListener("mouseenter", function(){ label.style.opacity = ".75"; });
+    label.addEventListener("mouseleave", function(){ label.style.opacity = ".45"; });
+
+    wrap.appendChild(a);
+    wrap.appendChild(label);
+
     host.innerHTML = "";
-    host.appendChild(a);
+    host.appendChild(wrap);
 
     // Impression ping — once per render
     ping(slug, creative.id, "view");
