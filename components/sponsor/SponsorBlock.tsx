@@ -9,9 +9,9 @@
 //   1. Fred (Circle.rn) — PRIMARY. He's our paying sponsor; lead-gen
 //      attribution must surface his link first, biggest, with the
 //      strongest CTA.
-//   2. Live Better Podcast — SECONDARY. Partnership with omnileadsagi.com
-//      (Prime IV channel). The "in partnership with" badge is
-//      non-optional — the partnership is the marketing point.
+//   2. SEO & PPC Marketing — SECONDARY. Partnership with omnileadsagi.com.
+//      The "in partnership with" badge is non-optional — the partnership
+//      is the marketing point.
 //
 // Every interactive element pings back to omnileadsagi.com so the
 // originating tenant's agentic dashboard
@@ -31,14 +31,14 @@ interface SponsorBlockProps {
 }
 
 const FRED_LINK = "https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc";
-const LBP_LINK = "https://livebetteronthedrip.com";
+const SEOPPC_LINK = "https://seoandppcmarketing.com";
 const CPS_LINK = "https://psychandcustodyevaluations.com";
 
 // Where the embed pings analytics. Always the central dashboard so the
 // operator sees ALL tenants' sponsor traffic in one place.
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
-type Target = "fred" | "lbp" | "cps";
+type Target = "fred" | "seoppc" | "cps";
 
 function ping(slug: string, target: Target, action: "view" | "click" | "share", extra?: Record<string, unknown>) {
   if (typeof window === "undefined") return;
@@ -67,7 +67,7 @@ function ping(slug: string, target: Target, action: "view" | "click" | "share", 
 function trackedHref(target: Target, slug: string): string {
   const base =
     target === "fred" ? FRED_LINK :
-    target === "lbp" ? LBP_LINK :
+    target === "seoppc" ? SEOPPC_LINK :
     CPS_LINK;
   // UTM tagging so each partner (Fred / podcast / CPS) can see attribution in their own
   // analytics. utm_source = the tenant slug → they know which Omni
@@ -78,7 +78,7 @@ function trackedHref(target: Target, slug: string): string {
   u.searchParams.set(
     "utm_campaign",
     target === "fred" ? "fred-circle" :
-    target === "lbp" ? "live-better-podcast" :
+    target === "seoppc" ? "seo-ppc-marketing" :
     "cps-feature",
   );
   return u.toString();
@@ -89,7 +89,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
   // matters for sponsor reporting (impressions, not just clicks).
   useEffect(() => {
     ping(slug, "fred", "view");
-    ping(slug, "lbp", "view");
+    ping(slug, "seoppc", "view");
     ping(slug, "cps", "view");
   }, [slug]);
 
@@ -224,12 +224,12 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
         align="left"
       />
 
-      {/* SECONDARY — Live Better Podcast (partnership) */}
+      {/* SECONDARY — SEO & PPC Marketing (partnership) */}
       <a
-        href={trackedHref("lbp", slug)}
+        href={trackedHref("seoppc", slug)}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={() => onClick("lbp")}
+        onClick={() => onClick("seoppc")}
         className="osb-card"
         style={{
           display: "block",
@@ -257,23 +257,23 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
               In partnership with omnileadsagi.com
             </div>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
-              Live Better Podcast
+              SEO &amp; PPC Marketing
             </div>
             <div className="osb-card-desc" style={{ fontSize: 13, color: textMuted }}>
-              Show + community from our podcast partner — listen, subscribe, share.
+              Get found first — search and paid acquisition engineered for local business.
             </div>
           </div>
           <span className="osb-card-cta" style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>
-            Listen →
+            Grow →
           </span>
         </div>
       </a>
 
       <ShareControls
-        url={trackedHref("lbp", slug)}
-        title="Live Better Podcast — in partnership with Omni AI"
+        url={trackedHref("seoppc", slug)}
+        title="SEO & PPC Marketing — in partnership with Omni AI"
         slug={slug}
-        target="lbp"
+        target="seoppc"
         align="left"
       />
 

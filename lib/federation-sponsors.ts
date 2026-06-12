@@ -55,13 +55,13 @@ export const FEDERATION_SPONSORS: SponsorSlot[] = [
     badge: "Sponsor",
   },
   {
-    slug: "live-better-on-the-drip",
+    slug: "seoppc",
     rank: 3,
-    brand: "Live Better · On The Drip",
-    tagline: "Show + community.",
+    brand: "SEO & PPC Marketing",
+    tagline: "Get found first.",
     blurb:
-      "The conversations that the Interlinked manifesto puts in public. Honest interviews about reassembling a life that was never meant to be split.",
-    hrefBase: "https://livebetteronthedrip.com",
+      "Search and paid acquisition engineered for local business. The traffic engine behind the federation's owned-audience flywheel.",
+    hrefBase: "https://seoandppcmarketing.com",
     badge: "Partner",
   },
 ];
