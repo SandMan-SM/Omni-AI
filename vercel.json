@@ -2,5 +2,11 @@
   "buildCommand": "npm run build",
   "installCommand": "npm install",
   "framework": "nextjs",
+  "crons": [
+    {
+      "path": "/api/cron/newsletter?action=publish-public",
+      "schedule": "5 14 * * *"
+    }
+  ],
   "outputDirectory": ".next"
 }

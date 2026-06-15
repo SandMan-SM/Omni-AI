@@ -2,6 +2,7 @@ node_modules
 .git
 .next
 .next-prod
+.local
 dist
 *.log
 .env*.local

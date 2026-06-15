@@ -81,6 +81,15 @@ export interface PremiumContent extends NewsletterContent {
   ai_recommendation?: string;
 }
 
+export interface NewsletterRunOptions {
+  /**
+   * Publish the web/RSS issue without sending email, Telegram, or send-log rows.
+   * This keeps the public newsletter feed fresh when owner email delivery is
+   * handled by an external MCP-backed automation.
+   */
+  publishOnly?: boolean;
+}
+
 // ── Trending Keywords ────────────────────────────────────────────────────────
 
 async function fetchTrendingKeywords(): Promise<string[]> {
@@ -402,6 +411,14 @@ function createSlug(subject: string): string {
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
     .slice(0, 80);
+}
+
+function todayIssueDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function interlinkedIssueSlug(tier: 'free' | 'premium'): string {
+  return `interlinked-${tier}-${todayIssueDate()}`;
 }
 
 export async function generateFreeContent(avoidSubjectsOrSnippets: string[] | AvoidSnippets = []): Promise<NewsletterContent> {
@@ -1451,7 +1468,8 @@ export async function generateDrafts(supabase: any) {
  * Sends to all free subscribers + publishes as page.
  * If an unpublished draft exists, uses that instead of generating new content.
  */
-export async function runDailyNewsletter(supabase: any = null) {
+export async function runDailyNewsletter(supabase: any = null, options: NewsletterRunOptions = {}) {
+  const publishOnly = options.publishOnly === true;
   let content: NewsletterContent;
   let draftId: string | null = null;
 
@@ -1496,6 +1514,7 @@ export async function runDailyNewsletter(supabase: any = null) {
   }
 
   content = normalizeNewsletterContentForPublish(content);
+  content.slug = interlinkedIssueSlug('free');
 
   // Skip the entire send for off-schedule partner content. Sending the
   // email/telegram with the post landing as draft would leave recipients
@@ -1506,7 +1525,7 @@ export async function runDailyNewsletter(supabase: any = null) {
     return { content, telegramOk: false, emailOk: false, premiumSent: 0, freeSent: 0 };
   }
 
-  const telegramOk = await sendToTelegram(content);
+  const telegramOk = publishOnly ? false : await sendToTelegram(content);
 
   // Send to subscribed audience — resolved via the canonical audience
   // helper so the admin panel view == the send set. The helper uses an
@@ -1517,17 +1536,19 @@ export async function runDailyNewsletter(supabase: any = null) {
   let emailOk = false;
   if (supabase) {
     try {
-      const admin = createAdminClient();
-      const audience = await getNewsletterAudience(admin);
-      const { freeRecipients } = audienceSendList(audience);
-      const allEmails = new Set<string>(freeRecipients);
+      if (!publishOnly) {
+        const admin = createAdminClient();
+        const audience = await getNewsletterAudience(admin);
+        const { freeRecipients } = audienceSendList(audience);
+        const allEmails = new Set<string>(freeRecipients);
 
-      if (allEmails.size > 0) {
-        const results = await Promise.allSettled(
-          Array.from(allEmails).map((email) => sendEmail(content, email))
-        );
-        freeSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
-        emailOk = freeSent > 0;
+        if (allEmails.size > 0) {
+          const results = await Promise.allSettled(
+            Array.from(allEmails).map((email) => sendEmail(content, email))
+          );
+          freeSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
+          emailOk = freeSent > 0;
+        }
       }
 
       const sentAt = new Date().toISOString();
@@ -1545,19 +1566,21 @@ export async function runDailyNewsletter(supabase: any = null) {
 
       if (draftId) {
         // Publish the existing draft + stamp send tracking fields
-        await supabase
+        const { error: updateErr } = await supabase
           .from('newsletter_posts')
           .update({
+            slug: content.slug,
             published_at: publishedStamp,
-            sent_at: sentAt,
+            sent_at: publishOnly ? null : sentAt,
             recipients_count: freeSent,
             email_sent: emailOk,
             telegram_sent: telegramOk,
           })
           .eq('id', draftId);
+        if (updateErr) throw updateErr;
       } else {
         // Save newsletter as a new publishable post
-        await supabase.from('newsletter_posts').insert({
+        const { error: insertErr } = await supabase.from('newsletter_posts').insert({
           slug: content.slug,
           subject: content.subject,
           intro: content.intro,
@@ -1569,35 +1592,39 @@ export async function runDailyNewsletter(supabase: any = null) {
           keywords: content.keywords || [],
           tier: 'free',
           published_at: publishedStamp,
-          sent_at: sentAt,
+          sent_at: publishOnly ? null : sentAt,
           recipients_count: freeSent,
           email_sent: emailOk,
           telegram_sent: telegramOk,
-        }).then(() => {}).catch((e: any) => console.error('Post save error:', e));
+        });
+        if (insertErr) throw insertErr;
       }
 
-      // Log — link to post if we have a draftId
-      await supabase.from('newsletter_sends').insert({
-        post_id: draftId || null,
-        subject: content.subject,
-        tier: 'free',
-        recipients_total: freeSent,
-        telegram_ok: telegramOk,
-        email_ok: emailOk,
-        sent_at: sentAt,
-      });
+      if (!publishOnly) {
+        // Log — link to post if we have a draftId
+        await supabase.from('newsletter_sends').insert({
+          post_id: draftId || null,
+          subject: content.subject,
+          tier: 'free',
+          recipients_total: freeSent,
+          telegram_ok: telegramOk,
+          email_ok: emailOk,
+          sent_at: sentAt,
+        });
 
-      // Memory log: track every email send for improvement analysis
-      await supabase.from('email_send_logs').insert({
-        post_id: draftId || null,
-        subject: content.subject,
-        sent_at: sentAt,
-        recipients_count: freeSent,
-        notes: null,
-        improvement_tags: [],
-      });
+        // Memory log: track every email send for improvement analysis
+        await supabase.from('email_send_logs').insert({
+          post_id: draftId || null,
+          subject: content.subject,
+          sent_at: sentAt,
+          recipients_count: freeSent,
+          notes: null,
+          improvement_tags: [],
+        });
+      }
     } catch (e) {
       console.error('Free newsletter send error:', e);
+      if (publishOnly) throw e;
     }
   }
 
@@ -1609,7 +1636,8 @@ export async function runDailyNewsletter(supabase: any = null) {
  * Mon: Value (teach), Wed: Insight (connect), Fri: Offer (monetize).
  * If an unpublished draft exists, uses that instead of generating new content.
  */
-export async function runPremiumNewsletter(supabase: any = null) {
+export async function runPremiumNewsletter(supabase: any = null, options: NewsletterRunOptions = {}) {
+  const publishOnly = options.publishOnly === true;
   const dayType = getDayType();
   if (!dayType) {
     return { content: null, sent: 0, skipped: true, reason: 'Not a premium send day (Mon/Wed/Fri only)' };
@@ -1661,6 +1689,7 @@ export async function runPremiumNewsletter(supabase: any = null) {
   }
 
   content = normalizeNewsletterContentForPublish(content);
+  content.slug = interlinkedIssueSlug('premium');
 
   // Premium tier is partner-free by policy. If the generator hands us a
   // partner-prefixed slug, skip the entire send — recipients shouldn't
@@ -1681,20 +1710,22 @@ export async function runPremiumNewsletter(supabase: any = null) {
       // audience member is premium if profiles.is_premium/subscription_status
       // says so OR newsletter_subscriptions.subscription_tier='premium'.
       // Either qualifies for the premium send.
-      const admin = createAdminClient();
-      const audience = await getNewsletterAudience(admin);
-      const { premiumRecipients } = audienceSendList(audience);
-      const premiumEmails = new Set<string>(premiumRecipients);
+      if (!publishOnly) {
+        const admin = createAdminClient();
+        const audience = await getNewsletterAudience(admin);
+        const { premiumRecipients } = audienceSendList(audience);
+        const premiumEmails = new Set<string>(premiumRecipients);
 
-      if (premiumEmails.size > 0) {
-        const results = await Promise.allSettled(
-          Array.from(premiumEmails).map((email) => sendEmail(content, email))
-        );
-        premiumSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
+        if (premiumEmails.size > 0) {
+          const results = await Promise.allSettled(
+            Array.from(premiumEmails).map((email) => sendEmail(content, email))
+          );
+          premiumSent = results.filter(r => r.status === 'fulfilled' && r.value).length;
+        }
       }
 
       // Also send premium Telegram update
-      telegramOk = await sendToTelegram(content);
+      telegramOk = publishOnly ? false : await sendToTelegram(content);
 
       const premiumSentAt = new Date().toISOString();
 
@@ -1709,19 +1740,21 @@ export async function runPremiumNewsletter(supabase: any = null) {
 
       if (draftId) {
         // Publish the existing draft + stamp send tracking fields
-        await supabase
+        const { error: updateErr } = await supabase
           .from('newsletter_posts')
           .update({
+            slug: content.slug,
             published_at: premiumPublishedStamp,
-            sent_at: premiumSentAt,
+            sent_at: publishOnly ? null : premiumSentAt,
             recipients_count: premiumSent,
             email_sent: premiumSent > 0,
             telegram_sent: telegramOk,
           })
           .eq('id', draftId);
+        if (updateErr) throw updateErr;
       } else {
         // Save premium newsletter as a new publishable post
-        await supabase.from('newsletter_posts').insert({
+        const { error: insertErr } = await supabase.from('newsletter_posts').insert({
           slug: content.slug,
           subject: content.subject,
           intro: content.intro,
@@ -1735,35 +1768,39 @@ export async function runPremiumNewsletter(supabase: any = null) {
           keywords: content.keywords || [],
           tier: 'premium',
           published_at: premiumPublishedStamp,
-          sent_at: premiumSentAt,
+          sent_at: publishOnly ? null : premiumSentAt,
           recipients_count: premiumSent,
           email_sent: premiumSent > 0,
           telegram_sent: telegramOk,
-        }).then(() => {}).catch((e: any) => console.error('Premium post save error:', e));
+        });
+        if (insertErr) throw insertErr;
       }
 
-      // Log — link to post if we have a draftId
-      await supabase.from('newsletter_sends').insert({
-        post_id: draftId || null,
-        subject: content.subject,
-        tier: 'premium',
-        recipients_total: premiumSent,
-        telegram_ok: telegramOk,
-        email_ok: premiumSent > 0,
-        sent_at: premiumSentAt,
-      });
+      if (!publishOnly) {
+        // Log — link to post if we have a draftId
+        await supabase.from('newsletter_sends').insert({
+          post_id: draftId || null,
+          subject: content.subject,
+          tier: 'premium',
+          recipients_total: premiumSent,
+          telegram_ok: telegramOk,
+          email_ok: premiumSent > 0,
+          sent_at: premiumSentAt,
+        });
 
-      // Memory log: track every email send for improvement analysis
-      await supabase.from('email_send_logs').insert({
-        post_id: draftId || null,
-        subject: content.subject,
-        sent_at: premiumSentAt,
-        recipients_count: premiumSent,
-        notes: null,
-        improvement_tags: [],
-      });
+        // Memory log: track every email send for improvement analysis
+        await supabase.from('email_send_logs').insert({
+          post_id: draftId || null,
+          subject: content.subject,
+          sent_at: premiumSentAt,
+          recipients_count: premiumSent,
+          notes: null,
+          improvement_tags: [],
+        });
+      }
     } catch (e) {
       console.error('Premium newsletter send error:', e);
+      if (publishOnly) throw e;
     }
   }
 

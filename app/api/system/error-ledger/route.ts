@@ -12,10 +12,12 @@ export const dynamic = "force-dynamic";
 
 async function authorizeLedgerRequest(req: Request): Promise<NextResponse | null> {
   const cronLogToken = req.headers.get("x-omni-cron-secret")?.trim() ?? "";
+  const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
   if (
-    cronLogToken &&
+    (cronLogToken || bearer) &&
     process.env.OMNI_CRON_LOG_SECRET &&
-    constantTimeEqual(cronLogToken, process.env.OMNI_CRON_LOG_SECRET)
+    (constantTimeEqual(cronLogToken, process.env.OMNI_CRON_LOG_SECRET) ||
+      constantTimeEqual(bearer, process.env.OMNI_CRON_LOG_SECRET))
   ) {
     return null;
   }

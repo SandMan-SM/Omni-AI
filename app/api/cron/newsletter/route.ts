@@ -15,8 +15,48 @@ export const fetchCache = "force-no-store";
  * Newsletter Cron — Called by Vercel Cron
  *
  * ?action=generate-drafts (8:00 AM ET): Generate draft newsletters without sending
+ * ?action=publish-public: Publish today's public web/RSS issues without sending email
  * Default (9:00 AM ET): Send FREE + PREMIUM newsletters, then send ONE clean Telegram debrief
  */
+
+function todayIssueDate(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function todayUtcRange() {
+  const start = new Date();
+  start.setUTCHours(0, 0, 0, 0);
+  const end = new Date(start);
+  end.setUTCDate(end.getUTCDate() + 1);
+  return { start: start.toISOString(), end: end.toISOString() };
+}
+
+async function findPublishedIssueForToday(supabase: any, tier: 'free' | 'premium') {
+  const { start, end } = todayUtcRange();
+  const slug = `interlinked-${tier}-${todayIssueDate()}`;
+
+  const { data: bySlug } = await supabase
+    .from('newsletter_posts')
+    .select('id, slug, subject, tier, published_at')
+    .eq('slug', slug)
+    .maybeSingle();
+
+  if (bySlug?.published_at) return bySlug;
+
+  const { data: byDate } = await supabase
+    .from('newsletter_posts')
+    .select('id, slug, subject, tier, published_at')
+    .eq('tier', tier)
+    .not('published_at', 'is', null)
+    .gte('published_at', start)
+    .lt('published_at', end)
+    .order('published_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return byDate ?? null;
+}
+
 export async function GET(request: Request) {
   noStore();
   const authHeader = request.headers.get('authorization');
@@ -47,6 +87,77 @@ export async function GET(request: Request) {
         success: true,
         action: 'generate-drafts',
         drafts,
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    // Public publish mode — intentionally no Resend/Telegram side effects.
+    // The owner-only email can be handled by the MCP-backed Hermes/Codex
+    // automation while this route keeps /api/newsletter/posts + RSS fresh.
+    if (action === 'publish-public') {
+      const existingFree = await findPublishedIssueForToday(supabase as any, 'free');
+      const existingPremium = await findPublishedIssueForToday(supabase as any, 'premium');
+
+      let freeSlug = existingFree?.slug ?? null;
+      let premiumSlug = existingPremium?.slug ?? null;
+      let freePayload: Record<string, unknown>;
+      let premiumPayload: Record<string, unknown>;
+
+      if (existingFree) {
+        freePayload = { skipped: true, reason: 'already_published_today', slug: existingFree.slug };
+      } else {
+        const freeResult = await runDailyNewsletter(supabase as any, { publishOnly: true });
+        freeSlug = freeResult.content.slug ?? null;
+        freePayload = {
+          subject: freeResult.content.subject,
+          slug: freeResult.content.slug,
+          published: true,
+          email_side_effects: false,
+        };
+      }
+
+      if (existingPremium) {
+        premiumPayload = { skipped: true, reason: 'already_published_today', slug: existingPremium.slug };
+      } else {
+        const premiumResult = await runPremiumNewsletter(supabase as any, { publishOnly: true });
+        if (premiumResult.skipped) {
+          premiumPayload = { skipped: true, reason: premiumResult.reason };
+        } else {
+          premiumSlug = premiumResult.content?.slug ?? null;
+          premiumPayload = {
+            subject: premiumResult.content?.subject,
+            slug: premiumResult.content?.slug,
+            published: true,
+            email_side_effects: false,
+          };
+        }
+      }
+
+      console.log(
+        `[Newsletter Cron] Public publish: free=${existingFree ? 'skipped' : freeSlug} | ` +
+        `premium=${existingPremium ? 'skipped' : premiumSlug ?? 'skipped'}`
+      );
+
+      logEvent(supabase as any, {
+        actor_type: 'cron',
+        actor_id: 'newsletter_cron',
+        event_type: 'newsletter_public_published',
+        event_category: 'newsletter',
+        action: 'publish',
+        target_type: 'newsletter_post',
+        value_text: 'publish_public',
+        properties: {
+          free: freeSlug,
+          premium: premiumSlug,
+          email_side_effects: false,
+        },
+      });
+
+      return NextResponse.json({
+        success: true,
+        action: 'publish-public',
+        free: freePayload,
+        premium: premiumPayload,
         timestamp: new Date().toISOString(),
       });
     }

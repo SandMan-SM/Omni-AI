@@ -1,8 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 function FitTitle() {
@@ -136,20 +135,6 @@ export function CampaignsSection() {
               No editors. No guessing. Just results.
             </motion.p>
 
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
-              viewport={{ once: true }}
-              className="flex items-center justify-start md:justify-center gap-4"
-            >
-              <div className="inline-flex max-w-full items-center gap-2 sm:gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 rounded-full bg-white/5 border border-white/10 text-xs sm:text-base text-gray-300 whitespace-nowrap">
-                <Video className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-purple-400 flex-shrink-0" />
-                <span>Available in your Dashboard</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 flex-shrink-0" />
-                <span className="text-purple-400 font-medium">Campaigns Tab</span>
-              </div>
-            </motion.div>
           </div>
         </motion.div>
 

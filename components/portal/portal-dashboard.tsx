@@ -30,14 +30,9 @@ export function PortalDashboard({
       <header className="mb-6 rounded-xl border border-white/[0.06] bg-white/[0.03] p-5 sm:p-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-white">
-                {client.businessName}
-              </h1>
-              <span className="rounded-full border border-white/10 px-2 py-0.5 text-[10px] uppercase tracking-widest text-white/40">
-                Demo data
-              </span>
-            </div>
+            <h1 className="text-2xl font-bold text-white">
+              {client.businessName}
+            </h1>
             <p className="mt-1 text-sm text-white/50">{client.vertical}</p>
             <p className="mt-2 text-sm">
               <span className="text-white/40">Asset: </span>

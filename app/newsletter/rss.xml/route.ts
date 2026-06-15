@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { unstable_noStore as noStore } from "next/cache";
 
 /**
  * RSS 2.0 feed for the Interlinked newsletter at /newsletter/rss.xml.
@@ -19,8 +20,9 @@ import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/ne
  * fine and it keeps Supabase round-trips off the hot path.
  */
 
-export const revalidate = 3600;
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 
 const siteUrl = "https://omnileadsagi.com";
 const feedUrl = `${siteUrl}/newsletter/rss.xml`;
@@ -53,11 +55,12 @@ function archiveDateForIndex(index: number): string {
 }
 
 export async function GET() {
+  noStore();
   const supabase = createAdminClient();
   const result = await withTimeout(
     supabase
       .from("newsletter_posts")
-      .select("slug, subject, intro, published_at, created_at, tier")
+      .select("slug, subject, intro, keywords, published_at, created_at, tier")
       // Keep this aligned with /api/newsletter/posts. `published_at` is
       // the stable public-publish marker; adding newer/optional columns to
       // the public RSS query can make PostgREST reject the whole request and
@@ -73,6 +76,7 @@ export async function GET() {
       slug?: string | null;
       subject?: string | null;
       intro?: string | null;
+      keywords?: unknown;
       published_at?: string | null;
       created_at?: string | null;
       tier?: string | null;
@@ -179,10 +183,10 @@ ${items}
   return new Response(xml, {
     headers: {
       "Content-Type": "application/rss+xml; charset=utf-8",
-      // Edge cache for an hour, serve stale for a day while revalidating.
-      // Keeps feed readers polite under burst load and survives a Supabase
-      // hiccup without 500-ing the feed.
-      "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400",
+      // Keep the feed aligned with /api/newsletter/posts. RSS is the public
+      // freshness signal, so serving yesterday's cached XML after a publish
+      // makes the whole newsletter look stale even when the DB is correct.
+      "Cache-Control": "no-store, no-cache, must-revalidate",
     },
   });
 }

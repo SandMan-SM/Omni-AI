@@ -96,14 +96,14 @@ interface PremiumContent extends NewsletterContent {
 ```json
 {
   "crons": [
-    { "path": "/api/cron/newsletter?action=generate-drafts", "schedule": "0 12 * * *" },
-    { "path": "/api/cron/newsletter",                        "schedule": "0 13 * * *" }
+    { "path": "/api/cron/newsletter?action=publish-public", "schedule": "5 14 * * *" }
   ]
 }
 ```
 
-- **12:00 UTC (8:00 AM ET)** — `generateDrafts()` runs. Cleans old unpublished drafts, then generates fresh free + premium drafts and writes them to `newsletter_posts` with `published_at = null`.
-- **13:00 UTC (9:00 AM ET)** — main cron runs. It:
+- **14:05 UTC (8:05 AM MT during daylight time)** — `publish-public` runs. It creates today's free + premium public issues in `newsletter_posts`, stamps `published_at`, and skips Resend/Telegram/send-log side effects. This is the source of truth for `/api/newsletter/posts` and `/newsletter/rss.xml`.
+- The owner-only Interlinked email can be sent by the external Hermes/Codex MCP Resend automation. That path must not be the only public publisher.
+- Manual full-send mode remains available at `/api/cron/newsletter`. It:
   1. Guards against double-send (checks `newsletter_sends` for any row from today).
   2. Calls `runDailyNewsletter()` — uses today's free draft if present, else generates fresh content. Sends to every `profiles.newsletter_subscribed = true` row via Resend. Marks the draft `published_at`.
   3. Calls `runPremiumNewsletter()` — same flow, filtered to `is_premium = true`. Currently gated to Mon/Wed/Fri; remove `getDayType()` guard to send daily.
