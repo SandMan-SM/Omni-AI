@@ -368,7 +368,7 @@ export function SolutionsClient({
               className="mt-3 text-3xl sm:text-4xl tracking-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Subscribe to what you need.
+              Add what you need.
             </h2>
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {monthly.map((s) => (
