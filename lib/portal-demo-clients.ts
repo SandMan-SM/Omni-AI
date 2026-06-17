@@ -215,7 +215,8 @@ export const DEMO_CLIENTS: DemoClient[] = [
           { label: "Won", value: 64600 },
         ],
       },
-      conversion: { ratePct: 31.67, wonRevenue: 84600 },
+      // 38 won / 120 total = 31.7% (one-decimal rounding of 31.667%).
+      conversion: { ratePct: 31.7, wonRevenue: 84600 },
       funnel: {
         pipelineName: "Omni Growth Pipeline",
         stages: [
