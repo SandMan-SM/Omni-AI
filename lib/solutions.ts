@@ -264,6 +264,5 @@ export const SOLUTIONS: Solution[] = [
     price: "$1,500/mo",
     billing: "monthly",
     planId: "P-0CW08001LU923782MNIUHR6I",
-    href: "/meta",
   },
 ];
