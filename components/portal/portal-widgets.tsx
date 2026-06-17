@@ -1,5 +1,6 @@
 "use client";
 
+import { useId } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { CheckCircle2, Circle, Phone, MessageSquare, Clock } from "lucide-react";
 import type {
@@ -53,12 +54,19 @@ function WidgetCard({
 }) {
   return (
     <section
-      className={`rounded-xl border border-white/[0.06] bg-white/[0.03] p-5 ${
+      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.055] to-white/[0.015] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_10px_30px_-14px_rgba(0,0,0,0.7)] transition-colors duration-300 hover:border-white/[0.16] ${
         fullWidth ? "sm:col-span-2 xl:col-span-3" : ""
       }`}
     >
+      {/* top sheen */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+      />
       <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-sm font-medium text-white/70">{title}</h2>
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/45">
+          {title}
+        </h2>
         {action}
       </div>
       {children}
@@ -77,34 +85,58 @@ function Donut({
   centerTop: string;
   centerBottom?: string;
 }) {
+  const uid = useId().replace(/:/g, "");
   const data = slices.filter((s) => s.value > 0);
   // All-zero datasets still need a visible ring.
   const chartData = data.length
     ? data
-    : [{ name: "empty", value: 1, color: "rgba(255,255,255,0.08)" }];
+    : [{ name: "empty", value: 1, color: "rgba(255,255,255,0.07)" }];
   return (
-    <div className="relative h-[180px]">
-      <ResponsiveContainer width="100%" height={180}>
+    <div
+      className="relative h-[184px]"
+      style={{ filter: "drop-shadow(0 6px 16px rgba(0,0,0,0.45))" }}
+    >
+      <ResponsiveContainer width="100%" height={184}>
         <PieChart>
+          <defs>
+            {chartData.map((entry, i) => (
+              <linearGradient
+                key={i}
+                id={`donut-${uid}-${i}`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
+                <stop offset="0%" stopColor={entry.color} stopOpacity={0.98} />
+                <stop offset="100%" stopColor={entry.color} stopOpacity={0.6} />
+              </linearGradient>
+            ))}
+          </defs>
           <Pie
             data={chartData}
             dataKey="value"
-            innerRadius={58}
-            outerRadius={76}
+            innerRadius={62}
+            outerRadius={82}
             stroke="none"
-            paddingAngle={data.length > 1 ? 2 : 0}
+            cornerRadius={7}
+            paddingAngle={data.length > 1 ? 3 : 0}
             isAnimationActive={false}
           >
             {chartData.map((entry, i) => (
-              <Cell key={i} fill={entry.color} />
+              <Cell key={i} fill={`url(#donut-${uid}-${i})`} />
             ))}
           </Pie>
         </PieChart>
       </ResponsiveContainer>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-        <span className="text-2xl font-bold text-white">{centerTop}</span>
+        <span className="text-[28px] font-bold leading-none tracking-tight text-white tabular-nums">
+          {centerTop}
+        </span>
         {centerBottom ? (
-          <span className="text-[11px] text-white/50">{centerBottom}</span>
+          <span className="mt-1.5 text-[10px] uppercase tracking-[0.18em] text-white/45">
+            {centerBottom}
+          </span>
         ) : null}
       </div>
     </div>
@@ -219,21 +251,21 @@ export function OpportunityValueWidget({
   const max = Math.max(...data.bars.map((b) => b.value), 1);
   return (
     <WidgetCard title="Opportunity Value">
-      <p className="mb-4 text-3xl font-bold text-white">
+      <p className="mb-4 text-3xl font-bold tracking-tight text-white tabular-nums">
         {formatMoney(data.total)}
       </p>
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         {data.bars.map((bar: ValueBar) => (
           <div key={bar.label}>
-            <div className="mb-1 flex items-center justify-between text-xs">
+            <div className="mb-1.5 flex items-center justify-between text-xs">
               <span className="truncate pr-2 text-white/60">{bar.label}</span>
               <span className="shrink-0 tabular-nums text-white/80">
                 {formatMoney(bar.value)}
               </span>
             </div>
-            <div className="h-2 rounded-full bg-white/[0.06]">
+            <div className="h-2.5 overflow-hidden rounded-full bg-white/[0.05] shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
               <div
-                className="h-2 rounded-full bg-gradient-to-r from-purple-500 to-sky-400"
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 shadow-[0_0_10px_rgba(129,140,248,0.4)] transition-[width] duration-700"
                 style={{ width: `${(bar.value / max) * 100}%` }}
               />
             </div>
@@ -255,15 +287,15 @@ export function FunnelWidget({ data }: { data: DemoMetrics["funnel"] }) {
   });
   return (
     <WidgetCard title={`Funnel · ${data.pipelineName}`} fullWidth>
-      <div className="space-y-2.5">
+      <div className="space-y-3">
         {rows.map((row) => (
           <div key={row.stage} className="flex items-center gap-3">
             <span className="w-32 shrink-0 truncate text-xs text-white/60 sm:w-48">
               {row.stage}
             </span>
-            <div className="h-2.5 flex-1 rounded-full bg-white/[0.06]">
+            <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/[0.05] shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
               <div
-                className="h-2.5 rounded-full bg-gradient-to-r from-violet-500 to-cyan-400"
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-cyan-400 shadow-[0_0_10px_rgba(129,140,248,0.35)] transition-[width] duration-700"
                 style={{ width: `${(row.count / max) * 100}%` }}
               />
             </div>
@@ -292,11 +324,13 @@ function StatGrid({
       {stats.map((s) => (
         <div
           key={s.label}
-          className="rounded-lg border border-white/[0.06] bg-black/25 p-3"
+          className="rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.05] to-white/[0.01] p-3.5 transition-colors duration-300 hover:border-white/[0.14]"
         >
-          <p className="text-xs text-white/50">{s.label}</p>
+          <p className="text-[11px] uppercase tracking-wide text-white/45">
+            {s.label}
+          </p>
           <p
-            className={`mt-1 text-xl font-semibold ${s.accent ?? "text-white"}`}
+            className={`mt-1.5 text-2xl font-semibold tabular-nums ${s.accent ?? "text-white"}`}
           >
             {s.value}
           </p>
@@ -498,7 +532,7 @@ export function LeadSourceWidget({
         ) : undefined
       }
     >
-      <p className="mb-3 text-3xl font-bold text-white">
+      <p className="mb-3 text-3xl font-bold tracking-tight text-white tabular-nums">
         {formatCompact(data.total)}
         <span className="ml-2 text-sm font-normal text-white/40">
           total leads

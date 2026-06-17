@@ -27,10 +27,14 @@ export function PortalDashboard({
   const m = client.metrics;
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6 sm:py-10">
-      <header className="mb-6 rounded-xl border border-white/[0.06] bg-white/[0.03] p-5 sm:p-6">
+      <header className="relative mb-6 overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-white/[0.02] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_12px_40px_-18px_rgba(0,0,0,0.75)] sm:p-6">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+        />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold tracking-tight text-white sm:text-[26px]">
               {client.businessName}
             </h1>
             <p className="mt-1 text-sm text-white/50">{client.vertical}</p>
@@ -58,7 +62,7 @@ export function PortalDashboard({
         </div>
       </header>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
         <OpportunityStatusWidget data={m.opportunities} />
         <OpportunityValueWidget data={m.opportunityValue} />
         <ConversionRateWidget data={m.conversion} />
