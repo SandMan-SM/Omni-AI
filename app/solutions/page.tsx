@@ -22,18 +22,18 @@ const PAYPAL_CLIENT_ID =
 export const metadata: Metadata = {
   title: "Solutions · À La Carte AI Services | Omni AI",
   description:
-    "Buy any Omni AI service à la carte: agentic websites ($25k+), AI CEO with advanced marketing ($100k+), hyper-advanced newsletters, SEO & GEO, email & SMS, custom CRM, social automation, cybersecurity, and more — each with its own PayPal payment option.",
+    "Buy any AI Integrated Solutions service à la carte: agentic websites ($25k+), AI CEO with advanced marketing ($100k+), hyper-advanced newsletters, SEO & GEO, email & SMS, custom CRM, social automation, cybersecurity, and more — each with its own PayPal payment option.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
-    title: "Omni AI Solutions · À La Carte AI Services",
+    title: "AI Integrated Solutions · À La Carte AI Services",
     description:
-      "Agentic websites, AI CEO, agentic newsletters, SEO & GEO, email & SMS, custom CRM, social automation, cybersecurity — buy any service à la carte with PayPal.",
+      "Agentic websites, AI CEO, agentic newsletters, SEO & GEO, email & SMS, custom CRM, social automation, cybersecurity — buy any service à la carte with PayPal from AI Integrated Solutions.",
     url: PAGE_URL,
-    siteName: "Omni AI",
+    siteName: "AI Integrated Solutions",
     type: "website",
     images: [
       {
-        url: `${SITE_URL}/api/og?title=Omni%20AI%20Solutions&topic=%C3%80%20La%20Carte%20AI%20Services`,
+        url: `${SITE_URL}/api/og?title=AI%20Integrated%20Solutions&topic=%C3%80%20La%20Carte%20AI%20Services`,
         width: 1200,
         height: 630,
       },
@@ -41,9 +41,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Omni AI Solutions · À La Carte AI Services",
+    title: "AI Integrated Solutions · À La Carte AI Services",
     description:
-      "Buy any Omni AI service à la carte with PayPal — websites, AI CEO, newsletters, SEO/GEO, email & SMS, CRM, social, cybersecurity.",
+      "Buy any service à la carte with PayPal from AI Integrated Solutions — websites, AI CEO, newsletters, SEO/GEO, email & SMS, CRM, social, cybersecurity.",
   },
   robots: { index: true, follow: true },
 };
