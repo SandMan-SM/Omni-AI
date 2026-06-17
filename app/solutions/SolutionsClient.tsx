@@ -118,7 +118,7 @@ function ServiceCard({
                 clientId={clientId}
                 amount={sol.amount}
                 label={sol.name}
-                funding="both"
+                funding="paypal"
               />
             </div>
           ) : null}
@@ -258,7 +258,7 @@ export function SolutionsClient({
                             clientId={paypalClientId}
                             amount={aiCeo.amount}
                             label={aiCeo.name}
-                            funding="both"
+                            funding="paypal"
                           />
                         </div>
                       ) : null}
