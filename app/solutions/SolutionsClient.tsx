@@ -4,14 +4,11 @@
 // as /meta: hoisted ProposalBackdrop + GoldSparksBackdrop siblings,
 // amber palette, Georgia serif headlines, chrome-flash CTA.
 //
-// Each card shows a uniform trigger button ("Pay by Card" / "Subscribe").
-// Clicking it opens a centered MODAL that renders the actual PayPal
-// control (PayPalOrderButton for one-time, PayPalSubscribeButton for
-// monthly). The PayPal card form expands inside the wide, centered modal
-// instead of cramming into the narrow card column. Data comes from
+// Every card renders the PayPal "Debit or Credit Card" button DIRECTLY
+// (PayPalOrderButton) — one-time card checkout, no Subscribe widget, no
+// intermediate "Pay by Card" trigger or modal. Data comes from
 // lib/solutions.ts (single source of truth).
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
@@ -32,25 +29,6 @@ function HollowTriangle() {
       aria-hidden="true"
     >
       <polygon points="6 3 20 12 6 21 6 3" />
-    </svg>
-  );
-}
-
-function CreditCardIcon() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      width="18"
-      height="18"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <rect x="2" y="5" width="20" height="14" rx="2" />
-      <line x1="2" y1="10" x2="22" y2="10" />
     </svg>
   );
 }
@@ -78,29 +56,13 @@ function PriceTag({ sol }: { sol: Solution }) {
   );
 }
 
-// Uniform trigger button on every card — opens the payment modal. Same
-// size everywhere so all cards' buttons line up.
-function PayTrigger({ sol, onPay }: { sol: Solution; onPay: () => void }) {
-  const label = "Pay by Card";
-  return (
-    <button
-      type="button"
-      onClick={onPay}
-      className="mt-6 flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
-    >
-      <CreditCardIcon />
-      <span className="chrome-white">{label}</span>
-    </button>
-  );
-}
-
 function ServiceCard({
   sol,
-  onPay,
+  clientId,
   featured = false,
 }: {
   sol: Solution;
-  onPay: () => void;
+  clientId: string;
   featured?: boolean;
 }) {
   return (
@@ -145,62 +107,10 @@ function ServiceCard({
           ))}
         </ul>
         <div className="mt-auto">
-          <PayTrigger sol={sol} onPay={onPay} />
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Centered payment modal — renders the actual PayPal control for the
-// chosen service. The PayPal card form expands here, with room to breathe.
-function PayModal({
-  sol,
-  clientId,
-  onClose,
-}: {
-  sol: Solution | null;
-  clientId: string;
-  onClose: () => void;
-}) {
-  if (!sol) return null;
-  return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-    >
-      <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
-        onClick={onClose}
-        aria-hidden
-      />
-      <div className="relative z-10 w-full max-w-md max-h-[88vh] overflow-y-auto rounded-3xl border border-amber-300/30 bg-[#0b0f1d] p-6 sm:p-8 shadow-2xl">
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full border border-white/15 text-zinc-300 hover:bg-white/10 transition-colors"
-        >
-          ✕
-        </button>
-        {sol.kind ? (
-          <p className="text-[10px] uppercase tracking-[0.3em] text-amber-300/80">
-            {sol.kind}
-          </p>
-        ) : null}
-        <h3
-          className="mt-2 pr-10 text-2xl tracking-tight text-white"
-          style={{ fontFamily: "Georgia, serif" }}
-        >
-          {sol.name}
-        </h3>
-        <div className="mt-3">
-          <PriceTag sol={sol} />
-        </div>
-        <div className="mt-6">
           {sol.amount ? (
-            <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
+            <div className="mt-6">
+              <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
+            </div>
           ) : null}
         </div>
       </div>
@@ -214,23 +124,6 @@ export function SolutionsClient({
   websiteTiers,
   solutions,
 }: Props) {
-  const [active, setActive] = useState<Solution | null>(null);
-
-  // Lock body scroll + close on Escape while the modal is open.
-  useEffect(() => {
-    if (!active) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setActive(null);
-    };
-    window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [active]);
-
   // Group by billing type: one-time builds together, monthly services
   // together. AI CEO is its own feature band.
   const aiCeo = solutions.find((s) => s.key === "ai-ceo");
@@ -298,7 +191,7 @@ export function SolutionsClient({
                 <ServiceCard
                   key={t.key}
                   sol={t}
-                  onPay={() => setActive(t)}
+                  clientId={paypalClientId}
                   featured={t.featured}
                 />
               ))}
@@ -349,7 +242,15 @@ export function SolutionsClient({
                       <p className="mt-2 text-sm text-zinc-400">
                         Custom build · scoped to your operation.
                       </p>
-                      <PayTrigger sol={aiCeo} onPay={() => setActive(aiCeo)} />
+                      {aiCeo.amount ? (
+                        <div className="mt-6">
+                          <PayPalOrderButton
+                            clientId={paypalClientId}
+                            amount={aiCeo.amount}
+                            label={aiCeo.name}
+                          />
+                        </div>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -372,7 +273,7 @@ export function SolutionsClient({
             </h2>
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {monthly.map((s) => (
-                <ServiceCard key={s.key} sol={s} onPay={() => setActive(s)} />
+                <ServiceCard key={s.key} sol={s} clientId={paypalClientId} />
               ))}
             </div>
           </div>
@@ -432,9 +333,6 @@ export function SolutionsClient({
         </footer>
         <p className="sr-only">{pageUrl}</p>
       </div>
-
-      {/* Payment popup */}
-      <PayModal sol={active} clientId={paypalClientId} onClose={() => setActive(null)} />
     </>
   );
 }
