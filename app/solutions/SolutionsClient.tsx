@@ -60,10 +60,12 @@ function ServiceCard({
   sol,
   clientId,
   featured = false,
+  payFunding = "card",
 }: {
   sol: Solution;
   clientId: string;
   featured?: boolean;
+  payFunding?: "card" | "paypal";
 }) {
   return (
     <div
@@ -109,7 +111,12 @@ function ServiceCard({
         <div className="mt-auto">
           {sol.amount ? (
             <div className="mt-6">
-              <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
+              <PayPalOrderButton
+                clientId={clientId}
+                amount={sol.amount}
+                label={sol.name}
+                funding={payFunding}
+              />
             </div>
           ) : null}
         </div>
@@ -273,7 +280,12 @@ export function SolutionsClient({
             </h2>
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {monthly.map((s) => (
-                <ServiceCard key={s.key} sol={s} clientId={paypalClientId} />
+                <ServiceCard
+                  key={s.key}
+                  sol={s}
+                  clientId={paypalClientId}
+                  payFunding="paypal"
+                />
               ))}
             </div>
           </div>

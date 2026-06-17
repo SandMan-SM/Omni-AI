@@ -22,7 +22,7 @@ import { useEffect, useRef, useState } from "react";
 
 type PayPalNS = {
   Buttons: (opts: Record<string, unknown>) => { render: (el: HTMLElement) => void };
-  FUNDING: { CARD: string };
+  FUNDING: { CARD: string; PAYPAL: string };
 };
 
 declare global {
@@ -60,11 +60,15 @@ export function PayPalOrderButton({
   amount,
   label,
   className = "",
+  funding = "card",
 }: {
   clientId: string;
   amount: string;
   label?: string;
   className?: string;
+  // "card" → standalone Debit/Credit Card button (inline card form).
+  // "paypal" → yellow PayPal button that opens the actual PayPal page.
+  funding?: "card" | "paypal";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
@@ -79,9 +83,12 @@ export function PayPalOrderButton({
         ref.current.innerHTML = ""; // StrictMode double-invoke guard
         window.paypalOrder
           .Buttons({
-            // Card-only: render just the "Debit or Credit Card" button,
-            // not the PayPal-branded one.
-            fundingSource: window.paypalOrder.FUNDING.CARD,
+            // "card" → standalone Debit/Credit Card button (inline form).
+            // "paypal" → yellow PayPal button → opens the real PayPal page.
+            fundingSource:
+              funding === "paypal"
+                ? window.paypalOrder.FUNDING.PAYPAL
+                : window.paypalOrder.FUNDING.CARD,
             style: { shape: "pill" },
             createOrder: (
               _data: unknown,
@@ -111,7 +118,7 @@ export function PayPalOrderButton({
     return () => {
       cancelled = true;
     };
-  }, [clientId, amount, label]);
+  }, [clientId, amount, label, funding]);
 
   if (!clientId || !amount) return null;
 
