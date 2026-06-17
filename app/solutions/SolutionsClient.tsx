@@ -13,6 +13,7 @@ import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
 import { PayPalOrderButton } from "@/components/paypal-order-button";
+import { PayPalSubscribeButton } from "@/components/paypal-subscribe-button";
 import { BOOK_CALL_URL, type Solution } from "@/lib/solutions";
 
 function HollowTriangle() {
@@ -60,12 +61,10 @@ function ServiceCard({
   sol,
   clientId,
   featured = false,
-  payFunding = "paypal",
 }: {
   sol: Solution;
   clientId: string;
   featured?: boolean;
-  payFunding?: "card" | "paypal";
 }) {
   return (
     <div
@@ -109,13 +108,17 @@ function ServiceCard({
           ))}
         </ul>
         <div className="mt-auto">
-          {sol.amount ? (
+          {sol.billing === "monthly" && sol.planId ? (
+            <div className="mt-6">
+              <PayPalSubscribeButton clientId={clientId} planId={sol.planId} />
+            </div>
+          ) : sol.amount ? (
             <div className="mt-6">
               <PayPalOrderButton
                 clientId={clientId}
                 amount={sol.amount}
                 label={sol.name}
-                funding={payFunding}
+                funding="both"
               />
             </div>
           ) : null}
@@ -255,7 +258,7 @@ export function SolutionsClient({
                             clientId={paypalClientId}
                             amount={aiCeo.amount}
                             label={aiCeo.name}
-                            funding="paypal"
+                            funding="both"
                           />
                         </div>
                       ) : null}
@@ -281,12 +284,7 @@ export function SolutionsClient({
             </h2>
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {monthly.map((s) => (
-                <ServiceCard
-                  key={s.key}
-                  sol={s}
-                  clientId={paypalClientId}
-                  payFunding="paypal"
-                />
+                <ServiceCard key={s.key} sol={s} clientId={paypalClientId} />
               ))}
             </div>
           </div>

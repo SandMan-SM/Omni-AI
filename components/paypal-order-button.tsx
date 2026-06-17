@@ -39,10 +39,12 @@ function loadPaypalOrderSdk(clientId: string): Promise<void> {
   if (orderSdkPromise) return orderSdkPromise;
   orderSdkPromise = new Promise<void>((resolve, reject) => {
     const s = document.createElement("script");
+    // disable-funding trims Pay Later / PayPal Credit so the default
+    // render is just PayPal + Debit/Credit Card (the two-button look).
     s.src =
       "https://www.paypal.com/sdk/js?client-id=" +
       encodeURIComponent(clientId) +
-      "&intent=capture&currency=USD";
+      "&intent=capture&currency=USD&disable-funding=paylater,credit";
     s.async = true;
     s.setAttribute("data-namespace", "paypalOrder");
     s.onload = () => resolve();
@@ -68,7 +70,8 @@ export function PayPalOrderButton({
   className?: string;
   // "card" → standalone Debit/Credit Card button (inline card form).
   // "paypal" → yellow PayPal button that opens the actual PayPal page.
-  funding?: "card" | "paypal";
+  // "both" → PayPal + Debit/Credit Card buttons (the two-button look).
+  funding?: "card" | "paypal" | "both";
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
@@ -85,10 +88,15 @@ export function PayPalOrderButton({
           .Buttons({
             // "card" → standalone Debit/Credit Card button (inline form).
             // "paypal" → yellow PayPal button → opens the real PayPal page.
-            fundingSource:
-              funding === "paypal"
-                ? window.paypalOrder.FUNDING.PAYPAL
-                : window.paypalOrder.FUNDING.CARD,
+            // "both" → no fundingSource → PayPal + Card (two buttons).
+            ...(funding === "both"
+              ? {}
+              : {
+                  fundingSource:
+                    funding === "paypal"
+                      ? window.paypalOrder.FUNDING.PAYPAL
+                      : window.paypalOrder.FUNDING.CARD,
+                }),
             style: { shape: "pill" },
             createOrder: (
               _data: unknown,
@@ -134,10 +142,10 @@ export function PayPalOrderButton({
   return (
     <div className={className}>
       <div ref={ref} />
-      {!failed && (
-        // "Powered by PayPal" caption — the standalone card button doesn't
-        // render one, so we add it to match the subscribe widget's caption
-        // on the monthly cards (consistent across every card).
+      {!failed && funding !== "both" && (
+        // "Powered by PayPal" caption — the standalone card/paypal button
+        // doesn't render one. In "both" mode the SDK renders its own, so we
+        // skip the manual one to avoid a duplicate.
         <p className="mt-3 flex items-center justify-center gap-1 text-[11px] text-zinc-500">
           Powered by
           <span className="font-bold">

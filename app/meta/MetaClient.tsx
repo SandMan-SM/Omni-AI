@@ -13,7 +13,7 @@
 import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
-import { PayPalOrderButton } from "@/components/paypal-order-button";
+import { PayPalSubscribeButton } from "@/components/paypal-subscribe-button";
 
 // Right-facing hollow triangle — same chrome-flash CTA shape used on
 // /meta/proposal and across the proposal portfolio.
@@ -171,11 +171,9 @@ export function MetaClient({ pageUrl, paypalClientId, paypalPlanId }: Props) {
                     as a simple monthly subscription.
                   </p>
                   <div className="relative z-10 mt-6">
-                    <PayPalOrderButton
+                    <PayPalSubscribeButton
                       clientId={paypalClientId}
-                      amount="1500"
-                      label="Meta Ads, Managed by AI"
-                      funding="paypal"
+                      planId={paypalPlanId}
                     />
                   </div>
                   <p className="relative z-10 mt-4 text-[11px] uppercase tracking-[0.28em] text-zinc-500 leading-relaxed">
@@ -344,11 +342,9 @@ export function MetaClient({ pageUrl, paypalClientId, paypalPlanId }: Props) {
                 after month one.
               </p>
               <div className="relative z-10 mt-8 mx-auto w-full max-w-sm">
-                <PayPalOrderButton
+                <PayPalSubscribeButton
                   clientId={paypalClientId}
-                  amount="1500"
-                  label="Meta Ads, Managed by AI"
-                  funding="paypal"
+                  planId={paypalPlanId}
                 />
               </div>
               <div className="relative z-10 mt-8 flex justify-center">
