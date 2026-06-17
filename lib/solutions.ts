@@ -74,7 +74,7 @@ export const WEBSITE_TIERS: Solution[] = [
       "Federation revenue + sponsor curation",
       "Custom scope — built around your goals",
     ],
-    price: "$80,000+",
+    price: "$80,000",
     amount: "80000",
     billing: "once",
     featured: true,
@@ -95,7 +95,7 @@ export const SOLUTIONS: Solution[] = [
       "Cross-channel distribution + optimization",
       "Reports to you in plain English",
     ],
-    price: "$100,000+",
+    price: "$100,000",
     amount: "100000",
     billing: "once",
     featured: true,
@@ -129,6 +129,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$1,500/mo",
     billing: "monthly",
     planId: "P-7VE35658JR630005ENIZAE2Y",
+    amount: "1500",
   },
   {
     key: "seo-geo",
@@ -144,6 +145,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$2,500/mo",
     billing: "monthly",
     planId: "P-5J038847XE322944WNIZAE3A",
+    amount: "2500",
   },
   {
     key: "email-sms",
@@ -159,6 +161,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$1,500/mo",
     billing: "monthly",
     planId: "P-3G973560E9259721JNIZAE3A",
+    amount: "1500",
   },
   {
     key: "social",
@@ -174,6 +177,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$1,500/mo",
     billing: "monthly",
     planId: "P-86373165K8546784XNIZAE3A",
+    amount: "1500",
   },
   {
     key: "cybersecurity",
@@ -189,6 +193,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$2,000/mo",
     billing: "monthly",
     planId: "P-0FB53846S54003837NIZAE3A",
+    amount: "2000",
   },
   {
     key: "lead-gen",
@@ -204,6 +209,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$2,500/mo",
     billing: "monthly",
     planId: "P-9CS92975YP255715CNIZAE3I",
+    amount: "2500",
   },
   {
     key: "chatbot-voice",
@@ -219,6 +225,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$1,000/mo",
     billing: "monthly",
     planId: "P-5TT368548N846132YNIZAE3I",
+    amount: "1000",
   },
   {
     key: "analytics",
@@ -234,6 +241,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$750/mo",
     billing: "monthly",
     planId: "P-0JE54840V23731416NIZAE3I",
+    amount: "750",
   },
   {
     key: "hosting",
@@ -249,6 +257,7 @@ export const SOLUTIONS: Solution[] = [
     price: "$1,000/mo",
     billing: "monthly",
     planId: "P-81S03289VY953274MNIZAE3I",
+    amount: "1000",
   },
   {
     key: "meta-ads",
@@ -264,5 +273,6 @@ export const SOLUTIONS: Solution[] = [
     price: "$1,500/mo",
     billing: "monthly",
     planId: "P-0CW08001LU923782MNIUHR6I",
+    amount: "1500",
   },
 ];

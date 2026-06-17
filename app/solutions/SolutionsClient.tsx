@@ -15,7 +15,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
-import { PayPalSubscribeButton } from "@/components/paypal-subscribe-button";
 import { PayPalOrderButton } from "@/components/paypal-order-button";
 import { BOOK_CALL_URL, type Solution } from "@/lib/solutions";
 
@@ -82,7 +81,7 @@ function PriceTag({ sol }: { sol: Solution }) {
 // Uniform trigger button on every card — opens the payment modal. Same
 // size everywhere so all cards' buttons line up.
 function PayTrigger({ sol, onPay }: { sol: Solution; onPay: () => void }) {
-  const label = sol.billing === "monthly" ? "Subscribe" : "Pay by Card";
+  const label = "Pay by Card";
   return (
     <button
       type="button"
@@ -200,10 +199,7 @@ function PayModal({
           <PriceTag sol={sol} />
         </div>
         <div className="mt-6">
-          {sol.billing === "monthly" && sol.planId ? (
-            <PayPalSubscribeButton clientId={clientId} planId={sol.planId} />
-          ) : null}
-          {sol.billing === "once" && sol.amount ? (
+          {sol.amount ? (
             <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
           ) : null}
         </div>
