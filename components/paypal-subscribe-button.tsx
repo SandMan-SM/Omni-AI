@@ -32,10 +32,12 @@ function loadPaypalSdk(clientId: string): Promise<void> {
   if (sdkPromise) return sdkPromise;
   sdkPromise = new Promise<void>((resolve, reject) => {
     const s = document.createElement("script");
+    // disable-funding trims the upsell buttons (PayPal Credit, Pay Later)
+    // so the subscribe widget shows just PayPal + Debit/Credit Card.
     s.src =
       "https://www.paypal.com/sdk/js?client-id=" +
       encodeURIComponent(clientId) +
-      "&vault=true&intent=subscription";
+      "&vault=true&intent=subscription&disable-funding=credit,paylater";
     s.async = true;
     s.onload = () => resolve();
     s.onerror = () => {

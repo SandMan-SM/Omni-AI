@@ -145,9 +145,15 @@ export function SolutionsClient({
   websiteTiers,
   solutions,
 }: Props) {
-  // Pull AI CEO out as a feature band; the rest render in the grid.
+  // Group by billing type so buttons are uniform within each section:
+  // one-time builds (single card button) together, monthly services
+  // (subscribe widget) together. AI CEO is its own feature band.
   const aiCeo = solutions.find((s) => s.key === "ai-ceo");
-  const rest = solutions.filter((s) => s.key !== "ai-ceo");
+  const oneTimeExtras = solutions.filter(
+    (s) => s.key !== "ai-ceo" && s.billing === "once",
+  );
+  const monthly = solutions.filter((s) => s.billing === "monthly");
+  const builds = [...websiteTiers, ...oneTimeExtras];
 
   return (
     <>
@@ -190,20 +196,20 @@ export function SolutionsClient({
           </div>
         </section>
 
-        {/* WEBSITES — 3 tiers */}
+        {/* BUILDS — websites + one-time builds (all single card buttons) */}
         <section className="relative border-t border-white/5">
           <div className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-              Websites · one-time builds
+              Build it once · own it
             </p>
             <h2
               className="mt-3 text-3xl sm:text-4xl tracking-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Agentic websites, three tiers.
+              Websites &amp; one-time builds.
             </h2>
-            <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {websiteTiers.map((t) => (
+            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {builds.map((t) => (
                 <ServiceCard
                   key={t.key}
                   sol={t}
@@ -271,16 +277,16 @@ export function SolutionsClient({
         <section className="relative border-t border-white/5">
           <div className="mx-auto max-w-6xl px-6 py-14 sm:py-16">
             <p className="text-[11px] uppercase tracking-[0.4em] text-zinc-500">
-              À la carte services
+              Monthly managed services
             </p>
             <h2
               className="mt-3 text-3xl sm:text-4xl tracking-tight"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              Add what you want. Subscribe or buy outright.
+              Subscribe to what you need.
             </h2>
             <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {rest.map((s) => (
+              {monthly.map((s) => (
                 <ServiceCard key={s.key} sol={s} clientId={paypalClientId} />
               ))}
             </div>
