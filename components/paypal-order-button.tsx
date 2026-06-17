@@ -127,6 +127,18 @@ export function PayPalOrderButton({
   return (
     <div className={className}>
       <div ref={ref} />
+      {!failed && (
+        // "Powered by PayPal" caption — the standalone card button doesn't
+        // render one, so we add it to match the subscribe widget's caption
+        // on the monthly cards (consistent across every card).
+        <p className="mt-3 flex items-center justify-center gap-1 text-[11px] text-zinc-500">
+          Powered by
+          <span className="font-bold">
+            <span style={{ color: "#003087" }}>Pay</span>
+            <span style={{ color: "#009cde" }}>Pal</span>
+          </span>
+        </p>
+      )}
       {failed && (
         <p className="mt-2 text-xs text-zinc-500">
           PayPal couldn&apos;t load — text Sitani at (385) 563-1562 to start.
