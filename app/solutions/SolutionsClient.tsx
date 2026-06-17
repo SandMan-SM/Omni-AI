@@ -60,7 +60,7 @@ function ServiceCard({
   sol,
   clientId,
   featured = false,
-  payFunding = "card",
+  payFunding = "paypal",
 }: {
   sol: Solution;
   clientId: string;
@@ -255,6 +255,7 @@ export function SolutionsClient({
                             clientId={paypalClientId}
                             amount={aiCeo.amount}
                             label={aiCeo.name}
+                            funding="paypal"
                           />
                         </div>
                       ) : null}
