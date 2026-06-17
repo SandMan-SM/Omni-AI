@@ -42,14 +42,11 @@ type Props = {
 
 // Payment control for a single service, chosen by its billing type.
 function PayCTA({ sol, clientId }: { sol: Solution; clientId: string }) {
+  // Secondary "View details" renders ABOVE the pay button so the pay
+  // button is always the bottom-most element. Combined with mt-auto on
+  // the card body and equal-height grid rows, every pay button lines up.
   return (
     <div className="mt-6 space-y-3">
-      {sol.billing === "monthly" && sol.planId ? (
-        <PayPalSubscribeButton clientId={clientId} planId={sol.planId} cardOnly />
-      ) : null}
-      {sol.billing === "once" && sol.amount ? (
-        <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
-      ) : null}
       {sol.href ? (
         <Link
           href={sol.href}
@@ -57,6 +54,12 @@ function PayCTA({ sol, clientId }: { sol: Solution; clientId: string }) {
         >
           View details <HollowTriangle />
         </Link>
+      ) : null}
+      {sol.billing === "monthly" && sol.planId ? (
+        <PayPalSubscribeButton clientId={clientId} planId={sol.planId} cardOnly />
+      ) : null}
+      {sol.billing === "once" && sol.amount ? (
+        <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
       ) : null}
     </div>
   );
