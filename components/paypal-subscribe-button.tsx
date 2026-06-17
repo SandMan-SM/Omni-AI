@@ -20,7 +20,6 @@ declare global {
       Buttons: (opts: Record<string, unknown>) => {
         render: (el: HTMLElement) => void;
       };
-      FUNDING?: { CARD: string };
     };
   }
 }
@@ -48,18 +47,18 @@ function loadPaypalSdk(clientId: string): Promise<void> {
   return sdkPromise;
 }
 
+// NOTE: PayPal does NOT support a standalone card-only funding button
+// for subscriptions (only for one-time orders — see PayPalOrderButton).
+// So this always renders the standard Subscribe button, which still lets
+// customers pay by debit/credit card from inside the PayPal flow.
 export function PayPalSubscribeButton({
   clientId,
   planId,
   className = "",
-  cardOnly = false,
 }: {
   clientId: string;
   planId: string;
   className?: string;
-  // When true, render only the "Debit or Credit Card" funding button
-  // (hides the PayPal-branded button). Used on /solutions.
-  cardOnly?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [done, setDone] = useState(false);
@@ -75,9 +74,6 @@ export function PayPalSubscribeButton({
         ref.current.innerHTML = "";
         window.paypal
           .Buttons({
-            ...(cardOnly && window.paypal.FUNDING
-              ? { fundingSource: window.paypal.FUNDING.CARD }
-              : {}),
             style: {
               layout: "vertical",
               color: "gold",
@@ -97,7 +93,7 @@ export function PayPalSubscribeButton({
     return () => {
       cancelled = true;
     };
-  }, [clientId, planId, cardOnly]);
+  }, [clientId, planId]);
 
   // Missing config → render nothing (no broken button on the page).
   if (!clientId || !planId) return null;

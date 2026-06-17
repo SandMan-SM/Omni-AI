@@ -56,7 +56,7 @@ function PayCTA({ sol, clientId }: { sol: Solution; clientId: string }) {
         </Link>
       ) : null}
       {sol.billing === "monthly" && sol.planId ? (
-        <PayPalSubscribeButton clientId={clientId} planId={sol.planId} cardOnly />
+        <PayPalSubscribeButton clientId={clientId} planId={sol.planId} />
       ) : null}
       {sol.billing === "once" && sol.amount ? (
         <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
