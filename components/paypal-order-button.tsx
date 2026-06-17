@@ -22,6 +22,7 @@ import { useEffect, useRef, useState } from "react";
 
 type PayPalNS = {
   Buttons: (opts: Record<string, unknown>) => { render: (el: HTMLElement) => void };
+  FUNDING: { CARD: string };
 };
 
 declare global {
@@ -78,7 +79,10 @@ export function PayPalOrderButton({
         ref.current.innerHTML = ""; // StrictMode double-invoke guard
         window.paypalOrder
           .Buttons({
-            style: { layout: "vertical", color: "gold", shape: "pill", label: "pay" },
+            // Card-only: render just the "Debit or Credit Card" button,
+            // not the PayPal-branded one.
+            fundingSource: window.paypalOrder.FUNDING.CARD,
+            style: { shape: "pill" },
             createOrder: (
               _data: unknown,
               actions: {

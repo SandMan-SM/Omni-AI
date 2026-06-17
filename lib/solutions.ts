@@ -45,7 +45,6 @@ export const WEBSITE_TIERS: Solution[] = [
     price: "$25,000",
     amount: "25000",
     billing: "once",
-    bookCall: true,
   },
   {
     key: "web-federation",
@@ -62,7 +61,6 @@ export const WEBSITE_TIERS: Solution[] = [
     price: "$50,000",
     amount: "50000",
     billing: "once",
-    bookCall: true,
   },
   {
     key: "web-empire",
@@ -77,8 +75,8 @@ export const WEBSITE_TIERS: Solution[] = [
       "Custom scope — built around your goals",
     ],
     price: "$80,000+",
-    billing: "quote",
-    bookCall: true,
+    amount: "80000",
+    billing: "once",
     featured: true,
   },
 ];
@@ -98,8 +96,8 @@ export const SOLUTIONS: Solution[] = [
       "Reports to you in plain English",
     ],
     price: "$100,000+",
-    billing: "quote",
-    bookCall: true,
+    amount: "100000",
+    billing: "once",
     featured: true,
   },
   {
@@ -116,7 +114,6 @@ export const SOLUTIONS: Solution[] = [
     price: "$15,000",
     amount: "15000",
     billing: "once",
-    bookCall: true,
   },
   {
     key: "newsletter",

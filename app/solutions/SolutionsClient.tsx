@@ -45,7 +45,7 @@ function PayCTA({ sol, clientId }: { sol: Solution; clientId: string }) {
   return (
     <div className="mt-6 space-y-3">
       {sol.billing === "monthly" && sol.planId ? (
-        <PayPalSubscribeButton clientId={clientId} planId={sol.planId} />
+        <PayPalSubscribeButton clientId={clientId} planId={sol.planId} cardOnly />
       ) : null}
       {sol.billing === "once" && sol.amount ? (
         <PayPalOrderButton clientId={clientId} amount={sol.amount} label={sol.name} />
@@ -56,14 +56,6 @@ function PayCTA({ sol, clientId }: { sol: Solution; clientId: string }) {
           className="flex items-center justify-center gap-2 rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-5 py-3 text-sm font-semibold text-amber-200 hover:bg-amber-300/[0.10] transition-colors"
         >
           View details <HollowTriangle />
-        </Link>
-      ) : null}
-      {sol.bookCall || sol.billing === "quote" ? (
-        <Link
-          href={BOOK_CALL_URL}
-          className="flex items-center justify-center gap-2 rounded-xl border border-white/20 bg-white/[0.03] px-5 py-3 text-sm font-semibold text-white hover:bg-white/[0.08] transition-colors"
-        >
-          Book a call
         </Link>
       ) : null}
     </div>
@@ -170,18 +162,27 @@ export function SolutionsClient({
               className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02]"
               style={{ fontFamily: "Georgia, serif" }}
             >
-              À la carte. Pay only for what you{" "}
+              Pay only for what you{" "}
               <span className="text-amber-300">need</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-300 leading-relaxed">
               Every Omni AI capability, available on its own. Buy a build
               outright or subscribe to a managed service — each one checks
-              out in a tap with PayPal. No bundles, no lock-in.
+              out in a tap by debit or credit card. No bundles, no lock-in.
             </p>
             <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm text-zinc-400">
               <span>✓ One-time builds or monthly retainers</span>
-              <span>✓ Secure PayPal checkout</span>
+              <span>✓ Secure debit/credit checkout</span>
               <span>✓ Mix and match anything</span>
+            </div>
+            <div className="mt-8">
+              <Link
+                href={BOOK_CALL_URL}
+                className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-8 py-4 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
+              >
+                <span className="chrome-white">Book Free Consultation</span>
+                <HollowTriangle />
+              </Link>
             </div>
           </div>
         </section>
@@ -311,15 +312,15 @@ export function SolutionsClient({
                 Let&apos;s map the right stack for you.
               </h2>
               <p className="relative z-10 mt-4 max-w-xl mx-auto text-sm sm:text-base text-zinc-400 leading-relaxed">
-                Book a call and we&apos;ll scope exactly which services move
-                your numbers — then you pay for only those.
+                Book a free consultation and we&apos;ll scope exactly which
+                services move your numbers — then you pay for only those.
               </p>
               <div className="relative z-10 mt-8 flex justify-center">
                 <Link
                   href={BOOK_CALL_URL}
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-10 py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
                 >
-                  <span className="chrome-white">Book a call</span>
+                  <span className="chrome-white">Book Free Consultation</span>
                   <HollowTriangle />
                 </Link>
               </div>
