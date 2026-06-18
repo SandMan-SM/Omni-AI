@@ -216,11 +216,7 @@ export function OpportunityStatusWidget({
   const total = useCountUp(data.total);
   return (
     <WidgetCard title="Opportunity Status">
-      <Donut
-        slices={slices}
-        centerTop={formatCompact(Math.round(total))}
-        centerBottom="opportunities"
-      />
+      <Donut slices={slices} centerTop={formatCompact(Math.round(total))} />
       <div className="mt-3 space-y-1.5">
         {slices
           .filter((s) => s.value > 0)
