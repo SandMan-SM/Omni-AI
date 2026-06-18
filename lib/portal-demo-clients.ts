@@ -201,7 +201,7 @@ export const DEMO_CLIENTS: DemoClient[] = [
     password: "orbit123",
     businessName: "Omni Leads AGI",
     website: "omnileadsagi.com",
-    vertical: "AI Lead Generation Platform",
+    vertical: "Agentic AI Command Center",
     metrics: {
       opportunities: { total: 120, won: 38, lost: 27, open: 55 },
       opportunityValue: {
