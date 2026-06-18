@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useEffect, useId, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { CheckCircle2, Circle, Phone, MessageSquare, Clock } from "lucide-react";
 import type {
@@ -41,6 +41,63 @@ const DONUT_PALETTE = [
   "#94a3b8", // slate
 ];
 
+// ── animation helpers ────────────────────────────────────────────────
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
+  );
+}
+
+// Count a number up from 0 → target on mount (easeOutCubic).
+function useCountUp(target: number, durationMs = 950) {
+  const [val, setVal] = useState(0);
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setVal(target);
+      return;
+    }
+    let raf = 0;
+    let start = 0;
+    const tick = (t: number) => {
+      if (!start) start = t;
+      const p = Math.min(1, (t - start) / durationMs);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setVal(target * eased);
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else setVal(target);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [target, durationMs]);
+  return val;
+}
+
+// A progress-bar fill that animates its width from 0 → pct on mount.
+function AnimatedBar({ pct, className }: { pct: number; className: string }) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    if (prefersReducedMotion()) {
+      setW(pct);
+      return;
+    }
+    const id = requestAnimationFrame(() => setW(pct));
+    return () => cancelAnimationFrame(id);
+  }, [pct]);
+  return <div className={className} style={{ width: `${w}%` }} />;
+}
+
+// Mount flag for entrance transitions.
+function useMounted() {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return shown;
+}
+
 function WidgetCard({
   title,
   action,
@@ -52,11 +109,12 @@ function WidgetCard({
   fullWidth?: boolean;
   children: React.ReactNode;
 }) {
+  const shown = useMounted();
   return (
     <section
-      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.055] to-white/[0.015] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_10px_30px_-14px_rgba(0,0,0,0.7)] transition-colors duration-300 hover:border-white/[0.16] ${
-        fullWidth ? "sm:col-span-2 xl:col-span-3" : ""
-      }`}
+      className={`group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.055] to-white/[0.015] p-5 shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_10px_30px_-14px_rgba(0,0,0,0.7)] transition-[opacity,transform,border-color] duration-500 ease-out hover:border-white/[0.16] ${
+        shown ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0"
+      } ${fullWidth ? "sm:col-span-2 xl:col-span-3" : ""}`}
     >
       {/* top sheen */}
       <div
@@ -121,7 +179,9 @@ function Donut({
             stroke="none"
             cornerRadius={7}
             paddingAngle={data.length > 1 ? 3 : 0}
-            isAnimationActive={false}
+            isAnimationActive
+            animationBegin={120}
+            animationDuration={950}
           >
             {chartData.map((entry, i) => (
               <Cell key={i} fill={`url(#donut-${uid}-${i})`} />
@@ -153,11 +213,12 @@ export function OpportunityStatusWidget({
     { name: "Lost", value: data.lost, color: "#fb7185" },
     { name: "Open", value: data.open, color: "#38bdf8" },
   ];
+  const total = useCountUp(data.total);
   return (
     <WidgetCard title="Opportunity Status">
       <Donut
         slices={slices}
-        centerTop={formatCompact(data.total)}
+        centerTop={formatCompact(Math.round(total))}
         centerBottom="opportunities"
       />
       <div className="mt-3 space-y-1.5">
@@ -193,9 +254,10 @@ export function ConversionRateWidget({
       color: "rgba(255,255,255,0.08)",
     },
   ];
+  const rate = useCountUp(data.ratePct);
   return (
     <WidgetCard title="Conversion Rate">
-      <Donut slices={slices} centerTop={`${data.ratePct}%`} />
+      <Donut slices={slices} centerTop={`${rate.toFixed(1)}%`} />
       <p className="mt-3 text-center text-sm text-white/50">
         Won revenue{" "}
         <span className="font-medium text-emerald-300">
@@ -216,11 +278,12 @@ export function StageDistributionWidget({
     value: s.count,
     color: DONUT_PALETTE[i % DONUT_PALETTE.length],
   }));
+  const total = useCountUp(data.total);
   return (
     <WidgetCard title="Stage Distribution">
       <div className="flex flex-col items-center gap-4 sm:flex-row">
         <div className="w-full sm:w-1/2">
-          <Donut slices={slices} centerTop={formatCompact(data.total)} />
+          <Donut slices={slices} centerTop={formatCompact(Math.round(total))} />
         </div>
         <div className="max-h-[180px] w-full space-y-1.5 overflow-y-auto pr-1 sm:w-1/2">
           {slices.map((s) => (
@@ -249,10 +312,11 @@ export function OpportunityValueWidget({
   data: DemoMetrics["opportunityValue"];
 }) {
   const max = Math.max(...data.bars.map((b) => b.value), 1);
+  const total = useCountUp(data.total);
   return (
     <WidgetCard title="Opportunity Value">
       <p className="mb-4 text-3xl font-bold tracking-tight text-white tabular-nums">
-        {formatMoney(data.total)}
+        {formatMoney(Math.round(total))}
       </p>
       <div className="space-y-3">
         {data.bars.map((bar: ValueBar) => (
@@ -264,9 +328,9 @@ export function OpportunityValueWidget({
               </span>
             </div>
             <div className="h-2.5 overflow-hidden rounded-full bg-white/[0.05] shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 shadow-[0_0_10px_rgba(129,140,248,0.4)] transition-[width] duration-700"
-                style={{ width: `${(bar.value / max) * 100}%` }}
+              <AnimatedBar
+                pct={(bar.value / max) * 100}
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-sky-400 shadow-[0_0_10px_rgba(129,140,248,0.4)] transition-[width] duration-700 ease-out"
               />
             </div>
           </div>
@@ -294,9 +358,9 @@ export function FunnelWidget({ data }: { data: DemoMetrics["funnel"] }) {
               {row.stage}
             </span>
             <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-white/[0.05] shadow-[inset_0_1px_2px_rgba(0,0,0,0.4)]">
-              <div
-                className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-cyan-400 shadow-[0_0_10px_rgba(129,140,248,0.35)] transition-[width] duration-700"
-                style={{ width: `${(row.count / max) * 100}%` }}
+              <AnimatedBar
+                pct={(row.count / max) * 100}
+                className="h-full rounded-full bg-gradient-to-r from-violet-500 via-fuchsia-400 to-cyan-400 shadow-[0_0_10px_rgba(129,140,248,0.35)] transition-[width] duration-700 ease-out"
               />
             </div>
             <span className="w-8 shrink-0 text-right text-xs tabular-nums text-white/80">
@@ -520,6 +584,7 @@ export function LeadSourceWidget({
 }: {
   data: DemoMetrics["leadSources"];
 }) {
+  const total = useCountUp(data.total);
   return (
     <WidgetCard
       title="Lead Source Report"
@@ -533,7 +598,7 @@ export function LeadSourceWidget({
       }
     >
       <p className="mb-3 text-3xl font-bold tracking-tight text-white tabular-nums">
-        {formatCompact(data.total)}
+        {formatCompact(Math.round(total))}
         <span className="ml-2 text-sm font-normal text-white/40">
           total leads
         </span>
