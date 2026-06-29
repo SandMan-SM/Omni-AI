@@ -9,6 +9,7 @@ const footerLinks = [
   { href: "/campaigns", label: "Campaigns" },
   { href: "/details", label: "Infographic" },
   { href: "/newsletter", label: "Newsletter" },
+  { href: "/portfolio", label: "Portfolio" },
   // /pricing was crawl-orphaned on ship — only the sitemap referenced it.
   // Surfacing it in the footer links it from every page on the site, which
   // is the discoverability floor Google expects for a commercial-intent
@@ -73,7 +74,7 @@ export function Footer() {
             links — the conventional placement on commercial sites. */}
         <div className="mt-8 pt-8 border-t border-white/5 text-center">
           <p className="text-gray-600 text-sm" data-testid="text-copyright">
-            © {new Date().getFullYear()} Omni AI LLC ·{" "}
+            © {new Date().getFullYear()} Omni Leads LLC ·{" "}
             <a
               href="/privacy"
               className="hover:text-gray-400 transition-colors underline-offset-2 hover:underline"

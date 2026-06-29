@@ -12,14 +12,14 @@ export const organizationSchema = {
   "@type": "Organization",
   name: "Omni AI",
   // legalName — byte-aligned with the copyright line rendered by
-  // components/footer.tsx ("© YYYY Omni AI LLC"). Google's Knowledge
+  // components/footer.tsx ("© YYYY Omni Leads LLC"). Google's Knowledge
   // Panel surfaces the legal entity name on "who owns Omni AI?" /
   // "who runs Omni AI?" queries, and LLMs preferentially cite the
   // legal name when asked for formal attribution. Without this
   // field, the Knowledge Graph has no typed edge to the legal
   // entity and defaults to the brand name, blurring the legal
   // vs marketing identity distinction.
-  legalName: "Omni AI LLC",
+  legalName: "Omni Leads LLC",
   alternateName: ["OmniLeads AGI", "Omni Leads AI"],
   url: "https://omnileadsagi.com",
   logo: {
@@ -181,7 +181,7 @@ export const websiteSchema = {
   // the year change automatically after new-year rollover.
   copyrightHolder: {
     "@type": "Organization",
-    name: "Omni AI",
+    name: "Omni Leads LLC",
     url: "https://omnileadsagi.com",
   },
   copyrightYear: new Date().getUTCFullYear(),
@@ -282,7 +282,7 @@ export const softwareSchema = {
   // silent authority down-rank).
   copyrightHolder: {
     "@type": "Organization",
-    name: "Omni AI",
+    name: "Omni Leads LLC",
     url: "https://omnileadsagi.com",
   },
   copyrightYear: new Date().getUTCFullYear(),
@@ -1067,7 +1067,7 @@ export const siteNavigationSchema = {
   "@type": "ItemList",
   name: "Omni AI — Main Navigation",
   itemListOrder: "https://schema.org/ItemListOrderAscending",
-  numberOfItems: 10,
+  numberOfItems: 11,
   itemListElement: [
     // Navbar items (positions 1–6) — logo home + the 5 visible nav links
     // in components/navbar.tsx. Labels are byte-aligned with the navLinks
@@ -1079,14 +1079,15 @@ export const siteNavigationSchema = {
     { "@type": "SiteNavigationElement", position: 4, name: "Arena", url: "https://omnileadsagi.com/arena" },
     { "@type": "SiteNavigationElement", position: 5, name: "Newsletter", url: "https://omnileadsagi.com/newsletter" },
     { "@type": "SiteNavigationElement", position: 6, name: "Pricing", url: "https://omnileadsagi.com/pricing" },
-    // Footer-only items (positions 7–10) — appear in components/footer.tsx
+    // Footer-only items (positions 7–11) — appear in components/footer.tsx
     // footerLinks. /privacy is excluded because it renders in the
     // copyright line, not the main footer nav (conventional legal
     // placement — including it here would over-promote legal boilerplate).
     { "@type": "SiteNavigationElement", position: 7, name: "Interlinked", url: "https://omnileadsagi.com/interlinked" },
-    { "@type": "SiteNavigationElement", position: 8, name: "Compare", url: "https://omnileadsagi.com/vs" },
-    { "@type": "SiteNavigationElement", position: 9, name: "About", url: "https://omnileadsagi.com/about" },
-    { "@type": "SiteNavigationElement", position: 10, name: "FAQ", url: "https://omnileadsagi.com/faq" },
+    { "@type": "SiteNavigationElement", position: 8, name: "Portfolio", url: "https://omnileadsagi.com/portfolio" },
+    { "@type": "SiteNavigationElement", position: 9, name: "Compare", url: "https://omnileadsagi.com/vs" },
+    { "@type": "SiteNavigationElement", position: 10, name: "About", url: "https://omnileadsagi.com/about" },
+    { "@type": "SiteNavigationElement", position: 11, name: "FAQ", url: "https://omnileadsagi.com/faq" },
   ],
 };
 

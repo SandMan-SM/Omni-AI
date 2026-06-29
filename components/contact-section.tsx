@@ -1,10 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 export function ContactSection() {
@@ -15,34 +15,6 @@ export function ContactSection() {
   // Server returns silent 200 on non-empty so the bot moves on.
   const [website, setWebsite] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const subtitleRef = useRef<HTMLSpanElement>(null);
-  const measureRef = useRef<HTMLSpanElement>(null);
-  const [titleSize, setTitleSize] = useState(24);
-
-  useEffect(() => {
-    const fit = () => {
-      const s = subtitleRef.current;
-      const m = measureRef.current;
-      if (!s || !m) return;
-      const target = s.getBoundingClientRect().width;
-      const natural = m.getBoundingClientRect().width;
-      if (natural <= 0 || target <= 0) return;
-      const isMobile = window.matchMedia("(max-width: 640px)").matches;
-      const scale = isMobile ? 0.78 : 1;
-      setTitleSize(Math.max(16, Math.min((target / natural) * 100 * scale, 80)));
-    };
-    fit();
-    const ro = new ResizeObserver(fit);
-    if (subtitleRef.current) ro.observe(subtitleRef.current);
-    window.addEventListener("resize", fit);
-    if (typeof document !== "undefined" && document.fonts?.ready) {
-      document.fonts.ready.then(fit).catch(() => {});
-    }
-    return () => {
-      ro.disconnect();
-      window.removeEventListener("resize", fit);
-    };
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +65,7 @@ export function ContactSection() {
   };
 
   return (
-    <section className="relative py-24 px-4 md:px-8" id="contact">
+    <section className="relative py-20 px-4 md:px-8" id="contact">
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[200px] md:w-[600px] md:h-[300px] lg:w-[800px] lg:h-[400px] rounded-full bg-purple-500/10 blur-[150px]" />
       </div>
@@ -105,30 +77,26 @@ export function ContactSection() {
         viewport={{ once: true }}
         className="max-w-4xl mx-auto relative z-10"
       >
-        <div className="glass-card rounded-2xl p-6 sm:p-10 md:p-12 neon-border">
-          <div className="text-center mb-6 sm:mb-8 overflow-hidden">
-            <span
-              ref={measureRef}
-              aria-hidden
-              className="absolute -z-50 opacity-0 pointer-events-none font-bold whitespace-nowrap"
-              style={{ fontSize: "100px", left: "-9999px", top: "-9999px" }}
-            >
-              Stay in the Loop
-            </span>
-            <h2
-              className="font-bold mb-3 sm:mb-4 whitespace-nowrap leading-[1.1] inline-block"
-              style={{ fontSize: `${titleSize}px` }}
-            >
-              <span className="text-gradient">Stay in the Loop</span>
-            </h2>
-            <p className="text-gray-400 text-sm sm:text-base md:text-lg whitespace-nowrap">
-              <span ref={subtitleRef} className="inline-block">
-                Subscribe for exclusive updates and insights.
-              </span>
-            </p>
+        <div className="glass-card rounded-2xl p-6 sm:p-8 md:p-10 neon-border overflow-hidden">
+          <div className="mb-7 flex items-start justify-between gap-4">
+            <div>
+              <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.35em] text-cyan-200/80">
+                Private List
+              </p>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-[0.95] tracking-tight">
+                <span className="text-gradient">Stay in the Loop</span>
+              </h2>
+            </div>
+            <div className="hidden sm:flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border border-cyan-300/25 bg-white/5 shadow-[0_0_30px_rgba(34,211,238,0.16)]">
+              <Sparkles className="h-6 w-6 text-cyan-200" />
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="max-w-lg mx-auto">
+          <p className="mb-7 max-w-2xl text-left text-gray-300 text-base sm:text-lg leading-relaxed">
+            Subscribe for exclusive updates and insights.
+          </p>
+
+          <form onSubmit={handleSubmit} className="max-w-none">
             {/* Honeypot — positioned off-screen instead of type=hidden so
                 dumb spambots that skip hidden fields still fill this. Real
                 users never see or tab to it (aria-hidden, tabIndex=-1). */}
@@ -174,7 +142,7 @@ export function ContactSection() {
               </Button>
             </div>
           </form>
-          <p className="text-center text-gray-500 text-sm mt-6">
+          <p className="text-left text-sm mt-6 bg-gradient-to-r from-sky-300 via-cyan-200 to-blue-400 bg-clip-text text-transparent drop-shadow-[0_0_12px_rgba(56,189,248,0.28)]">
             No spam. Unsubscribe anytime.
           </p>
         </div>

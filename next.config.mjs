@@ -55,6 +55,21 @@ const nextConfig = {
         destination: '/alira/referral/info',
         permanent: true,
       },
+      {
+        source: '/renelaveau/referral',
+        destination: '/referral/renelaveau',
+        permanent: true,
+      },
+      {
+        source: '/renelaveau/referral/info',
+        destination: '/referral/renelaveau/info',
+        permanent: true,
+      },
+      {
+        source: '/renelaveau/referral/:code',
+        destination: '/referral/renelaveau/:code',
+        permanent: true,
+      },
     ];
   },
   async headers() {

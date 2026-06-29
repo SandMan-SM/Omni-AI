@@ -160,7 +160,7 @@ export async function GET() {
     <link>${siteUrl}/newsletter</link>
     <description>Daily AI strategy, intelligence, and signals from Omni AI. Built for operators running autonomous lead-gen systems.</description>
     <language>en-us</language>
-    <copyright>© ${copyrightYear} Omni AI LLC. All rights reserved.</copyright>
+    <copyright>© ${copyrightYear} Omni Leads LLC. All rights reserved.</copyright>
     <managingEditor>alfred@omnileadsagi.com (Alfred Belvedere)</managingEditor>
     <webMaster>alfred@omnileadsagi.com (Alfred Belvedere)</webMaster>
     <generator>Next.js RSS (Omni AI)</generator>

@@ -559,6 +559,40 @@
   pointer-events: none;
 }
 
+.partner-logo-carousel {
+  background:
+    linear-gradient(to right, transparent, rgba(34, 211, 238, 0.08), transparent),
+    rgba(255, 255, 255, 0.01);
+  border-image: linear-gradient(to right, transparent, rgba(34, 211, 238, 0.45), rgba(167, 139, 250, 0.32), transparent) 1;
+  -webkit-mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+.partner-logo-track {
+  animation: partner-logo-scroll 26s linear infinite;
+  will-change: transform;
+}
+
+.partner-logo-carousel:hover .partner-logo-track,
+.partner-logo-carousel:focus-within .partner-logo-track {
+  animation-play-state: paused;
+}
+
+@keyframes partner-logo-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partner-logo-track {
+    animation: none;
+  }
+}
+
 /* ─── Tier Card Enhancements ─── */
 
 

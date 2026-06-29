@@ -1,4 +1,4 @@
-// /renelaveau/referral/[code] — dynamic affiliate / referral
+// /referral/renelaveau/[code] — dynamic affiliate / referral
 // route. Captures the URL segment (e.g. EMPIRE=G59713666) and
 // hands it through to the existing RenelaveauReferralClient as
 // the `affiliateCode` prop. The client then:
@@ -11,7 +11,7 @@
 //     reads client_reference_id off checkout.session.completed
 //     to credit the right affiliate when the payment clears.
 //
-// The static `/renelaveau/referral/info` segment takes routing
+// The static `/referral/renelaveau/info` segment takes routing
 // priority over this dynamic one in Next App Router, so the
 // info page is unaffected — only "arbitrary other paths" hit
 // this handler. We validate the code shape (uppercase prefix +
@@ -26,7 +26,7 @@ import { RenelaveauReferralClient } from "../RenelaveauReferralClient";
 
 const SITE_URL = "https://omnileadsagi.com";
 
-// Same live Stripe payment links the bare /renelaveau/referral
+// Same live Stripe payment links the bare /referral/renelaveau
 // route uses. Both prices sit under the same product, so all
 // conversions (bare URL + every affiliate URL) report cleanly
 // under "Rene Laveau · Referral Build · 10-month engagement"
@@ -49,7 +49,7 @@ type PageProps = {
 
 export function generateMetadata({ params }: PageProps): Metadata {
   const code = decodeURIComponent(params.code);
-  const PAGE_URL = `${SITE_URL}/renelaveau/referral/${encodeURIComponent(code)}`;
+  const PAGE_URL = `${SITE_URL}/referral/renelaveau/${encodeURIComponent(code)}`;
   const OG_IMAGE = `${SITE_URL}/api/og?title=Referred%20by%20Rene%20Laveau&topic=%2460K%20in%20Assets%20%C2%B7%20%243%2C000%20%C2%B7%20100%25%20Guarantee`;
 
   return {
@@ -88,7 +88,7 @@ export default function RenelaveauReferralCodePage({
     notFound();
   }
 
-  const PAGE_URL = `${SITE_URL}/renelaveau/referral/${encodeURIComponent(rawCode)}`;
+  const PAGE_URL = `${SITE_URL}/referral/renelaveau/${encodeURIComponent(rawCode)}`;
 
   return (
     <RenelaveauReferralClient

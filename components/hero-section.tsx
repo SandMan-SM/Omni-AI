@@ -24,6 +24,8 @@ const partners = [
   { name: "Perplexity", logo: "/logos/perplexity.svg" },
 ];
 
+const partnerCarouselLogos = [...partners, ...partners];
+
 interface HeroSectionProps {
   onBookDemo?: () => void;
   onSignIn?: () => void;
@@ -131,7 +133,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
     <section
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      className="relative min-h-[100svh] px-5 overflow-hidden"
+      className="relative px-5 pb-8 md:pb-10 overflow-hidden"
       style={{ paddingTop: 'clamp(120px, 20vh, 200px)' }}
     >
       {/* Radial glow backdrop */}
@@ -166,7 +168,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
         >
           <Sparkles className="w-3 h-3 md:w-3.5 md:h-3.5 text-purple-400 flex-shrink-0" />
           <span className="text-[10px] sm:text-[11px] md:text-xs text-gray-300 tracking-wide">
-            Introducing the world&apos;s first AGI Legacy Model
+            The worlds first legacy model
           </span>
         </motion.div>
 
@@ -174,7 +176,7 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.3 }}
-          className="relative text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-6"
+          className="relative block w-full whitespace-nowrap text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight leading-none mb-6"
           style={{
             backgroundImage: "linear-gradient(135deg, #ffffff 0%, #c4b5fd 50%, #67e8f9 100%)",
             WebkitBackgroundClip: "text",
@@ -276,25 +278,28 @@ export function HeroSection({ onBookDemo, onSignIn }: HeroSectionProps) {
           <span className="text-sm sm:text-base text-white/80 tracking-wider">
             Partnered with platforms like
           </span>
-          <div
-            className="flex flex-nowrap items-center justify-center mx-auto pb-2 px-4 max-w-full"
-            style={{ gap: "clamp(12px, 3vw, 33px)" }}
-          >
-            {partners.map((partner) => (
-              <div
-                key={partner.name}
-                className="flex items-center justify-center shrink-0"
-                style={{ width: "clamp(40px, 11vw, 100px)", height: "clamp(40px, 11vw, 100px)" }}
-              >
-                <Image
-                  src={partner.logo}
-                  alt={partner.name}
-                  width={100}
-                  height={100}
-                  className="object-contain opacity-90 hover:opacity-100 transition-opacity w-full h-full"
-                />
-              </div>
-            ))}
+          <div className="partner-logo-carousel relative w-screen max-w-none overflow-hidden border-y border-cyan-300/20 py-3">
+            <div
+              className="partner-logo-track flex w-max flex-nowrap items-center"
+              style={{ gap: "clamp(28px, 5vw, 56px)" }}
+            >
+              {partnerCarouselLogos.map((partner, index) => (
+                <div
+                  key={`${partner.name}-${index}`}
+                  className="flex shrink-0 items-center justify-center"
+                  style={{ width: "clamp(44px, 8vw, 78px)", height: "clamp(44px, 8vw, 78px)" }}
+                >
+                  <Image
+                    src={partner.logo}
+                    alt={index >= partners.length ? "" : partner.name}
+                    aria-hidden={index >= partners.length}
+                    width={78}
+                    height={78}
+                    className="h-full w-full object-contain opacity-80 transition-opacity hover:opacity-100"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         </motion.div>
       </motion.div>

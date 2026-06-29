@@ -31,6 +31,9 @@ const CampaignsSection = dynamic(
 const EcosystemSection = dynamic(
   () => import("@/components/ecosystem-section").then((m) => ({ default: m.EcosystemSection })),
 );
+const TalkToOmniCta = dynamic(
+  () => import("@/components/talk-to-omni-cta").then((m) => ({ default: m.TalkToOmniCta })),
+);
 const TestimonialsSection = dynamic(
   () => import("@/components/testimonials-section").then((m) => ({ default: m.TestimonialsSection })),
 );
@@ -269,6 +272,9 @@ export default function HomePage() {
         />
         <CampaignsSection />
         <LegacySection />
+        <TalkToOmniCta
+          onTalkToOmni={() => openAuthWithPrompt("Sign in to talk with Omni AI about your business.")}
+        />
         <EcosystemSection />
         <TestimonialsSection />
         <ContactSection />

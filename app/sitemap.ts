@@ -38,6 +38,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${baseUrl}/manifesto`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
     { url: `${baseUrl}/system`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${baseUrl}/oracle`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/portfolio`, lastModified: now, changeFrequency: "weekly", priority: 0.85 },
     { url: `${baseUrl}/join`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
     // /sponsor is intentionally omitted — it's a logged-in sponsor portal
     // (live build-log / MRR / ship history for authenticated sponsors), not

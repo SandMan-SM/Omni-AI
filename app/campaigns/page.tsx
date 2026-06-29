@@ -5,7 +5,7 @@
 // edge cache it. See the equivalent comment on `app/page.tsx`.
 
 import { motion } from "framer-motion";
-import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight, MessageSquare, Users, Globe, Check, Mail, DollarSign } from "lucide-react";
+import { Video, Sparkles, BarChart3, Play, Zap, Target, TrendingUp, ArrowRight, MessageSquare, Users, Globe, Check, Mail, DollarSign, ShieldCheck } from "lucide-react";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
@@ -41,10 +41,25 @@ const features = [
 ];
 
 const steps = [
-  { icon: Sparkles, label: "AI Creates", sublabel: "Videos generated from your brand data" },
-  { icon: Play, label: "Deploy & Test", sublabel: "Published across your channels" },
-  { icon: TrendingUp, label: "Rank & Learn", sublabel: "Performance tracked automatically" },
-  { icon: Zap, label: "Scale Winners", sublabel: "Top videos amplified, losers replaced" },
+  { icon: Sparkles, label: "AI Creates", sublabel: "Videos, hooks, and variants generated from your brand data" },
+  { icon: Play, label: "Deploy & Test", sublabel: "Creative launched across paid and organic channels" },
+  { icon: TrendingUp, label: "Rank & Learn", sublabel: "Performance tracked until the winning angles surface" },
+  { icon: Zap, label: "Scale Winners", sublabel: "Top videos amplified toward 1M+ guaranteed impressions" },
+];
+
+const pricing = [
+  {
+    label: "Monthly",
+    price: "$1,500",
+    cadence: "/month",
+    description: "Activate campaigns with monthly optimization, creative testing, and distribution.",
+  },
+  {
+    label: "Annual",
+    price: "$15,000",
+    cadence: "/year",
+    description: "Lock in the full-year program and save $3,000 versus monthly billing.",
+  },
 ];
 
 const platforms = [
@@ -104,7 +119,7 @@ export default function Campaigns() {
               </motion.div>
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">
-                <span className="text-gradient">AI Video Marketing</span>
+                <span className="text-gradient">Omni AI Campaigns</span>
               </h1>
               {/* data-speakable="intro" activates the
                   SpeakableSpecification on campaignsHowToSchema
@@ -118,8 +133,24 @@ export default function Campaigns() {
                 data-speakable="intro"
               >
                 AI creates your video marketing, tests every piece of content,
-                and surfaces the winners — all inside your personal dashboard.
+                and surfaces the winners — with a guaranteed 1M impressions minimum.
               </p>
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => setIsDemoModalOpen(true)}
+                  className="inline-flex h-12 items-center justify-center gap-3 rounded-md bg-gradient-to-r from-purple-600 to-blue-600 px-6 text-sm font-semibold text-white shadow-[0_0_28px_rgba(59,130,246,0.28)] transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+                  data-testid="button-campaigns-activate"
+                >
+                  <span>Activate Now</span>
+                  <span className="flex h-7 w-7 items-center justify-center rounded-md bg-white/15 border border-white/15">
+                    <DollarSign className="h-4 w-4" />
+                  </span>
+                </button>
+                <div className="inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-100">
+                  <ShieldCheck className="h-4 w-4" />
+                  1M impressions minimum guaranteed
+                </div>
+              </div>
             </motion.div>
 
             <motion.div
@@ -136,6 +167,14 @@ export default function Campaigns() {
                 <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500/30 to-transparent" />
 
                 <div className="relative px-6 py-10 md:px-12 md:py-16">
+                  <div className="mb-10 text-center">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-cyan-200/80">
+                      How It Works
+                    </p>
+                    <h2 className="text-2xl md:text-4xl font-bold text-white">
+                      From raw brand data to scaled winning campaigns.
+                    </h2>
+                  </div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4">
                     {steps.map((step, index) => {
                       const Icon = step.icon;
@@ -164,6 +203,65 @@ export default function Campaigns() {
                       );
                     })}
                   </div>
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="mb-16 md:mb-20"
+            >
+              <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+                <div>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.32em] text-purple-300/80">
+                    Pricing
+                  </p>
+                  <h2 className="text-2xl md:text-3xl font-bold text-white">
+                    Activate campaigns with a clear performance floor.
+                  </h2>
+                </div>
+                <div className="inline-flex w-fit items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-4 py-2 text-sm text-cyan-100">
+                  <ShieldCheck className="h-4 w-4" />
+                  Guaranteed 1M impressions minimum
+                </div>
+              </div>
+
+              <div className="grid gap-4 md:grid-cols-[1fr_1fr_1.1fr] md:gap-6">
+                {pricing.map((plan) => (
+                  <div
+                    key={plan.label}
+                    className="glass-card rounded-md border border-white/5 p-6 md:p-8"
+                  >
+                    <p className="mb-4 text-sm font-semibold text-cyan-200">
+                      {plan.label}
+                    </p>
+                    <div className="mb-4 flex items-end gap-2">
+                      <span className="text-4xl font-bold text-white">
+                        {plan.price}
+                      </span>
+                      <span className="pb-1 text-gray-400">{plan.cadence}</span>
+                    </div>
+                    <p className="text-sm leading-relaxed text-gray-400">
+                      {plan.description}
+                    </p>
+                  </div>
+                ))}
+
+                <div className="glass-card rounded-md border border-cyan-300/20 bg-cyan-300/5 p-6 md:p-8">
+                  <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-md border border-cyan-300/20 bg-cyan-300/10">
+                    <ShieldCheck className="h-6 w-6 text-cyan-200" />
+                  </div>
+                  <h3 className="mb-3 text-xl font-semibold text-white">
+                    1M impressions minimum
+                  </h3>
+                  <p className="text-sm leading-relaxed text-gray-400">
+                    Every activated campaign program is built around reaching at least
+                    1,000,000 impressions through creative testing, winner selection,
+                    and scaled distribution.
+                  </p>
                 </div>
               </div>
             </motion.div>

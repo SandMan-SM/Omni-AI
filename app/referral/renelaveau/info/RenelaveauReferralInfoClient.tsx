@@ -1,14 +1,14 @@
 "use client";
 
 // RenelaveauReferralInfoClient — long-form "under the hood"
-// breakdown for /renelaveau/referral. Covers what's actually
+// breakdown for /referral/renelaveau. Covers what's actually
 // shipped in the $60K stack, the federation distribution
 // playbook, the personal AI assistant layer, Rene's own
 // reference build, and the salary-replacement chart at scale.
 //
 // Two prominent "Activate Assets" CTAs per Sita — one in the
 // hero, one in the footer CTA card. Both deep-link to
-// /renelaveau/referral#activate so the pay modal auto-pops the
+// /referral/renelaveau#activate so the pay modal auto-pops the
 // moment the operator lands on the parent page (the referral
 // client now reads the #activate hash on mount).
 
@@ -145,12 +145,12 @@ export function RenelaveauReferralInfoClient({ pageUrl }: Props) {
             </p>
 
             {/* First Activate Assets CTA + Learn more anchor.
-                Activate Assets deep-links to /renelaveau/referral
+                Activate Assets deep-links to /referral/renelaveau
                 with the #activate hash so the modal auto-pops the
                 moment the operator lands on the parent page. */}
             <div className="mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Link
-                href="/renelaveau/referral#activate"
+                href="/referral/renelaveau#activate"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-8 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
                 data-testid="rene-ref-info-activate-hero"
               >
@@ -158,7 +158,7 @@ export function RenelaveauReferralInfoClient({ pageUrl }: Props) {
                 <HollowTriangle />
               </Link>
               <Link
-                href="/renelaveau/referral"
+                href="/referral/renelaveau"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                 data-testid="rene-ref-info-return-hero"
               >
@@ -597,7 +597,7 @@ export function RenelaveauReferralInfoClient({ pageUrl }: Props) {
                   back too. */}
               <div className="relative z-10 mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 justify-center">
                 <Link
-                  href="/renelaveau/referral#activate"
+                  href="/referral/renelaveau#activate"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border-2 border-white/90 bg-amber-300/20 hover:bg-amber-300/30 px-6 sm:px-10 py-4 sm:py-5 text-sm font-bold tracking-wide text-white transition-colors shadow-lg shadow-amber-300/20 backdrop-blur-sm"
                   data-testid="rene-ref-info-activate-footer"
                 >
@@ -607,7 +607,7 @@ export function RenelaveauReferralInfoClient({ pageUrl }: Props) {
                   <HollowTriangle />
                 </Link>
                 <Link
-                  href="/renelaveau/referral"
+                  href="/referral/renelaveau"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                   data-testid="rene-ref-info-return"
                 >

@@ -1,5 +1,5 @@
-// /renelaveau/referral/info — under-the-hood breakdown for the
-// referral surface at /renelaveau/referral. Carries the substance
+// /referral/renelaveau/info — under-the-hood breakdown for the
+// referral surface at /referral/renelaveau. Carries the substance
 // for operators who want to see exactly what's in the $60K stack
 // before clicking Activate Assets on the parent page.
 //
@@ -13,7 +13,7 @@ import type { ReactNode } from "react";
 import { RenelaveauReferralInfoClient } from "./RenelaveauReferralInfoClient";
 
 const SITE_URL = "https://omnileadsagi.com";
-const PAGE_URL = `${SITE_URL}/renelaveau/referral/info`;
+const PAGE_URL = `${SITE_URL}/referral/renelaveau/info`;
 
 // Branded OG image — distinct from the parent referral page so
 // when the info link is shared separately, the preview reads as

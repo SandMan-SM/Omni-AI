@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Menu, X, LayoutDashboard, Command } from "lucide-react";
+import { Menu, X, Command } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
@@ -100,19 +100,11 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
             )}
             <Button
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-              onClick={() => {
-                if (user) {
-                  router.push("/dashboard");
-                } else if (onDashboard) {
-                  router.push("/login");
-                } else {
-                  router.push("/join");
-                }
-              }}
-              data-testid="button-nav-dashboard"
+              onClick={() => router.push("/command")}
+              data-testid="button-nav-command-center"
             >
-              <LayoutDashboard className="w-4 h-4 mr-2" />
-              Dashboard
+              <Command className="w-4 h-4 mr-2" />
+              Command Center
             </Button>
           </div>
 
@@ -168,18 +160,12 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
                   className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full text-sm min-h-[44px]"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
-                    if (user) {
-                      router.push("/dashboard");
-                    } else if (onDashboard) {
-                      router.push("/login");
-                    } else {
-                      router.push("/join");
-                    }
+                    router.push("/command");
                   }}
-                  data-testid="button-mobile-dashboard"
+                  data-testid="button-mobile-command-center"
                 >
-                  <LayoutDashboard className="w-4 h-4 mr-2" />
-                  Dashboard
+                  <Command className="w-4 h-4 mr-2" />
+                  Command Center
                 </Button>
               </div>
             </div>

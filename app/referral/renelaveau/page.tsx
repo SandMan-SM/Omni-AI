@@ -1,4 +1,4 @@
-// /renelaveau/referral — private referral-rate offer for the
+// /referral/renelaveau — private referral-rate offer for the
 // people Rene Laveau sends our way. $3,000 over 10 months (or
 // paid in full) buys ~$60K in federation-grade digital assets:
 // Tier-3 bespoke site, AI CEO layer, calling agents, branded
@@ -16,7 +16,7 @@ import type { ReactNode } from "react";
 import { RenelaveauReferralClient } from "./RenelaveauReferralClient";
 
 const SITE_URL = "https://omnileadsagi.com";
-const PAGE_URL = `${SITE_URL}/renelaveau/referral`;
+const PAGE_URL = `${SITE_URL}/referral/renelaveau`;
 
 // Live Stripe payment links — created via Stripe MCP on
 // 2026-05-24 against the Omni AI account (acct_1THX7kE1uHPZaaHp).

@@ -1,7 +1,7 @@
 "use client";
 
 // RenelaveauReferralClient — long-form referral surface at
-// /renelaveau/referral. Pitches the people Rene sends our way on
+// /referral/renelaveau. Pitches the people Rene sends our way on
 // the Tier-3 federation build at the referral rate: $60K+ in
 // digital assets for $3,000 ($300/mo over 10 months, or paid in
 // full). 4-month build window, 100% delivery guarantee.
@@ -24,7 +24,7 @@ type Props = {
   payFullUrl: string;
   /**
    * Optional affiliate / referral code captured from the URL
-   * segment (e.g. `/renelaveau/referral/EMPIRE=G59713666` → code
+   * segment (e.g. `/referral/renelaveau/EMPIRE=G59713666` → code
    * `EMPIRE=G59713666`). When present, two things change:
    *   1. A small amber "Referred · <code>" pill renders in the
    *      hero so the visitor knows they're on a tracked surface
@@ -175,7 +175,7 @@ export function RenelaveauReferralClient({
   }, [modalOpen, closeModal]);
 
   // Deep-link support: if the user lands with #activate in the URL
-  // (e.g. from the new /renelaveau/referral/info page's CTAs),
+  // (e.g. from the new /referral/renelaveau/info page's CTAs),
   // auto-pop the pay modal so they don't have to click Activate
   // Assets again to get back to where they were. Same pattern used
   // for /ultimate-power → /alira/referral/full#activate.
@@ -223,28 +223,22 @@ export function RenelaveauReferralClient({
         <section className="relative">
           <div className="mx-auto max-w-5xl px-5 sm:px-6 pt-20 sm:pt-32 pb-10 sm:pb-12">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80 font-semibold">
-              Referred by Rene Laveau · Federation referral
+              Referred by Rene Laveau
             </p>
             <h1
               className="mt-5 text-4xl sm:text-7xl tracking-tight leading-[1.05]"
               style={{ fontFamily: "Georgia, serif" }}
             >
               <em className="font-normal text-amber-200/90 not-italic sm:italic">
-                $60K in assets. <br className="hidden sm:block" />
-                $3,000 in. 20x ROI.
+                Only <span className="chrome-gold">three</span> spots left.{" "}
+                <span className="chrome-gold">20X ROI</span> guaranteed.
               </em>
             </h1>
             <p className="mt-6 max-w-2xl text-base sm:text-xl text-zinc-300 leading-relaxed">
               Rene sent you because the build behind his brand
               isn&apos;t a website &mdash; it&apos;s an audience
               engine. You get the same federation-grade Tier-3 stack
-              at the referral rate:{" "}
-              <span className="text-amber-100 font-semibold tabular-nums">
-                $300 down + $300/mo for 9 months
-              </span>{" "}
-              (or <span className="tabular-nums">$3,000</span>{" "}
-              in full). Ten months. 4-month build window. 100%
-              delivery guarantee.
+              at the referral rate.
             </p>
 
             {/* Dual hero CTAs — chrome-flash Activate Assets opens
@@ -263,7 +257,7 @@ export function RenelaveauReferralClient({
                 <HollowTriangle />
               </button>
               <Link
-                href="/renelaveau/referral/info"
+                href="/referral/renelaveau/info"
                 className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-8 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                 data-testid="rene-ref-learn-more-hero"
               >
@@ -617,7 +611,7 @@ export function RenelaveauReferralClient({
                   <HollowTriangle />
                 </button>
                 <Link
-                  href="/renelaveau/referral/info"
+                  href="/referral/renelaveau/info"
                   className="inline-flex items-center justify-center gap-3 rounded-2xl border border-amber-300/40 bg-amber-300/[0.04] hover:bg-amber-300/[0.10] px-6 sm:px-10 py-4 sm:py-5 text-sm font-semibold tracking-wide text-amber-200 transition-colors backdrop-blur-sm"
                   data-testid="rene-ref-learn-more-footer"
                 >
