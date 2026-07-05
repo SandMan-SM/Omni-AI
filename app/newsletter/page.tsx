@@ -12,6 +12,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 import { NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsletter-issue-card";
+import NewsletterOptin from "@/components/NewsletterOptin";
 
 export const metadata: Metadata = {
   title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
@@ -377,6 +378,11 @@ export default async function NewsletterIndexPage() {
                 </a>
               </div>
             </div>
+
+            {/* Above-the-fold conversion column: free-signup capture (feeds the
+                federation subscriber pipeline) + the persistent strategy-call
+                CTA into the paid funnel. */}
+            <NewsletterOptin />
           </div>
         </section>
 

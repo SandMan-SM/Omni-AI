@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { headers } from 'next/headers';
-import { sanitizeText } from '@/lib/validation';
+import { sanitizeText, isValidEmail } from '@/lib/validation';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import {
   INBOUND_ORIGINS,
@@ -170,6 +170,55 @@ export async function POST(
     if (error) {
       console.error(`[inbound/${slug}/events] insert error:`, error);
       return NextResponse.json({ ok: false }, { status: 500, headers: cors });
+    }
+
+    // ── Subscriber capture ─────────────────────────────────────────────
+    // A subscribe event carries the email in properties.email (or value_text).
+    // Previously it was only logged as anonymous analytics and the email was
+    // dropped — so /subscribe forms never actually built a list. Persist a
+    // valid email into inbound_<slug>_leads (the existing lead table) so every
+    // signup is captured. Idempotent per email; never breaks the analytics 200.
+    const rawEmail =
+      (typeof (clientProps as { email?: unknown }).email === 'string'
+        ? (clientProps as { email: string }).email
+        : body.event_category === 'subscribe' && typeof body.value_text === 'string'
+          ? body.value_text
+          : '') || '';
+    const email = sanitizeText(rawEmail, 254).toLowerCase();
+    if (email && isValidEmail(email)) {
+      try {
+        const leadsTable = `inbound_${slug}_leads`;
+        const { data: existing } = await sb
+          .from(leadsTable)
+          .select('id')
+          .eq('email', email)
+          .limit(1)
+          .maybeSingle();
+        if (!existing) {
+          const propStr = (k: string, max: number) =>
+            typeof (clientProps as Record<string, unknown>)[k] === 'string'
+              ? sanitizeText((clientProps as Record<string, string>)[k], max)
+              : null;
+          await sb.from(leadsTable).insert({
+            business_id: businessId,
+            // full_name is NOT NULL on the leads tables — fall back to the
+            // email's local part so a bare-email subscribe still persists.
+            full_name: propStr('name', 120) || propStr('full_name', 120) || email.split('@')[0].slice(0, 120),
+            email,
+            source:
+              propStr('source', 50) ||
+              propStr('list', 50) ||
+              sanitizeText(body.event_category, 50) ||
+              'subscribe',
+            page_path: pagePath || null,
+            utm_source: propStr('utm_source', 100) || sanitizeText(body.utm_source, 100) || null,
+          });
+        }
+      } catch (capErr) {
+        // Capture is best-effort — a missing leads table or race must never
+        // fail the ingest response.
+        console.error(`[inbound/${slug}/events] subscribe capture skipped:`, capErr);
+      }
     }
 
     return NextResponse.json({ ok: true }, { headers: cors });
