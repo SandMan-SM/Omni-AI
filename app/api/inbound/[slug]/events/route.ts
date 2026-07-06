@@ -153,7 +153,8 @@ export async function POST(
       return NextResponse.json({ ok: false }, { status: 500, headers: cors });
     }
 
-    const { error } = await sb.from(tableName).insert({
+    try {
+      const { error } = await sb.from(tableName).insert({
       business_id: businessId,
       visitor_id: sanitizeText(body.visitor_id, 100) || null,
       session_id: sanitizeText(body.session_id, 100) || null,
@@ -182,11 +183,13 @@ export async function POST(
       duration_ms: typeof body.duration_ms === 'number' ? body.duration_ms : null,
       // Existing inbound_<slug>_events tables use `payload` jsonb.
       payload: safeProps,
-    });
-
-    if (error) {
-      console.error(`[inbound/${slug}/events] insert error:`, error);
-      return NextResponse.json({ ok: false }, { status: 500, headers: cors });
+      });
+      if (error) console.error(`[inbound/${slug}/events] insert error:`, error);
+    } catch (evErr) {
+      // Analytics insert is best-effort — an intermittent DB timeout must never
+      // 500 the tracker or, worse, drop the subscriber capture + welcome email
+      // below. We log and continue so signups + notifications still go out.
+      console.error(`[inbound/${slug}/events] events insert failed (best-effort):`, evErr);
     }
 
     // ── Subscriber capture ─────────────────────────────────────────────
@@ -203,29 +206,37 @@ export async function POST(
           : '') || '';
     const email = sanitizeText(rawEmail, 254).toLowerCase();
     if (email && isValidEmail(email)) {
+      const leadsTable = `inbound_${slug}_leads`;
+      const propStr = (k: string, max: number) =>
+        typeof (clientProps as Record<string, unknown>)[k] === 'string'
+          ? sanitizeText((clientProps as Record<string, string>)[k], max)
+          : null;
+      // full_name is NOT NULL on the leads tables — fall back to the email's
+      // local part so a bare-email subscribe still persists.
+      const fullName =
+        propStr('name', 120) || propStr('full_name', 120) || email.split('@')[0].slice(0, 120);
+      const source =
+        propStr('source', 50) ||
+        propStr('list', 50) ||
+        sanitizeText(body.event_category, 50) ||
+        'subscribe';
+      const utmSource = propStr('utm_source', 100) || sanitizeText(body.utm_source, 100) || null;
+
+      // Persist the lead — best-effort. If the DB is slow/unavailable we STILL
+      // send the emails below: a database blip must never swallow a subscriber's
+      // welcome email or the owner alert. `alreadyKnown` stays false when the
+      // dedup check can't run, so notifications fail OPEN (may re-send on a
+      // repeat submit during an outage — an acceptable trade for reliability).
+      let alreadyKnown = false;
       try {
-        const leadsTable = `inbound_${slug}_leads`;
         const { data: existing } = await sb
           .from(leadsTable)
           .select('id')
           .eq('email', email)
           .limit(1)
           .maybeSingle();
+        alreadyKnown = !!existing;
         if (!existing) {
-          const propStr = (k: string, max: number) =>
-            typeof (clientProps as Record<string, unknown>)[k] === 'string'
-              ? sanitizeText((clientProps as Record<string, string>)[k], max)
-              : null;
-          // full_name is NOT NULL on the leads tables — fall back to the
-          // email's local part so a bare-email subscribe still persists.
-          const fullName =
-            propStr('name', 120) || propStr('full_name', 120) || email.split('@')[0].slice(0, 120);
-          const source =
-            propStr('source', 50) ||
-            propStr('list', 50) ||
-            sanitizeText(body.event_category, 50) ||
-            'subscribe';
-          const utmSource = propStr('utm_source', 100) || sanitizeText(body.utm_source, 100) || null;
           await sb.from(leadsTable).insert({
             business_id: businessId,
             full_name: fullName,
@@ -234,78 +245,68 @@ export async function POST(
             page_path: pagePath || null,
             utm_source: utmSource,
           });
-
-          // ── Owner notification ────────────────────────────────────────
-          // Email the operator who just subscribed, on every NEW signup
-          // (deduped above, so no repeat spam). Best-effort: a missing key
-          // or Resend hiccup must never break the ingest 200.
-          try {
-            if (process.env.RESEND_API_KEY) {
-              const notifyTo = process.env.SUBSCRIBER_NOTIFY_EMAIL || 'sitanim8@gmail.com';
-              const from = process.env.RESEND_FROM || 'Omni AI <alfred@omnileadsagi.com>';
-              const site = INBOUND_ORIGINS[slug]?.[0] || 'https://omnileadsagi.com';
-              const brandLabel = rawSlug === slug ? slug : `${rawSlug} → ${slug}`;
-              await fetch('https://api.resend.com/emails', {
-                method: 'POST',
-                headers: {
-                  Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                  from,
-                  to: notifyTo,
-                  reply_to: email,
-                  subject: `New subscriber: ${email} — ${rawSlug}`,
-                  text: [
-                    `New ${brandLabel} subscriber`,
-                    '',
-                    `Email:  ${email}`,
-                    `Name:   ${fullName}`,
-                    `List:   ${source}`,
-                    `Site:   ${site}`,
-                    `Page:   ${pagePath || '—'}`,
-                    `Source: ${utmSource || 'direct'}`,
-                    `Time:   ${new Date().toISOString()}`,
-                  ].join('\n'),
-                }),
-              });
-            }
-          } catch (mailErr) {
-            console.error(`[inbound/${slug}/events] subscribe notify skipped:`, mailErr);
-          }
-
-          // ── Subscriber welcome ────────────────────────────────────────
-          // Send the new subscriber a branded welcome email for the specific
-          // business they joined. Best-effort — a bounce or misconfig must
-          // never break the ingest 200.
-          try {
-            if (process.env.RESEND_API_KEY) {
-              const welcome = buildWelcomeEmail(rawSlug, clientProps as Record<string, unknown>);
-              if (welcome) {
-                await fetch('https://api.resend.com/emails', {
-                  method: 'POST',
-                  headers: {
-                    Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    from: `${welcome.fromName} <newsletter@omnileadsagi.com>`,
-                    to: email,
-                    subject: welcome.subject,
-                    html: welcome.html,
-                    text: welcome.text,
-                  }),
-                });
-              }
-            }
-          } catch (welErr) {
-            console.error(`[inbound/${slug}/events] welcome email skipped:`, welErr);
-          }
         }
       } catch (capErr) {
-        // Capture is best-effort — a missing leads table or race must never
-        // fail the ingest response.
         console.error(`[inbound/${slug}/events] subscribe capture skipped:`, capErr);
+      }
+
+      if (!alreadyKnown && process.env.RESEND_API_KEY) {
+        // ── Owner notification — email the operator who just subscribed. ──
+        try {
+          const notifyTo = process.env.SUBSCRIBER_NOTIFY_EMAIL || 'sitanim8@gmail.com';
+          const from = process.env.RESEND_FROM || 'Omni AI <alfred@omnileadsagi.com>';
+          const site = INBOUND_ORIGINS[slug]?.[0] || 'https://omnileadsagi.com';
+          const brandLabel = rawSlug === slug ? slug : `${rawSlug} → ${slug}`;
+          await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              from,
+              to: notifyTo,
+              reply_to: email,
+              subject: `New subscriber: ${email} — ${rawSlug}`,
+              text: [
+                `New ${brandLabel} subscriber`,
+                '',
+                `Email:  ${email}`,
+                `Name:   ${fullName}`,
+                `List:   ${source}`,
+                `Site:   ${site}`,
+                `Page:   ${pagePath || '—'}`,
+                `Source: ${utmSource || 'direct'}`,
+                `Time:   ${new Date().toISOString()}`,
+              ].join('\n'),
+            }),
+          });
+        } catch (mailErr) {
+          console.error(`[inbound/${slug}/events] subscribe notify skipped:`, mailErr);
+        }
+
+        // ── Subscriber welcome — branded for the specific business joined. ──
+        try {
+          const welcome = buildWelcomeEmail(rawSlug, clientProps as Record<string, unknown>);
+          if (welcome) {
+            await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: `${welcome.fromName} <newsletter@omnileadsagi.com>`,
+                to: email,
+                subject: welcome.subject,
+                html: welcome.html,
+                text: welcome.text,
+              }),
+            });
+          }
+        } catch (welErr) {
+          console.error(`[inbound/${slug}/events] welcome email skipped:`, welErr);
+        }
       }
     }
 
