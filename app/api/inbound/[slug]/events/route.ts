@@ -3,6 +3,20 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { headers } from 'next/headers';
 import { sanitizeText, isValidEmail } from '@/lib/validation';
 import { buildWelcomeEmail } from '@/lib/subscribe-welcome';
+
+// Several /subscribe forms across the federation POST a brand-friendly slug that
+// is NOT a registered tenant (e.g. `utahmainstreet`, `omni`, `mythos`,
+// `mythosais`, `theixnetwork`). Without this map the ingest 404s and every one
+// of those subscribers is silently dropped. Map each to its canonical
+// registered tenant for capture; the ORIGINAL slug is still used to brand the
+// welcome email so the subscriber sees the right business name.
+const SUBSCRIBE_SLUG_ALIAS: Record<string, string> = {
+  utahmainstreet: 'mainst',
+  omni: 'omnileads',
+  mythos: 'omnileads',
+  mythosais: 'omnileads',
+  theixnetwork: 'omnileads',
+};
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import {
   INBOUND_ORIGINS,
@@ -38,7 +52,8 @@ export async function OPTIONS(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = SUBSCRIBE_SLUG_ALIAS[rawSlug] ?? rawSlug;
   if (!isInboundSlug(slug)) {
     return new NextResponse(null, { status: 404 });
   }
@@ -52,7 +67,8 @@ export async function POST(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
-  const { slug } = await params;
+  const { slug: rawSlug } = await params;
+  const slug = SUBSCRIBE_SLUG_ALIAS[rawSlug] ?? rawSlug;
   if (!isInboundSlug(slug)) {
     return NextResponse.json({ error: 'Unknown brand' }, { status: 404 });
   }
@@ -228,6 +244,7 @@ export async function POST(
               const notifyTo = process.env.SUBSCRIBER_NOTIFY_EMAIL || 'sitanim8@gmail.com';
               const from = process.env.RESEND_FROM || 'Omni AI <alfred@omnileadsagi.com>';
               const site = INBOUND_ORIGINS[slug]?.[0] || 'https://omnileadsagi.com';
+              const brandLabel = rawSlug === slug ? slug : `${rawSlug} → ${slug}`;
               await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
@@ -238,9 +255,9 @@ export async function POST(
                   from,
                   to: notifyTo,
                   reply_to: email,
-                  subject: `New subscriber: ${email} — ${slug}`,
+                  subject: `New subscriber: ${email} — ${rawSlug}`,
                   text: [
-                    `New ${slug} subscriber`,
+                    `New ${brandLabel} subscriber`,
                     '',
                     `Email:  ${email}`,
                     `Name:   ${fullName}`,
@@ -263,7 +280,7 @@ export async function POST(
           // never break the ingest 200.
           try {
             if (process.env.RESEND_API_KEY) {
-              const welcome = buildWelcomeEmail(slug, clientProps as Record<string, unknown>);
+              const welcome = buildWelcomeEmail(rawSlug, clientProps as Record<string, unknown>);
               if (welcome) {
                 await fetch('https://api.resend.com/emails', {
                   method: 'POST',
