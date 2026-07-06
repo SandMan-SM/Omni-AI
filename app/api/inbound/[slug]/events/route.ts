@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { headers } from 'next/headers';
 import { sanitizeText, isValidEmail } from '@/lib/validation';
+import { buildWelcomeEmail } from '@/lib/subscribe-welcome';
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import {
   INBOUND_ORIGINS,
@@ -199,20 +200,90 @@ export async function POST(
             typeof (clientProps as Record<string, unknown>)[k] === 'string'
               ? sanitizeText((clientProps as Record<string, string>)[k], max)
               : null;
+          // full_name is NOT NULL on the leads tables — fall back to the
+          // email's local part so a bare-email subscribe still persists.
+          const fullName =
+            propStr('name', 120) || propStr('full_name', 120) || email.split('@')[0].slice(0, 120);
+          const source =
+            propStr('source', 50) ||
+            propStr('list', 50) ||
+            sanitizeText(body.event_category, 50) ||
+            'subscribe';
+          const utmSource = propStr('utm_source', 100) || sanitizeText(body.utm_source, 100) || null;
           await sb.from(leadsTable).insert({
             business_id: businessId,
-            // full_name is NOT NULL on the leads tables — fall back to the
-            // email's local part so a bare-email subscribe still persists.
-            full_name: propStr('name', 120) || propStr('full_name', 120) || email.split('@')[0].slice(0, 120),
+            full_name: fullName,
             email,
-            source:
-              propStr('source', 50) ||
-              propStr('list', 50) ||
-              sanitizeText(body.event_category, 50) ||
-              'subscribe',
+            source,
             page_path: pagePath || null,
-            utm_source: propStr('utm_source', 100) || sanitizeText(body.utm_source, 100) || null,
+            utm_source: utmSource,
           });
+
+          // ── Owner notification ────────────────────────────────────────
+          // Email the operator who just subscribed, on every NEW signup
+          // (deduped above, so no repeat spam). Best-effort: a missing key
+          // or Resend hiccup must never break the ingest 200.
+          try {
+            if (process.env.RESEND_API_KEY) {
+              const notifyTo = process.env.SUBSCRIBER_NOTIFY_EMAIL || 'sitanim8@gmail.com';
+              const from = process.env.RESEND_FROM || 'Omni AI <alfred@omnileadsagi.com>';
+              const site = INBOUND_ORIGINS[slug]?.[0] || 'https://omnileadsagi.com';
+              await fetch('https://api.resend.com/emails', {
+                method: 'POST',
+                headers: {
+                  Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  from,
+                  to: notifyTo,
+                  reply_to: email,
+                  subject: `New subscriber: ${email} — ${slug}`,
+                  text: [
+                    `New ${slug} subscriber`,
+                    '',
+                    `Email:  ${email}`,
+                    `Name:   ${fullName}`,
+                    `List:   ${source}`,
+                    `Site:   ${site}`,
+                    `Page:   ${pagePath || '—'}`,
+                    `Source: ${utmSource || 'direct'}`,
+                    `Time:   ${new Date().toISOString()}`,
+                  ].join('\n'),
+                }),
+              });
+            }
+          } catch (mailErr) {
+            console.error(`[inbound/${slug}/events] subscribe notify skipped:`, mailErr);
+          }
+
+          // ── Subscriber welcome ────────────────────────────────────────
+          // Send the new subscriber a branded welcome email for the specific
+          // business they joined. Best-effort — a bounce or misconfig must
+          // never break the ingest 200.
+          try {
+            if (process.env.RESEND_API_KEY) {
+              const welcome = buildWelcomeEmail(slug, clientProps as Record<string, unknown>);
+              if (welcome) {
+                await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({
+                    from: `${welcome.fromName} <newsletter@omnileadsagi.com>`,
+                    to: email,
+                    subject: welcome.subject,
+                    html: welcome.html,
+                    text: welcome.text,
+                  }),
+                });
+              }
+            }
+          } catch (welErr) {
+            console.error(`[inbound/${slug}/events] welcome email skipped:`, welErr);
+          }
         }
       } catch (capErr) {
         // Capture is best-effort — a missing leads table or race must never
