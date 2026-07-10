@@ -86,22 +86,22 @@ export function EliTalksClient({ pageUrl }: Props) {
         <section className="relative">
           <div className="mx-auto max-w-5xl px-6 pt-10 pb-14 sm:pt-14 sm:pb-20">
             <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
-              Omni AI × Ellie Talks · 6-month partnership
+              Omni AI × Ellie Talks · 3-month partnership
             </p>
             <h1
               className="mt-5 text-5xl sm:text-7xl tracking-tight leading-[1.02]"
               style={{ fontFamily: "Georgia, serif" }}
             >
               One audience.{" "}
-              <span className="text-amber-300">Six channels.</span>{" "}
+              <span className="text-amber-300">Three channels.</span>{" "}
               <em className="font-normal text-pink-200/90 not-italic sm:italic">
-                Six months.
+                Three months.
               </em>
             </h1>
             <p className="mt-6 max-w-2xl text-lg sm:text-xl text-zinc-300 leading-relaxed">
-              A paid-social engine running across Meta + YouTube,
-              wired into the full Omni AI federation. We hit hard,
-              every day, for the next six months.
+              A paid-social engine running across Meta, Instagram +
+              YouTube, wired into the full Omni AI federation. We hit
+              hard, every day, for 90 days.
             </p>
           </div>
         </section>
@@ -116,9 +116,9 @@ export function EliTalksClient({ pageUrl }: Props) {
             </p>
             <div className="mt-6 grid grid-cols-2 sm:grid-cols-5 gap-3">
               {[
-                { value: "6", label: "Months" },
+                { value: "90", label: "Days" },
                 { value: "3", label: "Bespoke sites" },
-                { value: "6", label: "Channels" },
+                { value: "3", label: "Channels" },
                 { value: "16+", label: "Federation surfaces" },
                 { value: "∞", label: "Infinite potential" },
               ].map((stat) => {

@@ -80,12 +80,12 @@ const COMPARABLE = {
 export const metadata: Metadata = {
   title: "Omni AI × Ellie Talks · Full Partnership Breakdown",
   description:
-    "Full deliverable breakdown for the 6-month Omni AI × Ellie Talks partnership — paid-social engine, three websites, AI CEO layer, federation distribution, comparable case study, tracking dashboard, and the Omni AI Exclusive Membership tier ($1,000/mo) that keeps Ellie inside the network after the build window closes.",
+    "Full deliverable breakdown for the 3-month Omni AI × Ellie Talks partnership — paid-social engine, three websites, AI CEO layer, federation distribution, comparable case study, tracking dashboard, and the Omni AI Exclusive Membership tier ($1,000/mo) that keeps Ellie inside the network after the build window closes.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
     title: "Omni AI × Ellie Talks · Full Partnership Breakdown",
     description:
-      "The deep dive: every deliverable across the 6-month build window plus the $1,000/mo Omni AI Exclusive Membership that compounds the partnership.",
+      "The deep dive: every deliverable across the 3-month build window plus the $1,000/mo Omni AI Exclusive Membership that compounds the partnership.",
     url: PAGE_URL,
     type: "website",
     images: [{
@@ -98,7 +98,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Omni AI × Ellie Talks · Full Partnership Breakdown",
     description:
-      "Every deliverable across the 6-month partnership + the $1,000/mo Omni AI Exclusive Membership tier.",
+      "Every deliverable across the 3-month partnership + the $1,000/mo Omni AI Exclusive Membership tier.",
   },
   robots: { index: false, follow: false },
 };

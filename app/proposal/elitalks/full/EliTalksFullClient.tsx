@@ -33,6 +33,7 @@ import {
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
 import ShareRow from "@/components/case-study/ShareRow";
+import { PayPalSubscribeButton } from "./PayPalSubscribeButton";
 
 // Activate-partnership buttons + analytics ping removed per Sita's
 // 2026-05-14 cut: the page is value-pitch only, no on-page CTA. Ben
@@ -108,23 +109,23 @@ export function EliTalksFullClient({
               and the redundant pink pill was reading as social-handle
               fluff above the hero. */}
           <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">
-            Omni AI × Ellie Talks · 6-month partnership · Full breakdown
+            Omni AI × Ellie Talks · 3-month partnership · Full breakdown
           </p>
           <h1
             className="mt-4 text-4xl sm:text-6xl tracking-tight leading-[1.05]"
             style={{ fontFamily: "Georgia, serif" }}
           >
             One audience.{" "}
-            <span className="text-amber-300">Six channels.</span>{" "}
+            <span className="text-amber-300">Three channels.</span>{" "}
             <em className="font-normal text-pink-200/90 not-italic sm:italic">
-              Six months.
+              Three months.
             </em>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-zinc-300 leading-relaxed">
             A strategic partnership between Omni AI and the{" "}
             <em className="text-white not-italic">Ellie Talks</em>{" "}
-            podcast. For six months we run the paid-social engine —
-            Facebook, Instagram, YouTube — hitting hard every day,
+            podcast. For three months (90 days) we run the paid-social
+            engine — Meta, Instagram, YouTube — hitting hard every day,
             scaling whatever performs, and routing the audience back
             to Ellie&apos;s brand on a cadence the algorithm rewards.
           </p>
@@ -142,7 +143,7 @@ export function EliTalksFullClient({
             </span>{" "}
             across Meta + YouTube — daily creative, paid spend stacked
             behind the winners, retargeting + lookalikes tuned weekly.
-            That&apos;s the lever for the next six months.{" "}
+            That&apos;s the lever for the next 90 days.{" "}
             <em className="text-white not-italic">
               And there&apos;s more inside the Omni AI stack
             </em>{" "}
@@ -213,7 +214,7 @@ export function EliTalksFullClient({
                 number first, then reads outward. */}
             <div className="relative z-10 mt-8 flex flex-col items-center text-center">
               <p className="text-[10px] uppercase tracking-[0.4em] text-zinc-400 font-semibold">
-                Paid social · six-month agency retainer
+                Paid social · 3-month agency engagement
               </p>
 
               {/* Sans-serif at huge weight reads as one confident
@@ -239,7 +240,7 @@ export function EliTalksFullClient({
                 <span className="text-amber-300 font-semibold">$4K–8K/mo</span>{" "}
                 agency retainer ·{" "}
                 <span className="text-amber-300 font-semibold">$50K+/yr</span>{" "}
-                equivalent · 6-month minimum at retail rates
+                equivalent · 3-month engagement at retail rates
               </p>
             </div>
 
@@ -353,9 +354,9 @@ export function EliTalksFullClient({
               no awkward line-wraps, no mismatched x-heights. */}
           <div className="mt-10 grid grid-cols-2 sm:grid-cols-5 gap-3">
             {[
-              { value: "6",       label: "Months" },
+              { value: "90",      label: "Days" },
               { value: "3",       label: "Bespoke sites" },
-              { value: "6",       label: "Channels" },
+              { value: "3",       label: "Channels" },
               { value: "16+",     label: "Federation surfaces" },
               { value: "∞",       label: "Infinite potential" },
             ].map((stat) => {
@@ -406,7 +407,7 @@ export function EliTalksFullClient({
             The full scope, line by line.
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-zinc-400">
-            Every surface that ships across the six-month build window.
+            Everything we run across the 90-day engagement.
             Each line is its own deliverable with its own spec — and
             its own measurable output in the dashboard.
           </p>
@@ -414,36 +415,28 @@ export function EliTalksFullClient({
           <div className="mt-10 divide-y divide-white/5 border-y border-white/5">
             {[
               {
-                item: "Automated paid social — Meta + Instagram",
-                spec: "We hit Facebook and Instagram hard, every day. 15–20 native assets per week (Reels, carousels, stories, lives), paid spend stacked behind the winners, retargeting pools rebuilt weekly, lookalike audiences fed off Ellie's warmest viewers. The algorithm gets fed; the algorithm pays back.",
+                item: "A 3-month growth engine",
+                spec: "We build a 3-month growth engine around Ellie Talks — running paid social across Meta, Instagram, and YouTube every day, then putting more spend behind the content that performs best.",
               },
               {
-                item: "Three bespoke websites",
-                spec: "Three custom Next.js builds — full codebase ownership, JSON-LD schema, edge-rendered OG, federation tracker wired in. Mid-market agencies invoice $25K+ for one site of this spec.",
+                item: "The infrastructure around the show",
+                spec: "We create the infrastructure around the show so every episode works harder — including three bespoke websites, automated paid social, AI-assisted inbound/sales support, retention campaigns, newsletter flows, SEO/GEO content, calendar automation, and a live performance dashboard.",
               },
               {
-                item: "AI CEO layer + sales system",
-                spec: "Autonomous executive agent per site — qualifies every inbound, routes hot leads, books calendar slots, hands off to Ellie's pipeline. The sales engine that runs whether or not anyone's at the desk.",
+                item: "Plugged into the AI federation",
+                spec: "We plug Ellie Talks into the wider AI federation — giving the show recurring visibility across 16 partner businesses, 3 news outlets, operator newsletters, and cross-promo placements across the network.",
               },
               {
-                item: "Retention & nurturing campaigns",
-                spec: "Multi-step drip sequences across email + SMS, win-back flows for cold subscribers, segment-aware nurturing tied to each landing-page journey. Once a listener enters the orbit, the system keeps them warm.",
+                item: "Compounding what Ellie has built",
+                spec: "The goal is to compound what Ellie has already built — your voice, audience, and trust — by turning each episode into more reach, more subscribers, more inbound interest, and more long-term brand value.",
               },
               {
-                item: "SEO + GEO content engine",
-                spec: "Organic discovery for every show topic — geographic + topical landing pages, schema-rich articles, internal link graph. Built for buyer-intent search.",
+                item: "Clear monthly visibility",
+                spec: "You'll have clear visibility into what's working each month — from clicks, conversions, newsletter opens, ad performance, cost-per-subscriber/listen, SEO rankings, and federation referrals, all tracked through a dedicated dashboard and monthly reporting.",
               },
               {
-                item: "Newsletter system + distribution",
-                spec: "Branded Resend infrastructure, suppression list, engagement tracking, mirrored into the agentic dashboard. Powers the retention layer and the federation cross-promotion in one stack.",
-              },
-              {
-                item: "Calendar + inbound automation",
-                spec: "Cal.com integration, intake form scoring, slot routing, no-show recovery — the whole booking-funnel plumbing wired in and tuned.",
-              },
-              {
-                item: "Federation cross-promotion — 16 businesses",
-                spec: "Featured exposure across 16 partner businesses in the Omni AI federation — 3 of them news outlets — every operator newsletter, and the cross-promo widget firing on every federation site for the full six-month window.",
+                item: "Creative support",
+                spec: "We also provide the creative support needed to keep the brand polished and consistent — including, within reason, graphics, logos, editing services, and other visual assets to support the campaign across every channel.",
               },
             ].map((line) => (
               <div
@@ -479,7 +472,7 @@ export function EliTalksFullClient({
               { icon: <Mail className="w-5 h-5" />, title: "Retention & nurturing", body: "Multi-step drips, win-back flows, segment-aware sequences across email + SMS." },
               { icon: <BarChart3 className="w-5 h-5" />, title: "Organic SEO + GEO", body: "Every show topic ranked for its city + niche — free buyer-intent lead-gen on autopilot." },
               { icon: <Mic className="w-5 h-5" />, title: "Newsletter system", body: "Branded Resend domain, suppression, engagement tracking, federation-mirrored." },
-              { icon: <Network className="w-5 h-5" />, title: "16-business federation", body: "Featured exposure across 16 partner businesses (3 news outlets) for the full six months." },
+              { icon: <Network className="w-5 h-5" />, title: "16-business federation", body: "Featured exposure across 16 partner businesses (3 news outlets) for the full 90 days." },
               { icon: <CheckCircle2 className="w-5 h-5" />, title: "Performance dashboard", body: "Ellie Talks-scoped view inside omnileadsagi.com/dashboard — every metric, live." },
             ].map((d) => (
               <div key={d.title} className="rounded-2xl border border-white/10 bg-white/[0.02] p-5 hover:border-amber-300/40 transition-colors">
@@ -658,15 +651,16 @@ export function EliTalksFullClient({
             The federation amplifies the asset.
           </h2>
           <p className="mt-3 max-w-2xl text-sm text-zinc-400 leading-relaxed">
-            Ellie Talks doesn&apos;t live in a vacuum. For six months
+            Ellie Talks doesn&apos;t live in a vacuum. For 90 days
             it&apos;s wired into a network of{" "}
             <span className="text-amber-300 font-semibold">
               16 partner businesses — 3 of them news outlets
             </span>
             {" "}— plus every operator newsletter and cross-promo
-            surface in the Omni AI portfolio. Same audience graph
-            $Mafi uses to amplify her own brands. Consistent feature
-            placement, every week, for the full six-month window.
+            surface in the Omni AI portfolio. The same audience graph
+            the operator uses to amplify the network&apos;s own brands.
+            Consistent feature placement, every week, for the full
+            90-day window.
           </p>
 
           <div className="mt-10 grid gap-4 sm:grid-cols-2">
@@ -799,6 +793,34 @@ export function EliTalksFullClient({
         </div>
       </section>
 
+      {/* INVESTMENT — flat $4,000/month for the 90-day engagement,
+          with a live PayPal subscribe button. */}
+      <section id="investment" className="relative border-t border-white/5">
+        <div className="mx-auto max-w-5xl px-6 py-16 sm:py-24">
+          <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/90 font-semibold">
+            The investment
+          </p>
+          <h2
+            className="mt-3 text-3xl sm:text-5xl tracking-tight max-w-3xl leading-[1.1]"
+            style={{ fontFamily: "Georgia, serif" }}
+          >
+            <span className="text-amber-300">$4,000</span> / month.
+          </h2>
+          <p className="mt-4 max-w-2xl text-base sm:text-lg text-zinc-300 leading-relaxed">
+            A flat $4,000/month for the full three-month (90-day)
+            engagement — the paid-social engine, the infrastructure,
+            the federation distribution, and the monthly reporting, all
+            of it. No setup fee.
+          </p>
+          <div className="mt-8 flex flex-col items-start gap-3">
+            <PayPalSubscribeButton />
+            <span className="text-xs text-zinc-500">
+              Secure recurring billing via PayPal · billed monthly across the 90-day term.
+            </span>
+          </div>
+        </div>
+      </section>
+
       {/* OMNI AI EXCLUSIVE MEMBERSHIP — the "what comes after the
           partnership" tier. Frames continued membership as a way to
           stay inside the federation orbit after the 6-month build
@@ -822,7 +844,7 @@ export function EliTalksFullClient({
             <span className="text-amber-300">$1,000/month</span>.
           </h2>
           <p className="mt-4 max-w-2xl text-base sm:text-lg text-zinc-300 leading-relaxed">
-            After the 6-month partnership runs its course, the
+            After the 3-month partnership runs its course, the
             membership tier keeps Ellie inside the federation orbit —
             a fresh build under her brand, lifetime cross-membership
             across every Omni AI business, monthly feature placements
@@ -861,7 +883,7 @@ export function EliTalksFullClient({
                 Lifetime access · cancel anytime
               </p>
               <p className="relative z-10 mt-3 text-xs text-zinc-400 leading-relaxed">
-                Membership unlocks the moment the 6-month build window
+                Membership unlocks the moment the 3-month build window
                 closes — or whenever Ellie is ready to keep going.
               </p>
             </div>
@@ -919,9 +941,8 @@ export function EliTalksFullClient({
 
           <p className="mt-8 max-w-2xl text-xs text-zinc-500 leading-relaxed">
             Membership pricing surfaced here for transparency. The
-            6-month partnership above ships first; the membership tier
-            is the optional second act. Sita walks Ellie through the
-            details on the call — no payment link on the page.
+            3-month partnership above ships first; the membership tier
+            is the optional second act.
           </p>
         </div>
       </section>
