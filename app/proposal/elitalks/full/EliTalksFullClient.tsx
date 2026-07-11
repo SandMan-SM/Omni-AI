@@ -271,6 +271,17 @@ export function EliTalksFullClient({
         </div>
       </section>
 
+      {/* PAY CTA — top of the breakdown */}
+      <section className="relative">
+        <div className="mx-auto max-w-5xl px-6 pb-10 flex justify-center">
+          <EliTalksPayPalCheckout
+            label="Pay $2,000 down — one-time"
+            showArrow
+            className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-amber-300/60 bg-amber-300/15 px-10 py-5 text-sm font-bold tracking-wide text-amber-100 transition-colors hover:bg-amber-300/25"
+          />
+        </div>
+      </section>
+
       {/* ABOUT THE PODCAST */}
       <section className="relative border-t border-white/5 bg-black/40">
         <div className="mx-auto max-w-5xl px-6 py-16 sm:py-20">
@@ -763,6 +774,17 @@ export function EliTalksFullClient({
               </span>
             </div>
           </Link>
+        </div>
+      </section>
+
+      {/* PAY CTA — mid breakdown */}
+      <section className="relative">
+        <div className="mx-auto max-w-5xl px-6 py-4 flex justify-center">
+          <EliTalksPayPalCheckout
+            label="Pay $2,000 down — one-time"
+            showArrow
+            className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-amber-300/60 bg-amber-300/15 px-10 py-5 text-sm font-bold tracking-wide text-amber-100 transition-colors hover:bg-amber-300/25"
+          />
         </div>
       </section>
 

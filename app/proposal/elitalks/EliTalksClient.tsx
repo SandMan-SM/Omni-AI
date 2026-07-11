@@ -16,6 +16,7 @@
 import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
+import EliTalksPayPalCheckout from "./full/EliTalksPayPalCheckout";
 
 // Single right-facing hollow triangle for the CTA — matches the
 // chrome-flash button shape used on /alira/referral and the earlier
@@ -103,6 +104,13 @@ export function EliTalksClient({ pageUrl }: Props) {
               YouTube, wired into the full Omni AI federation. We hit
               hard, every day, for 90 days.
             </p>
+            <div className="mt-8">
+              <EliTalksPayPalCheckout
+                label="Pay $2,000 down — one-time"
+                showArrow
+                className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-amber-300/60 bg-amber-300/15 px-10 py-5 text-sm font-bold tracking-wide text-amber-100 transition-colors hover:bg-amber-300/25"
+              />
+            </div>
           </div>
         </section>
 
