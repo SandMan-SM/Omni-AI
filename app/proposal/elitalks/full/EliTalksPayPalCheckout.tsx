@@ -41,16 +41,14 @@ type PayPalNamespace = {
     onApprove: (data: { subscriptionID?: string }) => void;
   }) => PayPalButtons;
 };
-declare global {
-  interface Window {
-    paypal?: PayPalNamespace;
-  }
+function getPaypal(): PayPalNamespace | undefined {
+  return (window as unknown as { paypal?: PayPalNamespace }).paypal;
 }
 
 let paypalScriptPromise: Promise<void> | null = null;
 function loadPayPalScript() {
   if (typeof window === "undefined") return Promise.resolve();
-  if (window.paypal) return Promise.resolve();
+  if (getPaypal()) return Promise.resolve();
   if (paypalScriptPromise) return paypalScriptPromise;
   paypalScriptPromise = new Promise((resolve, reject) => {
     const existing = document.getElementById(PAYPAL_SCRIPT_ID) as HTMLScriptElement | null;
@@ -97,10 +95,11 @@ export default function EliTalksPayPalCheckout({ label, className, showArrow = f
     loadPayPalScript()
       .then(() => {
         if (cancelled) return;
+        const pp = getPaypal();
         const container = document.getElementById(containerId);
-        if (!window.paypal || !container) throw new Error("not ready");
+        if (!pp || !container) throw new Error("not ready");
         container.innerHTML = "";
-        return window.paypal
+        return pp
           .Buttons({
             style: { layout: "vertical", color: "gold", shape: "pill", label: "subscribe" },
             createSubscription: (_d, actions) => actions.subscription.create({ plan_id: PLAN_ID }),
