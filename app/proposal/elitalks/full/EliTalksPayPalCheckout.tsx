@@ -5,16 +5,14 @@ import { createPortal } from "react-dom";
 import { ArrowRight, ShieldCheck, X } from "lucide-react";
 
 /*
- * Ellie Talks x Omni AI checkout — PayPal subscription, modeled on the
- * sitanimafi.live intro-offer checkout: a styled CTA button that opens a
- * cosmic modal with the PayPal subscribe button inside.
- *
- * Live PayPal plan: $4,000.00/month, no setup fee, cancel anytime.
+ * Ellie Talks x Omni AI checkout — $2,000 down, ONE-TIME PayPal payment.
+ * Modeled on the sitanimafi.live intro-offer checkout: a styled CTA button
+ * that opens a cosmic modal with the PayPal button inside.
  */
 const PAYPAL_CLIENT_ID =
   "AW72P6A-yKEg77Tkh866rDoce2DKYU2EUhGKQp-401eIFKpSERKCOETvqtcSYTVTN4rnFbvBt6vP6Lf4";
-const PLAN_ID = "P-1TG9765750046684LNJIUZWY";
-const PAYPAL_SCRIPT_ID = "paypal-elitalks-sdk";
+const AMOUNT = "2000.00";
+const PAYPAL_SCRIPT_ID = "paypal-elitalks-order-sdk";
 
 const MODAL_STARS = Array.from({ length: 100 }, (_, index) => ({
   id: index,
@@ -30,17 +28,21 @@ const MODAL_STARS = Array.from({ length: 100 }, (_, index) => ({
         : "rgba(255,255,255,0.92)",
 }));
 
-type PayPalActions = {
-  subscription: { create: (input: { plan_id: string }) => Promise<string> };
+type PayPalOrderActions = {
+  order: {
+    create: (input: Record<string, unknown>) => Promise<string>;
+    capture: () => Promise<unknown>;
+  };
 };
 type PayPalButtons = { render: (selector: string) => Promise<void> };
 type PayPalNamespace = {
   Buttons: (options: {
-    style: { layout: "vertical"; color: "gold"; shape: "pill"; label: "subscribe" };
-    createSubscription: (data: unknown, actions: PayPalActions) => Promise<string>;
-    onApprove: (data: { subscriptionID?: string }) => void;
+    style: { layout: "vertical"; color: "gold"; shape: "pill"; label: "pay" };
+    createOrder: (data: unknown, actions: PayPalOrderActions) => Promise<string>;
+    onApprove: (data: unknown, actions: PayPalOrderActions) => Promise<void> | void;
   }) => PayPalButtons;
 };
+
 function getPaypal(): PayPalNamespace | undefined {
   return (window as unknown as { paypal?: PayPalNamespace }).paypal;
 }
@@ -59,7 +61,7 @@ function loadPayPalScript() {
     }
     const script = document.createElement("script");
     script.id = PAYPAL_SCRIPT_ID;
-    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&vault=true&intent=subscription`;
+    script.src = `https://www.paypal.com/sdk/js?client-id=${PAYPAL_CLIENT_ID}&currency=USD`;
     script.async = true;
     script.onload = () => resolve();
     script.onerror = () => reject(new Error("PayPal checkout failed to load."));
@@ -101,13 +103,25 @@ export default function EliTalksPayPalCheckout({ label, className, showArrow = f
         container.innerHTML = "";
         return pp
           .Buttons({
-            style: { layout: "vertical", color: "gold", shape: "pill", label: "subscribe" },
-            createSubscription: (_d, actions) => actions.subscription.create({ plan_id: PLAN_ID }),
-            onApprove: () => {
-              setError(null);
-              setIsOpen(false);
-              window.alert("You're in — subscription started. We'll reach out to kick off the build.");
-            },
+            style: { layout: "vertical", color: "gold", shape: "pill", label: "pay" },
+            createOrder: (_d, actions) =>
+              actions.order.create({
+                intent: "CAPTURE",
+                purchase_units: [
+                  {
+                    amount: { value: AMOUNT, currency_code: "USD" },
+                    description: "Ellie Talks x Omni AI — $2,000 down (one-time)",
+                  },
+                ],
+              }),
+            onApprove: (_d, actions) =>
+              actions.order.capture().then(() => {
+                setError(null);
+                setIsOpen(false);
+                window.alert(
+                  "Payment received — thank you! We'll reach out to kick off your Ellie Talks partnership.",
+                );
+              }),
           })
           .render(`#${containerId}`);
       })
@@ -187,11 +201,11 @@ export default function EliTalksPayPalCheckout({ label, className, showArrow = f
                 className="mt-3 text-4xl leading-tight text-white"
                 style={{ fontFamily: "Georgia, serif" }}
               >
-                Start the partnership
+                $2,000 down
               </h3>
               <p className="mt-3 text-sm leading-6 text-zinc-300">
-                $4,000/month across the three-month (90-day) engagement. No setup
-                fee — billed monthly, cancel anytime through PayPal.
+                A one-time $2,000 down payment to lock in your start with Omni AI
+                and kick off the Ellie Talks build.
               </p>
 
               <div className="mt-6 rounded-2xl border border-white/15 bg-white p-4 shadow-[0_18px_60px_rgba(0,0,0,0.28)]">

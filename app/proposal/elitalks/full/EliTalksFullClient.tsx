@@ -807,19 +807,21 @@ export function EliTalksFullClient({
             <span className="text-amber-300">$4,000</span> / month.
           </h2>
           <p className="mt-4 max-w-2xl text-base sm:text-lg text-zinc-300 leading-relaxed">
-            A flat $4,000/month for the full three-month (90-day)
-            engagement — the paid-social engine, the infrastructure,
-            the federation distribution, and the monthly reporting, all
-            of it. No setup fee.
+            The engagement runs at $4,000/month for the full three-month
+            (90-day) window — the paid-social engine, the infrastructure,
+            the federation distribution, and the monthly reporting, all of
+            it. Get started with a one-time{" "}
+            <span className="text-amber-300 font-semibold">$2,000 down payment</span>{" "}
+            to lock in your spot.
           </p>
           <div className="mt-8 flex flex-col items-start gap-3">
             <EliTalksPayPalCheckout
-              label="Start the partnership — $4,000/mo"
+              label="Pay $2,000 down — one-time"
               showArrow
               className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-amber-300/60 bg-amber-300/15 px-10 py-5 text-sm font-bold tracking-wide text-amber-100 transition-colors hover:bg-amber-300/25"
             />
             <span className="text-xs text-zinc-500">
-              Secure recurring billing via PayPal · billed monthly across the 90-day term.
+              Secure one-time payment via PayPal · $2,000 down to reserve your start.
             </span>
           </div>
         </div>
