@@ -33,7 +33,7 @@ import {
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
 import ShareRow from "@/components/case-study/ShareRow";
-import { PayPalSubscribeButton } from "./PayPalSubscribeButton";
+import EliTalksPayPalCheckout from "./EliTalksPayPalCheckout";
 
 // Activate-partnership buttons + analytics ping removed per Sita's
 // 2026-05-14 cut: the page is value-pitch only, no on-page CTA. Ben
@@ -813,7 +813,11 @@ export function EliTalksFullClient({
             of it. No setup fee.
           </p>
           <div className="mt-8 flex flex-col items-start gap-3">
-            <PayPalSubscribeButton />
+            <EliTalksPayPalCheckout
+              label="Start the partnership — $4,000/mo"
+              showArrow
+              className="inline-flex cursor-pointer items-center justify-center gap-3 rounded-2xl border-2 border-amber-300/60 bg-amber-300/15 px-10 py-5 text-sm font-bold tracking-wide text-amber-100 transition-colors hover:bg-amber-300/25"
+            />
             <span className="text-xs text-zinc-500">
               Secure recurring billing via PayPal · billed monthly across the 90-day term.
             </span>
