@@ -153,7 +153,7 @@ export default function EliTalksPayPalCheckout({ label, className, showArrow = f
         mounted &&
         createPortal(
           <div
-            className="fixed inset-0 z-[9999] grid place-items-center overflow-hidden p-4 backdrop-blur-xl"
+            className="fixed inset-0 z-[9999] overflow-y-auto overflow-x-hidden p-4 py-6 backdrop-blur-xl sm:py-8"
             role="dialog"
             aria-modal="true"
             aria-labelledby="elitalks-paypal-title"
@@ -183,7 +183,7 @@ export default function EliTalksPayPalCheckout({ label, className, showArrow = f
                 />
               ))}
             </div>
-            <div className="relative w-[min(94vw,30rem)] rounded-[1.5rem] border border-amber-300/30 bg-[#0a0612] p-6 shadow-[0_30px_140px_rgba(0,0,0,0.86)]">
+            <div className="relative z-10 mx-auto w-[min(94vw,30rem)] rounded-[1.5rem] border border-amber-300/30 bg-[#0a0612] p-6 shadow-[0_30px_140px_rgba(0,0,0,0.86)]">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
