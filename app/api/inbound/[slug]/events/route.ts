@@ -202,6 +202,23 @@ export async function POST(
         ? sanitizeText((clientProps as { area: string }).area, 50)
         : null;
 
+    // Shared-analytics capture FIRST (direct pg — bypasses the PostgREST path
+    // below) so legacy sites keep capturing even when the schema cache is sick.
+    // This is the forward sink the new dashboard reads.
+    await recordEvent({
+      slug,
+      event_type: sanitizeText(body.event_type, 50) || 'page_view',
+      event_category: sanitizeText(body.event_category, 50) || 'navigation',
+      action: sanitizeText(body.action, 50) || 'view',
+      page_url: pageUrl || undefined,
+      target_id: targetIdRaw || undefined,
+      value_text: sanitizeText(body.value_text, 500) || undefined,
+      value_numeric: typeof body.value_numeric === 'number' ? body.value_numeric : undefined,
+      visitor_id: sanitizeText(body.visitor_id, 100) || undefined,
+      session_id: sanitizeText(body.session_id, 100) || undefined,
+      props: safeProps,
+    });
+
     const sb = createAdminClient();
     const tableName = `inbound_${slug}_events`;
 
@@ -215,8 +232,11 @@ export async function POST(
       .maybeSingle();
     const businessId = bizRow?.id ?? null;
     if (!businessId) {
-      console.error(`[inbound/${slug}/events] no omni_businesses row for slug`);
-      return NextResponse.json({ ok: false }, { status: 500, headers: cors });
+      // Event already captured in analytics.events above (direct pg). The legacy
+      // per-tenant table needs a business_id we couldn't resolve (often a degraded
+      // PostgREST schema cache). Don't 500 — capture already succeeded.
+      console.warn(`[inbound/${slug}/events] no omni_businesses row; captured via shared analytics`);
+      return NextResponse.json({ ok: true }, { headers: cors });
     }
 
     try {
@@ -375,21 +395,6 @@ export async function POST(
         }
       }
     }
-
-    // Forward mirror -> shared analytics schema (best-effort; never affects the response).
-    void recordEvent({
-      slug,
-      event_type: sanitizeText(body.event_type, 50) || 'page_view',
-      event_category: sanitizeText(body.event_category, 50) || 'navigation',
-      action: sanitizeText(body.action, 50) || 'view',
-      page_url: pageUrl || undefined,
-      target_id: targetIdRaw || undefined,
-      value_text: sanitizeText(body.value_text, 500) || undefined,
-      value_numeric: typeof body.value_numeric === 'number' ? body.value_numeric : undefined,
-      visitor_id: sanitizeText(body.visitor_id, 100) || undefined,
-      session_id: sanitizeText(body.session_id, 100) || undefined,
-      props: safeProps,
-    });
 
     return NextResponse.json({ ok: true }, { headers: cors });
   } catch (e) {
