@@ -59,27 +59,75 @@ async function sendWelcomeEmail(
   cadence: string,
 ): Promise<void> {
   if (!RESEND_API_KEY) return;
+  const isUtahMainStreet = siteDomain === 'utahmainstreet.com';
+  const siteUrl = `https://${siteDomain}`;
   const unsubUrl = buildUnsubscribeUrl(
     email,
     `https://omnileadsagi.com`,
   );
-  const html = `
-    <div style="font-family:-apple-system,Segoe UI,sans-serif;max-width:560px;margin:0 auto;padding:24px;color:#222">
-      <p style="color:#666;font-size:12px;text-transform:uppercase;letter-spacing:2px;margin:0 0 8px">
-        Welcome to ${brandName}
-      </p>
-      <h1 style="font-size:24px;line-height:1.3;margin:0 0 16px">You're on the list.</h1>
-      <p style="font-size:15px;line-height:1.6">
-        ${cadence}
-        No spam, no resharing — and you can unsubscribe in one click any
-        time via the link at the bottom of every email.
-      </p>
-      <p style="font-size:13px;color:#666;margin-top:32px;border-top:1px solid #eee;padding-top:16px">
-        Sent from <a href="https://${siteDomain}" style="color:#d4af37">${siteDomain}</a> ·
-        <a href="${unsubUrl}" style="color:#888">unsubscribe</a>
-      </p>
+  const subject = isUtahMainStreet
+    ? 'Welcome to Utah Main Street — your morning read starts here'
+    : `Welcome to ${brandName}`;
+  const preheader = isUtahMainStreet
+    ? 'Source-backed Utah business stories, delivered each morning.'
+    : `${cadence} No spam, no resharing.`;
+  const headline = isUtahMainStreet ? "You're on Main Street now." : "You're on the list.";
+  const intro = isUtahMainStreet
+    ? 'Thanks for joining us. Each morning, we send one clear, source-backed look at a Utah operator, opening, shift, or local signal worth knowing.'
+    : `${cadence} No spam, no resharing — just the stories and updates you asked for.`;
+  const ctaHref = isUtahMainStreet ? `${siteUrl}/daily` : siteUrl;
+  const ctaLabel = isUtahMainStreet ? "Read today's Daily Post" : `Visit ${brandName}`;
+  const text = isUtahMainStreet
+    ? [
+        headline,
+        '',
+        intro,
+        '',
+        "What you'll get:",
+        '• One useful Utah story each morning',
+        '• Real names, places, sources, and public receipts',
+        '• No paid placements inside editorial coverage',
+        '',
+        `${ctaLabel}: ${ctaHref}`,
+        '',
+        `You subscribed at ${siteDomain}. Unsubscribe anytime: ${unsubUrl}`,
+      ].join('\n')
+    : [
+        headline,
+        '',
+        intro,
+        '',
+        `${ctaLabel}: ${ctaHref}`,
+        '',
+        `You subscribed at ${siteDomain}. Unsubscribe anytime: ${unsubUrl}`,
+      ].join('\n');
+  const expectations = isUtahMainStreet
+    ? `<div style="margin:26px 0 0;padding:20px 22px;background:#f5f5f4;border:1px solid #d6d3d1;border-radius:6px;">
+        <p style="margin:0 0 12px;color:#1f4d7a;font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;">What you'll get</p>
+        <p style="margin:0 0 8px;font-size:15px;line-height:1.55;color:#292524;">One useful Utah story each morning.</p>
+        <p style="margin:0 0 8px;font-size:15px;line-height:1.55;color:#292524;">Real names, places, sources, and public receipts.</p>
+        <p style="margin:0;font-size:15px;line-height:1.55;color:#292524;">No paid placements inside editorial coverage.</p>
+      </div>`
+    : '';
+  const html = `<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+  <body style="margin:0;background:#f0efec;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:#1c1917;">
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>
+    <div style="max-width:600px;margin:0 auto;padding:34px 18px;">
+      <div style="background:#fafaf9;border:1px solid #d6d3d1;border-top:4px double #1c1917;padding:38px 38px 32px;">
+        <p style="margin:0 0 18px;color:#1f4d7a;font-size:11px;font-weight:900;letter-spacing:2.6px;text-transform:uppercase;">${brandName} · Welcome</p>
+        <h1 style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:34px;line-height:1.08;color:#1c1917;">${headline}</h1>
+        <p style="margin:20px 0 0;font-family:Georgia,'Times New Roman',serif;font-size:18px;line-height:1.65;color:#44403c;">${intro}</p>
+        ${expectations}
+        <p style="margin:28px 0 0;">
+          <a href="${ctaHref}" style="display:inline-block;background:#1f4d7a;color:#fff;text-decoration:none;font-size:14px;font-weight:800;padding:13px 20px;border-radius:5px;">${ctaLabel}</a>
+        </p>
+        <p style="margin:32px 0 0;padding-top:18px;border-top:1px solid #d6d3d1;color:#78716c;font-size:12px;line-height:1.6;">
+          You subscribed at <a href="${siteUrl}" style="color:#1f4d7a;">${siteDomain}</a>. You can
+          <a href="${unsubUrl}" style="color:#78716c;">unsubscribe in one click</a> at any time.
+        </p>
+      </div>
     </div>
-  `;
+  </body></html>`;
   try {
     await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -90,8 +138,9 @@ async function sendWelcomeEmail(
       body: JSON.stringify({
         from: `${brandName} <${fromEmail}>`,
         to: [email],
-        subject: `Welcome to ${brandName}`,
+        subject,
         html,
+        text,
         headers: { 'List-Unsubscribe': `<${unsubUrl}>`, 'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click' },
       }),
     });
@@ -175,7 +224,7 @@ export async function POST(req: Request) {
   const fromEmail = brief.fromEmail ?? `dispatch@${brief.domain}`;
   const cadence =
     site === 'utah-main-street'
-      ? 'Your weekly Utah Main Street dispatch arrives on Mondays.'
+      ? 'Your Utah Main Street dispatch arrives each morning.'
       : 'New dispatches will arrive as soon as the next issue is published.';
   void sendWelcomeEmail(email, brief.brandName, fromEmail, brief.domain, cadence);
 
