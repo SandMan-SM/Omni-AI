@@ -16,6 +16,7 @@ import {
   notifyOwnerEmailInbound,
   notifyOwnerTelegramInbound,
 } from '@/lib/inbound-notify';
+import { isActiveTenant, tenantOrigins, recordLead } from '@/lib/server/analytics-ingest';
 
 /**
  * Generic inbound lead intake. Drop-in replacement for /api/cps/leads,
@@ -40,12 +41,27 @@ function corsHeaders(slug: InboundSlug, origin: string | null): HeadersInit {
   };
 }
 
+/** CORS for registry-driven (non-legacy) tenants — origins from analytics.tenants. */
+function registryCors(origins: string[], origin: string | null): HeadersInit {
+  const ok = origin && origins.includes(origin);
+  return {
+    'Access-Control-Allow-Origin': ok ? origin! : origins[0] ?? '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  };
+}
+
 export async function OPTIONS(
   request: Request,
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  if (!isInboundSlug(slug)) return new NextResponse(null, { status: 404 });
+  if (!isInboundSlug(slug)) {
+    if (!(await isActiveTenant(slug))) return new NextResponse(null, { status: 404 });
+    return new NextResponse(null, { status: 204, headers: registryCors(await tenantOrigins(slug), request.headers.get('origin')) });
+  }
   return new NextResponse(null, {
     status: 204,
     headers: corsHeaders(slug, request.headers.get('origin')),
@@ -57,12 +73,14 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
-  if (!isInboundSlug(slug)) {
+  if (!isInboundSlug(slug) && !(await isActiveTenant(slug))) {
     return NextResponse.json({ error: 'Unknown brand' }, { status: 404 });
   }
 
   const origin = request.headers.get('origin');
-  const cors = corsHeaders(slug, origin);
+  const cors: HeadersInit = isInboundSlug(slug)
+    ? corsHeaders(slug, origin)
+    : registryCors(await tenantOrigins(slug), origin);
 
   try {
     const ip = getClientIp(request.headers);
@@ -106,6 +124,29 @@ export async function POST(
       );
     }
 
+    // Write to the shared analytics schema FIRST — the dashboard-visible sink
+    // that captures the lead even if the legacy per-tenant table / omni_businesses
+    // row is missing (the old "Tenant not configured" 500 used to drop leads).
+    const dedupKey = `${(email || phone || '').toLowerCase()}:${(source || '').slice(0, 20)}`;
+    await recordLead({
+      slug,
+      name,
+      email: email || undefined,
+      phone: phone || undefined,
+      message: message || undefined,
+      source,
+      page_url: sanitizeText(body.page_url, 2048) || undefined,
+      dedup_key: dedupKey || undefined,
+      props: body && typeof body === 'object' ? body : {},
+    });
+
+    // Registry (non-legacy) tenants have no per-tenant table — the shared write
+    // above is their system of record. The dashboard + dark-tenant alarm surface
+    // it; owner-notify for these newer brands is wired in a later pass.
+    if (!isInboundSlug(slug)) {
+      return NextResponse.json({ ok: true }, { headers: cors });
+    }
+
     const fallbackHost = INBOUND_ORIGINS[slug][0] ?? 'https://omnileadsagi.com';
     const pageUrl = sanitizeText(body.page_url, 2048);
     let pagePath: string | null = null;
@@ -132,11 +173,10 @@ export async function POST(
       .maybeSingle();
     const businessId = bizRow?.id ?? null;
     if (!businessId) {
-      console.error(`[inbound/${slug}/leads] no omni_businesses row for slug`);
-      return NextResponse.json(
-        { error: 'Tenant not configured.' },
-        { status: 500, headers: cors },
-      );
+      // Lead already captured in analytics.leads above; the legacy per-tenant
+      // table needs a business_id we don't have. Capture, don't 500/drop.
+      console.warn(`[inbound/${slug}/leads] no omni_businesses row; captured via shared analytics`);
+      return NextResponse.json({ ok: true }, { headers: cors });
     }
 
     const { data: inserted, error: insertError } = await sb

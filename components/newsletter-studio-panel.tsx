@@ -50,6 +50,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { PublicationListsManager } from "@/components/PublicationListsManager";
 import {
   PREMIUM_FIRST_MONTH_PRICE_USD,
   PREMIUM_MONTHLY_PRICE_USD,
@@ -512,6 +513,8 @@ export function NewsletterStudioPanel() {
           </Badge>
         </div>
       )}
+
+      <PublicationListsManager />
 
       {/* Audience list */}
       <Card className="bg-white/5 border-white/10">

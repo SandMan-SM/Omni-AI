@@ -56,6 +56,7 @@ async function sendWelcomeEmail(
   brandName: string,
   fromEmail: string,
   siteDomain: string,
+  cadence: string,
 ): Promise<void> {
   if (!RESEND_API_KEY) return;
   const unsubUrl = buildUnsubscribeUrl(
@@ -69,7 +70,7 @@ async function sendWelcomeEmail(
       </p>
       <h1 style="font-size:24px;line-height:1.3;margin:0 0 16px">You're on the list.</h1>
       <p style="font-size:15px;line-height:1.6">
-        Daily dispatches start arriving in your inbox tomorrow morning.
+        ${cadence}
         No spam, no resharing — and you can unsubscribe in one click any
         time via the link at the bottom of every email.
       </p>
@@ -172,7 +173,11 @@ export async function POST(req: Request) {
 
   // Welcome email — fire-and-forget. Non-fatal if Resend fails.
   const fromEmail = brief.fromEmail ?? `dispatch@${brief.domain}`;
-  void sendWelcomeEmail(email, brief.brandName, fromEmail, brief.domain);
+  const cadence =
+    site === 'utah-main-street'
+      ? 'Your weekly Utah Main Street dispatch arrives on Mondays.'
+      : 'New dispatches will arrive as soon as the next issue is published.';
+  void sendWelcomeEmail(email, brief.brandName, fromEmail, brief.domain, cadence);
 
   return withCors(NextResponse.json({ ok: true }));
 }

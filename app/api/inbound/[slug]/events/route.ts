@@ -24,6 +24,25 @@ import {
   pickAllowedOrigin,
   type InboundSlug,
 } from '@/lib/inbound-types';
+import {
+  isActiveTenant,
+  tenantOrigins,
+  recordEvent,
+  recordLead,
+  recordNewsletter,
+} from '@/lib/server/analytics-ingest';
+
+/** CORS for registry-driven (non-legacy) tenants — origins come from analytics.tenants. */
+function registryCors(origins: string[], origin: string | null): HeadersInit {
+  const ok = origin && origins.includes(origin);
+  return {
+    'Access-Control-Allow-Origin': ok ? origin! : origins[0] ?? '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Max-Age': '86400',
+    Vary: 'Origin',
+  };
+}
 
 /**
  * Generic inbound analytics ingestion. Drop-in replacement for the bespoke
@@ -54,12 +73,14 @@ export async function OPTIONS(
 ) {
   const { slug: rawSlug } = await params;
   const slug = SUBSCRIBE_SLUG_ALIAS[rawSlug] ?? rawSlug;
+  const origin = request.headers.get('origin');
   if (!isInboundSlug(slug)) {
-    return new NextResponse(null, { status: 404 });
+    if (!(await isActiveTenant(slug))) return new NextResponse(null, { status: 404 });
+    return new NextResponse(null, { status: 204, headers: registryCors(await tenantOrigins(slug), origin) });
   }
   return new NextResponse(null, {
     status: 204,
-    headers: corsHeaders(slug, request.headers.get('origin')),
+    headers: corsHeaders(slug, origin),
   });
 }
 
@@ -69,11 +90,56 @@ export async function POST(
 ) {
   const { slug: rawSlug } = await params;
   const slug = SUBSCRIBE_SLUG_ALIAS[rawSlug] ?? rawSlug;
+  const origin = request.headers.get('origin');
+
+  // Registry-driven path: a non-legacy but active registry tenant (all the
+  // newer brands) writes ONLY to the shared analytics schema. The legacy
+  // per-tenant path below stays byte-for-byte unchanged for existing sites.
   if (!isInboundSlug(slug)) {
-    return NextResponse.json({ error: 'Unknown brand' }, { status: 404 });
+    if (!(await isActiveTenant(slug))) {
+      return NextResponse.json({ error: 'Unknown brand' }, { status: 404 });
+    }
+    const rcors = registryCors(await tenantOrigins(slug), origin);
+    try {
+      const b = await request.json().catch(() => ({}));
+      const props = b.properties && typeof b.properties === 'object' ? b.properties : {};
+      await recordEvent({
+        slug,
+        event_type: sanitizeText(b.event_type, 50) || 'page_view',
+        event_category: sanitizeText(b.event_category, 50) || 'navigation',
+        action: sanitizeText(b.action, 50) || 'view',
+        page_url: sanitizeText(b.page_url, 2048) || undefined,
+        target_id: sanitizeText(b.target_id, 200) || undefined,
+        value_text: sanitizeText(b.value_text, 500) || undefined,
+        value_numeric: typeof b.value_numeric === 'number' ? b.value_numeric : undefined,
+        visitor_id: sanitizeText(b.visitor_id, 100) || undefined,
+        session_id: sanitizeText(b.session_id, 100) || undefined,
+        props: props as Record<string, unknown>,
+      });
+      const rawEmail =
+        (typeof (props as { email?: unknown }).email === 'string'
+          ? (props as { email: string }).email
+          : b.event_category === 'subscribe' && typeof b.value_text === 'string'
+            ? b.value_text
+            : '') || '';
+      const email = sanitizeText(rawEmail, 254).toLowerCase();
+      if (email && isValidEmail(email)) {
+        await recordNewsletter({ slug, email, action: 'subscribe', props: props as Record<string, unknown> });
+        await recordLead({
+          slug,
+          email,
+          name: sanitizeText((props as { name?: string }).name, 120) || email.split('@')[0],
+          source: 'subscribe',
+          dedup_key: `sub:${email}`,
+          props: props as Record<string, unknown>,
+        });
+      }
+    } catch (err) {
+      console.error(`[inbound/${slug}/events] registry path failed:`, err);
+    }
+    return NextResponse.json({ ok: true }, { headers: rcors });
   }
 
-  const origin = request.headers.get('origin');
   const cors = corsHeaders(slug, origin);
 
   try {
@@ -309,6 +375,21 @@ export async function POST(
         }
       }
     }
+
+    // Forward mirror -> shared analytics schema (best-effort; never affects the response).
+    void recordEvent({
+      slug,
+      event_type: sanitizeText(body.event_type, 50) || 'page_view',
+      event_category: sanitizeText(body.event_category, 50) || 'navigation',
+      action: sanitizeText(body.action, 50) || 'view',
+      page_url: pageUrl || undefined,
+      target_id: targetIdRaw || undefined,
+      value_text: sanitizeText(body.value_text, 500) || undefined,
+      value_numeric: typeof body.value_numeric === 'number' ? body.value_numeric : undefined,
+      visitor_id: sanitizeText(body.visitor_id, 100) || undefined,
+      session_id: sanitizeText(body.session_id, 100) || undefined,
+      props: safeProps,
+    });
 
     return NextResponse.json({ ok: true }, { headers: cors });
   } catch (e) {
