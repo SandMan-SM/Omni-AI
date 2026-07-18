@@ -5,18 +5,90 @@ import { sanitizeText, isValidEmail } from '@/lib/validation';
 import { buildWelcomeEmail } from '@/lib/subscribe-welcome';
 
 // Several /subscribe forms across the federation POST a brand-friendly slug that
-// is NOT a registered tenant (e.g. `utahmainstreet`, `omni`, `mythos`,
-// `mythosais`, `theixnetwork`). Without this map the ingest 404s and every one
-// of those subscribers is silently dropped. Map each to its canonical
-// registered tenant for capture; the ORIGINAL slug is still used to brand the
-// welcome email so the subscriber sees the right business name.
+// is NOT a registered tenant (e.g. `utahmainstreet`, `omni`, `mythos`). Without
+// this map the ingest 404s and every one of those subscribers is silently
+// dropped. Map each to its canonical registered tenant for capture; the ORIGINAL
+// slug is still used to brand the welcome email so the subscriber sees the right
+// business name.
 const SUBSCRIBE_SLUG_ALIAS: Record<string, string> = {
   utahmainstreet: 'mainst',
   omni: 'omnileads',
   mythos: 'omnileads',
   mythosais: 'omnileads',
   theixnetwork: 'omnileads',
+  obsidiancasino: 'omnileads',
 };
+
+/**
+ * Resolve the tenant a request should be recorded against.
+ *
+ * The registry wins over the alias map. An alias is only a fallback for a
+ * brand-friendly slug that is NOT itself a registered tenant — once a brand
+ * gets its own analytics.tenants row, aliasing it would silently file its
+ * traffic under someone else's slug. `mythosais` and `theixnetwork` did exactly
+ * that: both became real tenants, and every event kept landing on `omnileads`.
+ * Checking the registry first makes the map self-healing, so a future brand
+ * being registered can never resurrect this bug.
+ */
+async function resolveTenantSlug(rawSlug: string): Promise<string> {
+  const alias = SUBSCRIBE_SLUG_ALIAS[rawSlug];
+  if (!alias) return rawSlug;
+  return (await isActiveTenant(rawSlug)) ? rawSlug : alias;
+}
+
+async function syncResendContact(email: string, firstName?: string | null): Promise<void> {
+  if (!process.env.RESEND_API_KEY) return;
+  try {
+    const res = await fetch('https://api.resend.com/contacts', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        ...(firstName ? { first_name: firstName } : {}),
+        unsubscribed: false,
+      }),
+    });
+    if (!res.ok && res.status !== 409) {
+      console.error(`[newsletter] Resend contact sync failed: ${res.status}`);
+    }
+  } catch (err) {
+    console.error('[newsletter] Resend contact sync failed:', err);
+  }
+}
+
+async function persistFederationSubscriber(input: {
+  site: string;
+  email: string;
+  firstName?: string | null;
+  source?: string | null;
+}): Promise<boolean> {
+  try {
+    const sb = createAdminClient();
+    const { error } = await sb
+      .from('federation_newsletter_subscribers')
+      .upsert(
+        {
+          site: input.site,
+          email: input.email,
+          first_name: input.firstName || null,
+          source: input.source || 'subscribe',
+          unsubscribed: false,
+        },
+        { onConflict: 'site,email' },
+      );
+    if (error) {
+      console.error(`[newsletter] federation subscriber persist failed: ${error.message}`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('[newsletter] federation subscriber persist failed:', err);
+    return false;
+  }
+}
 import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import {
   INBOUND_ORIGINS,
@@ -72,7 +144,7 @@ export async function OPTIONS(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug: rawSlug } = await params;
-  const slug = SUBSCRIBE_SLUG_ALIAS[rawSlug] ?? rawSlug;
+  const slug = await resolveTenantSlug(rawSlug);
   const origin = request.headers.get('origin');
   if (!isInboundSlug(slug)) {
     if (!(await isActiveTenant(slug))) return new NextResponse(null, { status: 404 });
@@ -89,7 +161,7 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug: rawSlug } = await params;
-  const slug = SUBSCRIBE_SLUG_ALIAS[rawSlug] ?? rawSlug;
+  const slug = await resolveTenantSlug(rawSlug);
   const origin = request.headers.get('origin');
 
   // Registry-driven path: a non-legacy but active registry tenant (all the
@@ -124,15 +196,23 @@ export async function POST(
             : '') || '';
       const email = sanitizeText(rawEmail, 254).toLowerCase();
       if (email && isValidEmail(email)) {
+        const firstName = sanitizeText((props as { name?: string }).name, 120) || null;
+        await persistFederationSubscriber({
+          site: slug,
+          email,
+          firstName,
+          source: sanitizeText((props as { source?: string }).source, 120) || rawSlug,
+        });
         await recordNewsletter({ slug, email, action: 'subscribe', props: props as Record<string, unknown> });
         await recordLead({
           slug,
           email,
-          name: sanitizeText((props as { name?: string }).name, 120) || email.split('@')[0],
+          name: firstName || email.split('@')[0],
           source: 'subscribe',
           dedup_key: `sub:${email}`,
           props: props as Record<string, unknown>,
         });
+        await syncResendContact(email, firstName);
       }
     } catch (err) {
       console.error(`[inbound/${slug}/events] registry path failed:`, err);
@@ -307,6 +387,24 @@ export async function POST(
         sanitizeText(body.event_category, 50) ||
         'subscribe';
       const utmSource = propStr('utm_source', 100) || sanitizeText(body.utm_source, 100) || null;
+
+      // Durable PostgREST-backed record. This remains available when the direct
+      // Postgres analytics sink is unreachable, and it is the dashboard's
+      // canonical newsletter source.
+      await persistFederationSubscriber({ site: slug, email, firstName: fullName, source });
+
+      // Shared newsletter + lead records are what the Agentic Dashboard reads.
+      // Write them for legacy tenants too, not only registry-driven tenants.
+      await recordNewsletter({ slug, email, action: 'subscribe', props: safeProps });
+      await recordLead({
+        slug,
+        email,
+        name: fullName,
+        source: 'subscribe',
+        dedup_key: `sub:${email}`,
+        props: safeProps,
+      });
+      await syncResendContact(email, fullName);
 
       // Persist the lead — best-effort. If the DB is slow/unavailable we STILL
       // send the emails below: a database blip must never swallow a subscriber's

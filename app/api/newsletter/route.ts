@@ -100,6 +100,40 @@ export async function POST(request: Request) {
     );
   }
 
+  // Mirror every Omni signup into the shared federation list used by the
+  // Agentic Dashboard and Resend contact sync. Do not report success unless
+  // the shared source of truth confirms the write.
+  try {
+    const federation = await fetch(
+      new URL('/api/federation-newsletter/subscribe', request.url),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          site: 'omni',
+          email: rawEmail,
+          source: 'omnileadsagi.com/newsletter',
+          send_welcome: false,
+        }),
+        signal: AbortSignal.timeout(8000),
+        cache: 'no-store',
+      },
+    );
+    if (!federation.ok) {
+      console.error('federation newsletter sync failed:', federation.status);
+      return NextResponse.json(
+        { error: "We couldn't finish your subscription. Please try again." },
+        { status: 502 },
+      );
+    }
+  } catch (federationError) {
+    console.error('federation newsletter sync failed:', federationError);
+    return NextResponse.json(
+      { error: "We couldn't finish your subscription. Please try again." },
+      { status: 502 },
+    );
+  }
+
   // Fire-and-forget event log (RLS-scoped; fine to miss if the session is
   // anon and the events policy rejects — the subscribe itself already
   // succeeded via the admin client above).

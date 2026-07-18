@@ -51,6 +51,29 @@ function isValidEmail(s: unknown): s is string {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) && trimmed.length <= 254;
 }
 
+async function syncResendContact(email: string, firstName: string | null): Promise<boolean> {
+  if (!RESEND_API_KEY) return false;
+  try {
+    const res = await fetch('https://api.resend.com/contacts', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        ...(firstName ? { first_name: firstName } : {}),
+        unsubscribed: false,
+      }),
+    });
+    // Resend returns conflict for an existing contact; the durable database
+    // upsert already made this subscription idempotent, so that is still synced.
+    return res.ok || res.status === 409;
+  } catch {
+    return false;
+  }
+}
+
 async function sendWelcomeEmail(
   email: string,
   brandName: string,
@@ -151,7 +174,13 @@ async function sendWelcomeEmail(
 
 export async function POST(req: Request) {
   noStore();
-  let body: { site?: unknown; email?: unknown; first_name?: unknown; source?: unknown };
+  let body: {
+    site?: unknown;
+    email?: unknown;
+    first_name?: unknown;
+    source?: unknown;
+    send_welcome?: unknown;
+  };
   try {
     body = await req.json();
   } catch {
@@ -220,13 +249,18 @@ export async function POST(req: Request) {
     );
   }
 
-  // Welcome email — fire-and-forget. Non-fatal if Resend fails.
-  const fromEmail = brief.fromEmail ?? `dispatch@${brief.domain}`;
-  const cadence =
-    site === 'utah-main-street'
-      ? 'Your Utah Main Street dispatch arrives each morning.'
-      : 'New dispatches will arrive as soon as the next issue is published.';
-  void sendWelcomeEmail(email, brief.brandName, fromEmail, brief.domain, cadence);
+  const providerSynced = await syncResendContact(email, firstName);
 
-  return withCors(NextResponse.json({ ok: true }));
+  // Sites with their own double-opt-in or branded welcome flow can disable the
+  // federation welcome while still getting durable storage + Resend contact sync.
+  if (body.send_welcome !== false) {
+    const fromEmail = brief.fromEmail ?? `dispatch@${brief.domain}`;
+    const cadence =
+      site === 'utah-main-street'
+        ? 'Your Utah Main Street dispatch arrives each morning.'
+        : 'New dispatches will arrive as soon as the next issue is published.';
+    void sendWelcomeEmail(email, brief.brandName, fromEmail, brief.domain, cadence);
+  }
+
+  return withCors(NextResponse.json({ ok: true, provider_synced: providerSynced }));
 }
