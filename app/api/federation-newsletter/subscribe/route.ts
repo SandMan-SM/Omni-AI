@@ -53,6 +53,8 @@ function isValidEmail(s: unknown): s is string {
 
 async function syncResendContact(email: string, firstName: string | null): Promise<boolean> {
   if (!RESEND_API_KEY) return false;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 2500);
   try {
     const res = await fetch('https://api.resend.com/contacts', {
       method: 'POST',
@@ -65,12 +67,15 @@ async function syncResendContact(email: string, firstName: string | null): Promi
         ...(firstName ? { first_name: firstName } : {}),
         unsubscribed: false,
       }),
+      signal: controller.signal,
     });
     // Resend returns conflict for an existing contact; the durable database
     // upsert already made this subscription idempotent, so that is still synced.
     return res.ok || res.status === 409;
   } catch {
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
