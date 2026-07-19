@@ -55,7 +55,20 @@ async function applyUnsubscribe(email: string): Promise<{ ok: boolean; touched: 
     .select('id');
   touched += (nRows ?? []).length;
 
-  // 3) Append to suppression list (global, business_id=null) — covers
+  // 3) Federation newsletters — unsubscribe every publication matching
+  //    this email so the legacy footer link and native one-click action
+  //    also stop sends from federation publications such as Alira.
+  const { data: fnRows } = await sb
+    .from('federation_newsletter_subscribers')
+    .update({
+      unsubscribed: true,
+      unsubscribed_at: new Date().toISOString(),
+    })
+    .ilike('email', email)
+    .select('id');
+  touched += (fnRows ?? []).length;
+
+  // 4) Append to suppression list (global, business_id=null) — covers
   //    all transactional sends too, not just the newsletter cron path.
   //    Unique key is (business_id, email); upsert idempotently on it.
   await sb
@@ -70,7 +83,7 @@ async function applyUnsubscribe(email: string): Promise<{ ok: boolean; touched: 
       { onConflict: 'business_id,email', ignoreDuplicates: true },
     );
 
-  // 4) Federation Marketing System — flip federation_owners row if any,
+  // 5) Federation Marketing System — flip federation_owners row if any,
   //    and mark every still-scheduled marketing_sends row for this
   //    recipient as suppressed so no further sends fire.
   const { data: foRows } = await sb

@@ -141,6 +141,17 @@ export const FEDERATION_NEWSLETTER_BRIEFS: FederationNewsletterBrief[] = [
     businessOwnerEmail: 'sitanim8@gmail.com',
   },
   {
+    site: 'alira',
+    brandName: 'ALIRA',
+    domain: 'alira.live',
+    voice: 'Warm, grounded, intuitive, and feminine without hype.',
+    audience: 'Women seeking readings, classes, retreats, and mentorship.',
+    niche: 'Oracle and Tarot guidance, intuitive practice, retreat openings, and program updates.',
+    doNotSay: ['guaranteed outcomes', 'cures', 'excessive use of sacred', 'hype-driven promises'],
+    businessOwnerEmail: 'brightsidebirth@gmail.com',
+    fromEmail: 'alira@omnileadsagi.com',
+  },
+  {
     site: 'imperium',
     brandName: 'Imperium',
     domain: 'secretimperium.com',

@@ -221,6 +221,9 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'http://localhost:3010',
   ],
   alira: [
+    'https://alira.live',
+    'https://www.alira.live',
+    'https://alira-site.vercel.app',
     'https://aliracare.com',
     'https://www.aliracare.com',
     'http://localhost:3000',
