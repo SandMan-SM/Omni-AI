@@ -8,6 +8,7 @@
  *   - leifson  → InboundAnalyticsEmbed slug="leifson"
  *   - ltb      → InboundAnalyticsEmbed slug="ltb"
  *   - prime_iv → InboundAnalyticsEmbed slug="prime_iv"
+ *   - rene     → InboundAnalyticsEmbed slug="rene"
  *
  * Reads the active workspace from localStorage and resolves it to a slug
  * via omni_businesses lookup (passed down by the AgiAdminPanel via props
@@ -80,12 +81,30 @@ export default function SiteAnalyticsRouter() {
   }, [bizTick]);
 
   if (slug === "cps") return <CpsAnalyticsPanel />;
-  if (slug === "youngs" || slug === "leifson" || slug === "ltb" || slug === "prime_iv") {
-    return <InboundAnalyticsEmbed slug={slug as "youngs" | "leifson" | "ltb" | "prime_iv"} />;
+  if (
+    slug === "youngs" ||
+    slug === "leifson" ||
+    slug === "ltb" ||
+    slug === "prime_iv" ||
+    slug === "rene"
+  ) {
+    return (
+      <InboundAnalyticsEmbed
+        slug={
+          slug as
+            | "youngs"
+            | "leifson"
+            | "ltb"
+            | "prime_iv"
+            | "rene"
+        }
+      />
+    );
   }
   return (
     <div className="rounded-xl border border-white/10 bg-black/20 p-8 text-sm text-gray-400">
-      Site Analytics is available for client workspaces (CPS, Youngs, Leifson, LTB, Prime IV). Switch workspace to view.
+      Site Analytics is available for client workspaces (CPS, Youngs,
+      Leifson, LTB, Prime IV, Rene). Switch workspace to view.
     </div>
   );
 }
