@@ -5,6 +5,7 @@ node_modules
 .local
 dist
 *.log
+.env
 .env*.local
 .DS_Store
 Thumbs.db
