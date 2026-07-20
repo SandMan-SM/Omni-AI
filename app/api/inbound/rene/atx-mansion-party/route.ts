@@ -4,6 +4,7 @@ import {
 } from "node:crypto";
 import { NextResponse } from "next/server";
 import { POST as persistInboundLead } from "@/app/api/inbound/[slug]/leads/route";
+import { notifyOwnerEmailInbound } from "@/lib/inbound-notify";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
 import { recordEvent } from "@/lib/server/analytics-ingest";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -30,6 +31,8 @@ const FROM =
   process.env.RENE_RESEND_FROM ||
   process.env.RESEND_FROM ||
   "Rene Laveau <newsletter@omnileadsagi.com>";
+const LOCAL_SOURCE_HEADER = "x-atx-local-source";
+const LOCAL_SOURCE_VALUE = "rene-laveau-dev";
 
 const PHONE_RE = /^[+()\-\s.\d]{7,24}$/;
 
@@ -43,6 +46,13 @@ type SignupPayload = {
 
 type ExistingLead = {
   id: string;
+  raw_data: Record<string, unknown> | null;
+  emailNotified: boolean;
+};
+
+type CrmContact = {
+  id: string;
+  notes: string | null;
   raw_data: Record<string, unknown> | null;
 };
 
@@ -89,7 +99,18 @@ function emailFingerprint(email: string): string {
     .slice(0, 24);
 }
 
+function literalIlike(value: string): string {
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
+}
+
 async function isAuthorized(request: Request): Promise<boolean> {
+  const url = new URL(request.url);
+  const isLoopbackDevelopment =
+    process.env.NODE_ENV === "development" &&
+    (url.hostname === "127.0.0.1" || url.hostname === "localhost") &&
+    request.headers.get(LOCAL_SOURCE_HEADER) === LOCAL_SOURCE_VALUE;
+  if (isLoopbackDevelopment) return true;
+
   const token =
     request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
   if (!token) return false;
@@ -141,7 +162,7 @@ function emailMarkup(
     `Get the ticket: ${TICKET_URL}`,
     `Share with friends: ${SHARE_URL}`,
     "",
-    "Friday, July 24, 2026 · 9 PM–2 AM CDT · West Austin",
+    "Friday, July 24, 2026 · 9 PM–2 AM CDT · South Austin",
     "The exact location is released on the event date.",
     "",
     `Stop event reminders: ${unsubscribeUrl}`,
@@ -165,7 +186,7 @@ function emailMarkup(
 
           <div style="margin:28px 0 0;padding:20px;border:1px solid rgba(255,255,255,.13);border-radius:14px;background:rgba(255,255,255,.04);">
             <p style="margin:0;color:#fff;font-size:15px;font-weight:700;">Friday, July 24, 2026</p>
-            <p style="margin:7px 0 0;color:#aaa3aa;font-size:14px;line-height:1.5;">9 PM–2 AM CDT · West Austin<br>The exact location is released on the event date.</p>
+            <p style="margin:7px 0 0;color:#aaa3aa;font-size:14px;line-height:1.5;">9 PM–2 AM CDT · South Austin<br>The exact location is released on the event date.</p>
           </div>
 
           <p style="margin:28px 0 0;">
@@ -300,7 +321,7 @@ async function sendAttendeeSequence(
       subject: "The House Party is one day away",
       preheader:
         "Your POSH ticket link and private share link for The House Party.",
-      eyebrow: "Tomorrow night · West Austin",
+      eyebrow: "Tomorrow night · South Austin",
       headline: "One night out",
       body:
         "The House Party begins tomorrow at 9 PM. Tickets are handled directly through POSH, and the same link below is the clean path to checkout. Send the private event page to the friends you want in the room.",
@@ -308,13 +329,13 @@ async function sendAttendeeSequence(
     },
     {
       kind: "day_of",
-      subject: "Tonight: The House Party in West Austin",
+      subject: "Tonight: The House Party in South Austin",
       preheader:
         "Tonight at 9 PM. Your POSH ticket link and friend-share link are inside.",
       eyebrow: "Tonight · 9 PM",
       headline: "Tonight is the night",
       body:
-        "The House Party opens tonight at 9 PM in West Austin. Use the direct POSH link for the event ticket, and share the invite with anyone joining you. The exact location is released on the event date.",
+        "The House Party opens tonight at 9 PM in South Austin. Use the direct POSH link for the event ticket, and share the invite with anyone joining you. The exact location is released on the event date.",
       scheduledAt: "2026-07-24T15:00:00.000Z",
     },
   ];
@@ -364,30 +385,26 @@ function previousSendResults(rawData: Record<string, unknown>): SendResult[] {
 async function findExistingLead(
   email: string,
 ): Promise<ExistingLead | null> {
-  try {
-    const sb = createAdminClient();
-    const { data, error } = await sb
-      .from("inbound_rene_leads")
-      .select("id,raw_data")
-      .eq("email", email)
-      .eq("source", SOURCE)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (error) {
-      console.error("[rene/atx-party] existing lead lookup failed", error);
-      return null;
-    }
-    return data
-      ? {
-          id: String(data.id),
-          raw_data: asObject(data.raw_data),
-        }
-      : null;
-  } catch (error) {
+  const sb = createAdminClient();
+  const { data, error } = await sb
+    .from("inbound_rene_leads")
+    .select("id,raw_data,email_notified")
+    .eq("email", email)
+    .eq("source", SOURCE)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) {
     console.error("[rene/atx-party] existing lead lookup failed", error);
-    return null;
+    throw new Error("existing_lead_lookup_failed");
   }
+  return data
+    ? {
+        id: String(data.id),
+        raw_data: asObject(data.raw_data),
+        emailNotified: data.email_notified === true,
+      }
+    : null;
 }
 
 async function persistLead(
@@ -463,16 +480,39 @@ async function ensureCrmMirror(
       return false;
     }
 
-    const { data: existing, error: lookupError } = await sb
+    const { data: linkedContact, error: linkedLookupError } = await sb
       .from("omni_leads_generated")
       .select("id,notes,raw_data")
+      .eq("business_id", business.id)
       .eq("source_table", "inbound_rene_leads")
       .eq("source_record_id", leadId)
       .limit(1)
       .maybeSingle();
-    if (lookupError) {
-      console.error("[rene/atx-party] CRM lookup failed", lookupError);
+    if (linkedLookupError) {
+      console.error(
+        "[rene/atx-party] linked CRM lookup failed",
+        linkedLookupError,
+      );
       return false;
+    }
+
+    let existing = linkedContact as CrmContact | null;
+    if (!existing) {
+      const { data: emailContact, error: emailLookupError } = await sb
+        .from("omni_leads_generated")
+        .select("id,notes,raw_data")
+        .eq("business_id", business.id)
+        .ilike("email", literalIlike(payload.email))
+        .limit(1)
+        .maybeSingle();
+      if (emailLookupError) {
+        console.error(
+          "[rene/atx-party] email CRM lookup failed",
+          emailLookupError,
+        );
+        return false;
+      }
+      existing = emailContact as CrmContact | null;
     }
 
     const firstName =
@@ -492,11 +532,13 @@ async function ensureCrmMirror(
       share_url: SHARE_URL,
       submission_id: payload.submissionId,
       workflow: WORKFLOW_VERSION,
+      source_table: "inbound_rene_leads",
+      source_record_id: leadId,
     };
 
-    if (existing?.id) {
+    const updateExisting = async (contact: CrmContact): Promise<boolean> => {
       const currentNotes =
-        typeof existing.notes === "string" ? existing.notes.trim() : "";
+        typeof contact.notes === "string" ? contact.notes.trim() : "";
       const mergedNotes = currentNotes.includes(
         "VIP ticket reservation — The House Party.",
       )
@@ -511,16 +553,20 @@ async function ensureCrmMirror(
           phone: payload.phone,
           notes: mergedNotes,
           raw_data: {
-            ...asObject(existing.raw_data),
+            ...asObject(contact.raw_data),
             atx_mansion_party: rawData,
           },
         })
-        .eq("id", existing.id);
+        .eq("id", contact.id);
       if (error) {
         console.error("[rene/atx-party] CRM update failed", error);
         return false;
       }
       return true;
+    };
+
+    if (existing?.id) {
+      return updateExisting(existing);
     }
 
     const { error } = await sb.from("omni_leads_generated").insert({
@@ -532,12 +578,24 @@ async function ensureCrmMirror(
       source: "web",
       status: "new",
       notes,
-      raw_data: rawData,
+      raw_data: { atx_mansion_party: rawData },
       source_table: "inbound_rene_leads",
       source_record_id: leadId,
       pipeline_type: "inbound",
     });
     if (error) {
+      if (error.code === "23505") {
+        const { data: racedContact, error: racedLookupError } = await sb
+          .from("omni_leads_generated")
+          .select("id,notes,raw_data")
+          .eq("business_id", business.id)
+          .ilike("email", literalIlike(payload.email))
+          .limit(1)
+          .maybeSingle();
+        if (!racedLookupError && racedContact?.id) {
+          return updateExisting(racedContact as CrmContact);
+        }
+      }
       console.error("[rene/atx-party] CRM mirror failed", error);
       return false;
     }
@@ -548,7 +606,9 @@ async function ensureCrmMirror(
   }
 }
 
-async function isSuppressed(email: string): Promise<boolean> {
+async function suppressionStatus(
+  email: string,
+): Promise<"clear" | "suppressed" | "error"> {
   try {
     const sb = createAdminClient();
     const { data, error } = await sb
@@ -558,12 +618,49 @@ async function isSuppressed(email: string): Promise<boolean> {
       .limit(1);
     if (error) {
       console.error("[rene/atx-party] suppression lookup failed", error);
-      return true;
+      return "error";
     }
-    return Boolean(data?.length);
+    return data?.length ? "suppressed" : "clear";
   } catch (error) {
     console.error("[rene/atx-party] suppression lookup failed", error);
+    return "error";
+  }
+}
+
+async function saveOwnerNotificationState(
+  leadId: string,
+  rawData: Record<string, unknown>,
+  accepted: boolean,
+): Promise<boolean> {
+  try {
+    const sb = createAdminClient();
+    const { error } = await sb
+      .from("inbound_rene_leads")
+      .update({
+        ...(accepted ? { email_notified: true } : {}),
+        raw_data: {
+          ...rawData,
+          ticket_owner_notification: {
+            ok: accepted,
+            attempted_at: new Date().toISOString(),
+          },
+        },
+      })
+      .eq("id", leadId);
+    if (error) {
+      console.error(
+        "[rene/atx-party] owner notification state update failed",
+        error,
+      );
+      return false;
+    }
     return true;
+  } catch (error) {
+    console.error(
+      "[rene/atx-party] owner notification state update failed",
+      error,
+    );
+    return false;
   }
 }
 
@@ -612,7 +709,10 @@ export async function GET() {
     thank_you: "immediate",
     reminders: ["2026-07-24T02:00:00.000Z", "2026-07-24T15:00:00.000Z"],
     email_configured: Boolean(process.env.RESEND_API_KEY),
-    authentication: "vercel_oidc",
+    authentication:
+      process.env.NODE_ENV === "development"
+        ? "loopback_dev_or_vercel_oidc"
+        : "vercel_oidc",
   });
 }
 
@@ -681,7 +781,15 @@ export async function POST(request: Request) {
   }
 
   const payload = { name, phone, email, submissionId };
-  const existing = await findExistingLead(email);
+  let existing: ExistingLead | null;
+  try {
+    existing = await findExistingLead(email);
+  } catch {
+    return NextResponse.json(
+      { ok: false, error: "existing_contact_lookup_failed" },
+      { status: 503 },
+    );
+  }
   let leadId = existing?.id || null;
   if (!leadId) {
     leadId = await persistLead(request, payload);
@@ -691,6 +799,23 @@ export async function POST(request: Request) {
       { ok: false, error: "dashboard_sync_failed" },
       { status: 503 },
     );
+  }
+
+  if (!existing) {
+    try {
+      existing = await findExistingLead(email);
+    } catch {
+      return NextResponse.json(
+        { ok: false, error: "saved_contact_reload_failed" },
+        { status: 503 },
+      );
+    }
+    if (!existing || existing.id !== leadId) {
+      return NextResponse.json(
+        { ok: false, error: "saved_contact_reload_failed" },
+        { status: 503 },
+      );
+    }
   }
 
   const crmSynced = await ensureCrmMirror(leadId, payload);
@@ -717,7 +842,7 @@ export async function POST(request: Request) {
     },
   });
 
-  const rawData = {
+  let rawData: Record<string, unknown> = {
     ...asObject(existing?.raw_data),
     name,
     phone,
@@ -730,7 +855,67 @@ export async function POST(request: Request) {
     submission_id: submissionId,
   };
 
-  if (await isSuppressed(email)) {
+  const previousOwnerState = asObject(
+    existing?.raw_data?.ticket_owner_notification,
+  );
+  const ownerAlreadyAccepted =
+    existing?.emailNotified === true || previousOwnerState.ok === true;
+  if (ownerAlreadyAccepted) {
+    rawData = {
+      ...rawData,
+      ticket_owner_notification: {
+        ...previousOwnerState,
+        ok: true,
+      },
+    };
+  } else {
+    const ownerAccepted = await notifyOwnerEmailInbound({
+      id: leadId,
+      slug: "rene",
+      name,
+      email,
+      phone,
+      message: [
+        "VIP ticket reservation — The House Party.",
+        `POSH ticket: ${TICKET_URL}`,
+        `Friend share: ${SHARE_URL}`,
+      ].join("\n"),
+      source: SOURCE,
+      pageUrl: SIGNUP_URL,
+    });
+    rawData = {
+      ...rawData,
+      ticket_owner_notification: {
+        ok: ownerAccepted,
+        attempted_at: new Date().toISOString(),
+      },
+    };
+    const ownerStateSaved = await saveOwnerNotificationState(
+      leadId,
+      rawData,
+      ownerAccepted,
+    );
+    if (!ownerAccepted || !ownerStateSaved) {
+      console.error("[rene/atx-party] owner notification failed", {
+        ownerAccepted,
+        ownerStateSaved,
+      });
+      return NextResponse.json(
+        { ok: false, error: "owner_notification_failed" },
+        { status: 503 },
+      );
+    }
+  }
+
+  const suppression = await suppressionStatus(email);
+  if (suppression === "error") {
+    return NextResponse.json(
+      { ok: false, error: "suppression_lookup_failed" },
+      { status: 503 },
+    );
+  }
+
+  if (suppression === "suppressed") {
     const stateSaved = await saveWorkflowState(
       leadId,
       rawData,

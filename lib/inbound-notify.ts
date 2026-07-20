@@ -68,6 +68,7 @@ export async function notifyOwnerEmailInbound(lead: InboundLead): Promise<boolea
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Idempotency-Key': `inbound-owner-${lead.slug}-${lead.id}`,
       },
       body: JSON.stringify({
         from: FROM_EMAIL,
