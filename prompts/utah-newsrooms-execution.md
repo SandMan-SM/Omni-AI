@@ -264,8 +264,9 @@ already pings every click / share / subscribe / impression to
 slug (`mainst`, `beehive`, `wasatch`) is wired in
 `lib/inbound-types.ts` of the omni-ai repo and the per-tenant
 tables exist. The operator dashboard at
-`omnileadsagi.com/dashboard?slug=<masthead>` shows the
-per-masthead rollup automatically.
+`mythosais.com/dashboard` shows the per-masthead rollup; select the
+relevant masthead/workspace in Mythos rather than relying on an unsupported
+Omni query-string route.
 
 If you add a new event type (e.g., `feature_read_complete` for
 The Wasatch Post scroll-depth tracking), that's free — the

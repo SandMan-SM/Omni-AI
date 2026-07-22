@@ -46,8 +46,8 @@ const html = `<!doctype html><html><body style="margin:0;background:#0a0a0a;colo
   <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:800;color:#fafafa;">Things only you can do</h1>
   <p style="color:#a1a1aa;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
     Automation has the rubric pieces in place — sponsor block (Fred + Live Better Podcast),
-    share controls, newsletter capture, cross-domain embed, and analytics ping back to
-    omnileadsagi.com/dashboard. Below is what needs <strong>your</strong> hands.
+    share controls, newsletter capture, cross-domain embed, and analytics visible in
+    the Mythos agentic dashboard. Below is what needs <strong>your</strong> hands.
   </p>
 
   <h2 style="font-size:14px;color:#f59e0b;margin:24px 0 6px;letter-spacing:.08em;text-transform:uppercase;">1 · Vercel domain attachments</h2>
@@ -70,7 +70,7 @@ const html = `<!doctype html><html><body style="margin:0;background:#0a0a0a;colo
     <li>The on-the-drip-deploy Vercel project IS serving livebetteronthedrip.com — fully wired.</li>
     <li>Open the on-the-drip-deploy repo and add this one-liner to the homepage <code>&lt;body&gt;</code> or footer:<br>
       <code style="display:block;background:#1a1a1a;color:#a1a1aa;padding:10px 14px;border-radius:6px;margin-top:8px;font-size:12px;">&lt;div id="omni-sponsor" data-slug="prime_iv"&gt;&lt;/div&gt;<br>&lt;script src="https://omnileadsagi.com/embed/sponsor.js" defer&gt;&lt;/script&gt;</code>
-      That&apos;s the embed — Fred&apos;s sponsor card + Live Better Podcast partnership card render automatically. Analytics flow back to <a href="https://omnileadsagi.com/dashboard" style="color:#f59e0b;">/dashboard</a>.
+      That&apos;s the embed — Fred&apos;s sponsor card + Live Better Podcast partnership card render automatically. Analytics are visible in <a href="https://mythosais.com/dashboard" style="color:#f59e0b;">the Mythos dashboard</a>.
     </li>
   </ul>
 

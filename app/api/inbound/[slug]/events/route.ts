@@ -111,6 +111,7 @@ function registryCors(origins: string[], origin: string | null): HeadersInit {
     'Access-Control-Allow-Origin': ok ? origin! : origins[0] ?? '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };
@@ -134,6 +135,7 @@ function corsHeaders(slug: InboundSlug, origin: string | null): HeadersInit {
     'Access-Control-Allow-Origin': ok ? origin! : pickAllowedOrigin(slug, origin),
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
+    'Access-Control-Allow-Credentials': 'true',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   };

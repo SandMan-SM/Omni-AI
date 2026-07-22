@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { assertCronCaller } from "@/lib/cron";
+import { AGENTIC_DASHBOARD_URL } from "@/lib/agentic-dashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -189,7 +190,7 @@ export async function GET(request: Request) {
 
   <table cellpadding="0" cellspacing="0" border="0" style="margin:0 0 24px;">
     <tr><td style="background:#fde68a;border-radius:999px;">
-      <a href="https://omnileadsagi.com/dashboard/command-center" style="display:inline-block;padding:12px 22px;color:#000;font-weight:600;text-decoration:none;font-size:14px;">Open command center →</a>
+      <a href="${AGENTIC_DASHBOARD_URL}" style="display:inline-block;padding:12px 22px;color:#000;font-weight:600;text-decoration:none;font-size:14px;">Open command center →</a>
     </td></tr>
   </table>
 
@@ -217,7 +218,7 @@ export async function GET(request: Request) {
       ? findingRows.map((f) => `- [${f.severity}] ${f.message_md}`)
       : ["- Nothing flagged. Hades is watching."]),
     "",
-    "Open command center: https://omnileadsagi.com/dashboard/command-center",
+    `Open command center: ${AGENTIC_DASHBOARD_URL}`,
   ].join("\n");
 
   const sendBody = {

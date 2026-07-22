@@ -2,12 +2,10 @@ import {
   createHash,
   randomUUID,
 } from "node:crypto";
+import { Pool, type PoolClient } from "pg";
 import { NextResponse } from "next/server";
-import { POST as persistInboundLead } from "@/app/api/inbound/[slug]/leads/route";
 import { notifyOwnerEmailInbound } from "@/lib/inbound-notify";
 import { rateLimit, getClientIp, rateLimitResponse } from "@/lib/rate-limit";
-import { recordEvent } from "@/lib/server/analytics-ingest";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { buildUnsubscribeUrl } from "@/lib/unsubscribe-token";
 import { isValidEmail, sanitizeText } from "@/lib/validation";
 import { verifyVercelProjectToken } from "@/lib/server/vercel-oidc";
@@ -15,7 +13,7 @@ import { verifyVercelProjectToken } from "@/lib/server/vercel-oidc";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 const SOURCE = "atx_mansion_party_vip";
 const EVENT_SLUG = "the-playboys-house-party";
@@ -29,12 +27,41 @@ const SIGNUP_URL =
   "https://renelaveau.com/atxmansionparty=ticket/signup";
 const FROM =
   process.env.RENE_RESEND_FROM ||
-  process.env.RESEND_FROM ||
-  "Rene Laveau <newsletter@omnileadsagi.com>";
+  "Rene Laveau <rene@theixnetwork.com>";
 const LOCAL_SOURCE_HEADER = "x-atx-local-source";
 const LOCAL_SOURCE_VALUE = "rene-laveau-dev";
 
 const PHONE_RE = /^[+()\-\s.\d]{7,24}$/;
+
+declare global {
+  // eslint-disable-next-line no-var
+  var __reneTicketPgPool: Pool | undefined;
+}
+
+function ticketPool(): Pool {
+  const connectionString =
+    process.env.POSTGRES_URL || process.env.DATABASE_URL || "";
+  if (!connectionString) {
+    throw new Error("ticket_database_not_configured");
+  }
+  const parsed = new URL(connectionString);
+  parsed.searchParams.delete("sslmode");
+  if (!global.__reneTicketPgPool) {
+    global.__reneTicketPgPool = new Pool({
+      connectionString: parsed.toString(),
+      max: 2,
+      idleTimeoutMillis: 10_000,
+      connectionTimeoutMillis: 12_000,
+      query_timeout: 25_000,
+      statement_timeout: 20_000,
+      ssl:
+        parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1"
+          ? undefined
+          : { rejectUnauthorized: false },
+    });
+  }
+  return global.__reneTicketPgPool;
+}
 
 type SignupPayload = {
   name?: unknown;
@@ -48,12 +75,6 @@ type ExistingLead = {
   id: string;
   raw_data: Record<string, unknown> | null;
   emailNotified: boolean;
-};
-
-type CrmContact = {
-  id: string;
-  notes: string | null;
-  raw_data: Record<string, unknown> | null;
 };
 
 type EmailKind = "thank_you" | "day_before" | "day_of";
@@ -99,10 +120,6 @@ function emailFingerprint(email: string): string {
     .slice(0, 24);
 }
 
-function literalIlike(value: string): string {
-  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
-}
-
 async function isAuthorized(request: Request): Promise<boolean> {
   const url = new URL(request.url);
   const isLoopbackDevelopment =
@@ -126,21 +143,6 @@ function asObject(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : {};
-}
-
-function forwardedHeaders(request: Request): Headers {
-  const headers = new Headers({ "Content-Type": "application/json" });
-  for (const name of [
-    "x-forwarded-for",
-    "x-real-ip",
-    "user-agent",
-    "referer",
-    "origin",
-  ]) {
-    const value = request.headers.get(name);
-    if (value) headers.set(name, value);
-  }
-  return headers;
 }
 
 function emailMarkup(
@@ -385,26 +387,110 @@ function previousSendResults(rawData: Record<string, unknown>): SendResult[] {
 async function findExistingLead(
   email: string,
 ): Promise<ExistingLead | null> {
-  const sb = createAdminClient();
-  const { data, error } = await sb
-    .from("inbound_rene_leads")
-    .select("id,raw_data,email_notified")
-    .eq("email", email)
-    .eq("source", SOURCE)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
-  if (error) {
+  try {
+    const result = await ticketPool().query<{
+      id: string;
+      raw_data: Record<string, unknown> | null;
+      email_notified: boolean | null;
+    }>(
+      `
+        SELECT id, raw_data, email_notified
+        FROM public.inbound_rene_leads
+        WHERE lower(email) = lower($1) AND source = $2
+        ORDER BY created_at DESC
+        LIMIT 1
+      `,
+      [email, SOURCE],
+    );
+    const data = result.rows[0];
+    return data
+      ? {
+          id: String(data.id),
+          raw_data: asObject(data.raw_data),
+          emailNotified: data.email_notified === true,
+        }
+      : null;
+  } catch (error) {
     console.error("[rene/atx-party] existing lead lookup failed", error);
     throw new Error("existing_lead_lookup_failed");
   }
-  return data
-    ? {
-        id: String(data.id),
-        raw_data: asObject(data.raw_data),
-        emailNotified: data.email_notified === true,
-      }
-    : null;
+}
+
+async function recordLeadAnalyticsDirect(
+  payload: {
+    name: string;
+    phone: string;
+    email: string;
+    submissionId: string;
+  },
+  message: string,
+  client?: PoolClient,
+): Promise<void> {
+  try {
+    await (client || ticketPool()).query(
+      `
+        INSERT INTO analytics.leads (
+          tenant_slug, name, email, phone, message, source, page_url,
+          dedup_key, props
+        )
+        VALUES ('rene', $1, $2, $3, $4, $5, $6, $7, $8::jsonb)
+        ON CONFLICT (tenant_slug, dedup_key)
+          WHERE dedup_key IS NOT NULL DO NOTHING
+      `,
+      [
+        payload.name,
+        payload.email,
+        payload.phone,
+        message,
+        SOURCE,
+        SIGNUP_URL,
+        `${payload.email}:${SOURCE}`,
+        JSON.stringify({
+          event_slug: EVENT_SLUG,
+          event_start: EVENT_START,
+          ticket_url: TICKET_URL,
+          share_url: SHARE_URL,
+          submission_id: payload.submissionId,
+        }),
+      ],
+    );
+  } catch (error) {
+    // Analytics is intentionally non-blocking once the canonical source row is
+    // durable. This uses the already-warm pool to avoid a second cold DB path.
+    console.error("[rene/atx-party] analytics lead write failed", error);
+  }
+}
+
+async function recordReservationEventDirect(
+  submissionId: string,
+): Promise<void> {
+  try {
+    await ticketPool().query(
+      `
+        INSERT INTO analytics.events (
+          tenant_slug, event_type, event_category, action, page_url,
+          value_text, props
+        )
+        VALUES (
+          'rene', 'form_submit', 'event_gate',
+          'atx_mansion_party_reservation', $1, $2, $3::jsonb
+        )
+      `,
+      [
+        "/atxmansionparty=ticket/signup",
+        EVENT_SLUG,
+        JSON.stringify({
+          event: EVENT_SLUG,
+          source: SOURCE,
+          submission_id: submissionId,
+          contact_captured: true,
+          agentic_dashboard_synced: true,
+        }),
+      ],
+    );
+  } catch (error) {
+    console.error("[rene/atx-party] analytics event write failed", error);
+  }
 }
 
 async function persistLead(
@@ -416,44 +502,88 @@ async function persistLead(
     submissionId: string;
   },
 ): Promise<string | null> {
-  const leadRequest = new Request(
-    new URL("/api/inbound/rene/leads", request.url),
-    {
-      method: "POST",
-      headers: forwardedHeaders(request),
-      body: JSON.stringify({
-        name: payload.name,
-        phone: payload.phone,
-        email: payload.email,
-        message:
-          "VIP ticket reservation — The House Party. Send confirmation and event reminders with the POSH ticket link and friend-share link.",
-        service_interest:
-          "The Playboys House Party — VIP ticket access",
-        source: SOURCE,
-        page_url: SIGNUP_URL,
-        event_slug: EVENT_SLUG,
-        event_start: EVENT_START,
-        ticket_url: TICKET_URL,
-        share_url: SHARE_URL,
-        submission_id: payload.submissionId,
-        website: "",
-      }),
-    },
-  );
+  const message =
+    "VIP ticket reservation — The House Party. Send confirmation and event reminders with the POSH ticket link and friend-share link.";
 
-  const response = await persistInboundLead(leadRequest, {
-    params: Promise.resolve({ slug: "rene" }),
-  });
-  const responseBody = (await response.json().catch(() => ({}))) as {
-    id?: unknown;
+  const rawData = {
+    name: payload.name,
+    phone: payload.phone,
+    email: payload.email,
+    source: SOURCE,
+    event_slug: EVENT_SLUG,
+    event_start: EVENT_START,
+    ticket_url: TICKET_URL,
+    share_url: SHARE_URL,
+    submission_id: payload.submissionId,
   };
-  if (!response.ok || typeof responseBody.id !== "string") {
-    console.error("[rene/atx-party] dashboard intake rejected", {
-      status: response.status,
-    });
+  let client: PoolClient | null = null;
+  try {
+    client = await ticketPool().connect();
+    const db = client;
+    await db.query("BEGIN");
+    await db.query(
+      "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))",
+      [`${SOURCE}:${payload.email.toLowerCase()}`],
+    );
+    const existing = await db.query<{ id: string }>(
+      `
+        SELECT id
+        FROM public.inbound_rene_leads
+        WHERE lower(email) = lower($1) AND source = $2
+        ORDER BY created_at DESC
+        LIMIT 1
+        FOR UPDATE
+      `,
+      [payload.email, SOURCE],
+    );
+    if (existing.rows[0]?.id) {
+      await db.query("COMMIT");
+      await recordLeadAnalyticsDirect(payload, message, db);
+      return String(existing.rows[0].id);
+    }
+    const business = await db.query<{ id: string }>(
+      "SELECT id FROM public.omni_businesses WHERE slug = 'rene' LIMIT 1",
+    );
+    if (!business.rows[0]?.id) {
+      throw new Error("rene_workspace_not_configured");
+    }
+    const inserted = await db.query<{ id: string }>(
+      `
+        INSERT INTO public.inbound_rene_leads (
+          business_id, full_name, email, phone, message, service_interest,
+          source, status, page_url, page_path, ip_address, user_agent, raw_data
+        )
+        VALUES (
+          $1, $2, $3, $4, $5, $6,
+          $7, 'new', $8, $9, $10, $11, $12::jsonb
+        )
+        RETURNING id
+      `,
+      [
+        business.rows[0].id,
+        payload.name,
+        payload.email,
+        payload.phone,
+        message,
+        "The Playboys House Party — VIP ticket access",
+        SOURCE,
+        SIGNUP_URL,
+        "/atxmansionparty=ticket/signup",
+        getClientIp(request.headers) || null,
+        sanitizeText(request.headers.get("user-agent"), 500) || null,
+        JSON.stringify(rawData),
+      ],
+    );
+    await db.query("COMMIT");
+    await recordLeadAnalyticsDirect(payload, message, db);
+    return inserted.rows[0]?.id ? String(inserted.rows[0].id) : null;
+  } catch (error) {
+    await client?.query("ROLLBACK").catch(() => undefined);
+    console.error("[rene/atx-party] source insert failed", error);
     return null;
+  } finally {
+    client?.release();
   }
-  return responseBody.id;
 }
 
 async function ensureCrmMirror(
@@ -465,144 +595,133 @@ async function ensureCrmMirror(
     submissionId: string;
   },
 ): Promise<boolean> {
+  const firstName =
+    payload.name.split(" ")[0]?.slice(0, 80) || "Guest";
+  const lastName =
+    payload.name.split(" ").slice(1).join(" ").trim() || null;
+  const notes = [
+    "VIP ticket reservation — The House Party.",
+    `POSH ticket: ${TICKET_URL}`,
+    `Friend share: ${SHARE_URL}`,
+    "Attendee thank-you and ticket reminders are scheduled centrally.",
+  ].join("\n");
+  const rawData = {
+    event_slug: EVENT_SLUG,
+    event_start: EVENT_START,
+    ticket_url: TICKET_URL,
+    share_url: SHARE_URL,
+    submission_id: payload.submissionId,
+    workflow: WORKFLOW_VERSION,
+    source_table: "inbound_rene_leads",
+    source_record_id: leadId,
+  };
+  let client: PoolClient | null = null;
+  let inTransaction = false;
   try {
-    const sb = createAdminClient();
-    const { data: business, error: businessError } = await sb
-      .from("omni_businesses")
-      .select("id")
-      .eq("slug", "rene")
-      .maybeSingle();
-    if (businessError || !business?.id) {
-      console.error(
-        "[rene/atx-party] Rene workspace is not configured",
-        businessError,
+    client = await ticketPool().connect();
+    const db = client;
+    const updateExisting = () =>
+      db.query<{ id: string }>(
+        `
+          UPDATE public.omni_leads_generated AS target
+          SET first_name = $1, last_name = $2, email = $3, phone = $4,
+              source = 'web', source_table = 'inbound_rene_leads',
+              source_record_id = $5, pipeline_type = 'inbound',
+              notes = CASE
+                WHEN coalesce(target.notes, '') LIKE '%VIP ticket reservation — The House Party.%'
+                  THEN target.notes
+                ELSE concat_ws(E'\\n\\n', nullif(btrim(target.notes), ''), $6::text)
+              END,
+              raw_data = coalesce(target.raw_data, '{}'::jsonb)
+                || jsonb_build_object('atx_mansion_party', $7::jsonb)
+          WHERE target.id = (
+            SELECT candidate.id
+            FROM public.omni_leads_generated AS candidate
+            JOIN public.omni_businesses AS business
+              ON business.id = candidate.business_id
+            WHERE business.slug = 'rene'
+              AND (
+                (candidate.source_table = 'inbound_rene_leads'
+                  AND candidate.source_record_id = $5)
+                OR lower(candidate.email) = lower($3)
+              )
+            ORDER BY
+              CASE WHEN candidate.source_table = 'inbound_rene_leads'
+                AND candidate.source_record_id = $5 THEN 0 ELSE 1 END,
+              candidate.created_at DESC
+            LIMIT 1
+          )
+          RETURNING target.id
+        `,
+        [
+          firstName,
+          lastName,
+          payload.email,
+          payload.phone,
+          leadId,
+          notes,
+          JSON.stringify(rawData),
+        ],
       );
-      return false;
-    }
 
-    const { data: linkedContact, error: linkedLookupError } = await sb
-      .from("omni_leads_generated")
-      .select("id,notes,raw_data")
-      .eq("business_id", business.id)
-      .eq("source_table", "inbound_rene_leads")
-      .eq("source_record_id", leadId)
-      .limit(1)
-      .maybeSingle();
-    if (linkedLookupError) {
-      console.error(
-        "[rene/atx-party] linked CRM lookup failed",
-        linkedLookupError,
-      );
-      return false;
-    }
+    // The common repeat/contact-update path is one round trip and does not
+    // open a transaction, which prevents pooler latency from stacking up.
+    const existing = await updateExisting();
+    if (existing.rows[0]?.id) return true;
 
-    let existing = linkedContact as CrmContact | null;
-    if (!existing) {
-      const { data: emailContact, error: emailLookupError } = await sb
-        .from("omni_leads_generated")
-        .select("id,notes,raw_data")
-        .eq("business_id", business.id)
-        .ilike("email", literalIlike(payload.email))
-        .limit(1)
-        .maybeSingle();
-      if (emailLookupError) {
-        console.error(
-          "[rene/atx-party] email CRM lookup failed",
-          emailLookupError,
-        );
-        return false;
-      }
-      existing = emailContact as CrmContact | null;
-    }
-
-    const firstName =
-      payload.name.split(" ")[0]?.slice(0, 80) || "Guest";
-    const lastName =
-      payload.name.split(" ").slice(1).join(" ").trim() || null;
-    const notes = [
-      "VIP ticket reservation — The House Party.",
-      `POSH ticket: ${TICKET_URL}`,
-      `Friend share: ${SHARE_URL}`,
-      "Attendee thank-you and ticket reminders are scheduled centrally.",
-    ].join("\n");
-    const rawData = {
-      event_slug: EVENT_SLUG,
-      event_start: EVENT_START,
-      ticket_url: TICKET_URL,
-      share_url: SHARE_URL,
-      submission_id: payload.submissionId,
-      workflow: WORKFLOW_VERSION,
-      source_table: "inbound_rene_leads",
-      source_record_id: leadId,
-    };
-
-    const updateExisting = async (contact: CrmContact): Promise<boolean> => {
-      const currentNotes =
-        typeof contact.notes === "string" ? contact.notes.trim() : "";
-      const mergedNotes = currentNotes.includes(
-        "VIP ticket reservation — The House Party.",
-      )
-        ? currentNotes
-        : [currentNotes, notes].filter(Boolean).join("\n\n");
-      const { error } = await sb
-        .from("omni_leads_generated")
-        .update({
-          first_name: firstName,
-          last_name: lastName,
-          email: payload.email,
-          phone: payload.phone,
-          notes: mergedNotes,
-          raw_data: {
-            ...asObject(contact.raw_data),
-            atx_mansion_party: rawData,
-          },
-        })
-        .eq("id", contact.id);
-      if (error) {
-        console.error("[rene/atx-party] CRM update failed", error);
-        return false;
-      }
+    await db.query("BEGIN");
+    inTransaction = true;
+    await db.query(
+      "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))",
+      [`crm:rene:${payload.email.toLowerCase()}`],
+    );
+    const afterLock = await updateExisting();
+    if (afterLock.rows[0]?.id) {
+      await db.query("COMMIT");
+      inTransaction = false;
       return true;
-    };
-
-    if (existing?.id) {
-      return updateExisting(existing);
     }
-
-    const { error } = await sb.from("omni_leads_generated").insert({
-      business_id: business.id,
-      first_name: firstName,
-      last_name: lastName,
-      email: payload.email,
-      phone: payload.phone,
-      source: "web",
-      status: "new",
-      notes,
-      raw_data: { atx_mansion_party: rawData },
-      source_table: "inbound_rene_leads",
-      source_record_id: leadId,
-      pipeline_type: "inbound",
-    });
-    if (error) {
-      if (error.code === "23505") {
-        const { data: racedContact, error: racedLookupError } = await sb
-          .from("omni_leads_generated")
-          .select("id,notes,raw_data")
-          .eq("business_id", business.id)
-          .ilike("email", literalIlike(payload.email))
-          .limit(1)
-          .maybeSingle();
-        if (!racedLookupError && racedContact?.id) {
-          return updateExisting(racedContact as CrmContact);
-        }
-      }
-      console.error("[rene/atx-party] CRM mirror failed", error);
-      return false;
+    const inserted = await db.query<{ id: string }>(
+      `
+        INSERT INTO public.omni_leads_generated (
+          business_id, first_name, last_name, email, phone, source, status,
+          notes, raw_data, source_table, source_record_id, pipeline_type
+        )
+        SELECT
+          business.id, $1, $2, $3, $4, 'web', 'new',
+          $5, jsonb_build_object('atx_mansion_party', $6::jsonb),
+          'inbound_rene_leads', $7, 'inbound'
+        FROM public.omni_businesses AS business
+        WHERE business.slug = 'rene'
+        LIMIT 1
+        ON CONFLICT DO NOTHING
+        RETURNING id
+      `,
+      [
+        firstName,
+        lastName,
+        payload.email,
+        payload.phone,
+        notes,
+        JSON.stringify(rawData),
+        leadId,
+      ],
+    );
+    if (!inserted.rows[0]?.id) {
+      const raced = await updateExisting();
+      if (!raced.rows[0]?.id) throw new Error("crm_race_recovery_failed");
     }
+    await db.query("COMMIT");
+    inTransaction = false;
     return true;
   } catch (error) {
+    if (inTransaction) {
+      await client?.query("ROLLBACK").catch(() => undefined);
+    }
     console.error("[rene/atx-party] CRM mirror failed", error);
     return false;
+  } finally {
+    client?.release();
   }
 }
 
@@ -610,17 +729,11 @@ async function suppressionStatus(
   email: string,
 ): Promise<"clear" | "suppressed" | "error"> {
   try {
-    const sb = createAdminClient();
-    const { data, error } = await sb
-      .from("omni_suppressions")
-      .select("email")
-      .eq("email", email)
-      .limit(1);
-    if (error) {
-      console.error("[rene/atx-party] suppression lookup failed", error);
-      return "error";
-    }
-    return data?.length ? "suppressed" : "clear";
+    const result = await ticketPool().query(
+      "SELECT 1 FROM public.omni_suppressions WHERE lower(email) = lower($1) LIMIT 1",
+      [email],
+    );
+    return result.rowCount ? "suppressed" : "clear";
   } catch (error) {
     console.error("[rene/atx-party] suppression lookup failed", error);
     return "error";
@@ -633,28 +746,23 @@ async function saveOwnerNotificationState(
   accepted: boolean,
 ): Promise<boolean> {
   try {
-    const sb = createAdminClient();
-    const { error } = await sb
-      .from("inbound_rene_leads")
-      .update({
-        ...(accepted ? { email_notified: true } : {}),
-        raw_data: {
-          ...rawData,
-          ticket_owner_notification: {
-            ok: accepted,
-            attempted_at: new Date().toISOString(),
-          },
-        },
-      })
-      .eq("id", leadId);
-    if (error) {
-      console.error(
-        "[rene/atx-party] owner notification state update failed",
-        error,
-      );
-      return false;
-    }
-    return true;
+    const nextRawData = {
+      ...rawData,
+      ticket_owner_notification: {
+        ok: accepted,
+        attempted_at: new Date().toISOString(),
+      },
+    };
+    const result = await ticketPool().query(
+      `
+        UPDATE public.inbound_rene_leads
+        SET email_notified = CASE WHEN $2 THEN true ELSE email_notified END,
+            raw_data = $3::jsonb
+        WHERE id = $1
+      `,
+      [leadId, accepted, JSON.stringify(nextRawData)],
+    );
+    return result.rowCount === 1;
   } catch (error) {
     console.error(
       "[rene/atx-party] owner notification state update failed",
@@ -671,30 +779,24 @@ async function saveWorkflowState(
   status: "scheduled" | "suppressed" | "failed",
 ): Promise<boolean> {
   try {
-    const sb = createAdminClient();
-    const { error } = await sb
-      .from("inbound_rene_leads")
-      .update({
-        raw_data: {
-          ...rawData,
-          ticket_followup_version: WORKFLOW_VERSION,
-          ticket_followup_status: status,
-          ticket_followup_updated_at: new Date().toISOString(),
-          ticket_followup_messages: results.map((result) => ({
-            kind: result.kind,
-            ok: result.ok,
-            id: result.id || null,
-            scheduled_at: result.scheduledAt || null,
-            error: result.error || null,
-          })),
-        },
-      })
-      .eq("id", leadId);
-    if (error) {
-      console.error("[rene/atx-party] workflow state update failed", error);
-      return false;
-    }
-    return true;
+    const nextRawData = {
+      ...rawData,
+      ticket_followup_version: WORKFLOW_VERSION,
+      ticket_followup_status: status,
+      ticket_followup_updated_at: new Date().toISOString(),
+      ticket_followup_messages: results.map((result) => ({
+        kind: result.kind,
+        ok: result.ok,
+        id: result.id || null,
+        scheduled_at: result.scheduledAt || null,
+        error: result.error || null,
+      })),
+    };
+    const result = await ticketPool().query(
+      "UPDATE public.inbound_rene_leads SET raw_data = $2::jsonb WHERE id = $1",
+      [leadId, JSON.stringify(nextRawData)],
+    );
+    return result.rowCount === 1;
   } catch (error) {
     console.error("[rene/atx-party] workflow state update failed", error);
     return false;
@@ -818,6 +920,22 @@ export async function POST(request: Request) {
     }
   }
 
+  // A scheduled workflow is our durable completion marker. It is written only
+  // after the source lead, Mythos CRM mirror, owner notification, and all
+  // attendee messages have succeeded. Returning here keeps repeat reservations
+  // idempotent and avoids re-running slow cross-service work.
+  const workflowAlreadyScheduled =
+    existing?.raw_data?.ticket_followup_version === WORKFLOW_VERSION &&
+    existing.raw_data.ticket_followup_status === "scheduled";
+  if (workflowAlreadyScheduled) {
+    return NextResponse.json({
+      ok: true,
+      leadId,
+      dashboard: "synced",
+      messaging: "already_scheduled",
+    });
+  }
+
   const crmSynced = await ensureCrmMirror(leadId, payload);
   if (!crmSynced) {
     return NextResponse.json(
@@ -826,21 +944,8 @@ export async function POST(request: Request) {
     );
   }
 
-  await recordEvent({
-    slug: "rene",
-    event_type: "form_submit",
-    event_category: "event_gate",
-    action: "atx_mansion_party_reservation",
-    page_url: "/atxmansionparty=ticket/signup",
-    value_text: EVENT_SLUG,
-    props: {
-      event: EVENT_SLUG,
-      source: SOURCE,
-      submission_id: submissionId,
-      contact_captured: true,
-      agentic_dashboard_synced: true,
-    },
-  });
+  const analyticsEventPromise = recordReservationEventDirect(submissionId);
+  const suppressionPromise = suppressionStatus(email);
 
   let rawData: Record<string, unknown> = {
     ...asObject(existing?.raw_data),
@@ -907,7 +1012,8 @@ export async function POST(request: Request) {
     }
   }
 
-  const suppression = await suppressionStatus(email);
+  const suppression = await suppressionPromise;
+  await analyticsEventPromise;
   if (suppression === "error") {
     return NextResponse.json(
       { ok: false, error: "suppression_lookup_failed" },
@@ -933,18 +1039,6 @@ export async function POST(request: Request) {
       leadId,
       dashboard: "synced",
       messaging: "suppressed",
-    });
-  }
-
-  if (
-    existing?.raw_data?.ticket_followup_version === WORKFLOW_VERSION &&
-    existing.raw_data.ticket_followup_status === "scheduled"
-  ) {
-    return NextResponse.json({
-      ok: true,
-      leadId,
-      dashboard: "synced",
-      messaging: "already_scheduled",
     });
   }
 

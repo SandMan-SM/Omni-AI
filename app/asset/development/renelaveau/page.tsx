@@ -72,7 +72,7 @@ const SCOPE: string[] = [
   "Full custom Next.js codebase you own outright",
   "Brand identity capture + custom palette, typography, animation",
   "JSON-LD structured data on every page (Schema.org compliant)",
-  "Analytics pipeline → your own dashboard inside omnileadsagi.com",
+  "Analytics pipeline → operator reporting powered by Mythos AIS",
   "Federation cross-promo embed wired to your slug",
   "OG + Twitter card images on every shareable URL",
   "12-month operational retainer — content support, infra patches, monthly reviews",

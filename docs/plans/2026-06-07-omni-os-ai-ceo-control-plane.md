@@ -1,5 +1,7 @@
 # Omni OS AI CEO Control Plane Implementation Plan
 
+> **Superseded routing note (2026-07-20):** Mythos at `https://mythosais.com/dashboard` is now the canonical operator dashboard. Omni remains an internal ingestion and legacy control-plane service; do not reuse historical Omni dashboard URLs for operator links.
+
 > **For OmniClaw:** Use this plan to turn scattered Omni AI websites, scripts, cron jobs, dashboards, and lead systems into an actual AI CEO operating system. Do not run Supabase migrations without $Mafi approval. Do not send client-facing messages without approval. Do reversible repo/docs/API/dashboard work autonomously after inspecting worktree state and running checks.
 
 **Goal:** Build **Omni OS**: the operating system that lets OmniClaw perceive, decide, execute, verify, and remember across every Omni AI client/business.

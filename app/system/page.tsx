@@ -9,6 +9,10 @@ import { SpaceFieldBackdrop } from "@/components/space-field-backdrop";
 import { CursorSpotlight } from "@/components/cursor-spotlight";
 import { AtomOrb } from "@/components/atom-orb";
 import { JsonLd, organizationSchema, breadcrumbSchema } from "@/components/json-ld";
+import {
+  AGENTIC_DASHBOARD_LABEL,
+  AGENTIC_DASHBOARD_URL,
+} from "@/lib/agentic-dashboard";
 
 export const metadata: Metadata = {
   title: "Portfolio Promotion System · Omni AI",
@@ -17,7 +21,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Portfolio Promotion System · Omni AI",
     description:
-      "Sponsor + partner + featured client embedded across every Omni AI portfolio site. One source of truth, attribution to omnileadsagi.com/dashboard.",
+      "Sponsor + partner + featured client embedded across every Omni AI portfolio site. One source of truth, attribution visible in the Mythos agentic dashboard.",
     url: "https://omnileadsagi.com/system",
     siteName: "Omni AI",
     type: "website",
@@ -326,8 +330,8 @@ export default function SystemPage() {
           as the secondary slot. One snippet, one source of truth, one
           analytics destination — every click, share, and subscribe pings
           back to{" "}
-          <Link href="/dashboard" style={{ color: "#f59e0b" }}>
-            omnileadsagi.com/dashboard
+          <Link href={AGENTIC_DASHBOARD_URL} style={{ color: "#f59e0b" }}>
+            {AGENTIC_DASHBOARD_LABEL}
           </Link>{" "}
           so attribution is visible per portfolio site.
         </p>
@@ -643,8 +647,8 @@ export default function SystemPage() {
               </div>
               <div style={{ fontSize: 13.5, color: "#e4e4e7", lineHeight: 1.6 }}>
                 Every click, share, and email subscribe pings back to{" "}
-                <Link href="/dashboard" style={{ color: "#f59e0b" }}>
-                  /dashboard
+                <Link href={AGENTIC_DASHBOARD_URL} style={{ color: "#f59e0b" }}>
+                  {AGENTIC_DASHBOARD_LABEL}
                 </Link>
                 . Sponsors see exactly which property drove the click; we
                 see which audiences are converting; the operator sees lead

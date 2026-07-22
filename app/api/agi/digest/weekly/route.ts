@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
+import { AGENTIC_DASHBOARD_URL } from "@/lib/agentic-dashboard";
 
 export const dynamic = "force-dynamic";
 
@@ -240,7 +241,7 @@ function renderDigestEmail(p: {
     </table>
 
     <div style="text-align:center;margin:30px 0 12px;">
-      <a href="https://omnileadsagi.com/dashboard" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#10b981,#7c3aed);color:#fff;text-decoration:none;padding:13px 30px;border-radius:8px;font-size:14px;font-weight:700;">Open dashboard</a>
+      <a href="${AGENTIC_DASHBOARD_URL}" target="_blank" style="display:inline-block;background:linear-gradient(135deg,#10b981,#7c3aed);color:#fff;text-decoration:none;padding:13px 30px;border-radius:8px;font-size:14px;font-weight:700;">Open dashboard</a>
     </div>
 
     <div style="text-align:center;padding-top:18px;border-top:1px solid #1e1e1e;">

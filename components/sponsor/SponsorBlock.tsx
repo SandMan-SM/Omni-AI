@@ -13,9 +13,9 @@
 //      The "in partnership with" badge is non-optional — the partnership
 //      is the marketing point.
 //
-// Every interactive element pings back to omnileadsagi.com so the
-// originating tenant's agentic dashboard
-// (omnileadsagi.com/dashboard) shows real attribution. Each tenant
+// Every interactive element pings the internal Omni ingestion service so the
+// originating tenant's workspace in the Mythos agentic dashboard shows real
+// attribution. Each tenant
 // passes its own `slug` so the inbound_<slug>_events table receives
 // the row.
 
@@ -34,8 +34,7 @@ const FRED_LINK = "https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488c
 const SEOPPC_LINK = "https://seoandppcmarketing.com";
 const CPS_LINK = "https://psychandcustodyevaluations.com";
 
-// Where the embed pings analytics. Always the central dashboard so the
-// operator sees ALL tenants' sponsor traffic in one place.
+// Internal analytics ingestion host. The operator-facing dashboard is Mythos.
 const ANALYTICS_HOST = "https://omnileadsagi.com";
 
 type Target = "fred" | "seoppc" | "cps";

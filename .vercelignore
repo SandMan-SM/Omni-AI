@@ -5,7 +5,15 @@ node_modules
 .local
 dist
 *.log
-.env
-.env*.local
+.env*
+!.env.example
+.vercel
 .DS_Store
 Thumbs.db
+*.tsbuildinfo
+
+# Local-only database administration scripts contain operator credentials and
+# must never enter a Vercel deployment bundle.
+scripts/migrate-auth.ts
+scripts/setup-auth.ts
+scripts/run-migrations.mjs

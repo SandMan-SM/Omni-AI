@@ -1,5 +1,7 @@
 # Client Agent Dashboards Implementation Plan
 
+> **Superseded routing note (2026-07-20):** this document records the original Omni-hosted dashboard plan. The canonical operator dashboard is now `https://mythosais.com/dashboard`; Omni dashboard routes are legacy/internal. Do not use the old URLs below in new notifications, runbooks, or integrations.
+
 > **For OmniClaw:** Use subagent-driven-development skill to implement this plan task-by-task after build/typecheck baseline is known.
 
 **Goal:** Turn every Omni AI client/business into a dedicated revenue-generating agent inside `omnileadsagi.com/dashboard`, with clean per-business dashboards for analytics, leads, SEO/GEO, case studies, action queues, and auto-improvement loops.

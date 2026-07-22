@@ -37,7 +37,7 @@ const html = `<!doctype html><html><body style="margin:0;background:#0a0a0a;colo
   <div style="color:#a1a1aa;font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;margin-bottom:14px;">Omni AI · Build Debrief</div>
   <h1 style="margin:0 0 8px 0;font-size:26px;font-weight:800;color:#fafafa;line-height:1.2;">Portfolio promotion system is live</h1>
   <p style="color:#a1a1aa;font-size:14px;line-height:1.6;margin:0 0 24px 0;">
-    Built today: a single sponsor + partner block that drops into any portfolio site with two lines of HTML. Fred Circle gets the primary slot, Live Better Podcast gets the partnership slot. All clicks, shares, and subscribes flow back to omnileadsagi.com/dashboard.
+    Built today: a single sponsor + partner block that drops into any portfolio site with two lines of HTML. Fred Circle gets the primary slot, Live Better Podcast gets the partnership slot. All clicks, shares, and subscribes are visible in the Mythos agentic dashboard.
   </p>
 
   <h2 style="font-size:14px;color:#f59e0b;margin:24px 0 6px;letter-spacing:.08em;text-transform:uppercase;">View it</h2>
@@ -45,7 +45,7 @@ const html = `<!doctype html><html><body style="margin:0;background:#0a0a0a;colo
     <li>Live system page (with the actual block embedded as demo): <a href="https://omnileadsagi.com/system" style="color:#f59e0b;">omnileadsagi.com/system</a></li>
     <li>Live on every newsletter post too — bottom of <a href="https://omnileadsagi.com/newsletter" style="color:#f59e0b;">omnileadsagi.com/newsletter</a></li>
     <li>Universal embed JS (what client sites pull): <a href="https://omnileadsagi.com/embed/sponsor.js" style="color:#f59e0b;">omnileadsagi.com/embed/sponsor.js</a></li>
-    <li>Attribution dashboard: <a href="https://omnileadsagi.com/dashboard" style="color:#f59e0b;">omnileadsagi.com/dashboard</a></li>
+    <li>Attribution dashboard: <a href="https://mythosais.com/dashboard" style="color:#f59e0b;">mythosais.com/dashboard</a></li>
   </ul>
 
   <h2 style="font-size:14px;color:#f59e0b;margin:24px 0 6px;letter-spacing:.08em;text-transform:uppercase;">What got built</h2>
@@ -89,7 +89,7 @@ VIEW
 - /system page: https://omnileadsagi.com/system  (live demo of the block)
 - Live on every newsletter post (bottom).
 - Universal embed: https://omnileadsagi.com/embed/sponsor.js
-- Attribution dashboard: https://omnileadsagi.com/dashboard
+- Attribution dashboard: https://mythosais.com/dashboard
 
 BUILT
 - SponsorBlock (Fred primary, LBP secondary)

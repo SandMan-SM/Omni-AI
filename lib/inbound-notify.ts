@@ -10,6 +10,10 @@
  */
 
 import { INBOUND_SLUG_LABELS, type InboundSlug } from '@/lib/inbound-types';
+import {
+  AGENTIC_DASHBOARD_LABEL,
+  AGENTIC_DASHBOARD_URL,
+} from '@/lib/agentic-dashboard';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
@@ -58,9 +62,12 @@ export async function notifyOwnerEmailInbound(lead: InboundLead): Promise<boolea
         ${pageUrl ? `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">Page</td><td style="padding:8px 0;border-bottom:1px solid #eee"><a href="${pageUrl}" style="color:#1f3b8c">${pageUrl}</a></td></tr>` : ''}
         ${message ? `<tr><td style="padding:8px 0;font-weight:600;vertical-align:top">Message</td><td style="padding:8px 0;white-space:pre-wrap">${message}</td></tr>` : ''}
       </table>
-      <p style="margin-top:24px;color:#888;font-size:13px">View in dashboard: <a href="https://omnileadsagi.com/dashboard" style="color:#1f3b8c">omnileadsagi.com/dashboard</a></p>
+      <p style="margin-top:24px;color:#888;font-size:13px">View in dashboard: <a href="${AGENTIC_DASHBOARD_URL}" style="color:#1f3b8c">${AGENTIC_DASHBOARD_LABEL}</a></p>
     </div>
   `;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8_000);
 
   try {
     const res = await fetch('https://api.resend.com/emails', {
@@ -76,11 +83,14 @@ export async function notifyOwnerEmailInbound(lead: InboundLead): Promise<boolea
         subject: `New ${brand} lead — ${lead.name}`,
         html,
       }),
+      signal: controller.signal,
     });
     return res.ok;
   } catch (e) {
     console.error('[inbound-notify email]', e);
     return false;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

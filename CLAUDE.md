@@ -1,9 +1,11 @@
 # CLAUDE.md — Omni AI Website
 
-The flagship site + agentic backend for **Omni AI**, an AI marketing/automation
-agency for local businesses. Production: **https://omnileadsagi.com**. It is also
-the federation control plane: client agentic dashboards, newsletters, lead-gen,
-daily trending landing pages, and an admin/CEO ops layer all live in this one repo.
+The flagship site + internal agentic backend for **Omni AI**, an AI
+marketing/automation agency for local businesses. Production:
+**https://omnileadsagi.com**. It provides authenticated federation ingestion,
+newsletters, lead-gen, and legacy admin/CEO operations. The canonical
+operator-facing agentic dashboard is a separate application at
+**https://mythosais.com/dashboard**.
 
 Owner: **Sitani Mafi** ($Mafi) — `sitanim8@gmail.com`. Acts/emails as
 `alfred@omnileadsagi.com` (via Resend).
@@ -138,8 +140,11 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - **Utah Main Street** — Mondays only. Repo: `/Users/janahasson/Desktop/Clients/Utah-Main-Street`.
 - If today is Saturday or Sunday, exit immediately with "No publishing today — weekend."
 
-## Agentic dashboards (`/dashboard`, `/admin`)
-- Each client business has an agentic dashboard fed by per-website analytics. Owner's #1 standing demand: **analytics synced to every dashboard with 100% accuracy** — leads, profiles, newsletter status all live and correct.
+## Agentic dashboard data plane
+- **Mythos is the dashboard.** Every operator-facing link, owner notification, runbook, and verification must target `https://mythosais.com/dashboard`; never label or link `omnileadsagi.com/dashboard` as the agentic dashboard.
+- This repo may own authenticated ingestion routes and shared-data writes that feed Mythos. `/dashboard` and `/admin` here are legacy/internal surfaces, not the canonical operator destination.
+- Each client business has an agentic workspace fed by per-website analytics. Owner's #1 standing demand: **analytics synced to Mythos with 100% accuracy** — leads, profiles, newsletter status all live and correct.
+- Cross-service changes require an end-to-end release check: tenant form -> authenticated route in this repo -> namespaced persistence -> documented CRM mirror -> direct Mythos command-schema query -> owner/customer email. Never deploy an isolated backend snapshot that omits an untracked dependency.
 - The "All businesses" view must default to **All** (not silently fall back to "Omni AI"); admin switches scope via the agentic-assets tab.
 - Pitfalls seen: (1) scope pills must dispatch a synthetic `StorageEvent` to propagate; (2) a Supabase query builder reused across awaited calls **caches results** — build a fresh query per call or you leak one tenant's data (e.g. 320 leads showing instead of 2). Cross-tenant leaks are a real risk — gate GET/PATCH with `authorizeCronOrAdmin`.
 
@@ -168,6 +173,6 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - **Federation** — the portfolio of client businesses Omni AI runs (sites, dashboards, newsletters) from this repo.
 - **Mastheads** — the individual newsroom/newsletter publications, each its own git repo with a `posts/` dir that auto-deploys to Vercel; a 14:00 UTC dispatch cron mails new posts.
 - **AGI layer** (`lib/agi/*`, `app/api/agi/*`) — the Anthropic-powered agent automation: lead scraping/scoring, replies, digests, autopilot.
-- **Agentic dashboard** — a client's per-business analytics/ops view at `/dashboard`.
+- **Agentic dashboard** — the per-business analytics/ops command center at `https://mythosais.com/dashboard`. Omni routes may feed its data but are not its operator-facing location.
 - **Fred** — main sponsor (circlern.com host link). **Jaime Bond** — Prime IV owner / Live Better podcast. **Sammy** — an LTB dashboard user (tenant-scoping test case).
 - Portfolio businesses include: Prime IV (Sandy), Love Thy Barber (LTB), Phoenix Exteriors, Leifson, CPS.

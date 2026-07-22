@@ -7,6 +7,11 @@
  * throws, so the lead is always saved even if every channel is down.
  */
 
+import {
+  AGENTIC_DASHBOARD_LABEL,
+  AGENTIC_DASHBOARD_URL,
+} from '@/lib/agentic-dashboard';
+
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
 const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
@@ -52,7 +57,7 @@ export async function notifyOwnerEmail(lead: CpsLead): Promise<boolean> {
         ${pageUrl ? `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">Page</td><td style="padding:8px 0;border-bottom:1px solid #eee"><a href="${pageUrl}" style="color:#1f3b8c">${pageUrl}</a></td></tr>` : ''}
         ${message ? `<tr><td style="padding:8px 0;font-weight:600;vertical-align:top">Message</td><td style="padding:8px 0;white-space:pre-wrap">${message}</td></tr>` : ''}
       </table>
-      <p style="margin-top:24px;color:#888;font-size:13px">View in dashboard: <a href="https://omnileadsagi.com/dashboard/cps" style="color:#1f3b8c">omnileadsagi.com/dashboard/cps</a></p>
+      <p style="margin-top:24px;color:#888;font-size:13px">View in dashboard: <a href="${AGENTIC_DASHBOARD_URL}" style="color:#1f3b8c">${AGENTIC_DASHBOARD_LABEL}</a></p>
     </div>
   `;
 
@@ -118,7 +123,7 @@ export async function notifyOwnerTelegram(lead: CpsLead): Promise<boolean> {
             ? [{ text: '✉️ Email', url: `mailto:${lead.email}` }]
             : []),
         ],
-        [{ text: '📊 Dashboard', url: 'https://omnileadsagi.com/dashboard/cps' }],
+        [{ text: '📊 Dashboard', url: AGENTIC_DASHBOARD_URL }],
       ].filter((row) => row.length > 0),
     },
   };

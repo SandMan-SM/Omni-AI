@@ -336,7 +336,7 @@ function messyToMotionProposal(t: Trigger): ProposedAction {
       execution_boundary:
         "Execute reversible scoped work without permission; pause for money, secrets, destructive data, legal/client-binding sends, paid ad spend, migrations, or unapproved outbound messages.",
       routing_boundary:
-        "Do not build the main client-agent dashboard on omnileadsagi.com/dashboard. OmniLeadsAGI is the public revenue site; dashboard work belongs in the separate dashboard service once mapped.",
+        "Do not build or link the main client-agent dashboard at omnileadsagi.com/dashboard. OmniLeadsAGI is the public revenue and internal ingestion service; the canonical operator dashboard is https://mythosais.com/dashboard.",
     },
     proposed_by: "OmniClaw",
   };
