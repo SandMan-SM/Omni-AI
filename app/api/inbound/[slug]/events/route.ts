@@ -117,6 +117,162 @@ function registryCors(origins: string[], origin: string | null): HeadersInit {
   };
 }
 
+type SfdAnonymousEvent = {
+  event_type: 'page_view' | 'click' | 'scroll';
+  event_category: string;
+  action: string;
+  page_url: string;
+  value_numeric?: number;
+  properties: Record<string, never>;
+};
+
+const SFD_PAGE_VIEW_CATEGORIES = new Set(['navigation', 'content']);
+const SFD_CLICK_CATEGORIES = new Set([
+  'click',
+  'nav',
+  'hero',
+  'footer',
+  'cta',
+  'sticky',
+  'offerings',
+  'shop',
+  'network_store',
+]);
+const SFD_PAGE_PATHS = new Set(['/', '/about', '/privacy', '/shop', '/subscribe', '/terms']);
+const SFD_PROTECTED_KEYS = new Set([
+  'email',
+  'phone',
+  'telephone',
+  'mobile',
+  'artistname',
+  'fullname',
+  'firstname',
+  'lastname',
+  'name',
+  'address',
+  'streetaddress',
+  'postaladdress',
+  'birthdate',
+  'dateofbirth',
+  'message',
+  'consent',
+  'consentterms',
+]);
+const SFD_EMAIL_FRAGMENT = /[A-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9-]+(?:\.[A-Z0-9-]+)+/i;
+
+function hasSfdPhoneFragment(value: string): boolean {
+  // Remove ISO calendar dates before looking for 10-15 digit phone groups so
+  // an ordinary timestamp never gets mistaken for contact information.
+  const withoutDates = value.replace(/\b\d{4}-\d{2}-\d{2}(?:[T ][0-9:.+-Z]+)?\b/gi, '');
+  const candidates = withoutDates.match(/(?:\+?\d[\d\s().-]{7,}\d)/g) ?? [];
+  return candidates.some((candidate) => {
+    const digits = candidate.replace(/\D/g, '');
+    return digits.length >= 10 && digits.length <= 15;
+  });
+}
+
+function hasSfdContactFragment(value: string): boolean {
+  const variants = [value];
+  try {
+    const decoded = decodeURIComponent(value);
+    if (decoded !== value) variants.push(decoded);
+  } catch {
+    // Invalid percent encoding cannot bypass the raw-string check. Unknown
+    // values are discarded by the anonymous event allowlist regardless.
+  }
+  return variants.some(
+    (candidate) => SFD_EMAIL_FRAGMENT.test(candidate) || hasSfdPhoneFragment(candidate),
+  );
+}
+
+/**
+ * Reject contact/form data at any nesting level before the analytics event is
+ * rebuilt. Unknown safe properties are dropped; protected keys, encoded
+ * emails, and formatted phone numbers fail closed instead of being logged.
+ */
+function hasProtectedSfdAnalyticsData(value: unknown): boolean {
+  let inspected = 0;
+  const inspect = (candidate: unknown, depth: number): boolean => {
+    inspected += 1;
+    if (inspected > 500 || depth > 8) return true;
+    if (typeof candidate === 'string') return hasSfdContactFragment(candidate);
+    if (!candidate || typeof candidate !== 'object') return false;
+    if (Array.isArray(candidate)) return candidate.some((item) => inspect(item, depth + 1));
+    return Object.entries(candidate as Record<string, unknown>).some(([key, child]) => {
+      const normalizedKey = key.toLowerCase().replace(/[^a-z]/g, '');
+      return SFD_PROTECTED_KEYS.has(normalizedKey) || inspect(child, depth + 1);
+    });
+  };
+  return inspect(value, 0);
+}
+
+function safeSfdPagePath(value: unknown): string | null {
+  const raw = sanitizeText(value, 2048);
+  if (!raw || hasSfdContactFragment(raw)) return null;
+  try {
+    const url = new URL(raw, 'https://sfdempire.com');
+    if (
+      url.protocol !== 'https:' ||
+      url.username !== '' ||
+      url.password !== '' ||
+      url.port !== '' ||
+      (url.hostname !== 'sfdempire.com' && url.hostname !== 'www.sfdempire.com')
+    ) {
+      return null;
+    }
+    const path = url.pathname === '/' ? '/' : url.pathname.replace(/\/$/, '');
+    return SFD_PAGE_PATHS.has(path) ? path : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * SFD's anonymous endpoint is analytics-only. Build a new object from a small
+ * allowlist instead of trying to discover PII inside attacker-controlled JSON.
+ * Unknown and nested properties are discarded and can never reach Postgres.
+ */
+function sanitizeSfdAnonymousEvent(body: Record<string, unknown>): SfdAnonymousEvent | null {
+  if (hasProtectedSfdAnalyticsData(body)) return null;
+  const eventType = sanitizeText(body.event_type, 20).toLowerCase();
+  const category = sanitizeText(body.event_category, 50).toLowerCase();
+  const pagePath = safeSfdPagePath(body.page_url);
+  if (!pagePath) return null;
+
+  let action: string | null = null;
+  let valueNumeric: number | undefined;
+  if (eventType === 'page_view') {
+    if (!SFD_PAGE_VIEW_CATEGORIES.has(category)) return null;
+    action = category === 'navigation' ? 'render' : 'view';
+  } else if (eventType === 'click') {
+    if (!SFD_CLICK_CATEGORIES.has(category)) return null;
+    action = 'activate';
+  } else if (eventType === 'scroll') {
+    if (category !== 'engagement' || ![25, 50, 75, 100].includes(Number(body.value_numeric))) {
+      return null;
+    }
+    valueNumeric = Number(body.value_numeric);
+    action = `${valueNumeric}%`;
+  } else {
+    // Form submissions, signups, and arbitrary custom event types belong on
+    // an authenticated receiver, never this public analytics endpoint.
+    return null;
+  }
+  if (!action) return null;
+
+  return {
+    event_type: eventType,
+    event_category: category,
+    action,
+    page_url: pagePath,
+    ...(valueNumeric !== undefined ? { value_numeric: valueNumeric } : {}),
+    // Do not copy caller-controlled properties, IDs, targets, referrers, UTM
+    // values, or free-form text. This guarantees nested objects and PII cannot
+    // cross the anonymous SFD analytics boundary.
+    properties: {},
+  };
+}
+
 /**
  * Generic inbound analytics ingestion. Drop-in replacement for the bespoke
  * /api/cps/events endpoint, parameterised by slug. Mounted on each client
@@ -165,6 +321,23 @@ export async function POST(
   const { slug: rawSlug } = await params;
   const slug = await resolveTenantSlug(rawSlug);
   const origin = request.headers.get('origin');
+  let sfdAnonymousEvent: SfdAnonymousEvent | null = null;
+
+  // SFD contact data is accepted only by the fixed-project authenticated
+  // receiver. Rebuild every anonymous event from a strict allowlist above both
+  // registry and legacy branches so future routing changes cannot reopen the
+  // public form pipeline or persist arbitrary nested properties.
+  if (slug === 'sfdempire') {
+    const candidate = (await request.clone().json().catch(() => ({}))) as Record<string, unknown>;
+    sfdAnonymousEvent = sanitizeSfdAnonymousEvent(candidate);
+    if (!sfdAnonymousEvent) {
+      const origins = await tenantOrigins(slug);
+      return NextResponse.json(
+        { ok: false, error: 'authenticated_forms_endpoint_required' },
+        { status: 403, headers: registryCors(origins, origin) },
+      );
+    }
+  }
 
   // Registry-driven path: a non-legacy but active registry tenant (all the
   // newer brands) writes ONLY to the shared analytics schema. The legacy
@@ -175,8 +348,11 @@ export async function POST(
     }
     const rcors = registryCors(await tenantOrigins(slug), origin);
     try {
-      const b = await request.json().catch(() => ({}));
-      const props = b.properties && typeof b.properties === 'object' ? b.properties : {};
+      const b = (sfdAnonymousEvent ??
+        (await request.json().catch(() => ({})))) as Record<string, unknown>;
+      const props = b.properties && typeof b.properties === 'object'
+        ? b.properties as Record<string, unknown>
+        : {};
       await recordEvent({
         slug,
         event_type: sanitizeText(b.event_type, 50) || 'page_view',
@@ -237,10 +413,13 @@ export async function POST(
       return r;
     }
 
-    const body = await request.json().catch(() => ({}));
+    const body = (sfdAnonymousEvent ??
+      await request.json().catch(() => ({}))) as Record<string, unknown>;
 
     const clientProps =
-      body.properties && typeof body.properties === 'object' ? body.properties : {};
+      body.properties && typeof body.properties === 'object'
+        ? body.properties as Record<string, unknown>
+        : {};
 
     // Cap properties JSON to 4KB so a malicious payload can't bloat rows.
     let safeProps: Record<string, unknown> = clientProps;
