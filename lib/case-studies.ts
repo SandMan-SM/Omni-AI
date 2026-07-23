@@ -159,8 +159,8 @@ export const CASE_STUDIES: CaseStudy[] = [
   {
     slug: "sitani-mafi",
     brand: "Sitani Mafi",
-    domain: "sitanimafi.live",
-    url: "https://sitanimafi.live",
+    domain: "sitanimafi.com",
+    url: "https://sitanimafi.com",
     inboundSlug: "sitanim",
     realm: 1,
     role: "Founder flagship · Operator",

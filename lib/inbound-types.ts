@@ -311,8 +311,8 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'http://localhost:3000',
   ],
   sitanim: [
-    'https://sitanimafi.live',
-    'https://www.sitanimafi.live',
+    'https://sitanimafi.com',
+    'https://www.sitanimafi.com',
     'https://sitanimafi-website.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',

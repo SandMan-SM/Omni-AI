@@ -6,7 +6,7 @@ import { ArrowRight, ShieldCheck, X } from "lucide-react";
 
 /*
  * Ellie Talks x Omni AI checkout — $2,000 down, ONE-TIME PayPal payment.
- * Modeled on the sitanimafi.live intro-offer checkout: a styled CTA button
+ * Modeled on the sitanimafi.com intro-offer checkout: a styled CTA button
  * that opens a cosmic modal with the PayPal button inside.
  */
 const PAYPAL_CLIENT_ID =

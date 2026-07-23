@@ -71,7 +71,7 @@ type OmniSiteAnalyticsProps = {
    */
   slug?: string;
   /**
-   * Optional host (domain) to scope analytics to. e.g. "sitanimafi.live".
+   * Optional host (domain) to scope analytics to. e.g. "sitanimafi.com".
    * Used when slug isn't a valid INBOUND_SLUGS entry. When omitted,
    * the API falls back to omnileadsagi.com so the legacy admin view
    * keeps its prior behavior.

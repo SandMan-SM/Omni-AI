@@ -510,8 +510,8 @@ function makeAllSentinel(): Business {
 }
 
 // Extract the hostname from a Business.website value. The field may be
-// stored as a bare domain ("sitanimafi.live"), a full URL ("https://
-// sitanimafi.live/about?utm=foo"), or null. We strip protocol, path,
+// stored as a bare domain ("sitanimafi.com"), a full URL ("https://
+// sitanimafi.com/about?utm=foo"), or null. We strip protocol, path,
 // query, and a leading "www." so the API filter matches what the
 // inbound trackers write into events.page_url. Returns undefined when
 // no usable host is found, so OmniSiteAnalytics falls back to its

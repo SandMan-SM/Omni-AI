@@ -61,7 +61,7 @@ const html = `<!doctype html><html><body style="margin:0;background:#0a0a0a;colo
     <li><strong>aidigitalmarketingsolution.com</strong> — local repo at <code>~/Desktop/Clients/AI-Digital-Marketing</code>, no Vercel project yet. Need to <code>vercel link</code> + push.</li>
     <li><strong>seoandppcmarketing.com</strong> — local repo at <code>~/Desktop/Clients/SEO-PPC</code>, same situation.</li>
     <li><strong>agiarena.online</strong> — registered but no repo or project. What goes here?</li>
-    <li><strong>sitanimafi.live</strong> — registered but no repo or project. Personal site?</li>
+    <li><strong>sitanimafi.com</strong> — registered but no repo or project. Personal site?</li>
   </ul>
 
   <h2 style="font-size:14px;color:#f59e0b;margin:24px 0 6px;letter-spacing:.08em;text-transform:uppercase;">3 · Live Better Podcast (Jaime / GoDaddy)</h2>
@@ -115,7 +115,7 @@ const text = `Omni AI · Portfolio audit · personal action items
 - aidigitalmarketingsolution.com: local repo at ~/Desktop/Clients/AI-Digital-Marketing, no Vercel project. vercel link + push.
 - seoandppcmarketing.com: same, local repo at ~/Desktop/Clients/SEO-PPC.
 - agiarena.online: no repo. What's going here?
-- sitanimafi.live: no repo. Personal site?
+- sitanimafi.com: no repo. Personal site?
 
 3. LIVE BETTER PODCAST
 - Domain GoDaddy/Jaime — leave hosting alone (per your direction).

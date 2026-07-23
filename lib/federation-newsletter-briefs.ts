@@ -133,7 +133,7 @@ export const FEDERATION_NEWSLETTER_BRIEFS: FederationNewsletterBrief[] = [
   {
     site: 'sitani-mafi',
     brandName: 'Sitani Mafi',
-    domain: 'sitanimafi.live',
+    domain: 'sitanimafi.com',
     voice: 'First-person operator. Builder writing to other builders. Short paragraphs.',
     audience: 'Founders, operators, people running systems alone.',
     niche: 'AI-native operating, federation building, Pantheon dispatches, builder field notes.',
