@@ -71,7 +71,8 @@ type SubscriberChannel = "welcome" | "owner";
 type ArtistChannel = "confirmation" | "owner";
 type LocalFailureSimulation =
   | "owner_provider_rejection"
-  | "suppression_lookup_failure";
+  | "suppression_lookup_failure"
+  | "provider_delivery_unknown";
 
 type SubscriberRow = {
   id: string;
@@ -227,7 +228,8 @@ function localFailureSimulation(
   if (!isLoopbackDevelopmentAuthorized(request)) return null;
   const requested = request.headers.get(LOCAL_FAILURE_HEADER);
   return requested === "owner_provider_rejection" ||
-    requested === "suppression_lookup_failure"
+    requested === "suppression_lookup_failure" ||
+    requested === "provider_delivery_unknown"
     ? requested
     : null;
 }
@@ -266,6 +268,18 @@ async function sendResend(input: {
     | "artist_owner";
   simulation?: LocalFailureSimulation | null;
 }): Promise<ResendResult> {
+  if (input.simulation === "provider_delivery_unknown") {
+    if (input.tag === "waitlist_owner" || input.tag === "artist_owner") {
+      return {
+        ok: false,
+        error: "simulated_provider_delivery_unknown",
+        outcome: "unknown",
+      };
+    }
+    // Reach the owner-channel ambiguity without sending a real recipient
+    // message. This switch is accepted only by loopback development auth.
+    return { ok: true, id: "local-simulated-recipient-acceptance" };
+  }
   if (input.simulation === "owner_provider_rejection") {
     if (input.tag === "waitlist_owner" || input.tag === "artist_owner") {
       return {
@@ -1116,36 +1130,72 @@ async function claimSubscriberChannel(
   const keyColumn = `${channel}_idempotency_key`;
   const attemptColumn = `${channel}_last_attempt_at`;
   const errorColumn = `${channel}_error_code`;
-  const currentStatus = row[statusColumn as keyof SubscriberRow];
-  const currentKey = row[keyColumn as keyof SubscriberRow];
-  if (typeof currentKey !== "string" || !currentKey) {
-    throw new IntakeError("message_state_invalid");
-  }
-  if (currentStatus === "accepted") {
-    return { accepted: true, idempotencyKey: currentKey };
-  }
-  if (currentStatus === "unknown") {
-    // A network timeout can happen after provider acceptance. Do not resend
-    // automatically; the stable key must be reconciled by an operator first.
-    throw new IntakeError("message_delivery_unknown");
-  }
+  let candidate = row;
 
-  const result = await formsPool().query(
-    `
-      update public.federation_newsletter_subscribers
-      set
-        ${statusColumn} = 'sending',
-        ${attemptColumn} = now(),
-        ${errorColumn} = null
-      where id = $1
-        and site = $2
-        and consent_epoch = $3
-        and subscription_state = 'pending'
-    `,
-    [row.id, TENANT, row.consent_epoch],
-  );
-  if (result.rowCount !== 1) throw new IntakeError("message_state_stale");
-  return { accepted: false, idempotencyKey: currentKey };
+  for (let claimAttempt = 0; claimAttempt < 2; claimAttempt += 1) {
+    const currentStatus = candidate[statusColumn as keyof SubscriberRow];
+    const currentKey = candidate[keyColumn as keyof SubscriberRow];
+    if (typeof currentKey !== "string" || !currentKey) {
+      throw new IntakeError("message_state_invalid");
+    }
+    if (currentStatus === "accepted") {
+      return { accepted: true, idempotencyKey: currentKey };
+    }
+
+    const claimed = await formsPool().query(
+      `
+        update public.federation_newsletter_subscribers
+        set
+          ${statusColumn} = 'sending',
+          ${attemptColumn} = now(),
+          ${errorColumn} = null
+        where id = $1
+          and site = $2
+          and consent_epoch = $3
+          and subscription_state = 'pending'
+          and ${keyColumn} = $4
+          and (
+            ${statusColumn} in ('pending', 'failed', 'unknown')
+            or (
+              ${statusColumn} = 'sending'
+              and ${attemptColumn} < now() - interval '15 minutes'
+            )
+          )
+      `,
+      [candidate.id, TENANT, candidate.consent_epoch, currentKey],
+    );
+    if (claimed.rowCount === 1) {
+      return { accepted: false, idempotencyKey: currentKey };
+    }
+
+    // Another request owns the channel. Give its bounded provider call time to
+    // settle, then converge on accepted or reclaim failed/unknown with the
+    // exact same persisted provider idempotency key.
+    for (let poll = 0; poll < 40; poll += 1) {
+      const fresh = await loadSubscriber(candidate.id);
+      if (!fresh || fresh.consent_epoch !== candidate.consent_epoch) {
+        throw new IntakeError("message_state_stale");
+      }
+      const freshStatus = fresh[statusColumn as keyof SubscriberRow];
+      if (freshStatus !== "sending") {
+        candidate = fresh;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 250));
+    }
+    const settledStatus = candidate[statusColumn as keyof SubscriberRow];
+    if (settledStatus === "accepted") {
+      const settledKey = candidate[keyColumn as keyof SubscriberRow];
+      if (typeof settledKey !== "string" || !settledKey) {
+        throw new IntakeError("message_state_invalid");
+      }
+      return { accepted: true, idempotencyKey: settledKey };
+    }
+    if (settledStatus === "sending") {
+      throw new IntakeError("message_in_progress");
+    }
+  }
+  throw new IntakeError("message_state_stale");
 }
 
 async function saveSubscriberChannel(
@@ -1157,6 +1207,11 @@ async function saveSubscriberChannel(
   const messageColumn = `${channel}_message_id`;
   const acceptedColumn = `${channel}_accepted_at`;
   const errorColumn = `${channel}_error_code`;
+  const keyColumn = `${channel}_idempotency_key`;
+  const key = row[keyColumn as keyof SubscriberRow];
+  if (typeof key !== "string" || !key) {
+    throw new IntakeError("message_state_invalid");
+  }
   const saved = await formsPool().query(
     `
       update public.federation_newsletter_subscribers
@@ -1168,6 +1223,8 @@ async function saveSubscriberChannel(
       where id = $1
         and site = $2
         and consent_epoch = $3
+        and ${statusColumn} = 'sending'
+        and ${keyColumn} = $7
         and subscription_state = 'pending'
     `,
     [
@@ -1181,6 +1238,7 @@ async function saveSubscriberChannel(
           : "failed",
       result.id || null,
       result.ok ? null : cleanProviderError(result.error, "send_failed"),
+      key,
     ],
   );
   if (saved.rowCount !== 1) throw new IntakeError("message_state_failed");
@@ -1267,9 +1325,9 @@ async function markWaitlistMirrorsComplete(row: SubscriberRow): Promise<void> {
 
 function waitlistWelcomeContent(firstName: string, unsubscribeUrl: string) {
   const safeName = escapeHtml(firstName || "there");
-  const html = `<!doctype html><html><body style="margin:0;background:#050505;color:#f5efe4;font-family:Arial,sans-serif"><div style="max-width:600px;margin:0 auto;padding:36px 18px"><div style="border:1px solid #4e452f;background:#0b0a08;padding:40px"><p style="margin:0;color:#d5ad43;font-size:11px;font-weight:800;letter-spacing:3px">SFD EMPIRE</p><h1 style="font-size:42px;line-height:1;margin:18px 0;color:#f5efe4">YOU'RE FIRST IN.</h1><p style="color:#aaa297;line-height:1.7">${safeName}, your place on the SFD Empire list is confirmed. You will receive the first word when the doors open, plus occasional updates along the way.</p><p style="margin-top:28px"><a href="${SITE_URL}" style="display:inline-block;background:#d5ad43;color:#050505;padding:15px 22px;text-decoration:none;font-weight:800;letter-spacing:1.5px">EXPLORE SFD EMPIRE</a></p><p style="margin-top:30px;padding-top:20px;border-top:1px solid #2d2921;color:#716c64;font-size:11px">You subscribed at sfdempire.com. <a href="${unsubscribeUrl}" style="color:#aaa297">Unsubscribe from SFD Empire updates</a>.</p></div></div></body></html>`;
+  const html = `<!doctype html><html><body style="margin:0;background:#050505;color:#f5efe4;font-family:Arial,sans-serif"><div style="max-width:600px;margin:0 auto;padding:36px 18px"><div style="border:1px solid #4e452f;background:#0b0a08;padding:40px"><p style="margin:0;color:#d5ad43;font-size:11px;font-weight:800;letter-spacing:3px">SFD EMPIRE</p><h1 style="font-size:42px;line-height:1;margin:18px 0;color:#f5efe4">YOU'VE BEEN GRANTED EXCLUSIVE ACCESS.</h1><p style="color:#aaa297;line-height:1.7">${safeName}, your place on the SFD Empire list is confirmed. You will receive the first word when the doors open, plus occasional updates along the way.</p><p style="margin-top:28px"><a href="${SITE_URL}" style="display:inline-block;background:#d5ad43;color:#050505;padding:15px 22px;text-decoration:none;font-weight:800;letter-spacing:1.5px">EXPLORE SFD EMPIRE</a></p><p style="margin-top:30px;padding-top:20px;border-top:1px solid #2d2921;color:#716c64;font-size:11px">You subscribed at sfdempire.com. <a href="${unsubscribeUrl}" style="color:#aaa297">Unsubscribe from SFD Empire updates</a>.</p></div></div></body></html>`;
   const text = [
-    `You're first in, ${firstName || "there"}.`,
+    `You've been granted exclusive access, ${firstName || "there"}.`,
     "",
     "Your place on the SFD Empire list is confirmed. You will receive the first word when the doors open, plus occasional updates along the way.",
     "",
@@ -1306,7 +1364,18 @@ async function completeWaitlist(prepared: {
     await markWaitlistMirrorsComplete(prepared.row);
     return prepared;
   }
-  let row = prepared.row;
+  let row = (await loadSubscriber(prepared.row.id)) || prepared.row;
+  if (row.consent_epoch !== prepared.row.consent_epoch) {
+    throw new IntakeError("message_state_stale");
+  }
+  if (
+    row.subscription_state === "active" &&
+    row.welcome_status === "accepted" &&
+    row.owner_status === "accepted"
+  ) {
+    await markWaitlistMirrorsComplete(row);
+    return { phase: "already", row };
+  }
 
   if (prepared.simulation === "suppression_lookup_failure") {
     const persisted = await formsPool().query(
@@ -1356,7 +1425,7 @@ async function completeWaitlist(prepared: {
     const welcome = await sendResend({
       to: row.email,
       replyTo: OWNER_EMAIL,
-      subject: "You're first in — SFD Empire",
+      subject: "You've been granted exclusive access — SFD Empire",
       html: content.html,
       text: content.text,
       idempotencyKey: welcomeClaim.idempotencyKey,
@@ -1392,7 +1461,21 @@ async function completeWaitlist(prepared: {
     [row.id, row.consent_epoch],
   );
   if (finalized.rows[0]?.ok !== true) {
-    throw new IntakeError("subscription_finalization_failed");
+    // A concurrent request may have committed the exact same consent epoch
+    // between this request's channel claim and finalization. That is already a
+    // successful completion, not a user-visible failure.
+    const concurrent = await loadSubscriber(row.id);
+    if (
+      !concurrent ||
+      concurrent.consent_epoch !== row.consent_epoch ||
+      concurrent.subscription_state !== "active" ||
+      concurrent.welcome_status !== "accepted" ||
+      concurrent.owner_status !== "accepted"
+    ) {
+      throw new IntakeError("subscription_finalization_failed");
+    }
+    await markWaitlistMirrorsComplete(concurrent);
+    return { phase: "already", row: concurrent };
   }
   const active = await loadSubscriber(row.id);
   if (
