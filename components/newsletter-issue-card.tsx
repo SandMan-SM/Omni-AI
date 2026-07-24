@@ -22,11 +22,11 @@ export function normalizeNewsletterKeywords(keywords: unknown): string[] {
 }
 
 export function newsletterIssueImageUrl(slug: string): string {
-  return `/newsletter/generated/${encodeURIComponent(slug)}.webp`;
+  return `/newsletter/${encodeURIComponent(slug)}/opengraph-image`;
 }
 
 export function newsletterIssueBackgroundImage(slug: string): string {
-  return `url("${newsletterIssueImageUrl(slug)}"), url("/newsletter/generated/default.webp")`;
+  return `url("${newsletterIssueImageUrl(slug)}")`;
 }
 
 export function NewsletterIssueCard({
