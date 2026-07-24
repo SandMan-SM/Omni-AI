@@ -167,6 +167,27 @@ export function NewsletterHeader() {
 
   return (
     <>
+      <div
+        className="sticky top-0 z-50 overflow-hidden border-b border-sky-300/25 bg-gradient-to-r from-violet-700 via-indigo-600 to-sky-600 py-1 text-[10px] font-bold uppercase tracking-[0.14em] text-white shadow-[0_8px_30px_rgba(0,0,0,0.35)]"
+        aria-label="Free Interlinked Premium Membership for a Limited Time Only"
+      >
+        <motion.div
+          aria-hidden="true"
+          className="flex w-max whitespace-nowrap sm:hidden"
+          animate={{ x: ["0%", "-50%"] }}
+          transition={{ duration: 12, ease: "linear", repeat: Infinity }}
+        >
+          <span className="pr-12">
+            Free Interlinked Premium Membership for a Limited Time Only
+          </span>
+          <span className="pr-12">
+            Free Interlinked Premium Membership for a Limited Time Only
+          </span>
+        </motion.div>
+        <div className="hidden px-4 text-center sm:block">
+          Free Interlinked Premium Membership for a Limited Time Only
+        </div>
+      </div>
       <header className="border-b border-white/[0.07] bg-black/25 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-5 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -252,7 +273,7 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
           <p className="text-gray-500 text-sm">Loading...</p>
         </div>
       ) : status === "not-premium" ? (
-        <div className="space-y-4">
+        <div>
           <div className="p-5 rounded-xl bg-amber-500/[0.03] border border-amber-500/[0.12]">
             <p className="text-gray-300 text-sm font-medium">Premium archive visible. Full issues unlock with Interlinked Premium.</p>
             <div className="mt-3 flex items-center gap-3">
@@ -267,28 +288,60 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
               </span>
             </div>
           </div>
-          {posts.map((post) => {
-            return (
-              <NewsletterIssueCard
+          <div className="mt-4 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {posts.map((post) => (
+              <div
                 key={post.slug}
-                post={post}
-                href="/newsletter/premium/info"
-                locked
-              />
-            );
-          })}
+                className="w-[78vw] max-w-[340px] shrink-0 snap-start"
+              >
+                <NewsletterIssueCard
+                  post={post}
+                  href="/newsletter/premium/info"
+                  locked
+                />
+              </div>
+            ))}
+            <Link
+              href="/newsletter/archive"
+              className="group flex aspect-[3/4] w-[78vw] max-w-[340px] shrink-0 snap-start flex-col items-center justify-center rounded-xl border border-amber-400/20 bg-gradient-to-br from-amber-400/[0.10] to-sky-400/[0.05] p-8 text-center transition-colors hover:border-amber-300/50"
+            >
+              <span className="text-xl font-bold text-white">View full archive</span>
+              <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
+                Browse every issue
+                <ArrowRight
+                  aria-hidden="true"
+                  className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                />
+              </span>
+            </Link>
+          </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          {posts.map((post) => {
-            return (
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {posts.map((post) => (
+            <div
+              key={post.slug}
+              className="w-[78vw] max-w-[340px] shrink-0 snap-start"
+            >
               <NewsletterIssueCard
-                key={post.slug}
                 post={post}
                 href={`/newsletter/${post.slug}`}
               />
-            );
-          })}
+            </div>
+          ))}
+          <Link
+            href="/newsletter/archive"
+            className="group flex aspect-[3/4] w-[78vw] max-w-[340px] shrink-0 snap-start flex-col items-center justify-center rounded-xl border border-amber-400/20 bg-gradient-to-br from-amber-400/[0.10] to-sky-400/[0.05] p-8 text-center transition-colors hover:border-amber-300/50"
+          >
+            <span className="text-xl font-bold text-white">View full archive</span>
+            <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
+              Browse every issue
+              <ArrowRight
+                aria-hidden="true"
+                className="h-4 w-4 transition-transform group-hover:translate-x-1"
+              />
+            </span>
+          </Link>
         </div>
       )}
     </div>

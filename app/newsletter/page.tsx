@@ -330,11 +330,6 @@ export default async function NewsletterIndexPage() {
 
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
             <div>
-              <div className="mb-4 flex flex-wrap items-center gap-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-300 md:mb-5 md:text-[11px]">
-                <span>Interlinked</span>
-                <span className="h-px w-8 bg-amber-400/40" />
-                <span className="text-sky-300">By Omni AI</span>
-              </div>
               <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-normal text-white sm:text-4xl md:text-6xl md:leading-[0.98]">
                 Omni AI Newsletter
               </h1>
@@ -379,9 +374,8 @@ export default async function NewsletterIndexPage() {
               </div>
             </div>
 
-            {/* Above-the-fold conversion column: free-signup capture (feeds the
-                federation subscriber pipeline) + the persistent strategy-call
-                CTA into the paid funnel. */}
+            {/* Above-the-fold conversion column: free-signup capture feeds the
+                federation subscriber pipeline. */}
             <NewsletterOptin />
           </div>
         </section>
@@ -404,15 +398,18 @@ export default async function NewsletterIndexPage() {
               Public operator briefings
             </span>
           </div>
-          <div className="space-y-4">
-            {freePosts.map((post) => {
-              return (
-                <NewsletterIssueCard key={post.slug} post={post} />
-              );
-            })}
+          <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            {freePosts.map((post) => (
+              <div
+                key={post.slug}
+                className="w-[78vw] max-w-[340px] shrink-0 snap-start"
+              >
+                <NewsletterIssueCard post={post} />
+              </div>
+            ))}
 
             {freePosts.length === 0 && (
-              <div className="text-center py-20 text-gray-600">
+              <div className="w-full text-center py-20 text-gray-600">
                 <p className="text-lg mb-2">
                   {postsUnavailable ? "Newsletter issues are reconnecting." : "No issues yet."}
                 </p>
@@ -423,17 +420,25 @@ export default async function NewsletterIndexPage() {
                 </p>
               </div>
             )}
+
+            {freePosts.length > 0 && (
+              <Link
+                href="/newsletter/archive"
+                className="group flex aspect-[3/4] w-[78vw] max-w-[340px] shrink-0 snap-start flex-col items-center justify-center rounded-xl border border-amber-400/20 bg-gradient-to-br from-amber-400/[0.10] to-sky-400/[0.05] p-8 text-center transition-colors hover:border-amber-300/50"
+              >
+                <span className="text-xl font-bold text-white">View full archive</span>
+                <span className="mt-3 inline-flex items-center gap-2 text-sm font-semibold text-amber-300">
+                  Browse every issue
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="h-4 w-4 transition-transform group-hover:translate-x-1"
+                  />
+                </span>
+              </Link>
+            )}
           </div>
         </div>
 
-        <div className="mt-10 text-center">
-          <Link
-            href="/newsletter/archive"
-            className="inline-flex h-11 items-center justify-center rounded-xl border border-amber-500/25 bg-amber-500/[0.06] px-5 text-sm font-semibold text-amber-300 transition-colors hover:border-amber-400/50 hover:bg-amber-500/[0.10]"
-          >
-            View full archive
-          </Link>
-        </div>
       </main>
       <Footer />
     </div>
