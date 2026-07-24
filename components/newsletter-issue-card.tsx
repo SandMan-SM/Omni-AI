@@ -21,17 +21,30 @@ export function normalizeNewsletterKeywords(keywords: unknown): string[] {
   return [];
 }
 
+const pngNewsletterArtwork = new Set([
+  "interlinked-premium-2026-07-24",
+  "interlinked-free-2026-07-24",
+  "interlinked-premium-2026-07-23",
+  "interlinked-free-2026-07-23",
+  "2026-07-23-ai-ceos-nobody-talking-about",
+  "interlinked-premium-2026-07-22",
+  "interlinked-free-2026-07-22",
+  "interlinked-premium-2026-07-21",
+  "interlinked-free-2026-07-21",
+  "interlinked-premium-2026-07-20",
+  "interlinked-free-2026-07-20",
+]);
+
 export function newsletterIssueImageUrl(slug: string): string {
-  // Every published issue already has a live, issue-specific Open Graph image
-  // generated from its title, tier, summary, keywords, and date. Use that
-  // canonical image on archive cards and article heroes so newly published
-  // issues never fall through to the generic default while waiting for a
-  // separately deployed static asset.
-  return `/newsletter/${encodeURIComponent(slug)}/opengraph-image`;
+  // Cards use the issue's text-free generated artwork. Titles, metadata, and
+  // labels remain in the card template instead of being baked into the image.
+  const extension = pngNewsletterArtwork.has(slug) ? "png" : "webp";
+  return `/newsletter/generated/${encodeURIComponent(slug)}.${extension}`;
 }
 
 export function newsletterIssueBackgroundImage(slug: string): string {
-  return `url("${newsletterIssueImageUrl(slug)}")`;
+  const encodedSlug = encodeURIComponent(slug);
+  return `url("${newsletterIssueImageUrl(slug)}"), url("/newsletter/${encodedSlug}/artwork-image")`;
 }
 
 export function NewsletterIssueCard({
