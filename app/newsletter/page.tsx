@@ -394,9 +394,13 @@ export default async function NewsletterIndexPage() {
               </p>
               <h2 className="mt-1 text-xl font-bold text-white">Daily Intelligence</h2>
             </div>
-            <span className="text-xs text-gray-500">
-              Public operator briefings
-            </span>
+            <Link
+              href="/newsletter/archive"
+              className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 text-xs font-semibold text-amber-200 transition-colors hover:border-amber-300/50 hover:bg-amber-400/[0.10]"
+            >
+              <Archive aria-hidden="true" className="h-3.5 w-3.5" />
+              Full archive
+            </Link>
           </div>
           <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {freePosts.map((post) => (

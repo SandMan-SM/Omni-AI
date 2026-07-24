@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { ChevronDown } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
@@ -176,6 +177,8 @@ export default async function NewsletterArchivePage({ searchParams }: Props) {
   const visiblePosts = selectedTag
     ? posts.filter((post) => postHasTag(post, selectedTag))
     : posts;
+  const visibleTagFilters = tagFilters.slice(0, 5);
+  const overflowTagFilters = tagFilters.slice(5);
   const premiumPosts = visiblePosts.filter((p) => p.tier === "premium");
   const freePosts = visiblePosts.filter((p) => p.tier !== "premium");
 
@@ -226,18 +229,18 @@ export default async function NewsletterArchivePage({ searchParams }: Props) {
             Every Omni AI intelligence issue in one place. The front page stays fast; the full library lives here.
           </p>
           {tagFilters.length > 0 && (
-            <div className="mt-6 flex flex-wrap gap-2">
+            <div className="mt-6 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
               <Link
                 href={archiveTagHref(null)}
-                className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                className={`inline-flex h-10 min-w-0 items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-[0.12em] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_22px_rgba(0,0,0,0.18)] transition-colors sm:h-9 sm:w-auto sm:px-3.5 sm:tracking-[0.14em] ${
                   selectedTag
-                    ? "border-white/10 bg-white/[0.04] text-gray-300 hover:border-amber-500/30 hover:text-amber-300"
-                    : "border-amber-400/45 bg-amber-400/12 text-amber-200"
+                    ? "border-sky-300/15 bg-slate-950/70 text-slate-300 hover:border-amber-400/35 hover:text-amber-200"
+                    : "border-amber-300/55 bg-amber-300/15 text-amber-100"
                 }`}
               >
                 All
               </Link>
-              {tagFilters.map((tag) => {
+              {visibleTagFilters.map((tag) => {
                 const isActive =
                   selectedTag &&
                   normalizeTagSlug(selectedTag) === normalizeTagSlug(tag.label);
@@ -245,17 +248,49 @@ export default async function NewsletterArchivePage({ searchParams }: Props) {
                   <Link
                     key={tag.label}
                     href={archiveTagHref(tag.label)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] transition-colors ${
+                    className={`inline-flex h-10 min-w-0 max-w-full items-center justify-center rounded-full border px-3 text-[11px] font-semibold uppercase tracking-[0.12em] shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_22px_rgba(0,0,0,0.18)] transition-colors sm:h-9 sm:w-auto sm:px-3.5 sm:tracking-[0.14em] ${
                       isActive
-                        ? "border-amber-400/45 bg-amber-400/12 text-amber-200"
-                        : "border-white/10 bg-white/[0.04] text-gray-300 hover:border-amber-500/30 hover:text-amber-300"
+                        ? "border-amber-300/55 bg-amber-300/15 text-amber-100"
+                        : "border-sky-300/15 bg-slate-950/70 text-slate-300 hover:border-amber-400/35 hover:text-amber-200"
                     }`}
                   >
-                    {tag.label}
+                    <span className="truncate">{tag.label}</span>
                     <span className="ml-1 text-[10px] opacity-60">{tag.count}</span>
                   </Link>
                 );
               })}
+              {overflowTagFilters.length > 0 && (
+                <details className="group relative col-span-2 sm:col-span-1">
+                  <summary className="inline-flex h-10 w-full cursor-pointer list-none items-center justify-center gap-2 rounded-full border border-sky-300/15 bg-slate-950/70 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-300 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_8px_22px_rgba(0,0,0,0.18)] transition-colors hover:border-amber-400/35 hover:text-amber-200 sm:h-9 sm:w-auto sm:px-3.5 sm:tracking-[0.14em] [&::-webkit-details-marker]:hidden">
+                    More topics
+                    <ChevronDown
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5 transition-transform group-open:rotate-180"
+                    />
+                  </summary>
+                  <div className="absolute left-0 right-0 z-20 mt-2 grid max-h-80 gap-1 overflow-y-auto rounded-xl border border-white/10 bg-slate-950/95 p-2 shadow-[0_24px_70px_rgba(0,0,0,0.45)] backdrop-blur sm:left-auto sm:w-[min(84vw,360px)]">
+                    {overflowTagFilters.map((tag) => {
+                      const isActive =
+                        selectedTag &&
+                        normalizeTagSlug(selectedTag) === normalizeTagSlug(tag.label);
+                      return (
+                        <Link
+                          key={tag.label}
+                          href={archiveTagHref(tag.label)}
+                          className={`flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition-colors ${
+                            isActive
+                              ? "bg-amber-300/15 text-amber-100"
+                              : "text-slate-300 hover:bg-white/[0.06] hover:text-amber-200"
+                          }`}
+                        >
+                          <span className="truncate">{tag.label}</span>
+                          <span className="shrink-0 text-[10px] opacity-60">{tag.count}</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </details>
+              )}
             </div>
           )}
         </div>
@@ -274,9 +309,14 @@ export default async function NewsletterArchivePage({ searchParams }: Props) {
                 Interlinked Premium
               </span>
             </div>
-            <div className="grid gap-5">
+            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {premiumPosts.map((post) => (
-                <NewsletterIssueCard key={post.slug} post={post} />
+                <div
+                  key={post.slug}
+                  className="w-[78vw] max-w-[340px] shrink-0 snap-start"
+                >
+                  <NewsletterIssueCard post={post} />
+                </div>
               ))}
             </div>
           </section>
@@ -290,9 +330,14 @@ export default async function NewsletterArchivePage({ searchParams }: Props) {
                 Interlinked Free
               </span>
             </div>
-            <div className="grid gap-5">
+            <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {freePosts.map((post) => (
-                <NewsletterIssueCard key={post.slug} post={post} />
+                <div
+                  key={post.slug}
+                  className="w-[78vw] max-w-[340px] shrink-0 snap-start"
+                >
+                  <NewsletterIssueCard post={post} />
+                </div>
               ))}
             </div>
           </section>

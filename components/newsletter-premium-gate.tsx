@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowRight, X } from "lucide-react";
+import { Archive, ArrowRight, X } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
 import { getStoredUser } from "@/lib/auth";
 import {
@@ -199,7 +199,7 @@ export function NewsletterHeader() {
               priority
               className="transition-transform group-hover:scale-105"
             />
-            <span className="text-xl font-bold text-gradient">Omni AI</span>
+            <span className="text-xl font-bold text-gradient">Interlinked</span>
           </Link>
           {isLoggedIn ? (
             <Link
@@ -260,11 +260,11 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
           <h2 className="mt-1 text-xl font-bold text-white">Premium Intelligence</h2>
         </div>
         <Link
-          href="/newsletter/premium/info"
+          href="/newsletter/archive"
           className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-amber-400/20 bg-amber-400/[0.06] px-3 text-xs font-semibold text-amber-200 transition-colors hover:border-amber-300/50 hover:bg-amber-400/[0.10]"
         >
-          Premium access
-          <ArrowRight aria-hidden="true" className="h-3.5 w-3.5" />
+          <Archive aria-hidden="true" className="h-3.5 w-3.5" />
+          Full archive
         </Link>
       </div>
 
