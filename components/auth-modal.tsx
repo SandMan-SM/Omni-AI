@@ -11,12 +11,11 @@
 import { useEffect, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Apple, Chrome, X, User, Lock, Loader2, CheckCircle } from "lucide-react";
+import { X, User, Lock, Loader2, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
-import type { OAuthProvider } from "@/lib/auth";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -53,8 +52,7 @@ export function AuthModal({
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<OAuthProvider | null>(null);
-  const { signIn, signInWithProvider, user } = useAuth();
+  const { signIn, user } = useAuth();
   const { toast } = useToast();
   const pathname = usePathname();
   const router = useRouter();
@@ -75,25 +73,11 @@ export function AuthModal({
     fetch("/api/auth/login", { cache: "no-store" }).catch(() => undefined);
   }, [isOpen]);
 
-  const oauthRedirectTarget = () => {
+  const postAuthRedirectTarget = () => {
     if (redirectTo === undefined) return "/dashboard";
     if (typeof redirectTo === "string") return redirectTo;
     if (typeof window === "undefined") return pathname || "/";
     return `${pathname}${window.location.search}${window.location.hash}` || "/";
-  };
-
-  const handleOAuth = async (provider: OAuthProvider) => {
-    setOauthLoading(provider);
-    const { error } = await signInWithProvider(provider, oauthRedirectTarget());
-
-    if (error) {
-      toast({
-        title: "Error",
-        description: error,
-        variant: "destructive",
-      });
-      setOauthLoading(null);
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -214,47 +198,6 @@ export function AuthModal({
               ) : null}
             </div>
 
-            <div className="space-y-3 mb-5">
-              <Button
-                type="button"
-                disabled={isLoading || Boolean(oauthLoading)}
-                onClick={() => handleOAuth("google")}
-                className="w-full border border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.10] py-5 rounded-lg"
-                data-testid="button-auth-google"
-              >
-                {oauthLoading === "google" ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <Chrome className="w-5 h-5 mr-2" />
-                    Continue with Google
-                  </>
-                )}
-              </Button>
-              <Button
-                type="button"
-                disabled={isLoading || Boolean(oauthLoading)}
-                onClick={() => handleOAuth("apple")}
-                className="w-full border border-white/10 bg-white/[0.06] text-white hover:bg-white/[0.10] py-5 rounded-lg"
-                data-testid="button-auth-apple"
-              >
-                {oauthLoading === "apple" ? (
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                ) : (
-                  <>
-                    <Apple className="w-5 h-5 mr-2" />
-                    Continue with Apple
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div className="mb-5 flex items-center gap-3 text-[11px] uppercase tracking-[0.22em] text-gray-500">
-              <span className="h-px flex-1 bg-white/10" />
-              <span>or use username</span>
-              <span className="h-px flex-1 bg-white/10" />
-            </div>
-
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
@@ -284,7 +227,7 @@ export function AuthModal({
 
               <Button
                 type="submit"
-                disabled={isLoading || Boolean(oauthLoading)}
+                disabled={isLoading}
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white py-5 text-base font-medium rounded-lg mt-2"
                 data-testid="button-auth-submit"
               >
@@ -302,7 +245,7 @@ export function AuthModal({
                 type="button"
                 onClick={() => {
                   onClose();
-                  const target = oauthRedirectTarget();
+                  const target = postAuthRedirectTarget();
                   router.push(`/join?next=${encodeURIComponent(target)}`);
                 }}
                 className="text-purple-400 hover:text-purple-300 transition-colors"
