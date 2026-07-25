@@ -2,7 +2,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
-import { Menu, X, Command } from "lucide-react";
+import { CalendarDays, Menu, X, Command } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { useProfile } from "@/hooks/use-profile";
@@ -20,6 +20,15 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { profile, profileLoading } = useProfile();
+
+  const handleBookAppointment = () => {
+    if (onBookDemo) {
+      onBookDemo();
+      return;
+    }
+
+    router.push("/book-now");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -100,11 +109,11 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
             )}
             <Button
               className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white"
-              onClick={() => router.push("/command")}
-              data-testid="button-nav-command-center"
+              onClick={handleBookAppointment}
+              data-testid="button-nav-book-appointment"
             >
-              <Command className="w-4 h-4 mr-2" />
-              Command Center
+              <CalendarDays className="w-4 h-4 mr-2" />
+              Book Appointment
             </Button>
           </div>
 
@@ -160,12 +169,12 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
                   className="bg-gradient-to-r from-purple-600 to-blue-600 border-0 text-white w-full text-sm min-h-[44px]"
                   onClick={() => {
                     setIsMobileMenuOpen(false);
-                    router.push("/command");
+                    handleBookAppointment();
                   }}
-                  data-testid="button-mobile-command-center"
+                  data-testid="button-mobile-book-appointment"
                 >
-                  <Command className="w-4 h-4 mr-2" />
-                  Command Center
+                  <CalendarDays className="w-4 h-4 mr-2" />
+                  Book Appointment
                 </Button>
               </div>
             </div>
