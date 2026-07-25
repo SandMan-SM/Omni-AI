@@ -45,7 +45,7 @@ type Offer = {
 const offers: Offer[] = [
   {
     key: "meta-ai-advertising",
-    eyebrow: "Campaign",
+    eyebrow: "Tier 1",
     title: "Meta AI Advertising",
     price: "$1,500",
     summary:
@@ -81,7 +81,7 @@ const offers: Offer[] = [
   },
   {
     key: "meta-ai-advertising-api",
-    eyebrow: "Connected",
+    eyebrow: "Tier 2",
     title: "Meta AI Advertising + API Integration",
     price: "$2,500",
     summary:
@@ -117,7 +117,7 @@ const offers: Offer[] = [
   },
   {
     key: "meta-ai-advertising-api-crm",
-    eyebrow: "Full system",
+    eyebrow: "Tier 3",
     title: "Meta AI + API + CRM (SMS, Email)",
     price: "$3,500",
     summary:
@@ -153,7 +153,7 @@ const offers: Offer[] = [
   },
   {
     key: "seo-first-11",
-    eyebrow: "First 11",
+    eyebrow: "Tier 0",
     title: "SEO",
     price: "Founding allocation",
     summary:
@@ -191,7 +191,7 @@ const offers: Offer[] = [
   },
   {
     key: "legacy",
-    eyebrow: "Private access",
+    eyebrow: "Tier 5",
     title: "Legacy",
     price: "Locked",
     summary:
@@ -288,7 +288,7 @@ function OfferCard({
             </div>
 
             <div
-              className={`relative mt-4 overflow-hidden rounded-2xl border border-white/10 ${
+              className={`relative mt-4 shrink-0 overflow-hidden rounded-2xl border border-white/10 ${
                 offer.compact ? "h-24 lg:h-28" : "h-24"
               }`}
             >
@@ -305,7 +305,7 @@ function OfferCard({
               />
             </div>
 
-            <h2 className={`${offer.compact ? "mt-3 text-2xl leading-tight lg:mt-5 lg:text-3xl" : "mt-3 text-2xl leading-tight"} font-semibold tracking-tight text-white`}>
+            <h2 className={`${offer.compact ? "mt-5 text-2xl leading-tight lg:text-3xl" : "mt-5 text-2xl leading-tight"} shrink-0 font-semibold tracking-tight text-white`}>
               {offer.title}
             </h2>
 
@@ -711,10 +711,7 @@ export function MetaAiAdvertisingClient() {
           />
           <div className="relative mx-auto w-full max-w-7xl">
             <div className="max-w-2xl text-left">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.4em] text-purple-300">
-                Omni AI Services
-              </p>
-              <h1 className="mt-5 text-5xl font-semibold tracking-[-0.04em] text-white drop-shadow-2xl sm:text-6xl xl:text-7xl">
+              <h1 className="text-5xl font-semibold tracking-[-0.04em] text-white drop-shadow-2xl sm:text-6xl xl:text-7xl">
                 Turn Meta attention into{" "}
                 <span className="bg-gradient-to-r from-purple-300 via-fuchsia-300 to-blue-300 bg-clip-text text-transparent">
                   action.
@@ -729,11 +726,11 @@ export function MetaAiAdvertisingClient() {
                   Focused packages
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Check className="h-4 w-4 text-blue-300" aria-hidden />
+                  <Check className="h-4 w-4 text-purple-300" aria-hidden />
                   Connected data
                 </span>
                 <span className="inline-flex items-center gap-2">
-                  <Check className="h-4 w-4 text-amber-300" aria-hidden />
+                  <Check className="h-4 w-4 text-purple-300" aria-hidden />
                   Automated follow-up
                 </span>
               </div>
@@ -750,7 +747,7 @@ export function MetaAiAdvertisingClient() {
           </div>
         </section>
 
-        <section className="px-4 pb-24 sm:px-6 sm:pb-32">
+        <section className="px-4 pb-24 pt-8 sm:px-6 sm:pb-32 sm:pt-10 lg:pt-0">
           <div className="mx-auto max-w-7xl">
             <div className="mb-4 flex items-center justify-between lg:hidden">
               <div>
