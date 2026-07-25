@@ -44,7 +44,9 @@ export function newsletterIssueImageUrl(slug: string): string {
 
 export function newsletterIssueBackgroundImage(slug: string): string {
   const encodedSlug = encodeURIComponent(slug);
-  return `url("${newsletterIssueImageUrl(slug)}"), url("/newsletter/${encodedSlug}/artwork-image")`;
+  // Always keep a real static artwork layer behind issue-specific images.
+  // New posts therefore stay visual even before their generated asset ships.
+  return `url("${newsletterIssueImageUrl(slug)}"), url("/newsletter/generated/default.webp"), url("/newsletter/${encodedSlug}/artwork-image")`;
 }
 
 export function NewsletterIssueCard({
