@@ -1,0 +1,1460 @@
+- generic [active] [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - generic "Free Interlinked Premium Membership for a Limited Time Only" [ref=f3e3]
+    - banner [ref=f3e5]:
+      - generic [ref=f3e6]:
+        - link "Omni AI Interlinked" [ref=f3e7] [cursor=pointer]:
+          - /url: /
+          - img "Omni AI" [ref=f3e8]
+          - generic [ref=f3e9]: Interlinked
+        - button "Subscribe" [ref=f3e10] [cursor=pointer]
+    - main [ref=f3e11]:
+      - navigation "Breadcrumb" [ref=f3e12]:
+        - list [ref=f3e13]:
+          - listitem [ref=f3e14]:
+            - link "Home" [ref=f3e15] [cursor=pointer]:
+              - /url: /
+            - generic [ref=f3e16]: /
+          - listitem [ref=f3e17]:
+            - link "Newsletter" [ref=f3e18] [cursor=pointer]:
+              - /url: /newsletter
+            - generic [ref=f3e19]: /
+          - listitem [ref=f3e20]:
+            - generic [ref=f3e21]: Archive
+      - generic [ref=f3e22]:
+        - paragraph [ref=f3e23]: Full Library
+        - heading "Interlinked Archive" [level=1] [ref=f3e24]
+        - paragraph [ref=f3e25]: Every Omni AI intelligence issue in one place. The front page stays fast; the full library lives here.
+        - generic [ref=f3e26]:
+          - link "All" [ref=f3e27] [cursor=pointer]:
+            - /url: /newsletter/archive
+          - link "AI automation 46" [ref=f3e28] [cursor=pointer]:
+            - /url: /newsletter/archive?tag=AI%20automation
+            - generic [ref=f3e29]: AI automation
+            - generic [ref=f3e30]: "46"
+          - link "AI operations 44" [ref=f3e31] [cursor=pointer]:
+            - /url: /newsletter/archive?tag=AI%20operations
+            - generic [ref=f3e32]: AI operations
+            - generic [ref=f3e33]: "44"
+          - link "AI lead generation 34" [ref=f3e34] [cursor=pointer]:
+            - /url: /newsletter/archive?tag=AI%20lead%20generation
+            - generic [ref=f3e35]: AI lead generation
+            - generic [ref=f3e36]: "34"
+          - link "AI marketing 34" [ref=f3e37] [cursor=pointer]:
+            - /url: /newsletter/archive?tag=AI%20marketing
+            - generic [ref=f3e38]: AI marketing
+            - generic [ref=f3e39]: "34"
+          - link "AI productivity 34" [ref=f3e40] [cursor=pointer]:
+            - /url: /newsletter/archive?tag=AI%20productivity
+            - generic [ref=f3e41]: AI productivity
+            - generic [ref=f3e42]: "34"
+          - group [ref=f3e43]:
+            - generic "More topics" [ref=f3e44] [cursor=pointer]
+      - generic [ref=f3e47]:
+        - generic [ref=f3e48]:
+          - heading "Interlinked" [level=2] [ref=f3e49]
+          - generic [ref=f3e50]: Interlinked Premium
+        - generic [ref=f3e51]:
+          - link "Interlinked Premium Jul 24, 2026 The Stack That's Replacing Entire Departments The operators reading this aren’t here for motivation — they’re here for the moves. Today’s offer edition is the distilled intelligence that separates top 1% businesses from everyone else. AI automation artificial intelligence business machine learning 2026" [ref=f3e53] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-24
+            - generic [ref=f3e58]:
+              - generic [ref=f3e59]:
+                - generic [ref=f3e60]: Interlinked Premium
+                - generic [ref=f3e61]: Jul 24, 2026
+              - generic [ref=f3e62]:
+                - heading "The Stack That's Replacing Entire Departments" [level=3] [ref=f3e63]
+                - paragraph [ref=f3e64]: The operators reading this aren’t here for motivation — they’re here for the moves. Today’s offer edition is the distilled intelligence that separates top 1% businesses from everyone else.
+                - generic [ref=f3e65]:
+                  - generic [ref=f3e66]: AI automation
+                  - generic [ref=f3e67]: artificial intelligence business
+                  - generic [ref=f3e68]: machine learning 2026
+          - link "Interlinked Premium Jul 23, 2026 What the NVIDIA Partnership Means for Our Premium Members Most newsletters give you the headline. This one gives you the blueprint. Today’s value edition breaks down the exact strategies the fastest-growing businesses are deploying right now. AI automation artificial intelligence business machine learning 2026" [ref=f3e70] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-23
+            - generic [ref=f3e75]:
+              - generic [ref=f3e76]:
+                - generic [ref=f3e77]: Interlinked Premium
+                - generic [ref=f3e78]: Jul 23, 2026
+              - generic [ref=f3e79]:
+                - heading "What the NVIDIA Partnership Means for Our Premium Members" [level=3] [ref=f3e80]
+                - paragraph [ref=f3e81]: Most newsletters give you the headline. This one gives you the blueprint. Today’s value edition breaks down the exact strategies the fastest-growing businesses are deploying right now.
+                - generic [ref=f3e82]:
+                  - generic [ref=f3e83]: AI automation
+                  - generic [ref=f3e84]: artificial intelligence business
+                  - generic [ref=f3e85]: machine learning 2026
+          - link "Interlinked Premium Jul 23, 2026 The AI CEOs Nobody Is Talking About (And Why That Won't Last) While most business owners are still debating whether AI is ready for serious business work, a small group is already running their companies with AI CEOs handling the day-to-day. The early results are staggering — and the gap between those two groups is about to become impossible to ignore. AI CEO implementation premium automation case studies" [ref=f3e87] [cursor=pointer]:
+            - /url: /newsletter/2026-07-23-ai-ceos-nobody-talking-about
+            - generic [ref=f3e92]:
+              - generic [ref=f3e93]:
+                - generic [ref=f3e94]: Interlinked Premium
+                - generic [ref=f3e95]: Jul 23, 2026
+              - generic [ref=f3e96]:
+                - heading "The AI CEOs Nobody Is Talking About (And Why That Won't Last)" [level=3] [ref=f3e97]
+                - paragraph [ref=f3e98]: While most business owners are still debating whether AI is ready for serious business work, a small group is already running their companies with AI CEOs handling the day-to-day. The early results are staggering — and the gap between those two groups is about to become impossible to ignore.
+                - generic [ref=f3e99]:
+                  - generic [ref=f3e100]: AI CEO implementation
+                  - generic [ref=f3e101]: premium automation
+                  - generic [ref=f3e102]: case studies
+          - link "Interlinked Premium Jul 22, 2026 Where Smart Money Is Moving in AI The gap between knowing and doing is where empires are built. This insight edition doesn’t just inform — it arms you with the exact tactical moves to execute this week. AI automation artificial intelligence business machine learning 2026" [ref=f3e104] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-22
+            - generic [ref=f3e109]:
+              - generic [ref=f3e110]:
+                - generic [ref=f3e111]: Interlinked Premium
+                - generic [ref=f3e112]: Jul 22, 2026
+              - generic [ref=f3e113]:
+                - heading "Where Smart Money Is Moving in AI" [level=3] [ref=f3e114]
+                - paragraph [ref=f3e115]: The gap between knowing and doing is where empires are built. This insight edition doesn’t just inform — it arms you with the exact tactical moves to execute this week.
+                - generic [ref=f3e116]:
+                  - generic [ref=f3e117]: AI automation
+                  - generic [ref=f3e118]: artificial intelligence business
+                  - generic [ref=f3e119]: machine learning 2026
+          - link "Interlinked Premium Jul 21, 2026 The AI Playbook Nobody's Sharing The gap between knowing and doing is where empires are built. This value edition doesn’t just inform — it arms you with the exact tactical moves to execute this week. AI automation artificial intelligence business machine learning 2026" [ref=f3e121] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-21
+            - generic [ref=f3e126]:
+              - generic [ref=f3e127]:
+                - generic [ref=f3e128]: Interlinked Premium
+                - generic [ref=f3e129]: Jul 21, 2026
+              - generic [ref=f3e130]:
+                - heading "The AI Playbook Nobody's Sharing" [level=3] [ref=f3e131]
+                - paragraph [ref=f3e132]: The gap between knowing and doing is where empires are built. This value edition doesn’t just inform — it arms you with the exact tactical moves to execute this week.
+                - generic [ref=f3e133]:
+                  - generic [ref=f3e134]: AI automation
+                  - generic [ref=f3e135]: artificial intelligence business
+                  - generic [ref=f3e136]: machine learning 2026
+          - link "Interlinked Premium Jul 20, 2026 What Elite Operators Actually Do Differently The gap between knowing and doing is where empires are built. This value edition doesn’t just inform — it arms you with the exact tactical moves to execute this week. AI automation artificial intelligence business machine learning 2026" [ref=f3e138] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-20
+            - generic [ref=f3e143]:
+              - generic [ref=f3e144]:
+                - generic [ref=f3e145]: Interlinked Premium
+                - generic [ref=f3e146]: Jul 20, 2026
+              - generic [ref=f3e147]:
+                - heading "What Elite Operators Actually Do Differently" [level=3] [ref=f3e148]
+                - paragraph [ref=f3e149]: The gap between knowing and doing is where empires are built. This value edition doesn’t just inform — it arms you with the exact tactical moves to execute this week.
+                - generic [ref=f3e150]:
+                  - generic [ref=f3e151]: AI automation
+                  - generic [ref=f3e152]: artificial intelligence business
+                  - generic [ref=f3e153]: machine learning 2026
+          - 'link "Interlinked Premium Jul 18, 2026 The Insider''s Guide to AI Workflows That Print Money Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception. AI automation artificial intelligence business machine learning 2026" [ref=f3e155] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-07-18
+            - generic [ref=f3e160]:
+              - generic [ref=f3e161]:
+                - generic [ref=f3e162]: Interlinked Premium
+                - generic [ref=f3e163]: Jul 18, 2026
+              - generic [ref=f3e164]:
+                - heading "The Insider's Guide to AI Workflows That Print Money" [level=3] [ref=f3e165]
+                - paragraph [ref=f3e166]: "Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception."
+                - generic [ref=f3e167]:
+                  - generic [ref=f3e168]: AI automation
+                  - generic [ref=f3e169]: artificial intelligence business
+                  - generic [ref=f3e170]: machine learning 2026
+          - 'link "Interlinked Premium Jul 18, 2026 The Execution Gap Nobody Is Talking About (Premium) Most business owners think their bottleneck is their team. It''s not. There''s a hidden execution gap forming between what fast-scaling companies are doing with AI right now — and it''s creating a competitive chasm that will be nearly impossible to close in 12 months. We''re seeing it with Omni AI clients: the ones hitting 3x growth aren''t working harder. They''ve restructured how decisions flow into execution — and AI is handling the in-between. ai ceo premium execution gap ai strategy" [ref=f3e172] [cursor=pointer]':
+            - /url: /newsletter/premium-ai-execution-gap-2026-07-18
+            - generic [ref=f3e177]:
+              - generic [ref=f3e178]:
+                - generic [ref=f3e179]: Interlinked Premium
+                - generic [ref=f3e180]: Jul 18, 2026
+              - generic [ref=f3e181]:
+                - heading "The Execution Gap Nobody Is Talking About (Premium)" [level=3] [ref=f3e182]
+                - paragraph [ref=f3e183]: "Most business owners think their bottleneck is their team. It's not. There's a hidden execution gap forming between what fast-scaling companies are doing with AI right now — and it's creating a competitive chasm that will be nearly impossible to close in 12 months. We're seeing it with Omni AI clients: the ones hitting 3x growth aren't working harder. They've restructured how decisions flow into execution — and AI is handling the in-between."
+                - generic [ref=f3e184]:
+                  - generic [ref=f3e185]: ai ceo premium
+                  - generic [ref=f3e186]: execution gap
+                  - generic [ref=f3e187]: ai strategy
+          - 'link "Interlinked Premium Jul 17, 2026 Signals From the Future of Work Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception. AI automation artificial intelligence business machine learning 2026" [ref=f3e189] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-07-17
+            - generic [ref=f3e194]:
+              - generic [ref=f3e195]:
+                - generic [ref=f3e196]: Interlinked Premium
+                - generic [ref=f3e197]: Jul 17, 2026
+              - generic [ref=f3e198]:
+                - heading "Signals From the Future of Work" [level=3] [ref=f3e199]
+                - paragraph [ref=f3e200]: "Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception."
+                - generic [ref=f3e201]:
+                  - generic [ref=f3e202]: AI automation
+                  - generic [ref=f3e203]: artificial intelligence business
+                  - generic [ref=f3e204]: machine learning 2026
+          - link "Interlinked Premium Jul 16, 2026 How AI-Native Companies Actually Operate The gap between knowing and doing is where empires are built. This value edition doesn’t just inform — it arms you with the exact tactical moves to execute this week. AI automation artificial intelligence business machine learning 2026" [ref=f3e206] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-16
+            - generic [ref=f3e211]:
+              - generic [ref=f3e212]:
+                - generic [ref=f3e213]: Interlinked Premium
+                - generic [ref=f3e214]: Jul 16, 2026
+              - generic [ref=f3e215]:
+                - heading "How AI-Native Companies Actually Operate" [level=3] [ref=f3e216]
+                - paragraph [ref=f3e217]: The gap between knowing and doing is where empires are built. This value edition doesn’t just inform — it arms you with the exact tactical moves to execute this week.
+                - generic [ref=f3e218]:
+                  - generic [ref=f3e219]: AI automation
+                  - generic [ref=f3e220]: artificial intelligence business
+                  - generic [ref=f3e221]: machine learning 2026
+          - 'link "Interlinked Premium Jul 15, 2026 How to Build an AI-First Operation in 72 Hours Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s insight edition is no exception. AI automation artificial intelligence business machine learning 2026" [ref=f3e223] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-07-15
+            - generic [ref=f3e228]:
+              - generic [ref=f3e229]:
+                - generic [ref=f3e230]: Interlinked Premium
+                - generic [ref=f3e231]: Jul 15, 2026
+              - generic [ref=f3e232]:
+                - heading "How to Build an AI-First Operation in 72 Hours" [level=3] [ref=f3e233]
+                - paragraph [ref=f3e234]: "Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s insight edition is no exception."
+                - generic [ref=f3e235]:
+                  - generic [ref=f3e236]: AI automation
+                  - generic [ref=f3e237]: artificial intelligence business
+                  - generic [ref=f3e238]: machine learning 2026
+          - link "Interlinked Premium Jul 12, 2026 The Insider's Guide to AI Workflows That Print Money Most newsletters give you the headline. This one gives you the blueprint. Today’s insight edition breaks down the exact strategies the fastest-growing businesses are deploying right now. AI automation artificial intelligence business machine learning 2026" [ref=f3e240] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-12
+            - generic [ref=f3e245]:
+              - generic [ref=f3e246]:
+                - generic [ref=f3e247]: Interlinked Premium
+                - generic [ref=f3e248]: Jul 12, 2026
+              - generic [ref=f3e249]:
+                - heading "The Insider's Guide to AI Workflows That Print Money" [level=3] [ref=f3e250]
+                - paragraph [ref=f3e251]: Most newsletters give you the headline. This one gives you the blueprint. Today’s insight edition breaks down the exact strategies the fastest-growing businesses are deploying right now.
+                - generic [ref=f3e252]:
+                  - generic [ref=f3e253]: AI automation
+                  - generic [ref=f3e254]: artificial intelligence business
+                  - generic [ref=f3e255]: machine learning 2026
+          - 'link "Interlinked Premium Jul 10, 2026 The Blockchain Founders Behind Omni AI Are Doing It Again Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception. AI automation artificial intelligence business machine learning 2026" [ref=f3e257] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-07-10
+            - generic [ref=f3e262]:
+              - generic [ref=f3e263]:
+                - generic [ref=f3e264]: Interlinked Premium
+                - generic [ref=f3e265]: Jul 10, 2026
+              - generic [ref=f3e266]:
+                - heading "The Blockchain Founders Behind Omni AI Are Doing It Again" [level=3] [ref=f3e267]
+                - paragraph [ref=f3e268]: "Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception."
+                - generic [ref=f3e269]:
+                  - generic [ref=f3e270]: AI automation
+                  - generic [ref=f3e271]: artificial intelligence business
+                  - generic [ref=f3e272]: machine learning 2026
+          - link "Interlinked Premium Jul 9, 2026 The Insider's Guide to AI Workflows That Print Money You’re reading this because you don’t just want to know the future — you want to own it. Today’s value premium intelligence brief is your unfair advantage. AI automation artificial intelligence business machine learning 2026" [ref=f3e274] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-09
+            - generic [ref=f3e279]:
+              - generic [ref=f3e280]:
+                - generic [ref=f3e281]: Interlinked Premium
+                - generic [ref=f3e282]: Jul 9, 2026
+              - generic [ref=f3e283]:
+                - heading "The Insider's Guide to AI Workflows That Print Money" [level=3] [ref=f3e284]
+                - paragraph [ref=f3e285]: You’re reading this because you don’t just want to know the future — you want to own it. Today’s value premium intelligence brief is your unfair advantage.
+                - generic [ref=f3e286]:
+                  - generic [ref=f3e287]: AI automation
+                  - generic [ref=f3e288]: artificial intelligence business
+                  - generic [ref=f3e289]: machine learning 2026
+          - 'link "Interlinked Premium Jul 9, 2026 The AI COO Report: How 6 Omni AI Clients Eliminated 40+ Hours of CEO Work Per Month We just finished analyzing Q2 data from our highest-performing AI CEO deployments. The numbers are not what most people expect. This is not about saving time on emails or auto-drafting reports. This is about something far more valuable: structural competitive advantage that compounds every single week. ai ceo ai coo business automation" [ref=f3e291] [cursor=pointer]':
+            - /url: /newsletter/premium-ai-coo-2026-07-09
+            - generic [ref=f3e296]:
+              - generic [ref=f3e297]:
+                - generic [ref=f3e298]: Interlinked Premium
+                - generic [ref=f3e299]: Jul 9, 2026
+              - generic [ref=f3e300]:
+                - 'heading "The AI COO Report: How 6 Omni AI Clients Eliminated 40+ Hours of CEO Work Per Month" [level=3] [ref=f3e301]'
+                - paragraph [ref=f3e302]: "We just finished analyzing Q2 data from our highest-performing AI CEO deployments. The numbers are not what most people expect. This is not about saving time on emails or auto-drafting reports. This is about something far more valuable: structural competitive advantage that compounds every single week."
+                - generic [ref=f3e303]:
+                  - generic [ref=f3e304]: ai ceo
+                  - generic [ref=f3e305]: ai coo
+                  - generic [ref=f3e306]: business automation
+          - 'link "Interlinked Premium Jul 8, 2026 What I Learned Automating 200+ Business Processes Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s insight edition is no exception. AI automation artificial intelligence business machine learning 2026" [ref=f3e308] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-07-08
+            - generic [ref=f3e313]:
+              - generic [ref=f3e314]:
+                - generic [ref=f3e315]: Interlinked Premium
+                - generic [ref=f3e316]: Jul 8, 2026
+              - generic [ref=f3e317]:
+                - heading "What I Learned Automating 200+ Business Processes" [level=3] [ref=f3e318]
+                - paragraph [ref=f3e319]: "Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s insight edition is no exception."
+                - generic [ref=f3e320]:
+                  - generic [ref=f3e321]: AI automation
+                  - generic [ref=f3e322]: artificial intelligence business
+                  - generic [ref=f3e323]: machine learning 2026
+          - 'link "Interlinked Premium Jul 7, 2026 Why Being Backed by the #1 Agentic Engineering Firm Changes Everything This premium edition is designed for operators who don’t just want to know what’s happening — they want the exact playbook. Today’s value edition goes deeper than the headlines. AI automation artificial intelligence business machine learning 2026" [ref=f3e325] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-07-07
+            - generic [ref=f3e330]:
+              - generic [ref=f3e331]:
+                - generic [ref=f3e332]: Interlinked Premium
+                - generic [ref=f3e333]: Jul 7, 2026
+              - generic [ref=f3e334]:
+                - 'heading "Why Being Backed by the #1 Agentic Engineering Firm Changes Everything" [level=3] [ref=f3e335]'
+                - paragraph [ref=f3e336]: This premium edition is designed for operators who don’t just want to know what’s happening — they want the exact playbook. Today’s value edition goes deeper than the headlines.
+                - generic [ref=f3e337]:
+                  - generic [ref=f3e338]: AI automation
+                  - generic [ref=f3e339]: artificial intelligence business
+                  - generic [ref=f3e340]: machine learning 2026
+          - link "Interlinked Premium Jul 5, 2026 What I Learned Automating 200+ Business Processes This premium edition is designed for operators who don’t just want to know what’s happening — they want the exact playbook. Today’s insight edition goes deeper than the headlines. AI automation artificial intelligence business machine learning 2026" [ref=f3e342] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-07-05
+            - generic [ref=f3e347]:
+              - generic [ref=f3e348]:
+                - generic [ref=f3e349]: Interlinked Premium
+                - generic [ref=f3e350]: Jul 5, 2026
+              - generic [ref=f3e351]:
+                - heading "What I Learned Automating 200+ Business Processes" [level=3] [ref=f3e352]
+                - paragraph [ref=f3e353]: This premium edition is designed for operators who don’t just want to know what’s happening — they want the exact playbook. Today’s insight edition goes deeper than the headlines.
+                - generic [ref=f3e354]:
+                  - generic [ref=f3e355]: AI automation
+                  - generic [ref=f3e356]: artificial intelligence business
+                  - generic [ref=f3e357]: machine learning 2026
+          - 'link "Interlinked Premium Jul 5, 2026 The AI edge your competitors can''t buy back Here''s what separates AI-adjacent businesses from AI-native ones: configuration depth. Most companies use AI like a calculator — inputs in, answers out. The businesses pulling ahead are using AI as a living operating system that learns their market, anticipates bottlenecks, and makes decisions in their voice — before you even ask. AI CEO business automation decision latency" [ref=f3e359] [cursor=pointer]':
+            - /url: /newsletter/ai-ceo-automation-july-5-2026-premium
+            - generic [ref=f3e364]:
+              - generic [ref=f3e365]:
+                - generic [ref=f3e366]: Interlinked Premium
+                - generic [ref=f3e367]: Jul 5, 2026
+              - generic [ref=f3e368]:
+                - heading "The AI edge your competitors can't buy back" [level=3] [ref=f3e369]
+                - paragraph [ref=f3e370]: "Here's what separates AI-adjacent businesses from AI-native ones: configuration depth. Most companies use AI like a calculator — inputs in, answers out. The businesses pulling ahead are using AI as a living operating system that learns their market, anticipates bottlenecks, and makes decisions in their voice — before you even ask."
+                - generic [ref=f3e371]:
+                  - generic [ref=f3e372]: AI CEO
+                  - generic [ref=f3e373]: business automation
+                  - generic [ref=f3e374]: decision latency
+          - 'link "Interlinked Premium Jul 2, 2026 Why Being Backed by the #1 Agentic Engineering Firm Changes Everything Welcome to the insider track. While the free edition tells you what’s happening, this value edition shows you exactly how to weaponize it. The playbook starts now. AI automation artificial intelligence business machine learning 2026" [ref=f3e376] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-07-02
+            - generic [ref=f3e381]:
+              - generic [ref=f3e382]:
+                - generic [ref=f3e383]: Interlinked Premium
+                - generic [ref=f3e384]: Jul 2, 2026
+              - generic [ref=f3e385]:
+                - 'heading "Why Being Backed by the #1 Agentic Engineering Firm Changes Everything" [level=3] [ref=f3e386]'
+                - paragraph [ref=f3e387]: Welcome to the insider track. While the free edition tells you what’s happening, this value edition shows you exactly how to weaponize it. The playbook starts now.
+                - generic [ref=f3e388]:
+                  - generic [ref=f3e389]: AI automation
+                  - generic [ref=f3e390]: artificial intelligence business
+                  - generic [ref=f3e391]: machine learning 2026
+          - link "Interlinked Premium Jun 30, 2026 The AI Playbook Nobody's Sharing Welcome to the insider track. While the free edition tells you what’s happening, this value edition shows you exactly how to weaponize it. The playbook starts now. AI automation artificial intelligence business machine learning 2026" [ref=f3e393] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-06-30
+            - generic [ref=f3e398]:
+              - generic [ref=f3e399]:
+                - generic [ref=f3e400]: Interlinked Premium
+                - generic [ref=f3e401]: Jun 30, 2026
+              - generic [ref=f3e402]:
+                - heading "The AI Playbook Nobody's Sharing" [level=3] [ref=f3e403]
+                - paragraph [ref=f3e404]: Welcome to the insider track. While the free edition tells you what’s happening, this value edition shows you exactly how to weaponize it. The playbook starts now.
+                - generic [ref=f3e405]:
+                  - generic [ref=f3e406]: AI automation
+                  - generic [ref=f3e407]: artificial intelligence business
+                  - generic [ref=f3e408]: machine learning 2026
+          - link "Interlinked Premium Jun 24, 2026 The Elite 5% Of CEOs Are Running AI Empires — Here Is What They Know There's a class of CEO emerging in 2026. They work 25 hours a week and generate more output than their competitors running 80-hour marathons. They're not smarter. They're not luckier. They've just made a structural bet on AI labor — and it's paying off in ways most business owners can't even conceive of yet. This is what we're seeing inside Omni AI's premium deployments right now. AI CEO premium insights business automation" [ref=f3e410] [cursor=pointer]:
+            - /url: /newsletter/premium-newsletter-2026-06-24
+            - generic [ref=f3e415]:
+              - generic [ref=f3e416]:
+                - generic [ref=f3e417]: Interlinked Premium
+                - generic [ref=f3e418]: Jun 24, 2026
+              - generic [ref=f3e419]:
+                - heading "The Elite 5% Of CEOs Are Running AI Empires — Here Is What They Know" [level=3] [ref=f3e420]
+                - paragraph [ref=f3e421]: There's a class of CEO emerging in 2026. They work 25 hours a week and generate more output than their competitors running 80-hour marathons. They're not smarter. They're not luckier. They've just made a structural bet on AI labor — and it's paying off in ways most business owners can't even conceive of yet. This is what we're seeing inside Omni AI's premium deployments right now.
+                - generic [ref=f3e422]:
+                  - generic [ref=f3e423]: AI CEO
+                  - generic [ref=f3e424]: premium insights
+                  - generic [ref=f3e425]: business automation
+          - link "Interlinked Premium Jun 21, 2026 Where Smart Money Is Moving in AI The operators reading this aren’t here for motivation — they’re here for the moves. Today’s insight edition is the distilled intelligence that separates top 1% businesses from everyone else. AI automation artificial intelligence business machine learning 2026" [ref=f3e427] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-06-21
+            - generic [ref=f3e432]:
+              - generic [ref=f3e433]:
+                - generic [ref=f3e434]: Interlinked Premium
+                - generic [ref=f3e435]: Jun 21, 2026
+              - generic [ref=f3e436]:
+                - heading "Where Smart Money Is Moving in AI" [level=3] [ref=f3e437]
+                - paragraph [ref=f3e438]: The operators reading this aren’t here for motivation — they’re here for the moves. Today’s insight edition is the distilled intelligence that separates top 1% businesses from everyone else.
+                - generic [ref=f3e439]:
+                  - generic [ref=f3e440]: AI automation
+                  - generic [ref=f3e441]: artificial intelligence business
+                  - generic [ref=f3e442]: machine learning 2026
+          - 'link "Interlinked Premium Jun 13, 2026 Where Smart Money Is Moving in AI Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception. AI automation artificial intelligence business machine learning 2026" [ref=f3e444] [cursor=pointer]':
+            - /url: /newsletter/interlinked-premium-2026-06-13
+            - generic [ref=f3e449]:
+              - generic [ref=f3e450]:
+                - generic [ref=f3e451]: Interlinked Premium
+                - generic [ref=f3e452]: Jun 13, 2026
+              - generic [ref=f3e453]:
+                - heading "Where Smart Money Is Moving in AI" [level=3] [ref=f3e454]
+                - paragraph [ref=f3e455]: "Every edition of this premium brief is built for one type of person: the operator who acts before the market catches up. Today’s offer edition is no exception."
+                - generic [ref=f3e456]:
+                  - generic [ref=f3e457]: AI automation
+                  - generic [ref=f3e458]: artificial intelligence business
+                  - generic [ref=f3e459]: machine learning 2026
+          - link "Interlinked Premium Jun 3, 2026 The AI CEOs Nobody Is Talking About (And Why That Changes Everything) Most business owners are still debating whether AI can run their business. The ones who already have AI CEOs running their operations are gaining advantages that wont be visible for another 12 to 18 months. This is how it works — and why the gap is going to become impossible to close. AI CEO automation autonomous business AI integration" [ref=f3e461] [cursor=pointer]:
+            - /url: /newsletter/interlinked-premium-2026-06-03
+            - generic [ref=f3e466]:
+              - generic [ref=f3e467]:
+                - generic [ref=f3e468]: Interlinked Premium
+                - generic [ref=f3e469]: Jun 3, 2026
+              - generic [ref=f3e470]:
+                - heading "The AI CEOs Nobody Is Talking About (And Why That Changes Everything)" [level=3] [ref=f3e471]
+                - paragraph [ref=f3e472]: Most business owners are still debating whether AI can run their business. The ones who already have AI CEOs running their operations are gaining advantages that wont be visible for another 12 to 18 months. This is how it works — and why the gap is going to become impossible to close.
+                - generic [ref=f3e473]:
+                  - generic [ref=f3e474]: AI CEO automation
+                  - generic [ref=f3e475]: autonomous business
+                  - generic [ref=f3e476]: AI integration
+          - link "Interlinked Premium Jun 1, 2026 Your AI CEO saw something last week. It wants to tell you. While you were enjoying your weekend, your AI CEO was working. Processing every deal, everySlack thread, every anomaly in your revenue data. And it found something most executives miss entirely until its too late. This is what that looks like - and why premium subscribers get it first. AI CEO weekly intelligence business automation" [ref=f3e478] [cursor=pointer]:
+            - /url: /newsletter/premium-ai-ceo-weekly-report-2026-06-01
+            - generic [ref=f3e483]:
+              - generic [ref=f3e484]:
+                - generic [ref=f3e485]: Interlinked Premium
+                - generic [ref=f3e486]: Jun 1, 2026
+              - generic [ref=f3e487]:
+                - heading "Your AI CEO saw something last week. It wants to tell you." [level=3] [ref=f3e488]
+                - paragraph [ref=f3e489]: While you were enjoying your weekend, your AI CEO was working. Processing every deal, everySlack thread, every anomaly in your revenue data. And it found something most executives miss entirely until its too late. This is what that looks like - and why premium subscribers get it first.
+                - generic [ref=f3e490]:
+                  - generic [ref=f3e491]: AI CEO
+                  - generic [ref=f3e492]: weekly intelligence
+                  - generic [ref=f3e493]: business automation
+          - link "Interlinked Premium May 31, 2026 What AI CEOs are quietly doing that you're not There's a version of your business that runs without you. Not in a 'firesale, I'm out' way. In a 'I'm finally operating at CEO level' way. The owners who get this — who've handed the operational keys to an AI — are making decisions faster, sleeping better, and scaling without the chaos. And right now, they're a small group. That window is closing. AI CEO premium AI tools business automation" [ref=f3e495] [cursor=pointer]:
+            - /url: /newsletter/ai-ceo-fomo-2026-05-31
+            - generic [ref=f3e500]:
+              - generic [ref=f3e501]:
+                - generic [ref=f3e502]: Interlinked Premium
+                - generic [ref=f3e503]: May 31, 2026
+              - generic [ref=f3e504]:
+                - heading "What AI CEOs are quietly doing that you're not" [level=3] [ref=f3e505]
+                - paragraph [ref=f3e506]: There's a version of your business that runs without you. Not in a 'firesale, I'm out' way. In a 'I'm finally operating at CEO level' way. The owners who get this — who've handed the operational keys to an AI — are making decisions faster, sleeping better, and scaling without the chaos. And right now, they're a small group. That window is closing.
+                - generic [ref=f3e507]:
+                  - generic [ref=f3e508]: AI CEO
+                  - generic [ref=f3e509]: premium AI tools
+                  - generic [ref=f3e510]: business automation
+          - link "Interlinked Premium May 30, 2026 What Your Competitors Don't Know (And Why They're About to Get Left Behind) While most CEOs are still debating whether to 'try AI,' the businesses winning right now are already running on AI-first operations. The gap isn't about budget. It's not about size. It's about decisions made — and decisions delayed. This is what's separating the companies scaling fast from the ones slowly bleeding relevance. AI CEO competitive advantage premium AI tools" [ref=f3e512] [cursor=pointer]:
+            - /url: /newsletter/premium-interlinked-2025-05-30
+            - generic [ref=f3e517]:
+              - generic [ref=f3e518]:
+                - generic [ref=f3e519]: Interlinked Premium
+                - generic [ref=f3e520]: May 30, 2026
+              - generic [ref=f3e521]:
+                - heading "What Your Competitors Don't Know (And Why They're About to Get Left Behind)" [level=3] [ref=f3e522]
+                - paragraph [ref=f3e523]: While most CEOs are still debating whether to 'try AI,' the businesses winning right now are already running on AI-first operations. The gap isn't about budget. It's not about size. It's about decisions made — and decisions delayed. This is what's separating the companies scaling fast from the ones slowly bleeding relevance.
+                - generic [ref=f3e524]:
+                  - generic [ref=f3e525]: AI CEO
+                  - generic [ref=f3e526]: competitive advantage
+                  - generic [ref=f3e527]: premium AI tools
+          - link "Interlinked Premium May 28, 2026 While You're Reading This, Your Competitors Are Deploying AI That Works 24/7 There's a quiet shift happening in business right now. The companies pulling ahead aren't using AI for content generation or chatbots. They're running full AI operational systems — making decisions, coordinating teams, handling logistics — 24/7 without a human in the loop. Most business owners don't know it's happening. That's exactly why you're still reading this instead of scaling. AI systems AI deployment business automation" [ref=f3e529] [cursor=pointer]:
+            - /url: /newsletter/competitors-deploying-ai-systems-2026-05-28-premium
+            - generic [ref=f3e534]:
+              - generic [ref=f3e535]:
+                - generic [ref=f3e536]: Interlinked Premium
+                - generic [ref=f3e537]: May 28, 2026
+              - generic [ref=f3e538]:
+                - heading "While You're Reading This, Your Competitors Are Deploying AI That Works 24/7" [level=3] [ref=f3e539]
+                - paragraph [ref=f3e540]: There's a quiet shift happening in business right now. The companies pulling ahead aren't using AI for content generation or chatbots. They're running full AI operational systems — making decisions, coordinating teams, handling logistics — 24/7 without a human in the loop. Most business owners don't know it's happening. That's exactly why you're still reading this instead of scaling.
+                - generic [ref=f3e541]:
+                  - generic [ref=f3e542]: AI systems
+                  - generic [ref=f3e543]: AI deployment
+                  - generic [ref=f3e544]: business automation
+          - link "Interlinked Premium May 3, 2026 The Pentagon just leaked your AI vendor playbook On May 1, the Department of Defense signed agreements with eight AI vendors to run on its IL6 and IL7 classified networks — the most security-paranoid procurement environment on the planet. The list reads like an enterprise CIO's 2026 shortlist. With one screaming exception that you should be repricing your stack against this morning. DoD AI contracts Pentagon AI vendors enterprise AI procurement" [ref=f3e546] [cursor=pointer]:
+            - /url: /newsletter/pentagon-il7-anthropic-exclusion-premium-2026-05-03
+            - generic [ref=f3e551]:
+              - generic [ref=f3e552]:
+                - generic [ref=f3e553]: Interlinked Premium
+                - generic [ref=f3e554]: May 3, 2026
+              - generic [ref=f3e555]:
+                - heading "The Pentagon just leaked your AI vendor playbook" [level=3] [ref=f3e556]
+                - paragraph [ref=f3e557]: On May 1, the Department of Defense signed agreements with eight AI vendors to run on its IL6 and IL7 classified networks — the most security-paranoid procurement environment on the planet. The list reads like an enterprise CIO's 2026 shortlist. With one screaming exception that you should be repricing your stack against this morning.
+                - generic [ref=f3e558]:
+                  - generic [ref=f3e559]: DoD AI contracts
+                  - generic [ref=f3e560]: Pentagon AI vendors
+                  - generic [ref=f3e561]: enterprise AI procurement
+          - link "Interlinked Premium May 2, 2026 Why Decagon at $4.5B exposes Sierra's pilot trap Last week Decagon closed a $250M Series D at $4.5B — three times its valuation six months ago, on roughly $35M of ARR. Sierra, with 4× the revenue at $150M, raised at $10B. The market just paid a 2× richer multiple for the smaller player, and that is not a typo. It is a verdict on which kind of customer wins the next twelve months of agent deployment — and a tell for how you should be picking your CX agent vendor right now. Decagon funding Sierra AI AI customer support" [ref=f3e563] [cursor=pointer]:
+            - /url: /newsletter/decagon-sierra-cx-velocity-premium-2026-05-02
+            - generic [ref=f3e568]:
+              - generic [ref=f3e569]:
+                - generic [ref=f3e570]: Interlinked Premium
+                - generic [ref=f3e571]: May 2, 2026
+              - generic [ref=f3e572]:
+                - heading "Why Decagon at $4.5B exposes Sierra's pilot trap" [level=3] [ref=f3e573]
+                - paragraph [ref=f3e574]: Last week Decagon closed a $250M Series D at $4.5B — three times its valuation six months ago, on roughly $35M of ARR. Sierra, with 4× the revenue at $150M, raised at $10B. The market just paid a 2× richer multiple for the smaller player, and that is not a typo. It is a verdict on which kind of customer wins the next twelve months of agent deployment — and a tell for how you should be picking your CX agent vendor right now.
+                - generic [ref=f3e575]:
+                  - generic [ref=f3e576]: Decagon funding
+                  - generic [ref=f3e577]: Sierra AI
+                  - generic [ref=f3e578]: AI customer support
+          - link "Interlinked Premium May 1, 2026 NVIDIA just funded Harvey's $5.6B Swedish rival Three weeks after Harvey hit $11B at 58x ARR, NVIDIA quietly wrote a check to the company hunting it. Legora — Swedish, $100M ARR, four years old — just took a Series D extension from NVentures that pushed its valuation to $5.6B. The legal AI knife fight is no longer about who has the best model. It's about who controls the workflow inside the firm. NVIDIA just picked a side, and the signal travels far past legal. NVIDIA AI investment Legora AI Harvey AI" [ref=f3e580] [cursor=pointer]:
+            - /url: /newsletter/nvidia-legora-harvey-vertical-ai-premium-2026-05-01
+            - generic [ref=f3e585]:
+              - generic [ref=f3e586]:
+                - generic [ref=f3e587]: Interlinked Premium
+                - generic [ref=f3e588]: May 1, 2026
+              - generic [ref=f3e589]:
+                - heading "NVIDIA just funded Harvey's $5.6B Swedish rival" [level=3] [ref=f3e590]
+                - paragraph [ref=f3e591]: Three weeks after Harvey hit $11B at 58x ARR, NVIDIA quietly wrote a check to the company hunting it. Legora — Swedish, $100M ARR, four years old — just took a Series D extension from NVentures that pushed its valuation to $5.6B. The legal AI knife fight is no longer about who has the best model. It's about who controls the workflow inside the firm. NVIDIA just picked a side, and the signal travels far past legal.
+                - generic [ref=f3e592]:
+                  - generic [ref=f3e593]: NVIDIA AI investment
+                  - generic [ref=f3e594]: Legora AI
+                  - generic [ref=f3e595]: Harvey AI
+          - 'link "Interlinked Premium Apr 30, 2026 LinkedIn turned half your recruiter into $450M ARR On yesterday’s earnings call, Microsoft quietly disclosed that LinkedIn’s agentic AI hiring products are pacing $450M ARR — a 0-to-billed run-rate in roughly 12 months against work humans were doing last year. New CEO Dan Shapero said it like this: “Recruiters told us half their day was low-value work, so we made a bet on understanding their pain to get our solution right.” Translation — your pricing window is closing this quarter. LinkedIn AI hiring agents $450M ARR Dan Shapero LinkedIn CEO 2026 Microsoft LinkedIn agentic recruiter" [ref=f3e597] [cursor=pointer]':
+            - /url: /newsletter/linkedin-450m-recruiter-agent-premium-2026-04-30
+            - generic [ref=f3e602]:
+              - generic [ref=f3e603]:
+                - generic [ref=f3e604]: Interlinked Premium
+                - generic [ref=f3e605]: Apr 30, 2026
+              - generic [ref=f3e606]:
+                - heading "LinkedIn turned half your recruiter into $450M ARR" [level=3] [ref=f3e607]
+                - paragraph [ref=f3e608]: "On yesterday’s earnings call, Microsoft quietly disclosed that LinkedIn’s agentic AI hiring products are pacing $450M ARR — a 0-to-billed run-rate in roughly 12 months against work humans were doing last year. New CEO Dan Shapero said it like this: “Recruiters told us half their day was low-value work, so we made a bet on understanding their pain to get our solution right.” Translation — your pricing window is closing this quarter."
+                - generic [ref=f3e609]:
+                  - generic [ref=f3e610]: LinkedIn AI hiring agents $450M ARR
+                  - generic [ref=f3e611]: Dan Shapero LinkedIn CEO 2026
+                  - generic [ref=f3e612]: Microsoft LinkedIn agentic recruiter
+          - link "Interlinked Premium Apr 29, 2026 $700B AI capex bet just flipped your pricing window Today is the largest tech earnings day in history. By 4 PM ET, Microsoft, Alphabet, Meta, and Amazon will collectively defend roughly $700B of 2026 AI capital expenditure — more than the GDP of Switzerland — to a market that has spent six weeks asking whether monetization is keeping up. The headline story is the spend. The operator story is the 14-day window it just opened in your favor. hyperscaler $700B capex 2026 Big Tech earnings April 29 2026 AI renewal leverage window" [ref=f3e614] [cursor=pointer]:
+            - /url: /newsletter/hyperscaler-700b-capex-pricing-window-premium-2026-04-29
+            - generic [ref=f3e619]:
+              - generic [ref=f3e620]:
+                - generic [ref=f3e621]: Interlinked Premium
+                - generic [ref=f3e622]: Apr 29, 2026
+              - generic [ref=f3e623]:
+                - heading "$700B AI capex bet just flipped your pricing window" [level=3] [ref=f3e624]
+                - paragraph [ref=f3e625]: Today is the largest tech earnings day in history. By 4 PM ET, Microsoft, Alphabet, Meta, and Amazon will collectively defend roughly $700B of 2026 AI capital expenditure — more than the GDP of Switzerland — to a market that has spent six weeks asking whether monetization is keeping up. The headline story is the spend. The operator story is the 14-day window it just opened in your favor.
+                - generic [ref=f3e626]:
+                  - generic [ref=f3e627]: hyperscaler $700B capex 2026
+                  - generic [ref=f3e628]: Big Tech earnings April 29 2026
+                  - generic [ref=f3e629]: AI renewal leverage window
+          - 'link "Interlinked Premium Apr 28, 2026 OpenAI bought the Fortune 500''s AI gate for $86M On March 9, OpenAI quietly paid roughly $86M for Promptfoo — a $23M-funded open-source eval startup most operators had never heard of. What it actually bought was the procurement gatekeeper sitting inside 25% of the Fortune 500. The deal closed mid-March. The founders moved into OpenAI Frontier on March 16. By this week, the second-order effect is hitting every enterprise AI pipeline: agent eval and red-teaming is no longer a feature — it’s the gate. And the operators who pre-clear it are closing while everyone else queues at security review. OpenAI Promptfoo acquisition Fortune 500 AI procurement gate agent red-teaming 2026" [ref=f3e631] [cursor=pointer]':
+            - /url: /newsletter/openai-promptfoo-f500-gate-premium-2026-04-28
+            - generic [ref=f3e636]:
+              - generic [ref=f3e637]:
+                - generic [ref=f3e638]: Interlinked Premium
+                - generic [ref=f3e639]: Apr 28, 2026
+              - generic [ref=f3e640]:
+                - heading "OpenAI bought the Fortune 500's AI gate for $86M" [level=3] [ref=f3e641]
+                - paragraph [ref=f3e642]: "On March 9, OpenAI quietly paid roughly $86M for Promptfoo — a $23M-funded open-source eval startup most operators had never heard of. What it actually bought was the procurement gatekeeper sitting inside 25% of the Fortune 500. The deal closed mid-March. The founders moved into OpenAI Frontier on March 16. By this week, the second-order effect is hitting every enterprise AI pipeline: agent eval and red-teaming is no longer a feature — it’s the gate. And the operators who pre-clear it are closing while everyone else queues at security review."
+                - generic [ref=f3e643]:
+                  - generic [ref=f3e644]: OpenAI Promptfoo acquisition
+                  - generic [ref=f3e645]: Fortune 500 AI procurement gate
+                  - generic [ref=f3e646]: agent red-teaming 2026
+          - 'link "Interlinked Premium Apr 27, 2026 Cursor''s $6B forecast just opened a 90-day window Cursor closed its $2B raise at a $50B post last Friday with one number that didn’t make the headlines: management is forecasting $6B annualized revenue by December — up from $2B in February. That’s $4B of net-new ARR pulled in ten months, almost all of it from enterprise dev teams. Today’s free post mapped how OpenAI’s $122B raise is collapsing the agent infrastructure tax. This is the trade you make with the savings — and the window to make it closes when Cursor’s enterprise tier hardens, which on this trajectory is roughly Q3. Cursor $50B valuation Anysphere $6B ARR forecast Cursor enterprise FDE program" [ref=f3e648] [cursor=pointer]':
+            - /url: /newsletter/cursor-50b-90-day-operator-window-premium-2026-04-27
+            - generic [ref=f3e653]:
+              - generic [ref=f3e654]:
+                - generic [ref=f3e655]: Interlinked Premium
+                - generic [ref=f3e656]: Apr 27, 2026
+              - generic [ref=f3e657]:
+                - heading "Cursor's $6B forecast just opened a 90-day window" [level=3] [ref=f3e658]
+                - paragraph [ref=f3e659]: "Cursor closed its $2B raise at a $50B post last Friday with one number that didn’t make the headlines: management is forecasting $6B annualized revenue by December — up from $2B in February. That’s $4B of net-new ARR pulled in ten months, almost all of it from enterprise dev teams. Today’s free post mapped how OpenAI’s $122B raise is collapsing the agent infrastructure tax. This is the trade you make with the savings — and the window to make it closes when Cursor’s enterprise tier hardens, which on this trajectory is roughly Q3."
+                - generic [ref=f3e660]:
+                  - generic [ref=f3e661]: Cursor $50B valuation
+                  - generic [ref=f3e662]: Anysphere $6B ARR forecast
+                  - generic [ref=f3e663]: Cursor enterprise FDE program
+          - 'link "Interlinked Premium Apr 26, 2026 Google paid the Big 4 $750M to gate your AI rollout Tuesday at Cloud Next ’26, Google Cloud committed $750 million to its 120,000-partner ecosystem to “accelerate agentic AI.” The press release framed it as ecosystem support. Read the partner list and it’s something else entirely: a captive distribution channel for Gemini. Accenture, Bain, BCG, Deloitte, and McKinsey get early access to Gemini models. Forward-deployed Google engineers will embed alongside Capgemini, Cognizant, HCL Tech, PwC, and TCS for the technical lift. If you’re not on that list — or paying someone who is — your AI rollout just got slower, more expensive, and quietly model-locked. Google Cloud $750M partner fund Cloud Next 2026 agentic AI Big 4 Gemini distribution channel" [ref=f3e665] [cursor=pointer]':
+            - /url: /newsletter/google-750m-big4-gemini-gate-premium-2026-04-26
+            - generic [ref=f3e670]:
+              - generic [ref=f3e671]:
+                - generic [ref=f3e672]: Interlinked Premium
+                - generic [ref=f3e673]: Apr 26, 2026
+              - generic [ref=f3e674]:
+                - heading "Google paid the Big 4 $750M to gate your AI rollout" [level=3] [ref=f3e675]
+                - paragraph [ref=f3e676]: "Tuesday at Cloud Next ’26, Google Cloud committed $750 million to its 120,000-partner ecosystem to “accelerate agentic AI.” The press release framed it as ecosystem support. Read the partner list and it’s something else entirely: a captive distribution channel for Gemini. Accenture, Bain, BCG, Deloitte, and McKinsey get early access to Gemini models. Forward-deployed Google engineers will embed alongside Capgemini, Cognizant, HCL Tech, PwC, and TCS for the technical lift. If you’re not on that list — or paying someone who is — your AI rollout just got slower, more expensive, and quietly model-locked."
+                - generic [ref=f3e677]:
+                  - generic [ref=f3e678]: Google Cloud $750M partner fund
+                  - generic [ref=f3e679]: Cloud Next 2026 agentic AI
+                  - generic [ref=f3e680]: Big 4 Gemini distribution channel
+          - link "Interlinked Premium Apr 25, 2026 CFOs killed 73% of AI bets — here's what survives The honeymoon ended in Q1 2026. While your competitors renewed every AI vendor on their stack, the smartest CFOs in the Fortune 500 quietly pulled the plug on 73% of their AI initiatives before they ever crossed into production. Today’s brief is the procurement playbook your free-tier readers won’t see — the 5-vendor cap, the outcome-pricing terms, and how to position to be on the right side of consolidation when your renewal hits. CFO AI vendor veto 2026 AI procurement consolidation 5-vendor cap enterprise AI" [ref=f3e682] [cursor=pointer]:
+            - /url: /newsletter/cfo-veto-5-vendor-cap-premium-2026-04-25
+            - generic [ref=f3e687]:
+              - generic [ref=f3e688]:
+                - generic [ref=f3e689]: Interlinked Premium
+                - generic [ref=f3e690]: Apr 25, 2026
+              - generic [ref=f3e691]:
+                - heading "CFOs killed 73% of AI bets — here's what survives" [level=3] [ref=f3e692]
+                - paragraph [ref=f3e693]: The honeymoon ended in Q1 2026. While your competitors renewed every AI vendor on their stack, the smartest CFOs in the Fortune 500 quietly pulled the plug on 73% of their AI initiatives before they ever crossed into production. Today’s brief is the procurement playbook your free-tier readers won’t see — the 5-vendor cap, the outcome-pricing terms, and how to position to be on the right side of consolidation when your renewal hits.
+                - generic [ref=f3e694]:
+                  - generic [ref=f3e695]: CFO AI vendor veto 2026
+                  - generic [ref=f3e696]: AI procurement consolidation
+                  - generic [ref=f3e697]: 5-vendor cap enterprise AI
+          - 'link "Interlinked Premium Apr 24, 2026 The $3.85M/employee benchmark your ops team will hate Slash Financial just raised $100M at a $1.4B valuation. That’s not the story. The story is buried in three numbers they disclosed on the way up: $250M ARR, $30B in annualized payment volume, 65 people — and profitable. That’s $3.85M in revenue per employee in a regulated category where the incumbents run at roughly $400K. This is the cleanest public benchmark we’ve seen for what an AI-native org actually looks like — and it’s a mirror your ops team does not want to look into. Slash Financial $1.4B unicorn Twin AI banking agent AI-native headcount benchmark" [ref=f3e699] [cursor=pointer]':
+            - /url: /newsletter/slash-ai-native-headcount-benchmark-premium-2026-04-24
+            - generic [ref=f3e704]:
+              - generic [ref=f3e705]:
+                - generic [ref=f3e706]: Interlinked Premium
+                - generic [ref=f3e707]: Apr 24, 2026
+              - generic [ref=f3e708]:
+                - heading "The $3.85M/employee benchmark your ops team will hate" [level=3] [ref=f3e709]
+                - paragraph [ref=f3e710]: "Slash Financial just raised $100M at a $1.4B valuation. That’s not the story. The story is buried in three numbers they disclosed on the way up: $250M ARR, $30B in annualized payment volume, 65 people — and profitable. That’s $3.85M in revenue per employee in a regulated category where the incumbents run at roughly $400K. This is the cleanest public benchmark we’ve seen for what an AI-native org actually looks like — and it’s a mirror your ops team does not want to look into."
+                - generic [ref=f3e711]:
+                  - generic [ref=f3e712]: Slash Financial $1.4B unicorn
+                  - generic [ref=f3e713]: Twin AI banking agent
+                  - generic [ref=f3e714]: AI-native headcount benchmark
+          - 'link "Interlinked Premium Apr 23, 2026 Your SaaS vendor is now your most likely acquirer Everyone is writing the obituary for vertical SaaS. The pitch: AI agents will replace per-seat software, customers will build their own with Claude or Cursor, and the multi-tenant playbook dies in 2026. The data this week says the opposite. Vertical SaaS is not dying — it is flipping the model entirely. The smart operators in HR-tech, school admin, dental, veterinary, and field services are using their balance sheets to acquire the SMBs that used to be customers, then running them on their own software with AI overlays. ZenaTech absorbed NOW Solutions on 4/22. Helkin pulled in Scuolab. CENTEGIX took Pikmykid. These are not tuck-ins. They are a category shift the consensus is missing — and your vendor may already be modeling you. vertical SaaS rollup 2026 SaaS-to-services flip SMB acquisition playbook" [ref=f3e716] [cursor=pointer]':
+            - /url: /newsletter/vertical-saas-buying-customers-insider-premium-2026-04-23
+            - generic [ref=f3e721]:
+              - generic [ref=f3e722]:
+                - generic [ref=f3e723]: Interlinked Premium
+                - generic [ref=f3e724]: Apr 23, 2026
+              - generic [ref=f3e725]:
+                - heading "Your SaaS vendor is now your most likely acquirer" [level=3] [ref=f3e726]
+                - paragraph [ref=f3e727]: "Everyone is writing the obituary for vertical SaaS. The pitch: AI agents will replace per-seat software, customers will build their own with Claude or Cursor, and the multi-tenant playbook dies in 2026. The data this week says the opposite. Vertical SaaS is not dying — it is flipping the model entirely. The smart operators in HR-tech, school admin, dental, veterinary, and field services are using their balance sheets to acquire the SMBs that used to be customers, then running them on their own software with AI overlays. ZenaTech absorbed NOW Solutions on 4/22. Helkin pulled in Scuolab. CENTEGIX took Pikmykid. These are not tuck-ins. They are a category shift the consensus is missing — and your vendor may already be modeling you."
+                - generic [ref=f3e728]:
+                  - generic [ref=f3e729]: vertical SaaS rollup 2026
+                  - generic [ref=f3e730]: SaaS-to-services flip
+                  - generic [ref=f3e731]: SMB acquisition playbook
+          - link "Interlinked Premium Apr 22, 2026 Anthropic hit $30B — your stack is on the wrong model Anthropic crossed $30B ARR this month and quietly passed OpenAI for the first time in either company’s history. 80% enterprise. 1,000 customers at $1M+ — doubled in eight weeks post-Series G. If you’ve architected on a single frontier model and haven’t renegotiated in the last 60 days, you’re paying the loser’s price on the wrong side of a repricing event the market hasn’t fully absorbed yet. Anthropic $30B ARR Claude enterprise pricing 2026 OpenAI enterprise contracts" [ref=f3e733] [cursor=pointer]:
+            - /url: /newsletter/anthropic-30b-repricing-insider-premium-2026-04-22
+            - generic [ref=f3e738]:
+              - generic [ref=f3e739]:
+                - generic [ref=f3e740]: Interlinked Premium
+                - generic [ref=f3e741]: Apr 22, 2026
+              - generic [ref=f3e742]:
+                - heading "Anthropic hit $30B — your stack is on the wrong model" [level=3] [ref=f3e743]
+                - paragraph [ref=f3e744]: Anthropic crossed $30B ARR this month and quietly passed OpenAI for the first time in either company’s history. 80% enterprise. 1,000 customers at $1M+ — doubled in eight weeks post-Series G. If you’ve architected on a single frontier model and haven’t renegotiated in the last 60 days, you’re paying the loser’s price on the wrong side of a repricing event the market hasn’t fully absorbed yet.
+                - generic [ref=f3e745]:
+                  - generic [ref=f3e746]: Anthropic $30B ARR
+                  - generic [ref=f3e747]: Claude enterprise pricing 2026
+                  - generic [ref=f3e748]: OpenAI enterprise contracts
+          - 'link "Interlinked Premium Apr 21, 2026 The $2.5T Gulf AI pipe US founders aren''t tapping While most US operators keep polishing Sand Hill decks nobody’s reading, roughly $2.5 trillion in committed Gulf capital sat on the table through Q1 2026. Sovereign-owned investors deployed $66B into AI in 2025 alone — Mubadala wrote $12.9B of that — and the checks are getting larger in 2026, not smaller. The reason you’re not being pitched: most of it flows through family offices and sovereign LPs who never show up in Crunchbase. sovereign AI capital Gulf AI investment 2026 MGX Abu Dhabi" [ref=f3e750] [cursor=pointer]':
+            - /url: /newsletter/gulf-ai-capital-pipeline-insider-premium-2026-04-21
+            - generic [ref=f3e755]:
+              - generic [ref=f3e756]:
+                - generic [ref=f3e757]: Interlinked Premium
+                - generic [ref=f3e758]: Apr 21, 2026
+              - generic [ref=f3e759]:
+                - heading "The $2.5T Gulf AI pipe US founders aren't tapping" [level=3] [ref=f3e760]
+                - paragraph [ref=f3e761]: "While most US operators keep polishing Sand Hill decks nobody’s reading, roughly $2.5 trillion in committed Gulf capital sat on the table through Q1 2026. Sovereign-owned investors deployed $66B into AI in 2025 alone — Mubadala wrote $12.9B of that — and the checks are getting larger in 2026, not smaller. The reason you’re not being pitched: most of it flows through family offices and sovereign LPs who never show up in Crunchbase."
+                - generic [ref=f3e762]:
+                  - generic [ref=f3e763]: sovereign AI capital
+                  - generic [ref=f3e764]: Gulf AI investment 2026
+                  - generic [ref=f3e765]: MGX Abu Dhabi
+          - link "Interlinked Premium Apr 21, 2026 Why 1,000x cheaper tokens tripled your AI bill Last week an operator pinged me convinced his engineers were cooking the books. His per-token pricing had dropped ~70% year-over-year, yet his monthly AI invoice had doubled. The engineers weren’t lying. They were hitting the inference paradox — the single most mispriced reality inside enterprise AI right now, and the reason most “AI-native” companies will have their margins cut in half before Q3 if they don’t restructure this week. inference paradox AI unit economics prompt caching 2026" [ref=f3e767] [cursor=pointer]:
+            - /url: /newsletter/inference-paradox-ai-margins-premium-2026-04-21
+            - generic [ref=f3e772]:
+              - generic [ref=f3e773]:
+                - generic [ref=f3e774]: Interlinked Premium
+                - generic [ref=f3e775]: Apr 21, 2026
+              - generic [ref=f3e776]:
+                - heading "Why 1,000x cheaper tokens tripled your AI bill" [level=3] [ref=f3e777]
+                - paragraph [ref=f3e778]: Last week an operator pinged me convinced his engineers were cooking the books. His per-token pricing had dropped ~70% year-over-year, yet his monthly AI invoice had doubled. The engineers weren’t lying. They were hitting the inference paradox — the single most mispriced reality inside enterprise AI right now, and the reason most “AI-native” companies will have their margins cut in half before Q3 if they don’t restructure this week.
+                - generic [ref=f3e779]:
+                  - generic [ref=f3e780]: inference paradox
+                  - generic [ref=f3e781]: AI unit economics
+                  - generic [ref=f3e782]: prompt caching 2026
+          - 'link "Interlinked Premium Apr 21, 2026 Inside AI''s quiet $1.5B rollup playbook While your feed argues over which frontier model is 4% smarter, General Catalyst quietly built a $1.5B engine doing the opposite: buying unsexy service businesses and bolting AI onto them. This is how the real money is being made in Q2 2026 — and why operators with your skill set are the last missing piece of the trade. AI rollup strategy private equity AI acquisitions General Catalyst Creation Strategy" [ref=f3e784] [cursor=pointer]':
+            - /url: /newsletter/premium-ai-rollup-playbook-insider-2026-04-21
+            - generic [ref=f3e789]:
+              - generic [ref=f3e790]:
+                - generic [ref=f3e791]: Interlinked Premium
+                - generic [ref=f3e792]: Apr 21, 2026
+              - generic [ref=f3e793]:
+                - heading "Inside AI's quiet $1.5B rollup playbook" [level=3] [ref=f3e794]
+                - paragraph [ref=f3e795]: "While your feed argues over which frontier model is 4% smarter, General Catalyst quietly built a $1.5B engine doing the opposite: buying unsexy service businesses and bolting AI onto them. This is how the real money is being made in Q2 2026 — and why operators with your skill set are the last missing piece of the trade."
+                - generic [ref=f3e796]:
+                  - generic [ref=f3e797]: AI rollup strategy
+                  - generic [ref=f3e798]: private equity AI acquisitions
+                  - generic [ref=f3e799]: General Catalyst Creation Strategy
+          - 'link "Interlinked Premium Apr 21, 2026 Q2 Agent Stack: The Autonomous Operations Blueprint [Premium Intelligence] Welcome to a special mid-week Interlinked Premium drop. Today’s edition pulls Wednesday’s Deep Intelligence forward — and stacks it with a full Agentic AI Playbook, a multi-agent architecture brief, real ROI numbers from a client who just crossed seven figures on a single autonomous workflow, a production-ready prompt from the Agent Prompt Library, and two Early Access releases reserved exclusively for Premium members. This is the brief we don’t share publicly. Read it twice. Then ship something before the next edition hits your inbox. agentic AI AI agent architecture autonomous operations" [ref=f3e801] [cursor=pointer]':
+            - /url: /newsletter/premium-q2-agent-stack-blueprint-2026-04-21
+            - generic [ref=f3e806]:
+              - generic [ref=f3e807]:
+                - generic [ref=f3e808]: Interlinked Premium
+                - generic [ref=f3e809]: Apr 21, 2026
+              - generic [ref=f3e810]:
+                - 'heading "Q2 Agent Stack: The Autonomous Operations Blueprint [Premium Intelligence]" [level=3] [ref=f3e811]'
+                - paragraph [ref=f3e812]: Welcome to a special mid-week Interlinked Premium drop. Today’s edition pulls Wednesday’s Deep Intelligence forward — and stacks it with a full Agentic AI Playbook, a multi-agent architecture brief, real ROI numbers from a client who just crossed seven figures on a single autonomous workflow, a production-ready prompt from the Agent Prompt Library, and two Early Access releases reserved exclusively for Premium members. This is the brief we don’t share publicly. Read it twice. Then ship something before the next edition hits your inbox.
+                - generic [ref=f3e813]:
+                  - generic [ref=f3e814]: agentic AI
+                  - generic [ref=f3e815]: AI agent architecture
+                  - generic [ref=f3e816]: autonomous operations
+          - link "Interlinked Premium Apr 20, 2026 How AI-Native Companies Actually Operate This premium edition is designed for operators who don’t just want to know what’s happening — they want the exact playbook. Today’s value edition goes deeper than the headlines. AI automation artificial intelligence business machine learning 2026" [ref=f3e818] [cursor=pointer]:
+            - /url: /newsletter/premium-draft-2026-04-20-3u32
+            - generic [ref=f3e823]:
+              - generic [ref=f3e824]:
+                - generic [ref=f3e825]: Interlinked Premium
+                - generic [ref=f3e826]: Apr 20, 2026
+              - generic [ref=f3e827]:
+                - heading "How AI-Native Companies Actually Operate" [level=3] [ref=f3e828]
+                - paragraph [ref=f3e829]: This premium edition is designed for operators who don’t just want to know what’s happening — they want the exact playbook. Today’s value edition goes deeper than the headlines.
+                - generic [ref=f3e830]:
+                  - generic [ref=f3e831]: AI automation
+                  - generic [ref=f3e832]: artificial intelligence business
+                  - generic [ref=f3e833]: machine learning 2026
+          - link "Interlinked Premium Apr 15, 2026 While others scrambled, our clients closed deals [Premium Inside] April 15th just hit. And while most business owners spent the last two weeks buried in receipts and chasing their accountants, the businesses running full AI CEO systems through Omni AI spent it closing deals, reviewing growth dashboards, and doing exactly zero administrative scrambling. That gap is not closing. It is widening. crisis advantage client wins market volatility" [ref=f3e835] [cursor=pointer]:
+            - /url: /newsletter/ai-ceo-clients-tax-season-advantage-premium-2026-04-15
+            - generic [ref=f3e840]:
+              - generic [ref=f3e841]:
+                - generic [ref=f3e842]: Interlinked Premium
+                - generic [ref=f3e843]: Apr 15, 2026
+              - generic [ref=f3e844]:
+                - heading "While others scrambled, our clients closed deals [Premium Inside]" [level=3] [ref=f3e845]
+                - paragraph [ref=f3e846]: April 15th just hit. And while most business owners spent the last two weeks buried in receipts and chasing their accountants, the businesses running full AI CEO systems through Omni AI spent it closing deals, reviewing growth dashboards, and doing exactly zero administrative scrambling. That gap is not closing. It is widening.
+                - generic [ref=f3e847]:
+                  - generic [ref=f3e848]: crisis advantage
+                  - generic [ref=f3e849]: client wins
+                  - generic [ref=f3e850]: market volatility
+          - link "Interlinked Premium Apr 14, 2026 What our top clients did this quarter — the part we don't share publicly While most business owners spent Q1 chasing leads, our highest-performing Omni AI clients were doing something quieter — and far more profitable. They weren’t working harder. They were running leaner, moving faster, and making decisions in hours that used to take weeks. The results? They’re not talking about it publicly. But we are. Exclusively, here. top client tactics quarterly review private strategy" [ref=f3e852] [cursor=pointer]:
+            - /url: /newsletter/q1-top-client-playbook-what-they-did-differently-premium
+            - generic [ref=f3e857]:
+              - generic [ref=f3e858]:
+                - generic [ref=f3e859]: Interlinked Premium
+                - generic [ref=f3e860]: Apr 14, 2026
+              - generic [ref=f3e861]:
+                - heading "What our top clients did this quarter — the part we don't share publicly" [level=3] [ref=f3e862]
+                - paragraph [ref=f3e863]: While most business owners spent Q1 chasing leads, our highest-performing Omni AI clients were doing something quieter — and far more profitable. They weren’t working harder. They were running leaner, moving faster, and making decisions in hours that used to take weeks. The results? They’re not talking about it publicly. But we are. Exclusively, here.
+                - generic [ref=f3e864]:
+                  - generic [ref=f3e865]: top client tactics
+                  - generic [ref=f3e866]: quarterly review
+                  - generic [ref=f3e867]: private strategy
+          - 'link "Interlinked Premium Apr 7, 2026 Why Being Backed by the #1 Agentic Engineering Firm Changes Everything The third agentic engineering firm in the country had a waitlist of 400 companies. Ours just finished onboarding its 12th client. What changed was not the tech — it was who was behind the build. agentic engineering #1 agentic firm strategic backing" [ref=f3e869] [cursor=pointer]':
+            - /url: /newsletter/premium-draft-2026-04-07-6wb6
+            - generic [ref=f3e874]:
+              - generic [ref=f3e875]:
+                - generic [ref=f3e876]: Interlinked Premium
+                - generic [ref=f3e877]: Apr 7, 2026
+              - generic [ref=f3e878]:
+                - 'heading "Why Being Backed by the #1 Agentic Engineering Firm Changes Everything" [level=3] [ref=f3e879]'
+                - paragraph [ref=f3e880]: The third agentic engineering firm in the country had a waitlist of 400 companies. Ours just finished onboarding its 12th client. What changed was not the tech — it was who was behind the build.
+                - generic [ref=f3e881]:
+                  - generic [ref=f3e882]: agentic engineering
+                  - generic [ref=f3e883]: "#1 agentic firm"
+                  - generic [ref=f3e884]: strategic backing
+          - 'link "Interlinked Premium Apr 6, 2026 Inside the $50,000 Program Backed by the Nation''s #1 Agentic Team Fifty thousand dollars sounds steep until you see the spreadsheet of what the last cohort replaced with it. Eighteen full-time hires, four SaaS tools, and a consulting retainer — gone in 90 days. $50k program agentic team high ticket" [ref=f3e886] [cursor=pointer]':
+            - /url: /newsletter/premium-draft-2026-04-06-wpkq
+            - generic [ref=f3e891]:
+              - generic [ref=f3e892]:
+                - generic [ref=f3e893]: Interlinked Premium
+                - generic [ref=f3e894]: Apr 6, 2026
+              - generic [ref=f3e895]:
+                - 'heading "Inside the $50,000 Program Backed by the Nation''s #1 Agentic Team" [level=3] [ref=f3e896]'
+                - paragraph [ref=f3e897]: Fifty thousand dollars sounds steep until you see the spreadsheet of what the last cohort replaced with it. Eighteen full-time hires, four SaaS tools, and a consulting retainer — gone in 90 days.
+                - generic [ref=f3e898]:
+                  - generic [ref=f3e899]: $50k program
+                  - generic [ref=f3e900]: agentic team
+                  - generic [ref=f3e901]: high ticket
+          - link "Interlinked Premium Apr 5, 2026 Three AI Moves Worth More Than an MBA An MBA teaches you to analyze markets. Three AI moves teach you to bend them. The operators we track this year are not reading case studies — they are generating them. AI over MBA strategic moves leverage plays" [ref=f3e903] [cursor=pointer]:
+            - /url: /newsletter/premium-draft-2026-04-05-ogt1
+            - generic [ref=f3e908]:
+              - generic [ref=f3e909]:
+                - generic [ref=f3e910]: Interlinked Premium
+                - generic [ref=f3e911]: Apr 5, 2026
+              - generic [ref=f3e912]:
+                - heading "Three AI Moves Worth More Than an MBA" [level=3] [ref=f3e913]
+                - paragraph [ref=f3e914]: An MBA teaches you to analyze markets. Three AI moves teach you to bend them. The operators we track this year are not reading case studies — they are generating them.
+                - generic [ref=f3e915]:
+                  - generic [ref=f3e916]: AI over MBA
+                  - generic [ref=f3e917]: strategic moves
+                  - generic [ref=f3e918]: leverage plays
+          - link "Interlinked Premium Apr 4, 2026 What Elite Operators Actually Do Differently Elite operators do not work harder. They work in fewer, sharper loops — and they automate the loops they run more than twice. Here is what that actually looks like in practice. elite operators operator habits execution rituals" [ref=f3e920] [cursor=pointer]:
+            - /url: /newsletter/premium-draft-2026-04-04-th7m
+            - generic [ref=f3e925]:
+              - generic [ref=f3e926]:
+                - generic [ref=f3e927]: Interlinked Premium
+                - generic [ref=f3e928]: Apr 4, 2026
+              - generic [ref=f3e929]:
+                - heading "What Elite Operators Actually Do Differently" [level=3] [ref=f3e930]
+                - paragraph [ref=f3e931]: Elite operators do not work harder. They work in fewer, sharper loops — and they automate the loops they run more than twice. Here is what that actually looks like in practice.
+                - generic [ref=f3e932]:
+                  - generic [ref=f3e933]: elite operators
+                  - generic [ref=f3e934]: operator habits
+                  - generic [ref=f3e935]: execution rituals
+          - 'link "Interlinked Premium Apr 3, 2026 The Blockchain Founders Behind Omni AI Are Doing It Again The team that put blockchain rails under three billion dollars of on-chain volume is quietly rebuilding the agent stack behind Omni AI. Same playbook: build infrastructure before the crowd notices it exists. blockchain founders repeat builders founder pedigree" [ref=f3e937] [cursor=pointer]':
+            - /url: /newsletter/premium-draft-2026-04-03-qie5
+            - generic [ref=f3e942]:
+              - generic [ref=f3e943]:
+                - generic [ref=f3e944]: Interlinked Premium
+                - generic [ref=f3e945]: Apr 3, 2026
+              - generic [ref=f3e946]:
+                - heading "The Blockchain Founders Behind Omni AI Are Doing It Again" [level=3] [ref=f3e947]
+                - paragraph [ref=f3e948]: "The team that put blockchain rails under three billion dollars of on-chain volume is quietly rebuilding the agent stack behind Omni AI. Same playbook: build infrastructure before the crowd notices it exists."
+                - generic [ref=f3e949]:
+                  - generic [ref=f3e950]: blockchain founders
+                  - generic [ref=f3e951]: repeat builders
+                  - generic [ref=f3e952]: founder pedigree
+          - 'link "Interlinked Premium Apr 2, 2026 What I Learned Automating 200+ Business Processes Two hundred automations later, the pattern is obvious: the wins never came from the tool. They came from picking the right edge of the process to cut. Here is how we learned where that edge lives. 200 automations process audit automation lessons" [ref=f3e954] [cursor=pointer]':
+            - /url: /newsletter/premium-draft-2026-04-02-kn4r
+            - generic [ref=f3e959]:
+              - generic [ref=f3e960]:
+                - generic [ref=f3e961]: Interlinked Premium
+                - generic [ref=f3e962]: Apr 2, 2026
+              - generic [ref=f3e963]:
+                - heading "What I Learned Automating 200+ Business Processes" [level=3] [ref=f3e964]
+                - paragraph [ref=f3e965]: "Two hundred automations later, the pattern is obvious: the wins never came from the tool. They came from picking the right edge of the process to cut. Here is how we learned where that edge lives."
+                - generic [ref=f3e966]:
+                  - generic [ref=f3e967]: 200 automations
+                  - generic [ref=f3e968]: process audit
+                  - generic [ref=f3e969]: automation lessons
+          - link "Interlinked Premium Apr 1, 2026 The AI Strategies Worth 10x Their Weight Most AI strategies are worth the webinar they came from. A handful — maybe five — have moved the P&L of every operator who actually ran them. This edition is only the five. 10x strategies high-leverage AI outsized returns" [ref=f3e971] [cursor=pointer]:
+            - /url: /newsletter/premium-draft-2026-04-01-fnii
+            - generic [ref=f3e976]:
+              - generic [ref=f3e977]:
+                - generic [ref=f3e978]: Interlinked Premium
+                - generic [ref=f3e979]: Apr 1, 2026
+              - generic [ref=f3e980]:
+                - heading "The AI Strategies Worth 10x Their Weight" [level=3] [ref=f3e981]
+                - paragraph [ref=f3e982]: Most AI strategies are worth the webinar they came from. A handful — maybe five — have moved the P&L of every operator who actually ran them. This edition is only the five.
+                - generic [ref=f3e983]:
+                  - generic [ref=f3e984]: 10x strategies
+                  - generic [ref=f3e985]: high-leverage AI
+                  - generic [ref=f3e986]: outsized returns
+          - link "Interlinked Premium Mar 29, 2026 Why Early AI Adopters Are Winning Big in 2026 Imagine standing at the edge of a cliff. Behind you, everything familiar. Ahead, a bridge that only appears when you step. That’s what AI adoption feels like right now — terrifying and electric at the same time. The ones who stepped? They’re not looking back. 2026 AI winners early adopters AI tailwind" [ref=f3e988] [cursor=pointer]:
+            - /url: /newsletter/why-early-ai-adopters-are-winning-big-in-2026
+            - generic [ref=f3e993]:
+              - generic [ref=f3e994]:
+                - generic [ref=f3e995]: Interlinked Premium
+                - generic [ref=f3e996]: Mar 29, 2026
+              - generic [ref=f3e997]:
+                - heading "Why Early AI Adopters Are Winning Big in 2026" [level=3] [ref=f3e998]
+                - paragraph [ref=f3e999]: Imagine standing at the edge of a cliff. Behind you, everything familiar. Ahead, a bridge that only appears when you step. That’s what AI adoption feels like right now — terrifying and electric at the same time. The ones who stepped? They’re not looking back.
+                - generic [ref=f3e1000]:
+                  - generic [ref=f3e1001]: 2026 AI winners
+                  - generic [ref=f3e1002]: early adopters
+                  - generic [ref=f3e1003]: AI tailwind
+      - generic [ref=f3e1004]:
+        - generic [ref=f3e1005]:
+          - heading "Daily Intelligence" [level=2] [ref=f3e1006]
+          - generic [ref=f3e1007]: Interlinked Free
+        - generic [ref=f3e1008]:
+          - 'link "Interlinked Free Jul 24, 2026 The New Moat: Why Speed Beats Everything Else Now The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage. AI automation artificial intelligence business machine learning 2026" [ref=f3e1010] [cursor=pointer]':
+            - /url: /newsletter/interlinked-free-2026-07-24
+            - generic [ref=f3e1015]:
+              - generic [ref=f3e1016]:
+                - generic [ref=f3e1017]: Interlinked Free
+                - generic [ref=f3e1018]: Jul 24, 2026
+              - generic [ref=f3e1019]:
+                - 'heading "The New Moat: Why Speed Beats Everything Else Now" [level=3] [ref=f3e1020]'
+                - paragraph [ref=f3e1021]: The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage.
+                - generic [ref=f3e1022]:
+                  - generic [ref=f3e1023]: AI automation
+                  - generic [ref=f3e1024]: artificial intelligence business
+                  - generic [ref=f3e1025]: machine learning 2026
+          - link "Interlinked Free Jul 23, 2026 The Future Isn't Coming — It's Already Here and Compounding Imagine your business running at 3AM. Not because someone’s pulling an all-nighter — because your AI agents don’t sleep. That’s not the future. That’s what the top 5% built last quarter. AI automation artificial intelligence business machine learning 2026" [ref=f3e1027] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-23
+            - generic [ref=f3e1032]:
+              - generic [ref=f3e1033]:
+                - generic [ref=f3e1034]: Interlinked Free
+                - generic [ref=f3e1035]: Jul 23, 2026
+              - generic [ref=f3e1036]:
+                - heading "The Future Isn't Coming — It's Already Here and Compounding" [level=3] [ref=f3e1037]
+                - paragraph [ref=f3e1038]: Imagine your business running at 3AM. Not because someone’s pulling an all-nighter — because your AI agents don’t sleep. That’s not the future. That’s what the top 5% built last quarter.
+                - generic [ref=f3e1039]:
+                  - generic [ref=f3e1040]: AI automation
+                  - generic [ref=f3e1041]: artificial intelligence business
+                  - generic [ref=f3e1042]: machine learning 2026
+          - link "Interlinked Free Jul 23, 2026 Your Competitors Are Quietly Automating Their CEOs. Here's What That Means For You. Most business owners spend their days putting out fires they shouldn't have to touch. Meetings that should've been emails. Decisions that don't need a human. Follow-ups that die in inboxes because your team is buried. Meanwhile, your competitors are handing these tasks to AI systems that never sleep, never drop the ball, and never need a performance review. The gap between you and them isn't getting smaller. It's compounding. AI CEO business automation scaling without hiring" [ref=f3e1044] [cursor=pointer]:
+            - /url: /newsletter/2026-07-23-competitors-automating-ceo
+            - generic [ref=f3e1049]:
+              - generic [ref=f3e1050]:
+                - generic [ref=f3e1051]: Interlinked Free
+                - generic [ref=f3e1052]: Jul 23, 2026
+              - generic [ref=f3e1053]:
+                - heading "Your Competitors Are Quietly Automating Their CEOs. Here's What That Means For You." [level=3] [ref=f3e1054]
+                - paragraph [ref=f3e1055]: Most business owners spend their days putting out fires they shouldn't have to touch. Meetings that should've been emails. Decisions that don't need a human. Follow-ups that die in inboxes because your team is buried. Meanwhile, your competitors are handing these tasks to AI systems that never sleep, never drop the ball, and never need a performance review. The gap between you and them isn't getting smaller. It's compounding.
+                - generic [ref=f3e1056]:
+                  - generic [ref=f3e1057]: AI CEO
+                  - generic [ref=f3e1058]: business automation
+                  - generic [ref=f3e1059]: scaling without hiring
+          - link "Interlinked Free Jul 22, 2026 The Gap Between AI Adopters and Everyone Else Just Doubled The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage. AI automation artificial intelligence business machine learning 2026" [ref=f3e1061] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-22
+            - generic [ref=f3e1066]:
+              - generic [ref=f3e1067]:
+                - generic [ref=f3e1068]: Interlinked Free
+                - generic [ref=f3e1069]: Jul 22, 2026
+              - generic [ref=f3e1070]:
+                - heading "The Gap Between AI Adopters and Everyone Else Just Doubled" [level=3] [ref=f3e1071]
+                - paragraph [ref=f3e1072]: The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage.
+                - generic [ref=f3e1073]:
+                  - generic [ref=f3e1074]: AI automation
+                  - generic [ref=f3e1075]: artificial intelligence business
+                  - generic [ref=f3e1076]: machine learning 2026
+          - 'link "Interlinked Free Jul 21, 2026 While You Were Debating AI, Your Market Moved On Here’s what nobody tells you about the AI revolution: it doesn’t announce itself. There’s no starting gun. One day you’re competitive, the next you’re a case study in what not to do. AI automation artificial intelligence business machine learning 2026" [ref=f3e1078] [cursor=pointer]':
+            - /url: /newsletter/interlinked-free-2026-07-21
+            - generic [ref=f3e1083]:
+              - generic [ref=f3e1084]:
+                - generic [ref=f3e1085]: Interlinked Free
+                - generic [ref=f3e1086]: Jul 21, 2026
+              - generic [ref=f3e1087]:
+                - heading "While You Were Debating AI, Your Market Moved On" [level=3] [ref=f3e1088]
+                - paragraph [ref=f3e1089]: "Here’s what nobody tells you about the AI revolution: it doesn’t announce itself. There’s no starting gun. One day you’re competitive, the next you’re a case study in what not to do."
+                - generic [ref=f3e1090]:
+                  - generic [ref=f3e1091]: AI automation
+                  - generic [ref=f3e1092]: artificial intelligence business
+                  - generic [ref=f3e1093]: machine learning 2026
+          - link "Interlinked Free Jul 20, 2026 What the Top 1% of Businesses Know About AI That You Don't There’s a reason the smartest founders in the room have gone quiet. They’re not debating AI strategy. They’re deploying it. Silently. Relentlessly. While the noise keeps everyone else distracted. AI automation artificial intelligence business machine learning 2026" [ref=f3e1095] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-20
+            - generic [ref=f3e1100]:
+              - generic [ref=f3e1101]:
+                - generic [ref=f3e1102]: Interlinked Free
+                - generic [ref=f3e1103]: Jul 20, 2026
+              - generic [ref=f3e1104]:
+                - heading "What the Top 1% of Businesses Know About AI That You Don't" [level=3] [ref=f3e1105]
+                - paragraph [ref=f3e1106]: There’s a reason the smartest founders in the room have gone quiet. They’re not debating AI strategy. They’re deploying it. Silently. Relentlessly. While the noise keeps everyone else distracted.
+                - generic [ref=f3e1107]:
+                  - generic [ref=f3e1108]: AI automation
+                  - generic [ref=f3e1109]: artificial intelligence business
+                  - generic [ref=f3e1110]: machine learning 2026
+          - link "Interlinked Free Jul 18, 2026 Stop Planning for AI. Start Building With It. Every day you operate the old way, you’re not just falling behind — you’re paying a compounding tax on inefficiency that gets heavier by the week. AI automation artificial intelligence business machine learning 2026" [ref=f3e1112] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-18
+            - generic [ref=f3e1117]:
+              - generic [ref=f3e1118]:
+                - generic [ref=f3e1119]: Interlinked Free
+                - generic [ref=f3e1120]: Jul 18, 2026
+              - generic [ref=f3e1121]:
+                - heading "Stop Planning for AI. Start Building With It." [level=3] [ref=f3e1122]
+                - paragraph [ref=f3e1123]: Every day you operate the old way, you’re not just falling behind — you’re paying a compounding tax on inefficiency that gets heavier by the week.
+                - generic [ref=f3e1124]:
+                  - generic [ref=f3e1125]: AI automation
+                  - generic [ref=f3e1126]: artificial intelligence business
+                  - generic [ref=f3e1127]: machine learning 2026
+          - 'link "Interlinked Free Jul 18, 2026 Your AI CEO Doesn''t Sleep. Neither Should Your Competitive Edge. Most business owners are still treating AI like a fancy calculator. If that''s your strategy, you''re leaving serious advantage on the table. Here''s what''s actually happening: AI CEOs are now a genuine force multiplier for business operators who know how to use them. Not as a replacement for your judgment — but as an amplifier. The owners getting ahead right now aren''t just experimenting. They''re integrating AI into the fabric of their daily operations. And the gap is widening fast. ai ceo business automation ai automation" [ref=f3e1129] [cursor=pointer]':
+            - /url: /newsletter/free-ai-ceo-competitive-edge-2026-07-18
+            - generic [ref=f3e1134]:
+              - generic [ref=f3e1135]:
+                - generic [ref=f3e1136]: Interlinked Free
+                - generic [ref=f3e1137]: Jul 18, 2026
+              - generic [ref=f3e1138]:
+                - heading "Your AI CEO Doesn't Sleep. Neither Should Your Competitive Edge." [level=3] [ref=f3e1139]
+                - paragraph [ref=f3e1140]: "Most business owners are still treating AI like a fancy calculator. If that's your strategy, you're leaving serious advantage on the table. Here's what's actually happening: AI CEOs are now a genuine force multiplier for business operators who know how to use them. Not as a replacement for your judgment — but as an amplifier. The owners getting ahead right now aren't just experimenting. They're integrating AI into the fabric of their daily operations. And the gap is widening fast."
+                - generic [ref=f3e1141]:
+                  - generic [ref=f3e1142]: ai ceo
+                  - generic [ref=f3e1143]: business automation
+                  - generic [ref=f3e1144]: ai automation
+          - link "Interlinked Free Jul 17, 2026 The Same Founders Who Built Blockchain Are Building the Next Wave The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage. AI automation artificial intelligence business machine learning 2026" [ref=f3e1146] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-17
+            - generic [ref=f3e1151]:
+              - generic [ref=f3e1152]:
+                - generic [ref=f3e1153]: Interlinked Free
+                - generic [ref=f3e1154]: Jul 17, 2026
+              - generic [ref=f3e1155]:
+                - heading "The Same Founders Who Built Blockchain Are Building the Next Wave" [level=3] [ref=f3e1156]
+                - paragraph [ref=f3e1157]: The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage.
+                - generic [ref=f3e1158]:
+                  - generic [ref=f3e1159]: AI automation
+                  - generic [ref=f3e1160]: artificial intelligence business
+                  - generic [ref=f3e1161]: machine learning 2026
+          - link "Interlinked Free Jul 16, 2026 What the Top 1% of Businesses Know About AI That You Don't Two years ago, a 10-person agency was considered lean. Today, a solo operator with the right AI stack is doing what that agency couldn’t. The rules didn’t bend — they broke. AI automation artificial intelligence business machine learning 2026" [ref=f3e1163] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-16
+            - generic [ref=f3e1168]:
+              - generic [ref=f3e1169]:
+                - generic [ref=f3e1170]: Interlinked Free
+                - generic [ref=f3e1171]: Jul 16, 2026
+              - generic [ref=f3e1172]:
+                - heading "What the Top 1% of Businesses Know About AI That You Don't" [level=3] [ref=f3e1173]
+                - paragraph [ref=f3e1174]: Two years ago, a 10-person agency was considered lean. Today, a solo operator with the right AI stack is doing what that agency couldn’t. The rules didn’t bend — they broke.
+                - generic [ref=f3e1175]:
+                  - generic [ref=f3e1176]: AI automation
+                  - generic [ref=f3e1177]: artificial intelligence business
+                  - generic [ref=f3e1178]: machine learning 2026
+          - 'link "Interlinked Free Jul 15, 2026 AI Trends Brief — July 15, 2026: Ask HN: Add flag for AI-generated articles The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1180] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-15
+            - generic [ref=f3e1185]:
+              - generic [ref=f3e1186]:
+                - generic [ref=f3e1187]: Interlinked Free
+                - generic [ref=f3e1188]: Jul 15, 2026
+              - generic [ref=f3e1189]:
+                - 'heading "AI Trends Brief — July 15, 2026: Ask HN: Add flag for AI-generated articles" [level=3] [ref=f3e1190]'
+                - paragraph [ref=f3e1191]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1192]:
+                  - generic [ref=f3e1193]: AI trends
+                  - generic [ref=f3e1194]: artificial intelligence
+                  - generic [ref=f3e1195]: AI agents
+          - link "Interlinked Free Jul 15, 2026 While You Were Debating AI, Your Market Moved On You can feel it in the air. The businesses that figured it out aren’t talking about AI anymore — they’re too busy compounding while everyone else is still reading articles about whether to start. AI automation artificial intelligence business machine learning 2026" [ref=f3e1197] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-15
+            - generic [ref=f3e1202]:
+              - generic [ref=f3e1203]:
+                - generic [ref=f3e1204]: Interlinked Free
+                - generic [ref=f3e1205]: Jul 15, 2026
+              - generic [ref=f3e1206]:
+                - heading "While You Were Debating AI, Your Market Moved On" [level=3] [ref=f3e1207]
+                - paragraph [ref=f3e1208]: You can feel it in the air. The businesses that figured it out aren’t talking about AI anymore — they’re too busy compounding while everyone else is still reading articles about whether to start.
+                - generic [ref=f3e1209]:
+                  - generic [ref=f3e1210]: AI automation
+                  - generic [ref=f3e1211]: artificial intelligence business
+                  - generic [ref=f3e1212]: machine learning 2026
+          - 'link "Interlinked Free Jul 13, 2026 AI Trends Brief — July 13, 2026: Ask HN: Add flag for AI-generated articles The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1214] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-13
+            - generic [ref=f3e1219]:
+              - generic [ref=f3e1220]:
+                - generic [ref=f3e1221]: Interlinked Free
+                - generic [ref=f3e1222]: Jul 13, 2026
+              - generic [ref=f3e1223]:
+                - 'heading "AI Trends Brief — July 13, 2026: Ask HN: Add flag for AI-generated articles" [level=3] [ref=f3e1224]'
+                - paragraph [ref=f3e1225]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1226]:
+                  - generic [ref=f3e1227]: AI trends
+                  - generic [ref=f3e1228]: artificial intelligence
+                  - generic [ref=f3e1229]: AI agents
+          - 'link "Interlinked Free Jul 12, 2026 AI Trends Brief — July 12, 2026: AI 2040: Plan A The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1231] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-12
+            - generic [ref=f3e1236]:
+              - generic [ref=f3e1237]:
+                - generic [ref=f3e1238]: Interlinked Free
+                - generic [ref=f3e1239]: Jul 12, 2026
+              - generic [ref=f3e1240]:
+                - 'heading "AI Trends Brief — July 12, 2026: AI 2040: Plan A" [level=3] [ref=f3e1241]'
+                - paragraph [ref=f3e1242]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1243]:
+                  - generic [ref=f3e1244]: AI trends
+                  - generic [ref=f3e1245]: artificial intelligence
+                  - generic [ref=f3e1246]: AI agents
+          - 'link "Interlinked Free Jul 10, 2026 AI Trends Brief — July 10, 2026: GitLost: We Tricked GitHub''s AI Agent into Leaking Private Repos The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1248] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-10
+            - generic [ref=f3e1253]:
+              - generic [ref=f3e1254]:
+                - generic [ref=f3e1255]: Interlinked Free
+                - generic [ref=f3e1256]: Jul 10, 2026
+              - generic [ref=f3e1257]:
+                - 'heading "AI Trends Brief — July 10, 2026: GitLost: We Tricked GitHub''s AI Agent into Leaking Private Repos" [level=3] [ref=f3e1258]'
+                - paragraph [ref=f3e1259]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1260]:
+                  - generic [ref=f3e1261]: AI trends
+                  - generic [ref=f3e1262]: artificial intelligence
+                  - generic [ref=f3e1263]: AI agents
+          - 'link "Interlinked Free Jul 9, 2026 You made 178 decisions yesterday. Your AI CEO made 10,000. Most CEOs I talk to are drowning in operational noise. They built businesses to have freedom, then found themselves chained to the desk making the same repetitive calls every single day. Here is the uncomfortable truth: if you are still the one reviewing every metric, approving every email, and weighing in on every minor decision — you are not a CEO. You are an expensive bottleneck. ai ceo business automation executive ai" [ref=f3e1265] [cursor=pointer]':
+            - /url: /newsletter/free-ai-decisions-2026-07-09
+            - generic [ref=f3e1270]:
+              - generic [ref=f3e1271]:
+                - generic [ref=f3e1272]: Interlinked Free
+                - generic [ref=f3e1273]: Jul 9, 2026
+              - generic [ref=f3e1274]:
+                - heading "You made 178 decisions yesterday. Your AI CEO made 10,000." [level=3] [ref=f3e1275]
+                - paragraph [ref=f3e1276]: "Most CEOs I talk to are drowning in operational noise. They built businesses to have freedom, then found themselves chained to the desk making the same repetitive calls every single day. Here is the uncomfortable truth: if you are still the one reviewing every metric, approving every email, and weighing in on every minor decision — you are not a CEO. You are an expensive bottleneck."
+                - generic [ref=f3e1277]:
+                  - generic [ref=f3e1278]: ai ceo
+                  - generic [ref=f3e1279]: business automation
+                  - generic [ref=f3e1280]: executive ai
+          - 'link "Interlinked Free Jul 9, 2026 AI Trends Brief — July 9, 2026 The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1282] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-09
+            - generic [ref=f3e1287]:
+              - generic [ref=f3e1288]:
+                - generic [ref=f3e1289]: Interlinked Free
+                - generic [ref=f3e1290]: Jul 9, 2026
+              - generic [ref=f3e1291]:
+                - heading "AI Trends Brief — July 9, 2026" [level=3] [ref=f3e1292]
+                - paragraph [ref=f3e1293]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1294]:
+                  - generic [ref=f3e1295]: AI trends
+                  - generic [ref=f3e1296]: artificial intelligence
+                  - generic [ref=f3e1297]: AI agents
+          - 'link "Interlinked Free Jul 8, 2026 AI Trends Brief — July 8, 2026: GLM 5.2 and the coming AI margin collapse The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1299] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-08
+            - generic [ref=f3e1304]:
+              - generic [ref=f3e1305]:
+                - generic [ref=f3e1306]: Interlinked Free
+                - generic [ref=f3e1307]: Jul 8, 2026
+              - generic [ref=f3e1308]:
+                - 'heading "AI Trends Brief — July 8, 2026: GLM 5.2 and the coming AI margin collapse" [level=3] [ref=f3e1309]'
+                - paragraph [ref=f3e1310]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1311]:
+                  - generic [ref=f3e1312]: AI trends
+                  - generic [ref=f3e1313]: artificial intelligence
+                  - generic [ref=f3e1314]: AI agents
+          - 'link "Interlinked Free Jul 7, 2026 AI Trends Brief — July 7, 2026: GLM 5.2 and the coming AI margin collapse The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1316] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-07
+            - generic [ref=f3e1321]:
+              - generic [ref=f3e1322]:
+                - generic [ref=f3e1323]: Interlinked Free
+                - generic [ref=f3e1324]: Jul 7, 2026
+              - generic [ref=f3e1325]:
+                - 'heading "AI Trends Brief — July 7, 2026: GLM 5.2 and the coming AI margin collapse" [level=3] [ref=f3e1326]'
+                - paragraph [ref=f3e1327]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1328]:
+                  - generic [ref=f3e1329]: AI trends
+                  - generic [ref=f3e1330]: artificial intelligence
+                  - generic [ref=f3e1331]: AI agents
+          - link "Interlinked Free Jul 5, 2026 Your competitors are automating decisions while you still approve every email Let's talk about leverage. Not the motivational kind. The math kind. Every hour you spend on tasks your AI could handle is an hour stolen from the decisions only you can make — the CEO-level thinking that actually grows your business. Most founders are drowning in operational quicksand while their AI-powered competitors swim past. AI CEO business automation executive productivity" [ref=f3e1333] [cursor=pointer]:
+            - /url: /newsletter/ai-ceo-automation-july-5-2026-free
+            - generic [ref=f3e1338]:
+              - generic [ref=f3e1339]:
+                - generic [ref=f3e1340]: Interlinked Free
+                - generic [ref=f3e1341]: Jul 5, 2026
+              - generic [ref=f3e1342]:
+                - heading "Your competitors are automating decisions while you still approve every email" [level=3] [ref=f3e1343]
+                - paragraph [ref=f3e1344]: Let's talk about leverage. Not the motivational kind. The math kind. Every hour you spend on tasks your AI could handle is an hour stolen from the decisions only you can make — the CEO-level thinking that actually grows your business. Most founders are drowning in operational quicksand while their AI-powered competitors swim past.
+                - generic [ref=f3e1345]:
+                  - generic [ref=f3e1346]: AI CEO
+                  - generic [ref=f3e1347]: business automation
+                  - generic [ref=f3e1348]: executive productivity
+          - 'link "Interlinked Free Jul 5, 2026 AI Trends Brief — July 5, 2026: The bottleneck might be the air in the room The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler. AI trends artificial intelligence AI agents" [ref=f3e1350] [cursor=pointer]':
+            - /url: /newsletter/ai-trends-brief-2026-07-05
+            - generic [ref=f3e1355]:
+              - generic [ref=f3e1356]:
+                - generic [ref=f3e1357]: Interlinked Free
+                - generic [ref=f3e1358]: Jul 5, 2026
+              - generic [ref=f3e1359]:
+                - 'heading "AI Trends Brief — July 5, 2026: The bottleneck might be the air in the room" [level=3] [ref=f3e1360]'
+                - paragraph [ref=f3e1361]: "The signals worth your attention from the last 72 hours in AI — pulled from where the builders actually gather, ranked by traction, and read through one lens: what an operator should do about it. No hype, no filler."
+                - generic [ref=f3e1362]:
+                  - generic [ref=f3e1363]: AI trends
+                  - generic [ref=f3e1364]: artificial intelligence
+                  - generic [ref=f3e1365]: AI agents
+          - link "Interlinked Free Jul 2, 2026 The Uncomfortable Truth About Business in 2026 Imagine your business running at 3AM. Not because someone’s pulling an all-nighter — because your AI agents don’t sleep. That’s not the future. That’s what the top 5% built last quarter. AI automation artificial intelligence business machine learning 2026" [ref=f3e1367] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-07-02
+            - generic [ref=f3e1372]:
+              - generic [ref=f3e1373]:
+                - generic [ref=f3e1374]: Interlinked Free
+                - generic [ref=f3e1375]: Jul 2, 2026
+              - generic [ref=f3e1376]:
+                - heading "The Uncomfortable Truth About Business in 2026" [level=3] [ref=f3e1377]
+                - paragraph [ref=f3e1378]: Imagine your business running at 3AM. Not because someone’s pulling an all-nighter — because your AI agents don’t sleep. That’s not the future. That’s what the top 5% built last quarter.
+                - generic [ref=f3e1379]:
+                  - generic [ref=f3e1380]: AI automation
+                  - generic [ref=f3e1381]: artificial intelligence business
+                  - generic [ref=f3e1382]: machine learning 2026
+          - link "Interlinked Free Jun 30, 2026 The Quiet Power of Businesses That Move First She wasn’t supposed to win. No VC backing. No Ivy League network. Just a laptop, a vision, and one AI agent that did the work of twelve. Six months later, she was outpacing companies with fifty-person teams. AI automation artificial intelligence business machine learning 2026" [ref=f3e1384] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-06-30
+            - generic [ref=f3e1389]:
+              - generic [ref=f3e1390]:
+                - generic [ref=f3e1391]: Interlinked Free
+                - generic [ref=f3e1392]: Jun 30, 2026
+              - generic [ref=f3e1393]:
+                - heading "The Quiet Power of Businesses That Move First" [level=3] [ref=f3e1394]
+                - paragraph [ref=f3e1395]: She wasn’t supposed to win. No VC backing. No Ivy League network. Just a laptop, a vision, and one AI agent that did the work of twelve. Six months later, she was outpacing companies with fifty-person teams.
+                - generic [ref=f3e1396]:
+                  - generic [ref=f3e1397]: AI automation
+                  - generic [ref=f3e1398]: artificial intelligence business
+                  - generic [ref=f3e1399]: machine learning 2026
+          - link "Interlinked Free Jun 24, 2026 Your Competitors Are Scaling Without Hiring — Here Is How A quiet revolution is happening in boardrooms across the country. CEOs who once spent 60% of their time firefighting operations are now deploying AI systems that work while they sleep. The gap between those who understand this shift and those who don't is widening fast. If you're still running your business the old way, this newsletter is your wake-up call. AI CEO business automation CEO productivity" [ref=f3e1401] [cursor=pointer]:
+            - /url: /newsletter/free-newsletter-2026-06-24
+            - generic [ref=f3e1406]:
+              - generic [ref=f3e1407]:
+                - generic [ref=f3e1408]: Interlinked Free
+                - generic [ref=f3e1409]: Jun 24, 2026
+              - generic [ref=f3e1410]:
+                - heading "Your Competitors Are Scaling Without Hiring — Here Is How" [level=3] [ref=f3e1411]
+                - paragraph [ref=f3e1412]: A quiet revolution is happening in boardrooms across the country. CEOs who once spent 60% of their time firefighting operations are now deploying AI systems that work while they sleep. The gap between those who understand this shift and those who don't is widening fast. If you're still running your business the old way, this newsletter is your wake-up call.
+                - generic [ref=f3e1413]:
+                  - generic [ref=f3e1414]: AI CEO
+                  - generic [ref=f3e1415]: business automation
+                  - generic [ref=f3e1416]: CEO productivity
+          - link "Interlinked Free Jun 21, 2026 The Silent Shift That's Rewriting Every Industry The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage. AI automation artificial intelligence business machine learning 2026" [ref=f3e1418] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-06-21
+            - generic [ref=f3e1423]:
+              - generic [ref=f3e1424]:
+                - generic [ref=f3e1425]: Interlinked Free
+                - generic [ref=f3e1426]: Jun 21, 2026
+              - generic [ref=f3e1427]:
+                - heading "The Silent Shift That's Rewriting Every Industry" [level=3] [ref=f3e1428]
+                - paragraph [ref=f3e1429]: The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage.
+                - generic [ref=f3e1430]:
+                  - generic [ref=f3e1431]: AI automation
+                  - generic [ref=f3e1432]: artificial intelligence business
+                  - generic [ref=f3e1433]: machine learning 2026
+          - link "Interlinked Free Jun 13, 2026 The AI Playbook Your Competitors Hope You Never Find The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage. AI automation artificial intelligence business machine learning 2026" [ref=f3e1435] [cursor=pointer]:
+            - /url: /newsletter/interlinked-free-2026-06-13
+            - generic [ref=f3e1440]:
+              - generic [ref=f3e1441]:
+                - generic [ref=f3e1442]: Interlinked Free
+                - generic [ref=f3e1443]: Jun 13, 2026
+              - generic [ref=f3e1444]:
+                - heading "The AI Playbook Your Competitors Hope You Never Find" [level=3] [ref=f3e1445]
+                - paragraph [ref=f3e1446]: The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage.
+                - generic [ref=f3e1447]:
+                  - generic [ref=f3e1448]: AI automation
+                  - generic [ref=f3e1449]: artificial intelligence business
+                  - generic [ref=f3e1450]: machine learning 2026
+          - 'link "Interlinked Free Jun 3, 2026 Your Biggest Business Bottleneck Isnt Strategy — Its You You built something. You have the vision. The strategy is not the problem. Heres what is: youre the one doing work that shouldnt require your attention, and its costing you more than you realize. Not in money youll notice today — in opportunity cost you wont notice until youre already behind. AI CEO business automation entrepreneur productivity" [ref=f3e1452] [cursor=pointer]':
+            - /url: /newsletter/interlinked-free-2026-06-03
+            - generic [ref=f3e1457]:
+              - generic [ref=f3e1458]:
+                - generic [ref=f3e1459]: Interlinked Free
+                - generic [ref=f3e1460]: Jun 3, 2026
+              - generic [ref=f3e1461]:
+                - heading "Your Biggest Business Bottleneck Isnt Strategy — Its You" [level=3] [ref=f3e1462]
+                - paragraph [ref=f3e1463]: "You built something. You have the vision. The strategy is not the problem. Heres what is: youre the one doing work that shouldnt require your attention, and its costing you more than you realize. Not in money youll notice today — in opportunity cost you wont notice until youre already behind."
+                - generic [ref=f3e1464]:
+                  - generic [ref=f3e1465]: AI CEO
+                  - generic [ref=f3e1466]: business automation
+                  - generic [ref=f3e1467]: entrepreneur productivity
+          - link "Interlinked Free Jun 1, 2026 Monday mornings look completely different for AI CEOs Most executives spend their Mondays drowning in emails, firefighting, and chasing status updates. But AI CEOs? They start the week already ahead. Here is what that actually looks like - and why it matters for your business. AI CEO Monday operations business automation" [ref=f3e1469] [cursor=pointer]:
+            - /url: /newsletter/free-ai-ceo-monday-2026-06-01
+            - generic [ref=f3e1474]:
+              - generic [ref=f3e1475]:
+                - generic [ref=f3e1476]: Interlinked Free
+                - generic [ref=f3e1477]: Jun 1, 2026
+              - generic [ref=f3e1478]:
+                - heading "Monday mornings look completely different for AI CEOs" [level=3] [ref=f3e1479]
+                - paragraph [ref=f3e1480]: Most executives spend their Mondays drowning in emails, firefighting, and chasing status updates. But AI CEOs? They start the week already ahead. Here is what that actually looks like - and why it matters for your business.
+                - generic [ref=f3e1481]:
+                  - generic [ref=f3e1482]: AI CEO
+                  - generic [ref=f3e1483]: Monday operations
+                  - generic [ref=f3e1484]: business automation
+          - 'link "Interlinked Free May 31, 2026 Your biggest bottleneck isn''t your team — it''s you Every business owner I''ve worked with has the same bottleneck. It''s not their marketing. It''s not their sales team. It''s not their product. The bottleneck is the founder who can''t let go of decisions that should have been automated years ago. Here''s the uncomfortable truth: if you''re still approving every vendor invoice, answering every ''quick question'' from your team, or personally reviewing reports you could set and forget — you''re not running a business. You''re running yourself into the ground. AI CEOs don''t have this problem. And neither should you. AI CEO decision bottleneck business automation" [ref=f3e1486] [cursor=pointer]':
+            - /url: /newsletter/ai-ceo-decisions-2026-05-31
+            - generic [ref=f3e1491]:
+              - generic [ref=f3e1492]:
+                - generic [ref=f3e1493]: Interlinked Free
+                - generic [ref=f3e1494]: May 31, 2026
+              - generic [ref=f3e1495]:
+                - heading "Your biggest bottleneck isn't your team — it's you" [level=3] [ref=f3e1496]
+                - paragraph [ref=f3e1497]: "Every business owner I've worked with has the same bottleneck. It's not their marketing. It's not their sales team. It's not their product. The bottleneck is the founder who can't let go of decisions that should have been automated years ago. Here's the uncomfortable truth: if you're still approving every vendor invoice, answering every 'quick question' from your team, or personally reviewing reports you could set and forget — you're not running a business. You're running yourself into the ground. AI CEOs don't have this problem. And neither should you."
+                - generic [ref=f3e1498]:
+                  - generic [ref=f3e1499]: AI CEO
+                  - generic [ref=f3e1500]: decision bottleneck
+                  - generic [ref=f3e1501]: business automation
+          - 'link "Interlinked Free May 30, 2026 The Silent Revenue Killer Hiding in Your Business (And How to Kill It) Your business isn''t missing a product. It''s not missing a market. It''s missing something far more basic — and far more expensive: velocity. Every hour your team spends on busywork is an hour NOT spent on growth. Every manual process is a bottleneck. Every delay in decision-making is money left on the table. Today, we''re going after those bottlenecks — and showing you how AI eliminates them at the source. AI automation business bottlenecks CEO efficiency" [ref=f3e1503] [cursor=pointer]':
+            - /url: /newsletter/free-interlinked-2025-05-30
+            - generic [ref=f3e1508]:
+              - generic [ref=f3e1509]:
+                - generic [ref=f3e1510]: Interlinked Free
+                - generic [ref=f3e1511]: May 30, 2026
+              - generic [ref=f3e1512]:
+                - heading "The Silent Revenue Killer Hiding in Your Business (And How to Kill It)" [level=3] [ref=f3e1513]
+                - paragraph [ref=f3e1514]: "Your business isn't missing a product. It's not missing a market. It's missing something far more basic — and far more expensive: velocity. Every hour your team spends on busywork is an hour NOT spent on growth. Every manual process is a bottleneck. Every delay in decision-making is money left on the table. Today, we're going after those bottlenecks — and showing you how AI eliminates them at the source."
+                - generic [ref=f3e1515]:
+                  - generic [ref=f3e1516]: AI automation
+                  - generic [ref=f3e1517]: business bottlenecks
+                  - generic [ref=f3e1518]: CEO efficiency
+          - 'link "Interlinked Free May 28, 2026 The AI CEO That Never Sleeps (And Never Takes a Sick Day) Your business is running you. Every day, you wake up to a flood of decisions, check-ins, and coordination tasks that eat up hours you could spend on actual growth. You built this company to have freedom, but somehow you''re the most operations-dependent person in it. That''s not a time management problem. It''s a structural problem. And the fix is simpler than you think: stop being the bottleneck. AI CEO 24/7 operations business automation" [ref=f3e1520] [cursor=pointer]':
+            - /url: /newsletter/ai-ceo-that-never-sleeps-2026-05-28-free
+            - generic [ref=f3e1525]:
+              - generic [ref=f3e1526]:
+                - generic [ref=f3e1527]: Interlinked Free
+                - generic [ref=f3e1528]: May 28, 2026
+              - generic [ref=f3e1529]:
+                - heading "The AI CEO That Never Sleeps (And Never Takes a Sick Day)" [level=3] [ref=f3e1530]
+                - paragraph [ref=f3e1531]: "Your business is running you. Every day, you wake up to a flood of decisions, check-ins, and coordination tasks that eat up hours you could spend on actual growth. You built this company to have freedom, but somehow you're the most operations-dependent person in it. That's not a time management problem. It's a structural problem. And the fix is simpler than you think: stop being the bottleneck."
+                - generic [ref=f3e1532]:
+                  - generic [ref=f3e1533]: AI CEO
+                  - generic [ref=f3e1534]: 24/7 operations
+                  - generic [ref=f3e1535]: business automation
+          - 'link "Interlinked Free May 2, 2026 Salesforce killed its own UI for AI agents This week Salesforce did something its competitors will spend the next 18 months trying to undo. It exposed its entire platform — every object, workflow, and permission boundary — through a headless API designed for AI agents to consume directly, no UI required. Mistral shipped Workflows, an orchestration layer that moves agents from sandbox to production processes. And OpenAI''s models are now available natively through AWS, ending the Microsoft-only distribution lock that defined the last 18 months. Three moves, one shape: the product surface your customer actually uses is no longer your screen. It is your API for their agent. Salesforce agents headless CRM Agentforce API" [ref=f3e1537] [cursor=pointer]':
+            - /url: /newsletter/salesforce-headless-agents-first-api-2026-05-02
+            - generic [ref=f3e1542]:
+              - generic [ref=f3e1543]:
+                - generic [ref=f3e1544]: Interlinked Free
+                - generic [ref=f3e1545]: May 2, 2026
+              - generic [ref=f3e1546]:
+                - heading "Salesforce killed its own UI for AI agents" [level=3] [ref=f3e1547]
+                - paragraph [ref=f3e1548]: "This week Salesforce did something its competitors will spend the next 18 months trying to undo. It exposed its entire platform — every object, workflow, and permission boundary — through a headless API designed for AI agents to consume directly, no UI required. Mistral shipped Workflows, an orchestration layer that moves agents from sandbox to production processes. And OpenAI's models are now available natively through AWS, ending the Microsoft-only distribution lock that defined the last 18 months. Three moves, one shape: the product surface your customer actually uses is no longer your screen. It is your API for their agent."
+                - generic [ref=f3e1549]:
+                  - generic [ref=f3e1550]: Salesforce agents
+                  - generic [ref=f3e1551]: headless CRM
+                  - generic [ref=f3e1552]: Agentforce API
+          - link "Interlinked Free May 1, 2026 Microsoft just turned agent chaos into a $99 SKU At 9 AM Pacific today, Microsoft 365 E7 went generally available with Agent 365 inside it — a single control plane for every AI agent your team is running, priced at $99 per user per month. That number matters less than what it represents. Five days from today, OpenAI's Workspace Agents exits free preview and switches to credit-based pricing. In the same week, the cost of governing AI agents and the cost of running them both got line items. The shadow-agent grace period is officially closed. Microsoft 365 agents Agent 365 enterprise AI pricing" [ref=f3e1554] [cursor=pointer]:
+            - /url: /newsletter/microsoft-99-agent-365-floor-2026-05-01
+            - generic [ref=f3e1559]:
+              - generic [ref=f3e1560]:
+                - generic [ref=f3e1561]: Interlinked Free
+                - generic [ref=f3e1562]: May 1, 2026
+              - generic [ref=f3e1563]:
+                - heading "Microsoft just turned agent chaos into a $99 SKU" [level=3] [ref=f3e1564]
+                - paragraph [ref=f3e1565]: At 9 AM Pacific today, Microsoft 365 E7 went generally available with Agent 365 inside it — a single control plane for every AI agent your team is running, priced at $99 per user per month. That number matters less than what it represents. Five days from today, OpenAI's Workspace Agents exits free preview and switches to credit-based pricing. In the same week, the cost of governing AI agents and the cost of running them both got line items. The shadow-agent grace period is officially closed.
+                - generic [ref=f3e1566]:
+                  - generic [ref=f3e1567]: Microsoft 365 agents
+                  - generic [ref=f3e1568]: Agent 365
+                  - generic [ref=f3e1569]: enterprise AI pricing
+          - link "Interlinked Free Apr 27, 2026 OpenAI raised $122B. Your edge costs $0.08/hour Two numbers landed in the same week and nobody is putting them next to each other. OpenAI closed $122 billion at an $852B post-money — Amazon, NVIDIA, SoftBank anchoring alongside Microsoft. Three days later Anthropic switched on Claude Managed Agents at $0.08 per session-hour. The capital is concentrating violently at the top of the stack. The tooling is collapsing in price at the bottom. If you run a 5-person team, the gap between what you can deploy and what an enterprise can deploy just got narrower than it has been in twenty years — and most of your competitors are still pricing themselves like it is 2024. OpenAI $122B raise Claude Managed Agents $0.08 GPT-5.5 agent mode" [ref=f3e1571] [cursor=pointer]:
+            - /url: /newsletter/openai-122b-008-agent-edge-2026-04-27
+            - generic [ref=f3e1576]:
+              - generic [ref=f3e1577]:
+                - generic [ref=f3e1578]: Interlinked Free
+                - generic [ref=f3e1579]: Apr 27, 2026
+              - generic [ref=f3e1580]:
+                - heading "OpenAI raised $122B. Your edge costs $0.08/hour" [level=3] [ref=f3e1581]
+                - paragraph [ref=f3e1582]: Two numbers landed in the same week and nobody is putting them next to each other. OpenAI closed $122 billion at an $852B post-money — Amazon, NVIDIA, SoftBank anchoring alongside Microsoft. Three days later Anthropic switched on Claude Managed Agents at $0.08 per session-hour. The capital is concentrating violently at the top of the stack. The tooling is collapsing in price at the bottom. If you run a 5-person team, the gap between what you can deploy and what an enterprise can deploy just got narrower than it has been in twenty years — and most of your competitors are still pricing themselves like it is 2024.
+                - generic [ref=f3e1583]:
+                  - generic [ref=f3e1584]: OpenAI $122B raise
+                  - generic [ref=f3e1585]: Claude Managed Agents $0.08
+                  - generic [ref=f3e1586]: GPT-5.5 agent mode
+          - 'link "Interlinked Free Apr 25, 2026 The first agent on your org chart shipped Tuesday Tuesday morning OpenAI quietly shipped Workspace Agents — shared, long-running, Codex-powered agents that live inside your team’s ChatGPT, hold their own permissions, and keep working when nobody’s logged in. The same week, Adobe rebranded Experience Cloud to CX Enterprise and introduced “Coworkers” — agents with goals instead of prompts. Snowflake locked in twin $200M deals with OpenAI and Anthropic to make sure those agents reason over governed data instead of bootleg pipes. Three announcements, one shape: the agent is no longer a tool you open. It’s a teammate with a seat — and the operators who don’t put one on the org chart this quarter are about to be the most expensive employees in their own company. OpenAI Workspace Agents Codex enterprise agents Adobe CX Enterprise Coworker" [ref=f3e1588] [cursor=pointer]':
+            - /url: /newsletter/agent-on-the-org-chart-2026-04-25
+            - generic [ref=f3e1593]:
+              - generic [ref=f3e1594]:
+                - generic [ref=f3e1595]: Interlinked Free
+                - generic [ref=f3e1596]: Apr 25, 2026
+              - generic [ref=f3e1597]:
+                - heading "The first agent on your org chart shipped Tuesday" [level=3] [ref=f3e1598]
+                - paragraph [ref=f3e1599]: "Tuesday morning OpenAI quietly shipped Workspace Agents — shared, long-running, Codex-powered agents that live inside your team’s ChatGPT, hold their own permissions, and keep working when nobody’s logged in. The same week, Adobe rebranded Experience Cloud to CX Enterprise and introduced “Coworkers” — agents with goals instead of prompts. Snowflake locked in twin $200M deals with OpenAI and Anthropic to make sure those agents reason over governed data instead of bootleg pipes. Three announcements, one shape: the agent is no longer a tool you open. It’s a teammate with a seat — and the operators who don’t put one on the org chart this quarter are about to be the most expensive employees in their own company."
+                - generic [ref=f3e1600]:
+                  - generic [ref=f3e1601]: OpenAI Workspace Agents
+                  - generic [ref=f3e1602]: Codex enterprise agents
+                  - generic [ref=f3e1603]: Adobe CX Enterprise Coworker
+          - link "Interlinked Free Apr 22, 2026 96% ship AI agents — only 21% can control them This week the numbers have a strange shape. EY just switched on agentic AI across its entire 130,000-person Assurance workforce — audits that used to crawl through 1.4 trillion lines of journal entries a year now run through a multi-agent fabric. Bezos is closing a $10B round for Project Prometheus, an AI lab aimed at world-model agents. Cursor is pricing at $50B. And yet when OutSystems polled enterprises this month, 96% said they’re already running AI agents, while only 21% had a real governance model behind them. The gap between what companies are shipping and what they actually control is now the biggest operational risk on the 2026 board deck. agent sprawl 2026 AI governance gap EY agentic deployment" [ref=f3e1605] [cursor=pointer]:
+            - /url: /newsletter/agent-sprawl-governance-gap-2026-04-22
+            - generic [ref=f3e1610]:
+              - generic [ref=f3e1611]:
+                - generic [ref=f3e1612]: Interlinked Free
+                - generic [ref=f3e1613]: Apr 22, 2026
+              - generic [ref=f3e1614]:
+                - heading "96% ship AI agents — only 21% can control them" [level=3] [ref=f3e1615]
+                - paragraph [ref=f3e1616]: This week the numbers have a strange shape. EY just switched on agentic AI across its entire 130,000-person Assurance workforce — audits that used to crawl through 1.4 trillion lines of journal entries a year now run through a multi-agent fabric. Bezos is closing a $10B round for Project Prometheus, an AI lab aimed at world-model agents. Cursor is pricing at $50B. And yet when OutSystems polled enterprises this month, 96% said they’re already running AI agents, while only 21% had a real governance model behind them. The gap between what companies are shipping and what they actually control is now the biggest operational risk on the 2026 board deck.
+                - generic [ref=f3e1617]:
+                  - generic [ref=f3e1618]: agent sprawl 2026
+                  - generic [ref=f3e1619]: AI governance gap
+                  - generic [ref=f3e1620]: EY agentic deployment
+          - link "Interlinked Free Apr 21, 2026 The week AI agents stopped being experimental American Express just paid real money for an AI agent company. Meta’s infrastructure team now ships in 30 minutes what used to take 10 engineer-hours. And Stanford’s freshly released 2026 AI Index quietly reported that agent success on real computer tasks climbed from 12 percent to 66 percent in a single year. You can argue about which milestone matters most — but together they close a window most operators are still planning around. Amex Hyper acquisition Meta agent platform Stanford AI Index 2026" [ref=f3e1622] [cursor=pointer]:
+            - /url: /newsletter/agents-stopped-being-experimental-2026-04-21
+            - generic [ref=f3e1627]:
+              - generic [ref=f3e1628]:
+                - generic [ref=f3e1629]: Interlinked Free
+                - generic [ref=f3e1630]: Apr 21, 2026
+              - generic [ref=f3e1631]:
+                - heading "The week AI agents stopped being experimental" [level=3] [ref=f3e1632]
+                - paragraph [ref=f3e1633]: American Express just paid real money for an AI agent company. Meta’s infrastructure team now ships in 30 minutes what used to take 10 engineer-hours. And Stanford’s freshly released 2026 AI Index quietly reported that agent success on real computer tasks climbed from 12 percent to 66 percent in a single year. You can argue about which milestone matters most — but together they close a window most operators are still planning around.
+                - generic [ref=f3e1634]:
+                  - generic [ref=f3e1635]: Amex Hyper acquisition
+                  - generic [ref=f3e1636]: Meta agent platform
+                  - generic [ref=f3e1637]: Stanford AI Index 2026
+          - link "Interlinked Free Apr 20, 2026 Your Next Hire Should Be an AI Agent — Here's Why Two years ago, a 10-person agency was considered lean. Today, a solo operator with the right AI stack is doing what that agency couldn’t. The rules didn’t bend — they broke. AI automation artificial intelligence business machine learning 2026" [ref=f3e1639] [cursor=pointer]:
+            - /url: /newsletter/your-next-hire-should-be-an-ai-agent-heres-why-draft-2026-04-20-3u32
+            - generic [ref=f3e1644]:
+              - generic [ref=f3e1645]:
+                - generic [ref=f3e1646]: Interlinked Free
+                - generic [ref=f3e1647]: Apr 20, 2026
+              - generic [ref=f3e1648]:
+                - heading "Your Next Hire Should Be an AI Agent — Here's Why" [level=3] [ref=f3e1649]
+                - paragraph [ref=f3e1650]: Two years ago, a 10-person agency was considered lean. Today, a solo operator with the right AI stack is doing what that agency couldn’t. The rules didn’t bend — they broke.
+                - generic [ref=f3e1651]:
+                  - generic [ref=f3e1652]: AI automation
+                  - generic [ref=f3e1653]: artificial intelligence business
+                  - generic [ref=f3e1654]: machine learning 2026
+          - 'link "Interlinked Free Apr 15, 2026 Your business is bleeding time — the Tax Day reality check It is April 15th. For most business owners, that means one thing: scrambling. Accountants, receipts, missing invoices, extensions, stress. But across the businesses we work with at Omni AI, something different happened this year. The ones running AI CEO systems are not scrambling. They are looking at clean dashboards, reviewing organized summaries, and signing off on work their systems already did. The difference is not luck. It is infrastructure. time leaks tax day efficiency ops bottlenecks" [ref=f3e1656] [cursor=pointer]':
+            - /url: /newsletter/your-business-bleeding-time-tax-day-reality-check-2026-04-15
+            - generic [ref=f3e1661]:
+              - generic [ref=f3e1662]:
+                - generic [ref=f3e1663]: Interlinked Free
+                - generic [ref=f3e1664]: Apr 15, 2026
+              - generic [ref=f3e1665]:
+                - heading "Your business is bleeding time — the Tax Day reality check" [level=3] [ref=f3e1666]
+                - paragraph [ref=f3e1667]: "It is April 15th. For most business owners, that means one thing: scrambling. Accountants, receipts, missing invoices, extensions, stress. But across the businesses we work with at Omni AI, something different happened this year. The ones running AI CEO systems are not scrambling. They are looking at clean dashboards, reviewing organized summaries, and signing off on work their systems already did. The difference is not luck. It is infrastructure."
+                - generic [ref=f3e1668]:
+                  - generic [ref=f3e1669]: time leaks
+                  - generic [ref=f3e1670]: tax day efficiency
+                  - generic [ref=f3e1671]: ops bottlenecks
+          - link "Interlinked Free Apr 14, 2026 Your next hire might not be human She had thirteen tabs open in Notion. Three open job reqs. A contractor who just went ghost. And a revenue goal that wasn’t going to hit itself. So she stopped hiring. Not because she gave up — because she finally understood the real math. Every new hire comes with salary, benefits, onboarding time, and the quiet tax of managing a human life. Every AI system comes with a prompt, a workflow, and a bill that starts at pennies. In 2026, the smartest operators I know aren’t posting job listings. They’re writing better prompts. And the gap between those two groups is widening fast. AI agents virtual employees agentic workforce" [ref=f3e1673] [cursor=pointer]:
+            - /url: /newsletter/your-next-hire-might-not-be-human
+            - generic [ref=f3e1678]:
+              - generic [ref=f3e1679]:
+                - generic [ref=f3e1680]: Interlinked Free
+                - generic [ref=f3e1681]: Apr 14, 2026
+              - generic [ref=f3e1682]:
+                - heading "Your next hire might not be human" [level=3] [ref=f3e1683]
+                - paragraph [ref=f3e1684]: She had thirteen tabs open in Notion. Three open job reqs. A contractor who just went ghost. And a revenue goal that wasn’t going to hit itself. So she stopped hiring. Not because she gave up — because she finally understood the real math. Every new hire comes with salary, benefits, onboarding time, and the quiet tax of managing a human life. Every AI system comes with a prompt, a workflow, and a bill that starts at pennies. In 2026, the smartest operators I know aren’t posting job listings. They’re writing better prompts. And the gap between those two groups is widening fast.
+                - generic [ref=f3e1685]:
+                  - generic [ref=f3e1686]: AI agents
+                  - generic [ref=f3e1687]: virtual employees
+                  - generic [ref=f3e1688]: agentic workforce
+          - 'link "Interlinked Free Apr 7, 2026 The New Moat: Why Speed Beats Everything Else Now The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage. speed as moat velocity advantage fast execution" [ref=f3e1690] [cursor=pointer]':
+            - /url: /newsletter/the-new-moat-why-speed-beats-everything-else-now-draft-2026-04-07-6wb6
+            - generic [ref=f3e1695]:
+              - generic [ref=f3e1696]:
+                - generic [ref=f3e1697]: Interlinked Free
+                - generic [ref=f3e1698]: Apr 7, 2026
+              - generic [ref=f3e1699]:
+                - 'heading "The New Moat: Why Speed Beats Everything Else Now" [level=3] [ref=f3e1700]'
+                - paragraph [ref=f3e1701]: The gap used to be about who had more people. Then more capital. Now? It’s about who moves faster. And the fastest movers have an unfair advantage.
+                - generic [ref=f3e1702]:
+                  - generic [ref=f3e1703]: speed as moat
+                  - generic [ref=f3e1704]: velocity advantage
+                  - generic [ref=f3e1705]: fast execution
+          - link "Interlinked Free Apr 6, 2026 Your Next Hire Should Be an AI Agent — Here's Why Your next hire will not ask for benefits, PTO, or a laptop. It will ticket itself, escalate when it needs you, and sleep when the queue is empty. The question is whether you are its manager or its replacement. AI agent hires autonomous workers lean teams" [ref=f3e1707] [cursor=pointer]:
+            - /url: /newsletter/your-next-hire-should-be-an-ai-agent-heres-why-draft-2026-04-06-wpkq
+            - generic [ref=f3e1712]:
+              - generic [ref=f3e1713]:
+                - generic [ref=f3e1714]: Interlinked Free
+                - generic [ref=f3e1715]: Apr 6, 2026
+              - generic [ref=f3e1716]:
+                - heading "Your Next Hire Should Be an AI Agent — Here's Why" [level=3] [ref=f3e1717]
+                - paragraph [ref=f3e1718]: Your next hire will not ask for benefits, PTO, or a laptop. It will ticket itself, escalate when it needs you, and sleep when the queue is empty. The question is whether you are its manager or its replacement.
+                - generic [ref=f3e1719]:
+                  - generic [ref=f3e1720]: AI agent hires
+                  - generic [ref=f3e1721]: autonomous workers
+                  - generic [ref=f3e1722]: lean teams
+          - link "Interlinked Free Apr 5, 2026 The Decision That Costs More Every Day You Delay It She wasn’t supposed to win. No VC backing. No Ivy League network. Just a laptop, a vision, and one AI agent that did the work of twelve. Six months later, she was outpacing companies with fifty-person teams. cost of delay procrastination decision tax" [ref=f3e1724] [cursor=pointer]:
+            - /url: /newsletter/the-decision-that-costs-more-every-day-you-delay-it-draft-2026-04-05-ogt1
+            - generic [ref=f3e1729]:
+              - generic [ref=f3e1730]:
+                - generic [ref=f3e1731]: Interlinked Free
+                - generic [ref=f3e1732]: Apr 5, 2026
+              - generic [ref=f3e1733]:
+                - heading "The Decision That Costs More Every Day You Delay It" [level=3] [ref=f3e1734]
+                - paragraph [ref=f3e1735]: She wasn’t supposed to win. No VC backing. No Ivy League network. Just a laptop, a vision, and one AI agent that did the work of twelve. Six months later, she was outpacing companies with fifty-person teams.
+                - generic [ref=f3e1736]:
+                  - generic [ref=f3e1737]: cost of delay
+                  - generic [ref=f3e1738]: procrastination
+                  - generic [ref=f3e1739]: decision tax
+          - link "Interlinked Free Apr 4, 2026 The Quiet Power of Businesses That Move First The scariest part isn’t that AI is moving fast. It’s that most people don’t realize they’ve already been lapped. The leaders aren’t ahead by months — they’re ahead by a fundamentally different operating system. first mover quiet wins early adoption" [ref=f3e1741] [cursor=pointer]:
+            - /url: /newsletter/the-quiet-power-of-businesses-that-move-first-draft-2026-04-04-th7m
+            - generic [ref=f3e1746]:
+              - generic [ref=f3e1747]:
+                - generic [ref=f3e1748]: Interlinked Free
+                - generic [ref=f3e1749]: Apr 4, 2026
+              - generic [ref=f3e1750]:
+                - heading "The Quiet Power of Businesses That Move First" [level=3] [ref=f3e1751]
+                - paragraph [ref=f3e1752]: The scariest part isn’t that AI is moving fast. It’s that most people don’t realize they’ve already been lapped. The leaders aren’t ahead by months — they’re ahead by a fundamentally different operating system.
+                - generic [ref=f3e1753]:
+                  - generic [ref=f3e1754]: first mover
+                  - generic [ref=f3e1755]: quiet wins
+                  - generic [ref=f3e1756]: early adoption
+          - 'link "Interlinked Free Apr 3, 2026 Stop Planning for AI. Start Building With It. Here’s what nobody tells you about the AI revolution: it doesn’t announce itself. There’s no starting gun. One day you’re competitive, the next you’re a case study in what not to do. AI adoption build not plan action bias" [ref=f3e1758] [cursor=pointer]':
+            - /url: /newsletter/stop-planning-for-ai-start-building-with-it-draft-2026-04-03-qie5
+            - generic [ref=f3e1763]:
+              - generic [ref=f3e1764]:
+                - generic [ref=f3e1765]: Interlinked Free
+                - generic [ref=f3e1766]: Apr 3, 2026
+              - generic [ref=f3e1767]:
+                - heading "Stop Planning for AI. Start Building With It." [level=3] [ref=f3e1768]
+                - paragraph [ref=f3e1769]: "Here’s what nobody tells you about the AI revolution: it doesn’t announce itself. There’s no starting gun. One day you’re competitive, the next you’re a case study in what not to do."
+                - generic [ref=f3e1770]:
+                  - generic [ref=f3e1771]: AI adoption
+                  - generic [ref=f3e1772]: build not plan
+                  - generic [ref=f3e1773]: action bias
+          - link "Interlinked Free Apr 1, 2026 How to Build a Business That Runs While You Sleep There’s a moment every founder remembers — the moment they realized the old playbook was dead. For some, it came too late. For the smart ones, it came just in time. passive ops autonomous business sleep revenue" [ref=f3e1775] [cursor=pointer]:
+            - /url: /newsletter/how-to-build-a-business-that-runs-while-you-sleep-draft-2026-04-01-fnii
+            - generic [ref=f3e1780]:
+              - generic [ref=f3e1781]:
+                - generic [ref=f3e1782]: Interlinked Free
+                - generic [ref=f3e1783]: Apr 1, 2026
+              - generic [ref=f3e1784]:
+                - heading "How to Build a Business That Runs While You Sleep" [level=3] [ref=f3e1785]
+                - paragraph [ref=f3e1786]: There’s a moment every founder remembers — the moment they realized the old playbook was dead. For some, it came too late. For the smart ones, it came just in time.
+                - generic [ref=f3e1787]:
+                  - generic [ref=f3e1788]: passive ops
+                  - generic [ref=f3e1789]: autonomous business
+                  - generic [ref=f3e1790]: sleep revenue
+          - link "Interlinked Free Mar 30, 2026 The Quiet Revolution Happening While Everyone's Distracted While headlines obsess over AGI timelines, seven-figure operators are quietly rewiring their back offices. No announcements. No demo days. Just margin creeping up 2 points a month while competitors hold board meetings. quiet revolution unnoticed shift focus while distracted" [ref=f3e1792] [cursor=pointer]:
+            - /url: /newsletter/the-quiet-revolution-happening-while-everyones-distracted
+            - generic [ref=f3e1797]:
+              - generic [ref=f3e1798]:
+                - generic [ref=f3e1799]: Interlinked Free
+                - generic [ref=f3e1800]: Mar 30, 2026
+              - generic [ref=f3e1801]:
+                - heading "The Quiet Revolution Happening While Everyone's Distracted" [level=3] [ref=f3e1802]
+                - paragraph [ref=f3e1803]: While headlines obsess over AGI timelines, seven-figure operators are quietly rewiring their back offices. No announcements. No demo days. Just margin creeping up 2 points a month while competitors hold board meetings.
+                - generic [ref=f3e1804]:
+                  - generic [ref=f3e1805]: quiet revolution
+                  - generic [ref=f3e1806]: unnoticed shift
+                  - generic [ref=f3e1807]: focus while distracted
+          - link "Interlinked Free Mar 29, 2026 How AI Is Cutting Costs by 40% for Smart Businesses She stared at the spreadsheet for the hundredth time that month. Twelve people doing work that felt like it should take two. Not because they were slow — because the work itself was a relic. Then she built one automation. Then another. Within 90 days, those twelve people weren’t doing data entry anymore. They were doing strategy. And revenue doubled. 40% cost reduction AI savings smart ops" [ref=f3e1809] [cursor=pointer]:
+            - /url: /newsletter/how-ai-is-cutting-costs-by-40-for-smart-businesses
+            - generic [ref=f3e1814]:
+              - generic [ref=f3e1815]:
+                - generic [ref=f3e1816]: Interlinked Free
+                - generic [ref=f3e1817]: Mar 29, 2026
+              - generic [ref=f3e1818]:
+                - heading "How AI Is Cutting Costs by 40% for Smart Businesses" [level=3] [ref=f3e1819]
+                - paragraph [ref=f3e1820]: She stared at the spreadsheet for the hundredth time that month. Twelve people doing work that felt like it should take two. Not because they were slow — because the work itself was a relic. Then she built one automation. Then another. Within 90 days, those twelve people weren’t doing data entry anymore. They were doing strategy. And revenue doubled.
+                - generic [ref=f3e1821]:
+                  - generic [ref=f3e1822]: 40% cost reduction
+                  - generic [ref=f3e1823]: AI savings
+                  - generic [ref=f3e1824]: smart ops
+          - link "Interlinked Free Mar 28, 2026 Clean Data Beats Better Models — The AI Edge Nobody Talks About Everyone’s chasing the next model drop like it’s a sneaker release. Meanwhile, the teams actually shipping AI that works? They’re not upgrading their models. They’re cleaning their data. It’s the least glamorous move in tech — and the most powerful. clean data data hygiene model vs data" [ref=f3e1826] [cursor=pointer]:
+            - /url: /newsletter/clean-data-beats-better-models-the-ai-edge-nobody-talks-about
+            - generic [ref=f3e1831]:
+              - generic [ref=f3e1832]:
+                - generic [ref=f3e1833]: Interlinked Free
+                - generic [ref=f3e1834]: Mar 28, 2026
+              - generic [ref=f3e1835]:
+                - heading "Clean Data Beats Better Models — The AI Edge Nobody Talks About" [level=3] [ref=f3e1836]
+                - paragraph [ref=f3e1837]: Everyone’s chasing the next model drop like it’s a sneaker release. Meanwhile, the teams actually shipping AI that works? They’re not upgrading their models. They’re cleaning their data. It’s the least glamorous move in tech — and the most powerful.
+                - generic [ref=f3e1838]:
+                  - generic [ref=f3e1839]: clean data
+                  - generic [ref=f3e1840]: data hygiene
+                  - generic [ref=f3e1841]: model vs data
+    - contentinfo [ref=f3e1842]:
+      - generic [ref=f3e1843]:
+        - generic [ref=f3e1844]:
+          - generic [ref=f3e1845]:
+            - generic [ref=f3e1846]: Omni AI
+            - img "Omni AI Logo" [ref=f3e1847]
+          - navigation [ref=f3e1848]:
+            - link "Interlinked" [ref=f3e1849] [cursor=pointer]:
+              - /url: /interlinked
+            - link "Campaigns" [ref=f3e1850] [cursor=pointer]:
+              - /url: /campaigns
+            - link "Infographic" [ref=f3e1851] [cursor=pointer]:
+              - /url: /details
+            - link "Newsletter" [ref=f3e1852] [cursor=pointer]:
+              - /url: /newsletter
+            - link "Portfolio" [ref=f3e1853] [cursor=pointer]:
+              - /url: /portfolio
+            - link "Pricing" [ref=f3e1854] [cursor=pointer]:
+              - /url: /pricing
+            - link "Compare" [ref=f3e1855] [cursor=pointer]:
+              - /url: /vs
+            - link "About" [ref=f3e1856] [cursor=pointer]:
+              - /url: /about
+            - link "FAQ" [ref=f3e1857] [cursor=pointer]:
+              - /url: /faq
+          - paragraph [ref=f3e1858]: “This is not a tool. This is a transformation.”
+        - paragraph [ref=f3e1860]:
+          - text: © 2026 Omni Leads LLC ·
+          - link "Privacy" [ref=f3e1861] [cursor=pointer]:
+            - /url: /privacy
+  - region "Notifications (F8)":
+    - list
+  - alert [ref=f3e1862]
