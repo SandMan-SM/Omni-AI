@@ -34,6 +34,46 @@ const pngNewsletterArtwork = new Set([
   "interlinked-free-2026-07-21",
   "interlinked-premium-2026-07-20",
   "interlinked-free-2026-07-20",
+  "interlinked-free-2026-07-25",
+  "interlinked-premium-2026-07-18",
+  "interlinked-free-2026-07-18",
+  "free-ai-ceo-competitive-edge-2026-07-18",
+  "premium-ai-execution-gap-2026-07-18",
+  "interlinked-premium-2026-07-17",
+  "interlinked-free-2026-07-17",
+  "interlinked-premium-2026-07-16",
+  "interlinked-free-2026-07-16",
+  "ai-trends-brief-2026-07-15",
+  "interlinked-premium-2026-07-15",
+  "interlinked-free-2026-07-15",
+  "ai-trends-brief-2026-07-13",
+  "interlinked-premium-2026-07-12",
+  "ai-trends-brief-2026-07-12",
+  "interlinked-premium-2026-07-10",
+  "ai-trends-brief-2026-07-10",
+  "interlinked-premium-2026-07-09",
+  "free-ai-decisions-2026-07-09",
+  "premium-ai-coo-2026-07-09",
+  "ai-trends-brief-2026-07-09",
+  "interlinked-premium-2026-07-08",
+  "ai-trends-brief-2026-07-08",
+  "interlinked-premium-2026-07-07",
+  "ai-trends-brief-2026-07-07",
+  "interlinked-premium-2026-07-05",
+  "ai-ceo-automation-july-5-2026-free",
+  "ai-ceo-automation-july-5-2026-premium",
+  "ai-trends-brief-2026-07-05",
+  "interlinked-premium-2026-07-02",
+  "interlinked-free-2026-07-02",
+  "interlinked-premium-2026-06-30",
+  "interlinked-free-2026-06-30",
+  "premium-newsletter-2026-06-24",
+  "interlinked-premium-2026-06-21",
+  "interlinked-free-2026-06-21",
+  "interlinked-premium-2026-06-13",
+  "interlinked-free-2026-06-13",
+  "interlinked-free-2026-06-03",
+  "interlinked-premium-2026-06-03",
 ]);
 
 export function newsletterIssueImageUrl(slug: string): string {
@@ -44,10 +84,9 @@ export function newsletterIssueImageUrl(slug: string): string {
 }
 
 export function newsletterIssueBackgroundImage(slug: string): string {
-  const encodedSlug = encodeURIComponent(slug);
-  // Always keep a real static artwork layer behind issue-specific images.
-  // New posts therefore stay visual even before their generated asset ships.
-  return `url("${newsletterIssueImageUrl(slug)}"), url("/newsletter/generated/default.webp"), url("/newsletter/${encodedSlug}/artwork-image")`;
+  // Every published issue must ship with its own durable raster asset. Do not
+  // mask missing artwork with a generic default or dynamic fallback.
+  return `url("${newsletterIssueImageUrl(slug)}")`;
 }
 
 export function NewsletterIssueCard({

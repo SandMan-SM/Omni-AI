@@ -25,7 +25,7 @@ Direct `vercel --prod` from a dirty or behind checkout is prohibited. If a direc
 
 ## Newsletter artwork invariant
 
-`components/newsletter-issue-card.tsx` must keep an issue-specific image followed by `/newsletter/generated/default.webp`. The default asset must exist at `public/newsletter/generated/default.webp`. Verify visually on both `/newsletter` and `/newsletter/archive` after every release that touches newsletter components, assets, or layout.
+Every published newsletter slug must have its own issue-specific raster asset under `public/newsletter/generated/`, and `components/newsletter-issue-card.tsx` must resolve directly to that asset. Published cards must not rely on `default.webp`, a generic logo/OG image, or the dynamic artwork route as a fallback. Verify visually on both `/newsletter` and `/newsletter/archive` after every release that touches newsletter components, assets, or layout.
 
 ## Known rollback history
 
