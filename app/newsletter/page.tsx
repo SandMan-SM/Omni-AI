@@ -15,9 +15,9 @@ import { NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsl
 import NewsletterOptin from "@/components/NewsletterOptin";
 
 export const metadata: Metadata = {
-  title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
+  title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
   description:
-    "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium AI intelligence from Omni AI.",
+    "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium AI intelligence from Interlinked.",
   keywords:
     "AI newsletter, business intelligence, AI automation, Omni AI, Interlinked, daily AI briefs, AI strategy",
   // Canonical URL so UTM / ref / share-parameter variants resolve to a
@@ -36,15 +36,15 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
+    title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
     description:
       "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium tiers available.",
     url: "https://omnileadsagi.com/newsletter",
-    siteName: "Omni AI",
+    siteName: "Interlinked",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Omni AI Newsletter — Daily AI Strategy & Intelligence",
+    title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
     description:
       "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium tiers available.",
   },
@@ -331,7 +331,7 @@ export default async function NewsletterIndexPage() {
           <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
             <div>
               <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-normal text-white sm:text-4xl md:text-6xl md:leading-[0.98]">
-                Omni AI Newsletter
+                Interlinked Newsletter
               </h1>
               {/* data-speakable="intro" activates the SpeakableSpecification
                   declared on the Blog + Periodical JSON-LD above. Voice

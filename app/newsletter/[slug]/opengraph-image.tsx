@@ -8,6 +8,20 @@ export const alt = "Interlinked Newsletter";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
+const pngNewsletterArtwork = new Set([
+  "interlinked-premium-2026-07-24",
+  "interlinked-free-2026-07-24",
+  "interlinked-premium-2026-07-23",
+  "interlinked-free-2026-07-23",
+  "2026-07-23-ai-ceos-nobody-talking-about",
+  "interlinked-premium-2026-07-22",
+  "interlinked-free-2026-07-22",
+  "interlinked-premium-2026-07-21",
+  "interlinked-free-2026-07-21",
+  "interlinked-premium-2026-07-20",
+  "interlinked-free-2026-07-20",
+]);
+
 function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
   return Promise.race([
     Promise.resolve(promise),
@@ -55,7 +69,16 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
-  const backgroundUrl = `${siteUrl}/newsletter/generated/${encodeURIComponent(slug)}.jpg?v=20260601`;
+  const encodedSlug = encodeURIComponent(slug);
+  const extension = pngNewsletterArtwork.has(slug) ? "png" : "webp";
+  const generatedArtworkUrl = `${siteUrl}/newsletter/generated/${encodedSlug}.${extension}`;
+  const generatedArtworkResponse = await withTimeout(
+    fetch(generatedArtworkUrl, { method: "HEAD", cache: "force-cache" }),
+    1000
+  );
+  const backgroundUrl = generatedArtworkResponse?.ok
+    ? generatedArtworkUrl
+    : `${siteUrl}/newsletter/${encodedSlug}/artwork-image`;
   const date = post?.published_at
     ? new Date(post.published_at).toLocaleDateString("en-US", {
         month: "long",

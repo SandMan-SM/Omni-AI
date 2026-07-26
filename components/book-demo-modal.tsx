@@ -17,6 +17,7 @@ interface BookDemoModalProps {
   // no-pitch free conversation, not a product demo.
   heading?: string;
   subheading?: string;
+  variant?: "default" | "meta";
 }
 
 const timeSlots = [
@@ -80,6 +81,7 @@ export function BookDemoModal({
   onClose,
   heading = "Book a Demo",
   subheading = "Let's explore how Omni AI can transform your business",
+  variant = "default",
 }: BookDemoModalProps) {
   const pathname = usePathname();
   const router = useRouter();
@@ -100,6 +102,7 @@ export function BookDemoModal({
     return { year: now.getFullYear(), month: now.getMonth() };
   });
   const { toast } = useToast();
+  const isMetaVariant = variant === "meta";
 
   const calendarDays = generateCalendarMonth(calendarMonth.year, calendarMonth.month);
 
@@ -261,12 +264,26 @@ export function BookDemoModal({
           // old 85dvh floor was added before the structural fix to
           // hide the border clip; with the clip gone we can use the
           // extra height to keep the form on one screen on most phones.
-          className="relative w-full max-w-md rounded-[1.75rem] border border-amber-300/20 bg-[#05070d]/95 shadow-[0_24px_80px_rgba(0,0,0,0.65),0_0_0_1px_rgba(251,191,36,0.08)] max-h-[90dvh] flex flex-col overflow-hidden"
+          className={`relative flex max-h-[90dvh] w-full max-w-md flex-col overflow-hidden rounded-[1.75rem] border ${
+            isMetaVariant
+              ? "border-white/10 bg-zinc-950 shadow-[0_24px_80px_rgba(0,0,0,0.65),0_0_55px_rgba(126,34,206,0.18)]"
+              : "border-amber-300/20 bg-[#05070d]/95 shadow-[0_24px_80px_rgba(0,0,0,0.65),0_0_0_1px_rgba(251,191,36,0.08)]"
+          }`}
           onClick={(e) => e.stopPropagation()}
         >
+          {isMetaVariant ? (
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-purple-500/20 via-blue-500/10 to-transparent"
+            />
+          ) : null}
           <button
             onClick={onClose}
-            className="absolute right-4 top-4 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition-colors hover:border-amber-300/30 hover:bg-amber-300/10 hover:text-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-300/40"
+            className={`absolute right-4 top-4 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition-colors focus:outline-none focus:ring-2 ${
+              isMetaVariant
+                ? "hover:border-purple-300/30 hover:bg-purple-400/10 hover:text-white focus:ring-purple-300/40"
+                : "hover:border-amber-300/30 hover:bg-amber-300/10 hover:text-amber-100 focus:ring-amber-300/40"
+            }`}
             data-testid="button-close-modal"
           >
             <X className="w-5 h-5" />
@@ -283,8 +300,14 @@ export function BookDemoModal({
                 transition={{ duration: 0.2 }}
               >
                 <div className="mb-4 flex items-center justify-center gap-4">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-300/25 bg-amber-300/10 shadow-[0_0_30px_rgba(251,191,36,0.12)]">
-                    <Calendar className="h-5 w-5 text-amber-200" />
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-2xl border ${
+                      isMetaVariant
+                        ? "border-purple-300/25 bg-purple-400/10 shadow-[0_0_30px_rgba(168,85,247,0.16)]"
+                        : "border-amber-300/25 bg-amber-300/10 shadow-[0_0_30px_rgba(251,191,36,0.12)]"
+                    }`}
+                  >
+                    <Calendar className={`h-5 w-5 ${isMetaVariant ? "text-purple-200" : "text-amber-200"}`} />
                   </div>
                 </div>
                 <h2 className="mb-2 text-center text-2xl font-semibold tracking-tight text-white md:text-[1.7rem]" data-testid="text-demo-heading">
@@ -321,38 +344,50 @@ export function BookDemoModal({
                     />
                   </div>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-200/45" />
+                    <User className={`absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${isMetaVariant ? "text-purple-200/55" : "text-amber-200/45"}`} />
                     <Input
                       placeholder="Full Name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
+                      className={`h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 ${
+                        isMetaVariant
+                          ? "focus-visible:border-purple-300/50 focus-visible:ring-purple-300/20"
+                          : "focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
+                      }`}
                       required
                       data-testid="input-demo-name"
                     />
                   </div>
 
                   <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-200/45" />
+                    <Mail className={`absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${isMetaVariant ? "text-purple-200/55" : "text-amber-200/45"}`} />
                     <Input
                       type="email"
                       placeholder="Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
+                      className={`h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 ${
+                        isMetaVariant
+                          ? "focus-visible:border-purple-300/50 focus-visible:ring-purple-300/20"
+                          : "focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
+                      }`}
                       required
                       data-testid="input-demo-email"
                     />
                   </div>
 
                   <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-amber-200/45" />
+                    <Phone className={`absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${isMetaVariant ? "text-purple-200/55" : "text-amber-200/45"}`} />
                     <Input
                       type="tel"
                       placeholder="Phone Number"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      className="h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
+                      className={`h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 ${
+                        isMetaVariant
+                          ? "focus-visible:border-purple-300/50 focus-visible:ring-purple-300/20"
+                          : "focus-visible:border-amber-300/45 focus-visible:ring-amber-300/20"
+                      }`}
                       required
                       data-testid="input-demo-phone"
                     />
@@ -361,7 +396,11 @@ export function BookDemoModal({
                   <Button
                     type="submit"
                     disabled={!isFormValid}
-                    className="mt-3 h-12 w-full rounded-xl border-0 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 text-sm font-semibold tracking-wide text-black shadow-[0_14px_35px_rgba(251,191,36,0.22)] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
+                    className={`mt-3 h-12 w-full rounded-xl border-0 bg-gradient-to-r text-sm font-semibold tracking-wide transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45 ${
+                      isMetaVariant
+                        ? "from-purple-500 to-blue-500 text-white shadow-[0_14px_35px_rgba(126,34,206,0.25)]"
+                        : "from-amber-300 via-yellow-400 to-amber-500 text-black shadow-[0_14px_35px_rgba(251,191,36,0.22)]"
+                    }`}
                     data-testid="button-submit-demo"
                   >
                     Pick Date & Time
@@ -381,7 +420,9 @@ export function BookDemoModal({
                 <div className="flex items-center gap-2 mb-4">
                   <button
                     onClick={() => setModalStep("form")}
-                    className="rounded-full p-1 text-white/45 transition-colors hover:bg-white/[0.06] hover:text-amber-100"
+                    className={`rounded-full p-1 text-white/45 transition-colors hover:bg-white/[0.06] ${
+                      isMetaVariant ? "hover:text-purple-100" : "hover:text-amber-100"
+                    }`}
                     data-testid="button-back-to-form"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -394,7 +435,11 @@ export function BookDemoModal({
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={() => navigateCalendar("prev")}
-                    className="rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors hover:border-amber-300/25 hover:bg-amber-300/10"
+                    className={`rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors ${
+                      isMetaVariant
+                        ? "hover:border-purple-300/25 hover:bg-purple-300/10"
+                        : "hover:border-amber-300/25 hover:bg-amber-300/10"
+                    }`}
                     data-testid="button-prev-month"
                   >
                     <ChevronLeft className="w-4 h-4 text-white" />
@@ -404,7 +449,11 @@ export function BookDemoModal({
                   </span>
                   <button
                     onClick={() => navigateCalendar("next")}
-                    className="rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors hover:border-amber-300/25 hover:bg-amber-300/10"
+                    className={`rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors ${
+                      isMetaVariant
+                        ? "hover:border-purple-300/25 hover:bg-purple-300/10"
+                        : "hover:border-amber-300/25 hover:bg-amber-300/10"
+                    }`}
                     data-testid="button-next-month"
                   >
                     <ChevronRight className="w-4 h-4 text-white" />
@@ -430,12 +479,16 @@ export function BookDemoModal({
                         disabled={isDisabled}
                         className={`p-1.5 rounded-lg text-center transition-all text-sm ${
                           isSelected
-                            ? "bg-amber-300 text-black shadow-[0_0_18px_rgba(251,191,36,0.22)]"
+                            ? isMetaVariant
+                              ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-[0_0_18px_rgba(126,34,206,0.24)]"
+                              : "bg-amber-300 text-black shadow-[0_0_18px_rgba(251,191,36,0.22)]"
                             : !day.isCurrentMonth
                             ? "text-gray-700"
                             : isDisabled
                             ? "text-gray-600 cursor-not-allowed"
-                            : "text-white hover:bg-amber-300/15"
+                            : isMetaVariant
+                              ? "text-white hover:bg-purple-300/15"
+                              : "text-white hover:bg-amber-300/15"
                         } ${day.isCurrentMonth && !isDisabled && !isSelected ? "bg-white/5" : ""}`}
                         data-testid={`button-calendar-${day.date}`}
                       >
@@ -465,8 +518,12 @@ export function BookDemoModal({
                           disabled={isSubmitting}
                           className={`p-2 rounded-lg text-xs font-medium transition-all ${
                             selectedTime === time
-                              ? "bg-amber-300 text-black shadow-[0_0_18px_rgba(251,191,36,0.2)]"
-                              : "border border-white/10 bg-white/[0.05] text-gray-300 hover:border-amber-300/25 hover:bg-amber-300/10"
+                              ? isMetaVariant
+                                ? "bg-gradient-to-r from-purple-500 to-blue-500 text-white shadow-[0_0_18px_rgba(126,34,206,0.22)]"
+                                : "bg-amber-300 text-black shadow-[0_0_18px_rgba(251,191,36,0.2)]"
+                              : isMetaVariant
+                                ? "border border-white/10 bg-white/[0.05] text-gray-300 hover:border-purple-300/25 hover:bg-purple-300/10"
+                                : "border border-white/10 bg-white/[0.05] text-gray-300 hover:border-amber-300/25 hover:bg-amber-300/10"
                           }`}
                           data-testid={`button-time-${time.replace(/\s/g, "-")}`}
                         >
@@ -480,7 +537,11 @@ export function BookDemoModal({
                 <Button
                   onClick={() => handleComplete()}
                   disabled={!selectedDate || !selectedTime || isSubmitting}
-                  className="mt-3 h-12 w-full rounded-xl border-0 bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 text-sm font-semibold tracking-wide text-black shadow-[0_14px_35px_rgba(251,191,36,0.22)] transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45"
+                  className={`mt-3 h-12 w-full rounded-xl border-0 bg-gradient-to-r text-sm font-semibold tracking-wide transition-all hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-45 ${
+                    isMetaVariant
+                      ? "from-purple-500 to-blue-500 text-white shadow-[0_14px_35px_rgba(126,34,206,0.25)]"
+                      : "from-amber-300 via-yellow-400 to-amber-500 text-black shadow-[0_14px_35px_rgba(251,191,36,0.22)]"
+                  }`}
                   data-testid="button-complete-booking"
                 >
                   {isSubmitting ? (

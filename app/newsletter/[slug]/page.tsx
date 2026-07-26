@@ -4,7 +4,6 @@ import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
-import { ShareButton } from "@/components/share-button";
 import { JsonLd, newsArticleSchema, breadcrumbSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
 // Per-issue archive pages had no site footer — a reader who finished a post
@@ -12,11 +11,16 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // path back into the site (FAQ, About, Campaigns, Newsletter index).
 import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
+import { NewsletterBookingWidget } from "@/components/newsletter/NewsletterBookingWidget";
 import { NewsletterStarCredit } from "@/components/newsletter/NewsletterStarCredit";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
-import { newsletterIssueBackgroundImage } from "@/components/newsletter-issue-card";
+import {
+  NewsletterIssueCard,
+  newsletterIssueBackgroundImage,
+  type NewsletterCardPost,
+} from "@/components/newsletter-issue-card";
 
 // Per-issue pages are public content and must be fast from shared links.
 // Known issues are generated from the protected fallback snapshot at build
@@ -28,6 +32,16 @@ export const dynamicParams = true;
 interface Props {
   params: Promise<{ slug: string }>;
 }
+
+type RawNewsletterSummary = {
+  slug: string | null;
+  subject: string | null;
+  intro: string | null;
+  keywords: unknown;
+  tier: string | null;
+  published_at: string | null;
+  created_at: string | null;
+};
 
 export function generateStaticParams() {
   return newsletterFallbackPosts.map((post) => ({ slug: post.slug }));
@@ -153,37 +167,104 @@ async function getPost(slug: string) {
   return post && isOmniAiNewsletterPost(post) ? post : null;
 }
 
-// Pick 3 related posts for the "Related issues" section. Logic:
-//   1. Pull the 50 most recent posts (excluding the current one).
-//   2. Score each by keyword-intersection count with the current post.
-//   3. Tie-break by recency.
-//   4. If the current post has no keywords (rare), fall back to the
-//      3 most recent posts.
-// Related issues must not block the article. Use the fallback snapshot so
-// post pages can be statically generated/served from ISR without waiting on
-// a live Supabase query for a footer shelf.
-async function getRelatedPosts(
-  currentSlug: string,
-  currentKeywords: string[] | null | undefined
-) {
-  const fallbackCandidates = getNewsletterFallbackSummaries().filter((p) => p.slug !== currentSlug);
-  const fallbackRelated = fallbackCandidates.slice(0, 3);
+function archiveDateForIndex(index: number): string {
+  const date = new Date(Date.UTC(2026, 4, 31, 14, 0, 0));
+  date.setUTCDate(date.getUTCDate() - index);
+  return date.toISOString();
+}
 
-  const kwSet = new Set(normalizeKeywords(currentKeywords).map((k) => k.toLowerCase()));
-  if (kwSet.size === 0) return fallbackRelated;
+function normalizeCardPost(post: RawNewsletterSummary, index: number): NewsletterCardPost {
+  return {
+    slug: post.slug!,
+    subject: post.subject!,
+    intro: post.intro || "",
+    keywords: Array.isArray(post.keywords) || typeof post.keywords === "string" ? post.keywords : null,
+    tier: (post.tier || "free").toLowerCase(),
+    published_at: post.published_at || archiveDateForIndex(index),
+    created_at: post.created_at || post.published_at || archiveDateForIndex(index),
+  };
+}
 
-  // Score each candidate by keyword-intersection size with the current post.
-  // Higher score first; recency breaks ties via the upstream DESC order.
-  const scored = fallbackCandidates.map((p) => {
-    const theirs = normalizeKeywords(p.keywords).map((k) => k.toLowerCase());
-    const overlap = theirs.reduce((n: number, k: string) => (kwSet.has(k) ? n + 1 : n), 0);
-    return { post: p, overlap };
-  });
-  scored.sort((a, b) => b.overlap - a.overlap);
-  // If the top-3 have zero overlap we still fall through to most-recent;
-  // the newsletter cluster has enough topical overlap that this branch
-  // is rare but still worth guarding.
-  return scored.slice(0, 3).map((s) => s.post);
+function sortNewsletterPosts(posts: NewsletterCardPost[]): NewsletterCardPost[] {
+  return posts.sort(
+    (a, b) =>
+      new Date(b.published_at || b.created_at || 0).getTime() -
+      new Date(a.published_at || a.created_at || 0).getTime()
+  );
+}
+
+function mergeNewsletterPosts(
+  primary: NewsletterCardPost[],
+  fallback: NewsletterCardPost[]
+): NewsletterCardPost[] {
+  const bySlug = new Map<string, NewsletterCardPost>();
+  for (const post of [...primary, ...fallback]) {
+    if (!bySlug.has(post.slug)) bySlug.set(post.slug, post);
+  }
+  return sortNewsletterPosts(Array.from(bySlug.values()));
+}
+
+function normalizeFilteredPosts(rows: RawNewsletterSummary[], indexOffset = 0): NewsletterCardPost[] {
+  return rows
+    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
+    .map((p, index) => normalizeCardPost(p, index + indexOffset));
+}
+
+function fallbackFrontShelfPosts() {
+  const fallbackPosts = getNewsletterFallbackSummaries()
+    .filter((p) => p.slug && p.subject && (p.published_at || p.created_at) && isOmniAiNewsletterPost(p))
+    .map((p, index) => normalizeCardPost(p, index));
+
+  return sortNewsletterPosts(fallbackPosts);
+}
+
+// Bottom shelves mirror the /newsletter premium/free card carousels and
+// exclude the issue the reader is currently on.
+async function getMoreIssueShelves(currentSlug: string) {
+  const supabase = createAdminClient();
+
+  const [premiumRes, freeRes] = await Promise.all([
+    withTimeout(
+      supabase
+        .from("newsletter_posts")
+        .select("slug, subject, intro, keywords, tier, published_at, created_at")
+        .eq("tier", "premium")
+        .or("published_at.not.is.null,status.eq.published")
+        .order("published_at", { ascending: false })
+        .limit(5),
+      2500
+    ),
+    withTimeout(
+      supabase
+        .from("newsletter_posts")
+        .select("slug, subject, intro, keywords, tier, published_at, created_at")
+        .neq("tier", "premium")
+        .or("published_at.not.is.null,status.eq.published")
+        .order("published_at", { ascending: false })
+        .limit(5),
+      2500
+    ),
+  ]);
+
+  const fallbackPosts = fallbackFrontShelfPosts();
+  const rawPremium = (premiumRes as { data?: RawNewsletterSummary[]; error?: unknown } | null)?.data || [];
+  const rawFree = (freeRes as { data?: RawNewsletterSummary[]; error?: unknown } | null)?.data || [];
+  const livePremium = normalizeFilteredPosts(rawPremium);
+  const liveFree = normalizeFilteredPosts(rawFree, livePremium.length);
+  const premiumPosts = mergeNewsletterPosts(
+    livePremium,
+    fallbackPosts.filter((p) => p.tier === "premium")
+  )
+    .filter((p) => p.slug !== currentSlug)
+    .slice(0, 5);
+  const freePosts = mergeNewsletterPosts(
+    liveFree,
+    fallbackPosts.filter((p) => p.tier !== "premium")
+  )
+    .filter((p) => p.slug !== currentSlug)
+    .slice(0, 5);
+
+  return { premiumPosts, freePosts };
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -238,7 +319,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   const post = await getPost(slug);
   if (!post) notFound();
 
-  const relatedPosts = await getRelatedPosts(slug, normalizeKeywords(post.keywords));
+  const { premiumPosts, freePosts } = await getMoreIssueShelves(slug);
 
   const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {
     weekday: "long",
@@ -265,7 +346,6 @@ export default async function NewsletterPostPage({ params }: Props) {
   const heroImage = newsletterIssueBackgroundImage(post.slug);
   const quoteText = normalizeQuoteText(post.quote);
   const powerMoveText = renderText(post.power_move);
-  const offerText = renderText(post.offer);
   const insightBodies = normalizeInsights(post.insights);
 
   return (
@@ -475,53 +555,28 @@ export default async function NewsletterPostPage({ params }: Props) {
             the actual subject and pushes conversion to the partner. */}
         {shoutout && <FeaturedBusinessCard shoutout={shoutout} />}
 
-        {/* CTA — recap + scheduler link + share. Gold styling on every
-            post (not just premium) so the button reads as the headline
-            action. Share icon sits to the right of the primary button.
-            Left-aligned with generous, symmetric padding (40px top/bottom,
-            32–40px left/right) so the copy breathes and the buttons have
-            room on every side. */}
+        {/* CTA — inline 1:1 scheduler tied to the current article. */}
         {!shoutout && (
-        <div className="mb-10 rounded-2xl border border-amber-500/30 bg-amber-500/[0.04] px-8 py-10 sm:px-10 sm:py-12 backdrop-blur-sm">
-          <h3 className="text-xl md:text-2xl font-semibold text-white mb-4 leading-snug">
-            {post.subject}
-          </h3>
-          <p className="text-gray-300 leading-relaxed mb-3 max-w-2xl">
-            That&rsquo;s the signal — here&rsquo;s the move. Book a free
-            30-minute strategy session and we&rsquo;ll walk through exactly
-            how to apply today&rsquo;s insight to your revenue, your team,
-            and your next 90 days. No pitch. Just straight advice from
-            operators who run AI systems for a living.
-          </p>
-          {offerText && (
-            <p className="text-gray-400 text-sm italic mb-5">{offerText}</p>
-          )}
-          <div className="flex items-center gap-2 mt-6">
-            <Link
-              href="/book-now"
-              style={{
-                // Same chrome-gold gradient border trick as the share
-                // button — dark interior on padding-box + chrome-gold
-                // gradient on border-box + transparent 2px border.
-                background:
-                  "linear-gradient(rgba(10,10,10,0.55), rgba(10,10,10,0.55)) padding-box, " +
-                  "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%) border-box",
-                border: "2px solid transparent",
-              }}
-              className="inline-flex items-center justify-center px-8 h-11 rounded-xl font-semibold text-sm text-[#ffd700] shadow-[0_0_12px_rgba(255,215,0,0.35)] transition-all hover:brightness-125 active:scale-[0.98]"
+          <div className="mb-10 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/[0.10] via-white/[0.035] to-sky-500/[0.08] px-5 py-6 text-center backdrop-blur-sm sm:px-7 sm:py-7">
+            <div className="mb-5">
+              <NewsletterStarCredit
+                newsletterSlug={post.slug}
+                newsletterTitle={post.subject}
+                compact
+              />
+            </div>
+            <div
+              className="mb-6 flex items-center gap-3"
+              aria-label="or"
             >
-              Schedule a Meeting
-            </Link>
-            <ShareButton
-              title={`Interlinked: ${post.subject}`}
-              text={post.intro || undefined}
-              url={postUrl}
-            />
+              <span className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-300/35" />
+              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-200/70">
+                Or
+              </span>
+              <span className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-300/35" />
+            </div>
+            <NewsletterBookingWidget articleTitle={post.subject} />
           </div>
-          <p className="text-xs text-gray-500 mt-5">
-            30 minutes · free · no obligation
-          </p>
-        </div>
         )}
 
         {/* Sponsor + partnership block — Fred (sponsor) primary, Live
@@ -537,79 +592,61 @@ export default async function NewsletterPostPage({ params }: Props) {
           Powered by Omni AI
         </p>
 
-        {/* Related issues — 3 cards below the closing line. Boosts
-            time-on-site on organic traffic and gives LLM retrieval a
-            cluster of linked issues to traverse when the current post
-            is cited. Scored by keyword overlap with the current post,
-            with recency as the tie-breaker. */}
-        {relatedPosts.length > 0 && (
-          <section className="mt-16 pt-10 border-t border-white/5">
-            <p className="text-xs font-semibold uppercase tracking-widest text-gray-500 mb-5">
-              More from Interlinked
-            </p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {relatedPosts.map((r: {
-                slug: string;
-                subject: string;
-                intro: string | null;
-                published_at: string | null;
-                tier: string | null;
-              }) => {
-                const rDate = r.published_at
-                  ? new Date(r.published_at).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
-                  : "";
-                const rIsPremium = r.tier === "premium";
-                return (
+        {(premiumPosts.length > 0 || freePosts.length > 0) && (
+          <section className="mt-16 space-y-10 border-t border-white/5 pt-10">
+            {premiumPosts.length > 0 && (
+              <div>
+                <div className="mb-5 flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                      Interlinked Premium
+                    </p>
+                    <h2 className="mt-1 text-xl font-bold text-white">More Premium Intelligence</h2>
+                  </div>
                   <Link
-                    key={r.slug}
-                    href={`/newsletter/${r.slug}`}
-                    className="group block rounded-xl border border-white/10 bg-white/[0.03] p-5 hover:border-white/20 hover:bg-white/[0.06] transition-colors"
+                    href="/newsletter/archive"
+                    className="text-xs font-semibold text-amber-200 underline underline-offset-4 decoration-amber-300/30 transition-colors hover:text-amber-100 hover:decoration-amber-200"
                   >
-                    <div className="flex items-center gap-3 mb-3">
-                      <span
-                        className={`text-[10px] font-semibold uppercase tracking-widest ${
-                          rIsPremium ? "text-amber-400" : "text-purple-400"
-                        }`}
-                      >
-                        {rIsPremium ? "Premium" : "Daily"}
-                      </span>
-                      <span className="text-[10px] text-gray-600">·</span>
-                      <span className="text-[10px] text-gray-500">{rDate}</span>
-                    </div>
-                    <h3 className="text-sm font-semibold text-white leading-snug mb-2 group-hover:text-amber-100 transition-colors">
-                      {r.subject}
-                    </h3>
-                    {r.intro && (
-                      <p className="text-xs text-gray-400 leading-relaxed line-clamp-3">
-                        {r.intro.slice(0, 140)}
-                        {r.intro.length > 140 ? "…" : ""}
-                      </p>
-                    )}
+                    Full archive
                   </Link>
-                );
-              })}
-            </div>
-            <p className="mt-6 text-xs text-gray-500">
-              See{" "}
-              <Link
-                href="/newsletter"
-                className="text-gray-300 hover:text-white underline underline-offset-2 decoration-white/20 hover:decoration-white/60 transition-colors"
-              >
-                all Interlinked issues
-              </Link>
-              .
-            </p>
+                </div>
+                <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {premiumPosts.map((relatedPost) => (
+                    <div key={relatedPost.slug} className="w-[78vw] max-w-[340px] shrink-0 snap-start">
+                      <NewsletterIssueCard post={relatedPost} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {freePosts.length > 0 && (
+              <div>
+                <div className="mb-5 flex items-end justify-between gap-3">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
+                      Interlinked Free
+                    </p>
+                    <h2 className="mt-1 text-xl font-bold text-white">More Daily Intelligence</h2>
+                  </div>
+                  <Link
+                    href="/newsletter/archive"
+                    className="text-xs font-semibold text-amber-200 underline underline-offset-4 decoration-amber-300/30 transition-colors hover:text-amber-100 hover:decoration-amber-200"
+                  >
+                    Full archive
+                  </Link>
+                </div>
+                <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                  {freePosts.map((relatedPost) => (
+                    <div key={relatedPost.slug} className="w-[78vw] max-w-[340px] shrink-0 snap-start">
+                      <NewsletterIssueCard post={relatedPost} />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
         )}
-
-        <NewsletterStarCredit
-          newsletterSlug={post.slug}
-          newsletterTitle={post.subject}
-        />
 
       </article>
       <Footer />

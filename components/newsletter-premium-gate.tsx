@@ -199,7 +199,7 @@ export function NewsletterHeader() {
               priority
               className="transition-transform group-hover:scale-105"
             />
-            <span className="text-xl font-bold text-gradient">Interlinked</span>
+            <span className="text-xl font-bold text-gradient">Omni AI</span>
           </Link>
           {isLoggedIn ? (
             <Link

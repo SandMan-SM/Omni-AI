@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Omni AI Newsletter — Daily AI Strategy & Intelligence";
+export const alt = "Interlinked Newsletter — Daily AI Strategy & Intelligence";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -109,7 +109,7 @@ export default async function Image() {
             lineHeight: 1.1,
           }}
         >
-          Omni AI Newsletter
+          Interlinked Newsletter
         </div>
 
         {/* Subtitle */}
@@ -149,7 +149,7 @@ export default async function Image() {
 
         {/* Bottom branding */}
         <div style={{ position: "absolute", top: "574px", left: "0px", width: "1200px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px" }}>
-          <span style={{ color: "#a855f7", fontSize: "18px", fontWeight: 700 }}>Omni AI</span>
+          <span style={{ color: "#a855f7", fontSize: "18px", fontWeight: 700 }}>Interlinked</span>
           <span style={{ color: "#4b5563", fontSize: "18px" }}>•</span>
           <span style={{ color: "#6b7280", fontSize: "16px" }}>omnileadsagi.com</span>
         </div>

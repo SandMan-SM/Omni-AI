@@ -26,11 +26,13 @@ type StarCreditResponse = {
 type Props = {
   newsletterSlug: string;
   newsletterTitle: string;
+  compact?: boolean;
 };
 
 export function NewsletterStarCredit({
   newsletterSlug,
   newsletterTitle,
+  compact = false,
 }: Props) {
   const { user, loading } = useAuth();
   const { toast } = useToast();
@@ -150,7 +152,11 @@ export function NewsletterStarCredit({
   return (
     <section
       id="newsletter-credit"
-      className="mt-16 flex scroll-mt-24 flex-col items-center border-t border-white/5 pt-10 text-center"
+      className={
+        compact
+          ? "flex scroll-mt-24 flex-col items-center text-center"
+          : "mt-16 flex scroll-mt-24 flex-col items-center border-t border-white/5 pt-10 text-center"
+      }
       aria-label="Newsletter credit"
     >
       <button

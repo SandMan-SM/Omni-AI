@@ -9,6 +9,7 @@ import {
   isValidEmail,
   isBotSubmission,
   sanitizeText,
+  escapeHtml,
 } from '@/lib/validation';
 import {
 rateLimit,
@@ -19,6 +20,93 @@ rateLimit,
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
+
+const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
+const OWNER_EMAIL = 'sitanim8@gmail.com';
+const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
+
+// Owner notification for a booked strategy call. The booking persists above
+// regardless; this tells the owner it happened. Without it, /book-now
+// consultations landed silently in the DB (the endpoint's own comment claimed
+// it sent two emails, but that code was gone — a silent-lead-miss). Best-effort
+// with a bounded retry (same idempotency key → Resend dedupes a slow success,
+// never double-sends); NEVER throws, so an email hiccup can't fail the booking.
+async function notifyOwnerOfBooking(input: {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  businessName: string;
+  purpose: string;
+  date: string;
+  time: string;
+  googleCalUrl: string;
+}): Promise<boolean> {
+  if (!RESEND_API_KEY) {
+    console.error('[demo-booking] RESEND_API_KEY not set — booking saved, owner not notified');
+    return false;
+  }
+  const nameEsc = escapeHtml(input.name || 'Prospect');
+  const emailEsc = escapeHtml(input.email);
+  const phoneEsc = escapeHtml(input.phone || '—');
+  const bizEsc = escapeHtml(input.businessName || '—');
+  const purposeEsc = escapeHtml(input.purpose || '—');
+  const whenEsc = escapeHtml(`${input.date} · ${input.time}`);
+  const html = `
+<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#111;">
+  <h2 style="margin-bottom:4px;">New strategy call booked</h2>
+  <p style="color:#555;margin-top:0;">Booked via <a href="https://omnileadsagi.com/book-now" style="color:#6366f1;">omnileadsagi.com/book-now</a>.</p>
+  <table style="width:100%;border-collapse:collapse;margin-top:20px;">
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;width:140px;">Name</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${nameEsc}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Email</td><td style="padding:10px 0;border-bottom:1px solid #eee;"><a href="mailto:${emailEsc}" style="color:#6366f1;">${emailEsc}</a></td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Phone</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${phoneEsc}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Business</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${bizEsc}</td></tr>
+    <tr><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:600;">Focus</td><td style="padding:10px 0;border-bottom:1px solid #eee;">${purposeEsc}</td></tr>
+    <tr><td style="padding:10px 0;font-weight:600;">Requested time</td><td style="padding:10px 0;">${whenEsc}</td></tr>
+  </table>
+  <p style="margin-top:24px;"><a href="${escapeHtml(input.googleCalUrl)}" style="display:inline-block;background:#6366f1;color:#fff;text-decoration:none;padding:12px 22px;border-radius:8px;font-weight:600;">Add to Google Calendar</a></p>
+</div>`;
+  const text = [
+    'NEW STRATEGY CALL BOOKED',
+    `Name:     ${input.name}`,
+    `Email:    ${input.email}`,
+    `Phone:    ${input.phone || '—'}`,
+    `Business: ${input.businessName || '—'}`,
+    `Focus:    ${input.purpose || '—'}`,
+    `When:     ${input.date} · ${input.time}`,
+    `Calendar: ${input.googleCalUrl}`,
+  ].join('\n');
+
+  const backoffs = [0, 600, 1800];
+  for (let attempt = 0; attempt < backoffs.length; attempt += 1) {
+    if (backoffs[attempt]) await new Promise((r) => setTimeout(r, backoffs[attempt]));
+    try {
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+          'Idempotency-Key': `demo-booking-owner-${input.id}`,
+        },
+        body: JSON.stringify({
+          from: FROM_EMAIL,
+          to: [OWNER_EMAIL],
+          reply_to: input.email || undefined,
+          subject: `New strategy call: ${input.name || 'Prospect'} — ${input.date} ${input.time}`,
+          html,
+          text,
+        }),
+      });
+      if (res.ok) return true;
+      const bodyText = await res.text().catch(() => '<no body>');
+      console.error(`[demo-booking] owner notify attempt ${attempt + 1} — resend ${res.status}: ${bodyText.slice(0, 200)}`);
+    } catch (err) {
+      console.error(`[demo-booking] owner notify attempt ${attempt + 1} failed`, err);
+    }
+  }
+  console.error('[demo-booking] owner notification not sent after retries — booking saved; follow up in CRM', input.id);
+  return false;
+}
 
 // ── GET: Fetch all bookings + webinar registrations ─────────────────────────
 
@@ -168,7 +256,22 @@ export async function POST(request: Request) {
       crmStatus: persistence.crmStatus,
     });
 
+    // Notify the owner. Guarded + retrying internally; never throws, so it
+    // cannot fail the captured booking or the 201 below.
+    const ownerNotified = await notifyOwnerOfBooking({
+      id: sourceRecordId,
+      name: row.name,
+      email: row.email,
+      phone: row.phone,
+      businessName: row.business_name,
+      purpose: row.purpose,
+      date: row.date,
+      time: row.time,
+      googleCalUrl,
+    });
+
     return NextResponse.json({
+      ownerNotified,
       id: sourceRecordId,
       leadId: persistence.leadId,
       name: row.name,
