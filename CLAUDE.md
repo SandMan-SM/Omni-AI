@@ -148,6 +148,12 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - The "All businesses" view must default to **All** (not silently fall back to "Omni AI"); admin switches scope via the agentic-assets tab.
 - Pitfalls seen: (1) scope pills must dispatch a synthetic `StorageEvent` to propagate; (2) a Supabase query builder reused across awaited calls **caches results** — build a fresh query per call or you leak one tenant's data (e.g. 320 leads showing instead of 2). Cross-tenant leaks are a real risk — gate GET/PATCH with `authorizeCronOrAdmin`.
 
+## Deployment source of truth
+- Read `docs/deployment-source-of-truth.md` before every build or deploy.
+- Canonical shared checkout: `/Users/janahasson/Desktop/Clients/Sitani Mafi/Omni AI/Website`; canonical remote/branch: `SandMan-SM/Omni-AI` / `main`; Vercel project: `omni-ai`.
+- Never run a direct production deploy from a dirty or behind checkout. Preserve desktop work, reconcile it into GitHub `main`, let the linked Vercel project deploy that exact SHA, and then verify the custom domain.
+- Newsletter releases must visibly verify artwork on both `/newsletter` and `/newsletter/archive`; keep the static default artwork fallback intact.
+
 ## Gotchas
 - **Never `npm run build` while `npm run dev` is running** in the same checkout — both touch `.next/`, causing stale chunks → `Cannot find module './XXXX.js'` → 500s. Use `npm run build:check` (writes `.next-prod/`) or just push and let Vercel build.
 - **One dev server per checkout.** Don't spawn a second on another port — they fight over `.next/` too. If a port's held: `lsof -iTCP:3001 -sTCP:LISTEN -t | xargs -r kill -9` then `npm run dev:clean`.
