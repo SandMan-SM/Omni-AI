@@ -141,9 +141,11 @@ export default async function NewsletterIndexPage() {
       supabase
         .from("newsletter_posts")
         .select("slug, subject, intro, keywords, tier, published_at, created_at")
-        .neq("tier", "premium")
-        .or("published_at.not.is.null,status.eq.published")
-        .order("published_at", { ascending: false })
+        .eq("tier", "free")
+        .ilike("slug", "%interlinked%")
+        .not("published_at", "is", null)
+        .lte("published_at", new Date().toISOString())
+        .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5),
       2500
     ),
