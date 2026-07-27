@@ -412,69 +412,65 @@ export default async function NewsletterPostPage({ params }: Props) {
 
       {/* Article */}
       <article className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-12 md:pb-20">
-        {/* Hero artwork and article header. The artwork has its own visible
-            1200×630 panel so mobile readers never mistake a dark overlay for
-            a missing image. The same per-slug resolver powers cards and social
-            sharing, including automatic topic-specific art for future posts. */}
-        <div className="relative mb-10 overflow-hidden rounded-3xl border border-amber-500/20 bg-black shadow-[0_0_40px_rgba(245,158,11,0.08)]">
-          <div className="relative aspect-[1200/630] w-full overflow-hidden bg-slate-950">
-            <Image
-              src={heroImage}
-              alt={`Custom artwork for ${post.subject}`}
-              fill
-              priority
-              sizes="(max-width: 1024px) 100vw, 960px"
-              quality={88}
-              className="object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/5" />
-            <div className="absolute bottom-4 left-4 rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80 backdrop-blur-md sm:bottom-5 sm:left-5">
-              Custom issue artwork
-            </div>
-          </div>
+        {/* Hero artwork stays behind the article header. The per-slug image
+            is decorative here because the visible H1 names the issue; the
+            dark overlays preserve the original hero readability. */}
+        <div className="relative mb-10 min-h-[430px] overflow-hidden rounded-3xl border border-amber-500/20 bg-slate-950 shadow-[0_0_40px_rgba(245,158,11,0.08)] sm:min-h-[460px]">
+          <Image
+            src={heroImage}
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 960px"
+            quality={88}
+            className="object-cover object-center"
+          />
+          <div className="absolute inset-0 bg-black/45" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/20" />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(5,5,14,0.20)_0%,rgba(20,11,48,0.42)_62%,rgba(8,8,18,0.72)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
-          <div className="relative flex flex-col justify-end bg-[linear-gradient(135deg,rgba(5,5,14,0.98)_0%,rgba(20,11,48,0.96)_62%,rgba(8,8,18,0.98)_100%)] p-5 sm:p-8 md:p-10">
+          <div className="relative flex min-h-[430px] flex-col justify-end p-5 sm:min-h-[460px] sm:p-8 md:p-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-amber-300"}`}>
-              {isPremium ? "Interlinked Premium" : "Interlinked Free"}
-            </span>
-              <span className="text-xs text-gray-600">·</span>
-            <span className="text-xs text-gray-500">{date}</span>
-          </div>
-            <h1 className="max-w-3xl text-3xl font-bold leading-tight text-white sm:text-4xl lg:text-5xl">
-            {post.subject}
-          </h1>
-          {/* Founder byline — visible E-E-A-T signal for Google, and the
-              anchor LLMs use when asked "who wrote this?". Links to /about
-              so the attribution resolves to a real Person entity. */}
-            <p className="mt-4 text-sm text-gray-300">
-            By{" "}
-            <Link
-              href="/about"
-                className="text-gray-100 underline underline-offset-2 decoration-white/20 transition-colors hover:text-white hover:decoration-white/60"
-            >
-              Alfred Belvedere
-            </Link>{" "}
-            — Founder, Omni AI
-          </p>
-          {tagsToShow.length > 0 && (
+                {isPremium ? "Interlinked Premium" : "Interlinked Free"}
+              </span>
+              <span className="text-xs text-gray-400">·</span>
+              <span className="text-xs text-gray-300">{date}</span>
+            </div>
+            <h1 className="max-w-3xl text-3xl font-bold leading-tight text-white drop-shadow-lg sm:text-4xl lg:text-5xl">
+              {post.subject}
+            </h1>
+            {/* Founder byline — visible E-E-A-T signal for Google, and the
+                anchor LLMs use when asked "who wrote this?". Links to /about
+                so the attribution resolves to a real Person entity. */}
+            <p className="mt-4 text-sm text-gray-200 drop-shadow-md">
+              By{" "}
+              <Link
+                href="/about"
+                className="text-white underline underline-offset-2 decoration-white/30 transition-colors hover:decoration-white/70"
+              >
+                Alfred Belvedere
+              </Link>{" "}
+              — Founder, Omni AI
+            </p>
+            {tagsToShow.length > 0 && (
               <details className="mt-5 group/tags">
-                <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs text-gray-400 transition-colors hover:text-gray-200">
-                <svg className="w-3.5 h-3.5 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
-                {tagsToShow.length} tags
-              </summary>
-              <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
-                {tagsToShow.map((kw: string) => (
-                  <span
-                    key={kw}
-                      className="whitespace-nowrap rounded-full border border-white/10 bg-black/30 px-2 py-0.5 text-[10px] text-gray-300 backdrop-blur-sm sm:px-2.5 sm:py-1 sm:text-[11px]"
-                  >
-                    {kw}
-                  </span>
-                ))}
-              </div>
-            </details>
-          )}
+                <summary className="flex cursor-pointer list-none items-center gap-1.5 text-xs text-gray-300 transition-colors hover:text-white">
+                  <svg className="w-3.5 h-3.5 transition-transform group-open/tags:rotate-180" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
+                  {tagsToShow.length} tags
+                </summary>
+                <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-2">
+                  {tagsToShow.map((kw: string) => (
+                    <span
+                      key={kw}
+                      className="whitespace-nowrap rounded-full border border-white/15 bg-black/45 px-2 py-0.5 text-[10px] text-gray-100 backdrop-blur-sm sm:px-2.5 sm:py-1 sm:text-[11px]"
+                    >
+                      {kw}
+                    </span>
+                  ))}
+                </div>
+              </details>
+            )}
           </div>
         </div>
 
