@@ -343,7 +343,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   // modern desktop). Clipboard-copy fallback lives in the ShareButton.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
-  const heroImage = `${newsletterIssueImageUrl(post.slug)}?v=hero-20260727`;
+  const heroImage = newsletterIssueImageUrl(post.slug);
   const quoteText = normalizeQuoteText(post.quote);
   const powerMoveText = renderText(post.power_move);
   const insightBodies = normalizeInsights(post.insights);
@@ -415,7 +415,7 @@ export default async function NewsletterPostPage({ params }: Props) {
         {/* Hero artwork stays behind the article header. The per-slug image
             is decorative here because the visible H1 names the issue; the
             dark overlays preserve the original hero readability. */}
-        <div className="relative mb-10 min-h-[430px] overflow-hidden rounded-3xl border border-amber-500/20 bg-slate-950 shadow-[0_0_40px_rgba(245,158,11,0.08)] sm:min-h-[460px]">
+        <div className="relative mb-8 min-h-[360px] overflow-hidden rounded-3xl border border-amber-500/20 bg-slate-950 shadow-[0_0_40px_rgba(245,158,11,0.08)] sm:min-h-[420px]">
           <Image
             src={heroImage}
             alt=""
@@ -426,11 +426,11 @@ export default async function NewsletterPostPage({ params }: Props) {
             quality={88}
             className="object-cover object-center"
           />
-          <div className="absolute inset-0 bg-black/45" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-black/20" />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(5,5,14,0.20)_0%,rgba(20,11,48,0.42)_62%,rgba(8,8,18,0.72)_100%)]" />
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(5,5,14,0.10)_0%,rgba(20,11,48,0.20)_62%,rgba(8,8,18,0.45)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
-          <div className="relative flex min-h-[430px] flex-col justify-end p-5 sm:min-h-[460px] sm:p-8 md:p-10">
+          <div className="relative flex min-h-[360px] flex-col justify-end p-5 sm:min-h-[420px] sm:p-8 md:p-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-amber-300"}`}>
                 {isPremium ? "Interlinked Premium" : "Interlinked Free"}

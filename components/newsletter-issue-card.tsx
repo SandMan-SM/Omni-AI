@@ -26,7 +26,7 @@ export function newsletterIssueImageUrl(slug: string): string {
   // A stable resolver serves the issue's real generated artwork (webp/png/jpg)
   // and only generates a deterministic issue-specific fallback when no raster
   // exists. Every visual surface uses this route, including share metadata.
-  return `/newsletter/${encodeURIComponent(slug)}/artwork-image`;
+  return `/newsletter/${encodeURIComponent(slug)}/artwork-image?v=artwork-20260727`;
 }
 
 export function newsletterIssueBackgroundImage(slug: string): string {
@@ -64,11 +64,12 @@ export function NewsletterIssueCard({
           src={newsletterIssueImageUrl(post.slug)}
           alt=""
           fill
+          unoptimized
           sizes="(max-width: 640px) 78vw, 340px"
           quality={72}
           className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.025]"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.58)_0%,rgba(0,0,0,0.76)_46%,rgba(0,0,0,0.96)_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.54)_46%,rgba(0,0,0,0.92)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
         <div className="relative flex h-full min-h-0 min-w-0 flex-col justify-between overflow-hidden p-5">
           <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
