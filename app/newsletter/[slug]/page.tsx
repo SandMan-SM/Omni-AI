@@ -78,6 +78,18 @@ function normalizeQuoteText(value: unknown): string {
     .replace(/[\s"'“”‘’]+$/, "");
 }
 
+function splitQuoteAttribution(value: unknown): { text: string; attribution: string } {
+  const normalized = normalizeQuoteText(value);
+  const match = normalized.match(/^(.*)\s+[—–-]\s+([^—–\n]{1,120})$/);
+
+  if (!match) return { text: normalized, attribution: "" };
+
+  return {
+    text: match[1].trim().replace(/[\s"'“”‘’]+$/, ""),
+    attribution: match[2].trim().replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, ""),
+  };
+}
+
 function splitNumberedInsightText(text: string): string[] {
   const normalized = text.replace(/\s+/g, " ").trim();
   if (!normalized) return [];
@@ -344,7 +356,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
   const heroImage = newsletterIssueImageUrl(post.slug);
-  const quoteText = normalizeQuoteText(post.quote);
+  const quote = splitQuoteAttribution(post.quote);
   const powerMoveText = renderText(post.power_move);
   const insightBodies = normalizeInsights(post.insights);
 
@@ -479,7 +491,7 @@ export default async function NewsletterPostPage({ params }: Props) {
             same balanced pull-quote treatment. Neutral lighter card bg
             keeps it readable against the fire-spark backdrop; accent
             border stays subtle. */}
-        {quoteText && (
+        {quote.text && (
           <figure
             className={`mx-auto mt-8 mb-12 max-w-2xl rounded-3xl border bg-white/[0.06] px-8 py-12 sm:px-12 sm:py-14 backdrop-blur-sm ${
               isPremium ? "border-amber-500/30" : "border-purple-500/30"
@@ -487,9 +499,14 @@ export default async function NewsletterPostPage({ params }: Props) {
           >
             <blockquote>
               <p className="text-center text-lg md:text-xl text-gray-100 italic leading-[1.75]">
-                &ldquo;{quoteText}&rdquo;
+                &ldquo;{quote.text}&rdquo;
               </p>
             </blockquote>
+            {quote.attribution && (
+              <figcaption className="mt-5 text-center text-sm font-medium not-italic text-gray-400">
+                &mdash; {quote.attribution}
+              </figcaption>
+            )}
           </figure>
         )}
 
