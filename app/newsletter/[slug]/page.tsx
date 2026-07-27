@@ -343,7 +343,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   // modern desktop). Clipboard-copy fallback lives in the ShareButton.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
-  const heroImage = newsletterIssueImageUrl(post.slug);
+  const heroImage = `${newsletterIssueImageUrl(post.slug)}?v=hero-20260727`;
   const quoteText = normalizeQuoteText(post.quote);
   const powerMoveText = renderText(post.power_move);
   const insightBodies = normalizeInsights(post.insights);
