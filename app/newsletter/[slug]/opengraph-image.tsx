@@ -8,20 +8,6 @@ export const alt = "Interlinked Newsletter";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-const pngNewsletterArtwork = new Set([
-  "interlinked-premium-2026-07-24",
-  "interlinked-free-2026-07-24",
-  "interlinked-premium-2026-07-23",
-  "interlinked-free-2026-07-23",
-  "2026-07-23-ai-ceos-nobody-talking-about",
-  "interlinked-premium-2026-07-22",
-  "interlinked-free-2026-07-22",
-  "interlinked-premium-2026-07-21",
-  "interlinked-free-2026-07-21",
-  "interlinked-premium-2026-07-20",
-  "interlinked-free-2026-07-20",
-]);
-
 function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
   return Promise.race([
     Promise.resolve(promise),
@@ -62,7 +48,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
   )
     .map((keyword: unknown) => String(keyword).trim())
     .filter(Boolean)
-    .slice(0, 5);
+    .slice(0, 3);
   const siteUrl =
     process.env.NODE_ENV === "development"
       ? "http://localhost:3000"
@@ -70,15 +56,11 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const encodedSlug = encodeURIComponent(slug);
-  const extension = pngNewsletterArtwork.has(slug) ? "png" : "webp";
-  const generatedArtworkUrl = `${siteUrl}/newsletter/generated/${encodedSlug}.${extension}`;
-  const generatedArtworkResponse = await withTimeout(
-    fetch(generatedArtworkUrl, { method: "HEAD", cache: "force-cache" }),
-    1000
-  );
-  const backgroundUrl = generatedArtworkResponse?.ok
-    ? generatedArtworkUrl
-    : `${siteUrl}/newsletter/${encodedSlug}/artwork-image`;
+  // The page hero, archive card, Open Graph image, and Twitter image all use
+  // this one stable artwork route. It resolves the issue's real generated
+  // raster asset regardless of extension, so new posts cannot drift to a
+  // generic or mismatched share background.
+  const backgroundUrl = `${siteUrl}/newsletter/${encodedSlug}/artwork-image`;
   const date = post?.published_at
     ? new Date(post.published_at).toLocaleDateString("en-US", {
         month: "long",
@@ -123,7 +105,16 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(90deg, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.72) 38%, rgba(0,0,0,0.30) 70%, rgba(0,0,0,0.10) 100%)",
+              "linear-gradient(90deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.80) 40%, rgba(0,0,0,0.38) 72%, rgba(0,0,0,0.16) 100%)",
+            display: "flex",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: "22px",
+            border: "1px solid rgba(251,191,36,0.22)",
+            borderRadius: "24px",
             display: "flex",
           }}
         />
@@ -163,14 +154,14 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
                 textTransform: "uppercase",
               }}
             >
-              {isPremium ? "Interlinked Premium" : "Interlinked Free"}
+              {isPremium ? "PREMIUM INTELLIGENCE" : "DAILY INTELLIGENCE"}
             </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: "18px", borderLeft: "5px solid #fbbf24", paddingLeft: "24px" }}>
             <div
               style={{
-                fontSize: subject.length > 54 ? "42px" : "50px",
+                fontSize: subject.length > 76 ? "36px" : subject.length > 54 ? "42px" : "50px",
                 fontWeight: 900,
                 lineHeight: 1.08,
                 color: "#ffffff",
@@ -187,7 +178,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
                 display: "flex",
               }}
             >
-              {intro.length > 128 ? intro.slice(0, 125) + "..." : intro}
+              {intro.length > 112 ? intro.slice(0, 109) + "..." : intro}
             </div>
           </div>
 

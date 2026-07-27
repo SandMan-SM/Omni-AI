@@ -3,6 +3,37 @@ import { ImageResponse } from "next/og";
 export const runtime = "edge";
 
 const size = { width: 1200, height: 630 };
+const GENERATED_ARTWORK_EXTENSIONS = ["webp", "png", "jpg", "jpeg"] as const;
+
+async function getGeneratedArtwork(request: Request, slug: string): Promise<Response | null> {
+  const requestUrl = new URL(request.url);
+  const encodedSlug = encodeURIComponent(slug);
+
+  for (const extension of GENERATED_ARTWORK_EXTENSIONS) {
+    const assetUrl = new URL(`/newsletter/generated/${encodedSlug}.${extension}`, requestUrl.origin);
+
+    try {
+      const asset = await fetch(assetUrl, { cache: "force-cache" });
+      const contentType = asset.headers.get("content-type") || "";
+
+      if (asset.ok && asset.body && contentType.startsWith("image/")) {
+        return new Response(asset.body, {
+          status: 200,
+          headers: {
+            "Content-Type": contentType,
+            "Cache-Control": "public, max-age=31536000, immutable",
+            "X-Newsletter-Artwork": assetUrl.pathname,
+          },
+        });
+      }
+    } catch {
+      // Continue to the next supported extension, then use the deterministic
+      // issue-specific fallback below if no durable raster is available.
+    }
+  }
+
+  return null;
+}
 
 function hashSlug(slug: string): number {
   let hash = 2166136261;
@@ -13,10 +44,13 @@ function hashSlug(slug: string): number {
   return hash >>> 0;
 }
 
-export function GET(
-  _request: Request,
+export async function GET(
+  request: Request,
   { params }: { params: { slug: string } }
 ) {
+  const generatedArtwork = await getGeneratedArtwork(request, params.slug);
+  if (generatedArtwork) return generatedArtwork;
+
   const hash = hashSlug(params.slug);
   const rotation = hash % 360;
   const orbX = 90 + (hash % 720);

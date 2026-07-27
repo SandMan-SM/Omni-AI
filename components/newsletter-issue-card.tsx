@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export type NewsletterCardPost = {
@@ -21,66 +22,11 @@ export function normalizeNewsletterKeywords(keywords: unknown): string[] {
   return [];
 }
 
-const pngNewsletterArtwork = new Set([
-  "interlinked-premium-2026-07-25",
-  "interlinked-premium-2026-07-24",
-  "interlinked-free-2026-07-24",
-  "interlinked-premium-2026-07-23",
-  "interlinked-free-2026-07-23",
-  "2026-07-23-ai-ceos-nobody-talking-about",
-  "interlinked-premium-2026-07-22",
-  "interlinked-free-2026-07-22",
-  "interlinked-premium-2026-07-21",
-  "interlinked-free-2026-07-21",
-  "interlinked-premium-2026-07-20",
-  "interlinked-free-2026-07-20",
-  "interlinked-free-2026-07-25",
-  "interlinked-premium-2026-07-18",
-  "interlinked-free-2026-07-18",
-  "free-ai-ceo-competitive-edge-2026-07-18",
-  "premium-ai-execution-gap-2026-07-18",
-  "interlinked-premium-2026-07-17",
-  "interlinked-free-2026-07-17",
-  "interlinked-premium-2026-07-16",
-  "interlinked-free-2026-07-16",
-  "ai-trends-brief-2026-07-15",
-  "interlinked-premium-2026-07-15",
-  "interlinked-free-2026-07-15",
-  "ai-trends-brief-2026-07-13",
-  "interlinked-premium-2026-07-12",
-  "ai-trends-brief-2026-07-12",
-  "interlinked-premium-2026-07-10",
-  "ai-trends-brief-2026-07-10",
-  "interlinked-premium-2026-07-09",
-  "free-ai-decisions-2026-07-09",
-  "premium-ai-coo-2026-07-09",
-  "ai-trends-brief-2026-07-09",
-  "interlinked-premium-2026-07-08",
-  "ai-trends-brief-2026-07-08",
-  "interlinked-premium-2026-07-07",
-  "ai-trends-brief-2026-07-07",
-  "interlinked-premium-2026-07-05",
-  "ai-ceo-automation-july-5-2026-free",
-  "ai-ceo-automation-july-5-2026-premium",
-  "ai-trends-brief-2026-07-05",
-  "interlinked-premium-2026-07-02",
-  "interlinked-free-2026-07-02",
-  "interlinked-premium-2026-06-30",
-  "interlinked-free-2026-06-30",
-  "premium-newsletter-2026-06-24",
-  "interlinked-premium-2026-06-21",
-  "interlinked-free-2026-06-21",
-  "interlinked-premium-2026-06-13",
-  "interlinked-free-2026-06-13",
-  "interlinked-free-2026-06-03",
-  "interlinked-premium-2026-06-03",
-]);
-
 export function newsletterIssueImageUrl(slug: string): string {
-  // Cards use the issue's text-free generated artwork. Titles, metadata, and
-  // labels remain in the card template instead of being baked into the image.
-  const extension = pngNewsletterArtwork.has(slug) ? "png" : "webp";
-  return `/newsletter/generated/${encodeURIComponent(slug)}.${extension}`;
+  // A stable resolver serves the issue's real generated artwork (webp/png/jpg)
+  // and only generates a deterministic issue-specific fallback when no raster
+  // exists. Every visual surface uses this route, including share metadata.
+  return `/newsletter/${encodeURIComponent(slug)}/artwork-image`;
 }
 
 export function newsletterIssueBackgroundImage(slug: string): string {
@@ -114,10 +60,13 @@ export function NewsletterIssueCard({
       className="group relative block aspect-[3/4] w-full min-w-0 overflow-hidden rounded-xl border border-amber-500/[0.14] bg-amber-500/[0.03] shadow-[0_0_24px_rgba(245,158,11,0.04)] transition-all hover:border-amber-500/35 hover:shadow-[0_0_32px_rgba(245,158,11,0.12)]"
     >
       <div className="relative h-full min-h-0 bg-black">
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-[1.025]"
-          style={{ backgroundImage: newsletterIssueBackgroundImage(post.slug) }}
+        <Image
+          src={newsletterIssueImageUrl(post.slug)}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 78vw, 340px"
+          quality={72}
+          className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.025]"
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.58)_0%,rgba(0,0,0,0.76)_46%,rgba(0,0,0,0.96)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
