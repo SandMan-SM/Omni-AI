@@ -178,12 +178,11 @@ export async function GET(request: Request, { params }: { params: { slug: string
   return new ImageResponse(
     <div style={{ width: "100%", height: "100%", display: "flex", position: "relative", overflow: "hidden", background: "linear-gradient(135deg, #02030a 0%, #0b1028 45%, #190a2f 100%)" }}>
       <div style={{ position: "absolute", inset: 0, background: `radial-gradient(circle at ${glowX}% ${glowY}%, ${colors.secondary}99 0%, transparent 32%), radial-gradient(circle at 82% 72%, ${colors.primary}80 0%, transparent 34%), radial-gradient(circle at 22% 82%, ${colors.accent}55 0%, transparent 28%)`, display: "flex" }} />
-      <div style={{ position: "absolute", inset: 0, opacity: 0.28, backgroundImage: "linear-gradient(rgba(255,255,255,0.10) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.10) 1px, transparent 1px)", backgroundSize: "54px 54px", display: "flex" }} />
       <TopicMotif theme={theme} hash={hash} colors={colors} />
       <div style={{ position: "absolute", inset: 28, border: `2px solid ${colors.accent}55`, borderRadius: 34, boxShadow: `inset 0 0 50px ${colors.primary}22`, display: "flex" }} />
       <div style={{ position: "absolute", left: 54, top: 52, display: "flex", alignItems: "center", gap: 14 }}>
-        <div style={{ width: 16, height: 16, borderRadius: 999, background: colors.accent, boxShadow: `0 0 24px ${colors.accent}`, display: "flex" }} />
-        <div style={{ color: "rgba(255,255,255,0.82)", fontSize: 18, fontWeight: 800, letterSpacing: "0.18em", textTransform: "uppercase", display: "flex" }}>Interlinked visual intelligence</div>
+        <div style={{ width: 16, height: 16, borderRadius: 999, background: colors.accent, display: "flex" }} />
+        <div style={{ width: 310, height: 4, borderRadius: 99, background: `linear-gradient(90deg, ${colors.accent}, ${colors.primary}, transparent)`, display: "flex" }} />
       </div>
       <div style={{ position: "absolute", left: 54, bottom: 50, width: 430, height: 5, borderRadius: 99, background: `linear-gradient(90deg, ${colors.accent}, ${colors.primary}, ${colors.secondary})`, boxShadow: `0 0 22px ${colors.primary}`, display: "flex" }} />
     </div>,
