@@ -77,42 +77,13 @@ export default function Image() {
             justifyContent: "center",
             width: "760px",
             height: "100%",
-            padding: "70px 0 66px 76px",
+            padding: "64px 0 64px 76px",
           }}
         >
           <div
             style={{
               display: "flex",
-              alignItems: "center",
-              alignSelf: "flex-start",
-              gap: "10px",
-              padding: "9px 16px",
-              borderRadius: "999px",
-              border: "1px solid rgba(167,139,250,0.34)",
-              background: "rgba(76,29,149,0.20)",
-              color: "#d8b4fe",
-              fontSize: "15px",
-              fontWeight: 700,
-              letterSpacing: "2.4px",
-            }}
-          >
-            <span
-              style={{
-                display: "flex",
-                width: "8px",
-                height: "8px",
-                borderRadius: "999px",
-                background: "#67e8f9",
-                boxShadow: "0 0 16px #22d3ee",
-              }}
-            />
-            THE AI CEO BRIEFING
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              marginTop: "24px",
+              marginTop: "0px",
               fontSize: "78px",
               lineHeight: 0.98,
               letterSpacing: "-4px",
@@ -159,26 +130,6 @@ export default function Image() {
             <span style={{ color: "#555b70" }}>→</span>
             <span style={{ color: "#f4c96b" }}>remember</span>
           </div>
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            left: 76,
-            right: 66,
-            bottom: 32,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            color: "#7f8497",
-            fontSize: "15px",
-            letterSpacing: "1px",
-          }}
-        >
-          <span style={{ display: "flex" }}>DAILY SIGNALS · DEEPER INTELLIGENCE</span>
-          <span style={{ display: "flex", color: "#a78bfa", fontWeight: 700 }}>
-            omnileadsagi.com/newsletter
-          </span>
         </div>
       </div>
     ),
