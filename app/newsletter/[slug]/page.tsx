@@ -18,7 +18,7 @@ import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 import {
   NewsletterIssueCard,
-  newsletterIssueBackgroundImage,
+  newsletterIssueImageUrl,
   type NewsletterCardPost,
 } from "@/components/newsletter-issue-card";
 
@@ -343,7 +343,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   // modern desktop). Clipboard-copy fallback lives in the ShareButton.
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
-  const heroImage = newsletterIssueBackgroundImage(post.slug);
+  const heroImage = newsletterIssueImageUrl(post.slug);
   const quoteText = normalizeQuoteText(post.quote);
   const powerMoveText = renderText(post.power_move);
   const insightBodies = normalizeInsights(post.insights);
@@ -412,16 +412,28 @@ export default async function NewsletterPostPage({ params }: Props) {
 
       {/* Article */}
       <article className="relative z-10 max-w-5xl mx-auto px-5 pt-6 pb-12 md:pb-20">
-        {/* Hero image — same 1200x630 generated asset used for social sharing. */}
+        {/* Hero artwork and article header. The artwork has its own visible
+            1200×630 panel so mobile readers never mistake a dark overlay for
+            a missing image. The same per-slug resolver powers cards and social
+            sharing, including automatic topic-specific art for future posts. */}
         <div className="relative mb-10 overflow-hidden rounded-3xl border border-amber-500/20 bg-black shadow-[0_0_40px_rgba(245,158,11,0.08)]">
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-cover bg-center opacity-70"
-            style={{ backgroundImage: heroImage }}
-          />
-          <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(0,0,0,0.88)_0%,rgba(0,0,0,0.68)_48%,rgba(0,0,0,0.30)_100%)]" />
+          <div className="relative aspect-[1200/630] w-full overflow-hidden bg-slate-950">
+            <Image
+              src={heroImage}
+              alt={`Custom artwork for ${post.subject}`}
+              fill
+              priority
+              sizes="(max-width: 1024px) 100vw, 960px"
+              quality={88}
+              className="object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/5" />
+            <div className="absolute bottom-4 left-4 rounded-full border border-white/15 bg-black/45 px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/80 backdrop-blur-md sm:bottom-5 sm:left-5">
+              Custom issue artwork
+            </div>
+          </div>
           <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
-          <div className="relative flex min-h-[240px] flex-col justify-end p-5 sm:min-h-[320px] sm:p-8 md:min-h-[380px] md:p-10">
+          <div className="relative flex flex-col justify-end bg-[linear-gradient(135deg,rgba(5,5,14,0.98)_0%,rgba(20,11,48,0.96)_62%,rgba(8,8,18,0.98)_100%)] p-5 sm:p-8 md:p-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-amber-300"}`}>
               {isPremium ? "Interlinked Premium" : "Interlinked Free"}
