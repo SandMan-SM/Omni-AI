@@ -104,9 +104,12 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
         <div
           style={{
             position: "absolute",
-            inset: 0,
+            left: 0,
+            top: 0,
+            width: "940px",
+            height: "630px",
             background:
-              "linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.92) 32%, rgba(0,0,0,0.84) 52%, rgba(0,0,0,0.64) 68%, rgba(0,0,0,0.26) 84%, rgba(0,0,0,0.08) 100%)",
+              "linear-gradient(90deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.90) 34%, rgba(0,0,0,0.78) 67%, rgba(0,0,0,0.38) 84%, rgba(0,0,0,0) 100%)",
             display: "flex",
           }}
         />

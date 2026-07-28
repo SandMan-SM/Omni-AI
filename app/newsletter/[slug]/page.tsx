@@ -311,7 +311,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const keywords = normalizeKeywords(post.keywords).join(", ") || "AI, business, automation";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
-  const ogImage = `${siteUrl}/newsletter/${encodeURIComponent(slug)}/opengraph-image?v=fullbleed-fade-4`;
+  const ogImage = `${siteUrl}/newsletter/${encodeURIComponent(slug)}/opengraph-image?v=fullbleed-fade-5`;
   const description = newsletterShareDescription(post, 155);
   return {
     title: `${post.subject} | Interlinked by Omni AI`,
