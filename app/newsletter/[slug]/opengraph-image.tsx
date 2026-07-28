@@ -2,6 +2,7 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 import { getNewsletterFallbackPost } from "@/lib/newsletter-fallback";
+import { newsletterShareDescription } from "@/lib/newsletter-share-copy";
 
 export const runtime = "edge";
 export const alt = "Interlinked Newsletter";
@@ -28,7 +29,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
   const result = await withTimeout(
     supabase
       .from("newsletter_posts")
-      .select("subject, intro, tier, keywords, published_at, quote")
+      .select("subject, intro, tier, keywords, published_at, quote, insights, power_move")
       .eq("slug", slug)
       .single(),
     1200
@@ -36,7 +37,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
   const post = (result as { data?: ReturnType<typeof getNewsletterFallbackPost> } | null)?.data || getNewsletterFallbackPost(slug);
 
   const subject = post?.subject || "Interlinked Newsletter";
-  const intro = post?.intro || "AI intelligence brief by Omni AI";
+  const intro = newsletterShareDescription(post || {}, 122);
   const isPremium = post?.tier === "premium";
   const rawKeywords = post?.keywords as unknown;
   const keywords = (
@@ -105,7 +106,16 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(90deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.80) 40%, rgba(0,0,0,0.38) 72%, rgba(0,0,0,0.16) 100%)",
+              "linear-gradient(90deg, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.91) 38%, rgba(0,0,0,0.76) 61%, rgba(0,0,0,0.38) 82%, rgba(0,0,0,0.18) 100%)",
+            display: "flex",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.05) 47%, rgba(0,0,0,0.58) 100%)",
             display: "flex",
           }}
         />
@@ -121,18 +131,15 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
 
         <div
           style={{
-            position: "relative",
+            position: "absolute",
+            left: "70px",
+            top: "54px",
             display: "flex",
             flexDirection: "column",
             justifyContent: "space-between",
-            margin: "54px 70px",
             width: "750px",
-            minHeight: "510px",
+            height: "522px",
             padding: "32px 0",
-            borderRadius: "0px",
-            background: "transparent",
-            border: "0px solid transparent",
-            boxShadow: "none",
           }}
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
@@ -189,6 +196,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
                 fontWeight: 900,
                 lineHeight: 1.08,
                 color: "#ffffff",
+                textShadow: "0 3px 18px rgba(0,0,0,0.92)",
                 display: "flex",
               }}
             >
@@ -196,13 +204,14 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
             </div>
             <div
               style={{
-                fontSize: "19px",
-                lineHeight: 1.48,
-                color: "rgba(255,255,255,0.72)",
+                fontSize: "24px",
+                lineHeight: 1.38,
+                color: "rgba(255,255,255,0.94)",
+                textShadow: "0 2px 14px rgba(0,0,0,0.92)",
                 display: "flex",
               }}
             >
-              {intro.length > 112 ? intro.slice(0, 109) + "..." : intro}
+              {intro}
             </div>
           </div>
 
