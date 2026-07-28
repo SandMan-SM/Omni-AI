@@ -100,6 +100,10 @@ function parseQuote(value: unknown): QuoteParts | null {
 
   if (!text) return null;
 
+  // Generated originals may be labeled for editorial review. That label is
+  // metadata, not part of the quotation, and must never reach the reader.
+  text = text.replace(/^\s*Original line:\s*/i, "");
+
   if (!attribution) {
     const combined = text.match(/^(.*?)(?:\s+[—–]\s+|\s+-\s+)([^—–]+)$/);
     if (combined) {
