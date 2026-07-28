@@ -16,6 +16,7 @@ import { NewsletterStarCredit } from "@/components/newsletter/NewsletterStarCred
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { newsletterShareDescription } from "@/lib/newsletter-share-copy";
 import {
   NewsletterIssueCard,
   newsletterIssueImageUrl,
@@ -70,24 +71,47 @@ function renderText(value: unknown): string {
   return "";
 }
 
-function normalizeQuoteText(value: unknown): string {
-  return renderText(value)
+type QuoteParts = {
+  text: string;
+  attribution: string | null;
+};
+
+function stripQuoteMarks(value: string): string {
+  return value
     .trim()
     .replace(/^[\s"'“”‘’]+/, "")
-    .replace(/["“”‘’]+(\s+[—-]\s+)/, "$1")
-    .replace(/[\s"'“”‘’]+$/, "");
+    .replace(/[\s"'“”‘’]+$/, "")
+    .trim();
 }
 
-function splitQuoteAttribution(value: unknown): { text: string; attribution: string } {
-  const normalized = normalizeQuoteText(value);
-  const match = normalized.match(/^(.*)\s+[—–-]\s+([^—–\n]{1,120})$/);
+function parseQuote(value: unknown): QuoteParts | null {
+  const record = value && typeof value === "object"
+    ? value as {
+        text?: unknown;
+        body?: unknown;
+        quote?: unknown;
+        attribution?: unknown;
+        author?: unknown;
+        source?: unknown;
+      }
+    : null;
+  let text = renderText(record?.quote ?? record?.text ?? record?.body ?? value).trim();
+  let attribution = renderText(record?.attribution ?? record?.author ?? record?.source).trim();
 
-  if (!match) return { text: normalized, attribution: "" };
+  if (!text) return null;
 
-  return {
-    text: match[1].trim().replace(/[\s"'“”‘’]+$/, ""),
-    attribution: match[2].trim().replace(/^[\s"'“”‘’]+|[\s"'“”‘’]+$/g, ""),
-  };
+  if (!attribution) {
+    const combined = text.match(/^(.*?)(?:\s+[—–]\s+|\s+-\s+)([^—–]+)$/);
+    if (combined) {
+      text = combined[1];
+      attribution = combined[2];
+    }
+  }
+
+  text = stripQuoteMarks(text);
+  attribution = stripQuoteMarks(attribution).replace(/^[—–-]\s*/, "");
+
+  return text ? { text, attribution: attribution || null } : null;
 }
 
 function splitNumberedInsightText(text: string): string[] {
@@ -287,10 +311,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const keywords = normalizeKeywords(post.keywords).join(", ") || "AI, business, automation";
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
-  const ogImage = `${siteUrl}/newsletter/${encodeURIComponent(slug)}/opengraph-image`;
+  const ogImage = `${siteUrl}/newsletter/${encodeURIComponent(slug)}/opengraph-image?v=readable-copy-3`;
+  const description = newsletterShareDescription(post, 155);
   return {
     title: `${post.subject} | Interlinked by Omni AI`,
-    description: post.intro?.slice(0, 160),
+    description,
     keywords,
     // Canonical URL — consolidates any UTM/referrer variations back to
     // the clean issue URL so duplicate-content signals don't split. Per
@@ -307,7 +332,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     },
     openGraph: {
       title: post.subject,
-      description: post.intro?.slice(0, 160),
+      description,
       type: "article",
       publishedTime: post.published_at,
       siteName: "Interlinked by Omni AI",
@@ -319,7 +344,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     twitter: {
       card: "summary_large_image",
       title: post.subject,
-      description: post.intro?.slice(0, 160),
+      description,
       images: [ogImage],
       site: "@SitaniMafi",
     },
@@ -356,7 +381,7 @@ export default async function NewsletterPostPage({ params }: Props) {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
   const postUrl = `${siteUrl}/newsletter/${slug}`;
   const heroImage = newsletterIssueImageUrl(post.slug);
-  const quote = splitQuoteAttribution(post.quote);
+  const quote = parseQuote(post.quote);
   const powerMoveText = renderText(post.power_move);
   const insightBodies = normalizeInsights(post.insights);
 
@@ -427,7 +452,7 @@ export default async function NewsletterPostPage({ params }: Props) {
         {/* Hero artwork stays behind the article header. The per-slug image
             is decorative here because the visible H1 names the issue; the
             dark overlays preserve the original hero readability. */}
-        <div className="relative mb-8 min-h-[360px] overflow-hidden rounded-3xl border border-amber-500/20 bg-slate-950 shadow-[0_0_40px_rgba(245,158,11,0.08)] sm:min-h-[420px]">
+        <div className="relative mb-10 -mx-5 min-h-[360px] overflow-hidden border-y border-amber-500/25 bg-slate-950 shadow-[0_12px_50px_rgba(245,158,11,0.10)] sm:mx-0 sm:min-h-[420px]">
           <Image
             src={heroImage}
             alt=""
@@ -438,9 +463,9 @@ export default async function NewsletterPostPage({ params }: Props) {
             quality={88}
             className="object-cover object-center"
           />
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
-          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(5,5,14,0.10)_0%,rgba(20,11,48,0.20)_62%,rgba(8,8,18,0.45)_100%)]" />
+          <div className="absolute inset-0 bg-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/45 to-black/10" />
+          <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(5,5,14,0.20)_0%,rgba(20,11,48,0.42)_62%,rgba(8,8,18,0.72)_100%)]" />
           <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
           <div className="relative flex min-h-[360px] flex-col justify-end p-5 sm:min-h-[420px] sm:p-8 md:p-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -491,9 +516,9 @@ export default async function NewsletterPostPage({ params }: Props) {
             same balanced pull-quote treatment. Neutral lighter card bg
             keeps it readable against the fire-spark backdrop; accent
             border stays subtle. */}
-        {quote.text && (
+        {quote && (
           <figure
-            className={`mx-auto mt-8 mb-12 max-w-2xl rounded-3xl border bg-white/[0.06] px-8 py-12 sm:px-12 sm:py-14 backdrop-blur-sm ${
+            className={`mx-auto mt-8 mb-12 max-w-2xl border-y bg-white/[0.045] px-6 py-10 sm:px-12 sm:py-12 backdrop-blur-sm ${
               isPremium ? "border-amber-500/30" : "border-purple-500/30"
             }`}
           >
@@ -503,7 +528,7 @@ export default async function NewsletterPostPage({ params }: Props) {
               </p>
             </blockquote>
             {quote.attribution && (
-              <figcaption className="mt-5 text-center text-sm font-medium not-italic text-gray-400">
+              <figcaption className="mt-5 text-center text-sm font-medium not-italic tracking-wide text-gray-400">
                 &mdash; {quote.attribution}
               </figcaption>
             )}
