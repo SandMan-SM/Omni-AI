@@ -132,7 +132,8 @@ export default async function NewsletterIndexPage() {
         .from("newsletter_posts")
         .select("slug, subject, intro, keywords, tier, published_at, created_at")
         .eq("tier", "premium")
-        .or("published_at.not.is.null,status.eq.published")
+        .eq("status", "published")
+        .not("published_at", "is", null)
         .order("published_at", { ascending: false })
         .limit(5),
       2500
@@ -142,6 +143,7 @@ export default async function NewsletterIndexPage() {
         .from("newsletter_posts")
         .select("slug, subject, intro, keywords, tier, published_at, created_at")
         .eq("tier", "free")
+        .eq("status", "published")
         .ilike("slug", "%interlinked%")
         .not("published_at", "is", null)
         .lte("published_at", new Date().toISOString())

@@ -154,7 +154,8 @@ async function getArchivePosts(): Promise<{ posts: NewsletterCardPost[]; unavail
     supabase
       .from("newsletter_posts")
       .select("slug, subject, intro, keywords, tier, published_at, created_at")
-      .or("published_at.not.is.null,status.eq.published")
+      .eq("status", "published")
+      .not("published_at", "is", null)
       .order("published_at", { ascending: false })
       .limit(500),
     4000
