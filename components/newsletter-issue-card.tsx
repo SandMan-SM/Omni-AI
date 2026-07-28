@@ -26,7 +26,7 @@ export function newsletterIssueImageUrl(slug: string): string {
   // A stable resolver serves the issue's real generated artwork (webp/png/jpg)
   // and only generates a deterministic issue-specific fallback when no raster
   // exists. Every visual surface uses this route, including share metadata.
-  return `/newsletter/${encodeURIComponent(slug)}/artwork-image?v=fullbleed-fade-20260727`;
+  return `/newsletter/${encodeURIComponent(slug)}/artwork-image?v=custom-art-20260728-v2`;
 }
 
 export function newsletterIssueBackgroundImage(slug: string): string {
