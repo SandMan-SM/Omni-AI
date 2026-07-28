@@ -21,6 +21,8 @@ async function getGeneratedArtwork(request: Request, slug: string): Promise<Resp
 
   for (const extension of GENERATED_ARTWORK_EXTENSIONS) {
     const assetUrl = new URL(`/newsletter/generated/${encodedSlug}.${extension}`, requestUrl.origin);
+    const version = requestUrl.searchParams.get("v");
+    if (version) assetUrl.searchParams.set("v", version);
 
     try {
       const asset = await fetch(assetUrl, { cache: "force-cache" });
@@ -32,7 +34,7 @@ async function getGeneratedArtwork(request: Request, slug: string): Promise<Resp
           headers: {
             "Content-Type": contentType,
             "Cache-Control": "public, max-age=31536000, immutable",
-            "X-Newsletter-Artwork": assetUrl.pathname,
+            "X-Newsletter-Artwork": `${assetUrl.pathname}${assetUrl.search}`,
           },
         });
       }

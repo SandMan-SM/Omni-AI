@@ -3,6 +3,7 @@ import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 import { getNewsletterFallbackPost } from "@/lib/newsletter-fallback";
 import { newsletterShareDescription } from "@/lib/newsletter-share-copy";
+import { newsletterIssueImageUrl } from "@/components/newsletter-issue-card";
 
 export const runtime = "edge";
 export const alt = "Interlinked Newsletter";
@@ -56,12 +57,11 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
       : process.env.VERCEL_URL
         ? `https://${process.env.VERCEL_URL}`
         : process.env.NEXT_PUBLIC_SITE_URL || "https://omnileadsagi.com";
-  const encodedSlug = encodeURIComponent(slug);
   // The page hero, archive card, Open Graph image, and Twitter image all use
   // this one stable artwork route. It resolves the issue's real generated
   // raster asset regardless of extension, so new posts cannot drift to a
   // generic or mismatched share background.
-  const backgroundUrl = `${siteUrl}/newsletter/${encodedSlug}/artwork-image`;
+  const backgroundUrl = new URL(newsletterIssueImageUrl(slug), siteUrl).toString();
   const date = post?.published_at
     ? new Date(post.published_at).toLocaleDateString("en-US", {
         month: "long",
@@ -106,7 +106,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(90deg, rgba(0,0,0,0.97) 0%, rgba(0,0,0,0.91) 38%, rgba(0,0,0,0.76) 61%, rgba(0,0,0,0.38) 82%, rgba(0,0,0,0.18) 100%)",
+              "linear-gradient(90deg, rgba(0,0,0,0.96) 0%, rgba(0,0,0,0.92) 32%, rgba(0,0,0,0.84) 52%, rgba(0,0,0,0.64) 68%, rgba(0,0,0,0.26) 84%, rgba(0,0,0,0.08) 100%)",
             display: "flex",
           }}
         />
@@ -115,7 +115,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
             position: "absolute",
             inset: 0,
             background:
-              "linear-gradient(180deg, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.05) 47%, rgba(0,0,0,0.58) 100%)",
+              "linear-gradient(180deg, rgba(0,0,0,0.26) 0%, rgba(0,0,0,0.04) 44%, rgba(0,0,0,0.68) 100%)",
             display: "flex",
           }}
         />
