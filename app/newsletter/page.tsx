@@ -53,7 +53,10 @@ export const metadata: Metadata = {
 // Fast front shelf: only the latest 5 premium + 5 free posts render here.
 // The full library lives at /newsletter/archive so the main page does not
 // block on full-list reads, subscriber counts, or send analytics.
-export const revalidate = 300;
+// Publication state must never be served from a stale shelf after an
+// operator unpublishes a malformed or duplicate issue.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> {
   return Promise.race([

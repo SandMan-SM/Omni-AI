@@ -27,7 +27,10 @@ import {
 // Known issues are generated from the protected fallback snapshot at build
 // time, then ISR keeps the shell warm. Supabase is only used for brand-new
 // slugs that are not in the snapshot yet.
-export const revalidate = 300;
+// Publication state must be checked on every direct issue request so an
+// unpublished duplicate cannot survive in ISR or social-link caches.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 export const dynamicParams = true;
 
 interface Props {
@@ -196,7 +199,8 @@ async function getPost(slug: string) {
       .from("newsletter_posts")
       .select("*")
       .eq("slug", slug)
-      .or("published_at.not.is.null,status.eq.published")
+      .eq("status", "published")
+      .not("published_at", "is", null)
       .maybeSingle(),
     2500
   );
@@ -269,7 +273,8 @@ async function getMoreIssueShelves(currentSlug: string) {
         .from("newsletter_posts")
         .select("slug, subject, intro, keywords, tier, published_at, created_at")
         .eq("tier", "premium")
-        .or("published_at.not.is.null,status.eq.published")
+        .eq("status", "published")
+        .not("published_at", "is", null)
         .order("published_at", { ascending: false })
         .limit(5),
       2500
@@ -279,7 +284,8 @@ async function getMoreIssueShelves(currentSlug: string) {
         .from("newsletter_posts")
         .select("slug, subject, intro, keywords, tier, published_at, created_at")
         .neq("tier", "premium")
-        .or("published_at.not.is.null,status.eq.published")
+        .eq("status", "published")
+        .not("published_at", "is", null)
         .order("published_at", { ascending: false })
         .limit(5),
       2500

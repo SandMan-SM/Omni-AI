@@ -13,7 +13,10 @@ import {
 } from "@/components/newsletter-issue-card";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 
-export const revalidate = 300;
+// Publication state must never be served from a stale archive after an
+// operator unpublishes a malformed or duplicate issue.
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "Interlinked Newsletter Archive — Omni AI",
