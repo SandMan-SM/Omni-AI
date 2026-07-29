@@ -79,7 +79,10 @@ async function cmdList() {
     console.error(xml);
     process.exit(1);
   }
-  const rows = [...xml.matchAll(/<Domain([^/>]+)\/>/g)];
+  // Namecheap returns PAIRED <Domain ...>...</Domain>, not self-closing tags.
+  // The old pattern required a trailing "/>" and so matched nothing, printing
+  // "Owned domains: 0" while the account held 57. Match the open tag only.
+  const rows = [...xml.matchAll(/<Domain\s+([^>]+?)\/?>/g)];
   console.log(`Owned domains: ${rows.length}`);
   for (const r of rows) {
     const attrs = r[1];
@@ -98,7 +101,8 @@ async function cmdHosts(domain: string) {
     console.error(xml);
     process.exit(1);
   }
-  const rows = [...xml.matchAll(/<host\s+([^/>]+)\/>/gi)];
+  // Same fix as cmdList — tolerate both self-closing and paired <host> tags.
+  const rows = [...xml.matchAll(/<host\s+([^>]+?)\/?>/gi)];
   console.log(`${domain} — ${rows.length} record(s):`);
   for (const r of rows) {
     const a = r[1];
