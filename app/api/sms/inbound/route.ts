@@ -22,6 +22,13 @@ export const maxDuration = 30;
 // Env: TWILIO_AUTH_TOKEN (signature verification), ANTHROPIC_API_KEY.
 // Until TWILIO_AUTH_TOKEN is set the route fails closed (403), so it cannot be
 // abused before the number is live.
+//
+// AUTO-REPLY IS OFF BY DEFAULT. Capture (lead + logging + owner email) always
+// runs, but the line stays silent unless SMS_AUTO_REPLY=1 is set explicitly.
+// Sending is the only irreversible thing this route does — a wrong or
+// mistimed reply lands on a real person's phone and cannot be recalled — so it
+// is opt-in rather than something that switches on the moment a number is
+// attached. Flip the env var when the copy has been reviewed.
 
 const MAX_REPLY_CHARS = 300;
 
@@ -150,6 +157,27 @@ export async function POST(req: NextRequest) {
     }
   } catch (e) {
     console.error("[sms/inbound] lead upsert failed:", e);
+  }
+
+  const autoReplyEnabled = process.env.SMS_AUTO_REPLY === "1";
+
+  // Silent mode: the lead is captured and the owner is emailed, but nothing is
+  // sent back to the texter. Claude is skipped entirely so no tokens are spent
+  // generating a reply that will never leave the building.
+  if (!autoReplyEnabled) {
+    await emailOwner({
+      subject: `${isNewLead ? "New" : ""} text from ${from}`.trim(),
+      html: ownerCard(
+        "SMS line",
+        isNewLead ? "New contact texted in" : "Text from an existing contact",
+        [
+          ["From", from],
+          ["Message", body.slice(0, 300) || "—"],
+        ],
+        "Captured silently — auto-reply is off (set SMS_AUTO_REPLY=1 to turn it on). Reply from the Twilio console to answer this person.",
+      ),
+    });
+    return twiml();
   }
 
   // Compose the reply. Claude keeps it short, human, and useful; a static
