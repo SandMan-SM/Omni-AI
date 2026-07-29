@@ -141,9 +141,38 @@ export async function POST(
     });
 
     // Registry (non-legacy) tenants have no per-tenant table — the shared write
-    // above is their system of record. The dashboard + dark-tenant alarm surface
-    // it; owner-notify for these newer brands is wired in a later pass.
+    // above is their system of record.
+    //
+    // They still get the owner notification. This used to return early here,
+    // so a lead from any newer brand (utahaddiction, theluxesocialist,
+    // deptofcreatvs, …) was saved silently and the owner was never told — the
+    // lead only existed if someone went looking in the dashboard. The lead is
+    // already durably recorded by recordLead() above, so this notify is
+    // best-effort and can never fail the capture.
     if (!isInboundSlug(slug)) {
+      const registryLead = {
+        id: `registry:${slug}:${Date.now()}`,
+        // Registry slugs are intentionally outside the legacy InboundSlug union.
+        // The notifier only uses this for the display label and falls back to the
+        // raw slug (`INBOUND_SLUG_LABELS[slug] ?? slug`), so the cast is safe.
+        slug: slug as InboundSlug,
+        name,
+        email: email || null,
+        phone: phone || null,
+        message: message || null,
+        source,
+        pageUrl: sanitizeText(body.page_url, 2048) || null,
+      };
+      await Promise.all([
+        notifyOwnerEmailInbound(registryLead).catch((e) => {
+          console.error(`[inbound/${slug}/leads] registry email notify failed`, e);
+          return false;
+        }),
+        notifyOwnerTelegramInbound(registryLead).catch((e) => {
+          console.error(`[inbound/${slug}/leads] registry telegram notify failed`, e);
+          return false;
+        }),
+      ]);
       return NextResponse.json({ ok: true }, { headers: cors });
     }
 
