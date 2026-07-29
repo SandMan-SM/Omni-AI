@@ -80,15 +80,40 @@ Reply with ONLY a JSON object, no markdown fence:
 {"reply": "<your message>", "capture": {"name": "...", "email": "...", "phone": "...", "interest": "network|omni|daily|tip|question"}}
 Include in "capture" only the fields you actually learned this turn; omit it entirely if you learned nothing new. "interest" is your read of what they want.`;
 
+/*
+ * Fallback desk, used whenever the model is unavailable — no API key, no
+ * credit balance, an outage, anything. It is deliberately rule-based and
+ * dependency-free so the widget stays USEFUL rather than apologetic: it still
+ * routes people to the right product and still collects an email, which is the
+ * part that actually earns money. The agent upgrades this automatically the
+ * moment the model can be reached again; no redeploy of the masthead needed.
+ */
+function fallbackReply(text: string, known: Record<string, unknown>): string {
+  const t = text.toLowerCase();
+  const hasEmail = Boolean((known as { hasEmail?: boolean }).hasEmail);
+  const close = hasEmail
+    ? "I've got your email, so someone will come back to you there."
+    : "Leave your email here and a person will come back to you.";
+
+  if (/\b(network|utah'?s best|member|directory|listed|feature|featured|join)\b/.test(t)) {
+    return `Utah's Best Network is our vetted directory — members are cross-listed across all three mastheads. It's $5,000 a year, or twelve payments through Klarna. Details at utahmainstreet.com/utahs-best. ${close}`;
+  }
+  if (/\b(lead|leads|marketing|customers|ads|advertis|automat|ai|omni|grow|sales)\b/.test(t)) {
+    return `That's Omni AI, our parent company — they build lead generation and automation for local businesses. There's a free 30-minute call, no pitch, at omnileadsagi.com/book-now. ${close}`;
+  }
+  if (/\b(tip|story|scoop|cover|pitch|reporter|news|write)\b/.test(t)) {
+    return `Send it through — tips reach a real person here. ${close}`;
+  }
+  if (/\b(subscribe|newsletter|daily|email list|sign ?up)\b/.test(t)) {
+    return hasEmail
+      ? "You're already on the daily — one short read each morning on real Utah operators."
+      : "The daily is one short read each morning on real Utah operators. Free, no paid placements. What's your email?";
+  }
+  return `Got it — that's with the desk, and a real person reads these. ${close}`;
+}
+
 export async function POST(req: NextRequest) {
   const headers = cors(req.headers.get("origin"));
-
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return NextResponse.json(
-      { reply: "The desk is offline for a moment — leave your email and a person will follow up." },
-      { status: 200, headers },
-    );
-  }
 
   let body: { messages?: Array<{ role?: string; content?: string }>; known?: Record<string, unknown>; pageUrl?: string };
   try {
@@ -114,6 +139,12 @@ export async function POST(req: NextRequest) {
   }
 
   const known = body.known && typeof body.known === "object" ? body.known : {};
+  const lastUser = turns[turns.length - 1].content;
+
+  // No key at all -> straight to the rule-based desk.
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return NextResponse.json({ reply: fallbackReply(lastUser, known), degraded: true }, { status: 200, headers });
+  }
   const context = [
     `Page they're reading: ${String(body.pageUrl || "utahmainstreet.com").slice(0, 200)}`,
     `Already known about them: ${JSON.stringify(known)}`,
@@ -156,10 +187,10 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ reply: reply.slice(0, 700), capture }, { status: 200, headers });
   } catch (e) {
-    console.error("[agent/chat] model call failed:", e);
-    return NextResponse.json(
-      { reply: "That one didn't reach me — mind trying again? Or leave an email and a person will pick it up." },
-      { status: 200, headers },
-    );
+    // Most common real cause here is an exhausted Anthropic credit balance,
+    // which returns invalid_request_error. Whatever the reason, the visitor
+    // must still get a useful answer rather than an apology.
+    console.error("[agent/chat] model call failed, serving fallback desk:", e);
+    return NextResponse.json({ reply: fallbackReply(lastUser, known), degraded: true }, { status: 200, headers });
   }
 }
