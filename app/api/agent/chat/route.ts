@@ -228,28 +228,97 @@ async function generate(system: string, turns: Turn[]): Promise<{ text: string; 
  * part that actually earns money. The agent upgrades this automatically the
  * moment the model can be reached again; no redeploy of the masthead needed.
  */
-function fallbackReply(text: string, known: Record<string, unknown>): string {
+function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): string {
   const t = text.toLowerCase();
   const hasEmail = Boolean((known as { hasEmail?: boolean }).hasEmail);
-  const close = hasEmail
-    ? "I've got your email, so someone will come back to you there."
-    : "Leave your email here and a person will come back to you.";
+  const hasName = Boolean((known as { hasName?: boolean }).hasName);
 
-  if (/\b(network|utah'?s best|member|directory|listed|feature|featured|join)\b/.test(t)) {
-    return `Utah's Best Network is our vetted directory — members are cross-listed across all three mastheads. It's $5,000 a year, or twelve payments through Klarna. Details at utahmainstreet.com/utahs-best. ${close}`;
+  /*
+   * The advancing move. A desk that answers and stops is a brochure; this
+   * appends exactly one forward step so the conversation goes somewhere.
+   *
+   * It is deliberately varied by turn and gated on what is already known:
+   * repeating a verbatim "leave your email" after every single answer was the
+   * single most bot-like thing the old version did, and re-asking for a
+   * detail already in the cookie reads as not listening. Once contact details
+   * exist the move stops asking and starts offering, which is the correct
+   * escalation for someone who has already identified themselves.
+   */
+  function move(): string {
+    if (!hasEmail) {
+      const asks = [
+        "What's the best email for you? I'll have a person follow up with specifics rather than a brochure.",
+        "Drop your email and I'll send the details plus who's already listed — no sales sequence.",
+        "What email should the follow-up go to?",
+      ];
+      return asks[turn % asks.length];
+    }
+    if (!hasName) return "Got your email. Who am I speaking with?";
+    return "Want me to set up the free 30-minute call? No pitch, no card.";
   }
-  if (/\b(lead|leads|marketing|customers|ads|advertis|automat|ai|omni|grow|sales)\b/.test(t)) {
-    return `That's Omni AI, our parent company — they build lead generation and automation for local businesses. There's a free 30-minute call, no pitch, at omnileadsagi.com/book-now. ${close}`;
+
+  // Greeting or an opener with no real question in it.
+  if (/^\s*(hi|hey|hello|yo|sup|good (morning|afternoon|evening))\b/.test(t) && t.length < 30) {
+    return `Morning. This is the Utah Main Street desk — we cover real Utah operators, and we run the Utah's Best Network directory. What are you working on?`;
   }
-  if (/\b(tip|story|scoop|cover|pitch|reporter|news|write)\b/.test(t)) {
-    return `Send it through — tips reach a real person here. ${close}`;
+
+  // Who/what is this. Establishes credibility before any ask.
+  if (/\b(who are you|what is this|what do you do|about you|whats this|who is this)\b/.test(t)) {
+    return `Utah Main Street is a daily local-business paper out of Salt Lake — real operators, verifiable receipts, no paid placements in the editorial. We also run Utah's Best Network, a vetted directory. ${move()}`;
   }
-  if (/\b(subscribe|newsletter|daily|email list|sign ?up)\b/.test(t)) {
+
+  // Price objection. Answer with framing, not a discount; never apologise for it.
+  if (/\b(expensive|too much|pricey|cheaper|afford|budget|steep|a lot of money|worth it)\b/.test(t)) {
+    return `Fair question. It's $5,000 a year, or twelve Klarna payments, and it's cross-listed across all three mastheads rather than one directory nobody reads. If one member job covers it, it's paid for — that's the maths most operators run. ${move()}`;
+  }
+
+  // Proof and results. Do not invent numbers; point at what is verifiable.
+  if (/\b(results|roi|proof|does it work|guarantee|evidence|case stud|testimonial|reviews?)\b/.test(t)) {
+    return `We don't publish invented numbers. What you can check: every operator we feature has a public receipt behind it, and the member list is open at utahmainstreet.com/utahs-best. Judge it on that. ${move()}`;
+  }
+
+  // What's included.
+  if (/\b(included|what do i get|benefits|whats in it|perks|come with)\b/.test(t)) {
+    return `A vetted listing cross-published across Utah Main Street, Beehive Biz Pulse and The Wasatch Post, a reputation page at /operators, and consideration for a full spotlight when there's a real story. ${move()}`;
+  }
+
+  // Membership and pricing.
+  if (/\b(network|utah'?s best|member|directory|listed|feature|featured|join|price|pricing|cost|how much|\$)\b/.test(t)) {
+    return `Utah's Best Network is our vetted directory — members are cross-listed across all three mastheads. $5,000 a year, or twelve payments through Klarna. Full details at utahmainstreet.com/utahs-best. ${move()}`;
+  }
+
+  // How it works / process.
+  if (/\b(how does it work|process|next steps?|get started|sign me up|how do i)\b/.test(t)) {
+    return `Straightforward: we check you're real and in good standing, build the listing and your /operators page, then cross-publish. Vetting is the slow part and it's the point. ${move()}`;
+  }
+
+  // Talk to a human.
+  if (/\b(call|phone|talk to|speak|human|person|meeting|appointment|contact)\b/.test(t)) {
     return hasEmail
-      ? "You're already on the daily — one short read each morning on real Utah operators."
+      ? `Easiest is the free 30-minute call — omnileadsagi.com/book-now, no pitch and no card. I'll flag your note either way.`
+      : `Happy to get a person on it. Free 30-minute call at omnileadsagi.com/book-now, or leave your email here and someone reaches out directly.`;
+  }
+
+  // Omni AI / lead gen.
+  if (/\b(lead|leads|marketing|customers|ads|advertis|automat|ai|omni|grow|sales|website|seo)\b/.test(t)) {
+    return `That's Omni AI, our parent company — lead generation and automation for local businesses. Free 30-minute call, no pitch, at omnileadsagi.com/book-now. ${move()}`;
+  }
+
+  // Editorial tip.
+  if (/\b(tip|story|scoop|cover|pitch|reporter|news|write|interview)\b/.test(t)) {
+    return `Send it through — tips reach a real person at this desk, and we check before we print. What's the story?`;
+  }
+
+  // The daily.
+  if (/\b(subscribe|newsletter|daily|email list|sign ?up|unsubscribe)\b/.test(t)) {
+    return hasEmail
+      ? "You're on the daily — one short read each morning on real Utah operators."
       : "The daily is one short read each morning on real Utah operators. Free, no paid placements. What's your email?";
   }
-  return `Got it — that's with the desk, and a real person reads these. ${close}`;
+
+  // Unmatched. Acknowledge the actual words rather than emitting a stock line.
+  const topic = text.trim().replace(/\s+/g, " ").slice(0, 60);
+  return `Let me get that in front of the right person — you asked about "${topic}". A real person reads these. ${move()}`;
 }
 
 export async function POST(req: NextRequest) {
@@ -280,6 +349,7 @@ export async function POST(req: NextRequest) {
 
   const known = body.known && typeof body.known === "object" ? body.known : {};
   const lastUser = turns[turns.length - 1].content;
+  const userTurns = turns.filter((x) => x.role === "user").length;
 
   // No provider configured at all -> straight to the rule-based desk.
   const hasProvider = Boolean(
@@ -290,7 +360,7 @@ export async function POST(req: NextRequest) {
       process.env.ANTHROPIC_API_KEY,
   );
   if (!hasProvider) {
-    return NextResponse.json({ reply: fallbackReply(lastUser, known), degraded: true }, { status: 200, headers });
+    return NextResponse.json({ reply: fallbackReply(lastUser, known, userTurns), degraded: true }, { status: 200, headers });
   }
   const context = [
     `Page they're reading: ${String(body.pageUrl || "utahmainstreet.com").slice(0, 200)}`,
@@ -327,6 +397,6 @@ export async function POST(req: NextRequest) {
     // which returns invalid_request_error. Whatever the reason, the visitor
     // must still get a useful answer rather than an apology.
     console.error("[agent/chat] model call failed, serving fallback desk:", e);
-    return NextResponse.json({ reply: fallbackReply(lastUser, known), degraded: true }, { status: 200, headers });
+    return NextResponse.json({ reply: fallbackReply(lastUser, known, userTurns), degraded: true }, { status: 200, headers });
   }
 }
