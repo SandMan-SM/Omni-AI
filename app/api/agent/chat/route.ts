@@ -266,7 +266,7 @@ function fallbackReply(
   text: string,
   known: Record<string, unknown>,
   turn = 1,
-  opts: { nameAlreadyAsked?: boolean } = {},
+  opts: { nameAlreadyAsked?: boolean; justLearnedName?: string } = {},
 ): string {
   const t = text.toLowerCase();
 
@@ -295,7 +295,8 @@ function fallbackReply(
    */
   const hasName =
     Boolean((known as { hasName?: boolean }).hasName) ||
-    Boolean(String((known as { name?: unknown }).name ?? "").trim());
+    Boolean(String((known as { name?: unknown }).name ?? "").trim()) ||
+    Boolean(opts.justLearnedName);
 
   /*
    * The advancing move. A desk that answers and stops is a brochure; this
@@ -321,6 +322,17 @@ function fallbackReply(
     // asking again is how the desk ends up in a loop — move the conversation on.
     if (!hasName && !opts.nameAlreadyAsked) return "Got your email. Who am I speaking with?";
     return "Want me to set up the free 30-minute call? No pitch, no card.";
+  }
+
+  /*
+   * They just told us their name. Use it — capturing a name and then replying
+   * "Understood, I've put that in front of the desk" is the tell of something
+   * that is filing you rather than talking to you.
+   */
+  if (opts.justLearnedName) {
+    const first = opts.justLearnedName.split(/\s+/)[0];
+    const pretty = first.charAt(0).toUpperCase() + first.slice(1);
+    return `Thanks, ${pretty}. ${move()}`;
   }
 
   /*
@@ -520,7 +532,7 @@ export async function POST(req: NextRequest) {
   );
   if (!hasProvider) {
     return NextResponse.json({
-        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked }),
+        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
       }, { status: 200, headers });
@@ -561,7 +573,7 @@ export async function POST(req: NextRequest) {
     // must still get a useful answer rather than an apology.
     console.error("[agent/chat] model call failed, serving fallback desk:", e);
     return NextResponse.json({
-        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked }),
+        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
       }, { status: 200, headers });
