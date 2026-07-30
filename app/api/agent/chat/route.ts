@@ -266,49 +266,44 @@ function fallbackReply(
   text: string,
   known: Record<string, unknown>,
   turn = 1,
-  opts: { nameAlreadyAsked?: boolean; justLearnedName?: string } = {},
+  opts: { nameAlreadyAsked?: boolean; justLearnedName?: string; alreadySaid?: string[] } = {},
 ): string {
-  const t = text.toLowerCase();
-
   /*
-   * Details supplied in THIS message count as known.
+   * Matching is on a NORMALISED string with loose substring tests, not on \b
+   * regexes over literal phrases.
    *
-   * The caller's `known` flags describe what was on record when the request was
-   * built, so a reader who types their address gets a payload that still says
-   * hasEmail:false — and the desk then asked for the email it had just been
-   * handed, which is the single most insulting thing a chat can do. Read the
-   * message itself and treat what is in it as already given.
+   * That change is the whole point of this rewrite. The literal-phrase version
+   * failed on ordinary English: the pattern `what do i get` did not match "what
+   * do i ACTUALLY get for that", `\$` did not match "5k", and there was simply
+   * no branch for "who else is in it", "how long does it take" or "im
+   * interested". A live conversation with an interested dental-clinic owner
+   * produced four consecutive "I'd rather a person answered that" replies, and
+   * the strongest buying signal in the thread — "ok im interested" — was
+   * answered with "Understood. I've put that in front of the desk."
+   *
+   * Punctuation collapses to spaces so word order and filler words stop
+   * mattering, and the string is space-padded so a needle can be anchored as
+   * " ai " where a bare substring would be too greedy.
    */
+  const rawLower = text.toLowerCase();
+  const t = ` ${rawLower.replace(/[^a-z0-9$@.'’+-]+/g, " ").replace(/\s+/g, " ").trim()} `;
+  const any = (...needles: string[]) => needles.some((n) => t.includes(n));
+
   const givenEmail = text.match(EMAIL_IN_TEXT)?.[0];
   const givenPhone = text.match(PHONE_IN_TEXT)?.[0];
   const hasEmail =
     Boolean((known as { hasEmail?: boolean }).hasEmail) ||
     Boolean(String((known as { email?: unknown }).email ?? "").trim()) ||
     Boolean(givenEmail);
-
-  /*
-   * Accept BOTH shapes. The widget's known-state is {name, hasEmail, hasPhone}
-   * — it carries the name itself and has no `hasName` key at all — while this
-   * route was reading `hasName` only. That read was always undefined, so the
-   * desk asked "Who am I speaking with?" on every single turn no matter how
-   * many times the reader answered. Trust either form.
-   */
   const hasName =
     Boolean((known as { hasName?: boolean }).hasName) ||
     Boolean(String((known as { name?: unknown }).name ?? "").trim()) ||
     Boolean(opts.justLearnedName);
 
-  /*
-   * The advancing move. A desk that answers and stops is a brochure; this
-   * appends exactly one forward step so the conversation goes somewhere.
-   *
-   * It is deliberately varied by turn and gated on what is already known:
-   * repeating a verbatim "leave your email" after every single answer was the
-   * single most bot-like thing the old version did, and re-asking for a
-   * detail already in the cookie reads as not listening. Once contact details
-   * exist the move stops asking and starts offering, which is the correct
-   * escalation for someone who has already identified themselves.
-   */
+  const BEST = "utahmainstreet.com/utahs-best";
+  const CALL = "omnileadsagi.com/book-now";
+
+  /** One advancing step per reply, varied, and never asking for what we hold. */
   function move(): string {
     if (!hasEmail) {
       const asks = [
@@ -318,174 +313,216 @@ function fallbackReply(
       ];
       return asks[turn % asks.length];
     }
-    // Ask for a name at most once. If we asked and still could not make one out,
-    // asking again is how the desk ends up in a loop — move the conversation on.
     if (!hasName && !opts.nameAlreadyAsked) return "Got your email. Who am I speaking with?";
-    return "Want me to set up the free 30-minute call? No pitch, no card.";
+    return `Want me to set up the free 30-minute call? No pitch, no card.`;
   }
 
-  /*
-   * They just told us their name. Use it — capturing a name and then replying
-   * "Understood, I've put that in front of the desk" is the tell of something
-   * that is filing you rather than talking to you.
-   */
-  if (opts.justLearnedName) {
-    const first = opts.justLearnedName.split(/\s+/)[0];
-    const pretty = first.charAt(0).toUpperCase() + first.slice(1);
-    return `Thanks, ${pretty}. ${move()}`;
-  }
-
-  /*
-   * Contact details handed over. Checked FIRST, before any topic intent: when
-   * someone gives an address the only correct reply is to confirm it and move
-   * on. Anything else reads as not listening.
-   */
-  if (givenEmail || givenPhone) {
-    const got = givenEmail && givenPhone ? "those details" : givenEmail ? "that address" : "that number";
-    if (hasName || opts.nameAlreadyAsked) {
-      return `Got ${got} — someone will come back to you directly. Anything you want passed on with it?`;
+  const answer = ((): string => {
+    // Contact details handed over — confirm before considering any topic.
+    if (givenEmail || givenPhone) {
+      const got = givenEmail && givenPhone ? "those details" : givenEmail ? "that address" : "that number";
+      if (hasName || opts.nameAlreadyAsked) {
+        return `Got ${got} — someone will come back to you directly. Anything you want passed on with it?`;
+      }
+      return `Got ${got} down, and a real person picks these up. Who am I speaking with?`;
     }
-    return `Got ${got} down, and a real person picks these up. Who am I speaking with?`;
-  }
 
-  // Greeting or an opener with no real question in it.
-  if (/^\s*(hi|hey|hello|yo|sup|good (morning|afternoon|evening))\b/.test(t) && t.length < 30) {
-    return `Morning. This is the Utah Main Street desk — we cover real Utah operators, and we run the Utah's Best Network directory. What are you working on?`;
-  }
-
-  // Who/what is this. Establishes credibility before any ask.
-  if (/\b(who are you|what is this|what do you do|about you|whats this|who is this)\b/.test(t)) {
-    return `Utah Main Street is a daily local-business paper out of Salt Lake — real operators, verifiable receipts, no paid placements in the editorial. We also run Utah's Best Network, a vetted directory. ${move()}`;
-  }
-
-  /*
-   * "What services do you provide?"
-   *
-   * Added from the live chat log: this is the most-asked real question and it
-   * was falling through to "I'd rather a person answered that", which is the
-   * worst possible answer to a question the business knows cold. Listing is the
-   * right shape here specifically because they asked for the list.
-   */
-  if (/\b(services?|what do you (offer|provide|sell|have)|what (do|can) you do for|offerings?|packages?|options)\b/.test(t)) {
-    return `Three things. The Network is a vetted directory — $5,000 a year, cross-listed across all three of our mastheads. Omni AI, our parent company, builds lead generation and automation for local businesses; the intro call is free. And the daily is a free morning read on Utah operators. Which of those is closest to what you need?`;
-  }
-
-  /*
-   * "I don't know" — a real reply from the log, given when the desk asked an
-   * open question. Answering uncertainty with another open question is how a
-   * conversation dies, so narrow it to a concrete either/or instead.
-   */
-  if (/^(i (don'?t|dont) know|not sure|idk|no idea|dunno|maybe|hmm+)\b/.test(t) || /^\s*(i (don'?t|dont) know|idk)\s*[.!]?\s*$/.test(t)) {
-    return `That's fair. Simplest split: do you want more people to trust you when they look you up, or more customers coming in? The first is the Network, the second is Omni AI. If neither, the daily is free and you can just read.`;
-  }
-
-  // Price objection. Answer with framing, not a discount; never apologise for it.
-  if (/\b(expensive|too much|pricey|cheaper|afford|budget|steep|a lot of money|worth it)\b/.test(t)) {
-    return `Fair question. It's $5,000 a year, or twelve Klarna payments, and it's cross-listed across all three mastheads rather than one directory nobody reads. If one member job covers it, it's paid for — that's the maths most operators run. ${move()}`;
-  }
-
-  // Proof and results. Do not invent numbers; point at what is verifiable.
-  if (/\b(results|roi|proof|does it work|guarantee|evidence|case stud|testimonial|reviews?)\b/.test(t)) {
-    return `We don't publish invented numbers. What you can check: every operator we feature has a public receipt behind it, and the member list is open at utahmainstreet.com/utahs-best. Judge it on that. ${move()}`;
-  }
-
-  // What's included.
-  if (/\b(included|what do i get|benefits|whats in it|perks|come with)\b/.test(t)) {
-    return `A vetted listing cross-published across Utah Main Street, Beehive Biz Pulse and The Wasatch Post, a reputation page at /operators, and consideration for a full spotlight when there's a real story. ${move()}`;
-  }
-
-  // Membership and pricing.
-  if (/\b(network|utah'?s best|member|directory|listed|feature|featured|join|price|pricing|cost|how much|\$)\b/.test(t)) {
-    return `Utah's Best Network is our vetted directory — members are cross-listed across all three mastheads. $5,000 a year, or twelve payments through Klarna. Full details at utahmainstreet.com/utahs-best. ${move()}`;
-  }
-
-  // How it works / process.
-  if (/\b(how does it work|process|next steps?|get started|sign me up|how do i)\b/.test(t)) {
-    return `Straightforward: we check you're real and in good standing, build the listing and your /operators page, then cross-publish. Vetting is the slow part and it's the point. ${move()}`;
-  }
-
-  // Talk to a human.
-  if (/\b(call|phone|talk to|speak|human|person|meeting|appointment|contact)\b/.test(t)) {
-    return hasEmail
-      ? `Easiest is the free 30-minute call — omnileadsagi.com/book-now, no pitch and no card. I'll flag your note either way.`
-      : `Happy to get a person on it. Free 30-minute call at omnileadsagi.com/book-now, or leave your email here and someone reaches out directly.`;
-  }
-
-  // Omni AI / lead gen.
-  if (/\b(lead|leads|marketing|customers|ads|advertis|automat|ai|omni|grow|sales|website|seo)\b/.test(t)) {
-    return `That's Omni AI, our parent company — lead generation and automation for local businesses. Free 30-minute call, no pitch, at omnileadsagi.com/book-now. ${move()}`;
-  }
-
-  // Coverage area. Must be checked before the tip intent, which used to match
-  // the bare word "cover" and answered "do you cover Ogden?" with a pitch for
-  // story tips.
-  if (/\b(cover|serve|based|area|region|only|statewide|county)\b/.test(t) && /\b(ogden|provo|logan|st\.? george|park city|lehi|orem|sandy|draper|utah county|davis|weber|cache|southern utah|northern utah|where|which (city|cities|towns?|areas?))\b/.test(t)) {
-    return `All of Utah, not just Salt Lake — we run three mastheads and the Network is cross-listed across all of them. If there's a real operator with a real receipt, location isn't the obstacle. ${move()}`;
-  }
-
-  // Low-intent browsing. Asking a browser for an email is the fastest way to
-  // look like a bot; offer the free thing instead and let them leave.
-  if (/\b(just (looking|browsing|checking)|nothing|no thanks|not (sure|really|now)|maybe later|curious)\b/.test(t)) {
-    return hasEmail
-      ? "No problem — have a look around. The daily lands each morning if you want the short version."
-      : "No problem, look around. If you want the short version, the daily is one read each morning and it's free — happy to add you, or not.";
-  }
-
-  // Editorial tip. Requires tip-specific language, not the bare word "cover".
-  if (/\b(tip|scoop|pitch|reporter|interview|story (idea|about|on)|got a story|write about)\b/.test(t)) {
-    return `Send it through — tips reach a real person at this desk, and we check before we print. What's the story?`;
-  }
-
-  // The daily.
-  if (/\b(subscribe|newsletter|daily|email list|sign ?up|unsubscribe)\b/.test(t)) {
-    return hasEmail
-      ? "You're on the daily — one short read each morning on real Utah operators."
-      : "The daily is one short read each morning on real Utah operators. Free, no paid placements. What's your email?";
-  }
-
-  /*
-   * Operator self-identification — "I run a barbershop in Sandy".
-   *
-   * Checked late so an explicit question above still wins, but it must be
-   * checked at all: this is the highest-intent thing a visitor can say and it
-   * was previously falling through to the unmatched branch, which asked them
-   * what they'd "asked about" when they hadn't asked anything. Name the trade
-   * back to them so the reply is visibly about their business.
-   */
-  const selfId = t.match(
-    /\b(?:i(?:'m| am)?\s+(?:own|run|have|manage|operate)(?:\s+a|\s+an|\s+my)?|my)\s+([a-z][a-z' ]{2,28}?)(?:\s+(?:in|on|at|out|here|down)\b|[.,!?]|$)/,
-  );
-  if (selfId || /\b(i own|i run|i operate|my (business|shop|store|company|salon|restaurant|practice|crew))\b/.test(t)) {
-    let trade = selfId?.[1]?.trim();
-    // Trades are typed lowercase in chat; acronyms have to come back up or the
-    // reply reads as sloppy, and the article has to agree with how the phrase
-    // is actually pronounced ("an HVAC company", "a barbershop").
-    if (trade) {
-      trade = trade.replace(/\b(hvac|hoa|cpa|it|mma|hr|suv|rv|atv|dj|cbd|ac)\b/g, (m) => m.toUpperCase());
+    // They just told us their name.
+    if (opts.justLearnedName) {
+      const first = opts.justLearnedName.split(/\s+/)[0];
+      return `Thanks, ${first.charAt(0).toUpperCase() + first.slice(1)}. ${move()}`;
     }
-    const vowelSound = trade ? /^(?:[aeiou]|HVAC|HOA|IT\b|MMA|HR|RV|ATV|SUV)/.test(trade) : false;
-    const named =
-      trade && trade.length > 2 && !/^(own|run|have|manage|operate)$/i.test(trade)
-        ? ` ${vowelSound ? "An" : "A"} ${trade} is exactly the kind of operator we cover.`
-        : "";
-    return `Good — that's who this paper is for.${named} Two ways in: the Network gets you vetted and cross-listed across all three mastheads, or Omni AI works on getting you more customers. Which is the actual problem right now?`;
-  }
 
-  // Unmatched. Acknowledge the actual words rather than emitting a stock line,
-  // and don't call a statement a question.
-  const topic = text.trim().replace(/\s+/g, " ").slice(0, 60);
-  const isQuestion = /\?|^(what|how|who|when|where|why|can|do|does|is|are|will|would|should)\b/.test(t);
-  if (isQuestion) {
-    return `Good question, and I'd rather a person answered it properly than have me guess. ${move()}`;
-  }
-  // Varied so two unmatched messages in a row don't come back word-for-word
-  // identical, which is what makes a desk look like a script.
-  const acks = [
-    `Noted — "${topic}" goes to a real person at this desk.`,
-    `That's logged, and it's read by a person rather than filed away.`,
-    `Understood. I've put that in front of the desk.`,
-  ];
-  return `${acks[turn % acks.length]} ${move()}`;
+    /*
+     * BUYING SIGNAL — checked before every topic intent.
+     *
+     * "ok im interested" and "whats next" are the highest-value things anyone
+     * types into this widget and both previously fell to the generic
+     * acknowledgement. When someone says yes, the only correct reply is the
+     * actual next step.
+     */
+    if (
+      any(
+        "interested", "sign me up", "sign up", "lets do it", "let's do it", " im in ", " i'm in ",
+        "count me in", "ready to", "how do i start", "how do i sign", "where do i sign",
+        "whats next", "what's next", "next step", "lets go", "do it",
+      )
+    ) {
+      if (hasEmail) {
+        return `Good. Next step is a short call to confirm fit and get the listing built — ${CALL}. Book a slot that suits you and a person takes it from there.`;
+      }
+      return `Good. Next step is a short call to confirm fit and build the listing — ${CALL}. Or leave your email here and a person will set it up with you.`;
+    }
+
+    // Greeting with no real question in it.
+    if (any(" hi ", " hey ", " hello ", " yo ", " sup ", "good morning", "good afternoon", "good evening") && t.length < 32) {
+      return `This is the Utah Main Street desk — we cover real Utah operators, and we run the Utah's Best Network directory. What are you working on?`;
+    }
+
+    /*
+     * WHO ELSE IS IN IT. Never name members: the list is public and inventing
+     * one would be the worst possible failure for a newsroom's credibility.
+     */
+    if (any("who else", "who is in", "whos in", "who's in", "member list", "current members", "any members", "examples", "who have you", "whos already", "who's already", "already listed")) {
+      return `The current list is public at ${BEST} — I'd rather you judge it yourself than take my word for it. Everyone on it is a Utah operator we've actually vetted. ${move()}`;
+    }
+
+    /*
+     * HOW LONG. No invented dates — the honest answer is that vetting sets the
+     * pace, and a person gives the real timeline.
+     */
+    if (any("how long", "how soon", "how fast", "timeline", "turnaround", "take to", "when would", "when do i", "how quickly")) {
+      return `Vetting is the slow part, and it depends on how quickly we can confirm your receipts — reviews, filings, that sort of thing. I won't invent a date; a person will give you a real one. ${move()}`;
+    }
+
+    // VETTING / REQUIREMENTS.
+    if (any("vetted", "vetting", "requirement", "qualify", "eligib", "criteria", "how do you check", "who gets in", "turned down", "rejected")) {
+      return `We check you're a real, operating Utah business in good standing, against signals anyone can verify — named reviews, filings, hiring, retention. If we can't verify it, we don't list it. That's the only reason the directory is worth being in. ${move()}`;
+    }
+
+    /*
+     * PRICE OBJECTION. Now catches the amount itself ("why is it 5k") which the
+     * old pattern missed entirely. Framing, never a discount.
+     */
+    if (
+      any("expensive", "too much", "pricey", "cheaper", "afford", "budget", "steep", "a lot of money", "worth it", "why is it 5", "why 5", "5k", "5,000", "5000", "$5")
+    ) {
+      return `Fair question. It's $5,000 a year, or twelve payments through Klarna, and it's cross-listed across all three mastheads rather than one directory nobody reads. If a single member job covers it, it's paid for — that's the arithmetic most operators run. ${move()}`;
+    }
+
+    /*
+     * WHAT'S INCLUDED. Loose matching so "what do i actually get for that"
+     * lands here instead of falling through, which is exactly what it did.
+     */
+    if (any("what do i get", "what do we get", "what does it include", "included", "get for that", "get for it", "comes with", "come with", "benefits", "perks", "in it for", "what am i paying", "what i pay for")) {
+      return `A vetted listing cross-published across Utah Main Street, Beehive Biz Pulse and The Wasatch Post, your own reputation page at /operators, and consideration for a full spotlight when there's a real story to tell. ${move()}`;
+    }
+
+    // WHAT SERVICES DO YOU PROVIDE — asked twice in the live log.
+    if (any("service", "what do you offer", "what do you provide", "what do you sell", "what do you have", "offering", "package", " options")) {
+      return `Three things. The Network is a vetted directory — $5,000 a year, cross-listed across all three of our mastheads. Omni AI, our parent company, builds lead generation and automation for local businesses; the intro call is free. And the daily is a free morning read on Utah operators. Which of those is closest to what you need?`;
+    }
+
+    // PRICING.
+    if (any("how much", "price", "pricing", "cost", "what's it cost", "whats it cost", "rate", "fee", "per year", "monthly", "payment", "klarna", "finance")) {
+      return `$5,000 a year for the Network, or twelve payments through Klarna. Full details at ${BEST}. ${move()}`;
+    }
+
+    // MEMBERSHIP / GENERAL NETWORK.
+    if (any("network", "utahs best", "utah's best", "directory", "listed", "listing", "member", "feature", "join")) {
+      return `Utah's Best Network is our vetted directory — members are cross-listed across all three mastheads. $5,000 a year, or twelve payments through Klarna. Full details at ${BEST}. ${move()}`;
+    }
+
+    // PROOF. Point at what is checkable; never invent numbers.
+    if (any("results", " roi", "proof", "does it work", "guarantee", "evidence", "case stud", "testimonial", "review", "worked for", "success")) {
+      return `We don't publish invented numbers. What you can check: every operator we feature has a public receipt behind it, and the member list is open at ${BEST}. Judge it on that. ${move()}`;
+    }
+
+    // WHO ARE YOU.
+    if (any("who are you", "what is this", "what do you do", "about you", "whats this", "what's this", "who is this", "are you a bot", "are you real", "is this a bot", "am i talking to a")) {
+      return `Utah Main Street is a daily local-business paper out of Salt Lake — real operators, verifiable receipts, no paid placements in the editorial. We also run Utah's Best Network, a vetted directory. I'm the desk assistant, and yes, I'm software. ${move()}`;
+    }
+
+    // HOW IT WORKS.
+    if (any("how does it work", "how it works", "process", "how do i", "get started", "steps")) {
+      return `Straightforward: we confirm you're real and in good standing, build the listing and your /operators page, then cross-publish across the three mastheads. Vetting is the slow part and it's the point. ${move()}`;
+    }
+
+    // COVERAGE AREA.
+    if (
+      any("cover", "serve", "based", "area", "region", "statewide", "county", "only in") &&
+      any("ogden", "provo", "logan", "st george", "park city", "lehi", "orem", "sandy", "draper", "utah county", "davis", "weber", "cache", "southern utah", "northern utah", "where", "which city", "which cities", "which towns", "which areas", "outside")
+    ) {
+      return `All of Utah, not just Salt Lake — three mastheads, and the Network is cross-listed across all of them. If there's a real operator with a real receipt, location isn't the obstacle. ${move()}`;
+    }
+
+    // UNCERTAINTY.
+    if (any(" i dont know ", " i don't know ", " not sure ", " idk ", " no idea ", " dunno ", " maybe ") && t.length < 30) {
+      return `That's fair. Simplest split: do you want more people to trust you when they look you up, or more customers coming in? The first is the Network, the second is Omni AI. If neither, the daily is free and you can just read.`;
+    }
+
+    // LOW-INTENT BROWSING.
+    if (any("just looking", "just browsing", "just checking", "no thanks", "not now", "not really", "maybe later", "curious", "nothing")) {
+      return hasEmail
+        ? "No problem — have a look around. The daily lands each morning if you want the short version."
+        : "No problem, look around. If you want the short version, the daily is one read each morning and it's free — happy to add you, or not.";
+    }
+
+    // TALK TO A HUMAN.
+    if (any("call", "phone", "talk to", "speak", "human", "real person", "meeting", "appointment", "contact", "reach you")) {
+      return hasEmail
+        ? `Easiest is the free 30-minute call — ${CALL}, no pitch and no card. I'll flag your note either way.`
+        : `Happy to get a person on it. Free 30-minute call at ${CALL}, or leave your email here and someone reaches out directly.`;
+    }
+
+    // OMNI AI / LEAD GEN.
+    if (any("lead", "marketing", "customer", " ads ", "advertis", "automat", " ai ", "omni", "grow", "sales", "website", " seo ", "booking", "crm")) {
+      return `That's Omni AI, our parent company — lead generation and automation for local businesses. Free 30-minute call, no pitch, at ${CALL}. ${move()}`;
+    }
+
+    // EDITORIAL TIP.
+    if (any(" tip ", "scoop", "pitch", "reporter", "interview", "story idea", "story about", "got a story", "write about", "cover my", "cover us")) {
+      return `Send it through — tips reach a real person at this desk, and we check before we print. What's the story?`;
+    }
+
+    // THE DAILY.
+    if (any("subscribe", "newsletter", "daily", "email list", "sign me up for the", "unsubscribe")) {
+      return hasEmail
+        ? "You're on the daily — one short read each morning on real Utah operators."
+        : "The daily is one short read each morning on real Utah operators. Free, no paid placements. What's your email?";
+    }
+
+    // OPERATOR SELF-IDENTIFICATION.
+    const selfId = t.match(
+      /\b(?:i(?:'m| am)?\s+(?:own|run|have|manage|operate)(?:\s+a|\s+an|\s+my)?|my)\s+([a-z][a-z' ]{2,28}?)(?:\s+(?:in|on|at|out|here|down)\b|$)/,
+    );
+    if (selfId || any("i own", "i run", "i operate", "my business", "my shop", "my store", "my company", "my practice", "my clinic")) {
+      let trade = selfId?.[1]?.trim();
+      if (trade) trade = trade.replace(/\b(hvac|hoa|cpa|it|mma|hr|suv|rv|atv|dj|cbd|ac)\b/g, (m) => m.toUpperCase());
+      const vowel = trade ? /^(?:[aeiou]|HVAC|HOA|IT\b|MMA|HR|RV|ATV|SUV)/.test(trade) : false;
+      const named =
+        trade && trade.length > 2 && !/^(own|run|have|manage|operate)$/i.test(trade)
+          ? ` ${vowel ? "An" : "A"} ${trade} is exactly the kind of operator we cover.`
+          : "";
+      return `Good — that's who this paper is for.${named} Two ways in: the Network gets you vetted and cross-listed across all three mastheads, or Omni AI works on getting you more customers. Which is the actual problem right now?`;
+    }
+
+    /*
+     * CATCH-ALL. Gives a route, not a shrug.
+     *
+     * The old version answered any unrecognised question with "I'd rather a
+     * person answered it properly than have me guess" and nothing else, which
+     * fired four turns in a row on a real prospect. Refusing to guess is right;
+     * refusing to guess while offering no path is not.
+     */
+    const isQuestion = /\?/.test(text) || any(" what ", " how ", " who ", " when ", " where ", " why ", " can ", " do ", " does ", " is ", " are ", " will ", " should ");
+    if (isQuestion) {
+      return hasEmail
+        ? `I won't guess at that one — you'll get a straight answer from a person. Quickest is the free call at ${CALL}, otherwise someone picks it up from your email.`
+        : `I won't guess at that one, and you'd rather have it right. Two ways to get it answered today: the free call at ${CALL}, or leave your email and a person replies directly.`;
+    }
+    const topic = text.trim().replace(/\s+/g, " ").slice(0, 60);
+    const acks = [
+      `Noted — "${topic}" goes to a real person at this desk.`,
+      `That's logged, and a person reads it rather than it being filed away.`,
+      `Understood. I've put that in front of the desk.`,
+    ];
+    return `${acks[turn % acks.length]} ${move()}`;
+  })();
+
+  /*
+   * NEVER SAY THE SAME THING TWICE.
+   *
+   * The live simulation produced a verbatim repeat four turns apart. Rules can
+   * only ever have one best answer per intent, so the guard has to live here:
+   * if this exact reply has already been given in this conversation, say
+   * something that acknowledges the loop instead of parroting.
+   */
+  const said = new Set((opts.alreadySaid ?? []).map((s) => s.trim()));
+  if (!said.has(answer.trim())) return answer;
+  return hasEmail
+    ? `I've already given you my version of that, and repeating it won't help. A person can go deeper — the free call is at ${CALL}.`
+    : `I've said my piece on that one. Leave an email and a person will give you the detail rather than me repeating myself.`;
 }
 
 export async function POST(req: NextRequest) {
@@ -521,6 +558,8 @@ export async function POST(req: NextRequest) {
   // stop the desk re-asking and to know when a bare reply is a name.
   const nameAlreadyAsked = turns.some((x) => x.role === "assistant" && ASKED_NAME.test(x.content));
   const inferredName = inferName(turns, lastUser);
+  // Everything the desk has already said this conversation, so it can refuse to repeat itself.
+  const priorAssistant = turns.filter((x) => x.role === "assistant").map((x) => x.content);
 
   // No provider configured at all -> straight to the rule-based desk.
   const hasProvider = Boolean(
@@ -532,7 +571,7 @@ export async function POST(req: NextRequest) {
   );
   if (!hasProvider) {
     return NextResponse.json({
-        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName }),
+        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName, alreadySaid: priorAssistant }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
       }, { status: 200, headers });
@@ -573,7 +612,7 @@ export async function POST(req: NextRequest) {
     // must still get a useful answer rather than an apology.
     console.error("[agent/chat] model call failed, serving fallback desk:", e);
     return NextResponse.json({
-        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName }),
+        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName, alreadySaid: priorAssistant }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
       }, { status: 200, headers });
