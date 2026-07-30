@@ -304,8 +304,23 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
     return `That's Omni AI, our parent company — lead generation and automation for local businesses. Free 30-minute call, no pitch, at omnileadsagi.com/book-now. ${move()}`;
   }
 
-  // Editorial tip.
-  if (/\b(tip|story|scoop|cover|pitch|reporter|news|write|interview)\b/.test(t)) {
+  // Coverage area. Must be checked before the tip intent, which used to match
+  // the bare word "cover" and answered "do you cover Ogden?" with a pitch for
+  // story tips.
+  if (/\b(cover|serve|based|area|region|only|statewide|county)\b/.test(t) && /\b(ogden|provo|logan|st\.? george|park city|lehi|orem|sandy|draper|utah county|davis|weber|cache|southern utah|northern utah|where|which (city|cities|towns?|areas?))\b/.test(t)) {
+    return `All of Utah, not just Salt Lake — we run three mastheads and the Network is cross-listed across all of them. If there's a real operator with a real receipt, location isn't the obstacle. ${move()}`;
+  }
+
+  // Low-intent browsing. Asking a browser for an email is the fastest way to
+  // look like a bot; offer the free thing instead and let them leave.
+  if (/\b(just (looking|browsing|checking)|nothing|no thanks|not (sure|really|now)|maybe later|curious)\b/.test(t)) {
+    return hasEmail
+      ? "No problem — have a look around. The daily lands each morning if you want the short version."
+      : "No problem, look around. If you want the short version, the daily is one read each morning and it's free — happy to add you, or not.";
+  }
+
+  // Editorial tip. Requires tip-specific language, not the bare word "cover".
+  if (/\b(tip|scoop|pitch|reporter|interview|story (idea|about|on)|got a story|write about)\b/.test(t)) {
     return `Send it through — tips reach a real person at this desk, and we check before we print. What's the story?`;
   }
 
