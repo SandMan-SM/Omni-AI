@@ -11,7 +11,9 @@ import { Pool } from "pg";
  * sinks out of the PostgREST schema cache (the root cause of the recurring
  * PGRST002 degradation) and keeps lead PII off the anon API surface.
  *
- * Every call is bounded and non-throwing: analytics must never break a form.
+ * Every call is bounded and non-throwing. Event analytics remain best-effort;
+ * lead intake exposes an explicit nullable result so form routes can fail
+ * closed when the durable sink is unavailable.
  */
 
 declare global {
@@ -134,6 +136,80 @@ export type LeadIn = {
   slug: string; name?: string; email?: string; phone?: string; message?: string;
   source?: string; page_url?: string; dedup_key?: string; props?: Record<string, unknown>;
 };
+
+export type LeadRecord = {
+  id: string;
+  notified: boolean;
+};
+
+/**
+ * Durable lead write for form submissions.
+ *
+ * Unlike the event writers, form intake is fail-closed: callers must not
+ * acknowledge a lead unless this returns the persisted row. Repeated
+ * submissions update and return the original row, which keeps the downstream
+ * notification idempotency key stable.
+ */
+export async function recordLeadAndReturn(l: LeadIn): Promise<LeadRecord | null> {
+  const p = pool();
+  if (!p) return null;
+  const r = await withTimeout(
+    p.query<LeadRecord>(
+      `INSERT INTO analytics.leads
+         (tenant_slug,name,email,phone,message,source,page_url,dedup_key,props)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::jsonb)
+       ON CONFLICT (tenant_slug,dedup_key) WHERE dedup_key IS NOT NULL
+       DO UPDATE SET
+         name = EXCLUDED.name,
+         email = EXCLUDED.email,
+         phone = EXCLUDED.phone,
+         message = EXCLUDED.message,
+         source = EXCLUDED.source,
+         page_url = EXCLUDED.page_url,
+         props = EXCLUDED.props || analytics.leads.props,
+         ts = now()
+       RETURNING id::text AS id, notified`,
+      [l.slug, l.name ?? null, l.email ?? null, l.phone ?? null, l.message ?? null,
+       l.source ?? "contact_form", l.page_url ?? null, l.dedup_key ?? null, JSON.stringify(l.props ?? {})],
+    ),
+    5_000,
+    "recordLeadAndReturn",
+  );
+  return r?.rows[0] ?? null;
+}
+
+export type LeadNotificationState = {
+  status: "accepted" | "failed";
+  provider: "resend";
+  provider_id?: string | null;
+  retryable: boolean;
+  telegram_accepted?: boolean;
+  error?: string;
+  updated_at: string;
+};
+
+/** Persist provider acceptance/failure before the API acknowledges the form. */
+export async function recordLeadNotificationState(
+  slug: string,
+  leadId: string,
+  state: LeadNotificationState,
+): Promise<boolean> {
+  const p = pool();
+  if (!p) return false;
+  const r = await withTimeout(
+    p.query(
+      `UPDATE analytics.leads
+          SET notified = $3,
+              props = props || jsonb_build_object('owner_notification', $4::jsonb)
+        WHERE id = $1::bigint AND tenant_slug = $2
+        RETURNING id`,
+      [leadId, slug, state.status === "accepted", JSON.stringify(state)],
+    ),
+    5_000,
+    "recordLeadNotificationState",
+  );
+  return Boolean(r?.rows[0]);
+}
 
 export async function recordLead(l: LeadIn): Promise<boolean> {
   const p = pool();

@@ -4,9 +4,9 @@
  * accepts a brand label so the subject / heading / dashboard deeplink
  * read correctly per client.
  *
- * Both channels are best-effort: a missing key or upstream failure logs
- * but never throws, so the lead is always saved even if every channel
- * is down.
+ * Telegram is best-effort. Registry-driven lead intake uses the receipt
+ * returned by the Resend helper to fail closed until the required owner
+ * notification has been accepted and its state persisted.
  */
 
 import { INBOUND_SLUG_LABELS, type InboundSlug } from '@/lib/inbound-types';
@@ -33,6 +33,10 @@ export type InboundLead = {
   pageUrl?: string | null;
 };
 
+export type InboundEmailReceipt =
+  | { ok: true; providerId: string | null }
+  | { ok: false; error: string };
+
 function escape(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -41,8 +45,10 @@ function escape(s: string): string {
     .replace(/"/g, '&quot;');
 }
 
-export async function notifyOwnerEmailInbound(lead: InboundLead): Promise<boolean> {
-  if (!RESEND_API_KEY) return false;
+export async function notifyOwnerEmailInboundWithReceipt(
+  lead: InboundLead,
+): Promise<InboundEmailReceipt> {
+  if (!RESEND_API_KEY) return { ok: false, error: 'resend_not_configured' };
   const brand = INBOUND_SLUG_LABELS[lead.slug] ?? lead.slug;
   const name = escape(lead.name);
   const email = lead.email ? escape(lead.email) : '';
@@ -85,13 +91,30 @@ export async function notifyOwnerEmailInbound(lead: InboundLead): Promise<boolea
       }),
       signal: controller.signal,
     });
-    return res.ok;
+    const payload = await res.json().catch(() => ({})) as { id?: unknown };
+    if (!res.ok) {
+      console.error(`[inbound-notify email] Resend rejected request (${res.status})`);
+      return { ok: false, error: `resend_http_${res.status}` };
+    }
+    return {
+      ok: true,
+      providerId: typeof payload.id === 'string' ? payload.id : null,
+    };
   } catch (e) {
     console.error('[inbound-notify email]', e);
-    return false;
+    return {
+      ok: false,
+      error: e instanceof Error && e.name === 'AbortError'
+        ? 'resend_timeout'
+        : 'resend_request_failed',
+    };
   } finally {
     clearTimeout(timeout);
   }
+}
+
+export async function notifyOwnerEmailInbound(lead: InboundLead): Promise<boolean> {
+  return (await notifyOwnerEmailInboundWithReceipt(lead)).ok;
 }
 
 export async function notifyOwnerTelegramInbound(lead: InboundLead): Promise<boolean> {

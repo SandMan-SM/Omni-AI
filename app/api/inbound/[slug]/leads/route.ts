@@ -14,9 +14,15 @@ import {
 } from '@/lib/inbound-types';
 import {
   notifyOwnerEmailInbound,
+  notifyOwnerEmailInboundWithReceipt,
   notifyOwnerTelegramInbound,
 } from '@/lib/inbound-notify';
-import { isActiveTenant, tenantOrigins, recordLead } from '@/lib/server/analytics-ingest';
+import {
+  isActiveTenant,
+  tenantOrigins,
+  recordLeadAndReturn,
+  recordLeadNotificationState,
+} from '@/lib/server/analytics-ingest';
 
 /**
  * Generic inbound lead intake. Drop-in replacement for /api/cps/leads,
@@ -128,7 +134,7 @@ export async function POST(
     // that captures the lead even if the legacy per-tenant table / omni_businesses
     // row is missing (the old "Tenant not configured" 500 used to drop leads).
     const dedupKey = `${(email || phone || '').toLowerCase()}:${(source || '').slice(0, 20)}`;
-    await recordLead({
+    const sharedLead = await recordLeadAndReturn({
       slug,
       name,
       email: email || undefined,
@@ -139,19 +145,34 @@ export async function POST(
       dedup_key: dedupKey || undefined,
       props: body && typeof body === 'object' ? body : {},
     });
+    if (!sharedLead) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: "We couldn't save your submission. Please try again.",
+          code: 'lead_storage_unavailable',
+        },
+        { status: 503, headers: cors },
+      );
+    }
 
     // Registry (non-legacy) tenants have no per-tenant table — the shared write
     // above is their system of record.
     //
-    // They still get the owner notification. This used to return early here,
-    // so a lead from any newer brand (utahaddiction, theluxesocialist,
-    // deptofcreatvs, …) was saved silently and the owner was never told — the
-    // lead only existed if someone went looking in the dashboard. The lead is
-    // already durably recorded by recordLead() above, so this notify is
-    // best-effort and can never fail the capture.
+    // They still get the owner notification. The email channel is required:
+    // return success only after Resend accepts it and that acceptance is
+    // persisted. Repeated submissions reuse the same analytics row and stable
+    // provider idempotency key, so they update/link rather than fail or resend.
     if (!isInboundSlug(slug)) {
+      if (sharedLead.notified) {
+        return NextResponse.json(
+          { ok: true, deduplicated: true },
+          { headers: cors },
+        );
+      }
+
       const registryLead = {
-        id: `registry:${slug}:${Date.now()}`,
+        id: sharedLead.id,
         // Registry slugs are intentionally outside the legacy InboundSlug union.
         // The notifier only uses this for the display label and falls back to the
         // raw slug (`INBOUND_SLUG_LABELS[slug] ?? slug`), so the cast is safe.
@@ -163,16 +184,67 @@ export async function POST(
         source,
         pageUrl: sanitizeText(body.page_url, 2048) || null,
       };
-      await Promise.all([
-        notifyOwnerEmailInbound(registryLead).catch((e) => {
+      const [emailReceipt, telegramOk] = await Promise.all([
+        notifyOwnerEmailInboundWithReceipt(registryLead).catch((e) => {
           console.error(`[inbound/${slug}/leads] registry email notify failed`, e);
-          return false;
+          return { ok: false as const, error: 'resend_request_failed' };
         }),
         notifyOwnerTelegramInbound(registryLead).catch((e) => {
           console.error(`[inbound/${slug}/leads] registry telegram notify failed`, e);
           return false;
         }),
       ]);
+
+      const updatedAt = new Date().toISOString();
+      if (!emailReceipt.ok) {
+        const failurePersisted = await recordLeadNotificationState(
+          slug,
+          sharedLead.id,
+          {
+            status: 'failed',
+            provider: 'resend',
+            retryable: true,
+            telegram_accepted: telegramOk,
+            error: emailReceipt.error,
+            updated_at: updatedAt,
+          },
+        );
+        if (!failurePersisted) {
+          console.error(`[inbound/${slug}/leads] could not persist retryable notification failure`);
+        }
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "We saved your request but couldn't notify the team. Please try again.",
+            code: 'owner_notification_failed',
+          },
+          { status: 503, headers: cors },
+        );
+      }
+
+      const acceptancePersisted = await recordLeadNotificationState(
+        slug,
+        sharedLead.id,
+        {
+          status: 'accepted',
+          provider: 'resend',
+          provider_id: emailReceipt.providerId,
+          retryable: false,
+          telegram_accepted: telegramOk,
+          updated_at: updatedAt,
+        },
+      );
+      if (!acceptancePersisted) {
+        return NextResponse.json(
+          {
+            ok: false,
+            error: "We couldn't confirm your submission. Please try again.",
+            code: 'notification_state_persist_failed',
+          },
+          { status: 503, headers: cors },
+        );
+      }
+
       return NextResponse.json({ ok: true }, { headers: cors });
     }
 
