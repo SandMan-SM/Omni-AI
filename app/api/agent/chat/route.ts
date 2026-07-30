@@ -248,7 +248,8 @@ const ASKED_CALL = /free 30-minute call/i;
 const ASKED_EMAIL = /(best email|drop your email|what email should|leave (an|your) email|what'?s your email)/i;
 const ASKED_FORK = /which (of those|is the actual problem)/i;
 const ASKED_STORY = /what'?s the story/i;
-const ASKED_PASSON = /anything (you want passed on|you'?d like me to pass on|to pass on)/i;
+const ASKED_PASSON =
+  /anything (you want passed on|you'?d like me to pass on|to pass on|you want them to know|else you want)/i;
 
 type LastAsk = "call" | "name" | "email" | "fork" | "story" | "passon" | null;
 
@@ -308,6 +309,7 @@ function fallbackReply(
     no?: boolean;
     callDeclined?: boolean;
     emailDeclined?: boolean;
+    callAccepted?: boolean;
   } = {},
 ): string {
   /*
@@ -377,7 +379,9 @@ function fallbackReply(
      * then let the answers stand on their own.
      */
     const callOffers = (opts.alreadySaid ?? []).filter((x) => ASKED_CALL.test(x)).length;
-    if (callOffers >= 2 || opts.callDeclined) return "";
+    // Already handed over the booking link, or already refused. Either way,
+    // offering it again is the loop this whole fix exists to remove.
+    if (callOffers >= 2 || opts.callDeclined || opts.callAccepted) return "";
     // Phrased as something a yes can actually be honoured against. "Want me to
     // set up the call?" promised an action this desk cannot perform, so a "yes"
     // had no correct answer available.
@@ -425,6 +429,15 @@ function fallbackReply(
         if (opts.no) return `Understood. Someone will pick it up from here.`;
         return `Go ahead — what should they know?`;
       }
+    }
+
+    /*
+     * A pre-call note. Free text answering "anything you want them to know"
+     * previously fell to the catch-all and got the booking link offered a second
+     * time, which is absurd when the reader is already booking.
+     */
+    if (opts.lastAsk === "passon" && !opts.yes && !opts.no) {
+      return `Passed on — they'll have that before the call. Anything else, I'm here.`;
       if (opts.lastAsk === "story" || opts.lastAsk === "fork") {
         // A bare yes/no is not an answer to either of these; ask properly.
         return opts.lastAsk === "fork"
@@ -442,10 +455,12 @@ function fallbackReply(
         return `The Network then. $5,000 a year or twelve payments through Klarna, cross-listed across all three mastheads, and vetted before you're listed. Details at ${BEST}. ${move()}`;
       }
       if (any("customer", "second", "leads", "lead", "more people", "phone ringing", "busier", "revenue", "sales", "booking")) {
-        return `That's Omni AI then — lead generation and automation, built for local operators. The intro call is free, no card: ${CALL}. ${move()}`;
+        // Contains the link already — appending "Want the link?" reads as not
+        // having read its own sentence.
+        return `That's Omni AI then — lead generation and automation, built for local operators. The intro call is free and there's no card: ${CALL}. Worth a look before you commit to anything.`;
       }
       if (any("both", "everything", "all of it", "either")) {
-        return `Both is normal. Practically it's one conversation — the free call covers what Omni AI would do, and the Network listing gets set up alongside it. ${CALL}. ${move()}`;
+        return `Both is normal, and practically it's one conversation — the free call covers what Omni AI would do, and the Network listing gets set up alongside it. Book whenever suits: ${CALL}.`;
       }
     }
 
@@ -741,6 +756,8 @@ export async function POST(req: NextRequest) {
   const saidNo = NO_RE.test(lastUser.trim());
   let callDeclined = false;
   let emailDeclined = false;
+  // The booking link has already been handed over in this conversation.
+  const callAccepted = priorAssistant.some((x) => /pick any slot that suits you/i.test(x));
   for (let i = 1; i < turns.length; i++) {
     const a = turns[i - 1];
     const u = turns[i];
@@ -768,6 +785,7 @@ export async function POST(req: NextRequest) {
           no: saidNo,
           callDeclined,
           emailDeclined,
+          callAccepted,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
@@ -818,6 +836,7 @@ export async function POST(req: NextRequest) {
           no: saidNo,
           callDeclined,
           emailDeclined,
+          callAccepted,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
