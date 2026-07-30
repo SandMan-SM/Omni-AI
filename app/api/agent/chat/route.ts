@@ -246,18 +246,20 @@ const ASKED_NAME = /who am i speaking with|who am i talking to|what'?s your name
  */
 const ASKED_CALL = /free 30-minute call/i;
 const ASKED_EMAIL = /(best email|drop your email|what email should|leave (an|your) email|what'?s your email)/i;
+const ASKED_PHONE = /(best number|phone number|number to reach|good number|number for you)/i;
 const ASKED_FORK = /which (of those|is the actual problem)/i;
 const ASKED_STORY = /what'?s the story/i;
 const ASKED_PASSON =
   /anything (you want passed on|you'?d like me to pass on|to pass on|you want them to know|else you want)/i;
 
-type LastAsk = "call" | "name" | "email" | "fork" | "story" | "passon" | null;
+type LastAsk = "call" | "name" | "email" | "phone" | "fork" | "story" | "passon" | null;
 
 function classifyAsk(prev: string): LastAsk {
   if (!prev) return null;
   if (ASKED_CALL.test(prev)) return "call";
   if (ASKED_NAME.test(prev)) return "name";
   if (ASKED_EMAIL.test(prev)) return "email";
+  if (ASKED_PHONE.test(prev)) return "phone";
   if (ASKED_FORK.test(prev)) return "fork";
   if (ASKED_STORY.test(prev)) return "story";
   if (ASKED_PASSON.test(prev)) return "passon";
@@ -311,6 +313,8 @@ function fallbackReply(
     emailDeclined?: boolean;
     callAccepted?: boolean;
     prevAssistant?: string;
+    nameDeclined?: boolean;
+    phoneDeclined?: boolean;
   } = {},
 ): string {
   /*
@@ -340,6 +344,10 @@ function fallbackReply(
     Boolean((known as { hasEmail?: boolean }).hasEmail) ||
     Boolean(String((known as { email?: unknown }).email ?? "").trim()) ||
     Boolean(givenEmail);
+  const hasPhone =
+    Boolean((known as { hasPhone?: boolean }).hasPhone) ||
+    Boolean(String((known as { phone?: unknown }).phone ?? "").trim()) ||
+    Boolean(givenPhone);
   const hasName =
     Boolean((known as { hasName?: boolean }).hasName) ||
     Boolean(String((known as { name?: unknown }).name ?? "").trim()) ||
@@ -349,43 +357,48 @@ function fallbackReply(
   const CALL = "omnileadsagi.com/book-now";
 
   /*
-   * How many times we have already asked for an email this conversation.
+   * THE CAPTURE LADDER — name, then email, then phone.
    *
-   * Needed because the ask fired on every single turn until it was answered —
-   * the simulation asked five times in a row. Rewording each time does not stop
-   * that being nagging, and a reader who has declined twice has told us
-   * something. Past two asks the desk keeps answering and stops pushing.
+   * Order is the operator's call: name first so the conversation is with a
+   * person rather than an address, then email, then phone. Anything already on
+   * file is skipped outright, which is the whole point of the signed cookie —
+   * being asked twice for something you have already given is the fastest way
+   * to look like a form with a chat skin.
+   *
+   * Each rung is asked at most twice and is abandoned the moment it is refused.
+   * A reader who has said no once has told us something; asking a third time
+   * does not change their mind, it just costs the rest of the conversation.
    */
-  const emailAsks = (opts.alreadySaid ?? []).filter((s) =>
-    /(what'?s the best email|drop your email|what email should|leave (an|your) email|what'?s your email)/i.test(s),
-  ).length;
+  const said = opts.alreadySaid ?? [];
+  const countAsks = (re: RegExp) => said.filter((x) => re.test(x)).length;
 
-  /** One advancing step per reply, varied, and never asking for what we hold. */
   function move(): string {
-    if (!hasEmail) {
-      // Asked and not answered twice, or declined outright. Stop asking.
-      if (emailAsks >= 2 || opts.emailDeclined) return "";
+    if (!hasName && !opts.nameDeclined && countAsks(ASKED_NAME) < 2) {
       const asks = [
-        "What's the best email for you? I'll have a person follow up with specifics rather than a brochure.",
-        "Drop your email and I'll send the details plus who's already listed — no sales sequence.",
+        "Before anything else — who am I speaking with?",
+        "Who am I speaking with?",
+        "What's your name, so I know who to put on this?",
+      ];
+      return asks[turn % asks.length];
+    }
+    if (!hasEmail && !opts.emailDeclined && countAsks(ASKED_EMAIL) < 2) {
+      const asks = [
+        "What's the best email for you? A person follows up with specifics rather than a brochure.",
+        "What's your email? I'll have someone send the detail rather than me guessing at it.",
         "What email should the follow-up go to?",
       ];
       return asks[turn % asks.length];
     }
-    if (!hasName && !opts.nameAlreadyAsked) return "Got your email. Who am I speaking with?";
-    /*
-     * Same restraint as the email ask. For a reader we already know, this was
-     * the only move left, so EVERY reply ended with "Want me to set up the free
-     * 30-minute call?" — three times running in the live widget. Offer it twice,
-     * then let the answers stand on their own.
-     */
-    const callOffers = (opts.alreadySaid ?? []).filter((x) => ASKED_CALL.test(x)).length;
-    // Already handed over the booking link, or already refused. Either way,
-    // offering it again is the loop this whole fix exists to remove.
-    if (callOffers >= 2 || opts.callDeclined || opts.callAccepted) return "";
-    // Phrased as something a yes can actually be honoured against. "Want me to
-    // set up the call?" promised an action this desk cannot perform, so a "yes"
-    // had no correct answer available.
+    if (!hasPhone && !opts.phoneDeclined && countAsks(ASKED_PHONE) < 2) {
+      // Give a reason. A phone number is the most expensive thing to ask for,
+      // and asking without saying why is what makes it feel like harvesting.
+      const asks = [
+        "And the best number to reach you on? Only used if a call is quicker than typing.",
+        "What's a good number for you? Handy if this is faster said than written.",
+      ];
+      return asks[turn % asks.length];
+    }
+    if (countAsks(ASKED_CALL) >= 2 || opts.callDeclined || opts.callAccepted) return "";
     return `The next step would be the free 30-minute call — no pitch, no card. Want the link?`;
   }
 
@@ -393,10 +406,11 @@ function fallbackReply(
     // Contact details handed over — confirm before considering any topic.
     if (givenEmail || givenPhone) {
       const got = givenEmail && givenPhone ? "those details" : givenEmail ? "that address" : "that number";
-      if (hasName || opts.nameAlreadyAsked) {
-        return `Got ${got} — someone will come back to you directly. Anything you want passed on with it?`;
-      }
-      return `Got ${got} down, and a real person picks these up. Who am I speaking with?`;
+      // Confirm, then ask for whatever is still missing — never re-ask for what
+      // the cookie already holds.
+      const next = move();
+      if (next) return `Got ${got}. ${next}`;
+      return `Got ${got} — someone will come back to you directly. Anything you want passed on with it?`;
     }
 
     // They just told us their name.
@@ -425,6 +439,20 @@ function fallbackReply(
           return `Fair enough, no email. Everything's public at ${BEST} — have a look and come back if you want a person on it.`;
         }
         return `Go ahead — what's the address?`;
+      }
+      if (opts.lastAsk === "phone") {
+        if (opts.no) {
+          const next = move();
+          return next ? `No number then, that's fine. ${next}` : `No number then, that's fine — email works just as well.`;
+        }
+        return `Go ahead — what's the number?`;
+      }
+      if (opts.lastAsk === "name") {
+        // Declined to give a name. Drop it and move down the ladder.
+        if (opts.no) {
+          const next = move();
+          return next ? `That's alright, no name needed. ${next}` : `That's alright — ask me anything you like.`;
+        }
       }
       if (opts.lastAsk === "passon") {
         if (opts.no) return `Understood. Someone will pick it up from here.`;
@@ -777,6 +805,8 @@ export async function POST(req: NextRequest) {
   const saidNo = NO_RE.test(lastUser.trim());
   let callDeclined = false;
   let emailDeclined = false;
+  let phoneDeclined = false;
+  let nameDeclined = false;
   // The booking link has already been handed over in this conversation.
   const callAccepted = priorAssistant.some((x) => /pick any slot that suits you/i.test(x));
   for (let i = 1; i < turns.length; i++) {
@@ -785,6 +815,8 @@ export async function POST(req: NextRequest) {
     if (a.role !== "assistant" || u.role !== "user" || !NO_RE.test(u.content.trim())) continue;
     if (ASKED_CALL.test(a.content)) callDeclined = true;
     if (ASKED_EMAIL.test(a.content)) emailDeclined = true;
+    if (ASKED_PHONE.test(a.content)) phoneDeclined = true;
+    if (ASKED_NAME.test(a.content)) nameDeclined = true;
   }
 
   // No provider configured at all -> straight to the rule-based desk.
@@ -808,6 +840,8 @@ export async function POST(req: NextRequest) {
           emailDeclined,
           callAccepted,
           prevAssistant,
+          nameDeclined,
+          phoneDeclined,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
@@ -860,6 +894,8 @@ export async function POST(req: NextRequest) {
           emailDeclined,
           callAccepted,
           prevAssistant,
+          nameDeclined,
+          phoneDeclined,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
