@@ -295,6 +295,27 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
     return `Utah Main Street is a daily local-business paper out of Salt Lake — real operators, verifiable receipts, no paid placements in the editorial. We also run Utah's Best Network, a vetted directory. ${move()}`;
   }
 
+  /*
+   * "What services do you provide?"
+   *
+   * Added from the live chat log: this is the most-asked real question and it
+   * was falling through to "I'd rather a person answered that", which is the
+   * worst possible answer to a question the business knows cold. Listing is the
+   * right shape here specifically because they asked for the list.
+   */
+  if (/\b(services?|what do you (offer|provide|sell|have)|what (do|can) you do for|offerings?|packages?|options)\b/.test(t)) {
+    return `Three things. The Network is a vetted directory — $5,000 a year, cross-listed across all three of our mastheads. Omni AI, our parent company, builds lead generation and automation for local businesses; the intro call is free. And the daily is a free morning read on Utah operators. Which of those is closest to what you need?`;
+  }
+
+  /*
+   * "I don't know" — a real reply from the log, given when the desk asked an
+   * open question. Answering uncertainty with another open question is how a
+   * conversation dies, so narrow it to a concrete either/or instead.
+   */
+  if (/^(i (don'?t|dont) know|not sure|idk|no idea|dunno|maybe|hmm+)\b/.test(t) || /^\s*(i (don'?t|dont) know|idk)\s*[.!]?\s*$/.test(t)) {
+    return `That's fair. Simplest split: do you want more people to trust you when they look you up, or more customers coming in? The first is the Network, the second is Omni AI. If neither, the daily is free and you can just read.`;
+  }
+
   // Price objection. Answer with framing, not a discount; never apologise for it.
   if (/\b(expensive|too much|pricey|cheaper|afford|budget|steep|a lot of money|worth it)\b/.test(t)) {
     return `Fair question. It's $5,000 a year, or twelve Klarna payments, and it's cross-listed across all three mastheads rather than one directory nobody reads. If one member job covers it, it's paid for — that's the maths most operators run. ${move()}`;
