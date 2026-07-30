@@ -433,7 +433,7 @@ function fallbackReply(
     if (opts.lastAsk && (opts.yes || opts.no)) {
       if (opts.lastAsk === "call") {
         if (opts.yes) {
-          return `Click below to pick a slot — any time that suits you, and a person will be on the other end. Anything you want them to know beforehand?`;
+          return `Click below to pick a slot — any time that suits you, and a person will be on the other end. Anything you want them to know beforehand? ${CALL}`;
         }
         return `No call then, that's fine. Everything's public if you'd rather just read it yourself, linked below. I'm here if something comes up. ${BEST}`;
       }
@@ -811,7 +811,9 @@ export async function POST(req: NextRequest) {
   let phoneDeclined = false;
   let nameDeclined = false;
   // The booking link has already been handed over in this conversation.
-  const callAccepted = priorAssistant.some((x) => /pick any slot that suits you/i.test(x));
+  // Detect the handover by the URL itself. Matching a sentence broke the
+  // moment that copy was reworded, which silently re-armed the call offer.
+  const callAccepted = priorAssistant.some((x) => /book-now/i.test(x));
   for (let i = 1; i < turns.length; i++) {
     const a = turns[i - 1];
     const u = turns[i];
