@@ -231,7 +231,43 @@ async function generate(system: string, turns: Turn[]): Promise<{ text: string; 
 const EMAIL_IN_TEXT = /[^\s@,;:<>()[\]]+@[^\s@,;:<>()[\]]+\.[a-z]{2,}/i;
 const PHONE_IN_TEXT = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
 
-function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): string {
+const ASKED_NAME = /who am i speaking with|who am i talking to|what'?s your name|who'?s this|who is this/i;
+
+// Words that arrive where a name is expected but plainly aren't one.
+const NOT_A_NAME =
+  /^(yes|yeah|no|nope|ok|okay|sure|thanks|thank you|hi|hey|hello|nothing|nobody|none|na|n\/a|test|testing|help|idk|maybe|who|why|what|stop|bruh|lol)$/i;
+
+/*
+ * Name capture for the no-model path.
+ *
+ * With no provider configured there is no model to return a `capture`, and the
+ * widget only scans for emails and phone numbers — so a reader could answer
+ * "Who am I speaking with?" every turn and the name was never recorded, which
+ * is exactly why the question repeated. Infer it here instead, but only in the
+ * one place it is unambiguous: directly after we asked for it.
+ */
+function inferName(turns: Turn[], lastUser: string): string | undefined {
+  const prevAssistant = [...turns].reverse().find((x) => x.role === "assistant")?.content ?? "";
+  if (!ASKED_NAME.test(prevAssistant)) return undefined;
+
+  const raw = lastUser.trim().replace(/[.!,]+$/, "");
+  // "it's Sita", "I'm Sita", "this is Sita", "my name is Sita" — the log shows
+  // readers answering in exactly this form, not with a bare word.
+  const led = raw.match(
+    /^(?:it'?s|i'?m|im|this is|my name is|name'?s|call me)\s+([a-z][a-z'’-]{1,20}(?:\s+[a-z][a-z'’-]{1,20})?)$/i,
+  );
+  const candidate = led ? led[1] : raw;
+  if (!/^[a-z][a-z'’-]{1,20}(?:\s+[a-z][a-z'’-]{1,20}){0,2}$/i.test(candidate)) return undefined;
+  if (NOT_A_NAME.test(candidate)) return undefined;
+  return candidate;
+}
+
+function fallbackReply(
+  text: string,
+  known: Record<string, unknown>,
+  turn = 1,
+  opts: { nameAlreadyAsked?: boolean } = {},
+): string {
   const t = text.toLowerCase();
 
   /*
@@ -245,8 +281,21 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
    */
   const givenEmail = text.match(EMAIL_IN_TEXT)?.[0];
   const givenPhone = text.match(PHONE_IN_TEXT)?.[0];
-  const hasEmail = Boolean((known as { hasEmail?: boolean }).hasEmail) || Boolean(givenEmail);
-  const hasName = Boolean((known as { hasName?: boolean }).hasName);
+  const hasEmail =
+    Boolean((known as { hasEmail?: boolean }).hasEmail) ||
+    Boolean(String((known as { email?: unknown }).email ?? "").trim()) ||
+    Boolean(givenEmail);
+
+  /*
+   * Accept BOTH shapes. The widget's known-state is {name, hasEmail, hasPhone}
+   * — it carries the name itself and has no `hasName` key at all — while this
+   * route was reading `hasName` only. That read was always undefined, so the
+   * desk asked "Who am I speaking with?" on every single turn no matter how
+   * many times the reader answered. Trust either form.
+   */
+  const hasName =
+    Boolean((known as { hasName?: boolean }).hasName) ||
+    Boolean(String((known as { name?: unknown }).name ?? "").trim());
 
   /*
    * The advancing move. A desk that answers and stops is a brochure; this
@@ -268,7 +317,9 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
       ];
       return asks[turn % asks.length];
     }
-    if (!hasName) return "Got your email. Who am I speaking with?";
+    // Ask for a name at most once. If we asked and still could not make one out,
+    // asking again is how the desk ends up in a loop — move the conversation on.
+    if (!hasName && !opts.nameAlreadyAsked) return "Got your email. Who am I speaking with?";
     return "Want me to set up the free 30-minute call? No pitch, no card.";
   }
 
@@ -279,7 +330,7 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
    */
   if (givenEmail || givenPhone) {
     const got = givenEmail && givenPhone ? "those details" : givenEmail ? "that address" : "that number";
-    if (hasName) {
+    if (hasName || opts.nameAlreadyAsked) {
       return `Got ${got} — someone will come back to you directly. Anything you want passed on with it?`;
     }
     return `Got ${got} down, and a real person picks these up. Who am I speaking with?`;
@@ -454,6 +505,10 @@ export async function POST(req: NextRequest) {
   const known = body.known && typeof body.known === "object" ? body.known : {};
   const lastUser = turns[turns.length - 1].content;
   const userTurns = turns.filter((x) => x.role === "user").length;
+  // Did we already ask for a name earlier in this conversation? Used both to
+  // stop the desk re-asking and to know when a bare reply is a name.
+  const nameAlreadyAsked = turns.some((x) => x.role === "assistant" && ASKED_NAME.test(x.content));
+  const inferredName = inferName(turns, lastUser);
 
   // No provider configured at all -> straight to the rule-based desk.
   const hasProvider = Boolean(
@@ -464,7 +519,11 @@ export async function POST(req: NextRequest) {
       process.env.ANTHROPIC_API_KEY,
   );
   if (!hasProvider) {
-    return NextResponse.json({ reply: fallbackReply(lastUser, known, userTurns), degraded: true }, { status: 200, headers });
+    return NextResponse.json({
+        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked }),
+        capture: inferredName ? { name: inferredName } : undefined,
+        degraded: true,
+      }, { status: 200, headers });
   }
   const context = [
     `Page they're reading: ${String(body.pageUrl || "utahmainstreet.com").slice(0, 200)}`,
@@ -501,6 +560,10 @@ export async function POST(req: NextRequest) {
     // which returns invalid_request_error. Whatever the reason, the visitor
     // must still get a useful answer rather than an apology.
     console.error("[agent/chat] model call failed, serving fallback desk:", e);
-    return NextResponse.json({ reply: fallbackReply(lastUser, known, userTurns), degraded: true }, { status: 200, headers });
+    return NextResponse.json({
+        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked }),
+        capture: inferredName ? { name: inferredName } : undefined,
+        degraded: true,
+      }, { status: 200, headers });
   }
 }
