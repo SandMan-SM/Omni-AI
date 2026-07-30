@@ -399,7 +399,10 @@ function fallbackReply(
       return asks[turn % asks.length];
     }
     if (countAsks(ASKED_CALL) >= 2 || opts.callDeclined || opts.callAccepted) return "";
-    return `The next step would be the free 30-minute call — no pitch, no card. Want the link?`;
+    // Named, not "the link". A reply can already be showing a card for the
+    // Network page while this offers the booking page — two destinations, and
+    // a bare "the link" makes the reader guess which one they'd be getting.
+    return `The next step would be the free 30-minute call — no pitch, no card. Want the booking link?`;
   }
 
   const answer = ((): string => {
