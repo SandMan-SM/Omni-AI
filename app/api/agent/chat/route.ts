@@ -228,9 +228,24 @@ async function generate(system: string, turns: Turn[]): Promise<{ text: string; 
  * part that actually earns money. The agent upgrades this automatically the
  * moment the model can be reached again; no redeploy of the masthead needed.
  */
+const EMAIL_IN_TEXT = /[^\s@,;:<>()[\]]+@[^\s@,;:<>()[\]]+\.[a-z]{2,}/i;
+const PHONE_IN_TEXT = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
+
 function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): string {
   const t = text.toLowerCase();
-  const hasEmail = Boolean((known as { hasEmail?: boolean }).hasEmail);
+
+  /*
+   * Details supplied in THIS message count as known.
+   *
+   * The caller's `known` flags describe what was on record when the request was
+   * built, so a reader who types their address gets a payload that still says
+   * hasEmail:false — and the desk then asked for the email it had just been
+   * handed, which is the single most insulting thing a chat can do. Read the
+   * message itself and treat what is in it as already given.
+   */
+  const givenEmail = text.match(EMAIL_IN_TEXT)?.[0];
+  const givenPhone = text.match(PHONE_IN_TEXT)?.[0];
+  const hasEmail = Boolean((known as { hasEmail?: boolean }).hasEmail) || Boolean(givenEmail);
   const hasName = Boolean((known as { hasName?: boolean }).hasName);
 
   /*
@@ -255,6 +270,19 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
     }
     if (!hasName) return "Got your email. Who am I speaking with?";
     return "Want me to set up the free 30-minute call? No pitch, no card.";
+  }
+
+  /*
+   * Contact details handed over. Checked FIRST, before any topic intent: when
+   * someone gives an address the only correct reply is to confirm it and move
+   * on. Anything else reads as not listening.
+   */
+  if (givenEmail || givenPhone) {
+    const got = givenEmail && givenPhone ? "those details" : givenEmail ? "that address" : "that number";
+    if (hasName) {
+      return `Got ${got} — someone will come back to you directly. Anything you want passed on with it?`;
+    }
+    return `Got ${got} down, and a real person picks these up. Who am I speaking with?`;
   }
 
   // Greeting or an opener with no real question in it.
@@ -363,9 +391,17 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
   // and don't call a statement a question.
   const topic = text.trim().replace(/\s+/g, " ").slice(0, 60);
   const isQuestion = /\?|^(what|how|who|when|where|why|can|do|does|is|are|will|would|should)\b/.test(t);
-  return isQuestion
-    ? `Good question, and I'd rather have a person answer it properly than guess at it. ${move()}`
-    : `Noted — "${topic}" goes to a real person at this desk. ${move()}`;
+  if (isQuestion) {
+    return `Good question, and I'd rather a person answered it properly than have me guess. ${move()}`;
+  }
+  // Varied so two unmatched messages in a row don't come back word-for-word
+  // identical, which is what makes a desk look like a script.
+  const acks = [
+    `Noted — "${topic}" goes to a real person at this desk.`,
+    `That's logged, and it's read by a person rather than filed away.`,
+    `Understood. I've put that in front of the desk.`,
+  ];
+  return `${acks[turn % acks.length]} ${move()}`;
 }
 
 export async function POST(req: NextRequest) {
