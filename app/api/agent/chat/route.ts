@@ -432,11 +432,11 @@ function fallbackReply(
         if (opts.yes) {
           return `Click below to pick a slot — any time that suits you, and a person will be on the other end. Anything you want them to know beforehand?`;
         }
-        return `No call then, that's fine. The details are all public at ${BEST} if you'd rather just read, and I'm here if something comes up.`;
+        return `No call then, that's fine. Everything's public if you'd rather just read it yourself, linked below. I'm here if something comes up. ${BEST}`;
       }
       if (opts.lastAsk === "email") {
         if (opts.no) {
-          return `Fair enough, no email. Everything's public at ${BEST} — have a look and come back if you want a person on it.`;
+          return `Fair enough, no email. It's all public — have a look below, and come back if you want a person on it. ${BEST}`;
         }
         return `Go ahead — what's the address?`;
       }
@@ -481,15 +481,15 @@ function fallbackReply(
      */
     if (opts.lastAsk === "fork") {
       if (any("network", "first", "trust", "reputation", "visib", "listed", "credib")) {
-        return `The Network then. $5,000 a year or twelve payments through Klarna, cross-listed across all three mastheads, and vetted before you're listed. Details at ${BEST}. ${move()}`;
+        return `The Network then. $5,000 a year or twelve payments through Klarna, cross-listed across all three mastheads, and vetted before you're listed. Full details below. ${move()} ${BEST}`;
       }
       if (any("customer", "second", "leads", "lead", "more people", "phone ringing", "busier", "revenue", "sales", "booking")) {
         // Contains the link already — appending "Want the link?" reads as not
         // having read its own sentence.
-        return `That's Omni AI then — lead generation and automation, built for local operators. The intro call is free and there's no card: ${CALL}. Worth a look before you commit to anything.`;
+        return `That's Omni AI then — lead generation and automation, built for local operators. The intro call is free and there's no card. Worth a look below before you commit to anything. ${CALL}`;
       }
       if (any("both", "everything", "all of it", "either")) {
-        return `Both is normal, and practically it's one conversation — the free call covers what Omni AI would do, and the Network listing gets set up alongside it. Book whenever suits: ${CALL}.`;
+        return `Both is normal, and practically it's one conversation — the free call covers what Omni AI would do, and the Network listing gets set up alongside it. Book whenever suits you, below. ${CALL}`;
       }
     }
 
@@ -499,7 +499,7 @@ function fallbackReply(
       return `Any time. The desk is here whenever you need it.`;
     }
     if (any(" bye ", " goodbye ", " see ya ", " later ", " cya ", " talk soon ") && t.length < 20) {
-      return `Take care. Everything's at ${BEST} if you want it later.`;
+      return `Take care. It's all below if you want it later. ${BEST}`;
     }
 
     /*
@@ -527,7 +527,7 @@ function fallbackReply(
      * them to verify rather than asking them to trust us.
      */
     if (any("scam", "ripoff", "rip off", "rip-off", "fraud", "fake", "shady", "sketchy", "bullshit", "waste of money", "predatory", "pyramid", "mlm", "too good to be true", "legit")) {
-      return `Reasonable thing to be suspicious of, and I'd rather answer it than dodge. Nothing in the editorial is paid for, the member list is public at ${BEST}, every operator we feature has a verifiable receipt behind it, and the price is stated plainly — $5,000 a year. Check all of that before you take my word for any of it.`;
+      return `Reasonable thing to be suspicious of, and I'd rather answer it than dodge. Nothing in the editorial is paid for, the member list is public, every operator we feature has a verifiable receipt behind it, and the price is stated plainly — $5,000 a year. Check all of it below before you take my word for any of it. ${BEST}`;
     }
 
     /*
@@ -570,7 +570,7 @@ function fallbackReply(
      * one would be the worst possible failure for a newsroom's credibility.
      */
     if (any("who else", "who is in", "whos in", "who's in", "member list", "current members", "any members", "examples", "who have you", "whos already", "who's already", "already listed")) {
-      return `The current list is public at ${BEST} — I'd rather you judge it yourself than take my word for it. Everyone on it is a Utah operator we've actually vetted. ${move()}`;
+      return `The current list is public, linked below — I'd rather you judge it yourself than take my word for it. Everyone on it is a Utah operator we've actually vetted. ${move()} ${BEST}`;
     }
 
     /*
@@ -622,17 +622,17 @@ function fallbackReply(
       if (aboutOmni) {
         return `Omni AI is scoped per business rather than sold at a list price — working out what it would actually cost you is what the free call is for, and there's no card involved. Separately, the Network is a flat $5,000 a year.`;
       }
-      return `$5,000 a year for the Network, or twelve payments through Klarna. Full details at ${BEST}. ${move()}`;
+      return `$5,000 a year for the Network, or twelve payments through Klarna. Full details below. ${move()} ${BEST}`;
     }
 
     // MEMBERSHIP / GENERAL NETWORK.
     if (any("network", "utahs best", "utah's best", "directory", "listed", "listing", "member", "feature", "join")) {
-      return `Utah's Best Network is our vetted directory — members are cross-listed across all three mastheads. $5,000 a year, or twelve payments through Klarna. Full details at ${BEST}. ${move()}`;
+      return `Utah's Best Network is our vetted directory — members are cross-listed across all three mastheads. $5,000 a year, or twelve payments through Klarna. Full details below. ${move()} ${BEST}`;
     }
 
     // PROOF. Point at what is checkable; never invent numbers.
     if (any("results", " roi", "proof", "does it work", "guarantee", "evidence", "case stud", "testimonial", "review", "worked for", "success")) {
-      return `We don't publish invented numbers. What you can check: every operator we feature has a public receipt behind it, and the member list is open at ${BEST}. Judge it on that. ${move()}`;
+      return `We don't publish invented numbers. What you can check: every operator we feature has a public receipt behind it, and the member list is open below. Judge it on that. ${move()} ${BEST}`;
     }
 
     // WHO ARE YOU.
@@ -668,13 +668,13 @@ function fallbackReply(
     // TALK TO A HUMAN.
     if (any("call", "phone", "talk to", "speak", "human", "real person", "meeting", "appointment", "contact", "reach you")) {
       return hasEmail
-        ? `Easiest is the free 30-minute call — ${CALL}, no pitch and no card. I'll flag your note either way.`
-        : `Happy to get a person on it. Free 30-minute call at ${CALL}, or leave your email here and someone reaches out directly.`;
+        ? `Easiest is the free 30-minute call — no pitch and no card, booking below. I'll flag your note either way. ${CALL}`
+        : `Happy to get a person on it. The free 30-minute call is below, or leave your email here and someone reaches out directly. ${CALL}`;
     }
 
     // OMNI AI / LEAD GEN.
     if (any("lead", "marketing", "customer", " ads ", "advertis", "automat", " ai ", "omni", "grow", "sales", "website", " seo ", "booking", "crm")) {
-      return `That's Omni AI, our parent company — lead generation and automation for local businesses. Free 30-minute call, no pitch, at ${CALL}. ${move()}`;
+      return `That's Omni AI, our parent company — lead generation and automation for local businesses. Free 30-minute call, no pitch, below. ${move()} ${CALL}`;
     }
 
     // EDITORIAL TIP.
@@ -730,8 +730,8 @@ function fallbackReply(
     const isQuestion = /\?/.test(text) || any(" what ", " how ", " who ", " when ", " where ", " why ", " can ", " do ", " does ", " is ", " are ", " will ", " should ");
     if (isQuestion) {
       return hasEmail
-        ? `I won't guess at that one — you'll get a straight answer from a person. Quickest is the free call at ${CALL}, otherwise someone picks it up from your email.`
-        : `I won't guess at that one, and you'd rather have it right. Two ways to get it answered today: the free call at ${CALL}, or leave your email and a person replies directly.`;
+        ? `I won't guess at that one — you'll get a straight answer from a person. Quickest is the free call below, otherwise someone picks it up from your email. ${CALL}`
+        : `I won't guess at that one, and you'd rather have it right. Two ways to get it answered today: the free call below, or leave your email and a person replies directly. ${CALL}`;
     }
     const topic = text.trim().replace(/\s+/g, " ").slice(0, 60);
     const acks = [
@@ -756,7 +756,7 @@ function fallbackReply(
   const saidExactly = new Set(said.map((x) => x.trim()));
   if (!saidExactly.has(tidy)) return tidy;
   return hasEmail
-    ? `I've already given you my version of that, and repeating it won't help. A person can go deeper — the free call is at ${CALL}.`
+    ? `I've already given you my version of that, and repeating it won't help. A person can go deeper — the free call is below. ${CALL}`
     : `I've said my piece on that one. Leave an email and a person will give you the detail rather than me repeating myself.`;
 }
 
