@@ -316,9 +316,31 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
       : "The daily is one short read each morning on real Utah operators. Free, no paid placements. What's your email?";
   }
 
-  // Unmatched. Acknowledge the actual words rather than emitting a stock line.
+  /*
+   * Operator self-identification — "I run a barbershop in Sandy".
+   *
+   * Checked late so an explicit question above still wins, but it must be
+   * checked at all: this is the highest-intent thing a visitor can say and it
+   * was previously falling through to the unmatched branch, which asked them
+   * what they'd "asked about" when they hadn't asked anything. Name the trade
+   * back to them so the reply is visibly about their business.
+   */
+  const selfId = t.match(
+    /\b(?:i(?:'m| am)?\s+(?:own|run|have|manage|operate)(?:\s+a|\s+an|\s+my)?|my)\s+([a-z][a-z' ]{2,28}?)(?:\s+(?:in|on|at|out|here|down)\b|[.,!?]|$)/,
+  );
+  if (selfId || /\b(i own|i run|i operate|my (business|shop|store|company|salon|restaurant|practice|crew))\b/.test(t)) {
+    const trade = selfId?.[1]?.trim().replace(/\b(business|shop|company)$/, "$1");
+    const named = trade && trade.length > 2 && !/^(own|run|have|manage|operate)$/.test(trade) ? ` A ${trade} is exactly the kind of operator we cover.` : "";
+    return `Good — that's who this paper is for.${named} Two ways in: the Network gets you vetted and cross-listed across all three mastheads, or Omni AI works on getting you more customers. Which is the actual problem right now?`;
+  }
+
+  // Unmatched. Acknowledge the actual words rather than emitting a stock line,
+  // and don't call a statement a question.
   const topic = text.trim().replace(/\s+/g, " ").slice(0, 60);
-  return `Let me get that in front of the right person — you asked about "${topic}". A real person reads these. ${move()}`;
+  const isQuestion = /\?|^(what|how|who|when|where|why|can|do|does|is|are|will|would|should)\b/.test(t);
+  return isQuestion
+    ? `Good question, and I'd rather have a person answer it properly than guess at it. ${move()}`
+    : `Noted — "${topic}" goes to a real person at this desk. ${move()}`;
 }
 
 export async function POST(req: NextRequest) {
