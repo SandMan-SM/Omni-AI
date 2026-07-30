@@ -753,8 +753,8 @@ function fallbackReply(
   // move() returns "" once the email has been asked for twice, so tidy the seam.
   const tidy = answer.replace(/\s{2,}/g, " ").trim();
 
-  const said = new Set((opts.alreadySaid ?? []).map((s) => s.trim()));
-  if (!said.has(tidy)) return tidy;
+  const saidExactly = new Set(said.map((x) => x.trim()));
+  if (!saidExactly.has(tidy)) return tidy;
   return hasEmail
     ? `I've already given you my version of that, and repeating it won't help. A person can go deeper — the free call is at ${CALL}.`
     : `I've said my piece on that one. Leave an email and a person will give you the detail rather than me repeating myself.`;
