@@ -344,8 +344,18 @@ function fallbackReply(text: string, known: Record<string, unknown>, turn = 1): 
     /\b(?:i(?:'m| am)?\s+(?:own|run|have|manage|operate)(?:\s+a|\s+an|\s+my)?|my)\s+([a-z][a-z' ]{2,28}?)(?:\s+(?:in|on|at|out|here|down)\b|[.,!?]|$)/,
   );
   if (selfId || /\b(i own|i run|i operate|my (business|shop|store|company|salon|restaurant|practice|crew))\b/.test(t)) {
-    const trade = selfId?.[1]?.trim().replace(/\b(business|shop|company)$/, "$1");
-    const named = trade && trade.length > 2 && !/^(own|run|have|manage|operate)$/.test(trade) ? ` A ${trade} is exactly the kind of operator we cover.` : "";
+    let trade = selfId?.[1]?.trim();
+    // Trades are typed lowercase in chat; acronyms have to come back up or the
+    // reply reads as sloppy, and the article has to agree with how the phrase
+    // is actually pronounced ("an HVAC company", "a barbershop").
+    if (trade) {
+      trade = trade.replace(/\b(hvac|hoa|cpa|it|mma|hr|suv|rv|atv|dj|cbd|ac)\b/g, (m) => m.toUpperCase());
+    }
+    const vowelSound = trade ? /^(?:[aeiou]|HVAC|HOA|IT\b|MMA|HR|RV|ATV|SUV)/.test(trade) : false;
+    const named =
+      trade && trade.length > 2 && !/^(own|run|have|manage|operate)$/i.test(trade)
+        ? ` ${vowelSound ? "An" : "A"} ${trade} is exactly the kind of operator we cover.`
+        : "";
     return `Good — that's who this paper is for.${named} Two ways in: the Network gets you vetted and cross-listed across all three mastheads, or Omni AI works on getting you more customers. Which is the actual problem right now?`;
   }
 
