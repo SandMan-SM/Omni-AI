@@ -233,6 +233,39 @@ const PHONE_IN_TEXT = /(?:\+?1[\s.-]?)?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}\b/;
 
 const ASKED_NAME = /who am i speaking with|who am i talking to|what'?s your name|who'?s this|who is this/i;
 
+/*
+ * WHAT THE DESK LAST ASKED.
+ *
+ * The desk asks plenty of questions but had no idea it had asked them, so an
+ * answer to one was just another unmatched message. Live result: it offered the
+ * call, the reader said "yes", and it offered the call again. Only the name case
+ * was handled, and only because it was special-cased.
+ *
+ * Classify our own previous message so the reader's reply can be read as the
+ * answer it is.
+ */
+const ASKED_CALL = /free 30-minute call/i;
+const ASKED_EMAIL = /(best email|drop your email|what email should|leave (an|your) email|what'?s your email)/i;
+const ASKED_FORK = /which (of those|is the actual problem)/i;
+const ASKED_STORY = /what'?s the story/i;
+const ASKED_PASSON = /anything (you want passed on|you'?d like me to pass on|to pass on)/i;
+
+type LastAsk = "call" | "name" | "email" | "fork" | "story" | "passon" | null;
+
+function classifyAsk(prev: string): LastAsk {
+  if (!prev) return null;
+  if (ASKED_CALL.test(prev)) return "call";
+  if (ASKED_NAME.test(prev)) return "name";
+  if (ASKED_EMAIL.test(prev)) return "email";
+  if (ASKED_FORK.test(prev)) return "fork";
+  if (ASKED_STORY.test(prev)) return "story";
+  if (ASKED_PASSON.test(prev)) return "passon";
+  return null;
+}
+
+const YES_RE = /^(y|ya|yes+|yeah|yep|yup|sure|ok|okay|kk|please|pls|sounds good|that works|go ahead|do it|lets do it|let'?s do it|absolutely|definitely|for sure|why not)\b/i;
+const NO_RE = /^(n|no+|nope|nah|not now|not right now|not yet|later|maybe later|no thanks|no thank you|pass|im good|i'?m good|all good)\b/i;
+
 // Words that arrive where a name is expected but plainly aren't one.
 const NOT_A_NAME =
   /^(yes|yeah|no|nope|ok|okay|sure|thanks|thank you|hi|hey|hello|nothing|nobody|none|na|n\/a|test|testing|help|idk|maybe|who|why|what|stop|bruh|lol)$/i;
@@ -266,7 +299,16 @@ function fallbackReply(
   text: string,
   known: Record<string, unknown>,
   turn = 1,
-  opts: { nameAlreadyAsked?: boolean; justLearnedName?: string; alreadySaid?: string[] } = {},
+  opts: {
+    nameAlreadyAsked?: boolean;
+    justLearnedName?: string;
+    alreadySaid?: string[];
+    lastAsk?: LastAsk;
+    yes?: boolean;
+    no?: boolean;
+    callDeclined?: boolean;
+    emailDeclined?: boolean;
+  } = {},
 ): string {
   /*
    * Matching is on a NORMALISED string with loose substring tests, not on \b
@@ -318,8 +360,8 @@ function fallbackReply(
   /** One advancing step per reply, varied, and never asking for what we hold. */
   function move(): string {
     if (!hasEmail) {
-      // Asked and not answered, twice. Stop asking; leave the door open.
-      if (emailAsks >= 2) return "";
+      // Asked and not answered twice, or declined outright. Stop asking.
+      if (emailAsks >= 2 || opts.emailDeclined) return "";
       const asks = [
         "What's the best email for you? I'll have a person follow up with specifics rather than a brochure.",
         "Drop your email and I'll send the details plus who's already listed — no sales sequence.",
@@ -334,9 +376,12 @@ function fallbackReply(
      * 30-minute call?" — three times running in the live widget. Offer it twice,
      * then let the answers stand on their own.
      */
-    const callOffers = (opts.alreadySaid ?? []).filter((x) => /set up the free 30-minute call/i.test(x)).length;
-    if (callOffers >= 2) return "";
-    return `Want me to set up the free 30-minute call? No pitch, no card.`;
+    const callOffers = (opts.alreadySaid ?? []).filter((x) => ASKED_CALL.test(x)).length;
+    if (callOffers >= 2 || opts.callDeclined) return "";
+    // Phrased as something a yes can actually be honoured against. "Want me to
+    // set up the call?" promised an action this desk cannot perform, so a "yes"
+    // had no correct answer available.
+    return `The next step would be the free 30-minute call — no pitch, no card. Want the link?`;
   }
 
   const answer = ((): string => {
@@ -353,6 +398,55 @@ function fallbackReply(
     if (opts.justLearnedName) {
       const first = opts.justLearnedName.split(/\s+/)[0];
       return `Thanks, ${first.charAt(0).toUpperCase() + first.slice(1)}. ${move()}`;
+    }
+
+    /*
+     * ANSWERING THE QUESTION WE JUST ASKED.
+     *
+     * This is the gap that made the desk feel broken. "yes" carries no keywords,
+     * so it matched nothing, fell to the catch-all, and the advancing move
+     * re-offered the very thing the reader had just accepted. A reply has to be
+     * read in the context of what was asked immediately before it.
+     */
+    if (opts.lastAsk && (opts.yes || opts.no)) {
+      if (opts.lastAsk === "call") {
+        if (opts.yes) {
+          return `Here you go: ${CALL} — pick any slot that suits you and a person will be on the other end. Anything you want them to know beforehand?`;
+        }
+        return `No call then, that's fine. The details are all public at ${BEST} if you'd rather just read, and I'm here if something comes up.`;
+      }
+      if (opts.lastAsk === "email") {
+        if (opts.no) {
+          return `Fair enough, no email. Everything's public at ${BEST} — have a look and come back if you want a person on it.`;
+        }
+        return `Go ahead — what's the address?`;
+      }
+      if (opts.lastAsk === "passon") {
+        if (opts.no) return `Understood. Someone will pick it up from here.`;
+        return `Go ahead — what should they know?`;
+      }
+      if (opts.lastAsk === "story" || opts.lastAsk === "fork") {
+        // A bare yes/no is not an answer to either of these; ask properly.
+        return opts.lastAsk === "fork"
+          ? `Let me put it more plainly: is the problem that people don't trust you yet, or that there aren't enough of them coming in?`
+          : `Send it through whenever — what happened?`;
+      }
+    }
+
+    /*
+     * WHICH OF THE TWO. The fork question was asked and then could not be
+     * answered, because "the first one" and "more customers" match no intent.
+     */
+    if (opts.lastAsk === "fork") {
+      if (any("network", "first", "trust", "reputation", "visib", "listed", "credib")) {
+        return `The Network then. $5,000 a year or twelve payments through Klarna, cross-listed across all three mastheads, and vetted before you're listed. Details at ${BEST}. ${move()}`;
+      }
+      if (any("customer", "second", "leads", "lead", "more people", "phone ringing", "busier", "revenue", "sales", "booking")) {
+        return `That's Omni AI then — lead generation and automation, built for local operators. The intro call is free, no card: ${CALL}. ${move()}`;
+      }
+      if (any("both", "everything", "all of it", "either")) {
+        return `Both is normal. Practically it's one conversation — the free call covers what Omni AI would do, and the Network listing gets set up alongside it. ${CALL}. ${move()}`;
+      }
     }
 
     /*
@@ -637,6 +731,23 @@ export async function POST(req: NextRequest) {
   const inferredName = inferName(turns, lastUser);
   // Everything the desk has already said this conversation, so it can refuse to repeat itself.
   const priorAssistant = turns.filter((x) => x.role === "assistant").map((x) => x.content);
+  /*
+   * Read the reader's reply against our own previous message, and remember an
+   * explicit decline so the desk stops offering something already refused.
+   */
+  const prevAssistant = [...turns].reverse().find((x) => x.role === "assistant")?.content ?? "";
+  const lastAsk = classifyAsk(prevAssistant);
+  const saidYes = YES_RE.test(lastUser.trim());
+  const saidNo = NO_RE.test(lastUser.trim());
+  let callDeclined = false;
+  let emailDeclined = false;
+  for (let i = 1; i < turns.length; i++) {
+    const a = turns[i - 1];
+    const u = turns[i];
+    if (a.role !== "assistant" || u.role !== "user" || !NO_RE.test(u.content.trim())) continue;
+    if (ASKED_CALL.test(a.content)) callDeclined = true;
+    if (ASKED_EMAIL.test(a.content)) emailDeclined = true;
+  }
 
   // No provider configured at all -> straight to the rule-based desk.
   const hasProvider = Boolean(
@@ -648,7 +759,16 @@ export async function POST(req: NextRequest) {
   );
   if (!hasProvider) {
     return NextResponse.json({
-        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName, alreadySaid: priorAssistant }),
+        reply: fallbackReply(lastUser, known, userTurns, {
+          nameAlreadyAsked,
+          justLearnedName: inferredName,
+          alreadySaid: priorAssistant,
+          lastAsk,
+          yes: saidYes,
+          no: saidNo,
+          callDeclined,
+          emailDeclined,
+        }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
       }, { status: 200, headers });
@@ -689,7 +809,16 @@ export async function POST(req: NextRequest) {
     // must still get a useful answer rather than an apology.
     console.error("[agent/chat] model call failed, serving fallback desk:", e);
     return NextResponse.json({
-        reply: fallbackReply(lastUser, known, userTurns, { nameAlreadyAsked, justLearnedName: inferredName, alreadySaid: priorAssistant }),
+        reply: fallbackReply(lastUser, known, userTurns, {
+          nameAlreadyAsked,
+          justLearnedName: inferredName,
+          alreadySaid: priorAssistant,
+          lastAsk,
+          yes: saidYes,
+          no: saidNo,
+          callDeclined,
+          emailDeclined,
+        }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
       }, { status: 200, headers });
