@@ -328,6 +328,14 @@ function fallbackReply(
       return asks[turn % asks.length];
     }
     if (!hasName && !opts.nameAlreadyAsked) return "Got your email. Who am I speaking with?";
+    /*
+     * Same restraint as the email ask. For a reader we already know, this was
+     * the only move left, so EVERY reply ended with "Want me to set up the free
+     * 30-minute call?" — three times running in the live widget. Offer it twice,
+     * then let the answers stand on their own.
+     */
+    const callOffers = (opts.alreadySaid ?? []).filter((x) => /set up the free 30-minute call/i.test(x)).length;
+    if (callOffers >= 2) return "";
     return `Want me to set up the free 30-minute call? No pitch, no card.`;
   }
 
