@@ -310,6 +310,7 @@ function fallbackReply(
     callDeclined?: boolean;
     emailDeclined?: boolean;
     callAccepted?: boolean;
+    prevAssistant?: string;
   } = {},
 ): string {
   /*
@@ -464,6 +465,15 @@ function fallbackReply(
       }
     }
 
+    // Courtesy and sign-offs. "thanks" was getting "That's logged", which is a
+    // filing cabinet talking.
+    if (any(" thanks ", " thank you ", " thx ", " ta ", " cheers ", " appreciate it ", " got it ", " perfect ", " great ") && t.length < 26) {
+      return `Any time. The desk is here whenever you need it.`;
+    }
+    if (any(" bye ", " goodbye ", " see ya ", " later ", " cya ", " talk soon ") && t.length < 20) {
+      return `Take care. Everything's at ${BEST} if you want it later.`;
+    }
+
     /*
      * AM I TALKING TO A BOT.
      *
@@ -573,6 +583,17 @@ function fallbackReply(
 
     // PRICING.
     if (any("how much", "price", "pricing", "cost", "what's it cost", "whats it cost", "rate", "fee", "per year", "monthly", "payment", "klarna", "finance")) {
+      /*
+       * Whose price? After the reader picks Omni AI, "how much would that cost"
+       * means Omni AI — and answering "$5,000 a year" quotes the Network's fee
+       * for a different product, which is a misquote to a live prospect. Omni AI
+       * is scoped per business; the honest answer is that there is no list price.
+       */
+      const aboutOmni =
+        /omni ai/i.test(opts.prevAssistant ?? "") && !/\$5,000/.test(opts.prevAssistant ?? "");
+      if (aboutOmni) {
+        return `Omni AI is scoped per business rather than sold at a list price — working out what it would actually cost you is what the free call is for, and there's no card involved. Separately, the Network is a flat $5,000 a year.`;
+      }
       return `$5,000 a year for the Network, or twelve payments through Klarna. Full details at ${BEST}. ${move()}`;
     }
 
@@ -786,6 +807,7 @@ export async function POST(req: NextRequest) {
           callDeclined,
           emailDeclined,
           callAccepted,
+          prevAssistant,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
@@ -837,6 +859,7 @@ export async function POST(req: NextRequest) {
           callDeclined,
           emailDeclined,
           callAccepted,
+          prevAssistant,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
