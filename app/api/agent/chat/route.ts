@@ -348,6 +348,43 @@ function fallbackReply(
     }
 
     /*
+     * AM I TALKING TO A BOT.
+     *
+     * Must be answered plainly and must be checked before the talk-to-a-human
+     * intent, which matched on the bare word "person" and replied "Happy to get
+     * a person on it" — dodging a direct question about what I am. Never claim
+     * to be a person; being straight is the entire brand.
+     */
+    if (
+      any(
+        "are you a bot", "are you a robot", "are you real", "are you a real", "are you human",
+        "are you a person", "are you an ai", "are you ai", "is this a bot", "is this a real person",
+        "is this a person", "am i talking to a bot", "am i talking to a real", "am i talking to a person",
+        "bot or", "or a bot", "human or", "or a human", "who am i talking to", "is this automated", "is this a robot",
+      )
+    ) {
+      return `I'm software — the desk assistant, not a person. I can answer the basics on the Network and the paper, and anything that needs a human I hand straight to one. ${move()}`;
+    }
+
+    /*
+     * SUSPICION. The one accusation a newsroom cannot answer with a shrug, and
+     * the old catch-all did exactly that. Answer with checkable facts and invite
+     * them to verify rather than asking them to trust us.
+     */
+    if (any("scam", "ripoff", "rip off", "rip-off", "fraud", "fake", "shady", "sketchy", "bullshit", "waste of money", "predatory", "pyramid", "mlm", "too good to be true", "legit")) {
+      return `Reasonable thing to be suspicious of, and I'd rather answer it than dodge. Nothing in the editorial is paid for, the member list is public at ${BEST}, every operator we feature has a verifiable receipt behind it, and the price is stated plainly — $5,000 a year. Check all of that before you take my word for any of it.`;
+    }
+
+    /*
+     * NEGOTIATION. "Can you do it for 2000 instead" previously matched the
+     * buying signal and got a cheerful next-step reply that ignored the actual
+     * request. Decline plainly and name the flexibility that does exist.
+     */
+    if (any("discount", "any deals", "deal on", "negotiate", "lower price", "lower the price", "knock off", "best price", "cheaper than", "instead of 5", "for 2000", "for 3000", "for 4000", "for 1000", "meet me at", "come down", "flexible on price", "wiggle room")) {
+      return `Straight answer: the price is $5,000 a year and I can't discount it — a vetted list stops meaning anything the moment it's negotiable. The flexibility is in how you pay, twelve payments through Klarna instead of up front. ${move()}`;
+    }
+
+    /*
      * BUYING SIGNAL — checked before every topic intent.
      *
      * "ok im interested" and "whats next" are the highest-value things anyone
@@ -359,7 +396,7 @@ function fallbackReply(
       any(
         "interested", "sign me up", "sign up", "lets do it", "let's do it", " im in ", " i'm in ",
         "count me in", "ready to", "how do i start", "how do i sign", "where do i sign",
-        "whats next", "what's next", "next step", "lets go", "do it",
+        "whats next", "what's next", "next step", "lets go",
       )
     ) {
       if (hasEmail) {
@@ -492,6 +529,21 @@ function fallbackReply(
     );
     if (selfId || any("i own", "i run", "i operate", "my business", "my shop", "my store", "my company", "my practice", "my clinic")) {
       let trade = selfId?.[1]?.trim();
+      /*
+       * Sanity-bound the extraction. On a long or repetitive message the capture
+       * ran across clause boundaries and produced "A shop and i own a sh is
+       * exactly the kind of operator we cover". A trade is one to three plain
+       * words; anything else is better left unnamed than echoed back as nonsense.
+       */
+      if (trade) {
+        const words = trade.split(/\s+/);
+        const sane =
+          words.length <= 3 &&
+          trade.length <= 24 &&
+          words.every((w) => /^[a-z'’-]{2,}$/i.test(w)) &&
+          !words.some((w) => /^(and|or|the|my|a|an|i|own|owns|run|runs|have|has|manage|operate)$/i.test(w));
+        if (!sane) trade = undefined;
+      }
       if (trade) trade = trade.replace(/\b(hvac|hoa|cpa|it|mma|hr|suv|rv|atv|dj|cbd|ac)\b/g, (m) => m.toUpperCase());
       const vowel = trade ? /^(?:[aeiou]|HVAC|HOA|IT\b|MMA|HR|RV|ATV|SUV)/.test(trade) : false;
       const named =
