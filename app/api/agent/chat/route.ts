@@ -80,6 +80,146 @@ Reply with ONLY a JSON object, no markdown fence:
 {"reply": "<your message>", "capture": {"name": "...", "email": "...", "phone": "...", "interest": "network|omni|daily|tip|question"}}
 Include in "capture" only the fields you actually learned this turn; omit it entirely if you learned nothing new. "interest" is your read of what they want.`;
 
+type Turn = { role: "user" | "assistant"; content: string };
+
+/*
+ * PROVIDER LADDER — first configured key wins.
+ *
+ * Deliberately provider-agnostic so the cheapest working option can be used
+ * without touching the masthead. Gemini and Groq both have free tiers that
+ * comfortably cover a local newsroom's chat volume, which is why they sit at
+ * the top: the goal is a real agent at zero marginal cost. Anthropic stays in
+ * the ladder but last, since its key is metered and currently out of credit.
+ *
+ * Groq and OpenAI share the OpenAI chat-completions shape, so they share a
+ * caller. Gemini needs its own request/response mapping.
+ */
+async function callGemini(system: string, turns: Turn[], key: string): Promise<string> {
+  const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
+  const res = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: system }] },
+        contents: turns.map((t) => ({
+          role: t.role === "assistant" ? "model" : "user",
+          parts: [{ text: t.content }],
+        })),
+        generationConfig: { maxOutputTokens: 400, temperature: 0.7 },
+      }),
+    },
+  );
+  if (!res.ok) throw new Error(`gemini ${res.status}: ${(await res.text()).slice(0, 200)}`);
+  const data = await res.json();
+  return (data?.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text || "").join("").trim();
+}
+
+async function callOpenAiCompatible(
+  system: string,
+  turns: Turn[],
+  key: string,
+  baseUrl: string,
+  model: string,
+): Promise<string> {
+  // Bounded so an unreachable or sleeping upstream (see HERMES_PROXY_URL) can
+  // never hold the visitor's request open — we would rather drop to the desk.
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), Number(process.env.AGENT_TIMEOUT_MS || 9000));
+  try {
+    const res = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model,
+        max_tokens: 400,
+        messages: [{ role: "system", content: system }, ...turns],
+      }),
+      signal: controller.signal,
+      cache: "no-store",
+    });
+    if (!res.ok) throw new Error(`${baseUrl} ${res.status}: ${(await res.text()).slice(0, 200)}`);
+    const data = await res.json();
+    return (data?.choices?.[0]?.message?.content || "").trim();
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function callAnthropic(system: string, turns: Turn[], key: string): Promise<string> {
+  const anthropic = new Anthropic({ apiKey: key });
+  const resp = await anthropic.messages.create({
+    model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
+    max_tokens: 400,
+    system,
+    messages: turns,
+  });
+  return resp.content
+    .filter((c): c is Anthropic.TextBlock => c.type === "text")
+    .map((c) => c.text)
+    .join("")
+    .trim();
+}
+
+/**
+ * Whichever provider is configured, in ascending order of cost.
+ *
+ * HERMES_PROXY_URL comes first on purpose. `hermes proxy start` runs a local
+ * OpenAI-compatible server that attaches the operator's OAuth subscription
+ * credentials upstream, so this path costs nothing per message and needs no
+ * metered API key — the explicitly requested arrangement. Point
+ * HERMES_PROXY_URL at the proxy's public origin (it binds 127.0.0.1 by
+ * default, so it needs a tunnel to be reachable from Vercel) and set
+ * HERMES_PROXY_TOKEN to any non-empty string: the proxy accepts any bearer
+ * token and substitutes the real credentials itself.
+ *
+ * Because that origin is a laptop rather than managed infrastructure, a short
+ * timeout is applied and any failure falls through to the next provider and
+ * ultimately to the rule-based desk, so the widget never hangs on a sleeping
+ * machine.
+ */
+async function generate(system: string, turns: Turn[]): Promise<{ text: string; provider: string }> {
+  if (process.env.HERMES_PROXY_URL) {
+    return {
+      text: await callOpenAiCompatible(
+        system, turns,
+        process.env.HERMES_PROXY_TOKEN || "hermes",
+        process.env.HERMES_PROXY_URL.replace(/\/+$/, ""),
+        process.env.HERMES_PROXY_MODEL || "gpt-5.6-sol",
+      ),
+      provider: "hermes",
+    };
+  }
+  if (process.env.GEMINI_API_KEY) {
+    return { text: await callGemini(system, turns, process.env.GEMINI_API_KEY), provider: "gemini" };
+  }
+  if (process.env.GROQ_API_KEY) {
+    return {
+      text: await callOpenAiCompatible(
+        system, turns, process.env.GROQ_API_KEY,
+        "https://api.groq.com/openai/v1",
+        process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+      ),
+      provider: "groq",
+    };
+  }
+  if (process.env.OPENAI_API_KEY) {
+    return {
+      text: await callOpenAiCompatible(
+        system, turns, process.env.OPENAI_API_KEY,
+        "https://api.openai.com/v1",
+        process.env.OPENAI_MODEL || "gpt-4o-mini",
+      ),
+      provider: "openai",
+    };
+  }
+  if (process.env.ANTHROPIC_API_KEY) {
+    return { text: await callAnthropic(system, turns, process.env.ANTHROPIC_API_KEY), provider: "anthropic" };
+  }
+  throw new Error("no provider configured");
+}
+
 /*
  * Fallback desk, used whenever the model is unavailable — no API key, no
  * credit balance, an outage, anything. It is deliberately rule-based and
@@ -141,8 +281,15 @@ export async function POST(req: NextRequest) {
   const known = body.known && typeof body.known === "object" ? body.known : {};
   const lastUser = turns[turns.length - 1].content;
 
-  // No key at all -> straight to the rule-based desk.
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // No provider configured at all -> straight to the rule-based desk.
+  const hasProvider = Boolean(
+    process.env.HERMES_PROXY_URL ||
+      process.env.GEMINI_API_KEY ||
+      process.env.GROQ_API_KEY ||
+      process.env.OPENAI_API_KEY ||
+      process.env.ANTHROPIC_API_KEY,
+  );
+  if (!hasProvider) {
     return NextResponse.json({ reply: fallbackReply(lastUser, known), degraded: true }, { status: 200, headers });
   }
   const context = [
@@ -152,19 +299,8 @@ export async function POST(req: NextRequest) {
   ].join("\n");
 
   try {
-    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-    const resp = await anthropic.messages.create({
-      model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
-      max_tokens: 400,
-      system: `${SYSTEM}\n\n# This conversation\n${context}`,
-      messages: turns,
-    });
-
-    const raw = resp.content
-      .filter((c): c is Anthropic.TextBlock => c.type === "text")
-      .map((c) => c.text)
-      .join("")
-      .trim();
+    const { text: raw } = await generate(`${SYSTEM}\n\n# This conversation\n${context}`, turns);
+    if (!raw) throw new Error("empty completion");
 
     // The model is told to return bare JSON; tolerate a stray fence anyway, and
     // fall back to treating the whole thing as prose rather than showing an error.
