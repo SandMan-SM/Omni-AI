@@ -430,7 +430,7 @@ function fallbackReply(
     if (opts.lastAsk && (opts.yes || opts.no)) {
       if (opts.lastAsk === "call") {
         if (opts.yes) {
-          return `Here you go: ${CALL} — pick any slot that suits you and a person will be on the other end. Anything you want them to know beforehand?`;
+          return `Click below to pick a slot — any time that suits you, and a person will be on the other end. Anything you want them to know beforehand?`;
         }
         return `No call then, that's fine. The details are all public at ${BEST} if you'd rather just read, and I'm here if something comes up.`;
       }
@@ -555,9 +555,9 @@ function fallbackReply(
       )
     ) {
       if (hasEmail) {
-        return `Good. Next step is a short call to confirm fit and get the listing built — ${CALL}. Book a slot that suits you and a person takes it from there.`;
+        return `Good. Next step is a short call to confirm fit and get the listing built. Click below to book — a person takes it from there. ${CALL}`;
       }
-      return `Good. Next step is a short call to confirm fit and build the listing — ${CALL}. Or leave your email here and a person will set it up with you.`;
+      return `Good. Next step is a short call to confirm fit and build the listing — click below to book it. Or leave your email here and a person will set it up with you. ${CALL}`;
     }
 
     // Greeting with no real question in it.
