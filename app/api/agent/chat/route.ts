@@ -303,9 +303,23 @@ function fallbackReply(
   const BEST = "utahmainstreet.com/utahs-best";
   const CALL = "omnileadsagi.com/book-now";
 
+  /*
+   * How many times we have already asked for an email this conversation.
+   *
+   * Needed because the ask fired on every single turn until it was answered —
+   * the simulation asked five times in a row. Rewording each time does not stop
+   * that being nagging, and a reader who has declined twice has told us
+   * something. Past two asks the desk keeps answering and stops pushing.
+   */
+  const emailAsks = (opts.alreadySaid ?? []).filter((s) =>
+    /(what'?s the best email|drop your email|what email should|leave (an|your) email|what'?s your email)/i.test(s),
+  ).length;
+
   /** One advancing step per reply, varied, and never asking for what we hold. */
   function move(): string {
     if (!hasEmail) {
+      // Asked and not answered, twice. Stop asking; leave the door open.
+      if (emailAsks >= 2) return "";
       const asks = [
         "What's the best email for you? I'll have a person follow up with specifics rather than a brochure.",
         "Drop your email and I'll send the details plus who's already listed — no sales sequence.",
@@ -518,8 +532,11 @@ function fallbackReply(
    * if this exact reply has already been given in this conversation, say
    * something that acknowledges the loop instead of parroting.
    */
+  // move() returns "" once the email has been asked for twice, so tidy the seam.
+  const tidy = answer.replace(/\s{2,}/g, " ").trim();
+
   const said = new Set((opts.alreadySaid ?? []).map((s) => s.trim()));
-  if (!said.has(answer.trim())) return answer;
+  if (!said.has(tidy)) return tidy;
   return hasEmail
     ? `I've already given you my version of that, and repeating it won't help. A person can go deeper — the free call is at ${CALL}.`
     : `I've said my piece on that one. Leave an email and a person will give you the detail rather than me repeating myself.`;
