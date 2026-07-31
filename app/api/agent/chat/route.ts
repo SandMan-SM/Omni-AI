@@ -795,8 +795,40 @@ function fallbackReply(
    * if this exact reply has already been given in this conversation, say
    * something that acknowledges the loop instead of parroting.
    */
-  // move() returns "" once the email has been asked for twice, so tidy the seam.
-  const tidy = answer.replace(/\s{2,}/g, " ").trim();
+  // move() returns "" once a rung is exhausted, so tidy the seam.
+  let tidy = answer.replace(/\s{2,}/g, " ").trim();
+
+  /*
+   * ONE LINK PER MESSAGE.
+   *
+   * move() can now emit the funnel while a topic answer appends its own URL,
+   * which produced two addresses jammed together at the end of one reply — and
+   * the widget renders a card for exactly one of them, so the card matched
+   * neither sentence.
+   *
+   * The funnel wins: it is the conversion path, and the topic detail is
+   * reachable from it anyway. Drop the other link and the clause that pointed
+   * at it, so nothing promises something "below" that is no longer there.
+   */
+  const LINK_G = /(?:https?:\/\/)?(?:www\.)?(?:omnileadsagi\.com|utahmainstreet\.com)\/[^\s]+/g;
+  const found = tidy.match(LINK_G) ?? [];
+  if (found.length > 1) {
+    const keep = found.find((l) => l.includes("free-consultation/signup")) ?? found[found.length - 1];
+    for (const l of found) {
+      if (l === keep) continue;
+      tidy = tidy.split(l).join("");
+    }
+    tidy = tidy
+      .replace(/\s*Full details below\.\s*/i, " ")
+      .replace(/,?\s*linked below\b/i, "")
+      .replace(/\s*Details below\.\s*/i, " ")
+      .replace(/\s{2,}/g, " ")
+      .trim();
+    // Make sure the survivor is terminal, so the widget can lift it cleanly.
+    if (!tidy.endsWith(keep)) {
+      tidy = `${tidy.split(keep).join("").replace(/\s{2,}/g, " ").trim()} ${keep}`;
+    }
+  }
 
   const saidExactly = new Set(said.map((x) => x.trim()));
   if (!saidExactly.has(tidy)) return tidy;
