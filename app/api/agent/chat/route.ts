@@ -246,16 +246,18 @@ const ASKED_NAME = /who am i speaking with|who am i talking to|what'?s your name
  */
 const ASKED_CALL = /free 30-minute call/i;
 const ASKED_EMAIL = /(best email|drop your email|what email should|leave (an|your) email|what'?s your email)/i;
+const ASKED_FUNNEL = /(free consultation|book\/free-consultation)/i;
 const ASKED_PHONE = /(best number|phone number|number to reach|good number|number for you)/i;
 const ASKED_FORK = /which (of those|is the actual problem)/i;
 const ASKED_STORY = /what'?s the story/i;
 const ASKED_PASSON =
   /anything (you want passed on|you'?d like me to pass on|to pass on|you want them to know|else you want)/i;
 
-type LastAsk = "call" | "name" | "email" | "phone" | "fork" | "story" | "passon" | null;
+type LastAsk = "funnel" | "call" | "name" | "email" | "phone" | "fork" | "story" | "passon" | null;
 
 function classifyAsk(prev: string): LastAsk {
   if (!prev) return null;
+  if (ASKED_FUNNEL.test(prev)) return "funnel";
   if (ASKED_CALL.test(prev)) return "call";
   if (ASKED_NAME.test(prev)) return "name";
   if (ASKED_EMAIL.test(prev)) return "email";
@@ -315,6 +317,7 @@ function fallbackReply(
     prevAssistant?: string;
     nameDeclined?: boolean;
     phoneDeclined?: boolean;
+    funnelDeclined?: boolean;
   } = {},
 ): string {
   /*
@@ -355,6 +358,7 @@ function fallbackReply(
 
   const BEST = "utahmainstreet.com/utahs-best";
   const CALL = "omnileadsagi.com/book-now";
+  const FUNNEL = "utahmainstreet.com/book/free-consultation/signup";
 
   /*
    * THE CAPTURE LADDER — name, then email, then phone.
@@ -373,6 +377,24 @@ function fallbackReply(
   const countAsks = (re: RegExp) => said.filter((x) => re.test(x)).length;
 
   function move(): string {
+    /*
+     * LINK FIRST, THEN COLLECT, THEN LINK AGAIN.
+     *
+     * The consultation funnel goes out before any detail is requested. Asking a
+     * reader for three fields before showing them what they are for is the order
+     * that loses people; leading with the offer lets whoever is ready simply go,
+     * and only the ones who stay get asked anything.
+     *
+     * If they don't take it, gather what is missing — and because the signup
+     * page prefills from the same signed cookie this chat writes to, everything
+     * collected here lands in that form already filled in. Then the link goes
+     * out a second time, which is the entire point of having collected it.
+     */
+    const funnelOffers = countAsks(ASKED_FUNNEL);
+    if (funnelOffers === 0) {
+      return `Quickest way in is the free consultation — a person looks at what you have already got and tells you the one thing worth changing. Click below. ${FUNNEL}`;
+    }
+
     if (!hasName && !opts.nameDeclined && countAsks(ASKED_NAME) < 2) {
       const asks = [
         "Before anything else — who am I speaking with?",
@@ -398,11 +420,20 @@ function fallbackReply(
       ];
       return asks[turn % asks.length];
     }
+    /*
+     * Everything has been given or refused. Send the funnel a second time —
+     * now with the form prefilled from whatever was just collected.
+     */
+    if (funnelOffers < 2) {
+      return hasName || hasEmail || hasPhone
+        ? `That's everything I need. Here's the consultation again — your details are already filled in. ${FUNNEL}`
+        : `The consultation is there whenever you want it. ${FUNNEL}`;
+    }
+
     if (countAsks(ASKED_CALL) >= 2 || opts.callDeclined || opts.callAccepted) return "";
-    // Named, not "the link". A reply can already be showing a card for the
-    // Network page while this offers the booking page — two destinations, and
-    // a bare "the link" makes the reader guess which one they'd be getting.
-    return `The next step would be the free 30-minute call — no pitch, no card. Want the booking link?`;
+    // Named, not "the link" — two destinations exist and a bare "the link"
+    // makes the reader guess which one a yes would get them.
+    return `There's also a free 30-minute call with Omni AI if that suits better — no pitch, no card. Want the booking link?`;
   }
 
   const answer = ((): string => {
@@ -431,6 +462,17 @@ function fallbackReply(
      * read in the context of what was asked immediately before it.
      */
     if (opts.lastAsk && (opts.yes || opts.no)) {
+      if (opts.lastAsk === "funnel") {
+        if (opts.yes) {
+          return `It's the card just above — name, email and number, then a person picks it up. ${FUNNEL}`;
+        }
+        // Declined the funnel. This is exactly when to collect, so the link can
+        // go back out later with the form already filled in.
+        const next = move();
+        return next
+          ? `No problem. ${next}`
+          : `No problem — it's there if you change your mind.`;
+      }
       if (opts.lastAsk === "call") {
         if (opts.yes) {
           return `Click below to pick a slot — any time that suits you, and a person will be on the other end. Anything you want them to know beforehand? ${CALL}`;
@@ -810,6 +852,7 @@ export async function POST(req: NextRequest) {
   let emailDeclined = false;
   let phoneDeclined = false;
   let nameDeclined = false;
+  let funnelDeclined = false;
   // The booking link has already been handed over in this conversation.
   // Detect the handover by the URL itself. Matching a sentence broke the
   // moment that copy was reworded, which silently re-armed the call offer.
@@ -822,6 +865,7 @@ export async function POST(req: NextRequest) {
     if (ASKED_EMAIL.test(a.content)) emailDeclined = true;
     if (ASKED_PHONE.test(a.content)) phoneDeclined = true;
     if (ASKED_NAME.test(a.content)) nameDeclined = true;
+    if (ASKED_FUNNEL.test(a.content)) funnelDeclined = true;
   }
 
   // No provider configured at all -> straight to the rule-based desk.
@@ -847,6 +891,7 @@ export async function POST(req: NextRequest) {
           prevAssistant,
           nameDeclined,
           phoneDeclined,
+          funnelDeclined,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
@@ -901,6 +946,7 @@ export async function POST(req: NextRequest) {
           prevAssistant,
           nameDeclined,
           phoneDeclined,
+          funnelDeclined,
         }),
         capture: inferredName ? { name: inferredName } : undefined,
         degraded: true,
