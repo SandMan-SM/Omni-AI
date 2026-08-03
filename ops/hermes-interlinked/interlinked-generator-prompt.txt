@@ -1,0 +1,101 @@
+Generate today's complete Omni AI Interlinked editorial bundle for a deterministic host publisher. Do not publish, deploy, run Git, write the database, send Telegram, send email, use terminal, or use execute_code. Determine today's America/Denver date from scheduler context.
+
+This is the same reliability split used by Utah Main Street: you do the creative and research work, then a separate host publisher validates and performs every mutation with real exit codes.
+
+Research one fresh, useful AI/business operating signal from current credible sources. Open the underlying sources, not only search snippets. Use 3-6 URLs from at least two independent credible domains. Never invent facts, dates, metrics, names, or quotations. The Free and Premium editions must cover the same signal from different depths and must not duplicate their subjects, intros, or recommendations.
+
+Create:
+- a substantive Free issue with a direct lede, 3-5 sourced insights, one concrete power move, and a clear closing;
+- a deeper Premium operator brief with 3-5 sourced insights, an exclusive operating insight, and a concrete AI recommendation;
+- exactly three social snippets;
+- two distinct original, professional, issue-specific, text-free images through image_generate: one Free and one Premium. No words, logos, watermarks, copied press photography, fake interface text, black filler, or generic AI imagery.
+
+Quote fields are original display lines. Each quote value must contain only the sentence itself: no “Quote:” label, attribution, nested quotation marks, or editorial note.
+
+IMPORTANT RUNTIME CONTRACT: host filesystem and terminal access may be unavailable. Do not stop for that reason. Generate the complete bundle in the final response so the deterministic host publisher can save and validate it.
+
+Your final response must contain exactly these markers and valid JSON between the JSON markers:
+
+INTERLINKED_DATE: YYYY-MM-DD
+FREE_IMAGE_PATH: exact absolute local path returned by image_generate
+PREMIUM_IMAGE_PATH: exact absolute local path returned by image_generate
+BEGIN_INTERLINKED_ROWS
+{
+  "date": "YYYY-MM-DD",
+  "sources": [
+    {"name": "source title", "url": "https://..."}
+  ],
+  "free": {
+    "slug": "interlinked-free-YYYY-MM-DD",
+    "subject": "specific headline",
+    "intro": "specific two-or-three-sentence lede",
+    "insights": ["substantive sourced paragraph", "substantive sourced paragraph", "substantive sourced paragraph"],
+    "power_move": "one concrete action",
+    "closing": "specific close",
+    "quote": "original display sentence only",
+    "offer": "Build the private AI CEO operating loop at https://omnileadsagi.com/interlinked",
+    "keywords": ["keyword", "keyword", "keyword"],
+    "tier": "free",
+    "status": "published"
+  },
+  "premium": {
+    "slug": "interlinked-premium-YYYY-MM-DD",
+    "subject": "different specific headline",
+    "intro": "different specific lede",
+    "insights": ["deeper sourced paragraph", "deeper sourced paragraph", "deeper sourced paragraph"],
+    "power_move": "deeper operating action",
+    "closing": "specific premium close",
+    "quote": "original display sentence only",
+    "offer": "Build the private AI CEO operating loop at https://omnileadsagi.com/interlinked",
+    "keywords": ["keyword", "keyword", "keyword"],
+    "tier": "premium",
+    "day_type": "insight",
+    "exclusive_insight": "specific operator-only insight",
+    "ai_recommendation": "specific implementation recommendation",
+    "status": "published"
+  }
+}
+END_INTERLINKED_ROWS
+BEGIN_INTERLINKED_ARTIFACT
+---
+title: "Omni AI Interlinked — YYYY-MM-DD"
+date: "YYYY-MM-DD"
+brand: "Omni AI"
+newsletter: "Interlinked"
+hero_image: "https://omnileadsagi.com/newsletter/generated/interlinked-free-YYYY-MM-DD.jpg"
+share_image: "https://omnileadsagi.com/newsletter/generated/interlinked-premium-YYYY-MM-DD-share.jpg"
+status: "publication-ready"
+---
+
+## Subject Line
+<Free subject>
+
+## Preview
+<specific preview>
+
+## Source Status
+<fresh-source summary and 3-6 source links>
+
+## Free Issue Body
+<complete Free edition>
+
+## Premium Issue
+<complete Premium operator brief of at least 180 words>
+
+## Social Snippets
+1. <snippet>
+2. <snippet>
+3. <snippet>
+
+## Keywords
+<keywords>
+
+## CTA
+Build the private AI CEO operating loop: https://omnileadsagi.com/interlinked
+
+## Send-Readiness
+Publication-ready draft with issue-specific media paths. Not sent; the host publisher must validate, deploy, write the database, verify live routes, post Telegram, and record provider receipts.
+END_INTERLINKED_ARTIFACT
+VERIFIED
+
+VERIFIED means only that you checked factual claims against the listed sources and created two distinct issue-specific images. Never claim the issue is live, posted, deployed, emailed, or database-published.
