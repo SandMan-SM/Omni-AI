@@ -140,6 +140,7 @@ export type LeadIn = {
 export type LeadRecord = {
   id: string;
   notified: boolean;
+  ownerMessageId: string | null;
 };
 
 /**
@@ -168,7 +169,13 @@ export async function recordLeadAndReturn(l: LeadIn): Promise<LeadRecord | null>
          page_url = EXCLUDED.page_url,
          props = EXCLUDED.props || analytics.leads.props,
          ts = now()
-       RETURNING id::text AS id, notified`,
+       RETURNING
+         id::text AS id,
+         notified,
+         nullif(
+           props #>> '{owner_notification,provider_id}',
+           ''
+         ) AS "ownerMessageId"`,
       [l.slug, l.name ?? null, l.email ?? null, l.phone ?? null, l.message ?? null,
        l.source ?? "contact_form", l.page_url ?? null, l.dedup_key ?? null, JSON.stringify(l.props ?? {})],
     ),
