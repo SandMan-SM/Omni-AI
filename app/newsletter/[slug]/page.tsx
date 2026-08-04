@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowUpRight } from "lucide-react";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { JsonLd, newsArticleSchema, breadcrumbSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -11,7 +12,6 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // path back into the site (FAQ, About, Campaigns, Newsletter index).
 import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
-import { NewsletterBookingWidget } from "@/components/newsletter/NewsletterBookingWidget";
 import { NewsletterStarCredit } from "@/components/newsletter/NewsletterStarCredit";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
@@ -616,27 +616,85 @@ export default async function NewsletterPostPage({ params }: Props) {
             the actual subject and pushes conversion to the partner. */}
         {shoutout && <FeaturedBusinessCard shoutout={shoutout} />}
 
-        {/* CTA — inline 1:1 scheduler tied to the current article. */}
+        {/* CTA — reward completion, then guide readers into the Meta AI
+            Advertising service funnel. */}
         {!shoutout && (
-          <div className="mb-10 rounded-2xl border border-amber-500/30 bg-gradient-to-r from-amber-500/[0.10] via-white/[0.035] to-sky-500/[0.08] px-5 py-6 text-center backdrop-blur-sm sm:px-7 sm:py-7">
-            <div className="mb-5">
-              <NewsletterStarCredit
-                newsletterSlug={post.slug}
-                newsletterTitle={post.subject}
-                compact
-              />
-            </div>
+          <div className="relative mb-10 overflow-hidden rounded-[1.75rem] border border-amber-300/25 bg-[#09090d] shadow-[0_24px_90px_rgba(0,0,0,0.45),0_0_45px_rgba(245,158,11,0.07)]">
             <div
-              className="mb-6 flex items-center gap-3"
-              aria-label="or"
-            >
-              <span className="h-px flex-1 bg-gradient-to-r from-transparent to-amber-300/35" />
-              <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-amber-200/70">
-                Or
-              </span>
-              <span className="h-px flex-1 bg-gradient-to-l from-transparent to-amber-300/35" />
+              aria-hidden
+              className="pointer-events-none absolute -left-24 -top-32 h-80 w-80 rounded-full bg-amber-400/[0.10] blur-3xl"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -bottom-40 right-0 h-96 w-96 rounded-full bg-blue-500/[0.09] blur-3xl"
+            />
+
+            <div className="relative grid lg:grid-cols-[minmax(0,1.3fr)_minmax(280px,0.7fr)]">
+              <div className="px-5 py-7 sm:px-8 sm:py-9 lg:px-10 lg:py-10">
+                <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.28em] text-amber-200/75">
+                  <span className="h-1.5 w-1.5 rounded-full bg-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.8)]" />
+                  Issue complete
+                </div>
+                <h2 className="mt-4 max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                  You showed up. Bank the reward.
+                </h2>
+                <p className="mt-3 max-w-2xl text-base leading-7 text-white/60">
+                  Mark this issue read and collect 5 Omni Stars. Keep showing
+                  up—your balance will unlock rewards in the upcoming Omni
+                  Rewards Shop.
+                </p>
+
+                <div className="mt-6 grid grid-cols-3 gap-2" aria-label="How Omni Stars work">
+                  {[
+                    ["01", "Read"],
+                    ["02", "Earn stars"],
+                    ["03", "Redeem"],
+                  ].map(([step, label]) => (
+                    <div
+                      key={step}
+                      className="rounded-xl border border-white/[0.08] bg-white/[0.035] px-3 py-3"
+                    >
+                      <span className="block text-[9px] font-bold tracking-[0.2em] text-amber-300/65">
+                        {step}
+                      </span>
+                      <span className="mt-1 block text-xs font-semibold text-white/75 sm:text-sm">
+                        {label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-7">
+                  <NewsletterStarCredit
+                    newsletterSlug={post.slug}
+                    newsletterTitle={post.subject}
+                    compact
+                  />
+                </div>
+              </div>
+
+              <aside className="relative flex flex-col justify-between border-t border-white/[0.08] bg-white/[0.025] px-5 py-7 sm:px-8 sm:py-9 lg:border-l lg:border-t-0 lg:px-8 lg:py-10">
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.26em] text-purple-200/70">
+                    Put the insight to work
+                  </p>
+                  <h3 className="mt-4 text-2xl font-semibold tracking-tight text-white">
+                    Ready to turn attention into customers?
+                  </h3>
+                  <p className="mt-3 text-sm leading-6 text-white/55">
+                    Explore Meta AI advertising systems built to attract,
+                    convert, and follow up with qualified prospects.
+                  </p>
+                </div>
+                <Link
+                  href="/service/meta-ai-advertising"
+                  className="mt-7 inline-flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-purple-300/25 bg-gradient-to-r from-purple-500/20 to-blue-500/20 px-5 text-sm font-semibold text-white transition hover:border-purple-200/45 hover:from-purple-500/30 hover:to-blue-500/30 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-300"
+                >
+                  View Our Services
+                  <ArrowUpRight className="h-4 w-4" aria-hidden />
+                </Link>
+              </aside>
             </div>
-            <NewsletterBookingWidget articleTitle={post.subject} />
           </div>
         )}
 

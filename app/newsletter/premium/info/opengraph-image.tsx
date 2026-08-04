@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 
 export const runtime = "edge";
-export const alt = "Interlinked Premium — Agentic AI Strategies & Automation Playbooks";
+export const alt = "Interlinked Premium is free for a limited time";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -88,14 +88,14 @@ export default async function Image() {
             marginBottom: "36px",
           }}
         >
-          Agentic AI strategies that compound your advantage — every week
+          Free premium access for a limited time
         </div>
 
         {/* Pills */}
         <div style={{ display: "flex", gap: "12px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#eab308", display: "flex" }} />
-            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Mon/Wed/Fri</span>
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Current Intelligence</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#a855f7", display: "flex" }} />
@@ -103,11 +103,11 @@ export default async function Image() {
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#818cf8", display: "flex" }} />
-            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Automation</span>
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>3x Weekly</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", padding: "10px 20px", borderRadius: "8px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
             <div style={{ width: "6px", height: "6px", borderRadius: "3px", background: "#60a5fa", display: "flex" }} />
-            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Intelligence</span>
+            <span style={{ color: "#d1d5db", fontSize: "15px", fontWeight: 500 }}>Clear Recommendations</span>
           </div>
         </div>
 

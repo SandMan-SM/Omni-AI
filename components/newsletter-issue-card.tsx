@@ -71,7 +71,7 @@ export function NewsletterIssueCard({
         />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.34)_0%,rgba(0,0,0,0.54)_46%,rgba(0,0,0,0.92)_100%)]" />
         <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-amber-300 via-yellow-500 to-amber-700" />
-        <div className="relative flex h-full min-h-0 min-w-0 flex-col justify-between overflow-hidden p-5">
+        <div className="relative flex h-full min-h-0 min-w-0 flex-col overflow-hidden p-5">
           <div className="flex min-w-0 flex-wrap items-start justify-between gap-3">
             <span className="max-w-[70%] shrink truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-300">
               {tierLabel}
@@ -79,14 +79,14 @@ export function NewsletterIssueCard({
             <span className="shrink-0 whitespace-nowrap text-xs text-gray-400">{date}</span>
           </div>
 
-          <div className="min-h-0 min-w-0 max-w-full overflow-hidden">
-            <h3 className="line-clamp-3 max-w-full whitespace-normal break-words text-[1.35rem] font-bold leading-tight text-amber-300 transition-colors group-hover:text-amber-200">
+          <div className="mt-auto flex h-[60%] min-h-0 min-w-0 max-w-full flex-col overflow-hidden">
+            <h3 className="line-clamp-3 min-h-[5.1rem] max-w-full whitespace-normal break-words text-[1.35rem] font-bold leading-tight text-amber-300 transition-colors group-hover:text-amber-200">
               {post.subject}
             </h3>
-            <p className="mt-3 line-clamp-4 max-w-full break-words text-sm leading-relaxed text-gray-300">
+            <p className="mt-2 line-clamp-3 max-w-full break-words text-sm leading-relaxed text-gray-300">
               {post.intro}
             </p>
-            <div className="mt-4 flex max-w-full flex-wrap gap-2 overflow-hidden">
+            <div className="mt-auto flex max-w-full flex-wrap gap-2 overflow-hidden pt-3">
               {/* Keep the tag row identical for premium and free cards.
                   The lock state only changes the destination URL; it must not
                   add a transient “Preview” pill or alter card formatting when

@@ -23,13 +23,13 @@ def valid_rows(day: str = "2026-08-02") -> dict:
     base = {
         "subject": "A specific operating shift worth acting on now",
         "intro": (
-            "A current signal is changing how operators should structure their "
-            "AI workflows. The evidence points to a concrete control point."
+            "A current agentic AI signal is changing how operators should structure "
+            "their autonomous workflows. The evidence points to a concrete control point."
         ),
         "insights": [
-            "The first source documents a material operating change with enough detail for a responsible decision.",
-            "The second source independently confirms the direction and adds a useful implementation constraint.",
-            "The combined evidence suggests a measured rollout with one deterministic verification gate.",
+            "The first source documents a material change in AI agent orchestration with enough detail for a responsible decision.",
+            "The second source independently confirms the agentic direction and adds a useful implementation constraint.",
+            "The combined evidence suggests a measured workflow-agent rollout with one deterministic verification gate.",
         ],
         "power_move": "Select one workflow and add a deterministic verification gate before Friday.",
         "closing": "The durable advantage comes from proving completed outcomes rather than counting automated actions.",
@@ -57,12 +57,47 @@ def valid_rows(day: str = "2026-08-02") -> dict:
             "Create the control record this week, run it against one live workflow, "
             "and pause the workflow when the verification result is missing."
         ),
+        "agentic_relevance": (
+            "This signal changes how operators deploy AI agents with tool calling, "
+            "bounded autonomy, and accountable orchestration in production workflows."
+        ),
+        "original_thesis": (
+            "The durable advantage is not another agent interface but a control record "
+            "that makes every autonomous action attributable, bounded, and reversible."
+        ),
+        "originality_note": (
+            "This brief synthesizes the dated sources into an original operator framework "
+            "and does not reproduce source sentences, quotations, or editorial framing."
+        ),
     }
     return {
         "date": day,
+        "trend_evidence": (
+            "A primary product release and independent reporting published this week "
+            "show the same agent-control shift moving from demos into production operations."
+        ),
         "sources": [
-            {"name": "Source A", "url": "https://example.net/report"},
-            {"name": "Source B", "url": "https://example.org/analysis"},
+            {
+                "name": "Source A",
+                "url": "https://example.net/report",
+                "published_at": day,
+                "kind": "primary",
+                "supports": "Documents the dated product release and its agent control changes.",
+            },
+            {
+                "name": "Source B",
+                "url": "https://example.org/analysis",
+                "published_at": day,
+                "kind": "independent",
+                "supports": "Independently analyzes production adoption and operator constraints.",
+            },
+            {
+                "name": "Source C",
+                "url": "https://example.com/context",
+                "published_at": day,
+                "kind": "primary",
+                "supports": "Provides technical documentation for the implementation details discussed.",
+            },
         ],
         "free": free,
         "premium": premium,
@@ -82,6 +117,43 @@ class PipelineTests(unittest.TestCase):
     def test_same_source_domain_fails(self) -> None:
         payload = valid_rows()
         payload["sources"][1]["url"] = "https://example.net/other"
+        payload["sources"][2]["url"] = "https://example.net/context"
+        with self.assertRaises(release.InterlinkedError):
+            release.validate_rows(payload, "2026-08-02")
+
+    def test_stale_trend_sources_fail(self) -> None:
+        payload = valid_rows()
+        for source in payload["sources"]:
+            source["published_at"] = "2026-07-01"
+        with self.assertRaises(release.InterlinkedError):
+            release.validate_rows(payload, "2026-08-02")
+
+    def test_sources_require_primary_and_independent_reporting(self) -> None:
+        payload = valid_rows()
+        for source in payload["sources"]:
+            source["kind"] = "independent"
+        with self.assertRaises(release.InterlinkedError):
+            release.validate_rows(payload, "2026-08-02")
+
+    def test_non_agentic_premium_topic_fails(self) -> None:
+        payload = valid_rows()
+        premium = payload["premium"]
+        premium["subject"] = "The management practice changing quarterly planning"
+        premium["intro"] = "A current business signal is changing how leaders structure quarterly planning and reporting. The evidence points to a practical management decision."
+        premium["insights"] = [
+            "The first report documents a change in management practice with enough detail for a responsible decision.",
+            "The second report independently confirms the direction and adds an implementation constraint for leaders.",
+            "The combined evidence suggests a measured rollout with one deterministic review gate for managers.",
+        ]
+        premium["agentic_relevance"] = "This business planning topic offers general management context but does not materially change current technology operations or production systems."
+        with self.assertRaises(release.InterlinkedError):
+            release.validate_rows(payload, "2026-08-02")
+
+    def test_copyright_led_premium_subject_fails(self) -> None:
+        payload = valid_rows()
+        payload["premium"]["subject"] = (
+            "The copyright lawsuit changing agentic AI licensing"
+        )
         with self.assertRaises(release.InterlinkedError):
             release.validate_rows(payload, "2026-08-02")
 

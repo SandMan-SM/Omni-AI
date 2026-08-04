@@ -63,6 +63,7 @@ export async function POST(request: Request) {
     );
   }
   const rawEmail = emailInput.toLowerCase();
+  const isLimitedPremiumOffer = body.offer === "premium-limited-time";
 
   const admin = createAdminClient();
 
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
   // the UI "welcome back" vs "thanks for subscribing".
   const { data: existing } = await admin
     .from("newsletter_subscriptions")
-    .select("id, subscribed")
+    .select("id, subscribed, subscription_tier")
     .eq("email", rawEmail)
     .maybeSingle();
 
@@ -82,10 +83,16 @@ export async function POST(request: Request) {
       {
         email: rawEmail,
         subscribed: true,
-        // Only flip tier back to the default if they were previously
-        // unsubscribed — don't clobber a paid 'premium' tier on an
-        // already-active row.
-        ...(wasReactivation ? { subscription_tier: "subscribed" } : {}),
+        // The limited-time Premium landing page intentionally grants the
+        // premium newsletter tier without checkout. All other public forms
+        // preserve an existing premium tier and cannot self-promote.
+        ...(isLimitedPremiumOffer
+          ? { subscription_tier: "premium" }
+          : existing?.subscription_tier === "premium"
+            ? { subscription_tier: "premium" }
+            : wasReactivation
+              ? { subscription_tier: "subscribed" }
+              : {}),
       },
       { onConflict: "email" },
     )
@@ -112,7 +119,9 @@ export async function POST(request: Request) {
         body: JSON.stringify({
           site: 'omni',
           email: rawEmail,
-          source: 'omnileadsagi.com/newsletter',
+          source: isLimitedPremiumOffer
+            ? 'newsletter-premium-info'
+            : 'omnileadsagi.com/newsletter',
           send_welcome: false,
         }),
         signal: AbortSignal.timeout(8000),
@@ -158,6 +167,7 @@ export async function POST(request: Request) {
       id: data?.id,
       email: data?.email,
       reactivated: wasReactivation,
+      premium: isLimitedPremiumOffer || data?.subscription_tier === "premium",
     },
     { status: wasReactivation ? 200 : 201 },
   );

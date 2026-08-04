@@ -2,11 +2,31 @@ Generate today's complete Omni AI Interlinked editorial bundle for a determinist
 
 This is the same reliability split used by Utah Main Street: you do the creative and research work, then a separate host publisher validates and performs every mutation with real exit codes.
 
-Research one fresh, useful AI/business operating signal from current credible sources. Open the underlying sources, not only search snippets. Use 3-6 URLs from at least two independent credible domains. Never invent facts, dates, metrics, names, or quotations. The Free and Premium editions must cover the same signal from different depths and must not duplicate their subjects, intros, or recommendations.
+Research one genuinely current trend in the agentic AI industry. The Premium edition must be about what is changing now in AI agents, agent runtimes, orchestration, tool use, MCP, computer use, multi-agent systems, agent security, evaluations, memory, governance, or production deployment. Do not settle for a generic AI/business lesson, an evergreen explainer, or a broad automation opinion.
+
+FRESHNESS AND TREND GATE:
+- Open the underlying sources, not only search snippets.
+- Use 3-6 URLs from at least two credible domains.
+- Include at least one primary source such as official release notes, documentation, a research paper, a standards body, a company engineering post, or a first-party benchmark.
+- Include at least one independent source that adds reporting, testing, criticism, or market context.
+- At least two sources must have been published in the previous 14 calendar days, and at least one must be from the previous 7 calendar days. Record the exact YYYY-MM-DD publication date for every source.
+- Explain why the signal is moving now using at least two dated source events. Popularity alone is not trend evidence.
+- Before selecting the topic, inspect recent Interlinked issues available on omnileadsagi.com/newsletter and reject a topic that repeats the same core thesis, framework, or recommendation.
+
+Do not make copyright, licensing, training-data lawsuits, intellectual property disputes, celebrity use, or general AI regulation the Premium headline or central thesis. A legal development may be supporting context only when it directly changes how production agents are designed, secured, evaluated, or operated.
+
+ORIGINALITY AND COPYRIGHT SAFETY:
+- Synthesize the sources into an original Omni AI operator thesis. Do not paraphrase one article section-by-section.
+- Use no direct quotations and reproduce no source sentence, headline structure, proprietary framework, or distinctive phrasing.
+- Do not use more than 12 consecutive words from any source.
+- Separate sourced facts from Omni AI analysis. The Premium edition must add an original decision framework, implementation consequence, or operating model that is not stated by any single source.
+- Never invent facts, dates, metrics, names, or quotations.
+
+The Free and Premium editions must cover the same current agentic signal from different depths and must not duplicate their subjects, intros, or recommendations.
 
 Create:
 - a substantive Free issue with a direct lede, 3-5 sourced insights, one concrete power move, and a clear closing;
-- a deeper Premium operator brief with 3-5 sourced insights, an exclusive operating insight, and a concrete AI recommendation;
+- a deeper Premium operator brief with 3-5 sourced insights, a clear explanation of the signal's agentic relevance, an original operator thesis, an exclusive operating insight, and a concrete implementation recommendation;
 - exactly three social snippets;
 - two distinct original, professional, issue-specific, text-free images through image_generate: one Free and one Premium. No words, logos, watermarks, copied press photography, fake interface text, black filler, or generic AI imagery.
 
@@ -22,8 +42,15 @@ PREMIUM_IMAGE_PATH: exact absolute local path returned by image_generate
 BEGIN_INTERLINKED_ROWS
 {
   "date": "YYYY-MM-DD",
+  "trend_evidence": "why this agentic topic is moving now, tied to at least two dated source events",
   "sources": [
-    {"name": "source title", "url": "https://..."}
+    {
+      "name": "source title",
+      "url": "https://...",
+      "published_at": "YYYY-MM-DD",
+      "kind": "primary or independent",
+      "supports": "the specific factual claim this source supports"
+    }
   ],
   "free": {
     "slug": "interlinked-free-YYYY-MM-DD",
@@ -50,6 +77,9 @@ BEGIN_INTERLINKED_ROWS
     "keywords": ["keyword", "keyword", "keyword"],
     "tier": "premium",
     "day_type": "insight",
+    "agentic_relevance": "how this signal changes the design, deployment, security, evaluation, or operation of AI agents",
+    "original_thesis": "Omni AI's original operator thesis that is not stated by any single source",
+    "originality_note": "how the brief synthesizes sources without copying their sentences, framing, or proprietary frameworks",
     "exclusive_insight": "specific operator-only insight",
     "ai_recommendation": "specific implementation recommendation",
     "status": "published"
@@ -74,7 +104,7 @@ status: "publication-ready"
 <specific preview>
 
 ## Source Status
-<fresh-source summary and 3-6 source links>
+<freshness summary, trend evidence, exact publication dates, source roles, and 3-6 source links>
 
 ## Free Issue Body
 <complete Free edition>
@@ -98,4 +128,4 @@ Publication-ready draft with issue-specific media paths. Not sent; the host publ
 END_INTERLINKED_ARTIFACT
 VERIFIED
 
-VERIFIED means only that you checked factual claims against the listed sources and created two distinct issue-specific images. Never claim the issue is live, posted, deployed, emailed, or database-published.
+VERIFIED means only that you opened and checked the listed sources, confirmed the freshness and agentic-topic gates, checked the Premium brief for original synthesis and non-copying, and created two distinct issue-specific images. Never claim the issue is live, posted, deployed, emailed, or database-published.

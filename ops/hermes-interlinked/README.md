@@ -6,7 +6,10 @@ leaving every Utah Main Street job and file untouched.
 ## Jobs
 
 1. **07:10 — creative generator**
-   - researches a fresh issue;
+   - researches a current agentic-industry trend with dated primary and
+     independent sources;
+   - rejects stale, evergreen, repeated, copyright-led, and derivative Premium
+     topics;
    - creates Free and Premium copy plus two original images;
    - emits a strict response bundle;
    - performs no Git, deploy, database, Telegram, or email mutations.
@@ -36,6 +39,10 @@ leaving every Utah Main Street job and file untouched.
 ## Safety and recovery
 
 - Every mutation job is idempotent.
+- The publisher fails closed unless the bundle contains 3-6 sources, primary
+  and independent coverage, two sources from the previous 14 days, one from
+  the previous 7 days, explicit trend evidence, and a Premium thesis specific
+  to the agentic AI industry.
 - Draft rows created by the Vercel fallback remain hidden until the deterministic
   publisher replaces their content and sets `status=published`.
 - Assets deploy before database publication, so missing images never become

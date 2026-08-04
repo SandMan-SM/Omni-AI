@@ -70,6 +70,29 @@ REQUIRED_ROW_FIELDS = (
     "tier",
 )
 BANNED_TEXT = ("tbd", "todo", "lorem ipsum", "as an ai", "i cannot browse")
+AGENTIC_TERMS = (
+    "agentic",
+    "ai agent",
+    "agents",
+    "multi-agent",
+    "tool calling",
+    "mcp",
+    "model context protocol",
+    "computer use",
+    "orchestration",
+    "agent runtime",
+    "agent evaluation",
+    "agent security",
+    "agent memory",
+    "autonomous workflow",
+    "workflow agent",
+    "ai gateway",
+    "agent framework",
+    "agent governance",
+)
+COPYRIGHT_LED_SUBJECT = re.compile(
+    r"(?i)\b(?:copyright|licensing|training[- ]data lawsuit|intellectual property)\b"
+)
 
 
 def response_section(text: str) -> str:
@@ -167,9 +190,12 @@ def validate_rows(payload: dict[str, Any], day: str) -> None:
     if payload.get("date") != day:
         raise InterlinkedError("rows JSON date does not match the scheduled day")
     sources = payload.get("sources")
-    if not isinstance(sources, list) or not 2 <= len(sources) <= 8:
-        raise InterlinkedError("rows JSON must contain 2-8 sources")
+    if not isinstance(sources, list) or not 3 <= len(sources) <= 6:
+        raise InterlinkedError("rows JSON must contain 3-6 sources")
+    issue_date = datetime.strptime(day, "%Y-%m-%d").date()
     hosts: set[str] = set()
+    source_kinds: set[str] = set()
+    source_ages: list[int] = []
     for source in sources:
         if not isinstance(source, dict):
             raise InterlinkedError("every source must be an object")
@@ -177,8 +203,41 @@ def validate_rows(payload: dict[str, Any], day: str) -> None:
         if not re.match(r"^https://[^/\s]+/.+", url):
             raise InterlinkedError(f"invalid source URL: {url or '<empty>'}")
         hosts.add(re.sub(r"^www\.", "", re.match(r"^https://([^/]+)", url).group(1)))
+        kind = clean_text(source.get("kind")).lower()
+        if kind not in {"primary", "independent"}:
+            raise InterlinkedError(
+                "every source kind must be primary or independent"
+            )
+        source_kinds.add(kind)
+        published_at = clean_text(source.get("published_at"))
+        try:
+            published_date = datetime.strptime(published_at, "%Y-%m-%d").date()
+        except ValueError as exc:
+            raise InterlinkedError(
+                f"invalid source published_at date: {published_at or '<empty>'}"
+            ) from exc
+        age_days = (issue_date - published_date).days
+        if age_days < 0:
+            raise InterlinkedError("source published_at cannot be in the future")
+        source_ages.append(age_days)
+        if len(clean_text(source.get("supports")).split()) < 7:
+            raise InterlinkedError("every source must state what claim it supports")
     if len(hosts) < 2:
         raise InterlinkedError("sources must include at least two independent domains")
+    if source_kinds != {"primary", "independent"}:
+        raise InterlinkedError(
+            "sources must include both primary and independent reporting"
+        )
+    if sum(age <= 14 for age in source_ages) < 2 or not any(
+        age <= 7 for age in source_ages
+    ):
+        raise InterlinkedError(
+            "trend gate failed: require two sources from the last 14 days, including one from the last 7 days"
+        )
+    if len(clean_text(payload.get("trend_evidence")).split()) < 20:
+        raise InterlinkedError(
+            "trend_evidence must explain why the agentic topic is moving now"
+        )
 
     subjects: list[str] = []
     intros: list[str] = []
@@ -242,9 +301,25 @@ def validate_rows(payload: dict[str, Any], day: str) -> None:
     if intros[0].lower() == intros[1].lower():
         raise InterlinkedError("Free and Premium intros must be distinct")
     premium = payload["premium"]
-    for field in ("exclusive_insight", "ai_recommendation"):
+    for field in (
+        "exclusive_insight",
+        "ai_recommendation",
+        "agentic_relevance",
+        "original_thesis",
+        "originality_note",
+    ):
         if len(clean_text(premium.get(field)).split()) < 15:
             raise InterlinkedError(f"premium {field} is too thin")
+    premium_text = json.dumps(premium, ensure_ascii=False).lower()
+    matched_agentic_terms = {term for term in AGENTIC_TERMS if term in premium_text}
+    if len(matched_agentic_terms) < 2:
+        raise InterlinkedError(
+            "premium topic is not specific enough to the agentic AI industry"
+        )
+    if COPYRIGHT_LED_SUBJECT.search(clean_text(premium.get("subject"))):
+        raise InterlinkedError(
+            "premium subject cannot be led by copyright or licensing coverage"
+        )
 
 
 def validate_image_sources(free_image: Path, premium_image: Path) -> None:

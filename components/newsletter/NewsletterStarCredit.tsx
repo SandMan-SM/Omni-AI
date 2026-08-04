@@ -129,12 +129,12 @@ export function NewsletterStarCredit({
 
       setStatus(data);
       toast({
-        title: data.alreadyClaimed ? "Already claimed" : "+5 Omni credits",
+        title: data.alreadyClaimed ? "Already claimed" : "+5 Omni Stars",
         description:
           data.message ||
           (data.alreadyClaimed
-            ? "This issue is already on your Omni credit ledger."
-            : "This issue has been added to your Omni credit ledger."),
+            ? "This issue is already in your Omni Stars balance."
+            : "Your reading reward was added to your Omni Stars balance."),
       });
     } catch {
       const message = "Credit claim failed. Try again.";
@@ -154,37 +154,62 @@ export function NewsletterStarCredit({
       id="newsletter-credit"
       className={
         compact
-          ? "flex scroll-mt-24 flex-col items-center text-center"
+          ? "flex scroll-mt-24 flex-col items-stretch text-left"
           : "mt-16 flex scroll-mt-24 flex-col items-center border-t border-white/5 pt-10 text-center"
       }
       aria-label="Newsletter credit"
     >
-      <button
-        type="button"
-        onClick={claimCredit}
-        disabled={loading || isChecking || isClaiming}
-        className="group relative grid h-16 w-16 place-items-center rounded-full border border-amber-300/40 bg-black/50 text-amber-200 shadow-[0_0_24px_rgba(245,158,11,0.20)] transition hover:border-amber-200 hover:bg-amber-300/10 hover:text-amber-100 disabled:cursor-not-allowed disabled:opacity-70"
-        aria-label={
-          claimed
-            ? "Newsletter credit already claimed"
-            : "Claim five Omni credits"
-        }
-        title={claimed ? "Claimed" : "Claim +5 Omni credits"}
-        data-testid="button-newsletter-star-credit"
-      >
-        {isClaiming || isChecking ? (
-          <Loader2 className="h-7 w-7 animate-spin" />
-        ) : (
-          <Star
-            className={`h-8 w-8 transition-transform group-hover:scale-110 ${
-              claimed ? "fill-amber-300 text-amber-200" : "text-amber-200"
-            }`}
-          />
+      <div className={compact ? "flex flex-col items-center gap-4 sm:flex-row" : ""}>
+        <button
+          type="button"
+          onClick={claimCredit}
+          disabled={loading || isChecking || isClaiming}
+          className={`group relative grid shrink-0 place-items-center rounded-full border border-amber-300/40 bg-black/50 text-amber-200 transition hover:border-amber-200 hover:bg-amber-300/10 hover:text-amber-100 disabled:cursor-not-allowed disabled:opacity-70 ${
+            compact
+              ? "h-20 w-20 shadow-[0_0_30px_rgba(245,158,11,0.22)]"
+              : "h-16 w-16 shadow-[0_0_24px_rgba(245,158,11,0.20)]"
+          }`}
+          aria-label={
+            claimed
+              ? "Newsletter reward already claimed"
+              : "Claim five Omni Stars"
+          }
+          title={claimed ? "Claimed" : "Claim +5 Omni Stars"}
+          data-testid="button-newsletter-star-credit"
+        >
+          {isClaiming || isChecking ? (
+            <Loader2 className="h-8 w-8 animate-spin" />
+          ) : (
+            <Star
+              className={`h-10 w-10 transition-transform group-hover:scale-110 ${
+                claimed ? "fill-amber-300 text-amber-200" : "text-amber-200"
+              }`}
+            />
+          )}
+          <span className="absolute -right-2 -top-2 rounded-full border border-amber-200/50 bg-amber-300 px-2.5 py-1 text-[11px] font-bold text-black shadow-[0_0_14px_rgba(251,191,36,0.35)]">
+            +5
+          </span>
+        </button>
+
+        {compact && !bannerOpen && (
+          <div className="w-full flex-1 text-center sm:text-left">
+            <button
+              type="button"
+              onClick={claimCredit}
+              disabled={loading || isChecking || isClaiming}
+              className="inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 px-5 text-sm font-bold text-black shadow-[0_12px_32px_rgba(251,191,36,0.20)] transition hover:brightness-105 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-200 disabled:cursor-not-allowed disabled:opacity-70 sm:w-auto"
+              data-testid="button-newsletter-credit-mark-read"
+            >
+              {claimed
+                ? "Reward claimed · +5 Omni Stars"
+                : "Mark as read & collect 5 stars"}
+            </button>
+            <p className="mt-2 text-xs leading-5 text-white/40">
+              One reward per issue. Your stars stay saved to your Omni account.
+            </p>
+          </div>
         )}
-        <span className="absolute -right-2 -top-2 rounded-full border border-amber-200/50 bg-amber-300 px-2 py-0.5 text-[10px] font-bold text-black shadow-[0_0_14px_rgba(251,191,36,0.35)]">
-          +5
-        </span>
-      </button>
+      </div>
 
       {bannerOpen && (
         <div className="mt-6 w-full max-w-xl rounded-2xl border border-amber-300/25 bg-amber-300/[0.07] p-5 text-left shadow-[0_0_28px_rgba(245,158,11,0.10)] backdrop-blur-sm">
@@ -193,12 +218,12 @@ export function NewsletterStarCredit({
               <div className="mb-3 flex items-center gap-3">
                 <Lock className="h-5 w-5 flex-shrink-0 text-amber-200" />
                 <p className="text-sm font-semibold text-amber-100">
-                  Sign in to claim +5 Omni credits.
+                  Sign in to collect +5 Omni Stars.
                 </p>
               </div>
               <p className="text-sm leading-relaxed text-gray-300">
                 Sign in or create an account to add this newsletter issue to
-                your Omni credit ledger.
+                your Omni Stars balance.
               </p>
               <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                 <Button
@@ -231,11 +256,11 @@ export function NewsletterStarCredit({
                 <p className="text-sm font-semibold text-emerald-100">
                   {status?.alreadyClaimed
                     ? "Already claimed for this issue."
-                    : `+${creditValue} Omni credits claimed.`}
+                    : `+${creditValue} Omni Stars collected.`}
                 </p>
                 <p className="mt-1 text-sm leading-relaxed text-gray-300">
-                  This newsletter is sealed to your Omni account with no
-                  duplicate credit event.
+                  This reading reward is saved to your Omni account. One claim
+                  per issue keeps every star earned.
                 </p>
               </div>
             </div>
@@ -249,8 +274,8 @@ export function NewsletterStarCredit({
               <div>
                 <p className="text-sm font-semibold text-amber-100">
                   {isClaiming
-                    ? "Claiming +5 Omni credits..."
-                    : "Ready to claim +5 Omni credits."}
+                    ? "Collecting +5 Omni Stars..."
+                    : "Your +5 Omni Stars are ready."}
                 </p>
                 {error && (
                   <p className="mt-1 text-sm leading-relaxed text-red-300">
@@ -266,7 +291,7 @@ export function NewsletterStarCredit({
       <AuthModal
         isOpen={authOpen}
         onClose={() => setAuthOpen(false)}
-        prompt="Sign in to claim your +5 Omni credits for this issue."
+        prompt="Sign in to collect your +5 Omni Stars for this issue."
         redirectTo={returnPath}
       />
     </section>
