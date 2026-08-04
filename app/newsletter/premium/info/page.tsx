@@ -82,7 +82,8 @@ const benefits = [
   },
 ];
 
-export default function PremiumInfoPage() {
+export default async function PremiumInfoPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const { next } = await searchParams;
   return (
     <div className="relative min-h-screen overflow-x-hidden bg-black text-white">
       <JsonLd data={premiumPageSchema} />
@@ -134,7 +135,7 @@ export default function PremiumInfoPage() {
           </p>
 
           <div className="mx-auto mt-7 max-w-2xl sm:mt-9">
-            <PremiumEmailSignup />
+            <PremiumEmailSignup next={next} />
           </div>
 
           <p className="mt-3 text-left text-xs text-white/40 sm:mt-4 sm:text-center">

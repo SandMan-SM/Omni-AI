@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Archive, ArrowRight, X } from "lucide-react";
 import { AuthModal } from "@/components/auth-modal";
 import { getStoredUser } from "@/lib/auth";
+import { hasLocalPremiumAccess } from "@/lib/premium-access";
 import {
   PREMIUM_FIRST_MONTH_DISCOUNT_PCT,
   PREMIUM_FIRST_MONTH_PRICE_USD,
@@ -35,6 +36,13 @@ type PremiumCandidate = {
 };
 
 function hasPremiumNewsletterAccess(user: PremiumCandidate | null | undefined): boolean {
+  /*
+   * The limited-time offer grants premium for an email alone, with no sign-in.
+   * getStoredUser() requires a valid auth token, so without this the reader was
+   * marked premium in the database, told "Premium unlocked", and still bounced
+   * to the upsell on every card.
+   */
+  if (hasLocalPremiumAccess()) return true;
   if (!user) return false;
   const status = String(user.subscription_status || "").toLowerCase();
   const tier = typeof user.tier === "number" ? user.tier : String(user.tier || "").toLowerCase();
@@ -294,9 +302,11 @@ export function PremiumSection({ posts }: { posts: Post[] }) {
                 key={post.slug}
                 className="w-[78vw] max-w-[340px] shrink-0 snap-start"
               >
+                {/* Carry the intended issue so the signup can return the
+                    reader to it instead of dumping them on a generic page. */}
                 <NewsletterIssueCard
                   post={post}
-                  href="/newsletter/premium/info"
+                  href={`/newsletter/premium/info?next=${encodeURIComponent(`/newsletter/${post.slug}`)}`}
                   locked
                 />
               </div>

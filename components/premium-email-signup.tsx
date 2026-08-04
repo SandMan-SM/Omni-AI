@@ -2,10 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Check, Mail } from "lucide-react";
+import { grantLocalPremiumAccess } from "@/lib/premium-access";
 
 type Status = "idle" | "loading" | "success" | "error";
 
-export function PremiumEmailSignup() {
+export function PremiumEmailSignup({ next }: { next?: string }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState("");
@@ -40,6 +41,7 @@ export function PremiumEmailSignup() {
       });
       const payload = (await response.json().catch(() => ({}))) as {
         error?: string;
+        premium?: boolean;
       };
 
       if (!response.ok) {
@@ -48,9 +50,24 @@ export function PremiumEmailSignup() {
         );
       }
 
+      /*
+       * The API already flipped this reader to subscription_tier "premium" and
+       * says so in the response. Record that locally so the gate stops sending
+       * them to the upsell, then take them straight to the issue they were
+       * trying to read. Previously this only printed "Premium unlocked" and
+       * left them exactly where they were, still locked out.
+       */
+      grantLocalPremiumAccess(trimmed);
       setEmail("");
       setStatus("success");
-      setMessage("Premium unlocked. Watch your inbox for the next issue.");
+      setMessage("Premium unlocked. Opening your issue\u2026");
+
+      const destination =
+        next && next.startsWith("/") && !next.startsWith("//")
+          ? next
+          : "/newsletter/archive";
+      window.location.assign(destination);
+      return;
     } catch (error) {
       setStatus("error");
       setMessage(
