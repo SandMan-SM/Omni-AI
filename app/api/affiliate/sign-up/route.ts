@@ -14,7 +14,7 @@ import {
 
 const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
+const FROM_EMAIL = 'Omni AI <bookings@omnios.news>';
 
 // POST /api/affiliate/sign-up
 //

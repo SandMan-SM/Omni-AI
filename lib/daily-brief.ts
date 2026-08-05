@@ -252,7 +252,7 @@ export async function sendDailyBrief(toEmail = 'sitanim8@gmail.com'): Promise<{ 
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: 'Omni AI <bookings@omnileadsagi.com>',
+          from: 'Omni AI <alerts@omnios.news>',
           to: toEmail,
           subject: `CEO Brief · ${payload.date} · ${fmtMoney(payload.portfolio_arr_usd)} ARR`,
           html,

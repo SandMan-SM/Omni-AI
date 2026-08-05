@@ -84,7 +84,7 @@ import { logEvent } from "@/lib/events";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const OWNER_EMAIL = "sitanim8@gmail.com";
-const FROM_EMAIL = "Omni AI <bookings@omnileadsagi.com>";
+const FROM_EMAIL = "Omni AI <bookings@omnios.news>";
 const SITE_URL = "https://omnileadsagi.com";
 
 // Segment slug for the landing_page_leads write. Keep this as a

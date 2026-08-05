@@ -30,7 +30,7 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const FROM_EMAIL =
   process.env.OMNI_PROGRAM_FROM_EMAIL ||
   process.env.RESEND_FROM ||
-  "Alfred Belvedere <alfred@omnileadsagi.com>";
+  "Alfred Belvedere <alfred@omnios.news>";
 const MAFI_EMAIL = process.env.OMNI_PROGRAM_MAFI_CC || "sitanim8@gmail.com";
 
 type Body = {

@@ -59,13 +59,25 @@ async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise
 // on DB failure, keep serving the last-known snapshot (or a seed set).
 export type TenantRow = { slug: string; active: boolean; owned: boolean; origins: string[] };
 
+/*
+ * Fallback allowlist used when the registry can't be read on a cold cache.
+ *
+ * MUST stay in sync with `select slug from analytics.tenants where active and owned`.
+ * A slug missing here 404s on a cold cache and the lead is dropped SILENTLY — the
+ * caller sees a 404, the visitor sees a failure, and nothing alarms. On 2026-08-04
+ * `huron` was absent while `mushin` was present: the only paying customer in the
+ * set had 324 events and exactly 1 lead row. `mafi` and `mythosais` were missing
+ * for the same reason.
+ *
+ * When you add a tenant to analytics.tenants, add it here in the same change.
+ */
 const SEED_ACTIVE = new Set<string>([
-  // fallback allowlist if the registry can't be read on a cold cache
   "alira","beehive","cps","imperium","leifson","ltb","mainst","omnileads","otd",
   "rene","sitanim","wasatch","youngs","converge","theixnetwork","gmsekingsavage",
   "deptofcreatvs","societyfeen","masondayy","hiddencamerastudios","theluxesocialist",
   "luxurybran","lanretealone","sfdempire","obsidiancasino","seoppc","aidigital",
   "aiintegrated","tanielafiefia","masonthomas","umsnews","mushin","arizonaphoenixrentals",
+  "huron","mafi","mythosais","leadfranchise",
 ]);
 
 let cache: { at: number; rows: Map<string, TenantRow> } | null = null;
@@ -192,6 +204,10 @@ export type LeadNotificationState = {
   retryable: boolean;
   telegram_accepted?: boolean;
   error?: string;
+  /** Extra recipients actually sent a copy of this lead. */
+  cc?: string[];
+  /** Why the tenant CC was withheld, if it was. */
+  cc_suppressed_reason?: string | null;
   updated_at: string;
 };
 

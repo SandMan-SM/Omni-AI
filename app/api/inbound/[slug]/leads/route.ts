@@ -14,6 +14,7 @@ import {
   type InboundSlug,
 } from '@/lib/inbound-types';
 import {
+  notifyLeadCc,
   notifyOwnerEmailInbound,
   notifyOwnerEmailInboundWithReceipt,
   notifyOwnerTelegramInbound,
@@ -558,6 +559,7 @@ export async function POST(
         message: message || null,
         source,
         pageUrl: sanitizeText(body.page_url, 2048) || null,
+        intakeId: intakeId || null,
       };
       const [emailReceipt, telegramOk] = await Promise.all([
         notifyOwnerEmailInboundWithReceipt(registryLead).catch((e) => {
@@ -635,6 +637,14 @@ export async function POST(
         );
       }
 
+      /*
+       * The owner is now provably notified. Only after that do we attempt the
+       * tenant's CC copy — it is best-effort by construction and its outcome is
+       * recorded, never thrown. A suppressed or failed CC must never be able to
+       * turn a captured lead into an error for the visitor.
+       */
+      const ccOutcome = await notifyLeadCc(registryLead);
+
       const acceptancePersisted = await recordLeadNotificationState(
         slug,
         sharedLead.id,
@@ -644,6 +654,8 @@ export async function POST(
           provider_id: emailReceipt.providerId,
           retryable: false,
           telegram_accepted: telegramOk,
+          cc: ccOutcome.sent,
+          cc_suppressed_reason: ccOutcome.suppressed,
           updated_at: updatedAt,
         },
       );

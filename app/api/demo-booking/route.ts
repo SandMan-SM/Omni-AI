@@ -23,7 +23,7 @@ export const fetchCache = "force-no-store";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
-const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
+const FROM_EMAIL = 'Omni AI <bookings@omnios.news>';
 
 // Owner notification for a booked strategy call. The booking persists above
 // regardless; this tells the owner it happened. Without it, /book-now

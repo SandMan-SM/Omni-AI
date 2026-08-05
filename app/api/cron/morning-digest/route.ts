@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
  *
  * Schedule (UTC, in vercel.json): 10:00 daily ≈ 06:00 ET in winter.
  */
-const FROM = process.env.RESEND_FROM || "OmniLeads AGI <agent@omnileadsagi.com>";
+const FROM = process.env.RESEND_FROM || "OmniLeads AGI <agent@omnios.news>";
 const FOUNDER_EMAIL = "sitanim8@gmail.com";
 const ADMIN_BCC = "alfred@omnileadsagi.com";
 

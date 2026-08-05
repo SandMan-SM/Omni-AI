@@ -362,7 +362,7 @@ async function sendCancellationEmail(b: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: 'Omni AI <bookings@omnileadsagi.com>',
+      from: 'Omni AI <bookings@omnios.news>',
       to: [b.attendee_email],
       reply_to: 'sitanim8@gmail.com',
       subject: `Your ${isStrategyCall ? 'Strategy Call' : 'Demo'} on ${dateFormatted} has been cancelled`,

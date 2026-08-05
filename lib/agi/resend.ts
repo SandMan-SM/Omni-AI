@@ -28,7 +28,7 @@ export async function sendOutreachEmail(input: SendInput): Promise<{
   message_id?: string;
   error?: string;
 }> {
-  const from = input.from ?? process.env.RESEND_FROM ?? 'OmniLeads AGI <agent@omnileadsagi.com>';
+  const from = input.from ?? process.env.RESEND_FROM ?? 'OmniLeads AGI <agent@omnios.news>';
 
   // Check suppression list first (unsubscribes are legally must-respect)
   // Skip the system booking confirmation email (no asset to update).

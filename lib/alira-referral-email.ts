@@ -18,7 +18,7 @@
 import { Resend } from "resend";
 
 const RESEND_FROM =
-  process.env.RESEND_FROM ?? "Omni AI <bookings@omnileadsagi.com>";
+  process.env.RESEND_FROM ?? "Omni AI <bookings@omnios.news>";
 // Google Calendar appointment-schedule URL for the post-payment strategy
 // meeting. Sita sets the real URL via OMNI_AI_BOOKING_URL in Vercel. The
 // placeholder only fires if the env var isn't set — Resend will still send

@@ -17,7 +17,7 @@ const sb = createClient(
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const TO_EMAIL = "sitanim8@gmail.com";
-const FROM_EMAIL = "Omni AI <reports@omnileadsagi.com>";
+const FROM_EMAIL = "Omni AI <reports@omnios.news>";
 
 interface Snapshot {
   business_id: string;

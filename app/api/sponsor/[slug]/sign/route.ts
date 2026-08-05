@@ -37,7 +37,7 @@ export const dynamic = "force-dynamic";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const OWNER_EMAIL = "sitanim8@gmail.com";
-const FROM_EMAIL = "Interlinked <bookings@omnileadsagi.com>";
+const FROM_EMAIL = "Interlinked <bookings@omnios.news>";
 
 // Sponsor whitelist — every slug that the dynamic route accepts.
 // Adding a new sponsor is two lines here + one new app/sponsor/

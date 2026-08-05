@@ -661,7 +661,7 @@ export async function POST(
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({
-                from: `${welcome.fromName} <newsletter@omnileadsagi.com>`,
+                from: `${welcome.fromName} <newsletter@omnios.news>`,
                 to: email,
                 subject: welcome.subject,
                 html: welcome.html,

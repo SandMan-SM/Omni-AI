@@ -22,7 +22,7 @@ export const fetchCache = "force-no-store";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
-const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
+const FROM_EMAIL = 'Omni AI <bookings@omnios.news>';
 
 export async function GET() {
   noStore();

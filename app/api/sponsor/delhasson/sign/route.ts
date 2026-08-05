@@ -28,7 +28,7 @@ export const dynamic = "force-dynamic";
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const OWNER_EMAIL = "sitanim8@gmail.com";
-const FROM_EMAIL = "Interlinked <bookings@omnileadsagi.com>";
+const FROM_EMAIL = "Interlinked <bookings@omnios.news>";
 // Sitani's pre-signed date — must match the constant in
 // DelHassonClient.tsx so emailed copies cite the same date the
 // signer saw on-screen.

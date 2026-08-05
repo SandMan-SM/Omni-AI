@@ -62,7 +62,7 @@ export async function GET(req: Request, { params }: { params: { slug: string } }
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Omni AI <bookings@omnileadsagi.com>',
+          from: 'Omni AI <bookings@omnios.news>',
           to: 'sitanim8@gmail.com',
           subject: `Investor Review · ${data.client.name} · ${new Date().toISOString().slice(0, 10)}`,
           html,

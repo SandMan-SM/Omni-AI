@@ -41,7 +41,7 @@ export async function GET(req: Request) {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: 'Omni AI <bookings@omnileadsagi.com>',
+            from: 'Omni AI <bookings@omnios.news>',
             to: 'sitanim8@gmail.com',
             subject: `Weekly Review · ${c.name} · ${new Date().toISOString().slice(0, 10)}`,
             html,

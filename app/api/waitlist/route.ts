@@ -14,7 +14,7 @@ import {
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
-const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
+const FROM_EMAIL = 'Omni AI <bookings@omnios.news>';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://omnileadsagi.com';
 
 // POST /api/waitlist — generic lead capture endpoint.

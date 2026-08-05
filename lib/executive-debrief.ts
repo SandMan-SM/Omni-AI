@@ -335,7 +335,7 @@ export async function sendExecDebrief(toEmail: string, commits30d: number): Prom
         method: 'POST',
         headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: 'Omni AI <bookings@omnileadsagi.com>',
+          from: 'Omni AI <alerts@omnios.news>',
           to: toEmail,
           subject: `Executive Debrief · ${fmtMoney(payload.portfolio_mrr)} MRR · ${payload.ships_30d} ships · 4 AI CEOs on deck`,
           html,

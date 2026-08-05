@@ -14,7 +14,7 @@ import {
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
-const FROM_EMAIL = 'Omni AI <bookings@omnileadsagi.com>';
+const FROM_EMAIL = 'Omni AI <alerts@omnios.news>';
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID =
   process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '';

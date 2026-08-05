@@ -149,7 +149,7 @@ export const FEDERATION_NEWSLETTER_BRIEFS: FederationNewsletterBrief[] = [
     niche: 'Oracle and Tarot guidance, intuitive practice, retreat openings, and program updates.',
     doNotSay: ['guaranteed outcomes', 'cures', 'excessive use of sacred', 'hype-driven promises'],
     businessOwnerEmail: 'brightsidebirth@gmail.com',
-    fromEmail: 'alira@omnileadsagi.com',
+    fromEmail: 'alira@omnios.news',
   },
   {
     site: 'imperium',

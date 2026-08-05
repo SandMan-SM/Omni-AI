@@ -3,7 +3,7 @@
 // booking + landing-lead flows. Fire-and-forget; a failed notify never blocks a
 // live call or a booking.
 const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || "sitanim8@gmail.com";
-const FROM = "Omni AI <bookings@omnileadsagi.com>";
+const FROM = "Omni AI <alerts@omnios.news>";
 
 export async function emailOwner(opts: {
   subject: string;
