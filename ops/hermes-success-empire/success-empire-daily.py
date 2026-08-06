@@ -49,21 +49,43 @@ PRINCIPLE_HEADINGS = (
     "Reflection for Today",
 )
 RUBRIC_MAX = {
-    "authenticity": 20,
-    "clarity": 15,
-    "applicability": 25,
-    "emotional_resonance": 15,
-    "relationship": 15,
-    "originality": 10,
-}
-RUBRIC_MIN = {
-    "authenticity": 16,
+    "authenticity": 18,
     "clarity": 12,
-    "applicability": 20,
+    "applicability": 18,
     "emotional_resonance": 12,
     "relationship": 12,
     "originality": 8,
+    "hook_strength": 10,
+    "reader_participation": 10,
 }
+RUBRIC_MIN = {
+    "authenticity": 15,
+    "clarity": 10,
+    "applicability": 15,
+    "emotional_resonance": 10,
+    "relationship": 10,
+    "originality": 6,
+    "hook_strength": 8,
+    "reader_participation": 8,
+}
+MIN_BODY_PARAGRAPHS = 5
+MAX_BODY_PARAGRAPHS = 10
+MIN_ARTICLE_WORDS = 300
+MAX_ARTICLE_WORDS = 650
+MAX_PARAGRAPH_WORDS = 95
+INTERACTIVE_CUES = (
+    "pause",
+    "notice",
+    "picture",
+    "imagine",
+    "choose",
+    "write",
+    "name",
+    "answer",
+    "ask yourself",
+    "try",
+    "decide",
+)
 HARD_FAIL_PHRASES = (
     "as an ai",
     "in today's fast-paced world",
@@ -512,6 +534,20 @@ Be warm, specific, direct, grounded, and useful. Ambition is welcome; posturing,
 generic motivation, shame, macho shorthand, invented facts, and fake certainty
 are not.
 
+Write for active participation, not passive consumption. The opening paragraph
+must create immediate tension, curiosity, recognition, or a useful question.
+Open one loop early and pay it off before the ending. Keep the rhythm fast:
+short paragraphs, concrete language, one-sentence pattern interrupts, and no
+throat-clearing. Across the piece, naturally ask the reader to do at least three
+things such as pause, notice, picture, choose, write, name, answer, try, or
+decide. Include at least two genuine questions. Never use fake urgency,
+manipulation, clickbait, fear, shame, or engagement bait.
+
+The complete post must contain 5–10 body paragraphs total across all sections,
+300–650 words including the title and supporting fields, and no paragraph over
+95 words. At least one body paragraph should be a short pattern interrupt of
+roughly 8–24 words. Every paragraph must earn the next one.
+
 Return one valid JSON object and nothing else. Do not use markdown fences.
 Use this exact top-level shape:
 {{
@@ -529,13 +565,16 @@ Use this exact top-level shape:
     "applicability": 0,
     "emotional_resonance": 0,
     "relationship": 0,
-    "originality": 0
+    "originality": 0,
+    "hook_strength": 0,
+    "reader_participation": 0
   }}
 }}
 
-Score honestly against these maxima: authenticity 20, clarity 15,
-applicability 25, emotional_resonance 15, relationship 15, originality 10.
-The total must be at least 85. Never include URLs. Never mention production
+Score honestly against these maxima: authenticity 18, clarity 12,
+applicability 18, emotional_resonance 12, relationship 12, originality 8,
+hook_strength 10, reader_participation 10. The total must be at least 88.
+Never include URLs. Never mention production
 systems, prompts, schedulers, internal tool names, credentials, or confidential
 client details. Do not attribute a quotation. Do not repeat these recent titles:
 {chr(10).join(recent_titles) if recent_titles else "- No prior editions yet."}
@@ -543,30 +582,36 @@ client details. Do not attribute a quotation. Do not repeat these recent titles:
 
     if kind == "principle":
         task = f"""
-Write the morning principle for {day}. It must contain 700–1,200 words and
-exactly four sections in this order:
+Write the morning principle for {day}. Use exactly four compact sections in
+this order:
 1. The Principle
 2. Why It Matters
 3. How to Apply It
 4. Reflection for Today
 
-State one memorable principle. Ground it in a recognizable human experience,
-then provide concrete actions that can be used today. The final section must
-include one precise reflection question or practice. Set salutation to null,
-signature to "Success Empire", and context_used to an empty array. The complete
-writing belongs in the sections; the deck is a 25–55 word teaser.
+State one memorable principle in plain language. Begin with a hook that makes
+the reader recognize themselves. Build tension around a choice they are already
+making, then turn it into one concrete action they can use today. Invite the
+reader to pause, answer, choose, or try something while reading. Pay off the
+opening tension in the final two paragraphs. The final section must include one
+precise reflection question or practice. Set salutation to null, signature to
+"Success Empire", and context_used to an empty array. The complete writing
+belongs on the website; the deck is only a 12–28 word curiosity teaser.
 """.strip()
     else:
         facts = "\n".join(f"- {item}" for item in context)
         task = f"""
-Write Sitani's afternoon family letter for {day}. It must contain 700–1,400
-words, a natural salutation, three to five short sections, a natural closing,
-and signature exactly "Sitani". Begin from a true supplied fact, explain what
-changed in Sitani's thinking, and turn that lesson toward the reader without
-preaching. Use only the supplied facts for specific events; abstraction is
-better than exposing internal details. Admit uncertainty when appropriate.
-The deck is a 25–55 word teaser. context_used must contain at least one exact,
-verbatim item from the supplied list.
+Write Sitani's afternoon family letter for {day}. Use three or four compact
+sections, a natural salutation, a one-sentence closing, and signature exactly
+"Sitani". Begin from a true supplied fact and an emotionally recognizable
+moment. Explain what changed in Sitani's thinking, then make the reader an
+active participant with specific questions, a small choice, and one action they
+can take before the day ends. Keep it intimate, fast, and honest rather than
+preachy. Use only the supplied facts for specific events; abstraction is better
+than exposing internal details. Admit uncertainty when appropriate. Pay off the
+opening question near the end. The deck is only a 12–28 word curiosity teaser.
+context_used must contain at least one exact, verbatim item from the supplied
+list.
 
 Private actual-day context:
 {facts}
@@ -665,8 +710,8 @@ def validate_rubric(draft: dict[str, Any]) -> None:
                 f"rubric score {key} is outside the passing range"
             )
         total += value
-    if total < 85:
-        raise SuccessEmpireError(f"draft rubric score is {total}, below 85")
+    if total < 88:
+        raise SuccessEmpireError(f"draft rubric score is {total}, below 88")
 
 
 def validate_draft(
@@ -678,29 +723,49 @@ def validate_draft(
 ) -> None:
     title = clean_text(draft.get("title"))
     deck = clean_text(draft.get("deck"))
-    if not 3 <= len(title) <= 180:
-        raise SuccessEmpireError("title length is outside 3–180 characters")
-    if not 20 <= len(deck) <= 420:
-        raise SuccessEmpireError("deck length is outside 20–420 characters")
-    if len(words(deck)) < 20 or len(words(deck)) > 65:
-        raise SuccessEmpireError("deck must remain a concise 20–65 word teaser")
+    if not 3 <= len(title) <= 100:
+        raise SuccessEmpireError("title length is outside 3–100 characters")
+    if not 25 <= len(deck) <= 220:
+        raise SuccessEmpireError("deck length is outside 25–220 characters")
+    if len(words(deck)) < 12 or len(words(deck)) > 28:
+        raise SuccessEmpireError("deck must remain a concise 12–28 word teaser")
 
     sections = draft.get("sections")
     if not isinstance(sections, list) or not sections:
         raise SuccessEmpireError("draft sections are missing")
     headings: list[str] = []
+    body_paragraphs: list[str] = []
     for section in sections:
         if not isinstance(section, dict):
             raise SuccessEmpireError("draft section is malformed")
         heading = clean_text(section.get("heading"))
         body = section.get("body")
-        if not heading or not isinstance(body, list) or len(body) < 2:
+        if not heading or not isinstance(body, list) or not 1 <= len(body) <= 3:
             raise SuccessEmpireError(
-                "every section needs a heading and at least two paragraphs"
+                "every section needs a heading and one to three paragraphs"
             )
-        if any(not isinstance(paragraph, str) or len(words(paragraph)) < 8 for paragraph in body):
-            raise SuccessEmpireError("draft contains an empty or fragmentary paragraph")
+        for paragraph in body:
+            paragraph_words = words(paragraph) if isinstance(paragraph, str) else []
+            if len(paragraph_words) < 6:
+                raise SuccessEmpireError(
+                    "draft contains an empty or fragmentary paragraph"
+                )
+            if len(paragraph_words) > MAX_PARAGRAPH_WORDS:
+                raise SuccessEmpireError(
+                    f"draft contains a paragraph over {MAX_PARAGRAPH_WORDS} words"
+                )
+            body_paragraphs.append(clean_text(paragraph))
         headings.append(heading)
+
+    if not MIN_BODY_PARAGRAPHS <= len(body_paragraphs) <= MAX_BODY_PARAGRAPHS:
+        raise SuccessEmpireError(
+            f"draft has {len(body_paragraphs)} body paragraphs; expected "
+            f"{MIN_BODY_PARAGRAPHS}–{MAX_BODY_PARAGRAPHS}"
+        )
+    if not any(len(words(paragraph)) <= 24 for paragraph in body_paragraphs):
+        raise SuccessEmpireError(
+            "draft needs one short pattern-interrupt paragraph"
+        )
 
     if kind == "principle":
         if tuple(headings) != PRINCIPLE_HEADINGS:
@@ -712,14 +777,16 @@ def validate_draft(
         context_used = draft.get("context_used")
         if context_used not in ([], None):
             raise SuccessEmpireError("morning principle cannot claim day context")
-        minimum, maximum = 700, 1200
     else:
-        if len(sections) < 3 or len(sections) > 5:
-            raise SuccessEmpireError("afternoon letter needs three to five sections")
+        if len(sections) < 3 or len(sections) > 4:
+            raise SuccessEmpireError("afternoon letter needs three or four sections")
         if len(words(clean_text(draft.get("salutation")))) < 1:
             raise SuccessEmpireError("afternoon salutation is missing")
-        if len(words(clean_text(draft.get("closing")))) < 3:
-            raise SuccessEmpireError("afternoon closing is missing")
+        closing_words = words(clean_text(draft.get("closing")))
+        if len(closing_words) < 3 or len(closing_words) > 25:
+            raise SuccessEmpireError(
+                "afternoon closing must be one concise sentence"
+            )
         if clean_text(draft.get("signature")) != "Sitani":
             raise SuccessEmpireError("afternoon signature must be Sitani")
         context_used = draft.get("context_used")
@@ -731,9 +798,10 @@ def validate_draft(
 
     article_text = flatten_draft(draft)
     article_words = len(words(article_text))
-    if article_words < minimum or article_words > maximum:
+    if article_words < MIN_ARTICLE_WORDS or article_words > MAX_ARTICLE_WORDS:
         raise SuccessEmpireError(
-            f"{kind} word count is {article_words}; expected {minimum}–{maximum}"
+            f"{kind} word count is {article_words}; expected "
+            f"{MIN_ARTICLE_WORDS}–{MAX_ARTICLE_WORDS}"
         )
     lowered = article_text.casefold()
     for phrase in (*HARD_FAIL_PHRASES, *INTERNAL_TERMS):
@@ -749,6 +817,19 @@ def validate_draft(
         raise SuccessEmpireError("draft does not speak directly to the reader")
     if not re.search(r"\b(i|i’m|i've|i’ve|we|my|our)\b", lowered):
         raise SuccessEmpireError("draft lacks a personal point of view")
+    if article_text.count("?") < 2:
+        raise SuccessEmpireError(
+            "draft needs at least two genuine reader-facing questions"
+        )
+    cues_used = {
+        cue
+        for cue in INTERACTIVE_CUES
+        if re.search(rf"\b{re.escape(cue)}\b", lowered)
+    }
+    if len(cues_used) < 3:
+        raise SuccessEmpireError(
+            "draft needs at least three distinct reader-participation cues"
+        )
 
     normalized_title = slugify(title)
     for row in recent:
@@ -1104,18 +1185,33 @@ def verified_resend_domain(config: Config) -> dict[str, Any]:
     raise SuccessEmpireError("Resend sender domain sitanimafi.com is not verified")
 
 
-def teaser_excerpt(value: Any, max_length: int = 320) -> str:
+def teaser_excerpt(value: Any, max_length: int = 180) -> str:
     clean = clean_text(value)
     if not clean:
         raise SuccessEmpireError("teaser is empty")
     if len(clean) <= max_length:
         return clean
-    sentence = re.match(r"^.{100,320}?[.!?](?:\s|$)", clean)
+    sentence = re.match(
+        rf"^.{{60,{max_length}}}?[.!?](?:\s|$)",
+        clean,
+    )
     if sentence:
         return sentence.group(0).strip()
     clipped = clean[: max_length + 1]
     boundary = clipped.rfind(" ")
-    return clipped[: boundary if boundary > 140 else max_length].strip() + "…"
+    return clipped[: boundary if boundary > 80 else max_length].strip() + "…"
+
+
+def compact_email_subject(kind: str, title: str, max_length: int = 58) -> str:
+    prefix = "Try this today: " if kind == "principle" else "A quick note: "
+    candidate = f"{prefix}{clean_text(title)}"
+    if len(candidate) <= max_length:
+        return candidate
+    available = max_length - len(prefix) - 1
+    clipped = clean_text(title)[: available + 1]
+    boundary = clipped.rfind(" ")
+    short_title = clipped[: boundary if boundary > 18 else available].rstrip(" ,:;.-")
+    return f"{prefix}{short_title}…"
 
 
 def render_email(
@@ -1128,31 +1224,28 @@ def render_email(
     url = entry_url(config, entry)
     if kind == "principle":
         eyebrow = "Success Empire · Morning Principle"
-        subject = f"Today’s principle: {title}"
-        intro = "A principle for the day"
-        button = "Read the Principle"
+        subject = compact_email_subject(kind, title)
+        button = "Read the Full Principle"
         accent = "#c99837"
     else:
         eyebrow = "A note from Sitani"
-        subject = f"{title} — a note from Sitani"
-        intro = "I wrote you a short letter about today"
-        button = "Read the Full Letter"
+        subject = compact_email_subject(kind, title)
+        button = "Read Sitani’s Note"
         accent = "#9f7aea"
     body = f"""<!doctype html>
 <html>
   <body style="margin:0;background:#0d0d10;font-family:Georgia,'Times New Roman',serif;">
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0d0d10;">
-      <tr><td align="center" style="padding:38px 16px 46px;">
+      <tr><td align="center" style="padding:28px 16px 34px;">
         <table role="presentation" width="620" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:620px;background:#15151a;border:1px solid #2b2b33;border-radius:14px;">
-          <tr><td style="padding:34px 34px 30px;">
-            <p style="margin:0 0 14px;color:{accent};font-family:Arial,sans-serif;font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;">{html.escape(eyebrow)}</p>
-            <p style="margin:0 0 10px;color:#9c9ca8;font-family:Arial,sans-serif;font-size:14px;">{html.escape(intro)}</p>
-            <h1 style="margin:0 0 18px;color:#f5f2ea;font-size:31px;line-height:1.2;font-weight:600;">{html.escape(title)}</h1>
-            <p style="margin:0 0 26px;color:#d7d4cc;font-size:17px;line-height:1.75;">{html.escape(teaser)}</p>
-            <a href="{html.escape(url)}" style="display:inline-block;padding:14px 22px;border-radius:8px;background:{accent};color:#111116;font-family:Arial,sans-serif;font-size:14px;font-weight:700;text-decoration:none;">{html.escape(button)}</a>
+          <tr><td style="padding:28px 30px 26px;">
+            <p style="margin:0 0 12px;color:{accent};font-family:Arial,sans-serif;font-size:10px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;">{html.escape(eyebrow)}</p>
+            <h1 style="margin:0 0 14px;color:#f5f2ea;font-size:28px;line-height:1.18;font-weight:600;">{html.escape(title)}</h1>
+            <p style="margin:0 0 22px;color:#d7d4cc;font-size:16px;line-height:1.6;">{html.escape(teaser)}</p>
+            <a href="{html.escape(url)}" style="display:inline-block;padding:13px 19px;border-radius:8px;background:{accent};color:#111116;font-family:Arial,sans-serif;font-size:14px;font-weight:700;text-decoration:none;">{html.escape(button)}</a>
           </td></tr>
-          <tr><td style="padding:20px 34px;border-top:1px solid #2b2b33;color:#777783;font-family:Arial,sans-serif;font-size:11px;line-height:1.6;">
-            The complete writing lives on sitanimafi.com. This email is only the invitation.
+          <tr><td style="padding:15px 30px;border-top:1px solid #2b2b33;color:#777783;font-family:Arial,sans-serif;font-size:10px;line-height:1.5;">
+            The full 3-minute read is on sitanimafi.com.
           </td></tr>
         </table>
       </td></tr>

@@ -22,12 +22,11 @@ sys.modules[SPEC.name] = daily
 SPEC.loader.exec_module(daily)
 
 
-def long_paragraph(seed: str, count: int = 82) -> str:
+def long_paragraph(seed: str, count: int = 44) -> str:
     words = (
-        f"{seed} attention becomes useful when a person slows down enough to "
-        "notice the choice in front of them and then takes one honest step. "
-        "The point is not perfection or performance. The point is to practice "
-        "a clear decision, learn from the result, and return with more patience. "
+        f"{seed}. Pause and notice the choice in front of you. What are you "
+        "protecting by waiting? Picture the smallest honest move, choose it, "
+        "and write down what you will try before the day ends. "
     ).split()
     repeated: list[str] = []
     while len(repeated) < count:
@@ -37,12 +36,14 @@ def long_paragraph(seed: str, count: int = 82) -> str:
 
 def valid_rubric() -> dict[str, int]:
     return {
-        "authenticity": 18,
-        "clarity": 14,
-        "applicability": 22,
-        "emotional_resonance": 13,
-        "relationship": 14,
-        "originality": 9,
+        "authenticity": 16,
+        "clarity": 11,
+        "applicability": 16,
+        "emotional_resonance": 11,
+        "relationship": 11,
+        "originality": 7,
+        "hook_strength": 9,
+        "reader_participation": 9,
     }
 
 
@@ -63,6 +64,13 @@ def valid_principle() -> dict:
                     ),
                     long_paragraph(
                         f"Your next practice in section {index} can stay simple"
+                    ),
+                    *(
+                        [
+                            "Pause here: which promise will you choose to keep today?"
+                        ]
+                        if index == len(daily.PRINCIPLE_HEADINGS)
+                        else []
                     ),
                 ],
             }
@@ -93,6 +101,13 @@ def valid_journal(context: str) -> dict:
                     ),
                     long_paragraph(
                         f"My clearest lesson is that your next step can be gentle {index}"
+                    ),
+                    *(
+                        [
+                            "Before you move on, what will you try differently tonight?"
+                        ]
+                        if index == 4
+                        else []
                     ),
                 ],
             }
@@ -182,6 +197,57 @@ class SuccessEmpireDailyTests(unittest.TestCase):
             recent=[],
         )
 
+    def test_post_is_short_and_psychologically_interactive(self) -> None:
+        draft = valid_principle()
+        paragraphs = [
+            paragraph
+            for section in draft["sections"]
+            for paragraph in section["body"]
+        ]
+        self.assertGreaterEqual(len(paragraphs), 5)
+        self.assertLessEqual(len(paragraphs), 10)
+        self.assertGreaterEqual(daily.flatten_draft(draft).count("?"), 2)
+        daily.validate_draft(
+            draft,
+            "principle",
+            context=[],
+            recent=[],
+        )
+
+    def test_more_than_ten_paragraphs_fails(self) -> None:
+        draft = valid_principle()
+        draft["sections"][0]["body"].append(
+            "Pause and notice this extra choice before you decide what to try?"
+        )
+        draft["sections"][1]["body"].append(
+            "Picture one more decision and write the honest answer down now."
+        )
+        with self.assertRaises(daily.SuccessEmpireError):
+            daily.validate_draft(
+                draft,
+                "principle",
+                context=[],
+                recent=[],
+            )
+
+    def test_passive_post_without_reader_participation_fails(self) -> None:
+        draft = valid_principle()
+        for section in draft["sections"]:
+            section["body"] = [
+                (
+                    "I learned that steady attention can make an ordinary "
+                    "decision clearer when the work feels uncertain and slow."
+                )
+                for _paragraph in section["body"]
+            ]
+        with self.assertRaises(daily.SuccessEmpireError):
+            daily.validate_draft(
+                draft,
+                "principle",
+                context=[],
+                recent=[],
+            )
+
     def test_journal_requires_verbatim_actual_day_context(self) -> None:
         supplied = "I made a difficult decision about what deserved attention."
         draft = valid_journal(supplied)
@@ -226,14 +292,15 @@ class SuccessEmpireDailyTests(unittest.TestCase):
         config = daily.Config({"SUCCESS_EMPIRE_SITE_URL": "https://sitanimafi.com"})
         item = entry("principle")
         subject, body = daily.render_email(config, item)
-        self.assertIn("Today’s principle", subject)
+        self.assertIn("Try this today", subject)
+        self.assertLessEqual(len(subject), 58)
         self.assertIn(item["title"], body)
         self.assertIn(item["deck"], body)
-        self.assertIn("Read the Principle", body)
+        self.assertIn("Read the Full Principle", body)
         for section in item["sections"]:
             self.assertNotIn(section["heading"], body)
             self.assertNotIn(section["body"][0][:100], body)
-        self.assertLess(len(body), 6500)
+        self.assertLess(len(body), 5000)
 
     def test_telegram_buttons_drive_to_website(self) -> None:
         config = daily.Config({"SUCCESS_EMPIRE_SITE_URL": "https://sitanimafi.com"})
