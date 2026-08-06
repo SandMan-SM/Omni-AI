@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -142,6 +143,35 @@ class SuccessEmpireDailyTests(unittest.TestCase):
 
         with patch.object(daily.urllib.request, "urlopen", side_effect=inspect_request):
             self.assertEqual(daily.request_json("https://api.resend.com/domains"), {})
+
+    def test_writer_uses_authenticated_hermes_provider_without_anthropic_key(
+        self,
+    ) -> None:
+        completed = subprocess.CompletedProcess(
+            args=[],
+            returncode=0,
+            stdout='editor result: {"title": "A valid object"}',
+            stderr="",
+        )
+        with (
+            tempfile.TemporaryDirectory() as directory,
+            patch.object(daily, "STATE_ROOT", Path(directory)),
+            patch.object(
+                daily.subprocess,
+                "run",
+                return_value=completed,
+            ) as run,
+        ):
+            draft, receipt = daily.hermes_generate(
+                daily.Config({}),
+                system="system",
+                prompt="prompt",
+            )
+        command = run.call_args.args[0]
+        self.assertEqual(draft["title"], "A valid object")
+        self.assertEqual(receipt["provider"], "openai-codex")
+        self.assertIn("openai-codex", command)
+        self.assertIn(daily.MODEL, command)
 
     def test_principle_passes_editorial_gate(self) -> None:
         draft = valid_principle()
@@ -311,6 +341,63 @@ class SuccessEmpireDailyTests(unittest.TestCase):
                 daily.delivery_preflight(config)
         resend.assert_not_called()
         telegram.assert_not_called()
+
+    def test_email_preflight_can_proceed_while_channel_is_unregistered(self) -> None:
+        config = daily.Config({})
+        with (
+            patch.object(daily, "suppressed_recipient", return_value=None),
+            patch.object(
+                daily,
+                "verified_resend_domain",
+                return_value={"name": "sitanimafi.com", "status": "verified"},
+            ),
+            patch.object(daily, "telegram_preflight") as telegram,
+        ):
+            checks = daily.delivery_preflight(
+                config,
+                require_telegram=False,
+            )
+        self.assertEqual(checks["email"]["domain"], "sitanimafi.com")
+        telegram.assert_not_called()
+
+    def test_missing_channel_is_deferred_without_hiding_other_failures(self) -> None:
+        config = daily.Config({})
+        item = entry("principle")
+        with (
+            patch.object(
+                daily,
+                "deliver_telegram",
+                side_effect=daily.SuccessEmpireError(
+                    "Success Empire Telegram channel ID is not configured"
+                ),
+            ),
+            patch.object(daily, "mark_entry_channel") as mark,
+        ):
+            result = daily.deliver_or_defer_telegram(
+                config,
+                item,
+                None,
+                require_telegram=False,
+            )
+        self.assertEqual(result["status"], "pending")
+        mark.assert_called_once()
+
+        with (
+            patch.object(
+                daily,
+                "deliver_telegram",
+                side_effect=daily.SuccessEmpireError(
+                    "Omni AI bot lacks permission to post in Success Empire"
+                ),
+            ),
+            self.assertRaises(daily.SuccessEmpireError),
+        ):
+            daily.deliver_or_defer_telegram(
+                config,
+                item,
+                None,
+                require_telegram=False,
+            )
 
     def test_script_aliases_infer_the_scheduled_command(self) -> None:
         self.assertEqual(

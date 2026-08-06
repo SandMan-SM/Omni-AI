@@ -30,7 +30,7 @@ from zoneinfo import ZoneInfo
 MOUNTAIN = ZoneInfo("America/Denver")
 SITE_URL = "https://sitanimafi.com"
 RECIPIENT = "sitanim8@gmail.com"
-MODEL = "claude-sonnet-5"
+MODEL = "gpt-5.6-sol"
 STATE_ROOT = Path.home() / ".hermes" / "state" / "success-empire"
 CHANNEL_DIRECTORY = Path.home() / ".hermes" / "channel_directory.json"
 ENV_FILES = (
@@ -574,14 +574,27 @@ Private actual-day context:
     return common, task
 
 
-def anthropic_generate(
+def extract_model_json(text: str) -> dict[str, Any]:
+    start = text.find("{")
+    end = text.rfind("}")
+    if start < 0 or end <= start:
+        raise SuccessEmpireError("writing model returned no JSON object")
+    try:
+        draft = json.loads(text[start : end + 1])
+    except json.JSONDecodeError as exc:
+        raise SuccessEmpireError("writing model response was not valid JSON") from exc
+    if not isinstance(draft, dict):
+        raise SuccessEmpireError("writing model response was not a JSON object")
+    return draft
+
+
+def hermes_generate(
     config: Config,
     *,
     system: str,
     prompt: str,
     correction: str = "",
 ) -> tuple[dict[str, Any], dict[str, Any]]:
-    api_key = config.require("ANTHROPIC_API_KEY")
     model = config.first("SUCCESS_EMPIRE_MODEL", default=MODEL)
     message = prompt
     if correction:
@@ -589,45 +602,51 @@ def anthropic_generate(
             "\n\nThe prior draft was rejected. Correct every issue below without "
             f"discussing the correction:\n{correction}"
         )
-    payload = request_json(
-        "https://api.anthropic.com/v1/messages",
-        method="POST",
-        headers={
-            "x-api-key": api_key,
-            "anthropic-version": "2023-06-01",
-            "Content-Type": "application/json",
-        },
-        payload={
-            "model": model,
-            "max_tokens": 5000,
-            "temperature": 0.72,
-            "system": system,
-            "messages": [{"role": "user", "content": message}],
-        },
-        timeout=150,
-    )
-    if not isinstance(payload, dict):
-        raise SuccessEmpireError("Anthropic returned a malformed response")
-    text_blocks = [
-        block.get("text", "")
-        for block in payload.get("content", [])
-        if isinstance(block, dict) and block.get("type") == "text"
+    STATE_ROOT.mkdir(parents=True, exist_ok=True)
+    usage_path = STATE_ROOT / "latest-model-usage.json"
+    command = [
+        "hermes",
+        "-z",
+        f"{system}\n\n{message}",
+        "--provider",
+        "openai-codex",
+        "--model",
+        model,
+        "--ignore-rules",
+        "--usage-file",
+        str(usage_path),
     ]
-    raw = "\n".join(text_blocks).strip()
-    if raw.startswith("```"):
-        raw = re.sub(r"^```(?:json)?\s*", "", raw)
-        raw = re.sub(r"\s*```$", "", raw)
     try:
-        draft = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise SuccessEmpireError("model response was not valid JSON") from exc
-    if not isinstance(draft, dict):
-        raise SuccessEmpireError("model response was not a JSON object")
+        completed = subprocess.run(
+            command,
+            cwd=CONTEXT_REPOSITORIES[0],
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=420,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as exc:
+        raise SuccessEmpireError(
+            "Hermes/Codex writing call timed out after 420 seconds"
+        ) from exc
+    if completed.returncode != 0:
+        detail = clean_text(completed.stderr or completed.stdout)[:700]
+        raise SuccessEmpireError(
+            f"Hermes/Codex writing call failed ({completed.returncode}): {detail}"
+        )
+    draft = extract_model_json(completed.stdout)
+    usage: Any = {}
+    if usage_path.is_file():
+        try:
+            usage = json.loads(usage_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            usage = {}
     receipt = {
-        "model": payload.get("model") or model,
-        "message_id": payload.get("id"),
-        "stop_reason": payload.get("stop_reason"),
-        "usage": payload.get("usage") if isinstance(payload.get("usage"), dict) else {},
+        "provider": "openai-codex",
+        "model": model,
+        "usage": usage,
+        "generated_at": utc_now(),
     }
     return draft, receipt
 
@@ -763,7 +782,7 @@ def generate_validated_draft(
     errors: list[str] = []
     for _ in range(3):
         try:
-            draft, receipt = anthropic_generate(
+            draft, receipt = hermes_generate(
                 config,
                 system=system,
                 prompt=prompt,
@@ -1581,6 +1600,8 @@ def deterministic_afternoon_target(
 def delivery_preflight(
     config: Config,
     entry: dict[str, Any] | None = None,
+    *,
+    require_telegram: bool = True,
 ) -> dict[str, Any]:
     checks: dict[str, Any] = {}
     if not entry or entry.get("email_status") not in {"accepted", "delivered"}:
@@ -1594,12 +1615,48 @@ def delivery_preflight(
             "domain": domain.get("name"),
             "status": domain.get("status"),
         }
-    if not entry or entry.get("telegram_status") not in {
-        "accepted",
-        "delivered",
-    }:
+    if require_telegram and (
+        not entry
+        or entry.get("telegram_status") not in {"accepted", "delivered"}
+    ):
         checks["telegram"] = telegram_preflight(config)
     return checks
+
+
+def defer_telegram(
+    config: Config,
+    entry: dict[str, Any],
+    reason: str,
+) -> dict[str, Any]:
+    mark_entry_channel(
+        config,
+        entry,
+        "telegram",
+        status="pending",
+        error=reason,
+    )
+    return {
+        "status": "pending",
+        "reason": "channel-not-yet-registered",
+    }
+
+
+def deliver_or_defer_telegram(
+    config: Config,
+    entry: dict[str, Any],
+    principle: dict[str, Any] | None,
+    *,
+    require_telegram: bool,
+) -> dict[str, Any]:
+    try:
+        return deliver_telegram(config, entry, principle=principle)
+    except SuccessEmpireError as exc:
+        if (
+            require_telegram
+            or str(exc) != "Success Empire Telegram channel ID is not configured"
+        ):
+            raise
+        return defer_telegram(config, entry, str(exc))
 
 
 def afternoon_secret(config: Config) -> str:
@@ -1616,9 +1673,15 @@ def workflow(
     day: str,
     *,
     preview: bool = False,
+    require_telegram: bool = False,
+    skip_telegram: bool = False,
 ) -> dict[str, Any]:
     existing = entry_for_day(config, day, kind)
-    delivery_preflight(config, existing)
+    delivery_preflight(
+        config,
+        existing,
+        require_telegram=require_telegram and not skip_telegram,
+    )
     principle = (
         entry_for_day(config, day, "principle")
         if kind == "journal"
@@ -1676,10 +1739,20 @@ def workflow(
         }
     email_result = deliver_email(config, entry)
     latest = entry_for_day(config, day, kind)
-    telegram_result = deliver_telegram(
-        config,
-        latest or entry,
-        principle=principle,
+    delivery_entry = latest or entry
+    telegram_result = (
+        defer_telegram(
+            config,
+            delivery_entry,
+            "Success Empire Telegram channel ID is not configured",
+        )
+        if skip_telegram
+        else deliver_or_defer_telegram(
+            config,
+            delivery_entry,
+            principle,
+            require_telegram=require_telegram,
+        )
     )
     return {
         "kind": kind,
@@ -1717,7 +1790,12 @@ def run_monitor(config: Config, day: str) -> dict[str, Any]:
     errors: list[str] = []
     for kind in ("principle", "journal"):
         try:
-            results[kind] = workflow(config, kind, day)
+            results[kind] = workflow(
+                config,
+                kind,
+                day,
+                require_telegram=True,
+            )
         except SuccessEmpireError as exc:
             errors.append(f"{kind}: {exc}")
     rows = table_query(
@@ -1759,6 +1837,14 @@ def build_parser() -> argparse.ArgumentParser:
             "--preview",
             action="store_true",
             help="generate or render without delivering",
+        )
+        sub.add_argument(
+            "--skip-telegram",
+            action="store_true",
+            help=(
+                "publish the website and owner email while leaving Telegram "
+                "pending for the monitor"
+            ),
         )
         if command == "afternoon":
             sub.add_argument(
@@ -1819,7 +1905,15 @@ def main(argv: list[str] | None = None) -> int:
             print_json({"day": day, "context": collect_day_context(config, day, principle)})
             return 0
         if args.command == "morning":
-            print_json(workflow(config, "principle", day, preview=args.preview))
+            print_json(
+                workflow(
+                    config,
+                    "principle",
+                    day,
+                    preview=args.preview,
+                    skip_telegram=args.skip_telegram,
+                )
+            )
             return 0
         if args.command == "afternoon":
             target = deterministic_afternoon_target(
@@ -1835,7 +1929,15 @@ def main(argv: list[str] | None = None) -> int:
                     }
                 )
                 return 0
-            print_json(workflow(config, "journal", day, preview=args.preview))
+            print_json(
+                workflow(
+                    config,
+                    "journal",
+                    day,
+                    preview=args.preview,
+                    skip_telegram=args.skip_telegram,
+                )
+            )
             return 0
         if args.command == "monitor":
             print_json(run_monitor(config, day))
