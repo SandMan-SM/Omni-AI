@@ -113,17 +113,13 @@ export const PARTNER_NETWORK: NetworkMember[] = [
     weight: 1,
     utmCampaign: "love-thy-barber",
   },
-  {
-    slug: "prime_iv",
-    name: "Prime IV Hydration — Sandy",
-    href: "https://primeivsandy.com",
-    eyebrow: "Partner",
-    tagline: "IV wellness therapy. First drip $49 in Sandy.",
-    cta: "Feel it",
-    category: "wellness",
-    weight: 1,
-    utmCampaign: "prime-iv-sandy",
-  },
+  /*
+   * REMOVED 2026-08-04: "Prime IV Hydration — Sandy" (primeivsandy.com).
+   * Its registry row is active=false, owned=false, and the only Prime-IV-adjacent
+   * asset we actually own is the livebetteronthedrip.com domain. It was rotating
+   * into every brand newsletter — promoting a business we do not own, from lists
+   * we do. Do not re-add without an owned+active row in analytics.tenants.
+   */
   {
     slug: "alira",
     name: "Alira",
@@ -158,15 +154,21 @@ export const PARTNER_NETWORK: NetworkMember[] = [
     utmCampaign: "imperium",
   },
   {
-    slug: "greenwood",
-    name: "The Greenwood — Phoenix West Valley",
+    /*
+     * Slug was "greenwood", which has no row in analytics.tenants — so this entry
+     * could never resolve against the registry. The surface itself IS owned:
+     * arizonaphoenixrentals.com, registry slug `arizonaphoenixrentals`, owned+active.
+     * Renamed to match the registry rather than removed.
+     */
+    slug: "arizonaphoenixrentals",
+    name: "Arizona Phoenix Rentals",
     href: "https://arizonaphoenixrentals.com",
     eyebrow: "Featured",
-    tagline: "Furnished mid-term stays for travel nurses and relocations.",
+    tagline: "Short-term and vacation property rentals across the Phoenix valley.",
     cta: "Stay",
     category: "home-services",
     weight: 1,
-    utmCampaign: "greenwood-rentals",
+    utmCampaign: "arizona-phoenix-rentals",
   },
   {
     slug: "omnileads",
@@ -230,12 +232,13 @@ const HOST_TO_MEMBER: Record<string, string> = {
   youngs: "youngs",
   ltb: "ltb",
   alira: "alira",
-  prime_iv: "prime_iv",
   rene: "rene",
   omnileads: "omnileads",
   omni: "omnileadsagi",
-  phoenix: "phoenix",
-  niki: "niki",
+  arizonaphoenixrentals: "arizonaphoenixrentals",
+  // `prime_iv`, `phoenix` and `niki` were removed 2026-08-04 — all three are
+  // owned=false / active=false in analytics.tenants, so they are not federation
+  // hosts and must not appear as network members either.
   // News brands host the banner but are not creatives themselves.
   wasatch: "wasatch",
   mainst: "mainst",
