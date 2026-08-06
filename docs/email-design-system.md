@@ -103,6 +103,33 @@ Each production email maps to exactly one render function:
 
 ---
 
+## Interlinked Conversion Contract
+
+Interlinked email is a route into the website, not a portable copy of the
+issue. Free and Premium subscriber emails contain only:
+
+1. the issue title;
+2. one bounded teaser paragraph;
+3. one primary button to that recipient's entitled web issue; and
+4. account/subscription footer links.
+
+Never include the issue's insight paragraphs, power move, exclusive analysis,
+AI recommendation, source notes, keywords, social snippets, publication
+receipt, or internal readiness metadata in email.
+
+Audience routing is exclusive:
+
+- Free members receive only the Free teaser.
+- Premium members receive only the Premium teaser.
+- Admins receive the combined owner teaser with both Free and Premium links.
+
+The deterministic Hermes owner sender is
+`ops/hermes-interlinked/interlinked-owner-email.py`. It must validate both the
+admin and Premium entitlements before sending the combined edition. A prior
+template receipt never deduplicates a corrected template version.
+
+---
+
 ## The Structure Contract (every template)
 
 Every email is composed in this order, top to bottom, using the primitives:

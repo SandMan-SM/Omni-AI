@@ -992,14 +992,11 @@ function premiumFallbackContent(today: string, dayType: string): NewsletterConte
 import {
   wrapper as tplWrapper,
   header as tplHeader,
-  callout as tplCallout,
   sectionHeading as tplSectionHeading,
   section as tplSection,
   ctaBlock as tplCtaBlock,
   footer as tplFooter,
   THEME as EMAIL_THEME,
-  accentColor as emailAccent,
-  accentBg as emailAccentBg,
 } from '@/lib/email-template';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
@@ -1026,134 +1023,66 @@ function isPublishAllowed(slug: string | undefined | null): boolean {
   return getShoutoutForSlug(slug, 'free', new Date().toISOString()) !== null;
 }
 
+function teaserExcerpt(text: string, maxLength = 260): string {
+  const clean = String(text || '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= maxLength) return clean;
+  const sentence = clean.match(/^.{80,260}?[.!?](?:\s|$)/)?.[0]?.trim();
+  if (sentence) return sentence;
+  const clipped = clean.slice(0, maxLength + 1);
+  const boundary = clipped.lastIndexOf(' ');
+  return `${clipped.slice(0, boundary > 120 ? boundary : maxLength).trim()}…`;
+}
+
 function buildNewsletterEmailHtml(content: NewsletterContent, tier: 'free' | 'premium'): string {
   const isPremium = tier === 'premium';
   const accent = isPremium ? 'amber' : 'purple';
-  const accentHex = emailAccent(accent);
-  const accentBgHex = emailAccentBg(accent);
-  const today = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const title = isPremium ? 'Interlinked Premium' : 'Interlinked';
-  const subtitle = isPremium
-    ? `Daily Premium Intelligence Brief · ${today}`
-    : `Daily Intelligence Brief · ${today}`;
-
-  const postUrl = content.slug ? `${SITE_URL}/newsletter/${content.slug}` : SITE_URL;
-  const shareSubject = encodeURIComponent(`Interlinked: ${content.subject}`);
-  const shareBody = encodeURIComponent(
-    `Today's Interlinked brief from Omni AI:\n\n${content.subject}\n\n${postUrl}\n\nBook a working session anytime: ${SITE_URL}/book-now`,
-  );
-  const shareHref = `mailto:?subject=${shareSubject}&body=${shareBody}`;
-
-  // Quote pull (optional, exactly one)
-  const quoteBlock = content.quote
-    ? `<tr><td style="padding:0 0 20px;">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${accentBgHex};border:1px solid ${EMAIL_THEME.border};border-radius:12px;">
-          <tr><td style="padding:22px 26px;">
-            <p style="margin:0;font-size:16px;font-style:italic;line-height:1.65;color:${accentHex};text-align:center;">${esc(content.quote)}</p>
-          </td></tr>
-        </table>
-      </td></tr>`
-    : '';
-
-  // Subject as heading above the body
-  const subjectHeading = `
-<tr><td style="padding:8px 0 18px;">
-  <h2 style="margin:0;font-family:${EMAIL_THEME.fontBody};font-size:22px;line-height:1.3;font-weight:800;color:${EMAIL_THEME.textPrimary};letter-spacing:-0.01em;">${esc(content.subject)}</h2>
-</td></tr>`;
-
-  // Intro paragraph
-  const introBlock = `
-<tr><td style="padding:0 0 22px;">
-  <p style="margin:0;font-size:16px;line-height:1.75;color:${EMAIL_THEME.text};">${esc(content.intro)}</p>
-</td></tr>`;
-
-  // Insights — paragraphs only (per design rule: never bullets)
-  const insightsInner = content.insights
-    .map((ins) => `<p style="margin:0 0 14px;font-size:15px;line-height:1.75;color:${EMAIL_THEME.text};">${esc(ins)}</p>`)
-    .join('');
-  const insightsBlock =
-    tplSectionHeading("Today's insights", accent as any) +
-    tplSection(insightsInner);
-
-  // Premium-only: exclusive_insight + ai_recommendation
-  const premiumExtras = isPremium
-    ? [
-        (content as PremiumContent).exclusive_insight
-          ? tplSectionHeading('Premium · exclusive insight', 'amber') +
-            tplSection(`<p style="margin:0;font-size:15px;line-height:1.75;color:${EMAIL_THEME.text};">${esc((content as PremiumContent).exclusive_insight!)}</p>`)
-          : '',
-        (content as PremiumContent).ai_recommendation
-          ? tplCallout('AI tool of the week', esc((content as PremiumContent).ai_recommendation!), 'amber')
-          : '',
-      ].join('')
-    : '';
-
-  // Power move callout (always)
-  const powerMoveBlock = tplCallout('Power move', esc(content.power_move), accent as any);
-
-  // CTA block — table-based two-button row
-  const ctaBlockHtml = tplCtaBlock({
-    tagline: 'Book a free 30-minute strategy session — or share this with someone who needs it.',
-    primary: { href: `${SITE_URL}/book-now`, label: 'Book Now', accent: accent as any },
-    secondary: { href: shareHref, label: 'Share' },
+  const today = new Date().toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
   });
+  const postUrl = content.slug ? `${SITE_URL}/newsletter/${content.slug}` : SITE_URL;
+  const teaser = teaserExcerpt(content.intro);
 
-  // Read-on-web link + $50K callout
-  const webLink = `
-<tr><td align="center" style="padding:0 0 16px;">
-  <a href="${postUrl}" style="font-size:13px;color:${EMAIL_THEME.cyan};text-decoration:underline;">Read this on the web →</a>
-</td></tr>`;
-
-  const fiftyKCallout = `
-<tr><td style="padding:0 0 24px;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:${accentBgHex};border:1px solid ${EMAIL_THEME.border};border-radius:10px;">
-    <tr><td align="center" style="padding:16px 20px;">
-      <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:${accentHex};">Get a $50,000 certification — free</p>
-      <p style="margin:0;font-size:12px;color:${EMAIL_THEME.textMuted};">Sponsored by Omni AI · <a href="https://t.me/+HxMnLSV1FYs0YmIx" style="color:${EMAIL_THEME.cyan};text-decoration:underline;">Join the community</a></p>
-    </td></tr>
-  </table>
-</td></tr>`;
-
-  // Keywords pill strip
-  const keywordsBlock = content.keywords?.length
-    ? `<tr><td style="padding:0 0 16px;">
-        <p style="margin:0 0 8px;font-family:${EMAIL_THEME.fontMono};font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:${EMAIL_THEME.textSubtle};">Today's trends</p>
-        <p style="margin:0;font-size:13px;line-height:1.8;color:${EMAIL_THEME.textMuted};">${content.keywords.slice(0, 12).map((k) => esc(k)).join(' <span style=\"color:' + EMAIL_THEME.textSubtle + ';\">·</span> ')}</p>
-      </td></tr>`
-    : '';
-
-  // Footer
-  const footerLinks = isPremium
-    ? [
-        { label: 'Manage account', href: `${SITE_URL}/dashboard` },
-        { label: 'Affiliate program', href: `${SITE_URL}/affiliate/info` },
-      ]
-    : [
-        { label: 'Manage subscription', href: `${SITE_URL}/dashboard` },
-        { label: 'Upgrade to Premium', href: `${SITE_URL}/interlinked/premium` },
-      ];
-
+  // Conversion contract: the inbox gets a useful reason to click, never the
+  // issue itself. Insights, power move, premium analysis, quote, offer, and
+  // keyword metadata live only on the website.
   const body = [
-    tplHeader({ eyebrow: title, title: subtitle, accent: accent as any }),
-    quoteBlock,
-    subjectHeading,
-    introBlock,
-    insightsBlock,
-    premiumExtras,
-    powerMoveBlock,
-    ctaBlockHtml,
-    webLink,
-    fiftyKCallout,
-    keywordsBlock,
+    tplHeader({
+      eyebrow: title,
+      title: `${isPremium ? 'Premium intelligence' : 'Daily intelligence'} · ${today}`,
+      accent: accent as any,
+    }),
+    tplSectionHeading(isPremium ? 'Your premium brief is ready' : 'Today’s signal', accent as any),
+    tplSection(`
+      <h2 style="margin:0 0 14px;font-family:${EMAIL_THEME.fontBody};font-size:24px;line-height:1.3;font-weight:800;color:${EMAIL_THEME.textPrimary};letter-spacing:-0.01em;">${esc(content.subject)}</h2>
+      <p style="margin:0;font-size:16px;line-height:1.75;color:${EMAIL_THEME.text};">${esc(teaser)}</p>
+    `),
+    tplCtaBlock({
+      tagline: isPremium
+        ? 'Your premium analysis and implementation move are waiting on Interlinked.'
+        : 'Read the evidence, implications, and next move on Interlinked.',
+      primary: {
+        href: postUrl,
+        label: isPremium ? 'Open Premium Brief' : 'Read Today’s Issue',
+        accent: accent as any,
+      },
+    }),
     tplFooter({
-      tagline: `Omni AI · Interlinked ${isPremium ? 'Premium' : ''}`.trim(),
-      links: footerLinks,
+      tagline: `Omni AI · ${title}`,
+      links: isPremium
+        ? [{ label: 'Manage account', href: `${SITE_URL}/dashboard` }]
+        : [
+            { label: 'Manage subscription', href: `${SITE_URL}/dashboard` },
+            { label: 'Upgrade to Premium', href: `${SITE_URL}/interlinked/premium` },
+          ],
     }),
   ].join('');
 
   return tplWrapper({
     title: `${title} · ${content.subject}`,
-    preheader: content.intro.slice(0, 140),
+    preheader: teaser.slice(0, 140),
     body,
   });
 }

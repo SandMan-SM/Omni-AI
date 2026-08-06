@@ -31,8 +31,18 @@ def load_receipt(path: Path, label: str) -> dict:
 
 def verify() -> None:
     day = today()
-    load_receipt(STATE_ROOT / f"{day}.json", "publication")
-    load_receipt(STATE_ROOT / f"{day}-email.json", "email")
+    publication = load_receipt(STATE_ROOT / f"{day}.json", "publication")
+    load_receipt(STATE_ROOT / f"{day}-owner-teaser-v3.json", "email")
+    telegram = publication.get("telegram")
+    if (
+        not isinstance(telegram, dict)
+        or telegram.get("telegram_content")
+        != "premium_teaser_with_free_art"
+        or not telegram.get("photo")
+    ):
+        raise InterlinkedError(
+            "Telegram receipt is not Premium teaser + Free artwork"
+        )
 
     rows, source = newsletter_posts()
     if source != "supabase":
@@ -69,8 +79,13 @@ def verify() -> None:
         raise InterlinkedError("database pair missing")
     if any(row.get("status") != "published" for row in state):
         raise InterlinkedError("database publication marker missing")
-    if any(not row.get("telegram_sent") for row in state):
-        raise InterlinkedError("Telegram receipt is not mirrored in the database")
+    premium_state = next(
+        (row for row in state if row.get("tier") == "premium"), None
+    )
+    if not premium_state or not premium_state.get("telegram_sent"):
+        raise InterlinkedError(
+            "Premium Telegram receipt is not mirrored in the database"
+        )
     if any(not row.get("email_sent") for row in state):
         raise InterlinkedError("owner email receipt is not mirrored in the database")
 

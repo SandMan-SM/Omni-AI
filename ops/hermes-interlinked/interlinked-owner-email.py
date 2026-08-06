@@ -29,6 +29,7 @@ from interlinked_common import (
     run,
     same_day_pair,
     secret_value,
+    supabase_request,
     today,
 )
 
@@ -64,11 +65,26 @@ def live_preflight(day: str, artifact: str) -> dict[str, Any]:
     rows, source = newsletter_posts()
     if source != "supabase":
         raise InterlinkedError(f"newsletter API source is {source}, not Supabase")
-    free, premium = same_day_pair(rows, day)
-    if free.get("slug") != f"interlinked-free-{day}":
+    public_free, public_premium = same_day_pair(rows, day)
+    if public_free.get("slug") != f"interlinked-free-{day}":
         raise InterlinkedError("live Free slug does not match the scheduled day")
-    if premium.get("slug") != f"interlinked-premium-{day}":
+    if public_premium.get("slug") != f"interlinked-premium-{day}":
         raise InterlinkedError("live Premium slug does not match the scheduled day")
+
+    # The public posts endpoint intentionally exposes only minimal dashboard
+    # fields. Fetch the bounded teaser source directly from the canonical rows
+    # after the public slugs have been verified.
+    content_rows = newsletter_rows_for_day(
+        day,
+        select="slug,tier,subject,intro,status",
+    )
+    free, premium = same_day_pair(content_rows, day)
+    if any(row.get("status") != "published" for row in (free, premium)):
+        raise InterlinkedError("canonical Interlinked pair is not published")
+    if free.get("subject") != public_free.get("subject"):
+        raise InterlinkedError("public Free subject does not match the database")
+    if premium.get("subject") != public_premium.get("subject"):
+        raise InterlinkedError("public Premium subject does not match the database")
 
     hero = frontmatter_value(artifact, "hero_image")
     share = frontmatter_value(artifact, "share_image")
@@ -125,92 +141,110 @@ def provider_receipt(email_id: str, key: str) -> dict[str, Any]:
     }
 
 
-def markdown_body(text: str) -> str:
-    body = re.sub(r"\A---\n.*?\n---\n", "", text, count=1, flags=re.DOTALL)
-    body = re.sub(r"(?ms)^## Publication Receipt\n.*\Z", "", body).strip()
-    chunks: list[str] = []
-    in_list = False
-    for raw in body.splitlines():
-        line = raw.strip()
-        if not line:
-            if in_list:
-                chunks.append("</ul>")
-                in_list = False
-            continue
-        if line.startswith("## "):
-            if in_list:
-                chunks.append("</ul>")
-                in_list = False
-            chunks.append(
-                '<h2 style="margin:30px 0 12px;color:#fbbf24;font-size:22px;">'
-                + html.escape(line[3:])
-                + "</h2>"
-            )
-            continue
-        item = re.match(r"^(?:\d+\.|-)\s+(.+)$", line)
-        if item:
-            if not in_list:
-                chunks.append(
-                    '<ul style="margin:8px 0 20px;padding-left:22px;color:#e5e7eb;">'
-                )
-                in_list = True
-            chunks.append(
-                '<li style="margin:8px 0;line-height:1.65;">'
-                + linkify(item.group(1))
-                + "</li>"
-            )
-            continue
-        if in_list:
-            chunks.append("</ul>")
-            in_list = False
-        chunks.append(
-            '<p style="margin:0 0 15px;color:#e5e7eb;line-height:1.75;">'
-            + linkify(line)
-            + "</p>"
-        )
-    if in_list:
-        chunks.append("</ul>")
-    return "".join(chunks)
-
-
-def linkify(text: str) -> str:
-    escaped = html.escape(text)
-    return re.sub(
-        r"(https://[^\s<]+)",
-        r'<a href="\1" style="color:#fbbf24;">\1</a>',
-        escaped,
+def recipient_entitlements() -> dict[str, Any]:
+    rows = supabase_request(
+        "profiles",
+        query={
+            "select": (
+                "email,is_admin,is_premium,role,subscription_status,"
+                "newsletter_subscribed"
+            ),
+            "email": f"eq.{RECIPIENT}",
+            "limit": "1",
+        },
     )
+    if not isinstance(rows, list) or len(rows) != 1:
+        raise InterlinkedError("owner profile is missing or ambiguous")
+    row = rows[0]
+    if not isinstance(row, dict):
+        raise InterlinkedError("owner profile is malformed")
+    is_admin = row.get("is_admin") is True or row.get("role") == "admin"
+    is_premium = (
+        row.get("is_premium") is True
+        or row.get("subscription_status") == "active"
+    )
+    if not is_admin:
+        raise InterlinkedError("owner recipient is not an active admin")
+    if not is_premium:
+        raise InterlinkedError("owner recipient is not entitled to Premium")
+    if row.get("newsletter_subscribed") is False:
+        raise InterlinkedError("owner recipient is unsubscribed")
+    return {
+        "email": RECIPIENT,
+        "is_admin": True,
+        "is_premium": True,
+    }
 
 
-def build_email(artifact: str, live: dict[str, Any]) -> tuple[str, str]:
-    subject = str(live["free"].get("subject") or "").strip()
-    if not subject:
-        raise InterlinkedError("live Free subject is empty")
-    hero = live["hero"]
+def teaser_excerpt(value: Any, max_length: int = 260) -> str:
+    clean = re.sub(r"\s+", " ", str(value or "")).strip()
+    if not clean:
+        raise InterlinkedError("live issue teaser is empty")
+    if len(clean) <= max_length:
+        return clean
+    sentence = re.match(r"^.{80,260}?[.!?](?:\s|$)", clean)
+    if sentence:
+        return sentence.group(0).strip()
+    clipped = clean[: max_length + 1]
+    boundary = clipped.rfind(" ")
+    return clipped[: boundary if boundary > 120 else max_length].strip() + "…"
+
+
+def build_email(live: dict[str, Any]) -> tuple[str, str]:
+    free_subject = str(live["free"].get("subject") or "").strip()
+    premium_subject = str(live["premium"].get("subject") or "").strip()
+    if not free_subject or not premium_subject:
+        raise InterlinkedError("live Interlinked subject is empty")
+    free_teaser = teaser_excerpt(live["free"].get("intro"))
+    premium_teaser = teaser_excerpt(live["premium"].get("intro"))
+    hero = str(live["hero"])
     free_url = f"{SITE_URL}/newsletter/{live['free']['slug']}"
     premium_url = f"{SITE_URL}/newsletter/{live['premium']['slug']}"
-    body = markdown_body(artifact)
     email_html = f"""<!doctype html>
 <html>
-  <body style="margin:0;background:#050505;font-family:Arial,sans-serif;">
-    <div style="max-width:720px;margin:0 auto;padding:26px 18px 42px;">
-      <div style="color:#fbbf24;font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;">Interlinked · Omni AI</div>
-      <h1 style="margin:10px 0 18px;color:#fff;font-size:34px;line-height:1.12;">{html.escape(subject)}</h1>
-      <img src="{html.escape(hero)}" alt="" width="720" style="width:100%;height:auto;border-radius:14px;border:1px solid #3f3214;" />
-      <div style="margin-top:24px;">{body}</div>
-      <div style="margin:30px 0 8px;text-align:center;">
-        <a href="{html.escape(free_url)}" style="display:inline-block;margin:5px;padding:13px 20px;border-radius:9px;background:#f59e0b;color:#111827;text-decoration:none;font-weight:700;">Read Free Issue</a>
-        <a href="{html.escape(premium_url)}" style="display:inline-block;margin:5px;padding:13px 20px;border-radius:9px;border:1px solid #f59e0b;color:#fbbf24;text-decoration:none;font-weight:700;">Open Premium Brief</a>
-      </div>
-    </div>
+  <body style="margin:0;background:#0a0a0f;font-family:Arial,sans-serif;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#0a0a0f;">
+      <tr><td align="center" style="padding:28px 16px 42px;">
+        <table role="presentation" width="640" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:640px;">
+          <tr><td style="padding:0 0 16px;color:#f59e0b;font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;">Interlinked · Admin Edition</td></tr>
+          <tr><td style="padding:0 0 20px;">
+            <h1 style="margin:0;color:#f1f5f9;font-size:32px;line-height:1.18;">Today’s Free + Premium intelligence is live.</h1>
+          </td></tr>
+          <tr><td style="padding:0 0 22px;">
+            <img src="{html.escape(hero)}" alt="" width="640" style="display:block;width:100%;height:auto;border:0;border-radius:10px;" />
+          </td></tr>
+          <tr><td style="padding:0 0 16px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#13131a;border:1px solid #262631;border-radius:10px;">
+              <tr><td style="padding:22px 24px;">
+                <p style="margin:0 0 9px;color:#a855f7;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;">Free Brief</p>
+                <h2 style="margin:0 0 11px;color:#f1f5f9;font-size:22px;line-height:1.3;">{html.escape(free_subject)}</h2>
+                <p style="margin:0 0 18px;color:#e5e7eb;font-size:15px;line-height:1.7;">{html.escape(free_teaser)}</p>
+                <a href="{html.escape(free_url)}" style="display:inline-block;padding:13px 20px;border-radius:9px;background:#a855f7;color:#ffffff;text-decoration:none;font-weight:700;">Read Free Issue</a>
+              </td></tr>
+            </table>
+          </td></tr>
+          <tr><td style="padding:0 0 20px;">
+            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="background:#13131a;border:1px solid #3a321f;border-radius:10px;">
+              <tr><td style="padding:22px 24px;">
+                <p style="margin:0 0 9px;color:#f59e0b;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;">Premium Brief</p>
+                <h2 style="margin:0 0 11px;color:#f1f5f9;font-size:22px;line-height:1.3;">{html.escape(premium_subject)}</h2>
+                <p style="margin:0 0 18px;color:#e5e7eb;font-size:15px;line-height:1.7;">{html.escape(premium_teaser)}</p>
+                <a href="{html.escape(premium_url)}" style="display:inline-block;padding:13px 20px;border-radius:9px;background:#f59e0b;color:#111827;text-decoration:none;font-weight:700;">Open Premium Brief</a>
+              </td></tr>
+            </table>
+          </td></tr>
+          <tr><td align="center" style="padding-top:4px;color:#6b7280;font-size:12px;">The full intelligence stays on Interlinked. Your inbox gets the signal and the route.</td></tr>
+        </table>
+      </td></tr>
+    </table>
   </body>
 </html>"""
-    return f"Interlinked — {subject}", email_html
+    return f"Interlinked Admin — {free_subject}", email_html
 
 
 def mark_delivered(day: str, receipt: dict[str, Any]) -> None:
     feedback = (
-        f"owner-only resend:{receipt['id']} status:{receipt['last_event']} "
+        f"owner-teaser-v3:{receipt['id']} status:{receipt['last_event']} "
         f"verified:{now_iso()}"
     )
     rows = newsletter_rows_for_day(
@@ -237,7 +271,7 @@ def mark_delivered(day: str, receipt: dict[str, Any]) -> None:
 
 
 def existing_receipt(day: str, key: str) -> dict[str, Any] | None:
-    path = STATE_ROOT / f"{day}-email.json"
+    path = STATE_ROOT / f"{day}-owner-teaser-v3.json"
     try:
         state = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
@@ -255,7 +289,7 @@ def existing_receipt(day: str, key: str) -> dict[str, Any] | None:
 
     rows = row_email_state(day)
     feedback = "\n".join(str(row.get("send_feedback") or "") for row in rows)
-    match = re.search(r"owner-only resend:([A-Za-z0-9-]+)", feedback)
+    match = re.search(r"owner-teaser-v3:([A-Za-z0-9-]+)", feedback)
     if all(bool(row.get("email_sent")) for row in rows) and match:
         receipt = provider_receipt(match.group(1), key)
         return {
@@ -267,11 +301,18 @@ def existing_receipt(day: str, key: str) -> dict[str, Any] | None:
     return None
 
 
-def execute(check_only: bool) -> dict[str, Any]:
-    day = today()
+def execute(
+    check_only: bool,
+    requested_day: str | None = None,
+    preview_html: Path | None = None,
+) -> dict[str, Any]:
+    day = requested_day or today()
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day):
+        raise InterlinkedError(f"invalid issue day: {day}")
     artifact_path, artifact = artifact_for_day(day)
     live = live_preflight(day, artifact)
     rows = row_email_state(day)
+    entitlements = recipient_entitlements()
     sender = check_resend_sender()
     values = parse_env_file()
     key = secret_value("RESEND_API_KEY", values)
@@ -280,9 +321,13 @@ def execute(check_only: bool) -> dict[str, Any]:
         return {
             **prior,
             "artifact": str(artifact_path),
+            "entitlements": entitlements,
             "sender": sender,
         }
-    subject, body = build_email(artifact, live)
+    subject, body = build_email(live)
+    if preview_html is not None:
+        preview_html.parent.mkdir(parents=True, exist_ok=True)
+        preview_html.write_text(body, encoding="utf-8")
     if check_only:
         return {
             "ok": True,
@@ -290,6 +335,8 @@ def execute(check_only: bool) -> dict[str, Any]:
             "day": day,
             "subject": subject,
             "artifact": str(artifact_path),
+            "entitlements": entitlements,
+            "preview_html": str(preview_html) if preview_html else None,
             "sender": sender,
             "rows": rows,
         }
@@ -306,7 +353,7 @@ def execute(check_only: bool) -> dict[str, Any]:
         method="POST",
         headers={
             "Authorization": f"Bearer {key}",
-            "Idempotency-Key": f"interlinked-owner/{day}/v2",
+            "Idempotency-Key": f"interlinked-owner/{day}/v3",
         },
         payload={
             "from": from_address,
@@ -315,6 +362,7 @@ def execute(check_only: bool) -> dict[str, Any]:
             "html": body,
             "tags": [
                 {"name": "workflow", "value": "interlinked_owner"},
+                {"name": "template", "value": "teaser_v3"},
                 {"name": "issue_date", "value": day.replace("-", "_")},
             ],
         },
@@ -332,11 +380,12 @@ def execute(check_only: bool) -> dict[str, Any]:
         "artifact": str(artifact_path),
         "provider": receipt,
         "recipient": RECIPIENT,
+        "entitlements": entitlements,
         "sender": sender,
     }
     # Persist provider acceptance before the database mirror. If the mirror
     # fails, retries recover from this receipt without sending twice.
-    atomic_json(STATE_ROOT / f"{day}-email.json", state)
+    atomic_json(STATE_ROOT / f"{day}-owner-teaser-v3.json", state)
     mark_delivered(day, receipt)
     return state
 
@@ -344,19 +393,24 @@ def execute(check_only: bool) -> dict[str, Any]:
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--check-only", action="store_true")
+    parser.add_argument("--day")
+    parser.add_argument("--preview-html", type=Path)
     args = parser.parse_args()
     try:
-        result = execute(args.check_only)
+        result = execute(args.check_only, args.day, args.preview_html)
         print(json.dumps(result, ensure_ascii=False, sort_keys=True))
         return 0
     except (InterlinkedError, OSError, ValueError, json.JSONDecodeError) as exc:
         failure = {
             "ok": False,
-            "day": today(),
+            "day": args.day or today(),
             "failed_at": now_iso(),
             "error": str(exc),
         }
-        atomic_json(STATE_ROOT / f"{today()}-email-failure.json", failure)
+        atomic_json(
+            STATE_ROOT / f"{args.day or today()}-owner-teaser-v3-failure.json",
+            failure,
+        )
         print(json.dumps(failure, ensure_ascii=False, sort_keys=True))
         return 1
 

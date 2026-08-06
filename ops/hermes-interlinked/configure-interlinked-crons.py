@@ -23,6 +23,7 @@ EMAIL_ID = "88d2f6823782"
 MONITOR_NAME = "Interlinked Daily Health Monitor — receipts or alert"
 FILES = (
     "interlinked_common.py",
+    "interlinked-daily-channel-post.py",
     "interlinked-daily-release.py",
     "interlinked-owner-email.py",
     "interlinked-health-monitor.py",

@@ -93,6 +93,7 @@ AGENTIC_TERMS = (
 COPYRIGHT_LED_SUBJECT = re.compile(
     r"(?i)\b(?:copyright|licensing|training[- ]data lawsuit|intellectual property)\b"
 )
+QUESTION_RE = re.compile(r"^[^?\n]{12,180}\?$")
 
 
 def response_section(text: str) -> str:
@@ -189,19 +190,86 @@ def clean_text(value: Any) -> str:
 def validate_rows(payload: dict[str, Any], day: str) -> None:
     if payload.get("date") != day:
         raise InterlinkedError("rows JSON date does not match the scheduled day")
+    seo_question = clean_text(payload.get("seo_question"))
+    if not QUESTION_RE.fullmatch(seo_question):
+        raise InterlinkedError(
+            "seo_question must be one natural-language question ending in ?"
+        )
+    search_intent = clean_text(payload.get("search_intent"))
+    if len(search_intent.split()) < 8:
+        raise InterlinkedError("search_intent is too thin")
+    demand_evidence = clean_text(payload.get("demand_evidence"))
+    if len(demand_evidence.split()) < 20:
+        raise InterlinkedError(
+            "demand_evidence must explain why the selected question won"
+        )
+    demand_signals = payload.get("demand_signals")
+    if not isinstance(demand_signals, list) or not 2 <= len(demand_signals) <= 6:
+        raise InterlinkedError("rows JSON must contain 2-6 demand signals")
+    issue_date = datetime.strptime(day, "%Y-%m-%d").date()
+    demand_hosts: set[str] = set()
+    for signal in demand_signals:
+        if not isinstance(signal, dict):
+            raise InterlinkedError("every demand signal must be an object")
+        url = clean_text(signal.get("url"))
+        match = re.match(r"^https://([^/\s]+)(?:/.*)?$", url)
+        if not match:
+            raise InterlinkedError(f"invalid demand-signal URL: {url or '<empty>'}")
+        demand_hosts.add(re.sub(r"^www\.", "", match.group(1)))
+        observed_at = clean_text(signal.get("observed_at"))
+        try:
+            observed_date = datetime.strptime(observed_at, "%Y-%m-%d").date()
+        except ValueError as exc:
+            raise InterlinkedError(
+                f"invalid demand observed_at date: {observed_at or '<empty>'}"
+            ) from exc
+        age_days = (issue_date - observed_date).days
+        if not 0 <= age_days <= 3:
+            raise InterlinkedError(
+                "demand signals must have been observed in the last three days"
+            )
+        if len(clean_text(signal.get("query")).split()) < 2:
+            raise InterlinkedError("every demand signal must record its seed query")
+        if len(clean_text(signal.get("signal")).split()) < 8:
+            raise InterlinkedError(
+                "every demand signal must explain the observed question pattern"
+            )
+    if len(demand_hosts) < 2:
+        raise InterlinkedError(
+            "demand evidence must come from at least two distinct surfaces"
+        )
+    related_questions = payload.get("related_questions")
+    if (
+        not isinstance(related_questions, list)
+        or not 3 <= len(related_questions) <= 6
+        or any(
+            not QUESTION_RE.fullmatch(clean_text(question))
+            for question in related_questions
+        )
+    ):
+        raise InterlinkedError(
+            "related_questions must contain 3-6 natural-language questions"
+        )
+    normalized_questions = {
+        clean_text(question).casefold() for question in related_questions
+    }
+    if len(normalized_questions) != len(related_questions):
+        raise InterlinkedError("related_questions must be unique")
+
     sources = payload.get("sources")
     if not isinstance(sources, list) or not 3 <= len(sources) <= 6:
         raise InterlinkedError("rows JSON must contain 3-6 sources")
-    issue_date = datetime.strptime(day, "%Y-%m-%d").date()
     hosts: set[str] = set()
     source_kinds: set[str] = set()
     source_ages: list[int] = []
+    source_urls: set[str] = set()
     for source in sources:
         if not isinstance(source, dict):
             raise InterlinkedError("every source must be an object")
         url = clean_text(source.get("url"))
         if not re.match(r"^https://[^/\s]+/.+", url):
             raise InterlinkedError(f"invalid source URL: {url or '<empty>'}")
+        source_urls.add(url)
         hosts.add(re.sub(r"^www\.", "", re.match(r"^https://([^/]+)", url).group(1)))
         kind = clean_text(source.get("kind")).lower()
         if kind not in {"primary", "independent"}:
@@ -238,6 +306,41 @@ def validate_rows(payload: dict[str, Any], day: str) -> None:
         raise InterlinkedError(
             "trend_evidence must explain why the agentic topic is moving now"
         )
+    if len(clean_text(payload.get("premium_market_summary")).split()) < 20:
+        raise InterlinkedError("premium_market_summary is too thin")
+    market_moves = payload.get("market_moves")
+    if not isinstance(market_moves, list) or not 3 <= len(market_moves) <= 5:
+        raise InterlinkedError("premium market brief must contain 3-5 moves")
+    ranks: list[int] = []
+    for move in market_moves:
+        if not isinstance(move, dict):
+            raise InterlinkedError("every market move must be an object")
+        rank = move.get("rank")
+        if not isinstance(rank, int):
+            raise InterlinkedError("every market move must have an integer rank")
+        ranks.append(rank)
+        for field, minimum in (
+            ("headline", 4),
+            ("what_changed", 12),
+            ("leverage", 12),
+            ("risk", 10),
+            ("action", 10),
+        ):
+            if len(clean_text(move.get(field)).split()) < minimum:
+                raise InterlinkedError(
+                    f"market move {rank} has a thin {field}"
+                )
+        move_sources = move.get("source_urls")
+        if (
+            not isinstance(move_sources, list)
+            or not move_sources
+            or any(clean_text(url) not in source_urls for url in move_sources)
+        ):
+            raise InterlinkedError(
+                f"market move {rank} must cite final editorial source URLs"
+            )
+    if sorted(ranks) != list(range(1, len(market_moves) + 1)):
+        raise InterlinkedError("market move ranks must be contiguous from 1")
 
     subjects: list[str] = []
     intros: list[str] = []
@@ -300,6 +403,14 @@ def validate_rows(payload: dict[str, Any], day: str) -> None:
         raise InterlinkedError("Free and Premium subjects must be distinct")
     if intros[0].lower() == intros[1].lower():
         raise InterlinkedError("Free and Premium intros must be distinct")
+    if subjects[0] != seo_question:
+        raise InterlinkedError(
+            "Free subject must exactly match the selected SEO question"
+        )
+    if intros[0].endswith("?"):
+        raise InterlinkedError(
+            "Free intro must answer the question instead of asking another one"
+        )
     premium = payload["premium"]
     for field in (
         "exclusive_insight",
@@ -407,9 +518,10 @@ def validate_artifact(artifact: str, day: str, stage: Path) -> Path:
         "## Premium Issue",
         "## Social Snippets",
         "## Send-Readiness",
-        "Not sent",
     )
     missing = [marker for marker in required if marker not in artifact]
+    if not re.search(r"\bnot\s+sent\b", artifact, flags=re.IGNORECASE):
+        missing.append("not sent")
     if missing:
         raise InterlinkedError(
             "artifact is missing required markers: " + ", ".join(missing)
@@ -1039,13 +1151,32 @@ def post_telegram(day: str) -> dict[str, Any]:
         receipt = json.loads(delivery.stdout.strip().splitlines()[-1])
     except (json.JSONDecodeError, IndexError) as exc:
         raise InterlinkedError("Telegram delivery returned no JSON receipt") from exc
-    if not receipt.get("ok") or receipt.get("day") != day:
+    if (
+        not receipt.get("ok")
+        or receipt.get("day") != day
+        or receipt.get("telegram_content")
+        != "premium_teaser_with_free_art"
+        or not receipt.get("photo")
+    ):
         raise InterlinkedError(f"Telegram delivery failed: {receipt}")
-    feedback = f"telegram message:{receipt.get('message_id')} day:{day}"
-    rows = newsletter_rows_for_day(day, select="slug,send_feedback")
+    message_id = receipt.get("message_id")
+    rows = newsletter_rows_for_day(day, select="slug,tier,send_feedback")
     if len(rows) != 2:
         raise InterlinkedError("cannot mirror Telegram receipt; database pair missing")
     for row in rows:
+        tier = str(row.get("tier") or "")
+        if tier == "premium":
+            feedback = (
+                f"telegram premium:{message_id} day:{day} "
+                "content:premium-teaser-with-free-art"
+            )
+            telegram_sent = True
+        else:
+            feedback = (
+                f"telegram artwork:{message_id} day:{day} "
+                "content:free-art-attached-to-premium-teaser"
+            )
+            telegram_sent = False
         prior = str(row.get("send_feedback") or "").strip()
         combined = prior if feedback in prior else "\n".join(
             value for value in (prior, feedback) if value
@@ -1053,7 +1184,7 @@ def post_telegram(day: str) -> dict[str, Any]:
         patch_newsletter_row(
             str(row["slug"]),
             {
-                "telegram_sent": True,
+                "telegram_sent": telegram_sent,
                 "send_feedback": combined,
                 "updated_at": now_iso(),
             },
