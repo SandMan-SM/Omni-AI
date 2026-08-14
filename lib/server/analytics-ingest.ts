@@ -77,7 +77,7 @@ const SEED_ACTIVE = new Set<string>([
   "deptofcreatvs","societyfeen","masondayy","hiddencamerastudios","theluxesocialist",
   "luxurybran","lanretealone","sfdempire","obsidiancasino","seoppc","aidigital",
   "aiintegrated","tanielafiefia","masonthomas","umsnews","mushin","arizonaphoenixrentals",
-  "huron","mafi","mythosais","leadfranchise",
+  "huron","mafi","mythosais","leadfranchise","ellietalks",
 ]);
 
 let cache: { at: number; rows: Map<string, TenantRow> } | null = null;
