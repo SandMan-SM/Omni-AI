@@ -20,6 +20,7 @@ import {
   leadFromAddress,
 } from '@/lib/lead-recipients';
 import { CC_LEAD_FROM, HOUSE_LEAD_FROM, leadSenderFor } from '@/lib/lead-sender';
+import { resolveLeadSender } from '@/lib/server/lead-sender-registry';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
@@ -127,6 +128,13 @@ export async function notifyOwnerEmailInboundWithReceipt(
 
   const subject = `New ${brand} lead — ${lead.name}`;
 
+  /*
+   * federation.lead_senders is the authority for who this is from. The resolver
+   * falls back to the derived address on any database trouble, so a slow
+   * registry cannot turn into a rejected visitor on a fail-closed route.
+   */
+  const fromAddress = leadFromAddress(lead.slug, await resolveLeadSender(lead.slug));
+
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8_000);
 
@@ -139,7 +147,7 @@ export async function notifyOwnerEmailInboundWithReceipt(
         'Idempotency-Key': `inbound-owner-${lead.slug}-${lead.id}`,
       },
       body: JSON.stringify({
-        from: leadFromAddress(lead.slug, leadSenderFor(lead.slug) || FROM_EMAIL),
+        from: fromAddress,
         to: [OWNER_EMAIL],
         subject,
         html,
