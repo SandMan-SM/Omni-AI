@@ -141,6 +141,35 @@ async function cmdVercel(domain: string) {
   }
 }
 
+/*
+ * Nameserver swap — the council's `ns-swap-for-new-domains` directive.
+ *
+ * Namecheap's setHosts returns Status="OK" while the authoritative DNS can take
+ * 60+ minutes (sometimes days) to actually serve the new records, because the
+ * change goes through a separate internal sync queue. Handing the whole zone to
+ * the target provider's nameservers avoids that queue entirely, so a new
+ * federation domain goes live in minutes rather than "sometime today".
+ *
+ * Only for domains with nothing to preserve. If the zone already carries MX or
+ * verification records, an NS swap drops them — migrate those first.
+ */
+async function cmdNs(domain: string, nameservers: string[]) {
+  const { sld, tld } = splitDomain(domain);
+  const xml = await call("namecheap.domains.dns.setCustom", {
+    SLD: sld,
+    TLD: tld,
+    Nameservers: nameservers.join(","),
+  });
+  if (ok(xml)) {
+    console.log(`${domain} nameservers -> ${nameservers.join(", ")}`);
+    console.log("Propagation is usually minutes; the registry can take up to 24h.");
+  } else {
+    console.error(`${domain} setCustom failed:`, err(xml));
+    console.error(xml);
+    process.exit(1);
+  }
+}
+
 async function main() {
   const [cmd, arg] = process.argv.slice(2);
   switch (cmd) {
@@ -151,12 +180,21 @@ async function main() {
       if (!arg) throw new Error("usage: hosts <domain.tld>");
       await cmdHosts(arg);
       return;
+    case "ns": {
+      if (!arg) throw new Error("usage: ns <domain.tld> [ns1,ns2] (defaults to Vercel)");
+      const list = (process.argv[4] ?? "ns1.vercel-dns.com,ns2.vercel-dns.com")
+        .split(",")
+        .map((n) => n.trim())
+        .filter(Boolean);
+      await cmdNs(arg, list);
+      return;
+    }
     case "vercel":
       if (!arg) throw new Error("usage: vercel <domain.tld>");
       await cmdVercel(arg);
       return;
     default:
-      console.error("commands: list | hosts <domain> | vercel <domain>");
+      console.error("commands: list | hosts <domain> | ns <domain> [ns1,ns2] | vercel <domain>");
       process.exit(1);
   }
 }
