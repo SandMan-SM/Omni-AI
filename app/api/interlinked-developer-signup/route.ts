@@ -1,3 +1,5 @@
+import { HOUSE_LEAD_FROM } from "@/lib/lead-sender";
+
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -269,7 +271,7 @@ export async function POST(request: Request) {
           html: buildRegistrantEmail({ firstName: firstNameEsc }),
         }),
         sendEmail({
-          from: FROM_EMAIL,
+          from: HOUSE_LEAD_FROM,
           to: OWNER_EMAIL,
           replyTo: email,
           subject: `New Developer Class signup: ${name}`,

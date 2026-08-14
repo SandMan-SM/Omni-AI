@@ -1,3 +1,5 @@
+import { HOUSE_LEAD_FROM } from "@/lib/lead-sender";
+
 // POST /api/sponsor/delhasson/sign
 //
 // Receives the executed sponsorship agreement from /sponsor/delhasson,
@@ -60,7 +62,7 @@ async function sendEmail(
   to: string,
   subject: string,
   html: string,
-  opts: { replyTo?: string } = {},
+  opts: { replyTo?: string; from?: string } = {},
 ) {
   if (!RESEND_API_KEY) {
     // Email is the only record path for v1 — surface this explicitly so
@@ -71,7 +73,7 @@ async function sendEmail(
     return { ok: false, reason: "RESEND_API_KEY missing" as const };
   }
   const payload: Record<string, unknown> = {
-    from: FROM_EMAIL,
+    from: opts.from ?? FROM_EMAIL,
     to: [to],
     subject,
     html,
@@ -254,7 +256,7 @@ export async function POST(req: Request) {
       OWNER_EMAIL,
       `Del Hasson signed · ${tierLabels[tier].split(" (")[0]} · ${amountFmt}`,
       html,
-      { replyTo: signerEmail },
+      { replyTo: signerEmail, from: HOUSE_LEAD_FROM },
     ),
     sendEmail(
       signerEmail,

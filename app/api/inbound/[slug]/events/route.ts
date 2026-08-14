@@ -1,3 +1,5 @@
+import { leadSenderFor } from '@/lib/lead-sender';
+
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { headers } from 'next/headers';
@@ -619,7 +621,7 @@ export async function POST(
         // ── Owner notification — email the operator who just subscribed. ──
         try {
           const notifyTo = process.env.SUBSCRIBER_NOTIFY_EMAIL || 'sitanim8@gmail.com';
-          const from = process.env.RESEND_FROM || 'Omni AI <alfred@omnileadsagi.com>';
+          const from = process.env.RESEND_FROM || leadSenderFor(slug);
           const site = INBOUND_ORIGINS[slug]?.[0] || 'https://omnileadsagi.com';
           const brandLabel = rawSlug === slug ? slug : `${rawSlug} → ${slug}`;
           await fetch('https://api.resend.com/emails', {

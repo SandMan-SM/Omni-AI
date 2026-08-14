@@ -1,9 +1,11 @@
-// Owner notification for voice-receptionist events, via Resend — same sender
-// identity ("Omni AI <bookings@omnileadsagi.com>") and owner inbox used by the
-// booking + landing-lead flows. Fire-and-forget; a failed notify never blocks a
-// live call or a booking.
+// Owner notification for voice-receptionist events, via Resend. Shares the
+// single lead sending identity with every other form on the fabric — see
+// lib/lead-sender.ts. Fire-and-forget; a failed notify never blocks a live call
+// or a booking.
+import { HOUSE_LEAD_FROM } from "@/lib/lead-sender";
+
 const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || "sitanim8@gmail.com";
-const FROM = "Omni AI <alerts@omnios.news>";
+const FROM = HOUSE_LEAD_FROM;
 
 export async function emailOwner(opts: {
   subject: string;

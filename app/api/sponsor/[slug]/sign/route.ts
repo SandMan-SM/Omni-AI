@@ -1,3 +1,5 @@
+import { HOUSE_LEAD_FROM } from "@/lib/lead-sender";
+
 // POST /api/sponsor/[slug]/sign
 //
 // Dynamic catch-all for every sponsorship-signing surface. The
@@ -113,13 +115,13 @@ async function sendEmail(
   to: string,
   subject: string,
   html: string,
-  opts: { replyTo?: string } = {},
+  opts: { replyTo?: string; from?: string } = {},
 ) {
   if (!RESEND_API_KEY) {
     return { ok: false, reason: "RESEND_API_KEY missing" as const };
   }
   const payload: Record<string, unknown> = {
-    from: FROM_EMAIL,
+    from: opts.from ?? FROM_EMAIL,
     to: [to],
     subject,
     html,
@@ -283,7 +285,7 @@ export async function POST(req: Request, context: RouteContext) {
       OWNER_EMAIL,
       `${sponsor.displayName} signed · ${tierLabels[tier].split(" (")[0]} · ${amountFmt}`,
       ownerHtml,
-      { replyTo: signerEmail },
+      { replyTo: signerEmail, from: HOUSE_LEAD_FROM },
     ),
     sendEmail(
       signerEmail,

@@ -19,6 +19,7 @@ import {
   leadCcDecision,
   leadFromAddress,
 } from '@/lib/lead-recipients';
+import { CC_LEAD_FROM, HOUSE_LEAD_FROM, leadSenderFor } from '@/lib/lead-sender';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
@@ -32,9 +33,15 @@ const OWNER_EMAIL = 'sitanim8@gmail.com';
  * every tenant's lead form return 503 and turn real visitors away. Never point
  * this at a domain that is not verified in the account.
  */
-const FROM_EMAIL = 'Omni AI <alerts@omnios.news>';
+/*
+ * Fallback only. Every tenant now derives an on-domain sender from its own
+ * slug via leadSenderFor(), so this is reached only if that produced nothing.
+ * It stays on the lead domain so the fallback cannot silently reintroduce a
+ * second sending domain.
+ */
+const FROM_EMAIL = HOUSE_LEAD_FROM;
 /* Kept separate from the owner's sender so a CC complaint can't taint it. */
-const CC_FROM_EMAIL = 'Lead Alerts <desk@omnios.news>';
+const CC_FROM_EMAIL = CC_LEAD_FROM;
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID =
   process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '';
@@ -132,7 +139,7 @@ export async function notifyOwnerEmailInboundWithReceipt(
         'Idempotency-Key': `inbound-owner-${lead.slug}-${lead.id}`,
       },
       body: JSON.stringify({
-        from: leadFromAddress(lead.slug, FROM_EMAIL),
+        from: leadFromAddress(lead.slug, leadSenderFor(lead.slug) || FROM_EMAIL),
         to: [OWNER_EMAIL],
         subject,
         html,
@@ -235,7 +242,7 @@ export async function notifyLeadCc(
         'Idempotency-Key': `inbound-cc-${lead.slug}-${lead.id}-${audience}`,
       },
       body: JSON.stringify({
-        from: leadFromAddress(lead.slug, CC_FROM_EMAIL),
+        from: CC_FROM_EMAIL,
         to: decision.recipients,
         subject: `New ${brand} lead — ${lead.name}`,
         html,

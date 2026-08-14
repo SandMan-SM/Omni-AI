@@ -1,3 +1,5 @@
+import { HOUSE_LEAD_FROM } from "@/lib/lead-sender";
+
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -21,11 +23,16 @@ async function sendEmail(
   to: string,
   subject: string,
   html: string,
-  opts: { replyTo?: string } = {},
+  // `from` is a parameter because this helper serves two audiences. The owner's
+  // lead alert sends from the shared lead domain so every alert on the fabric
+  // lands the same way; the lead's own thank-you keeps the Omni AI sender they
+  // just signed up with, since a confirmation from an unfamiliar domain reads
+  // as a phish and costs a warm prospect.
+  opts: { replyTo?: string; from?: string } = {},
 ) {
   if (!RESEND_API_KEY) return;
   const payload: Record<string, unknown> = {
-    from: FROM_EMAIL,
+    from: opts.from ?? FROM_EMAIL,
     to: [to],
     subject,
     html,
@@ -174,7 +181,7 @@ export async function POST(request: Request) {
         </table>
       </div>
       `,
-      { replyTo: email },
+      { replyTo: email, from: HOUSE_LEAD_FROM },
     );
 
     // 4. Thank-you email to lead

@@ -11,10 +11,11 @@ import {
   AGENTIC_DASHBOARD_LABEL,
   AGENTIC_DASHBOARD_URL,
 } from '@/lib/agentic-dashboard';
+import { leadSenderFor } from '@/lib/lead-sender';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const OWNER_EMAIL = 'sitanim8@gmail.com';
-const FROM_EMAIL = 'Omni AI <alerts@omnios.news>';
+const FROM_EMAIL = leadSenderFor('cps');
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID =
   process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '';

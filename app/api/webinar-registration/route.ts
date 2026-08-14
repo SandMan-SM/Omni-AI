@@ -1,3 +1,5 @@
+import { HOUSE_LEAD_FROM } from "@/lib/lead-sender";
+
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createClient } from '@/lib/supabase/server';
@@ -158,7 +160,7 @@ export async function POST(request: Request) {
       // instead of the bookings@ sender address.
       emailPromises.push(
         sendEmail({
-          from: FROM_EMAIL,
+          from: HOUSE_LEAD_FROM,
           to: OWNER_EMAIL,
           replyTo: row.email,
           subject: `New Training Registration: ${fullName} — ${dateFormatted} at ${row.session_time}`,

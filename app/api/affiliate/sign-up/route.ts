@@ -11,10 +11,11 @@ import {
   getClientIp,
   rateLimitResponse,
 } from '@/lib/rate-limit';
+import { HOUSE_LEAD_FROM } from '@/lib/lead-sender';
 
 const OWNER_EMAIL = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const FROM_EMAIL = 'Omni AI <bookings@omnios.news>';
+const FROM_EMAIL = HOUSE_LEAD_FROM;
 
 // POST /api/affiliate/sign-up
 //

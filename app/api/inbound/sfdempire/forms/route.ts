@@ -1,3 +1,5 @@
+import { leadSenderFor } from "@/lib/lead-sender";
+
 import {
   createHash,
   timingSafeEqual,
@@ -34,7 +36,7 @@ const OWNER_EMAIL =
 const FROM_EMAIL =
   process.env.SFD_RESEND_FROM ||
   process.env.RESEND_FROM ||
-  "SFD Empire <bookings@omnileadsagi.com>";
+  leadSenderFor("sfdempire");
 
 declare global {
   // eslint-disable-next-line no-var
