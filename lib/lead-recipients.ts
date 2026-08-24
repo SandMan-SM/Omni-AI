@@ -29,10 +29,13 @@
  * of them. Added at the owner's request 2026-08-05.
  */
 const LEAD_CC: Record<string, readonly string[]> = {
-  leadfranchise: [
-    'ranceolison45@gmail.com',
-    'mohammad.syed.1001@gmail.com',
-  ],
+  /*
+   * Paused by the owner 2026-08-06 — leads go to the owner only for now.
+   * Restore by uncommenting; the suppression logic below is unchanged and
+   * still unit-tested, so this is a one-line switch when they should resume.
+   *
+   * leadfranchise: ['ranceolison45@gmail.com', 'mohammad.syed.1001@gmail.com'],
+   */
 };
 
 /**

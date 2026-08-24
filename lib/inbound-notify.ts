@@ -154,9 +154,29 @@ export async function notifyOwnerEmailInboundWithReceipt(
       }),
       signal: controller.signal,
     });
-    const payload = await res.json().catch(() => ({})) as { id?: unknown };
+    const payload = await res.json().catch(() => ({})) as {
+      id?: unknown;
+      message?: unknown;
+      name?: unknown;
+    };
     if (!res.ok) {
-      console.error(`[inbound-notify email] Resend rejected request (${res.status})`);
+      /*
+       * Log the provider's OWN reason, not just the status.
+       *
+       * This previously logged the bare status. A 403 says "refused" but not
+       * why, and the four plausible causes (unverified domain, revoked key,
+       * domain-scoped key, account restriction) need completely different
+       * fixes — so diagnosing an outage meant reading the failure state back
+       * out of the database rather than the logs. Resend states the cause
+       * plainly ("Domain not verified: Verify x.com or update your from
+       * domain"); the From address is included because the whole class of bug
+       * here is sending from a domain nobody realised was in play.
+       */
+      const providerMessage =
+        typeof payload.message === 'string' ? payload.message : '(no message)';
+      console.error(
+        `[inbound-notify email] Resend rejected ${lead.slug} (${res.status}) from="${fromAddress}": ${providerMessage}`,
+      );
       return { ok: false, error: `resend_http_${res.status}` };
     }
     return {

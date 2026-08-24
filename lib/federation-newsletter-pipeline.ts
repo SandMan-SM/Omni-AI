@@ -30,6 +30,7 @@ import {
   type FederationNewsletterBrief,
 } from '@/lib/federation-newsletter-briefs';
 import { sendTelegram } from '@/lib/telegram';
+import { resolveSender } from '@/lib/sender-registry';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
@@ -368,8 +369,11 @@ async function sendDraftPreviewToOperator(
     .toISOString()
     .slice(0, 10)}: ${row.title}`;
 
-  const fromEmail =
-    brief.fromEmail ?? `dispatch@${brief.domain}`;
+  // Resolved against the verified-domain registry; falls back to the house
+  // sender rather than handing Resend a domain it will reject.
+  const fromEmail = brief.fromEmail
+    ? brief.fromEmail
+    : resolveSender(brief.brandName, brief.domain, 'dispatch').from;
 
   // Resolve owner email at draft-preview time too — the operator's
   // approval email needs to tell them WHO will receive the dispatch
@@ -408,7 +412,7 @@ async function sendDraftPreviewToOperator(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: `${brief.brandName} <${fromEmail}>`,
+      from: fromEmail.includes('<') ? fromEmail : `${brief.brandName} <${fromEmail}>`,
       to: [FEDERATION_OPERATOR_EMAIL],
       subject,
       html,
@@ -484,7 +488,9 @@ async function dispatchPublishedToOwner(
 ): Promise<{ ok: boolean; error?: string }> {
   if (!RESEND_API_KEY) return { ok: false, error: 'RESEND_API_KEY missing' };
 
-  const fromEmail = brief.fromEmail ?? `dispatch@${brief.domain}`;
+  const fromEmail = brief.fromEmail
+    ? brief.fromEmail
+    : resolveSender(brief.brandName, brief.domain, 'dispatch').from;
   const publicUrl = `https://${brief.domain}/newsletter/${row.slug}`;
   const ownerEmail = await resolveOwnerEmail(row.site);
   const subscribers = await loadSubscriberEmails(row.site);
@@ -520,7 +526,7 @@ async function dispatchPublishedToOwner(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      from: `${brief.brandName} <${fromEmail}>`,
+      from: fromEmail.includes('<') ? fromEmail : `${brief.brandName} <${fromEmail}>`,
       to: [primaryTo],
       cc: ownerEmail ? [FEDERATION_OPERATOR_EMAIL] : undefined,
       subject,
@@ -548,7 +554,7 @@ async function dispatchPublishedToOwner(
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            from: `${brief.brandName} <${fromEmail}>`,
+            from: fromEmail.includes('<') ? fromEmail : `${brief.brandName} <${fromEmail}>`,
             to: [fromEmail],   // dummy primary; real recipients on BCC
             bcc: batch,
             subject: row.title,

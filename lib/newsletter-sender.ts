@@ -45,11 +45,30 @@
  * );
  */
 
+import { isSendable } from '@/lib/sender-registry';
+
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || '';
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_ADMIN_CHAT_ID || process.env.TELEGRAM_CHAT_ID || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
-const NEWSLETTER_FROM = process.env.NEWSLETTER_FROM_EMAIL || 'Omni AI <newsletter@omnios.news>';
+/*
+ * Interlinked / Omni AI newsletters send from omnios.news (owner's decision,
+ * 2026-08-06). NEWSLETTER_FROM_EMAIL is honoured ONLY if it names a verified
+ * domain — the production value still points at the removed omnileadsagi.com,
+ * and an env var silently overriding a correct default is precisely how this
+ * broke in the first place.
+ */
+const NEWSLETTER_FROM = (() => {
+  const configured = process.env.NEWSLETTER_FROM_EMAIL?.trim();
+  const fallback = 'Omni AI <newsletter@omnios.news>';
+  if (!configured) return fallback;
+  if (isSendable(configured)) return configured;
+  console.warn(
+    `[newsletter] NEWSLETTER_FROM_EMAIL="${configured}" is not on a verified ` +
+      `sending domain — using ${fallback}.`,
+  );
+  return fallback;
+})();
 const NEWSLETTER_TO = process.env.NEWSLETTER_TO_EMAIL || 'sitanim8@gmail.com';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://omnileadsagi.com';
 

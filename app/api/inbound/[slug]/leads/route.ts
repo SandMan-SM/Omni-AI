@@ -590,15 +590,50 @@ export async function POST(
           },
         );
         if (!failurePersisted) {
+          // Without a durable record of the lead AND its pending notification
+          // there is nothing to retry from, so this is the one case that still
+          // has to fail closed.
           console.error(`[inbound/${slug}/leads] could not persist retryable notification failure`);
+          return NextResponse.json(
+            {
+              ok: false,
+              error: "We couldn't confirm your submission. Please try again.",
+              code: 'owner_notification_failed',
+            },
+            { status: 503, headers: cors },
+          );
         }
+
+        /*
+         * The lead is durably stored and the failed alert is recorded as
+         * retryable, so telling the visitor they are on the list is TRUE.
+         *
+         * This used to return 503. That was wrong in a specific and expensive
+         * way: the submission had already been captured, so the visitor was
+         * turned away from a form that had in fact worked, and the ones who
+         * retried produced duplicate rows. A provider outage on OUR side is not
+         * the visitor's problem to solve by resubmitting.
+         *
+         * Fail-closed still applies where it belongs — above, on storage. What
+         * changed is that a broken notification channel no longer masquerades
+         * as a broken form. `owner_notification` tells the caller the alert is
+         * queued rather than sent, and Telegram (attempted in parallel) often
+         * still gets through, so the operator is rarely blind.
+         *
+         * This is not hypothetical: a stale deploy on 2026-08-23 reverted the
+         * sending domain to one removed from Resend, and every tenant's intake
+         * returned 503 to real visitors while their leads sat safely in the
+         * database.
+         */
         return NextResponse.json(
           {
-            ok: false,
-            error: "We saved your request but couldn't notify the team. Please try again.",
-            code: 'owner_notification_failed',
+            ok: true,
+            lead_id: publicLeadId,
+            owner_notification: 'pending_retry',
+            owner_notification_error: emailError,
+            telegram_accepted: telegramOk,
           },
-          { status: 503, headers: cors },
+          { headers: cors },
         );
       }
 

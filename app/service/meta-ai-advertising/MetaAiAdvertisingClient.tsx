@@ -941,6 +941,14 @@ export function MetaAiAdvertisingClient() {
 
       <Footer />
 
+      {/* Parent-company attribution for this landing page only. It sits below
+          the shared footer so it reads as the last line on the page, and takes
+          the same muted boilerplate treatment as the copyright above it rather
+          than competing with the offers. */}
+      <div className="border-t border-white/5 pb-8 pt-6 text-center">
+        <p className="text-sm text-gray-600">Powered by AIS</p>
+      </div>
+
       {selectedOffer ? (
         <ReservationModal
           offer={selectedOffer}
