@@ -1,34 +1,50 @@
 Generate today's complete Omni AI Interlinked editorial bundle for a deterministic host publisher. Do not publish, deploy, run Git, write the database, send Telegram, send email, use terminal, or use execute_code. Determine today's America/Denver date from scheduler context.
 
-This is the same reliability split used by Utah Main Street: you do the creative and research work, then a separate host publisher validates and performs every mutation with real exit codes.
+This workflow has two different editorial products:
 
-Research one genuinely current trend in the agentic AI industry. The Premium edition must be about what is changing now in AI agents, agent runtimes, orchestration, tool use, MCP, computer use, multi-agent systems, agent security, evaluations, memory, governance, or production deployment. Do not settle for a generic AI/business lesson, an evergreen explainer, or a broad automation opinion.
+1. FREE = a daily search-and-answer engine. Find the highest-confidence, most-repeated question people are asking now about AI agents, agentic AI, AGI, ASI, autonomous systems, AI automation, agent memory, MCP, computer use, orchestration, evaluation, governance, or production deployment. Answer it better than the current search results.
+2. PREMIUM = a daily operator intelligence brief. Find the newest high-leverage market shifts, product releases, research, standards, adoption signals, security changes, and competitive moves that materially affect people building or buying agentic systems. Turn them into decisions and full execution plans.
 
-FRESHNESS AND TREND GATE:
+The Free and Premium editions may share source context, but they are not shortened and expanded versions of the same article. Their subjects, intros, recommendations, and reader jobs must be distinct.
+
+FREE DEMAND-DISCOVERY GATE:
+- Build 8-15 candidate natural-language questions before choosing one.
+- Use at least two distinct demand surfaces and record the exact URLs observed. Acceptable surfaces include Google Trends, Google or Bing autocomplete/related questions, People Also Ask results, current Reddit or specialist-community question threads, Stack Overflow or GitHub discussion/search patterns, and reputable keyword tools with visible public evidence.
+- Prefer repeated question wording visible on more than one surface. Score candidates by cross-surface repetition, recency, operator relevance, answerability, and whether recent Interlinked issues already answered them.
+- Do not claim exact global search volume unless a visible source provides it. “Most asked” means the highest-confidence question supported by the observed demand evidence today.
+- Inspect recent Interlinked issues at omnileadsagi.com/newsletter and reject a repeated question, thesis, or answer.
+- The Free subject must be the exact natural-language question and end in a question mark.
+- Answer the question directly in the first sentence. The direct answer must appear within the first 45 words—no throat-clearing, scene-setting, teaser language, or “it depends” without an immediate explanation.
+- Cover the definition, the practical mechanism, a concrete example, the main limitation or misconception, and a step-by-step action a reader can take.
+- Add 3-6 closely related natural-language questions for answer-engine coverage. Every related question must be answered somewhere in the Free issue.
+- Write for humans first. Never keyword-stuff or repeat the target phrase unnaturally.
+
+PREMIUM MARKET-INTELLIGENCE GATE:
+- Scan the market broadly before selecting the final brief. The final issue must contain 3-5 distinct market moves, not one generic trend padded into several sections.
 - Open the underlying sources, not only search snippets.
-- Use 3-6 URLs from at least two credible domains.
-- Include at least one primary source such as official release notes, documentation, a research paper, a standards body, a company engineering post, or a first-party benchmark.
-- Include at least one independent source that adds reporting, testing, criticism, or market context.
-- At least two sources must have been published in the previous 14 calendar days, and at least one must be from the previous 7 calendar days. Record the exact YYYY-MM-DD publication date for every source.
-- Explain why the signal is moving now using at least two dated source events. Popularity alone is not trend evidence.
-- Before selecting the topic, inspect recent Interlinked issues available on omnileadsagi.com/newsletter and reject a topic that repeats the same core thesis, framework, or recommendation.
+- Use 3-6 final editorial sources from at least two credible domains.
+- Include at least one primary source such as official release notes, documentation, a research paper, a standards body, a company engineering post, a filing, or a first-party benchmark.
+- Include at least one independent source that adds reporting, testing, criticism, adoption evidence, or market context.
+- At least two final sources must have been published in the previous 14 calendar days, and at least one must be from the previous 7 calendar days. Record the exact YYYY-MM-DD publication date for every final source.
+- Each market move must state: what changed, why it matters now, who gains or loses leverage, the non-obvious risk, the operator action, and the supporting source URLs.
+- Rank the moves by leverage, not by publicity. Prefer changes that affect distribution, economics, reliability, security, adoption, or defensibility.
+- Include a 24-hour action, a 7-day build, a 30-day operating change, a watchlist, and explicit “do not overreact” guidance.
+- Explain what a capable operator is likely to miss and what would falsify the thesis.
 
-Do not make copyright, licensing, training-data lawsuits, intellectual property disputes, celebrity use, or general AI regulation the Premium headline or central thesis. A legal development may be supporting context only when it directly changes how production agents are designed, secured, evaluated, or operated.
+Do not make copyright, licensing, training-data lawsuits, intellectual-property disputes, celebrity use, or general AI regulation the Premium headline or central thesis. A legal development may be supporting context only when it directly changes how production agents are designed, secured, evaluated, bought, or operated.
 
 ORIGINALITY AND COPYRIGHT SAFETY:
-- Synthesize the sources into an original Omni AI operator thesis. Do not paraphrase one article section-by-section.
+- Synthesize the sources into original Omni AI analysis. Do not paraphrase one article section-by-section.
 - Use no direct quotations and reproduce no source sentence, headline structure, proprietary framework, or distinctive phrasing.
 - Do not use more than 12 consecutive words from any source.
-- Separate sourced facts from Omni AI analysis. The Premium edition must add an original decision framework, implementation consequence, or operating model that is not stated by any single source.
-- Never invent facts, dates, metrics, names, or quotations.
-
-The Free and Premium editions must cover the same current agentic signal from different depths and must not duplicate their subjects, intros, or recommendations.
+- Separate sourced facts from Omni AI analysis.
+- Never invent facts, dates, metrics, names, demand signals, source publication dates, or quotations.
 
 Create:
-- a substantive Free issue with a direct lede, 3-5 sourced insights, one concrete power move, and a clear closing;
-- a deeper Premium operator brief with 3-5 sourced insights, a clear explanation of the signal's agentic relevance, an original operator thesis, an exclusive operating insight, and a concrete implementation recommendation;
+- a substantive Free search-answer issue with a direct answer, 4-6 sourced sections, a concrete power move, related-question coverage, and a clear closing;
+- a Premium market-intelligence brief with 3-5 ranked market moves, second-order implications, a leverage map, risks, and a 24-hour/7-day/30-day execution plan;
 - exactly three social snippets;
-- two distinct original, professional, issue-specific, text-free images through image_generate: one Free and one Premium. No words, logos, watermarks, copied press photography, fake interface text, black filler, or generic AI imagery.
+- two distinct original, professional, issue-specific, text-free images through image_generate: one Free and one Premium. The Free image must visually represent the chosen question; the Premium image must represent the market map. No words, logos, watermarks, copied press photography, fake interface text, black filler, or generic glowing-brain/robot imagery.
 
 Quote fields are original display lines. Each quote value must contain only the sentence itself: no “Quote:” label, attribution, nested quotation marks, or editorial note.
 
@@ -42,7 +58,36 @@ PREMIUM_IMAGE_PATH: exact absolute local path returned by image_generate
 BEGIN_INTERLINKED_ROWS
 {
   "date": "YYYY-MM-DD",
-  "trend_evidence": "why this agentic topic is moving now, tied to at least two dated source events",
+  "seo_question": "the exact selected natural-language question?",
+  "search_intent": "what the searcher is actually trying to understand or accomplish",
+  "demand_evidence": "why this is the highest-confidence repeated question today without overstating unavailable volume",
+  "demand_signals": [
+    {
+      "source": "demand surface name",
+      "url": "https://...",
+      "observed_at": "YYYY-MM-DD",
+      "query": "the seed query used",
+      "signal": "the exact repeated-question or demand pattern observed, paraphrased without copying long source text"
+    }
+  ],
+  "related_questions": [
+    "closely related natural-language question?",
+    "closely related natural-language question?",
+    "closely related natural-language question?"
+  ],
+  "trend_evidence": "why the selected premium market moves matter now, tied to dated source events",
+  "premium_market_summary": "the day’s highest-leverage market thesis in operator language",
+  "market_moves": [
+    {
+      "rank": 1,
+      "headline": "specific market move",
+      "what_changed": "dated factual change",
+      "leverage": "who gains or loses leverage and why",
+      "risk": "non-obvious risk or failure mode",
+      "action": "specific operator action",
+      "source_urls": ["https://..."]
+    }
+  ],
   "sources": [
     {
       "name": "source title",
@@ -54,9 +99,9 @@ BEGIN_INTERLINKED_ROWS
   ],
   "free": {
     "slug": "interlinked-free-YYYY-MM-DD",
-    "subject": "specific headline",
-    "intro": "specific two-or-three-sentence lede",
-    "insights": ["substantive sourced paragraph", "substantive sourced paragraph", "substantive sourced paragraph"],
+    "subject": "the exact selected natural-language question?",
+    "intro": "a direct answer beginning in the first sentence, followed by one sentence defining the practical stakes",
+    "insights": ["definition and mechanism", "concrete example", "implementation steps", "limitation or misconception", "answers to related questions"],
     "power_move": "one concrete action",
     "closing": "specific close",
     "quote": "original display sentence only",
@@ -67,10 +112,10 @@ BEGIN_INTERLINKED_ROWS
   },
   "premium": {
     "slug": "interlinked-premium-YYYY-MM-DD",
-    "subject": "different specific headline",
-    "intro": "different specific lede",
-    "insights": ["deeper sourced paragraph", "deeper sourced paragraph", "deeper sourced paragraph"],
-    "power_move": "deeper operating action",
+    "subject": "specific market-intelligence headline",
+    "intro": "a direct summary of the day’s leverage map",
+    "insights": ["ranked market move and implication", "ranked market move and implication", "ranked market move and implication", "24-hour, 7-day, and 30-day execution sequence"],
+    "power_move": "the first 24-hour operating action",
     "closing": "specific premium close",
     "quote": "original display sentence only",
     "offer": "Build the private AI CEO operating loop at https://omnileadsagi.com/interlinked",
@@ -80,8 +125,8 @@ BEGIN_INTERLINKED_ROWS
     "agentic_relevance": "how this signal changes the design, deployment, security, evaluation, or operation of AI agents",
     "original_thesis": "Omni AI's original operator thesis that is not stated by any single source",
     "originality_note": "how the brief synthesizes sources without copying their sentences, framing, or proprietary frameworks",
-    "exclusive_insight": "specific operator-only insight",
-    "ai_recommendation": "specific implementation recommendation",
+    "exclusive_insight": "the non-obvious cross-source insight and what a capable operator is likely to miss",
+    "ai_recommendation": "24-hour action, 7-day build, 30-day operating change, watchlist, falsification trigger, and do-not-overreact guidance",
     "status": "published"
   }
 }
@@ -104,13 +149,13 @@ status: "publication-ready"
 <specific preview>
 
 ## Source Status
-<freshness summary, trend evidence, exact publication dates, source roles, and 3-6 source links>
+<Free demand-signal summary, selected-question rationale, Premium freshness summary, exact publication dates, source roles, and all demand/editorial links>
 
 ## Free Issue Body
-<complete Free edition>
+<complete search-answer edition. Begin with the exact question as a heading and the direct answer. Cover the definition, mechanism, example, implementation steps, limitation, and every related question.>
 
 ## Premium Issue
-<complete Premium operator brief of at least 180 words>
+<complete Premium operator market brief of at least 500 words, with 3-5 ranked moves, leverage, risks, 24-hour/7-day/30-day execution, watchlist, falsification trigger, and do-not-overreact guidance>
 
 ## Social Snippets
 1. <snippet>
@@ -128,4 +173,4 @@ Publication-ready draft with issue-specific media paths. Not sent; the host publ
 END_INTERLINKED_ARTIFACT
 VERIFIED
 
-VERIFIED means only that you opened and checked the listed sources, confirmed the freshness and agentic-topic gates, checked the Premium brief for original synthesis and non-copying, and created two distinct issue-specific images. Never claim the issue is live, posted, deployed, emailed, or database-published.
+VERIFIED means only that you opened and checked the listed demand and editorial sources, compared candidate questions, confirmed the selected question’s evidence, confirmed the Premium freshness and market-move gates, checked both editions for original synthesis and non-copying, answered every related question, and created two distinct issue-specific images. Never claim the issue is live, posted, deployed, emailed, or database-published.

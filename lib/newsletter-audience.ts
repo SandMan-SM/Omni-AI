@@ -17,6 +17,16 @@
 
 import type { SupabaseClient } from "@supabase/supabase-js";
 
+/**
+ * Production delivery is intentionally closed to one owner address while the
+ * three-newsletter portfolio is being proven end to end. This is a code-level
+ * circuit breaker: stale profile flags, imported subscription rows, or an
+ * accidentally relaxed environment variable cannot broaden a send.
+ */
+export const NEWSLETTER_DELIVERY_ALLOWLIST = new Set([
+  "sitanim8@gmail.com",
+]);
+
 export type AudienceSource = "profile" | "subscription" | "both";
 
 export interface AudienceMember {
@@ -40,6 +50,11 @@ export interface AudienceMember {
    * or their newsletter_subscriptions row is tier='premium'.
    */
   is_premium: boolean;
+  /**
+   * Admins are routed separately so they receive the explicit combined
+   * Free + Premium owner brief instead of duplicate subscriber sends.
+   */
+  is_admin: boolean;
   profile_id: string | null;
   subscription_id: string | null;
   /** Raw tier from newsletter_subscriptions, if the row exists. */
@@ -71,6 +86,8 @@ interface ProfileRow {
   first_name: string | null;
   newsletter_subscribed: boolean | null;
   is_premium: boolean | null;
+  is_admin: boolean | null;
+  role: string | null;
   subscription_status: string | null;
   created_at: string | null;
 }
@@ -99,7 +116,7 @@ export async function getNewsletterAudience(
     admin
       .from("profiles")
       .select(
-        "id, email, first_name, newsletter_subscribed, is_premium, subscription_status, created_at",
+        "id, email, first_name, newsletter_subscribed, is_premium, is_admin, role, subscription_status, created_at",
       ),
     admin
       .from("newsletter_subscriptions")
@@ -119,11 +136,13 @@ export async function getNewsletterAudience(
     const existing = byEmail.get(email);
     const premiumFromProfile =
       p.is_premium === true || p.subscription_status === "active";
+    const adminFromProfile = p.is_admin === true || p.role === "admin";
     if (existing) {
       existing.profile_id = p.id;
       existing.first_name = existing.first_name || p.first_name || null;
       existing.source = "both";
       existing.is_premium = existing.is_premium || premiumFromProfile;
+      existing.is_admin = existing.is_admin || adminFromProfile;
       // explicit profile opt-out dominates
       if (p.newsletter_subscribed === false) {
         existing.unsubscribed = true;
@@ -140,6 +159,7 @@ export async function getNewsletterAudience(
         active: false, // computed below
         unsubscribed: p.newsletter_subscribed === false,
         is_premium: premiumFromProfile,
+        is_admin: adminFromProfile,
         profile_id: p.id,
         subscription_id: null,
         subscription_tier: null,
@@ -174,6 +194,7 @@ export async function getNewsletterAudience(
         active: false, // computed below
         unsubscribed: s.subscribed === false,
         is_premium: premiumFromSub,
+        is_admin: false,
         profile_id: null,
         subscription_id: s.id,
         subscription_tier: s.subscription_tier,
@@ -278,13 +299,23 @@ export function computeAudienceStats(members: AudienceMember[]): AudienceStats {
 export function audienceSendList(members: AudienceMember[]): {
   freeRecipients: string[];
   premiumRecipients: string[];
+  adminRecipients: string[];
 } {
   const freeRecipients: string[] = [];
   const premiumRecipients: string[] = [];
+  const adminRecipients: string[] = [];
   for (const m of members) {
     if (!m.active) continue;
-    freeRecipients.push(m.email);
-    if (m.is_premium) premiumRecipients.push(m.email);
+    if (!NEWSLETTER_DELIVERY_ALLOWLIST.has(m.email.trim().toLowerCase())) {
+      continue;
+    }
+    if (m.is_admin) {
+      adminRecipients.push(m.email);
+    } else if (m.is_premium) {
+      premiumRecipients.push(m.email);
+    } else {
+      freeRecipients.push(m.email);
+    }
   }
-  return { freeRecipients, premiumRecipients };
+  return { freeRecipients, premiumRecipients, adminRecipients };
 }
