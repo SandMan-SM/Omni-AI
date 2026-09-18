@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail, Search, Send, Users, Plus, Download, Upload, UserPlus,
@@ -215,7 +215,8 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  const load = async () => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const load = useCallback(async () => {
     setLoading(true);
     try {
       const bust = `_t=${Date.now()}`;
@@ -238,9 +239,10 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     } finally {
       setLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshKey]);
 
-  useEffect(() => { load(); }, [refreshKey]);
+  useEffect(() => { load(); }, [refreshKey, load]);
 
   // Auto-refresh analytics every 60 seconds.
   // Admin-only endpoint — forward the omni_token bearer so requireAdmin()

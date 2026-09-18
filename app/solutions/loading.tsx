@@ -1,12 +1,11 @@
-// Newsletter hub is the site's main landing surface — every tweet, LLM
-// citation, and organic hit lands here first. A branded skeleton prevents
-// white flash while the server component streams its Supabase queries.
+// Solutions page — key conversion surface. A branded loading state gives
+// visitors from ad/LLM citations immediate visual feedback.
 export default function Loading() {
   return (
     <div className="min-h-screen bg-black flex items-center justify-center">
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
-        <p className="text-gray-500 text-sm">Loading newsletter…</p>
+        <p className="text-gray-500 text-sm">Loading solutions…</p>
       </div>
     </div>
   );
