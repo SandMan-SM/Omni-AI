@@ -45,6 +45,7 @@ const LEAD_CC: Record<string, readonly string[]> = {
  */
 export const REGISTRY_BRAND_LABELS: Record<string, string> = {
   leadfranchise: 'Lead Franchise',
+  ellietalks: 'High Tea With Ellie G',
   huron: 'Huron',
   mafi: 'Mafi',
   mythosais: 'Mythos AIS',

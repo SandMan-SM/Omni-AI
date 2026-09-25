@@ -197,6 +197,77 @@ export async function notifyOwnerEmailInboundWithReceipt(
 }
 
 /**
+ * Transactional confirmation for a High Tea VIP waitlist request.
+ *
+ * This is deliberately separate from the owner alert. Each message has its
+ * own stable provider idempotency key and receipt, so a retry can repair one
+ * side without delivering the other twice.
+ */
+export async function notifyEllieWaitlistConfirmationWithReceipt(
+  lead: InboundLead,
+): Promise<InboundEmailReceipt> {
+  if (!RESEND_API_KEY) return { ok: false, error: 'resend_not_configured' };
+  if (!lead.email) return { ok: false, error: 'customer_email_missing' };
+
+  const safeName = escape(lead.name);
+  const fromAddress = leadFromAddress(
+    lead.slug,
+    await resolveLeadSender(lead.slug),
+  );
+  const html = `
+    <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:560px;margin:0 auto;background:#0b0018;color:#f8efff;padding:32px;border:1px solid #7d1b68;border-radius:20px;line-height:1.6">
+      <p style="margin:0 0 12px;color:#ff68ce;font-size:12px;font-weight:800;letter-spacing:2px">HIGH TEA VIP</p>
+      <h1 style="margin:0 0 16px;font-size:30px;line-height:1.2">You're on the waitlist.</h1>
+      <p style="margin:0 0 14px;color:#d9c7e8">${safeName}, we received your request to join the High Tea VIP waitlist.</p>
+      <p style="margin:0;color:#d9c7e8">We'll email you when VIP membership access opens.</p>
+      <p style="margin:28px 0 0;padding-top:18px;border-top:1px solid #3c1747;color:#9d8aaa;font-size:12px">This confirmation was sent because this address was entered on the VIP waitlist at <a href="https://highteawithellieg.com" style="color:#ff68ce">highteawithellieg.com</a>. <a href="https://highteawithellieg.com/privacy" style="color:#ff68ce">Privacy</a> · <a href="https://highteawithellieg.com/terms" style="color:#ff68ce">Terms</a></p>
+    </div>
+  `;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8_000);
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Idempotency-Key': `inbound-customer-${lead.slug}-${lead.id}`,
+      },
+      body: JSON.stringify({
+        from: fromAddress,
+        to: [lead.email],
+        subject: "You're on the High Tea VIP waitlist",
+        html,
+      }),
+      signal: controller.signal,
+    });
+    const payload = (await res.json().catch(() => ({}))) as { id?: unknown };
+    if (!res.ok) {
+      console.error(
+        `[inbound-notify customer] Resend rejected request (${res.status})`,
+      );
+      return { ok: false, error: `resend_http_${res.status}` };
+    }
+    return {
+      ok: true,
+      providerId: typeof payload.id === 'string' ? payload.id : null,
+    };
+  } catch (error) {
+    console.error('[inbound-notify customer]', error);
+    return {
+      ok: false,
+      error:
+        error instanceof Error && error.name === 'AbortError'
+          ? 'resend_timeout'
+          : 'resend_request_failed',
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/**
  * Send the tenant's configured CC copy of a genuine lead.
  *
  * Deliberately a SEPARATE message rather than a `cc:` field on the owner's
@@ -312,6 +383,14 @@ export async function notifyOwnerTelegramInbound(lead: InboundLead): Promise<boo
     lead.message ? `\n${md(lead.message.slice(0, 400))}` : null,
   ].filter(Boolean);
 
+  // Keep the established behavior for every existing tenant. Ellie is the
+  // only caller whose fail-closed form waits on two required email receipts,
+  // so bound its optional Telegram side-channel without changing anyone else.
+  const controller =
+    String(lead.slug) === 'ellietalks' ? new AbortController() : null;
+  const timeout = controller
+    ? setTimeout(() => controller.abort(), 3_000)
+    : null;
   try {
     const res = await fetch(
       `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`,
@@ -324,11 +403,14 @@ export async function notifyOwnerTelegramInbound(lead: InboundLead): Promise<boo
           parse_mode: 'Markdown',
           disable_web_page_preview: true,
         }),
+        ...(controller ? { signal: controller.signal } : {}),
       },
     );
     return res.ok;
   } catch (e) {
     console.error('[inbound-notify telegram]', e);
     return false;
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
 }

@@ -153,6 +153,7 @@ export type LeadRecord = {
   id: string;
   notified: boolean;
   ownerMessageId: string | null;
+  customerMessageId: string | null;
 };
 
 /**
@@ -187,7 +188,11 @@ export async function recordLeadAndReturn(l: LeadIn): Promise<LeadRecord | null>
          nullif(
            props #>> '{owner_notification,provider_id}',
            ''
-         ) AS "ownerMessageId"`,
+         ) AS "ownerMessageId",
+         nullif(
+           props #>> '{customer_notification,provider_id}',
+           ''
+         ) AS "customerMessageId"`,
       [l.slug, l.name ?? null, l.email ?? null, l.phone ?? null, l.message ?? null,
        l.source ?? "contact_form", l.page_url ?? null, l.dedup_key ?? null, JSON.stringify(l.props ?? {})],
     ),
@@ -230,6 +235,28 @@ export async function recordLeadNotificationState(
     ),
     5_000,
     "recordLeadNotificationState",
+  );
+  return Boolean(r?.rows[0]);
+}
+
+/** Persist the visitor-facing confirmation independently of the owner alert. */
+export async function recordLeadCustomerNotificationState(
+  slug: string,
+  leadId: string,
+  state: LeadNotificationState,
+): Promise<boolean> {
+  const p = pool();
+  if (!p) return false;
+  const r = await withTimeout(
+    p.query(
+      `UPDATE analytics.leads
+          SET props = props || jsonb_build_object('customer_notification', $3::jsonb)
+        WHERE id = $1::bigint AND tenant_slug = $2
+        RETURNING id`,
+      [leadId, slug, JSON.stringify(state)],
+    ),
+    5_000,
+    "recordLeadCustomerNotificationState",
   );
   return Boolean(r?.rows[0]);
 }

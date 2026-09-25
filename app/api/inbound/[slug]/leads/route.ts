@@ -15,6 +15,7 @@ import {
 } from '@/lib/inbound-types';
 import {
   notifyLeadCc,
+  notifyEllieWaitlistConfirmationWithReceipt,
   notifyOwnerEmailInbound,
   notifyOwnerEmailInboundWithReceipt,
   notifyOwnerTelegramInbound,
@@ -23,8 +24,12 @@ import {
   isActiveTenant,
   tenantOrigins,
   recordLeadAndReturn,
+  recordLeadCustomerNotificationState,
   recordLeadNotificationState,
 } from '@/lib/server/analytics-ingest';
+import { verifyVercelProjectToken } from '@/lib/server/vercel-oidc';
+
+export const maxDuration = 30;
 
 /**
  * Generic inbound lead intake. Drop-in replacement for /api/cps/leads,
@@ -42,9 +47,11 @@ import {
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const REGISTRY_RECEIPTS_KEY = 'leadfranchise_owner_receipts';
+const ELLIE_LOCAL_SOURCE_HEADER = 'x-ellie-talks-local-source';
 
 type RegistryContact = {
   id: string;
+  businessId: string;
   rawData: Record<string, unknown>;
   ownerMessageId: string | null;
 };
@@ -86,6 +93,39 @@ function leadFranchiseAuthorized(request: Request, slug: string): boolean {
   );
 }
 
+/**
+ * Ellie Talks is a server-to-server caller. Production accepts only the fixed
+ * Vercel project identity; local parity is available only on loopback in a
+ * development process with a dedicated secret.
+ */
+async function ellieTalksAuthorized(
+  request: Request,
+  slug: string,
+): Promise<boolean> {
+  if (slug !== 'ellietalks') return true;
+
+  const url = new URL(request.url);
+  const localSecret = process.env.ELLIE_TALKS_LOCAL_SOURCE_SECRET || '';
+  const localHeader = request.headers.get(ELLIE_LOCAL_SOURCE_HEADER) || '';
+  const loopbackAuthorized =
+    process.env.NODE_ENV === 'development' &&
+    (url.hostname === '127.0.0.1' || url.hostname === 'localhost') &&
+    localSecret.length >= 16 &&
+    localHeader.length > 0 &&
+    safeSecretEqual(localHeader, localSecret);
+  if (loopbackAuthorized) return true;
+
+  const token =
+    request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') || '';
+  if (!token) return false;
+  return verifyVercelProjectToken(token, {
+    ownerId: 'team_jvhwfBn81nJXTMX0DEvwQCuA',
+    projectId: 'prj_c2hz6nbp3cj5e1i0ghZxWNjZMLz2',
+    projectName: 'ellie-talks',
+    environment: 'production',
+  });
+}
+
 async function syncRegistryContact(input: {
   slug: string;
   name: string;
@@ -109,7 +149,10 @@ async function syncRegistryContact(input: {
   const lastName =
     input.name.split(/\s+/).slice(1).join(' ').trim().slice(0, 120) ||
     null;
-  const sourceTable = 'leadfranchise_intakes';
+  const sourceTable =
+    input.slug === 'leadfranchise'
+      ? 'leadfranchise_intakes'
+      : 'analytics_leads';
   const sourceRecordId = UUID_RE.test(input.intakeId)
     ? input.intakeId
     : null;
@@ -195,6 +238,7 @@ async function syncRegistryContact(input: {
     if (error || !data?.id) return null;
     return {
       id: data.id,
+      businessId: business.id,
       rawData,
       ownerMessageId: registryOwnerMessageId(
         rawData,
@@ -217,6 +261,7 @@ async function syncRegistryContact(input: {
   if (!insertError && inserted?.id) {
     return {
       id: inserted.id,
+      businessId: business.id,
       rawData,
       ownerMessageId: null,
     };
@@ -255,6 +300,7 @@ async function syncRegistryContact(input: {
       if (error || !data?.id) return null;
       return {
         id: data.id,
+        businessId: business.id,
         rawData: winnerRawData,
         ownerMessageId: registryOwnerMessageId(
           winnerRawData,
@@ -265,6 +311,33 @@ async function syncRegistryContact(input: {
   }
 
   return null;
+}
+
+type SuppressionStatus = 'clear' | 'suppressed' | 'error';
+
+/** Fail closed when we cannot establish whether a customer may be emailed. */
+async function registrySuppressionStatus(
+  businessId: string,
+  email: string,
+): Promise<SuppressionStatus> {
+  const sb = createAdminClient();
+  const emailPattern = email.replace(/[\\%_]/g, '\\$&');
+  const { data, error } = await sb
+    .from('omni_suppressions')
+    .select('id,email,business_id')
+    .ilike('email', emailPattern)
+    .or(`business_id.is.null,business_id.eq.${businessId}`)
+    .limit(10);
+  if (error) {
+    console.error('[inbound/registry] suppression lookup failed');
+    return 'error';
+  }
+  const normalized = email.trim().toLowerCase();
+  return ((data as Array<{ email?: string | null }> | null) ?? []).some(
+    (row) => row.email?.trim().toLowerCase() === normalized,
+  )
+    ? 'suppressed'
+    : 'clear';
 }
 
 async function persistRegistryOwnerReceipt(
@@ -364,6 +437,12 @@ export async function POST(
         { status: 401, headers: cors },
       );
     }
+    if (!(await ellieTalksAuthorized(request, slug))) {
+      return NextResponse.json(
+        { ok: false, error: 'Unauthorized caller.' },
+        { status: 401, headers: cors },
+      );
+    }
 
     const ip = getClientIp(request.headers);
     if (slug !== 'leadfranchise') {
@@ -456,7 +535,9 @@ export async function POST(
       }
       let crmContactId: string | null = null;
       let registryContact: RegistryContact | null = null;
-      if (slug === 'leadfranchise') {
+      const requiresWorkspaceContact =
+        slug === 'leadfranchise' || slug === 'ellietalks';
+      if (requiresWorkspaceContact) {
         registryContact = await syncRegistryContact({
           slug,
           name,
@@ -482,10 +563,160 @@ export async function POST(
         }
       }
 
+      const registryLead = {
+        id: sharedLead.id,
+        // Registry slugs are intentionally outside the legacy InboundSlug union.
+        // The notifier uses the raw slug only to resolve the configured label.
+        slug: slug as InboundSlug,
+        name,
+        email: email || null,
+        phone: phone || null,
+        message: message || null,
+        source,
+        pageUrl: sanitizeText(body.page_url, 2048) || null,
+        // Preserve the production Lead Franchise receipt/linking context while
+        // reusing the same notification object for Ellie confirmations.
+        intakeId: intakeId || null,
+      };
+
+      const confirmEllieCustomer = async (): Promise<
+        | { ok: true; providerId: string | null }
+        | { ok: false; response: NextResponse }
+      > => {
+        if (slug !== 'ellietalks') return { ok: true, providerId: null };
+        if (sharedLead.customerMessageId) {
+          return { ok: true, providerId: sharedLead.customerMessageId };
+        }
+        if (!registryContact || !email) {
+          return {
+            ok: false,
+            response: NextResponse.json(
+              {
+                ok: false,
+                error:
+                  "We saved your request but couldn't prepare the confirmation email. Please try again.",
+                code: 'customer_confirmation_unavailable',
+              },
+              { status: 503, headers: cors },
+            ),
+          };
+        }
+
+        const suppression = await registrySuppressionStatus(
+          registryContact.businessId,
+          email,
+        );
+        if (suppression !== 'clear') {
+          const error =
+            suppression === 'error'
+              ? 'suppression_lookup_failed'
+              : 'customer_email_suppressed';
+          const persisted = await recordLeadCustomerNotificationState(
+            slug,
+            sharedLead.id,
+            {
+              status: 'failed',
+              provider: 'resend',
+              retryable: suppression === 'error',
+              error,
+              updated_at: new Date().toISOString(),
+            },
+          );
+          if (!persisted) {
+            console.error(
+              `[inbound/${slug}/leads] could not persist customer suppression state`,
+            );
+          }
+          return {
+            ok: false,
+            response: NextResponse.json(
+              {
+                ok: false,
+                error:
+                  suppression === 'error'
+                    ? "We couldn't verify email delivery eligibility. Please try again."
+                    : 'This address cannot receive waitlist email. Please use another email address.',
+                code: error,
+              },
+              { status: suppression === 'error' ? 503 : 409, headers: cors },
+            ),
+          };
+        }
+
+        const receipt = await notifyEllieWaitlistConfirmationWithReceipt(
+          registryLead,
+        ).catch((error) => {
+          console.error(
+            `[inbound/${slug}/leads] customer confirmation failed`,
+            error,
+          );
+          return { ok: false as const, error: 'resend_request_failed' };
+        });
+        if (!receipt.ok || !receipt.providerId) {
+          const error = receipt.ok
+            ? 'resend_missing_provider_id'
+            : receipt.error;
+          const persisted = await recordLeadCustomerNotificationState(
+            slug,
+            sharedLead.id,
+            {
+              status: 'failed',
+              provider: 'resend',
+              retryable: true,
+              error,
+              updated_at: new Date().toISOString(),
+            },
+          );
+          if (!persisted) {
+            console.error(
+              `[inbound/${slug}/leads] could not persist customer notification failure`,
+            );
+          }
+          return {
+            ok: false,
+            response: NextResponse.json(
+              {
+                ok: false,
+                error:
+                  "We saved your request but couldn't send the confirmation email. Please try again.",
+                code: 'customer_confirmation_failed',
+              },
+              { status: 503, headers: cors },
+            ),
+          };
+        }
+
+        const persisted = await recordLeadCustomerNotificationState(
+          slug,
+          sharedLead.id,
+          {
+            status: 'accepted',
+            provider: 'resend',
+            provider_id: receipt.providerId,
+            retryable: false,
+            updated_at: new Date().toISOString(),
+          },
+        );
+        if (!persisted) {
+          return {
+            ok: false,
+            response: NextResponse.json(
+              {
+                ok: false,
+                error: "We couldn't confirm your submission. Please try again.",
+                code: 'customer_confirmation_state_persist_failed',
+              },
+              { status: 503, headers: cors },
+            ),
+          };
+        }
+        return { ok: true, providerId: receipt.providerId };
+      };
+
       if (sharedLead.notified) {
         const persistedOwnerMessageId =
           sharedLead.ownerMessageId ?? registryContact?.ownerMessageId ?? null;
-        if (slug === 'leadfranchise' && !persistedOwnerMessageId) {
+        if (requiresWorkspaceContact && !persistedOwnerMessageId) {
           return NextResponse.json(
             {
               ok: false,
@@ -496,6 +727,8 @@ export async function POST(
             { status: 503, headers: cors },
           );
         }
+        const customer = await confirmEllieCustomer();
+        if (!customer.ok) return customer.response;
         return NextResponse.json(
           {
             ok: true,
@@ -503,6 +736,7 @@ export async function POST(
             lead_id: publicLeadId,
             crm_contact_id: crmContactId,
             owner_message_id: persistedOwnerMessageId ?? undefined,
+            customer_message_id: customer.providerId ?? undefined,
           },
           { headers: cors },
         );
@@ -535,6 +769,8 @@ export async function POST(
             { status: 503, headers: cors },
           );
         }
+        const customer = await confirmEllieCustomer();
+        if (!customer.ok) return customer.response;
         return NextResponse.json(
           {
             ok: true,
@@ -542,25 +778,12 @@ export async function POST(
             lead_id: publicLeadId,
             crm_contact_id: crmContactId,
             owner_message_id: registryContact.ownerMessageId,
+            customer_message_id: customer.providerId ?? undefined,
           },
           { headers: cors },
         );
       }
 
-      const registryLead = {
-        id: sharedLead.id,
-        // Registry slugs are intentionally outside the legacy InboundSlug union.
-        // The notifier only uses this for the display label and falls back to the
-        // raw slug (`INBOUND_SLUG_LABELS[slug] ?? slug`), so the cast is safe.
-        slug: slug as InboundSlug,
-        name,
-        email: email || null,
-        phone: phone || null,
-        message: message || null,
-        source,
-        pageUrl: sanitizeText(body.page_url, 2048) || null,
-        intakeId: intakeId || null,
-      };
       const [emailReceipt, telegramOk] = await Promise.all([
         notifyOwnerEmailInboundWithReceipt(registryLead).catch((e) => {
           console.error(`[inbound/${slug}/leads] registry email notify failed`, e);
@@ -589,11 +812,14 @@ export async function POST(
             updated_at: updatedAt,
           },
         );
-        if (!failurePersisted) {
-          // Without a durable record of the lead AND its pending notification
-          // there is nothing to retry from, so this is the one case that still
-          // has to fail closed.
-          console.error(`[inbound/${slug}/leads] could not persist retryable notification failure`);
+        if (!failurePersisted || slug === 'ellietalks') {
+          // Storage failure always fails closed; High Tea additionally requires a
+          // confirmed owner notification, even when its retry state is saved.
+          if (!failurePersisted) {
+            console.error(`[inbound/${slug}/leads] could not persist retryable notification failure`);
+          }
+          // High Tea requires owner acceptance before success. The saved failure and
+          // stable lead ID retain the existing retry/idempotency path.
           return NextResponse.json(
             {
               ok: false,
@@ -705,12 +931,16 @@ export async function POST(
         );
       }
 
+      const customer = await confirmEllieCustomer();
+      if (!customer.ok) return customer.response;
+
       return NextResponse.json(
         {
           ok: true,
           lead_id: publicLeadId,
           crm_contact_id: crmContactId,
           owner_message_id: emailReceipt.providerId,
+          customer_message_id: customer.providerId ?? undefined,
         },
         { headers: cors },
       );
