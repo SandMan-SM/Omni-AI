@@ -82,10 +82,12 @@ function safeSecretEqual(left: string, right: string): boolean {
   );
 }
 
-function leadFranchiseAuthorized(request: Request, slug: string): boolean {
-  if (slug !== 'leadfranchise') return true;
-  const expected = process.env.LEADFRANCHISE_INBOUND_SECRET || '';
-  const supplied = request.headers.get('x-leadfranchise-token') || '';
+function serviceCallerAuthorized(request: Request, slug: string): boolean {
+  if (slug !== 'leadfranchise' && slug !== 'aisempire') return true;
+  const expected = (slug === 'aisempire'
+    ? process.env.AISEMPIRE_INBOUND_SECRET
+    : process.env.LEADFRANCHISE_INBOUND_SECRET) || '';
+  const supplied = request.headers.get(`x-${slug}-token`) || '';
   return (
     expected.length >= 32 &&
     supplied.length >= 32 &&
@@ -431,7 +433,7 @@ export async function POST(
     : registryCors(await tenantOrigins(slug), origin);
 
   try {
-    if (!leadFranchiseAuthorized(request, slug)) {
+    if (!serviceCallerAuthorized(request, slug)) {
       return NextResponse.json(
         { ok: false, error: 'Unauthorized caller.' },
         { status: 401, headers: cors },
@@ -716,7 +718,7 @@ export async function POST(
       if (sharedLead.notified) {
         const persistedOwnerMessageId =
           sharedLead.ownerMessageId ?? registryContact?.ownerMessageId ?? null;
-        if (requiresWorkspaceContact && !persistedOwnerMessageId) {
+        if ((requiresWorkspaceContact || slug === 'aisempire') && !persistedOwnerMessageId) {
           return NextResponse.json(
             {
               ok: false,
@@ -812,14 +814,13 @@ export async function POST(
             updated_at: updatedAt,
           },
         );
-        if (!failurePersisted || slug === 'ellietalks') {
-          // Storage failure always fails closed; High Tea additionally requires a
-          // confirmed owner notification, even when its retry state is saved.
+        if (!failurePersisted || slug === 'ellietalks' || slug === 'aisempire') {
+          // Storage failure always fails closed; these two tenants additionally
+          // require a confirmed owner notification even when retry state is saved.
           if (!failurePersisted) {
             console.error(`[inbound/${slug}/leads] could not persist retryable notification failure`);
           }
-          // High Tea requires owner acceptance before success. The saved failure and
-          // stable lead ID retain the existing retry/idempotency path.
+          // The saved failure and stable lead ID retain the retry/idempotency path.
           return NextResponse.json(
             {
               ok: false,
