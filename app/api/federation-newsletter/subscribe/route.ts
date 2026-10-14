@@ -6,10 +6,12 @@ import {
   FEDERATION_OPERATOR_EMAIL,
 } from '@/lib/federation-newsletter-briefs';
 import { buildUnsubscribeUrl } from '@/lib/unsubscribe-token';
+import { ixLegacySignupPost } from '@/lib/server/ix-network-legacy';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
+export const maxDuration = 60;
 
 /**
  * Federation newsletter subscribe endpoint.
@@ -32,7 +34,7 @@ export const fetchCache = 'force-no-store';
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 
-function withCors(res: NextResponse) {
+function withCors<T extends Response>(res: T): T {
   res.headers.set('Access-Control-Allow-Origin', '*');
   res.headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.headers.set('Access-Control-Allow-Headers', 'content-type');
@@ -204,6 +206,12 @@ export async function POST(req: Request) {
       ),
     );
   }
+  // Keep existing IX website callers compatible without restoring the public
+  // writer: identity, source and strict workflow completion remain mandatory.
+  if (site === 'theixnetwork') {
+    return withCors(await ixLegacySignupPost(req, body));
+  }
+
   const brief = getFederationBrief(site);
   if (!brief) {
     return withCors(
