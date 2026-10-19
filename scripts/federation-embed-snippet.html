@@ -11,11 +11,11 @@
     - Inbound analytics: page views / clicks / scroll depth / form submits
       streaming to inbound_<slug>_events on Supabase, surfaced on the
       operator's pinned dashboard.
-    - Federation cross-promo banner in the footer (auto-rotated by the
-      Pantheon Decision Engine).
-    - Sponsor banner (slim, host-adaptive — inherits your fonts + colors).
     - Federation referral capture (?ref=<slug> from cross-promo links
       gets persisted + attributed on form submit).
+
+  Generic cross-portfolio sponsor and federation ad embeds are retired.
+  Do not add sponsor.js or federation-ad.js to new or updated sites.
 
   Where to paste:
     Squarespace  → Settings → Advanced → Code Injection → Footer
@@ -36,15 +36,3 @@
 <script src="https://omnileadsagi.com/embed/inbound-tracker.js"
         data-slug="REPLACE_WITH_SLUG"
         defer></script>
-
-<!-- 2. Sponsor banner — slim, host-adaptive, rotates Fred + LBP + CPS -->
-<div id="omni-sponsor"
-     data-slug="REPLACE_WITH_SLUG"
-     data-brand="REPLACE_WITH_BRAND_NAME"></div>
-<script src="https://omnileadsagi.com/embed/sponsor.js" defer></script>
-
-<!-- 3. Federation cross-promo banner — Pantheon Decision Engine picks per visitor -->
-<div id="omni-fedad-footer"
-     data-slot="footer"
-     data-slug="REPLACE_WITH_SLUG"></div>
-<script src="https://omnileadsagi.com/embed/federation-ad.js" defer></script>

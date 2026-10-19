@@ -2,6 +2,11 @@ node_modules
 .git
 .next
 .next-prod
+.next*
+.playwright-mcp
+supabase/.temp
+**/supabase/.temp
+payments-project
 .local
 dist
 *.log
@@ -11,6 +16,14 @@ dist
 .DS_Store
 Thumbs.db
 *.tsbuildinfo
+
+# Local test operator artifacts must not enter a deployment bundle.
+scripts/.email-previews
+scripts/.sitanim-payments*
+scripts/sitanim-payments-live-*
+scripts/sitanim-payments-operator.mjs
+tests/
+**/runtime.env
 
 # Local-only database administration scripts contain operator credentials and
 # must never enter a Vercel deployment bundle.
