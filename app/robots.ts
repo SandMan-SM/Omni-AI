@@ -28,6 +28,14 @@ export default function robots(): MetadataRoute.Robots {
         //   /portal        — client demo-dashboard portal behind a simple
         //                    sign-in. Layout sets noindex,nofollow; exact-
         //                    match because /portal has no sub-routes.
+        //   /assets        — owner-only federation asset surface that
+        //                    redirects into the dashboard. Layout sets
+        //                    noindex,nofollow.
+        //   /login         — authentication form. No public content to
+        //                    index; the layout sets noindex,nofollow.
+        //   /club-obsidian/ — private referral share links. Each share
+        //                    surface sets noindex,nofollow; the disallow
+        //                    keeps invite codes out of the crawl graph.
         disallow: [
           "/api/",
           "/admin/",
@@ -37,6 +45,9 @@ export default function robots(): MetadataRoute.Robots {
           "/void-preview/",
           "/fray",
           "/portal",
+          "/assets",
+          "/login",
+          "/club-obsidian/",
         ],
       },
       {
