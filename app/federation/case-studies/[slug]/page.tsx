@@ -577,7 +577,7 @@ export default async function CaseStudyPage({ params }: { params: Promise<Params
               One call. We map the bottleneck and show you the federation stack that fixes it.
             </p>
             <Link
-              href="/book/omni"
+              href="/book-now"
               className="mt-8 inline-flex items-center gap-2 rounded-full bg-amber-400 px-8 py-4 font-semibold text-zinc-900 hover:bg-amber-300 transition-colors"
             >
               Book a strategy call →

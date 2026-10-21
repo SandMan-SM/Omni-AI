@@ -39,8 +39,15 @@ export default function CTAButtons({ slug }: CTAButtonsProps) {
           style={{ background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)" }}
           onClick={(e) => { if (e.target === e.currentTarget) setOpen(false); }}
         >
+          {/* max-h/overflow-y keeps the panel scrollable when the form is
+              taller than the viewport — phone landscape and short browser
+              chrome both used to clip the submit button out of reach,
+              with no way to scroll to it. dvh tracks the real visible
+              viewport so the 90% cap is accurate when mobile browser
+              bars collapse. overscroll-contain stops the scroll from
+              chaining to the page behind the modal. */}
           <div
-            className="relative w-full max-w-md rounded-2xl p-8 border border-white/10"
+            className="relative w-full max-w-md max-h-[90dvh] overflow-y-auto overscroll-contain rounded-2xl p-8 border border-white/10"
             style={{ background: "#0d0d14" }}
           >
             {/* Close */}

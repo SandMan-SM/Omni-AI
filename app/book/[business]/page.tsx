@@ -101,7 +101,7 @@ export default function BookingPage({ params }: { params: { business: string } }
           }}>
             <CheckCircle2 size={48} color="#10b981" style={{ marginBottom: 16 }} />
             <div style={{ fontSize: 22, fontWeight: 700, color: '#10b981', marginBottom: 8 }}>
-              Booked! 🎉
+              Booked!
             </div>
             <div style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6 }}>
               You&apos;re confirmed for{' '}

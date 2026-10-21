@@ -27,7 +27,17 @@ export const metadata: Metadata = {
 
 export default function SubscribePage() {
   return (
-    <main className="fixed inset-0 z-[60] overflow-hidden bg-[hsl(var(--background))]">
+    // Previously `fixed inset-0 overflow-hidden`, which pinned the page to
+    // exactly one viewport and clipped anything taller. On a 375×667 phone
+    // the logo + headline + description + subscribe form exceed the
+    // viewport, so the form was cut off with no way to scroll to it — the
+    // subscribe CTA rendered but was unreachable. `min-h-screen` on the
+    // main plus `min-h-screen` on the inner flex column keeps the
+    // vertically-centred composition on tall screens while letting the
+    // document scroll normally when the content is taller than the
+    // viewport. `relative` preserves the original stacking context that
+    // `fixed` + `z-[60]` was providing.
+    <main className="relative z-[60] min-h-screen bg-[hsl(var(--background))]">
       {/* On-brand dark gradient backdrop */}
       <div
         aria-hidden
@@ -38,7 +48,7 @@ export default function SubscribePage() {
         className="absolute inset-0 bg-black/40"
       />
 
-      <div className="relative flex h-full w-full flex-col items-center justify-center px-6 py-10">
+      <div className="relative flex min-h-screen w-full flex-col items-center justify-center px-6 py-10">
         {/* Logo */}
         <Link
           href="/"
