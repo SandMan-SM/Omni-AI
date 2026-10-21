@@ -1,3 +1,21 @@
 {
-  "extends": "next/core-web-vitals"
+  "extends": "next/core-web-vitals",
+  "overrides": [
+    {
+      // next/og's ImageResponse renders on the edge through satori, which
+      // resolves artwork from a raw <img src="..."> element. next/image
+      // is not available in that runtime, and a CSS background-image
+      // would not be embedded in the generated PNG — so the
+      // no-img-element rule is a false positive in these files.
+      "files": [
+        "**/opengraph-image.tsx",
+        "**/twitter-image.tsx",
+        "**/opengraph-image.ts",
+        "**/twitter-image.ts"
+      ],
+      "rules": {
+        "@next/next/no-img-element": "off"
+      }
+    }
+  ]
 }

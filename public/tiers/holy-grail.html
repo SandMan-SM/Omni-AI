@@ -263,7 +263,7 @@ async function submitBooking(){
     if(!res.ok)throw new Error(data.error||'Failed');
     document.getElementById('booking-form').style.display='none';
     document.getElementById('booking-success').style.display='block';
-    if(data.googleCalendarUrl)document.getElementById('gcal-link').href=data.googleCalendarUrl;
+    var gcal=document.getElementById('gcal-link');if(data.googleCalendarUrl){gcal.href=data.googleCalendarUrl;}else{gcal.style.display='none';}
   }catch(e){st.style.display='block';st.style.color='#ef4444';st.textContent='Something went wrong. Please try again.';btn.disabled=false;btn.textContent='Apply for Holy Grail Access';btn.style.opacity='1';}
 }
 </script>
