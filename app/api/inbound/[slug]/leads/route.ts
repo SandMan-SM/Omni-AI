@@ -28,6 +28,10 @@ import {
   recordLeadNotificationState,
 } from '@/lib/server/analytics-ingest';
 import { verifyVercelProjectToken } from '@/lib/server/vercel-oidc';
+import {
+  LEADFRANCHISE_TRIAL_SOURCE,
+  leadfranchiseTrialReceipt,
+} from '@/lib/server/leadfranchise-trial-receipt';
 
 export const maxDuration = 30;
 
@@ -82,7 +86,15 @@ function safeSecretEqual(left: string, right: string): boolean {
   );
 }
 
+function dedicatedTrialCallerAuthorized(request: Request, slug: string): boolean {
+  if (slug !== 'leadfranchise') return false;
+  const expected = process.env.LEADFRANCHISE_TRIAL_INBOUND_SECRET || '';
+  const supplied = request.headers.get('x-leadfranchise-trial-token') || '';
+  return expected.length >= 32 && supplied.length >= 32 && safeSecretEqual(expected, supplied);
+}
+
 function serviceCallerAuthorized(request: Request, slug: string): boolean {
+  if (dedicatedTrialCallerAuthorized(request, slug)) return true;
   if (slug !== 'leadfranchise' && slug !== 'aisempire') return true;
   const expected = (slug === 'aisempire'
     ? process.env.AISEMPIRE_INBOUND_SECRET
@@ -458,6 +470,11 @@ export async function POST(
 
     const body = await request.json().catch(() => ({}));
 
+    // The dedicated website-trial credential cannot invoke legacy workflows.
+    if (dedicatedTrialCallerAuthorized(request, slug) && body.source !== LEADFRANCHISE_TRIAL_SOURCE) {
+      return NextResponse.json({ ok: false, error: 'This caller is restricted to website trial applications.' }, { status: 403, headers: cors });
+    }
+
     if (isBotSubmission(body)) {
       // Silent success so spammers don't tune their probes.
       return NextResponse.json({ ok: true }, { headers: cors });
@@ -468,7 +485,19 @@ export async function POST(
     const phone = sanitizeText(body.phone, 50);
     const message = sanitizeText(body.message, 4000);
     const source = sanitizeText(body.source, 50) || 'contact_form';
-    const intakeId = sanitizeText(body.intake_id, 64);
+    let intakeId = sanitizeText(body.intake_id, 64);
+    const isLeadfranchiseTrial =
+      slug === 'leadfranchise' && source === LEADFRANCHISE_TRIAL_SOURCE;
+    const trialReceipt = isLeadfranchiseTrial
+      ? leadfranchiseTrialReceipt(body)
+      : null;
+    if (trialReceipt && !trialReceipt.ok) {
+      return NextResponse.json(
+        { ok: false, error: 'A valid website trial application receipt is required.', code: trialReceipt.code },
+        { status: 422, headers: cors },
+      );
+    }
+    if (trialReceipt?.ok) intakeId = trialReceipt.intakeId;
 
     if (!name) {
       return NextResponse.json(
@@ -493,7 +522,15 @@ export async function POST(
     // Write to the shared analytics schema FIRST — the dashboard-visible sink
     // that captures the lead even if the legacy per-tenant table / omni_businesses
     // row is missing (the old "Tenant not configured" 500 used to drop leads).
-    const dedupKey = `${(email || phone || '').toLowerCase()}:${(source || '').slice(0, 20)}`;
+    const dedupKey = trialReceipt?.ok
+      ? trialReceipt.dedupKey
+      : `${(email || phone || '').toLowerCase()}:${(source || '').slice(0, 20)}`;
+    const leadProps: Record<string, unknown> = body && typeof body === 'object' ? { ...body } : {};
+    if (isLeadfranchiseTrial) {
+      // Acceptance receipts belong to the receiver, never the caller's payload.
+      delete leadProps.owner_notification;
+      delete leadProps.customer_notification;
+    }
     const sharedLead = await recordLeadAndReturn({
       slug,
       name,
@@ -503,7 +540,7 @@ export async function POST(
       source,
       page_url: sanitizeText(body.page_url, 2048) || undefined,
       dedup_key: dedupKey || undefined,
-      props: body && typeof body === 'object' ? body : {},
+      props: leadProps,
     });
     if (!sharedLead) {
       return NextResponse.json(
@@ -814,9 +851,9 @@ export async function POST(
             updated_at: updatedAt,
           },
         );
-        if (!failurePersisted || slug === 'ellietalks' || slug === 'aisempire') {
-          // Storage failure always fails closed; these two tenants additionally
-          // require a confirmed owner notification even when retry state is saved.
+        if (!failurePersisted || slug === 'ellietalks' || slug === 'aisempire' || isLeadfranchiseTrial) {
+          // Storage failure always fails closed. These tenants and website
+          // trial applications also require the owner acceptance receipt.
           if (!failurePersisted) {
             console.error(`[inbound/${slug}/leads] could not persist retryable notification failure`);
           }
