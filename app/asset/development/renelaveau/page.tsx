@@ -41,6 +41,8 @@ export const metadata: Metadata = {
     images: [{ url: `${SITE_URL}/api/og?title=Build%20Your%20Own%20Agentic%20Website&topic=Recommended%20by%20Rene%20Laveau`, width: 1200, height: 630 }],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Build Your Own Agentic Website · Recommended by Rene Laveau",
     description:

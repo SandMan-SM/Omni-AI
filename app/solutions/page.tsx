@@ -40,6 +40,8 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "AI Integrated Solutions · À La Carte AI Services",
     description:

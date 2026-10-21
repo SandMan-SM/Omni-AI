@@ -39,6 +39,8 @@ export const metadata: Metadata = {
     siteName: "Omni AI",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Affiliate Consultation — Omni AI",
     description: "A free 30-minute working session to plan your Omni AI affiliate strategy.",

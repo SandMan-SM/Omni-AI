@@ -35,6 +35,8 @@ export const metadata: Metadata = {
     images: [{ url: ogImage }],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Omni Partner Network",
     description:

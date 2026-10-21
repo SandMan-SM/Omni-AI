@@ -36,6 +36,8 @@ export const metadata: Metadata = {
     siteName: "Omni AI",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Platform Details — How Omni AI Works",
     description:

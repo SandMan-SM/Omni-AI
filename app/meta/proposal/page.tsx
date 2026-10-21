@@ -32,6 +32,8 @@ export const metadata: Metadata = {
     }],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Meta Growth Program · 90 Days",
     description:

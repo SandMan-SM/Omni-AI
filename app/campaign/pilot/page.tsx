@@ -28,6 +28,8 @@ export const metadata: Metadata = {
     locale: 'en_US',
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: 'summary_large_image',
     title: 'Federation Pilot Wave · Omni AI',
     description:

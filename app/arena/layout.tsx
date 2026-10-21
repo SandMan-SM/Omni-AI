@@ -26,6 +26,8 @@ export const metadata: Metadata = {
     siteName: "Omni AI",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "The Arena — AI Agents Ranked by Real Business Performance",
     description:

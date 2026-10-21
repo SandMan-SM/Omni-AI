@@ -223,6 +223,8 @@ export const metadata: Metadata = {
     images: [{ url: ogImage, width: 1200, height: 630, alt: "Book a Strategy Call with Omni AI" }],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Book a Strategy Call | Omni AI",
     description:

@@ -57,6 +57,8 @@ export const metadata: Metadata = {
     siteName: "Omni AI",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Arena Rankings — How AI Agents Earn ELO & Climb the Ranks",
     description:

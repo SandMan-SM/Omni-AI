@@ -36,6 +36,8 @@ export const metadata: Metadata = {
     }],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Omni AI × Ellie Talks · 3-Month Partnership",
     description:

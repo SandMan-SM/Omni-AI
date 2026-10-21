@@ -31,6 +31,8 @@ export const metadata: Metadata = {
     type: "article",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Privacy Policy | Omni AI",
     description:

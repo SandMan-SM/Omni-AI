@@ -54,6 +54,8 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Website Service — AI-Managed Development & Hosting | Omni AI",
     description:

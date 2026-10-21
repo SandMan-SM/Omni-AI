@@ -34,6 +34,8 @@ export const metadata: Metadata = {
     siteName: "Omni AI · Interlinked",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Book a working session · Omni AI",
     description:

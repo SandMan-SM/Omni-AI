@@ -103,6 +103,8 @@ export async function generateMetadata({
       images: [{ url: `${url}/opengraph-image`, width: 1200, height: 630 }],
     },
     twitter: {
+      site: "@SitaniMafi",
+      creator: "@SitaniMafi",
       card: 'summary_large_image',
       title,
       description: desc,

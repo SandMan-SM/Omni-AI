@@ -21,7 +21,11 @@ export const metadata: Metadata = {
     url: `${SITE_URL}/federation/case-studies`,
     type: "website",
   },
-  twitter: { card: "summary_large_image" },
+  twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
+    card: "summary_large_image"
+  },
   robots: { index: true, follow: true },
 };
 

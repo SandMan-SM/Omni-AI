@@ -42,6 +42,8 @@ export const metadata: Metadata = {
     ],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Meta Ads, Managed by AI · $1,500/mo",
     description:

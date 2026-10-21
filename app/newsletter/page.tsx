@@ -43,6 +43,8 @@ export const metadata: Metadata = {
     siteName: "Interlinked",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
     description:

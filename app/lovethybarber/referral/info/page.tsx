@@ -169,6 +169,8 @@ export function generateMetadata({ searchParams }: PageProps): Metadata {
       images: [{ url: ogImage, width: 1200, height: 630 }],
     },
     twitter: {
+      site: "@SitaniMafi",
+      creator: "@SitaniMafi",
       card: "summary_large_image",
       title: `Under the Hood · Referred by ${name}`,
       description: `$60K+ in assets for $3,000. 20× ROI. 100% guarantee. We don't even want the money. — ${name}`,

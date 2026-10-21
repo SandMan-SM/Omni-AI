@@ -154,6 +154,8 @@ export const metadata: Metadata = {
     images: [{ url: OG_IMAGE_URL, width: 1200, height: 630, alt: "Inside the Build · CPS × Omni AI" }],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "How Your Marketing Is Actually Working · CPS × Omni AI",
     description:

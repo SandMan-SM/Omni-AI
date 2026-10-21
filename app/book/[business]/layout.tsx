@@ -38,6 +38,8 @@ export async function generateMetadata({
       type: 'website',
     },
     twitter: {
+      site: "@SitaniMafi",
+      creator: "@SitaniMafi",
       card: 'summary',
       title,
       description,

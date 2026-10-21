@@ -25,6 +25,8 @@ export const metadata: Metadata = {
     siteName: "Omni AI",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "AI Video Marketing — AI Scripts, Produces & Optimizes Videos",
     description:

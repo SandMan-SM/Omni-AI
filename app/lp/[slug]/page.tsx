@@ -36,6 +36,8 @@ export async function generateMetadata({ params }: { params: { slug: string } })
       images: [{ url: '/api/og', width: 1200, height: 630, alt: title }],
     },
     twitter: {
+      site: "@SitaniMafi",
+      creator: "@SitaniMafi",
       card: 'summary_large_image',
       title,
       description,

@@ -17,6 +17,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Subscribe — Omni AI",
     description:

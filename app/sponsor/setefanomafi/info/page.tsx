@@ -24,6 +24,8 @@ export const metadata: Metadata = {
     images: [{ url: OG_IMAGE, width: 1200, height: 630 }],
   },
   twitter: {
+    site: "@SitaniMafi",
+    creator: "@SitaniMafi",
     card: "summary_large_image",
     title: "Sponsorship · Setefano Mafi · Full Breakdown",
     description:

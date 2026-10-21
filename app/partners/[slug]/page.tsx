@@ -55,7 +55,11 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
     description,
     alternates: { canonical },
     openGraph: { title, description, url: canonical, type: "website", siteName: "Omni AI" },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: {
+      site: "@SitaniMafi",
+      creator: "@SitaniMafi",
+      card: "summary_large_image", title, description
+    },
   };
 }
 
