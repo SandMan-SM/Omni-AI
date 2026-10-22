@@ -124,7 +124,7 @@ export default function PilotPage() {
             <strong style={{ color: '#fff' }}>Feature placement across 10 Utah-rooted properties</strong>{' '}
             &mdash; Sacred Letters (renelaveau.com), Imperium Editorial, Love Thy Barber, Beehive Biz
             Pulse, The Wasatch Post, Utah Main Street, Leifson Built, Youngs Cabinet, Alira Care, and
-            Psych &amp; Custody Evaluations. Cross-promo blocks on each one rotate your brand into view
+            Clinical &amp; Professional Solutions. Cross-promo blocks on each one rotate your brand into view
             of every visitor.
           </li>
           <li style={{ marginBottom: 10 }}>

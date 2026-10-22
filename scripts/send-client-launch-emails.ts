@@ -90,9 +90,9 @@ const RECIPIENTS: Recipient[] = [
     to: "korine@wecanhelpout.com",
     cc: ["steve@wecanhelpout.com", "benjones@omnileadsllc.com", "sitanim8@gmail.com"],
     firstName: "Korine & Steve",
-    brandLine: "Comprehensive Psychological Services",
+    brandLine: "Clinical and Professional Solutions",
     intro:
-      "Quick note from the Omni AI side: the CPS agentic dashboard is officially live, and we loaded 100 qualified leads into your pipeline as a test pass — neuropsych, ADHD, custody-eval, and ketamine intent across the Salt Lake area, all scoped to CPS so the team has a warm queue from day one.",
+      "Quick note from the Omni AI side: the CPS agentic dashboard is officially live, and we loaded 100 qualified leads into your pipeline as a test pass — mental health, ADHD, evaluation, and ketamine intent across the Salt Lake area, all scoped to CPS so the team has a warm queue from day one.",
     subject: "CPS is live on Omni AI (100 leads loaded)",
     partnerSlug: "cps",
   },

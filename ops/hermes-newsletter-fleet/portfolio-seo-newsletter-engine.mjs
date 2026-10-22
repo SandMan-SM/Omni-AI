@@ -19,12 +19,17 @@ const PORTFOLIO_EXCLUSIONS = [
 
 const SERVICE_OVERRIDES = [
   {
-    match: "/CPS/cps-website",
+    // `match` is a substring of the client path relative to CLIENTS_ROOT.
+    // The CPS checkout has been renamed twice (cps-website → Website /
+    // cpsutah-site), so match on the client directory itself rather than a
+    // repo folder name that no longer exists — the old value never matched
+    // and this override was silently inert.
+    match: "/CPS/",
     client: "CPS",
     market: "Utah",
-    audience: "parents, attorneys, schools, and referral partners",
-    services: ["behavioral health evaluations", "ADHD evaluations", "autism evaluations", "custody evaluations"],
-    compliance: "HIPAA-safe, no diagnosis promises, no patient details",
+    audience: "families, business owners, and referral partners across Utah",
+    services: ["mental health support", "evaluation and assessment resources", "legal and financial guidance", "career, education, and caregiving resources"],
+    compliance: "no diagnosis promises, no treatment or legal advice, no private details",
   },
   {
     match: "/Sitani Mafi/Omni AI/Website",

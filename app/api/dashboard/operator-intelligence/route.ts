@@ -60,9 +60,9 @@ const BOOTSTRAP_CLIENT_SCOPES: Record<string, OperatorIntelligenceScope> = {
     mode: "workspace",
     businesses: [{
       id: "ea40a965-02b8-47ed-b17d-e580bf4802f2",
-      name: "CPS",
+      name: "Clinical and Professional Solutions",
       slug: "cps",
-      website: "psychandcustodyevaluations.com",
+      website: "cpsutah.org",
     }],
   },
 };
@@ -84,9 +84,9 @@ const BOOTSTRAP_PORTFOLIO_SCOPE: OperatorIntelligenceScope = {
     },
     {
       id: "ea40a965-02b8-47ed-b17d-e580bf4802f2",
-      name: "CPS",
+      name: "Clinical and Professional Solutions",
       slug: "cps",
-      website: "psychandcustodyevaluations.com",
+      website: "cpsutah.org",
     },
     {
       id: "b593a442-c5a9-486f-8333-ef9a8429ed2f",

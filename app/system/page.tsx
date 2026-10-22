@@ -72,11 +72,11 @@ const PORTFOLIO_SITES: PortfolioSite[] = [
     group: "core",
   },
   {
-    name: "CPS · Psych & Custody Evaluations",
+    name: "CPS · Clinical & Professional Solutions",
     slug: "cps",
-    url: "https://psychandcustodyevaluations.com",
-    preview: "https://cps-website-nine.vercel.app",
-    blurb: "Forensic psychology + custody evaluations.",
+    url: "https://cpsutah.org",
+    preview: "https://cpsutah.vercel.app",
+    blurb: "Utah solutions navigation — health, home, business, family.",
     status: "live",
     group: "client-site",
   },
@@ -340,7 +340,7 @@ export default function SystemPage() {
 
         {/* The Interlinked thread — the philosophical layer the
             sponsorship + partnership system exists to serve. CPS works
-            with families fractured by the same disconnection the
+            with people navigating the same disconnection the
             manifesto names; Live Better Podcast is the show built on
             that homecoming; Omni AI is the agentic tool that gives
             people back the attention to feel any of it. Three operators
@@ -501,10 +501,10 @@ export default function SystemPage() {
                   lineHeight: 1.6,
                 }}
               >
-                Forensic psychology and custody evaluations meet families
-                at the moment the manifesto names — when one tear,
-                somewhere upstream, has fractured a family system. CPS
-                is the operator who walks people through that repair.
+                Clinical and professional solutions meet families at the
+                moment the manifesto names — when one tear, somewhere
+                upstream, has fractured a family system. CPS is the
+                operator who walks people through that repair.
               </div>
             </div>
           </div>
@@ -1221,7 +1221,7 @@ export default function SystemPage() {
                 marginBottom: 4,
               }}
             >
-              CPS · Psych &amp; Custody Evaluations
+              CPS · Clinical &amp; Professional Solutions
             </div>
             <div
               style={{
@@ -1230,8 +1230,8 @@ export default function SystemPage() {
                 lineHeight: 1.65,
               }}
             >
-              Forensic psychology + custody evaluations across Utah —
-              one of our flagship operators. Cross-portfolio promotion
+              Utah community and professional solutions across the state
+              — one of our flagship operators. Cross-portfolio promotion
               comes with the agency relationship. The card stays
               tertiary so it never competes with Fred for the primary
               attention slot.

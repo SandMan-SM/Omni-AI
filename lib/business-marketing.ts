@@ -24,22 +24,33 @@ const OMNI_PHYSICAL_ADDRESS =
   'Omni AI · 1234 Federation Way · Salt Lake City, UT 84101';
 
 // ── verified domains ────────────────────────────────────────────────
-// Source: 10 domains DKIM/SPF-verified in Resend dashboard 2026-05-10.
-// Keep this in sync with `mcp__resend__list-domains`. enqueueCampaign
-// rejects any sender_email whose host doesn't appear here.
+// Source: the Resend account's live domain list, status `verified`.
+// Reconciled 2026-10-22 against the account (10 domains). Keep this in
+// sync with `resend.list-domains` — enqueueCampaign rejects any
+// sender_email whose host doesn't appear here, which is the guard that
+// stops a campaign from being queued against a domain that cannot send.
+//
+// The previous list was a 2026-05-10 snapshot that had drifted: it still
+// named `omnileadsagi.com` (unverified since 2026-08-06) and
+// `psychandcustodyevaluations.com` (the CPS domain before the
+// cpsutah.org rebrand), neither of which is in the account any more.
+// Listing a domain that cannot send turns a queued campaign into a
+// 403 at send time instead of a clean rejection at enqueue time.
+//
+// To give a brand its own sending domain: verify it in Resend first,
+// then add it here. `cpsutah.org` is pending that verification.
 
 export const VERIFIED_DOMAINS = [
   'alira.live',
-  'beehivebizpulse.com',
+  'highteawithellieg.com',
+  'leadfranchise.org',
   'lovethybarber.shop',
-  'omnileadsagi.com', // Alfred persona — DKIM+SPF verified, only tracking CNAME failed (non-blocking for sending).
-  'psychandcustodyevaluations.com',
-  'renelaveau.com',
+  'omniltd.app',
+  'omnios.news',
   'secretimperium.com',
-  'thewasatchpost.com',
-  'utahdeckandbasementremodel.com',
+  'sitanimafi.com',
+  'theixnetwork.com',
   'utahmainstreet.com',
-  'youngscabinetrefinishing.com',
 ] as const;
 
 const NOREPLY_LOCAL = /^(noreply|no-reply|do-not-reply|donotreply)$/i;

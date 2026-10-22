@@ -143,7 +143,7 @@ const OG_IMAGE_URL = `${SITE_URL}/api/og?title=Inside%20the%20Build&topic=CPS%20
 export const metadata: Metadata = {
   title: "How Your Marketing Is Actually Working · CPS × Omni AI",
   description:
-    "An inside look at how Psych & Custody Evaluations' marketing budget is moving across 16 federation businesses, what the AI CEO layer is doing in the background, and why the current B2B-heavy lead mix is a feature, not a bug.",
+    "An inside look at how Clinical and Professional Solutions' marketing budget is moving across 16 federation businesses, what the AI CEO layer is doing in the background, and why the current B2B-heavy lead mix is a feature, not a bug.",
   alternates: { canonical: PAGE_URL },
   openGraph: {
     title: "How Your Marketing Is Actually Working · CPS × Omni AI",

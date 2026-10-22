@@ -822,23 +822,23 @@ export const DEMO_CLIENTS: DemoClient[] = [
     },
   },
 
-  // ── 11. Steve — Comprehensive Psychological Services ──────────────
+  // ── 11. Steve — Clinical and Professional Solutions ──────────────
   {
     username: "steve",
     password: "mind123",
-    businessName: "Comprehensive Psychological Services",
-    website: "psychandcustodyevaluations.com",
-    vertical: "Psychological & Custody Evaluations",
+    businessName: "Clinical and Professional Solutions",
+    website: "cpsutah.org",
+    vertical: "Community & Professional Solutions",
     metrics: {
       opportunities: { total: 110, won: 52, lost: 33, open: 25 },
       opportunityValue: {
         total: 176000,
         bars: [
-          { label: "New Referral", value: 14400 },
-          { label: "Records Requested", value: 11200 },
-          { label: "Eval Scheduled", value: 9600 },
-          { label: "Report Drafting", value: 4800 },
-          { label: "Completed / Won", value: 83200 },
+          { label: "New Inquiry", value: 14400 },
+          { label: "Options Matched", value: 11200 },
+          { label: "Intro Scheduled", value: 9600 },
+          { label: "Options Sent", value: 4800 },
+          { label: "Enrolled / Won", value: 83200 },
           { label: "Lost", value: 52800 },
         ],
       },
@@ -846,11 +846,11 @@ export const DEMO_CLIENTS: DemoClient[] = [
       funnel: {
         pipelineName: "Intake Pipeline",
         stages: [
-          { stage: "New Referral", count: 9 },
-          { stage: "Records Requested", count: 7 },
-          { stage: "Eval Scheduled", count: 6 },
-          { stage: "Report Drafting", count: 3 },
-          { stage: "Completed / Won", count: 52 },
+          { stage: "New Inquiry", count: 9 },
+          { stage: "Options Matched", count: 7 },
+          { stage: "Intro Scheduled", count: 6 },
+          { stage: "Options Sent", count: 3 },
+          { stage: "Enrolled / Won", count: 52 },
           { stage: "Lost", count: 33 },
         ],
       },
@@ -866,19 +866,19 @@ export const DEMO_CLIENTS: DemoClient[] = [
         ],
       },
       tasks: [
-        { title: "Send intake packet to new attorney referral", status: "pending", due: "Jun 11" },
-        { title: "Finalize custody eval report for review", status: "pending", due: "Jun 16" },
-        { title: "Confirm Thursday testimony prep call", status: "completed" },
+        { title: "Send resource packet to new inquiry", status: "pending", due: "Jun 11" },
+        { title: "Finalize options summary for review", status: "pending", due: "Jun 16" },
+        { title: "Confirm Thursday partner-intro call", status: "completed" },
       ],
       manualActions: { phone: 6, sms: 2, pending: 8 },
       leadSources: {
         total: 110,
         trendPct: 14,
         rows: [
-          { source: "Attorney referral", totalLeads: 47, totalValue: 75200, open: 11, won: 23, lost: 13, abandoned: 0, winPct: 48.94 },
-          { source: "Court referral", totalLeads: 29, totalValue: 46400, open: 6, won: 14, lost: 9, abandoned: 0, winPct: 48.28 },
+          { source: "Partner referral", totalLeads: 47, totalValue: 75200, open: 11, won: 23, lost: 13, abandoned: 0, winPct: 48.94 },
+          { source: "Community referral", totalLeads: 29, totalValue: 46400, open: 6, won: 14, lost: 9, abandoned: 0, winPct: 48.28 },
           { source: "Google Search", totalLeads: 21, totalValue: 33600, open: 5, won: 10, lost: 6, abandoned: 0, winPct: 47.62 },
-          { source: "Psychology Today", totalLeads: 13, totalValue: 20800, open: 3, won: 5, lost: 5, abandoned: 0, winPct: 38.46 },
+          { source: "Resource directory", totalLeads: 13, totalValue: 20800, open: 3, won: 5, lost: 5, abandoned: 0, winPct: 38.46 },
         ],
       },
       googleAnalytics: { visitors: 2800, sessions: 3700, pageViews: 9200, bounceRatePct: 46.9 },

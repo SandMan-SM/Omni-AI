@@ -60,10 +60,10 @@ export const PARTNER_NETWORK: NetworkMember[] = [
   },
   {
     slug: "cps",
-    name: "Psych & Custody Evaluations",
-    href: "https://psychandcustodyevaluations.com",
+    name: "Clinical & Professional Solutions",
+    href: "https://cpsutah.org",
     eyebrow: "Featured",
-    tagline: "Trusted forensic and psychological evaluations across Utah.",
+    tagline: "Utah solutions navigation across health, home, business, and family.",
     cta: "Learn",
     category: "professional",
     weight: 2,

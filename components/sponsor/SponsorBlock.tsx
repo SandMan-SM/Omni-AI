@@ -32,7 +32,7 @@ interface SponsorBlockProps {
 
 const FRED_LINK = "https://circlern.com/host/eef969fc-01ae-4af5-95af-ad0f104488cc";
 const SEOPPC_LINK = "https://seoandppcmarketing.com";
-const CPS_LINK = "https://psychandcustodyevaluations.com";
+const CPS_LINK = "https://cpsutah.org";
 
 // Internal analytics ingestion host. The operator-facing dashboard is Mythos.
 const ANALYTICS_HOST = "https://omnileadsagi.com";
@@ -278,10 +278,10 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
 
       {/* TERTIARY — CPS · Featured Client. The third tier in the slot
           hierarchy: paid sponsor → strategic partnership → featured
-          client. CPS is one of our flagship operators (forensic
-          psych + custody evaluations) and gets cross-portfolio
-          promotion as part of the agency relationship. Visually
-          subdued vs. Fred's card so it never competes with the
+          client. CPS is one of our flagship operators (Clinical and
+          Professional Solutions — Utah solutions navigation) and gets
+          cross-portfolio promotion as part of the agency relationship.
+          Visually subdued vs. Fred's card so it never competes with the
           paying sponsor for attention. */}
       <a
         href={trackedHref("cps", slug)}
@@ -315,11 +315,11 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
               Featured client · powered by Omni AI
             </div>
             <div style={{ fontSize: 15, fontWeight: 600, marginBottom: 2 }}>
-              CPS · Psych &amp; Custody Evaluations
+              CPS · Clinical &amp; Professional Solutions
             </div>
             <div className="osb-card-desc" style={{ fontSize: 13, color: textMuted }}>
-              Forensic psychology + custody evaluations across Utah.
-              Trusted by attorneys, courts, and families.
+              Utah community and professional solutions — health, home,
+              business, education, careers, and family support.
             </div>
           </div>
           <span className="osb-card-cta" style={{ flexShrink: 0, fontSize: 12, color: accent, fontWeight: 600 }}>
@@ -330,7 +330,7 @@ export function SponsorBlock({ slug, theme = "dark" }: SponsorBlockProps) {
 
       <ShareControls
         url={trackedHref("cps", slug)}
-        title="CPS · Psych & Custody Evaluations — featured client of Omni AI"
+        title="CPS · Clinical and Professional Solutions — featured client of Omni AI"
         slug={slug}
         target="cps"
         align="left"

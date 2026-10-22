@@ -15,7 +15,7 @@ const SITE_ALIASES: Record<string, string> = {
 const LABELS: Record<string, string> = {
   sitanim: 'Sitani Mafi', mainst: 'Utah Main Street', wasatch: 'The Wasatch Post',
   beehive: 'Beehive Biz Pulse', ltb: 'Love Thy Barber', otd: 'Live Better On The Drip',
-  cps: 'PACE / CPS', omnileads: 'Omni AI', mythosais: 'Mythos AIS',
+  cps: 'Clinical and Professional Solutions', omnileads: 'Omni AI', mythosais: 'Mythos AIS',
   theixnetwork: 'The IX Network', 'taniela-fiefia': 'The Concrete Operator', imperium: 'Imperium',
 };
 

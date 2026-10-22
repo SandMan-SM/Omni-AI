@@ -37,11 +37,11 @@ export const FEDERATION_SPONSORS: SponsorSlot[] = [
   {
     slug: "cps",
     rank: 1,
-    brand: "CPS · The Repair",
-    tagline: "Forensic psychology · custody work.",
+    brand: "CPS · Clinical & Professional Solutions",
+    tagline: "Utah solutions navigation · one clear next step.",
     blurb:
-      "Where families go when one tear, somewhere upstream, has fractured the system. CPS is the operator who walks people through the repair.",
-    hrefBase: "https://psychandcustodyevaluations.com",
+      "Where people go when one tear, somewhere upstream, has fractured the system. CPS is the operator who walks people through the repair.",
+    hrefBase: "https://cpsutah.org",
     badge: "Featured",
   },
   {

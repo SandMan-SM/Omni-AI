@@ -358,7 +358,7 @@ export default function OraclePage() {
             them.
           </p>
           <div className="grid gap-5 sm:grid-cols-2">
-            <ProjectCard name="CPS" tag="Psych & custody evaluations · Utah" body="Bespoke pipeline live. Full agentic dashboard exposed to the owner. Newsletter, leads, pipeline scoring all running. 10 GEO city pages in flight." />
+            <ProjectCard name="CPS" tag="Community & professional solutions · Utah" body="Bespoke pipeline live. Full agentic dashboard exposed to the owner. Newsletter, leads, pipeline scoring all running. 12 solution areas, service-area coverage, and city pages in flight." />
             <ProjectCard name="Leifson Built" tag="Decks, basements, custom builds · Utah" body="Tracker + book-consultation deployed. Workspace pinned for Adam. Newsletter seed of 30 posts coming." />
             <ProjectCard name="Young&rsquo;s Cabinet Refinishing" tag="Cabinet refinishing · Utah" body="Tracker + book-consultation deployed. Workspace pinned for Brent. Newsletter seed of 30 posts coming." />
             <ProjectCard name="Love Thy Barber" tag="Premium barber studio · Sandy, UT" body="Public site live at lovethybarber.shop. Tracker mount in this round. Workspace pinned for Sammy. 30 newsletter posts incoming." />

@@ -2,7 +2,8 @@
  * CPS lead notification — fan-out to email (Resend) + Telegram.
  *
  * Used by /api/cps/leads to alert the owner the moment a lead arrives
- * from the CPS website (psychandcustodyevaluations.com). Both channels
+ * from the CPS website (cpsutah.org — Clinical and Professional
+ * Solutions). Both channels
  * are best-effort: a missing key or upstream failure logs but never
  * throws, so the lead is always saved even if every channel is down.
  */
@@ -50,7 +51,7 @@ export async function notifyOwnerEmail(lead: CpsLead): Promise<boolean> {
   const html = `
     <div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif;max-width:560px;margin:0 auto;color:#111;line-height:1.5">
       <h2 style="margin:0 0 8px;color:#1f3b8c">New CPS lead</h2>
-      <p style="margin:0 0 16px;color:#666">From psychandcustodyevaluations.com — source: <strong>${source}</strong></p>
+      <p style="margin:0 0 16px;color:#666">From cpsutah.org — source: <strong>${source}</strong></p>
       <table style="width:100%;border-collapse:collapse">
         <tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600;width:100px">Name</td><td style="padding:8px 0;border-bottom:1px solid #eee">${name}</td></tr>
         ${phone ? `<tr><td style="padding:8px 0;border-bottom:1px solid #eee;font-weight:600">Phone</td><td style="padding:8px 0;border-bottom:1px solid #eee"><a href="tel:${phone}" style="color:#1f3b8c">${phone}</a></td></tr>` : ''}

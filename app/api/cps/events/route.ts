@@ -6,8 +6,8 @@ import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
 /**
  * CPS analytics ingestion. Called by <CpsTracker /> mounted on
- * psychandcustodyevaluations.com on every page view, click, scroll
- * milestone, and form submit.
+ * cpsutah.org (Clinical and Professional Solutions) on every page view,
+ * click, scroll milestone, and form submit.
  *
  * Writes to the cps_events table (separate from the main events table
  * so CPS data never mixes with omnileads data).
@@ -15,12 +15,17 @@ import { rateLimit, rateLimitResponse } from '@/lib/rate-limit';
  * Rate-limited at 240/min per IP — higher than the main /api/events/track
  * because this endpoint also receives scroll-depth + click-delegation
  * fanout from the CPS site, which is heavier than the omnileads site.
+ *
+ * The allowlist mirrors INBOUND_ORIGINS.cps in lib/inbound-types.ts. Keep
+ * the two in sync: the generic /api/inbound/[slug]/* routes and this
+ * bespoke one both accept CPS browser beacons, and a domain that is
+ * allowlisted in one but not the other 403s silently on the client.
  */
 
 const ALLOWED_ORIGINS = new Set([
-  'https://psychandcustodyevaluations.com',
-  'https://www.psychandcustodyevaluations.com',
-  'https://cps-website-nine.vercel.app',
+  'https://cpsutah.org',
+  'https://www.cpsutah.org',
+  'https://cpsutah.vercel.app',
   'http://localhost:3000',
   'http://localhost:3001',
 ]);
@@ -28,7 +33,7 @@ const ALLOWED_ORIGINS = new Set([
 function corsHeaders(origin: string | null): HeadersInit {
   const ok = origin && ALLOWED_ORIGINS.has(origin);
   return {
-    'Access-Control-Allow-Origin': ok ? origin! : 'https://psychandcustodyevaluations.com',
+    'Access-Control-Allow-Origin': ok ? origin! : 'https://cpsutah.org',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Max-Age': '86400',
@@ -78,7 +83,7 @@ export async function POST(request: Request) {
     const pageUrl = sanitizeText(body.page_url, 2048) || referer || undefined;
     let pagePath: string | undefined;
     try {
-      if (pageUrl) pagePath = new URL(pageUrl, 'https://psychandcustodyevaluations.com').pathname;
+      if (pageUrl) pagePath = new URL(pageUrl, 'https://cpsutah.org').pathname;
     } catch {
       pagePath = undefined;
     }

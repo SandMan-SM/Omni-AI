@@ -91,7 +91,7 @@ export default function MeetingsPage() {
   // link points to that page instead of the legacy /book/{biz_id} route —
   // so paste-into-email-signature lands prospects on a richer surface.
   const CUSTOM_BOOKING_URLS: Record<string, string> = {
-    cps: 'https://psychandcustodyevaluations.com/book-consultation',
+    cps: 'https://cpsutah.org/booknow',
     leifson: 'https://utahdeckandbasementremodel.com/book-consultation',
     youngs: 'https://youngscabinetrefinishing.com/book-consultation',
     ltb: 'https://lovethybarber.shop/book-consultation',

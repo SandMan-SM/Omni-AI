@@ -260,12 +260,14 @@ export function CpsMarketingClient({
             </span>
           </h2>
           <p className="mt-6 max-w-3xl text-base sm:text-lg text-zinc-300 leading-relaxed">
-            The work you do — court-ordered psych evaluations, custody
-            assessments, family-system clarity — sits exactly at the
-            intersection where generational trauma either ends or
-            compounds another cycle. Every family you stabilize is a
-            child who gets a different inheritance. That&apos;s not a
-            metaphor; it&apos;s the actual mechanism of the work.
+            The work you do — helping a family find the right
+            mental-health support, pointing a business owner at the
+            right local service, making a hard category legible before
+            anyone makes a decision — sits exactly at the intersection
+            where generational disconnection either ends or compounds
+            another cycle. Every person you point at the right resource
+            is a family that gets a different inheritance. That&apos;s not
+            a metaphor; it&apos;s the actual mechanism of the work.
           </p>
           <p className="mt-5 max-w-3xl text-base text-zinc-300 leading-relaxed">
             That&apos;s why Omni AI&apos;s purpose runs <em>through</em> CPS,

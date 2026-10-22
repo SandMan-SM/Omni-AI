@@ -26,7 +26,10 @@
  * Removing a domain here is safe (senders fall back). Adding one that is NOT
  * actually verified re-creates the outage this file exists to prevent.
  *
- * Last reconciled 2026-08-06.
+ * Last reconciled 2026-10-22 against the live account. The account holds ten
+ * verified domains; the two portfolio brands below are listed so a brand that
+ * owns its domain can send from it. `omnileadsagi.com` is NOT in the account
+ * and must never be added here.
  */
 export const VERIFIED_SENDING_DOMAINS = new Set([
   'leadfranchise.org',
@@ -37,6 +40,8 @@ export const VERIFIED_SENDING_DOMAINS = new Set([
   'secretimperium.com',
   'lovethybarber.shop',
   'alira.live',
+  'highteawithellieg.com',
+  'omniltd.app',
 ]);
 
 /** The house sender. Must always be a verified domain. */
@@ -59,11 +64,12 @@ const BRAND_SENDING_DOMAIN: Record<string, string> = {
   'mythosais.com': HOUSE_DOMAIN,
   'obsidian.casino': HOUSE_DOMAIN,
   /*
-   * CPS sends from leadfranchise.org by owner decision (2026-08-06).
-   * Worth knowing: recipients are clinical/custody-evaluation contacts, and
-   * mail from a lead-generation brand may read as unrelated to them.
+   * CPS (Clinical and Professional Solutions) sends from the house sender
+   * by owner decision — its own domain, cpsutah.org, is not verified in the
+   * Resend account, so naming it here would produce an unsendable address.
+   * Re-point this to cpsutah.org once the domain is verified.
    */
-  'psychandcustodyevaluations.com': 'leadfranchise.org',
+  'cpsutah.org': HOUSE_DOMAIN,
   'utahmainstreet.com': 'utahmainstreet.com',
   'leadfranchise.org': 'leadfranchise.org',
   'theixnetwork.com': 'theixnetwork.com',

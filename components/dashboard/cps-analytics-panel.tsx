@@ -6,7 +6,7 @@
  * Mounted inside the main /dashboard page when the signed-in user is the
  * CPS account (username='cps'). Polls /api/dashboard/cps-data every 30s
  * and renders leads, calls counted, top pages, top buttons, and the
- * live event feed for psychandcustodyevaluations.com.
+ * live event feed for cpsutah.org (Clinical and Professional Solutions).
  *
  * Style follows the surrounding dashboard chrome — `Card` from
  * components/ui/card with bg-white/[0.03] border-white/[0.06].
@@ -162,7 +162,7 @@ export default function CpsAnalyticsPanel() {
         <div className="min-w-0">
           <h2 className="text-xl sm:text-2xl font-bold text-white">CPS Live Analytics</h2>
           <p className="text-[10px] sm:text-xs text-gray-500 mt-1 leading-tight">
-            <span className="hidden sm:inline">psychandcustodyevaluations.com · </span>
+            <span className="hidden sm:inline">cpsutah.org · </span>
             refreshes every 30s
             <span className="hidden sm:inline"> · last updated {fmtTime(data.fetchedAt)}</span>
           </p>
