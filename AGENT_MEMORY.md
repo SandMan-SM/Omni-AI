@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — OMNI-AI
-> Synthetic Intelligence Memory | Updated: October 22, 2026 01:24 AM
+> Synthetic Intelligence Memory | Updated: October 22, 2026 02:40 AM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
@@ -7,28 +7,36 @@
 |---|---|---|
 | Build | 90/100 | █████████░ |
 | SEO | 100/100 | ██████████ |
-| Performance | 88/100 | █████████░ |
+| Performance | 90/100 | █████████░ |
 | Backend | 100/100 | ██████████ |
-| Mobile | 70/100 | ███████░░░ |
-| **OVERALL** | **89/100** | █████████░ |
+| Mobile | 72/100 | ███████░░░ |
+| **OVERALL** | **90/100** | █████████░ |
 
 ## 🎯 This Session: Do These In Order
-1. Apply pattern 'seo-metadata-nextjs': Standard Next.js metadata export with title, description, op — **DONE (session 39)**
-2. Ship session 39 to production and verify live — **DONE (session 39)**
-3. Sweep the remaining legacy CPS identity out of the backend — `app/api/cps/events/route.ts` (CORS allowlist + page-path parsing still point at psychandcustodyevaluations.com), `app/dashboard/meetings/page.tsx`, `app/system/page.tsx`, `app/api/dashboard/operator-intelligence/route.ts`, `components/dashboard/cps-analytics-panel.tsx`, `components/sponsor/SponsorBlock.tsx`, `lib/portal-demo-clients.ts`, `lib/sender-registry.ts`, `lib/business-marketing.ts`, `lib/cps-notify.ts`, `lib/case-studies.ts`, `lib/partner-network.ts`, `lib/federation-sponsors.ts`, `scripts/send-client-launch-emails.ts`. The 2026-10-22 restore only covered the intake path; these still carry the former practice's name and domain
+1. ~~Sweep the remaining legacy CPS identity out of the backend~~ — **DONE (session 41)**
+2. Ship session 41 to production and verify live — **DONE (session 41)**
+3. Chase the three owner decisions this repo is now blocked on (see "Owner Decisions Pending" below) — **OPEN**
 4. Next: apply 'seo-metadata-factory' to any NEW route as it is created (no known backlog — all routes covered)
 
 ## 🔬 Why
-- Pattern proven in cps
-- Session 39 shipped the SEO/mobile pass to omnileadsagi.com; remaining work is incremental
+- The CPS identity sweep was the last mechanical sweep in the repo; what remains needs the owner's call, not another agent pass
+- Three live send defects surfaced during the sweep that the owner has to resolve — they need a Resend/brand decision, not code
+
+## 📌 Owner Decisions Pending (do not act unilaterally)
+- **`cpsutah.org` is not verified in Resend.** The account's 10 verified domains are `leadfranchise.org`, `sitanimafi.com`, `omnios.news`, `theixnetwork.com`, `utahmainstreet.com`, `secretimperium.com`, `lovethybarber.shop`, `alira.live`, `highteawithellieg.com`, `omniltd.app`. Until CPS's domain is verified, CPS mail sends from the house sender (`omnios.news`). Verify it and then re-point `BRAND_SENDING_DOMAIN` in `lib/sender-registry.ts`.
+- **Two `marketing_campaigns` rows are `active` with senders that cannot send** — `rene@renelaveau.com` and `alfred@omnileadsagi.com`. Neither domain is in the Resend account, so both 403 at send time. They need a sender re-point, not a code fix.
+- **Homepage still titles as "Interlinked"** while every other page says Omni AI. Asked the owner in session 39; still unanswered.
+- **`/cps/marketing` is publicly reachable** and exposes the client's lead counts, spend, and asset valuation to anyone with the URL. It reads as an intentionally shareable explainer, so gating it is the owner's call, not the agent's.
 
 ## 📚 Stats
-- Sessions: 40
-- Lines written: 0
+- Sessions: 41
+- Lines written: 141
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-22 | perf | `/federation/case-studies/[slug]` is `force-dynamic` and awaits seven Supabase query rounds before rendering, and `/vs/[competitor]` had no skeleton either — both now use the shared `PageLoading` treatment | 10 |
+| 2026-10-22 | bugfix | **CPS identity sweep.** The 2026-10-22 restore only rebranded the CPS *intake* path; fourteen backend files and four public pages still carried the former practice's name and domain. Identity now matches the live `omni_businesses` row (`name` "Clinical and Professional Solutions", `website` cpsutah.org, `industry` "Utah community and professional solutions"). Two live send defects found while sweeping: (a) `lib/business-marketing.ts` `VERIFIED_DOMAINS` was a 2026-05-10 snapshot still naming `omnileadsagi.com` (unverified since 2026-08-06) and `psychandcustodyevaluations.com` (gone) — listing a domain that cannot send turns a queued campaign into a 403 at send instead of a clean rejection at enqueue, so it was reconciled against the live account; (b) `lib/sender-registry.ts` mapped the *retired* CPS domain to a sending domain and had no entry for the live `cpsutah.org`, so CPS mail fell through to an unsendable default — now maps to the house sender. Also: the meetings dashboard linked CPS at `/book-consultation`, which 404s on cpsutah.org (now `/booknow`); the `/api/cps/events` CORS allowlist still pointed at the old domain and would 403 the current site's beacons; and the ops newsletter fleet's CPS override matched `"/CPS/cps-website"`, a directory that no longer exists, so the override was silently inert — now matches `"/CPS/"` | 141 |
 | 2026-10-22 | pattern | **Never port a Next 15 commit onto a Next 14 `main` by file copy.** `a4a3d3e1` was authored on Next 15.5.27 and carried `params: Promise<...>` route-handler signatures plus a `next` major upgrade in `package.json`; `main` is Next 14.2.35. Restore route *files* and hand-port only the behaviour, never the framework-version diff. Verify with `node -p "require('next/package.json').version"` in the target repo, and let the restored repo's own tests catch the rest — `lib/server/cps-appointment-intake.test.ts` failed loudly on the first restore because `lib/inbound-types.ts` had been missed |
 | 2026-10-22 | bugfix | **CPS intake outage fixed.** The 2026-10-21 sitewide SEO deploy shipped `main`, which never contained the CPS receiver files — they lived only on `a4a3d3e1` and its descendants — so the live build was missing exactly `api/inbound/cps/appointments`, `api/inbound/cps/newsletter` and `api/inbound/cps/newsletter/unsubscribe`, and every CPS lead and newsletter submission on cpsutah.org failed closed with a 503. Restored all three routes plus `lib/server/cps-*` (intake, policy, token, postgres config) from `a4a3d3e1`, rebranded the `cps` origin allowlist in `lib/inbound-types.ts` and the `cps` newsletter brief, disabled the CPS automated publication fan-out, and retired the legacy CPS writers with 410. Deployed as `09221fac` (deployment `dpl_GuAJynxtuAFxYvmpDm9iUwPA5mif`), federation lease 896 released, record `deploy-records/20261022T065121Z-Website-prod.json` | 4235 |
 | 2026-10-21 | deploy | Shipped session 39 to production. Vercel git auto-deploy lagged ~15 min after push — the deployment DID appear in `BUILDING` then `READY` and promoted to omnileadsagi.com. Meanwhile the guarded runner (`scripts/omniclaw_deploy_guard.py deploy Website --mode prod`) deployed immediately and wrote `deploy-records/20261021T163354Z-Website-prod.json`. Federation lease 882 released (auto-journaled as changelog 1789) | 1 |
@@ -50,7 +58,10 @@
 - **seo-metadata-nextjs** — Standard Next.js metadata export with title, description, openGraph, a
 - **seo-metadata-factory** — Route metadata goes through `buildMetadata()` in `lib/seo.ts` instead of a hand-rolled object. Client pages can't export `metadata`, so they get a sibling `layout.tsx` that exports it and renders `children`.
 - **twitter-handle-parity** — Any page that overrides the `twitter` block must re-declare `site`/`creator: "@SitaniMafi"`. Next.js metadata is shallow-merged, so a partial override silently drops the root's fields.
+- **brand-truth-from-db** — When a tenant's brand is in question, the live `omni_businesses` row is the authority, not the code. `select name, website, industry from omni_businesses where slug = '<tenant>'` gave "Clinical and Professional Solutions" / cpsutah.org / "Utah community and professional solutions" while fourteen files still said "Psych & Custody Evaluations". Read the row first, then sweep the code to match it — and cross-check `case-studies.ts` (federation vocabulary) against `omni_businesses.slug` (DB vocabulary), which are deliberately different.
+- **resend-allowlist-is-live-data** — Any list of "domains we can send from" is a cache of the Resend account and rots silently. Reconciled 2026-10-22: the account holds exactly ten verified domains, and the old lists still named three domains that are not in it. Re-derive with `GET https://api.resend.com/domains` before trusting either `VERIFIED_SENDING_DOMAINS` (lib/sender-registry.ts) or `VERIFIED_DOMAINS` (lib/business-marketing.ts) — the second gates campaign *enqueue*, so a stale entry converts a clean rejection into a 403 at send time.
 - **deploy-verify-poll** — After `git push origin main`, Vercel's git auto-deploy can take 15–20+ minutes to even appear. Empty GitHub `check-runs` proves nothing. Poll the Vercel API (`/v6/deployments?projectId=...`) for ~20 min, matching `meta.githubCommitSha` to the pushed SHA. If prod must be live sooner, run `python3 scripts/omniclaw_deploy_guard.py deploy Website --mode prod` from `/Users/janahasson/Desktop/Clients/Sitani Mafi/Omni AI` (stop any dev server in that checkout first — the guard runs a real `next build`).
+- **federation-over-postgrest** — `federation.surfaces` / `work_leases` / `changelog` are NOT exposed as PostgREST tables and direct Postgres is DNS-blocked from the agent's machine. Reach them through the RPCs instead: `POST /rest/v1/rpc/hermes_federation_surface` with `p_domain`, `hermes_federation_acquire_lease` with `p_target/p_agent/p_kind/p_session_ref/p_note/p_ttl_minutes`, and `hermes_federation_release_lease`. Listing the RPC names: `GET /rest/v1/` with `Accept: application/openapi+json`.
 
 ## ⚡ Rules
 - Read this file first, every session
