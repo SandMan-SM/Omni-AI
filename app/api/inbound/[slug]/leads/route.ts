@@ -435,6 +435,12 @@ export async function POST(
   { params }: { params: Promise<{ slug: string }> },
 ) {
   const { slug } = await params;
+  // The former CPS writer must never reach best-effort notifications or
+  // legacy tables. The rebranded site uses dedicated authenticated workflows.
+  if (slug === 'cps') {
+    return NextResponse.json({ ok: false, error: 'This legacy intake endpoint has been retired.', code: 'cps_legacy_intake_retired' },
+      { status: 410, headers: { 'Cache-Control': 'no-store' } });
+  }
   if (!isInboundSlug(slug) && !(await isActiveTenant(slug))) {
     return NextResponse.json({ error: 'Unknown brand' }, { status: 404 });
   }

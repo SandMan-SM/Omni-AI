@@ -7,6 +7,7 @@ import {
 } from '@/lib/federation-newsletter-briefs';
 import { buildUnsubscribeUrl } from '@/lib/unsubscribe-token';
 import { ixLegacySignupPost } from '@/lib/server/ix-network-legacy';
+import { handleCpsSubscription } from '@/lib/server/cps-newsletter-intake';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -210,6 +211,11 @@ export async function POST(req: Request) {
   // writer: identity, source and strict workflow completion remain mandatory.
   if (site === 'theixnetwork') {
     return withCors(await ixLegacySignupPost(req, body));
+  }
+  // CPS has a fixed, authenticated, release-gated workflow. Never let this
+  // compatibility URL bypass its required owner/customer acceptance state.
+  if (site === 'cps') {
+    return handleCpsSubscription(req, body);
   }
 
   const brief = getFederationBrief(site);

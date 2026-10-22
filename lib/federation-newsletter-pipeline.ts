@@ -75,6 +75,11 @@ export async function generateDraftFor(site: string): Promise<{
   status?: string;
   error?: string;
 }> {
+  // CPS subscription intake is independent of the legacy best-effort BCC
+  // publication pipeline. Keep that fan-out disabled until it is fail-closed.
+  if (site === 'cps') {
+    return { ok: false, error: 'CPS automated publication is disabled until per-recipient, fail-closed delivery is implemented' };
+  }
   const brief = getFederationBrief(site);
   if (!brief) {
     return { ok: false, error: `unknown site: ${site}` };
@@ -159,6 +164,9 @@ export async function approvePost(
   postId: string,
   site: string,
 ): Promise<{ ok: boolean; published?: boolean; error?: string }> {
+  if (site === 'cps') {
+    return { ok: false, published: false, error: 'CPS automated publication is disabled until per-recipient, fail-closed delivery is implemented' };
+  }
   const sb = createAdminClient();
   const brief = getFederationBrief(site);
   if (!brief) return { ok: false, error: `unknown site: ${site}` };
@@ -486,6 +494,9 @@ async function dispatchPublishedToOwner(
   row: FederationPostRow,
   brief: FederationNewsletterBrief,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (row.site === 'cps') {
+    return { ok: false, error: 'CPS automated publication is disabled until per-recipient, fail-closed delivery is implemented' };
+  }
   if (!RESEND_API_KEY) return { ok: false, error: 'RESEND_API_KEY missing' };
 
   const fromEmail = brief.fromEmail

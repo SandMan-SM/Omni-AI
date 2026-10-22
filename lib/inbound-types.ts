@@ -229,11 +229,8 @@ export const INBOUND_ORIGINS: Record<InboundSlug, string[]> = {
     'http://localhost:3000',
   ],
   cps: [
-    'https://psychandcustodyevaluations.com',
-    'https://www.psychandcustodyevaluations.com',
-    'https://cps-website-nine.vercel.app',
-    'http://localhost:3000',
-    'http://localhost:3001',
+    'https://cpsutah.org',
+    'https://www.cpsutah.org',
   ],
   otd: [
     'https://onthedoor.app',

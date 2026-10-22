@@ -19,6 +19,8 @@ export type FederationNewsletterBrief = {
   brandName: string;
   /** Public domain (no protocol). Used to build the published post URL. */
   domain: string;
+  /** Optional public landing-page URL for branded transactional mail. */
+  websiteUrl?: string;
   /** Short voice/persona descriptor — fed into the Claude prompt. */
   voice: string;
   /** Who this is written for — also fed to Claude. */
@@ -173,13 +175,15 @@ export const FEDERATION_NEWSLETTER_BRIEFS: FederationNewsletterBrief[] = [
   },
   {
     site: 'cps',
-    brandName: 'Comprehensive Psychological Services',
-    domain: 'psychandcustodyevaluations.com',
-    voice: 'Clear, calm, clinically responsible, and practical.',
-    audience: 'Utah families, attorneys, and professionals seeking psychological services.',
-    niche: 'Psychological services, evaluations, parenting resources, and clinic updates.',
-    doNotSay: ['guaranteed outcome', 'instant diagnosis'],
-    businessOwnerEmail: 'cps@wecanhelpout.com',
+    brandName: 'Clinical and Professional Solutions',
+    domain: 'cpsutah.org',
+    websiteUrl: 'https://cpsutah.org',
+    voice: 'Clear, calm, practical, and solutions-focused.',
+    audience: 'Utah residents, families, and business owners looking for the right local support.',
+    niche: 'Utah solutions across health, home, business, education, careers, caregiving, technology, and community resources.',
+    doNotSay: ['guaranteed outcome', 'instant diagnosis', 'Comprehensive Psychological Services', 'our clinic', 'our offices'],
+    businessOwnerEmail: 'sitanim8@gmail.com',
+    fromEmail: 'solutions@omnios.news',
   },
   {
     site: 'taniela-fiefia',
