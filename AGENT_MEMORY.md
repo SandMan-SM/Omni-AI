@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — OMNI-AI
-> Synthetic Intelligence Memory | Updated: October 21, 2026 09:52 AM
+> Synthetic Intelligence Memory | Updated: October 22, 2026 01:05 AM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
@@ -15,7 +15,8 @@
 ## 🎯 This Session: Do These In Order
 1. Apply pattern 'seo-metadata-nextjs': Standard Next.js metadata export with title, description, op — **DONE (session 39)**
 2. Ship session 39 to production and verify live — **DONE (session 39)**
-3. Next: apply 'seo-metadata-factory' to any NEW route as it is created (no known backlog — all routes covered)
+3. Sweep the remaining legacy CPS identity out of the backend — `app/api/cps/events/route.ts` (CORS allowlist + page-path parsing still point at psychandcustodyevaluations.com), `app/dashboard/meetings/page.tsx`, `app/system/page.tsx`, `app/api/dashboard/operator-intelligence/route.ts`, `components/dashboard/cps-analytics-panel.tsx`, `components/sponsor/SponsorBlock.tsx`, `lib/portal-demo-clients.ts`, `lib/sender-registry.ts`, `lib/business-marketing.ts`, `lib/cps-notify.ts`, `lib/case-studies.ts`, `lib/partner-network.ts`, `lib/federation-sponsors.ts`, `scripts/send-client-launch-emails.ts`. The 2026-10-22 restore only covered the intake path; these still carry the former practice's name and domain
+4. Next: apply 'seo-metadata-factory' to any NEW route as it is created (no known backlog — all routes covered)
 
 ## 🔬 Why
 - Pattern proven in cps
@@ -28,6 +29,8 @@
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-22 | pattern | **Never port a Next 15 commit onto a Next 14 `main` by file copy.** `a4a3d3e1` was authored on Next 15.5.27 and carried `params: Promise<...>` route-handler signatures plus a `next` major upgrade in `package.json`; `main` is Next 14.2.35. Restore route *files* and hand-port only the behaviour, never the framework-version diff. Verify with `node -p "require('next/package.json').version"` in the target repo, and let the restored repo's own tests catch the rest — `lib/server/cps-appointment-intake.test.ts` failed loudly on the first restore because `lib/inbound-types.ts` had been missed |
+| 2026-10-22 | bugfix | **CPS intake outage fixed.** The 2026-10-21 sitewide SEO deploy shipped `main`, which never contained the CPS receiver files — they lived only on `a4a3d3e1` and its descendants — so the live build was missing exactly `api/inbound/cps/appointments`, `api/inbound/cps/newsletter` and `api/inbound/cps/newsletter/unsubscribe`, and every CPS lead and newsletter submission on cpsutah.org failed closed with a 503. Restored all three routes plus `lib/server/cps-*` (intake, policy, token, postgres config) from `a4a3d3e1`, rebranded the `cps` origin allowlist in `lib/inbound-types.ts` and the `cps` newsletter brief, disabled the CPS automated publication fan-out, and retired the legacy CPS writers with 410. Deployed as `09221fac` (deployment `dpl_GuAJynxtuAFxYvmpDm9iUwPA5mif`), federation lease 896 released, record `deploy-records/20261022T065121Z-Website-prod.json` | 4235 |
 | 2026-10-21 | deploy | Shipped session 39 to production. Vercel git auto-deploy lagged ~15 min after push — the deployment DID appear in `BUILDING` then `READY` and promoted to omnileadsagi.com. Meanwhile the guarded runner (`scripts/omniclaw_deploy_guard.py deploy Website --mode prod`) deployed immediately and wrote `deploy-records/20261021T163354Z-Website-prod.json`. Federation lease 882 released (auto-journaled as changelog 1789) | 1 |
 | 2026-10-21 | deploy | Root-caused the "no deployment" scare: GitHub `check-runs`/`statuses` are EMPTY for Vercel git deployments, and `[skip ci]` in an ancestor commit does NOT block later deploys. Poll for ~20 min before diagnosing a broken pipeline | 1 |
 | 2026-10-21 | copy | Emailed the owner (`sitanim8@gmail.com`) the one decision this pass left open: the homepage still titles as "Interlinked — Free Premium AI Intelligence" while every other page now identifies as Omni AI. Asked him to pick "keep Interlinked" vs "move the homepage to Omni AI" — do not rename it unilaterally | 1 |
