@@ -15,8 +15,9 @@
 ## 🎯 This Session: Do These In Order
 1. ~~Sweep the remaining legacy CPS identity out of the backend~~ — **DONE (session 41)**
 2. Ship session 41 to production and verify live — **DONE (session 41)**
-3. Chase the three owner decisions this repo is now blocked on (see "Owner Decisions Pending" below) — **OPEN**
+3. Chase the owner decisions this repo is now blocked on (see "Owner Decisions Pending" below) — **OPEN** (owner emailed 2026-10-22 with the consolidated list; awaiting reply)
 4. Next: apply 'seo-metadata-factory' to any NEW route as it is created (no known backlog — all routes covered)
+5. Next: rename the four empty `psychcustody_*` tables to `cps_*` — **needs an owner-authorized migration session** (the agent may not run migrations)
 
 ## 🔬 Why
 - The CPS identity sweep was the last mechanical sweep in the repo; what remains needs the owner's call, not another agent pass
@@ -27,14 +28,18 @@
 - **Two `marketing_campaigns` rows are `active` with senders that cannot send** — `rene@renelaveau.com` and `alfred@omnileadsagi.com`. Neither domain is in the Resend account, so both 403 at send time. They need a sender re-point, not a code fix.
 - **Homepage still titles as "Interlinked"** while every other page says Omni AI. Asked the owner in session 39; still unanswered.
 - **`/cps/marketing` is publicly reachable** and exposes the client's lead counts, spend, and asset valuation to anyone with the URL. It reads as an intentionally shareable explainer, so gating it is the owner's call, not the agent's.
+- **Four empty `psychcustody_*` tables** (`psychcustody_contacts`, `psychcustody_campaigns`, `psychcustody_campaign_sends`, `psychcustody_contact_events`) still carry the legacy name. They are 0 rows and unreferenced by code, so the rename is cosmetic — but it needs a migration, and the agent may not run migrations.
 
 ## 📚 Stats
-- Sessions: 41
-- Lines written: 141
+- Sessions: 42
+- Lines written: 143
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-10-22 | copy | Emailed the owner (`sitanim8@gmail.com`) the consolidated decision list left open by the CPS sweep: verify `cpsutah.org` in Resend; re-point the two `active` `marketing_campaigns` senders that cannot send (`rene@renelaveau.com`, `alfred@omnileadsagi.com`); the homepage still titles as "Interlinked"; whether `/cps/marketing` should be gated; and the four empty `psychcustody_*` tables that need an authorized migration. Sent from `Omni AI <bookings@omnios.news>` — `omnileadsagi.com` is not verified in the Resend account, so it cannot be the sender |
+| 2026-10-22 | data | **Live-data half of the CPS identity sweep.** Three content sources are DB rows, not code, and all three still carried the legacy practice's identity: `omni_businesses.partnership_blurb` (slug `cps`, surfaced on `/partners/cps`), `marketing_campaigns.body_md_template` (id `5a12cf01-68e2-4813-a589-2ff8b193e85f`, the copy every CPS campaign email is built from), and `federation_owners.notes` (id `9e1d131d-2c4b-481a-bf9d-5ef96b0de148`). All three patched to the live brand; `omni_businesses.name`/`website`/`industry` already matched the code, confirming the DB was the authority. The four `psychcustody_*` tables (`psychcustody_contacts`, `psychcustody_campaigns`, `psychcustody_campaign_sends`, `psychcustody_contact_events`) are **empty (0 rows) and unreferenced by any code** — renaming them is pure rename with no data risk but still needs a migration, which the agent may not run |
+| 2026-10-22 | gotcha | **`/partners/[slug]` is ISR'd at `export const revalidate = 600`** — patching the DB row does NOT change the live page. Expect the old copy for up to 10 minutes and poll until it flips; do not re-patch the row a second time. Confirmed `legacy_refs=0` at 01:50:18 Pacific. Pages that read live DB content without a `revalidate` export (`/federation/case-studies/[slug]` is `force-dynamic`) refresh on the next request |
 | 2026-10-22 | perf | `/federation/case-studies/[slug]` is `force-dynamic` and awaits seven Supabase query rounds before rendering, and `/vs/[competitor]` had no skeleton either — both now use the shared `PageLoading` treatment | 10 |
 | 2026-10-22 | bugfix | **CPS identity sweep.** The 2026-10-22 restore only rebranded the CPS *intake* path; fourteen backend files and four public pages still carried the former practice's name and domain. Identity now matches the live `omni_businesses` row (`name` "Clinical and Professional Solutions", `website` cpsutah.org, `industry` "Utah community and professional solutions"). Two live send defects found while sweeping: (a) `lib/business-marketing.ts` `VERIFIED_DOMAINS` was a 2026-05-10 snapshot still naming `omnileadsagi.com` (unverified since 2026-08-06) and `psychandcustodyevaluations.com` (gone) — listing a domain that cannot send turns a queued campaign into a 403 at send instead of a clean rejection at enqueue, so it was reconciled against the live account; (b) `lib/sender-registry.ts` mapped the *retired* CPS domain to a sending domain and had no entry for the live `cpsutah.org`, so CPS mail fell through to an unsendable default — now maps to the house sender. Also: the meetings dashboard linked CPS at `/book-consultation`, which 404s on cpsutah.org (now `/booknow`); the `/api/cps/events` CORS allowlist still pointed at the old domain and would 403 the current site's beacons; and the ops newsletter fleet's CPS override matched `"/CPS/cps-website"`, a directory that no longer exists, so the override was silently inert — now matches `"/CPS/"` | 141 |
 | 2026-10-22 | pattern | **Never port a Next 15 commit onto a Next 14 `main` by file copy.** `a4a3d3e1` was authored on Next 15.5.27 and carried `params: Promise<...>` route-handler signatures plus a `next` major upgrade in `package.json`; `main` is Next 14.2.35. Restore route *files* and hand-port only the behaviour, never the framework-version diff. Verify with `node -p "require('next/package.json').version"` in the target repo, and let the restored repo's own tests catch the rest — `lib/server/cps-appointment-intake.test.ts` failed loudly on the first restore because `lib/inbound-types.ts` had been missed |
