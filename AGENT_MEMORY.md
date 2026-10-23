@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — OMNI-AI
-> Synthetic Intelligence Memory | Updated: October 23, 2026 03:05 AM
+> Synthetic Intelligence Memory | Updated: October 23, 2026 03:15 AM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
@@ -9,22 +9,25 @@
 | SEO | 100/100 | ██████████ |
 | Performance | 90/100 | █████████░ |
 | Backend | 100/100 | ██████████ |
-| Mobile | 88/100 | █████████░ |
-| **OVERALL** | **91/100** | █████████░ |
+| Mobile | 92/100 | █████████░ |
+| **OVERALL** | **92/100** | █████████░ |
 
 ## 🎯 This Session: Do These In Order
 1. ~~Sweep the remaining legacy CPS identity out of the backend~~ — **DONE (session 41)**
 2. ~~Ship session 41 to production and verify live~~ — **DONE (session 41)**
 3. ~~Chase the owner decisions this repo is now blocked on~~ — **OPEN** (owner emailed 2026-10-22 and 2026-10-23 with the consolidated list; awaiting reply)
 4. ~~Raise Mobile from 72 → 88 (overflow, tap targets, iOS zoom, modal reachability, form a11y)~~ — **DONE (session 43, shipped `830a0622`)**
-5. Next: apply 'seo-metadata-factory' to any NEW route as it is created (no known backlog — all routes covered)
-6. Next: rename the four empty `psychcustody_*` tables to `cps_*` — **needs an owner-authorized migration session** (the agent may not run migrations)
-7. Next: the homepage has no `<Navbar>` (it is the Interlinked newsletter surface). The owner decision on the homepage's identity is still open, so do NOT restructure nav until that is answered.
+5. ~~Add a static mobile UI audit gate and clear the 63 findings it found~~ — **DONE (session 44, shipped `43097de4`)**
+6. Next: apply 'seo-metadata-factory' to any NEW route as it is created (no known backlog — all routes covered)
+7. Next: rename the four empty `psychcustody_*` tables to `cps_*` — **needs an owner-authorized migration session** (the agent may not run migrations)
+8. Next: the homepage has no `<Navbar>` (it is the Interlinked newsletter surface). The owner decision on the homepage's identity is still open, so do NOT restructure nav until that is answered.
+9. Next: run `npm run audit:mobile` before every ship — it is the only thing in the repo that catches the mobile defect classes `tsc` and `next build` cannot see.
 
 ## 🔬 Why
 - The CPS identity sweep was the last mechanical sweep in the repo; what remains needs the owner's call, not another agent pass
 - Three live send defects surfaced during the sweep that the owner has to resolve — they need a Resend/brand decision, not code
-- With the code sweeps exhausted, Mobile was the only metric below 90. It is now 88; the residual gap is the homepage's missing nav, which is blocked on an owner decision
+- With the code sweeps exhausted, Mobile was the only metric below 90. It is now 92; the residual gap is the homepage's missing nav, which is blocked on an owner decision
+- Session 43's fixes were hand-found by eyeballing pages at 375px, which does not scale. The audit gate turns those four defect classes into a one-second check, and it immediately found 63 more instances the manual pass had missed
 
 ## 📌 Owner Decisions Pending (do not act unilaterally)
 - **`cpsutah.org` is not verified in Resend.** The account's 10 verified domains are `leadfranchise.org`, `sitanimafi.com`, `omnios.news`, `theixnetwork.com`, `utahmainstreet.com`, `secretimperium.com`, `lovethybarber.shop`, `alira.live`, `highteawithellieg.com`, `omniltd.app`. Until CPS's domain is verified, CPS mail sends from the house sender (`omnios.news`). Verify it and then re-point `BRAND_SENDING_DOMAIN` in `lib/sender-registry.ts`.
@@ -34,13 +37,15 @@
 - **Four empty `psychcustody_*` tables** (`psychcustody_contacts`, `psychcustody_campaigns`, `psychcustody_campaign_sends`, `psychcustody_contact_events`) still carry the legacy name. They are 0 rows and unreferenced by code, so the rename is cosmetic — but it needs a migration, and the agent may not run migrations.
 
 ## 📚 Stats
-- Sessions: 43
+- Sessions: 44
 - Lines written: 143
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
-| 2026-10-23 | deploy | Shipped session 43 to production as `830a0622` (`omni-lgv88nflu-sandman-sms-projects.vercel.app`, aliased to omnileadsagi.com). Federation surface re-resolved first (`omnileadsagi.com` → Vercel project `omni-ai`, `deploy_method: vercel-cli`, `git_remote: github`), lease 931 acquired and released with the deploy journal. Guarded runner (`python3 scripts/omniclaw_deploy_guard.py deploy Website --mode prod`) ran `npm run check` + `build:check` clean, then `npx vercel --prod --yes`; record `deploy-records/20261023T082953Z-Website-prod.json`. Local `main` was 5 ahead / 0 behind `origin/main` and was pushed first, so the git auto-deploy lands on the same SHA and cannot revert content | 1 |
+| 2026-10-23 | deploy | Shipped session 44 to production as `43097de4` (`omni-ak1h3l6ex-sandman-sms-projects.vercel.app`, aliased to omnileadsagi.com). Federation surface re-resolved first (`omnileadsagi.com` → Vercel project `omni-ai`, `deploy_method: vercel-cli`, `git_remote: github`), lease 932 acquired and released with the deploy journal. Guarded runner ran `npm run check` + `build:check` clean, then `npx vercel --prod --yes`; record `deploy-records/20261023T085017Z-Website-prod.json` (`git_head: 43097de4`, `dirty_count: 0`). `main` was pushed to `origin/main` first, so the git auto-deploy lands on the same SHA and cannot revert content. Live verification: `/cps/marketing` serves `minmax(0,1fr)_auto_minmax(0,1fr)`, `/newsletter` serves `inline-flex h-11 md:h-10`, `/command` serves `md:h-8 md:w-8`, `/campaigns` serves `minmax(0,1.1fr)` | 1 |
+| 2026-10-23 | tooling | **Added `scripts/audit-mobile-ui.ts` — a static gate for the four mobile defect classes that `tsc` and `next build` cannot see** (every instance of them in session 43 passed both). Read-only, no network, runs in a second over 819 files, exits non-zero on findings, wired as `npm run audit:mobile`. Rules: `ios-input-font-floor` (a raw input/textarea/select whose MOBILE font-size is under 16px — iOS Safari zooms the viewport on focus and breaks the 375px layout for the rest of the session), `grid-1fr-min-content` (a `grid-cols-[...]` track with a bare `1fr`, whose auto minimum is min-content and therefore overflows), `tap-target-under-44` (WCAG / iOS HIG minimum touch target), `image-missing-alt`, `dead-href` (`href="#"`), `fixed-width-overflow`. It distinguishes the MOBILE size from the `md:` size, so `text-base sm:text-sm` passes and `text-sm md:text-base` fails | ~300 |
+| 2026-10-23 | mobile | **63 more mobile defects found by the new gate and fixed** (Mobile 88 → 92). The audit found what session 43's manual pass had missed across 40 files: 33 tap targets under 44px (modal close buttons at `h-9 w-9`/`h-10 w-10`, the `/command` header refresh at `w-7 h-7`, the `/command` passkey eye at `h-8 w-8`, the `/dashboard` sign-out at `h-9`, four error boundaries at `h-10`, the newsletter RSS link, calendar arrows, swatch and chip buttons), 15 inputs under 16px (inline `fontSize: 12/13` in `/assets`, `/dashboard/companies`, `/dashboard/meetings`, `/dashboard/autopilot`, `AgiArenaManager`; `text-sm`/`text-xs` in `/admin`, `admin-campaigns`, `PublicationListsManager`, `AgiAdminPanel`), and 15 grids with a bare `1fr` (`/campaigns`, `/dashboard`, `/solutions`, `/meta`, `/meta/proposal/full`, `/proposal/elitalks/full`, `admin-crm`, `document-signature`, the referral info clients, `/interlinked/developer/info`). Every change is mobile-first with a `md:` override so desktop density is unchanged, and no color, structure, or behavior was touched. Two knock-on fixes: `app/admin`'s country dropdown moved to `top-full` on mobile so it no longer sits under the taller 44px button, and `/command`'s passkey eye button moved to `right-0` with `pr-12` so the 44px target clears the typed text. `npm run audit:mobile` now reports 0 findings across 819 files | ~75 |
 | 2026-10-23 | mobile | **Mobile 72 → 88.** Two full audits (overflow, then tap-target/a11y) produced four real bug classes, all fixed and shipped: (1) **Horizontal overflow** — `/cps/marketing`'s comparison grid `grid-cols-[1fr_auto_1fr]` clipped the right column by ~19px on a 375px viewport (1fr's auto minimum is min-content, and the copy contains `infrastructure`); now `grid-cols-1 … sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]` with the arrow rotated 90° when stacked. Also: `/dashboard`'s two-button row had a `max-[340px]` escape that never fired at 375px (now `min-[440px]`); `/meta/proposal`'s "See the full breakdown." was `whitespace-nowrap` inside an `overflow-hidden` card (now `sm:whitespace-nowrap`); the `/[slug]` landing h1 was `text-5xl` with no smaller step (now `text-4xl` + `break-words`); `/interlinked`'s INTERLINKED h1 was `text-5xl` (now `text-4xl sm:text-5xl`); five referral/contract pricing tables used `overflow-hidden` (an unscrollable clip) — now `overflow-x-auto`. (2) **iOS zoom** — 20+ form controls computed under 16px, which makes Safari zoom the viewport on focus and break the 375px layout mid-typing; all now `text-base` / `fontSize: 16`. (3) **Unreachable submit buttons** — three overlays (`MetaAiAdvertising` reservation, newsletter-history "Edit Subscriber" and "Import Users") had no height cap, so on a 667px phone the form's submit was clipped with no way to scroll; now `max-h-[90dvh] overflow-y-auto`, and the two affiliate modals were restructured to the auth-modal pattern (shell owns the cap, inner div scrolls). (4) **Tap targets + a11y** — the shared `Button`/`Input` now get 44px on mobile only (`min-h-11 md:min-h-9`, `h-11 md:h-9`) so desktop density is untouched; six icon-only close buttons, the mobile hamburger (40px, no `aria-label`, no `aria-expanded`), the footer nav links, seven "Book a Call →" header links, the `/search` submit and the 404 CTAs were all under 44px. The navbar's mobile menu also never closed on a client-side route change — now `useEffect` on `pathname`. 14 placeholder-only inputs (join, auth-modal, book-demo, both affiliate modals, portal-login, sponsor application, developer signup, arena leaderboard, newsletter-history) gained `aria-label`s. **Also fixed a real rendering bug**: `components/ui/input.tsx` sets `h-9`, and `app/join` + `components/auth-modal` passed `py-5` expecting ~60px fields — tailwind-merge keeps both and the fixed height wins, so those fields rendered 36px tall with 20px of padding crammed in; they now pass `h-12` | ~430 |
 | 2026-10-23 | audit | Two audits run and their negative results recorded so they are not re-run: **loading.tsx coverage is complete** — every server page that `await`s has one; the 23 routes without a `loading.tsx` are all `'use client'` pages that fetch after mount, where a skeleton would never show. **Alt text is complete** — zero `<Image>` tags without `alt`, and all five local assets plus all four remote image URLs return 200. **Internal links are clean** — a route-pattern matcher over every `href="/..."` in `app/` and `components/` found 0 unresolved targets (a first pass reporting 17 was a bug in the matcher, which did not handle nested routes). The only solid light backgrounds are deliberate white-on-dark CTA buttons | 1 |
 | 2026-10-23 | audit | The homepage (`app/page.tsx` re-exports `app/newsletter/page.tsx`) renders `<NewsletterHeader>` — a logo plus a Subscribe button — and **no `<Navbar>`**, so the five primary routes are unreachable on mobile except via the footer's 20px links. Verified that `<Navbar>` is imported per-page (13 pages), not from the root layout; `/pricing`, `/about`, `/search`, `/vs`, `/portfolio`, `/newsletter/[slug]`, `/join`, `/login`, `/solutions`, `/partners/[slug]`, `/federation/case-studies` all render their own minimal header instead. **Not fixed** — the homepage's identity ("Interlinked" vs "Omni AI") is an open owner decision, and adding a nav bar to the flagship landing surface is a design call, not a bug fix. Recorded in Priorities instead | 1 |
@@ -68,6 +73,7 @@
 | 2026-10-21 | seo | 77 pages overrode the whole `twitter` block and dropped the root layout's verified `@SitaniMafi` site/creator attribution — added it back to every block that lacked it | 77 |
 
 ## 🌐 Patterns To Apply
+- **audit-the-defects-the-toolchain-cannot-see** — A defect class that survives `tsc` and `next build` will come back every time, because nothing in the pipeline looks for it. Fix the class, then encode it as a one-second check that exits non-zero: `npx tsx scripts/audit-send-domains.ts` for the Resend allowlists, `npm run audit:mobile` for the mobile defect classes. The gate is worth more than the fix — session 43 fixed the visible instances by hand and session 44's gate immediately found 63 more across 40 files.
 - **tailwind-merge-height-precedence** — `components/ui/input.tsx` sets a fixed `h-9`, so a call site passing `py-5` does NOT grow the field: tailwind-merge keeps both (different property groups) and the fixed height wins, rendering a 36px box with 20px of padding crammed inside it. To change the height, pass `h-12`/`h-auto` — never `py-*` alone. The same applies to every shared component with a fixed height.
 - **ios-16px-input-floor** — iOS Safari zooms the viewport when a focused field's computed font-size is under 16px, which breaks the 375px layout mid-typing. The `Input` component already gets this right (`text-base … md:text-sm`); bare `<input>`/`<textarea>` elements with `text-sm`/`text-xs` or an inline `fontSize: 13` do not. Audit raw form controls, not just the shared component — there were 20+ offenders, and the dashboard's inline `style={{ fontSize: 13 }}` ones cannot be rescued by a Tailwind responsive class.
 - **mobile-44px-without-losing-desktop-density** — Set touch targets with the mobile value first and a `md:` override for the desktop value (`min-h-11 md:min-h-9`, `h-11 md:h-9`). Bumping the base size alone changes desktop density everywhere; the `md:` override keeps the desktop layout identical while giving mobile the 44px minimum.
@@ -87,6 +93,7 @@
 - Never repeat anything in Edit History
 - Check patterns before writing new code
 - Build before and after every change
+- Run `npm run audit:mobile` before every ship — it is the only check that sees the mobile defect classes
 - Never touch .env files
 - Commit every logical unit: `agent: [what]`
 - Push when done
