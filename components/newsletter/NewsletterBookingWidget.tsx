@@ -326,7 +326,7 @@ export function NewsletterBookingWidget({
               onClick={() => moveMonth(-1)}
               disabled={!canGoBack}
               aria-label="Previous month"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/60 transition-colors hover:border-amber-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-20"
+              className="inline-flex h-11 w-11 md:h-8 md:w-8 items-center justify-center rounded-lg border border-white/10 text-white/60 transition-colors hover:border-amber-300/30 hover:text-white disabled:cursor-not-allowed disabled:opacity-20"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
@@ -335,7 +335,7 @@ export function NewsletterBookingWidget({
               type="button"
               onClick={() => moveMonth(1)}
               aria-label="Next month"
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-white/60 transition-colors hover:border-amber-300/30 hover:text-white"
+              className="inline-flex h-11 w-11 md:h-8 md:w-8 items-center justify-center rounded-lg border border-white/10 text-white/60 transition-colors hover:border-amber-300/30 hover:text-white"
             >
               <ChevronRight className="h-4 w-4" />
             </button>
@@ -405,7 +405,7 @@ export function NewsletterBookingWidget({
                       setStep("details");
                     }}
                     aria-pressed={selected}
-                    className={`h-9 rounded-lg border px-2 text-xs font-semibold transition-all ${
+                    className={`h-11 md:h-9 rounded-lg border px-2 text-xs font-semibold transition-all ${
                       selected
                         ? "border-amber-300 bg-amber-300 text-black"
                         : "border-white/10 bg-white/[0.045] text-white/70 hover:border-amber-300/30 hover:text-white"

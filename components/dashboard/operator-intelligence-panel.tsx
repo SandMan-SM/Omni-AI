@@ -193,7 +193,7 @@ function EmptyState({ onRetry }: { onRetry: () => void }) {
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-amber-300/30 bg-black/20 px-3 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-200/60"
+          className="inline-flex h-11 md:h-9 items-center justify-center gap-2 rounded-lg border border-amber-300/30 bg-black/20 px-3 text-sm font-semibold text-amber-100 transition-colors hover:border-amber-200/60"
         >
           <RefreshCw className="h-4 w-4" />
           Retry
@@ -344,7 +344,7 @@ export function OperatorIntelligencePanel({ enabled }: { enabled: boolean }) {
           <button
             type="button"
             onClick={() => setRefreshKey((v) => v + 1)}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-300 transition-colors hover:border-sky-300/35 hover:text-sky-100"
+            className="inline-flex h-11 md:h-9 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-300 transition-colors hover:border-sky-300/35 hover:text-sky-100"
           >
             <RefreshCw className="h-4 w-4" />
             Refresh

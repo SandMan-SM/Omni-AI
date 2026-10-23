@@ -481,7 +481,7 @@ export function AliraReferralInfoClient({
                 {marketRates.map((r) => (
                   <div
                     key={r.service}
-                    className="grid gap-1 sm:grid-cols-[1fr_1.4fr] sm:items-baseline py-3 first:pt-0 last:pb-0"
+                    className="grid gap-1 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.4fr)] sm:items-baseline py-3 first:pt-0 last:pb-0"
                   >
                     <span className="text-sm font-semibold text-zinc-100">
                       {r.service}
@@ -850,7 +850,7 @@ export function AliraReferralInfoClient({
               type="button"
               onClick={closeModal}
               aria-label="Close"
-              className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 hover:text-white hover:border-white/30 hover:bg-white/[0.08] transition-colors"
+              className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 hover:text-white hover:border-white/30 hover:bg-white/[0.08] transition-colors"
               data-testid="alira-activate-modal-close"
             >
               <X className="w-4 h-4" />

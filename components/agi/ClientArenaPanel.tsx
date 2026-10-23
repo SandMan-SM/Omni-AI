@@ -201,7 +201,7 @@ export function ClientArenaPanel() {
           <button
             onClick={saveName}
             disabled={saving || editingName === agent.agentName || !editingName.trim()}
-            className="h-10 px-4 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 text-white text-sm font-medium disabled:opacity-40 inline-flex items-center gap-2"
+            className="h-11 md:h-10 px-4 rounded-lg bg-gradient-to-r from-emerald-600 to-cyan-600 text-white text-sm font-medium disabled:opacity-40 inline-flex items-center gap-2"
           >
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Save

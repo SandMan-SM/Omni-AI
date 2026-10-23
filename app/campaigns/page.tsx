@@ -229,7 +229,7 @@ export default function Campaigns() {
                 </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-[1fr_1fr_1.1fr] md:gap-6">
+              <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.1fr)] md:gap-6">
                 {pricing.map((plan) => (
                   <div
                     key={plan.label}

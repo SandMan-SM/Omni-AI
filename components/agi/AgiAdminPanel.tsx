@@ -324,7 +324,7 @@ export function AgiAdminPanel({
                 }));
                 setActiveBizId(next);
               }}
-              className="bg-zinc-900/80 border border-white/10 rounded-md px-2.5 py-1.5 text-xs text-white hover:border-emerald-400/50 focus:border-emerald-400 focus:outline-none cursor-pointer min-w-[160px]"
+              className="bg-zinc-900/80 border border-white/10 rounded-md px-2.5 py-1.5 text-base sm:text-xs text-white hover:border-emerald-400/50 focus:border-emerald-400 focus:outline-none cursor-pointer min-w-[160px]"
               data-testid="workspace-selector"
               aria-label="Switch workspace"
             >

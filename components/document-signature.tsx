@@ -333,7 +333,7 @@ export function DocumentSignature({
       <section id="signature" className="border-t border-white/[0.08] py-12 sm:py-16">
         <div className="relative overflow-hidden rounded-lg border border-amber-300/25 bg-black/50 p-5 sm:p-8">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(251,191,36,0.16),transparent_34%),radial-gradient(circle_at_18%_86%,rgba(56,189,248,0.10),transparent_36%)]" />
-          <div className="relative grid gap-7 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div className="relative grid gap-7 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-center">
             <div>
               <div className="flex h-10 w-10 items-center justify-center rounded-md border border-amber-200/30 bg-amber-200/10 text-amber-100">
                 <Lock className="h-5 w-5" />
@@ -509,7 +509,7 @@ export function DocumentSignature({
     <section id="signature" className="border-t border-white/[0.08] py-12 sm:py-16">
       <div className="relative overflow-hidden rounded-lg border border-amber-300/25 bg-black/50 p-5 sm:p-8">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(251,191,36,0.16),transparent_34%),radial-gradient(circle_at_18%_86%,rgba(56,189,248,0.10),transparent_36%)]" />
-        <div className="relative grid gap-8 lg:grid-cols-[0.85fr_1.15fr] lg:items-end">
+        <div className="relative grid gap-8 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-end">
           <div>
             <p className="text-xs font-semibold uppercase text-amber-200/80">
               Electronic acknowledgement

@@ -512,7 +512,7 @@ function ReservationModal({
           type="button"
           onClick={onClose}
           aria-label="Close reservation form"
-          className="absolute right-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-zinc-400 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
+          className="absolute right-4 top-4 z-10 flex h-11 w-11 md:h-10 md:w-10 items-center justify-center rounded-full border border-white/10 bg-black/40 text-zinc-400 transition hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400"
         >
           <X className="h-5 w-5" aria-hidden />
         </button>
@@ -831,7 +831,7 @@ export function MetaAiAdvertisingClient() {
                   onClick={() => goToPrimarySlide(index)}
                   aria-label={`Go to service ${index + 1}`}
                   aria-current={primarySlide === index ? "true" : undefined}
-                  className="flex h-8 items-center justify-center px-1"
+                  className="flex h-11 md:h-8 items-center justify-center px-1"
                 >
                   <span
                     className={`h-2 rounded-full transition-all ${
@@ -922,7 +922,7 @@ export function MetaAiAdvertisingClient() {
                     onClick={() => goToCompactSlide(index)}
                     aria-label={`Go to additional service ${index + 1}`}
                     aria-current={compactSlide === index ? "true" : undefined}
-                    className="flex h-8 items-center justify-center px-1"
+                    className="flex h-11 md:h-8 items-center justify-center px-1"
                   >
                     <span
                       className={`h-2 rounded-full transition-all ${

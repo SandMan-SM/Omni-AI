@@ -480,7 +480,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
 
       {/* Column headers */}
       {activeList === "clients" && currentList.length > 0 && (
-        <div className="hidden sm:grid grid-cols-[auto_1fr_100px_100px_100px_20px_20px] items-center gap-4 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[auto_minmax(0,1fr)_100px_100px_100px_20px_20px] items-center gap-4 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
           <div className="w-2" />
           <span>Client</span>
           <span>Health</span>
@@ -492,7 +492,7 @@ export function AdminCRM({ users, onRefresh }: AdminCRMProps) {
       )}
 
       {activeList === "nurture" && currentList.length > 0 && (
-        <div className="hidden sm:grid grid-cols-[auto_1fr_80px_100px_20px] items-center gap-4 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
+        <div className="hidden sm:grid grid-cols-[auto_minmax(0,1fr)_80px_100px_20px] items-center gap-4 px-4 text-[10px] text-gray-600 uppercase tracking-wider">
           <div className="w-2" />
           <span>Lead</span>
           <span>Score</span>

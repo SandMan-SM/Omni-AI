@@ -279,7 +279,7 @@ export function BookDemoModal({
           ) : null}
           <button
             onClick={onClose}
-            className={`absolute right-4 top-4 z-20 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition-colors focus:outline-none focus:ring-2 ${
+            className={`absolute right-4 top-4 z-20 inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition-colors focus:outline-none focus:ring-2 ${
               isMetaVariant
                 ? "hover:border-purple-300/30 hover:bg-purple-400/10 hover:text-white focus:ring-purple-300/40"
                 : "hover:border-amber-300/30 hover:bg-amber-300/10 hover:text-amber-100 focus:ring-amber-300/40"

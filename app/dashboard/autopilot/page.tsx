@@ -399,7 +399,7 @@ function NumberField({ label, value, onChange, hint }: { label: string; value: n
       <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
       <input
         type="number" value={value} onChange={e => onChange(parseInt(e.target.value) || 0)}
-        style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 13 }}
+        style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 16 }}
       />
       {hint && <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{hint}</div>}
     </div>

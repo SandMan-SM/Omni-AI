@@ -452,7 +452,7 @@ export function EliTalksFullClient({
             ].map((line) => (
               <div
                 key={line.item}
-                className="grid gap-3 sm:grid-cols-[1.4fr_2fr] py-5 items-start"
+                className="grid gap-3 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,2fr)] py-5 items-start"
               >
                 <p className="text-base font-semibold text-white">{line.item}</p>
                 <p className="text-sm text-zinc-400 leading-relaxed">{line.spec}</p>

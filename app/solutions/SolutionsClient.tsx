@@ -221,7 +221,7 @@ export function SolutionsClient({
                   aria-hidden
                   className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-amber-300/20 blur-3xl"
                 />
-                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-8 lg:items-center">
+                <div className="relative z-10 grid grid-cols-1 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] gap-8 lg:items-center">
                   <div>
                     <p className="text-[10px] uppercase tracking-[0.3em] text-amber-300/80">
                       {aiCeo.kind}

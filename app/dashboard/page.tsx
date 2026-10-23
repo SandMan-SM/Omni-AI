@@ -269,7 +269,7 @@ export default function OmniProgramPage() {
           <button
             type="button"
             onClick={handleSignOut}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-zinc-300 transition-colors hover:border-amber-200/40 hover:text-amber-100"
+            className="inline-flex h-11 md:h-9 items-center justify-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-zinc-300 transition-colors hover:border-amber-200/40 hover:text-amber-100"
           >
             <LogOut className="h-4 w-4" />
             <span>Sign out</span>
@@ -292,7 +292,7 @@ export default function OmniProgramPage() {
               cleaner agency, and fewer unconscious loops. Not a dashboard.
               A document you return to until the pattern lives in you.
             </p>
-            <div className="mt-8 grid grid-cols-1 gap-3 min-[440px]:grid-cols-[1.45fr_1fr] sm:flex sm:flex-wrap">
+            <div className="mt-8 grid grid-cols-1 gap-3 min-[440px]:grid-cols-[minmax(0,1.45fr)_minmax(0,1fr)] sm:flex sm:flex-wrap">
               <a
                 href="#definitions"
                 className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-md border border-amber-200/30 bg-amber-200/10 px-3 text-[13px] font-semibold text-amber-100 transition-colors hover:border-amber-100/60 sm:w-auto sm:px-4 sm:text-sm"
@@ -391,7 +391,7 @@ export default function OmniProgramPage() {
         </Section>
 
         <section id="practice" className="border-t border-white/[0.08] py-11 sm:py-20">
-          <div className="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-start">
             <div>
               <p className="mb-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-amber-200/70 sm:text-[11px] sm:tracking-[0.28em]">
                 06 / Practice

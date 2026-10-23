@@ -725,7 +725,7 @@ export function LoveThyBarberReferralClient({
               type="button"
               onClick={closeModal}
               aria-label="Close"
-              className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 hover:text-white hover:border-white/30 hover:bg-white/[0.08] transition-colors"
+              className="absolute right-4 top-4 z-10 inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full border border-white/15 bg-white/[0.04] text-zinc-300 hover:text-white hover:border-white/30 hover:bg-white/[0.08] transition-colors"
               data-testid="ltb-activate-modal-close"
             >
               <CloseX />

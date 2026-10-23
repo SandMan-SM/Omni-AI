@@ -121,7 +121,7 @@ export function MetaClient({ pageUrl, paypalClientId, paypalPlanId }: Props) {
             the side. Stacks on mobile (card under the pitch). */}
         <section className="relative overflow-hidden">
           <div className="relative z-10 mx-auto max-w-6xl px-6 pt-24 pb-12 sm:pt-32 sm:pb-16">
-            <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-10 lg:gap-14 lg:items-center">
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] gap-10 lg:gap-14 lg:items-center">
               {/* Left — the pitch */}
               <div>
                 <p className="text-[11px] uppercase tracking-[0.4em] text-amber-300/80">

@@ -310,7 +310,7 @@ export function MetaProposalFullClient({
               {retailLines.map((line) => (
                 <div
                   key={line.item}
-                  className="grid gap-2 sm:grid-cols-[1.4fr_1.6fr_auto] sm:items-baseline py-3 first:pt-0 last:pb-0"
+                  className="grid gap-2 sm:grid-cols-[minmax(0,1.4fr)_minmax(0,1.6fr)_auto] sm:items-baseline py-3 first:pt-0 last:pb-0"
                 >
                   <p className="text-sm sm:text-base font-semibold text-white">
                     {line.item}

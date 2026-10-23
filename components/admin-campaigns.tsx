@@ -416,7 +416,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
           {/* Assign to user */}
           <Field label="Assign to Business">
             <select value={form.profile_id} onChange={e => set("profile_id")(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50 h-9">
+              className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-purple-500/50 h-11 md:h-9">
               <option value="" className="bg-[#111]">Unassigned (Admin only)</option>
               {users.map(u => (
                 <option key={u.id} value={u.id} className="bg-[#111]">
@@ -429,13 +429,13 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
           <Field label="Campaign Name *">
             <Input value={form.name} onChange={e => set("name")(e.target.value)}
               placeholder="e.g. Spring Awareness Push"
-              className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-9 text-sm" />
+              className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-11 md:h-9 text-base sm:text-sm" />
           </Field>
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Status">
               <select value={form.status} onChange={e => set("status")(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white focus:outline-none focus:border-purple-500/50 h-9">
+                className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-purple-500/50 h-11 md:h-9">
                 {STATUS_OPTIONS.map(s => (
                   <option key={s} value={s} className="bg-[#111]">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
                 ))}
@@ -444,17 +444,17 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
             <Field label="Type">
               <Input value={form.type} onChange={e => set("type")(e.target.value)}
                 placeholder="e.g. Brand, Outreach"
-                className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-9 text-sm" />
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-11 md:h-9 text-base sm:text-sm" />
             </Field>
             <Field label="Budget">
               <Input value={form.budget} onChange={e => set("budget")(e.target.value)}
                 placeholder="$0"
-                className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-9 text-sm" />
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-11 md:h-9 text-base sm:text-sm" />
             </Field>
             <Field label="Platform">
               <Input value={form.platform} onChange={e => set("platform")(e.target.value)}
                 placeholder="e.g. Meta, Google, TikTok"
-                className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-9 text-sm" />
+                className="bg-white/5 border-white/10 text-white placeholder:text-gray-700 h-11 md:h-9 text-base sm:text-sm" />
             </Field>
           </div>
 
@@ -462,7 +462,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
             <textarea value={form.description} onChange={e => set("description")(e.target.value)}
               placeholder="Brief description of campaign goals..."
               rows={2}
-              className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-sm text-white placeholder:text-gray-700 focus:outline-none focus:border-purple-500/50 resize-none" />
+              className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-base sm:text-sm text-white placeholder:text-gray-700 focus:outline-none focus:border-purple-500/50 resize-none" />
           </Field>
 
           {/* Color */}
@@ -470,7 +470,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
             <div className="flex flex-wrap gap-1.5">
               {GRADIENT_OPTIONS.map(g => (
                 <button key={g} onClick={() => set("thumbnail")(g)}
-                  className={`w-7 h-7 rounded-md bg-gradient-to-br ${g} border-2 transition-all ${form.thumbnail === g ? "border-white scale-110" : "border-transparent opacity-60 hover:opacity-100"}`}
+                  className={`h-11 w-11 md:h-7 md:w-7 rounded-md bg-gradient-to-br ${g} border-2 transition-all ${form.thumbnail === g ? "border-white scale-110" : "border-transparent opacity-60 hover:opacity-100"}`}
                 />
               ))}
             </div>

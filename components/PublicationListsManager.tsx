@@ -143,7 +143,7 @@ export function PublicationListsManager() {
             <select
               value={site}
               onChange={(event) => setSite(event.target.value)}
-              className="h-9 rounded-md border border-white/10 bg-black/30 px-3 text-sm text-white"
+              className="h-11 md:h-9 rounded-md border border-white/10 bg-black/30 px-3 text-base sm:text-sm text-white"
               aria-label="Publication"
             >
               {PUBLICATIONS.map(([value, label]) => (
@@ -168,7 +168,7 @@ export function PublicationListsManager() {
           </div>
         </div>
 
-        <div className="grid gap-2 md:grid-cols-[1fr_1fr_auto]">
+        <div className="grid gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
           <Input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="subscriber@example.com" type="email" className="bg-white/5 border-white/10 text-white" />
           <Input value={name} onChange={(event) => setName(event.target.value)} placeholder="First name (optional)" className="bg-white/5 border-white/10 text-white" />
           <Button onClick={add} disabled={!email.trim() || busy === 'add'} className="gap-2 bg-amber-500 text-black hover:bg-amber-400">

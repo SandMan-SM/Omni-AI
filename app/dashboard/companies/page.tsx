@@ -163,7 +163,7 @@ export default function CompaniesPage() {
                 value={domain}
                 onChange={e => setDomain(e.target.value)}
                 placeholder="domain.com"
-                style={{ flex: 1, background: '#0a0a0a', border: '1px solid #222', borderRadius: 6, padding: '8px 10px', color: '#e8e8e8', fontSize: 12 }}
+                style={{ flex: 1, background: '#0a0a0a', border: '1px solid #222', borderRadius: 6, padding: '8px 10px', color: '#e8e8e8', fontSize: 16 }}
               />
               <button onClick={handleEnrich} disabled={!domain || enriching} style={{
                 background: domain ? '#10b981' : '#1a1a1a', color: domain ? '#fff' : '#555',

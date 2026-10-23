@@ -163,7 +163,7 @@ function AgentCardModal({ agent, onClose }: { agent: FullAgent; onClose: () => v
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center hover:bg-gray-700 transition-colors flex-shrink-0"
+              className="h-11 w-11 md:h-8 md:w-8 rounded-full bg-gray-800 border border-white/10 flex items-center justify-center hover:bg-gray-700 transition-colors flex-shrink-0"
               aria-label="Close"
             >
               <X className="w-4 h-4 text-gray-400" />

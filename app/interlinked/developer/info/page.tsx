@@ -658,7 +658,7 @@ export default function InterlinkedDeveloperInfoPage() {
             transition={{ duration: 0.5 }}
             className="relative rounded-3xl p-8 md:p-12 border border-purple-400/30 bg-gradient-to-br from-purple-500/[0.10] via-white/[0.02] to-transparent overflow-hidden"
           >
-            <div className="grid md:grid-cols-[auto,1fr] gap-6 md:gap-10 items-center">
+            <div className="grid md:grid-cols-[auto_minmax(0,1fr)] gap-6 md:gap-10 items-center">
               <div
                 className="w-20 h-20 rounded-2xl flex items-center justify-center shrink-0 mx-auto md:mx-0"
                 style={{

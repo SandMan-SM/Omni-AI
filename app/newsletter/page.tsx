@@ -367,14 +367,14 @@ export default async function NewsletterIndexPage() {
                 </Link>
                 <Link
                   href="/newsletter/archive"
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-200 transition-colors hover:border-amber-400/30 hover:text-amber-200 md:h-11 md:px-4"
+                  className="inline-flex h-11 md:h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-200 transition-colors hover:border-amber-400/30 hover:text-amber-200 md:px-4"
                 >
                   <Archive className="h-4 w-4" />
                   Full archive
                 </Link>
                 <a
                   href="/newsletter/rss.xml"
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-semibold text-gray-400 transition-colors hover:border-sky-400/30 hover:text-sky-200 md:h-11 md:px-4"
+                  className="inline-flex h-11 md:h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-semibold text-gray-400 transition-colors hover:border-sky-400/30 hover:text-sky-200 md:px-4"
                   aria-label="Subscribe to the Omni AI newsletter via RSS"
                 >
                   <Rss className="h-4 w-4" />

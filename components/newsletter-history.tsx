@@ -742,7 +742,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 const id = e.target.value;
                 setSelectedProfile(id ? newsletterBusinesses.find(p => p.id === id) || null : null);
               }}
-              className="h-7 text-[11px] bg-black border border-white/[0.10] text-white rounded-md pl-2 pr-6 focus:outline-none focus:ring-1 focus:ring-purple-500/30 cursor-pointer"
+              className="h-11 md:h-7 text-base sm:text-[11px] bg-black border border-white/[0.10] text-white rounded-md pl-2 pr-6 focus:outline-none focus:ring-1 focus:ring-purple-500/30 cursor-pointer"
               style={{ WebkitAppearance: 'none', MozAppearance: 'none', appearance: 'none' } as React.CSSProperties}
             >
               <option value="">Select business</option>

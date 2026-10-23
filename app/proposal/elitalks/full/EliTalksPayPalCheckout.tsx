@@ -187,7 +187,7 @@ export default function EliTalksPayPalCheckout({ label, className, showArrow = f
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center bg-transparent text-white/65"
+                className="absolute right-4 top-4 flex h-11 w-11 md:h-10 md:w-10 items-center justify-center bg-transparent text-white/65"
                 aria-label="Close PayPal checkout"
               >
                 <X size={22} aria-hidden />

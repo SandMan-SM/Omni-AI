@@ -528,7 +528,7 @@ function MeetingPanel({
                 type="datetime-local"
                 value={newStart}
                 onChange={e => setNewStart(e.target.value)}
-                style={{ background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '8px 10px', borderRadius: 6, fontSize: 13 }}
+                style={{ background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '8px 10px', borderRadius: 6, fontSize: 16 }}
               />
               <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                 <span style={{ fontSize: 12, color: '#94a3b8' }}>Duration</span>

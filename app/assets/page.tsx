@@ -298,7 +298,7 @@ export default function AssetsPage() {
             style={{
               marginLeft: "auto",
               background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#e8e8e8",
-              padding: "9px 12px", borderRadius: 8, fontSize: 13, fontFamily: "inherit",
+              padding: "9px 12px", borderRadius: 8, fontSize: 16, fontFamily: "inherit",
               outline: "none", minWidth: 220,
             }}
           >
