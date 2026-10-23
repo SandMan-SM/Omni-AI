@@ -494,7 +494,7 @@ export function RenelaveauInfoClient({
             absorbing into a single federation engagement.
           </p>
 
-          <div className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] overflow-hidden">
+          <div className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] overflow-x-auto overflow-y-hidden">
             <table className="w-full text-left text-[14px]">
               <thead>
                 <tr className="border-b border-amber-300/20">

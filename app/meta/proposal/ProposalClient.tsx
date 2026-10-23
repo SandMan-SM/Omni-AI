@@ -157,7 +157,7 @@ export function ProposalClient({ pageUrl }: Props) {
                 Ready when you are
               </p>
               <h2
-                className="relative z-10 mt-3 whitespace-nowrap text-[clamp(1.75rem,7.2vw,2.25rem)] sm:text-4xl tracking-tight"
+                className="relative z-10 mt-3 text-[clamp(1.75rem,7.2vw,2.25rem)] sm:whitespace-nowrap sm:text-4xl tracking-tight"
                 style={{ fontFamily: "Georgia, serif" }}
               >
                 See the full breakdown.

@@ -292,7 +292,7 @@ export default function OmniProgramPage() {
               cleaner agency, and fewer unconscious loops. Not a dashboard.
               A document you return to until the pattern lives in you.
             </p>
-            <div className="mt-8 grid grid-cols-[1.45fr_1fr] gap-3 max-[340px]:grid-cols-1 sm:flex sm:flex-wrap">
+            <div className="mt-8 grid grid-cols-1 gap-3 min-[440px]:grid-cols-[1.45fr_1fr] sm:flex sm:flex-wrap">
               <a
                 href="#definitions"
                 className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-md border border-amber-200/30 bg-amber-200/10 px-3 text-[13px] font-semibold text-amber-100 transition-colors hover:border-amber-100/60 sm:w-auto sm:px-4 sm:text-sm"

@@ -215,7 +215,7 @@ export default async function TrendingLandingPage({ params }: Props) {
         </div>
 
         {/* Headline */}
-        <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight mb-6 max-w-5xl">
+        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-black leading-[1.02] tracking-tight mb-6 max-w-5xl break-words">
           <span
             className="bg-clip-text text-transparent"
             style={{

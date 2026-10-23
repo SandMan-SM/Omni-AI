@@ -420,7 +420,7 @@ export function LoveThyBarberReferralClient({
               $60,000+ in self-generating assets.
             </h2>
 
-            <div className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] overflow-hidden">
+            <div className="mt-6 rounded-2xl border border-amber-300/30 bg-amber-300/[0.04] overflow-x-auto overflow-y-hidden">
               <table className="w-full text-left text-[14px]">
                 <thead>
                   <tr className="border-b border-amber-300/20">

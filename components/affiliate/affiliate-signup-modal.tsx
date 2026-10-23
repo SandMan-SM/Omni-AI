@@ -62,20 +62,21 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          className="fixed inset-0 h-[100dvh] z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="relative w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 p-8"
+            className="relative w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 max-h-[90dvh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white">
+            <button onClick={onClose} className="absolute top-4 right-4 z-20 text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
 
+            <div className="overflow-y-auto p-8 flex-1">
             {done ? (
               <div className="text-center py-8">
                 <div className="w-14 h-14 mx-auto rounded-full bg-green-500/20 flex items-center justify-center mb-4">
@@ -115,6 +116,7 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
                 </div>
               </>
             )}
+            </div>
           </motion.div>
         </motion.div>
       )}

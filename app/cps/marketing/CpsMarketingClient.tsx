@@ -683,28 +683,28 @@ export function CpsMarketingClient({
           </p>
 
           <div className="mt-10 grid gap-3">
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-3 items-center text-[10px] uppercase tracking-[0.28em] text-zinc-500 px-2">
+            <div className="grid grid-cols-1 gap-3 items-center text-[10px] uppercase tracking-[0.28em] text-zinc-500 px-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
               <p>Other agencies</p>
-              <p className="text-center w-8" />
+              <p className="text-center w-8 hidden sm:block" />
               <p>This system</p>
             </div>
             {agencyVsFederation.map((row) => (
               <div
                 key={row.theirs}
-                className="grid grid-cols-[1fr_auto_1fr] gap-3 items-stretch"
+                className="grid grid-cols-1 gap-3 items-stretch sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]"
               >
                 <div className="rounded-xl border border-white/10 bg-white/[0.02] p-4 flex items-start gap-3">
                   <X className="w-4 h-4 text-rose-400 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-zinc-400 leading-relaxed">
+                  <p className="text-sm text-zinc-400 leading-relaxed break-words">
                     {row.theirs}
                   </p>
                 </div>
-                <div className="flex items-center justify-center w-8">
+                <div className="flex items-center justify-center w-8 rotate-90 sm:rotate-0">
                   <ArrowRight className="w-4 h-4 text-amber-300" />
                 </div>
                 <div className="rounded-xl border border-amber-300/30 bg-amber-300/[0.04] p-4 flex items-start gap-3">
                   <CheckCircle2 className="w-4 h-4 text-amber-300 flex-shrink-0 mt-0.5" />
-                  <p className="text-sm text-zinc-200 leading-relaxed">
+                  <p className="text-sm text-zinc-200 leading-relaxed break-words">
                     {row.ours}
                   </p>
                 </div>

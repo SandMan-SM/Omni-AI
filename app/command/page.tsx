@@ -160,7 +160,7 @@ export default function CommandCenter() {
           <div className="cc-p"><div className="cc-h"><GitCommit className="w-3.5 h-3.5 text-emerald-400 inline mr-2" />AGENT COMMITS <span className="ml-2 text-emerald-400">{tc}</span></div><div className="p-4 space-y-1.5 max-h-64 overflow-y-auto">{edits.slice(0, 20).map((e: any) => (<div key={e.id} className="flex items-start gap-2 py-1.5 border-b border-white/[.03] last:border-0"><span className="text-sm mt-0.5">{EM[e.project] || "\u{1F4E6}"}</span><div className="flex-1 min-w-0"><p className="text-[11px] font-mono text-gray-400 truncate">{e.commit_message}</p><p className="text-[9px] font-mono text-gray-700">{tAgo(e.created_at)}</p></div></div>))}</div></div>
         </div>
       </div>
-      <div className="fixed bottom-0 left-0 right-0 h-7 bg-[#030305]/95 border-t border-emerald-500/10 flex items-center px-4 gap-4 z-40"><span className="text-[9px] font-mono text-emerald-500/40">SYS::OMNI_INTELLIGENCE | {proj.length} projects | {deps.length} deploys</span><span className="ml-auto text-[9px] font-mono text-emerald-500/40">{clock.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span></div>
+      <div className="fixed bottom-0 left-0 right-0 h-7 bg-[#030305]/95 border-t border-emerald-500/10 flex items-center px-4 gap-4 z-40"><span className="min-w-0 truncate text-[9px] font-mono text-emerald-500/40">SYS::OMNI_INTELLIGENCE | {proj.length} projects | {deps.length} deploys</span><span className="ml-auto shrink-0 text-[9px] font-mono text-emerald-500/40">{clock.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })}</span></div>
     </div>
   );
 }

@@ -236,7 +236,7 @@ export default function Interlinked() {
             <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-purple-400 flex-shrink-0" />
             <span className="text-xs md:text-sm text-gray-300 whitespace-nowrap">Omni AI introducing Interlinked</span>
           </a>
-          <h1 className="text-5xl md:text-6xl font-bold mb-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4">
             <span className="text-gradient">INTERLINKED</span>
           </h1>
         </motion.div>
