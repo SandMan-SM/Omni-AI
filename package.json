@@ -21,6 +21,7 @@
     "lint": "next lint",
     "check": "node scripts/ensure-clean-worktree.mjs --phase before-check && npm run check:dirty && node scripts/ensure-clean-worktree.mjs --phase after-check",
     "check:dirty": "tsc",
+    "audit:mobile": "tsx scripts/audit-mobile-ui.ts",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs"
   },
   "dependencies": {
