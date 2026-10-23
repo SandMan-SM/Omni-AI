@@ -236,7 +236,7 @@ export function NewsletterStarCredit({
                 </Button>
                 <Link
                   href={joinHref}
-                  className="inline-flex h-10 items-center justify-center rounded-md border border-white/10 px-4 text-sm font-medium text-gray-100 transition hover:border-white/20 hover:bg-white/10"
+                  className="inline-flex h-11 items-center justify-center rounded-md border border-white/10 px-4 text-sm font-medium text-gray-100 transition hover:border-white/20 hover:bg-white/10"
                   data-testid="link-newsletter-credit-create-account"
                 >
                   Create account

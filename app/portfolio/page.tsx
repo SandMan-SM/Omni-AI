@@ -197,7 +197,7 @@ function statusClass(status: CaseStudy["status"]) {
 function ExternalAssetLink({ asset }: { asset: CaseStudy }) {
   if (asset.url === "#") {
     return (
-      <span className="inline-flex min-h-10 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-zinc-500">
+      <span className="inline-flex min-h-11 items-center rounded-lg border border-white/10 px-3 text-xs font-semibold text-zinc-500">
         Domain reserved
       </span>
     );
@@ -208,7 +208,7 @@ function ExternalAssetLink({ asset }: { asset: CaseStudy }) {
       href={asset.url}
       target="_blank"
       rel="noreferrer"
-      className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs font-semibold text-zinc-100 transition hover:border-amber-300/50 hover:bg-amber-300/10 hover:text-amber-100"
+      className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-xs font-semibold text-zinc-100 transition hover:border-amber-300/50 hover:bg-amber-300/10 hover:text-amber-100"
       aria-label={`Open ${asset.brand} live asset`}
     >
       Live asset
@@ -274,7 +274,7 @@ function AssetCard({ asset }: { asset: CaseStudy }) {
         <ExternalAssetLink asset={asset} />
         <Link
           href={`/federation/case-studies/${asset.slug}`}
-          className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-amber-300/25 bg-amber-300/10 px-3 text-xs font-semibold text-amber-100 transition hover:border-amber-200/60 hover:bg-amber-300/20"
+          className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-amber-300/25 bg-amber-300/10 px-3 text-xs font-semibold text-amber-100 transition hover:border-amber-200/60 hover:bg-amber-300/20"
         >
           Case study
           <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
@@ -340,7 +340,7 @@ export default function PortfolioPage() {
             <a
               key={group.key}
               href={`#${group.key}`}
-              className="inline-flex min-h-10 items-center rounded-full border border-white/10 bg-white/[0.03] px-4 text-sm font-medium text-zinc-300 transition hover:border-amber-300/40 hover:text-white"
+              className="inline-flex min-h-11 items-center rounded-full border border-white/10 bg-white/[0.03] px-4 text-sm font-medium text-zinc-300 transition hover:border-amber-300/40 hover:text-white"
             >
               {group.title}
               <span className="ml-2 rounded-full bg-white/10 px-2 py-0.5 text-xs text-zinc-400">

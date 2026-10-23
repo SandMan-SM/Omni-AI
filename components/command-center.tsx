@@ -228,7 +228,7 @@ export function CommandCenter() {
         </div>
         <a
           href="/command"
-          className="inline-block px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-sm"
+          className="inline-flex items-center min-h-[44px] px-5 py-2.5 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-black font-bold text-sm"
         >
           Sign back in
         </a>

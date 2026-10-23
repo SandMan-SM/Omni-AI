@@ -54,7 +54,7 @@ export function PortalDashboard({
           <button
             type="button"
             onClick={onLogout}
-            className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm text-white/60 transition hover:bg-white/[0.06] hover:text-white"
+            className="inline-flex shrink-0 min-h-[44px] items-center gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm text-white/60 transition hover:bg-white/[0.06] hover:text-white"
           >
             <LogOut className="h-4 w-4" />
             Log out

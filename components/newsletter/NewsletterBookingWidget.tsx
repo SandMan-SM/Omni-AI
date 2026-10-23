@@ -182,7 +182,7 @@ export function NewsletterBookingWidget({
             href={calendarUrl}
             target="_blank"
             rel="noreferrer"
-            className="mt-5 inline-flex h-10 items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-300/10 px-4 text-sm font-semibold text-emerald-100 transition-colors hover:bg-emerald-300/15"
+            className="mt-5 inline-flex h-11 items-center justify-center rounded-xl border border-emerald-300/30 bg-emerald-300/10 px-4 text-sm font-semibold text-emerald-100 transition-colors hover:bg-emerald-300/15"
           >
             Add to calendar
           </a>
