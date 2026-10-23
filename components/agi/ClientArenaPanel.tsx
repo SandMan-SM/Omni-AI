@@ -196,7 +196,7 @@ export function ClientArenaPanel() {
             onChange={(e) => setEditingName(e.target.value)}
             placeholder="e.g. Apollo, Atlas, Mercury…"
             maxLength={60}
-            className="flex-1 min-w-[200px] h-10 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-sm text-white placeholder:text-gray-600 focus:outline-none focus:border-emerald-500/40"
+            className="flex-1 min-w-[200px] h-10 px-3 rounded-lg bg-white/[0.04] border border-white/10 text-base text-white placeholder:text-gray-600 focus:outline-none focus:border-emerald-500/40"
           />
           <button
             onClick={saveName}

@@ -215,7 +215,7 @@ export default function ImportPage() {
             placeholder="Paste CSV here..."
             style={{
               width: '100%', minHeight: 220, background: '#0a0a0a', border: '1px solid #222',
-              borderRadius: 8, padding: 14, color: '#cbd5e1', fontSize: 12, lineHeight: 1.5,
+              borderRadius: 8, padding: 14, color: '#cbd5e1', fontSize: 16, lineHeight: 1.5,
               fontFamily: 'ui-monospace, SFMono-Regular, monospace', resize: 'vertical',
             }}
           />

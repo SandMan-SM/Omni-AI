@@ -50,12 +50,12 @@ export function Footer() {
             <Image src="/omni-logo.svg" alt="Omni AI Logo" width={36} height={36} className="h-7 md:h-9 w-auto" />
           </div>
 
-          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 md:gap-x-8" data-testid="footer-nav">
+          <nav className="flex flex-wrap items-center justify-center gap-x-4 gap-y-0 md:gap-x-8" data-testid="footer-nav">
             {footerLinks.map((link) => (
               <a
                 key={link.href}
                 href={link.href}
-                className="text-gray-500 hover:text-white transition-colors text-sm"
+                className="inline-flex items-center min-h-[44px] text-gray-500 hover:text-white transition-colors text-sm"
                 data-testid={`footer-link-${link.label.toLowerCase().replace(" ", "-")}`}
               >
                 {link.label}

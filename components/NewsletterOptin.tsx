@@ -62,12 +62,12 @@ export default function NewsletterOptin() {
               autoComplete="email"
               placeholder="you@company.com"
               aria-label="Email address"
-              className="w-full min-w-0 bg-transparent px-1 py-2 text-sm text-white outline-none placeholder:text-slate-500"
+              className="w-full min-w-0 bg-transparent px-1 py-2 text-base text-white outline-none placeholder:text-slate-500"
             />
             <button
               type="submit"
               disabled={state === "sending"}
-              className="shrink-0 rounded-lg border border-white/20 bg-cover bg-center px-4 py-2.5 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-[0_0_20px_rgba(56,189,248,0.20)] [text-shadow:0_1px_5px_rgba(0,0,0,0.95)] transition hover:scale-[1.02] hover:border-sky-200/60 hover:brightness-125 disabled:opacity-60"
+              className="shrink-0 min-h-[44px] rounded-lg border border-white/20 bg-cover bg-center px-4 py-2.5 text-xs font-bold uppercase tracking-[0.08em] text-white shadow-[0_0_20px_rgba(56,189,248,0.20)] [text-shadow:0_1px_5px_rgba(0,0,0,0.95)] transition hover:scale-[1.02] hover:border-sky-200/60 hover:brightness-125 disabled:opacity-60"
               style={{
                 backgroundImage:
                   'linear-gradient(90deg, rgba(15,23,42,0.5), rgba(49,46,129,0.18)), url("/images/newsletter-subscribe-bg.webp")',

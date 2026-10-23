@@ -53,7 +53,7 @@ export default function CTAButtons({ slug }: CTAButtonsProps) {
             {/* Close */}
             <button
               onClick={() => setOpen(false)}
-              className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full text-gray-500 hover:text-white hover:bg-white/10 transition-all"
+              className="absolute top-2 right-2 w-11 h-11 flex items-center justify-center rounded-full text-gray-500 hover:text-white hover:bg-white/10 transition-all"
               aria-label="Close"
             >
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

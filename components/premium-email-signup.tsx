@@ -119,7 +119,7 @@ export function PremiumEmailSignup({ next }: { next?: string }) {
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@company.com"
           disabled={status === "loading"}
-          className="w-full min-w-0 flex-1 bg-transparent px-1 py-2 text-sm text-white outline-none placeholder:text-slate-500 disabled:opacity-60"
+          className="w-full min-w-0 flex-1 bg-transparent px-1 py-2 text-base text-white outline-none placeholder:text-slate-500 disabled:opacity-60"
         />
         <input
           type="text"
@@ -132,7 +132,7 @@ export function PremiumEmailSignup({ next }: { next?: string }) {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-cover bg-center px-3 py-2.5 text-xs font-bold uppercase tracking-[0.04em] text-white shadow-[0_0_20px_rgba(56,189,248,0.20)] [text-shadow:0_1px_5px_rgba(0,0,0,0.95)] transition hover:scale-[1.02] hover:border-sky-200/60 hover:brightness-125 disabled:cursor-wait disabled:opacity-60 sm:px-4 sm:tracking-[0.08em]"
+          className="inline-flex shrink-0 min-h-[44px] items-center justify-center gap-1.5 rounded-lg border border-white/20 bg-cover bg-center px-3 py-2.5 text-xs font-bold uppercase tracking-[0.04em] text-white shadow-[0_0_20px_rgba(56,189,248,0.20)] [text-shadow:0_1px_5px_rgba(0,0,0,0.95)] transition hover:scale-[1.02] hover:border-sky-200/60 hover:brightness-125 disabled:cursor-wait disabled:opacity-60 sm:px-4 sm:tracking-[0.08em]"
           style={{
             backgroundImage:
               'linear-gradient(90deg, rgba(15,23,42,0.5), rgba(49,46,129,0.18)), url("/images/newsletter-subscribe-bg.webp")',

@@ -399,7 +399,7 @@ export default function InboxPage() {
                   placeholder="Click 'Generate' to have Claude draft a response..."
                   style={{
                     width: '100%', minHeight: 160, background: '#0a0a0a', border: '1px solid #222',
-                    borderRadius: 8, padding: 14, color: '#e8e8e8', fontSize: 13, lineHeight: 1.7,
+                    borderRadius: 8, padding: 14, color: '#e8e8e8', fontSize: 16, lineHeight: 1.7,
                     fontFamily: 'inherit', resize: 'vertical',
                   }}
                 />
@@ -479,7 +479,7 @@ export default function InboxPage() {
               placeholder="UUID of the asset they replied to"
               style={{
                 width: '100%', background: '#0a0a0a', border: '1px solid #222',
-                borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 12,
+                borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 16,
                 fontFamily: 'ui-monospace, SFMono-Regular, monospace', marginBottom: 14,
               }}
             />
@@ -492,7 +492,7 @@ export default function InboxPage() {
               placeholder="Paste the full reply..."
               style={{
                 width: '100%', minHeight: 140, background: '#0a0a0a', border: '1px solid #222',
-                borderRadius: 8, padding: 12, color: '#e8e8e8', fontSize: 13, lineHeight: 1.6,
+                borderRadius: 8, padding: 12, color: '#e8e8e8', fontSize: 16, lineHeight: 1.6,
                 fontFamily: 'inherit', resize: 'vertical', marginBottom: 14,
               }}
             />

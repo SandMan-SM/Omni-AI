@@ -951,14 +951,16 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                       value={newSubName}
                       onChange={e => setNewSubName(e.target.value)}
                       placeholder="Name"
-                      className="h-8 text-xs bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30"
+                      aria-label="Name"
+                      className="h-8 text-base bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30"
                     />
                     <Input
                       value={newSubEmail}
                       onChange={e => setNewSubEmail(e.target.value)}
                       placeholder="Email"
+                      aria-label="Email address"
                       type="email"
-                      className="h-8 text-xs bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30"
+                      className="h-8 text-base bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30"
                     />
                     <Button
                       size="sm"
@@ -1141,7 +1143,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 h-[100dvh] z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
             onClick={() => setEditingSub(null)}
           >
             <motion.div
@@ -1149,7 +1151,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-sm bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-6 space-y-4"
+              className="w-full max-w-sm max-h-[90dvh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-6 space-y-4"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -1165,7 +1167,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                   <Input
                     value={editName}
                     onChange={e => setEditName(e.target.value)}
-                    className="h-9 text-sm bg-black border-white/[0.10] text-white focus-visible:ring-purple-500/30"
+                    className="h-9 text-base bg-black border-white/[0.10] text-white focus-visible:ring-purple-500/30"
                   />
                 </div>
                 <div>
@@ -1174,7 +1176,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                     value={editEmail}
                     onChange={e => setEditEmail(e.target.value)}
                     type="email"
-                    className="h-9 text-sm bg-black border-white/[0.10] text-white focus-visible:ring-purple-500/30"
+                    className="h-9 text-base bg-black border-white/[0.10] text-white focus-visible:ring-purple-500/30"
                   />
                 </div>
                 <div>
@@ -1255,7 +1257,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 h-[100dvh] z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
             onClick={() => setShowImportUsers(false)}
           >
             <motion.div
@@ -1263,7 +1265,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15 }}
-              className="w-full max-w-md bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-6 space-y-3"
+              className="w-full max-w-md max-h-[90dvh] overflow-y-auto bg-[#0a0a0a] border border-white/[0.08] rounded-xl p-6 space-y-3"
               onClick={e => e.stopPropagation()}
             >
               <div className="flex items-center justify-between">
@@ -1282,7 +1284,8 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                   value={importUsersSearch}
                   onChange={e => setImportUsersSearch(e.target.value)}
                   placeholder="Search users..."
-                  className="pl-8 h-8 text-xs bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30"
+                  aria-label="Search users"
+                  className="pl-8 h-8 text-base bg-black border-white/[0.10] text-white placeholder:text-gray-600 focus-visible:ring-purple-500/30"
                 />
               </div>
 

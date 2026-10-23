@@ -131,7 +131,7 @@ export default async function ComparisonPage({ params }: Props) {
           </Link>
           <Link
             href="/book-now"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="inline-flex items-center min-h-[44px] text-sm text-gray-400 hover:text-white transition-colors"
           >
             Book a Call →
           </Link>

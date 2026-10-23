@@ -428,7 +428,7 @@ function Field({ label, value, onChange, placeholder }: { label: string; value: 
         placeholder={placeholder}
         style={{
           width: '100%', background: '#0a0a0a', border: '1px solid #222',
-          borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 13,
+          borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 16,
         }}
       />
     </div>

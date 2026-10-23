@@ -190,7 +190,7 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
           onChange={e => setBodyOverride(e.target.value)}
           style={{
             width: '100%', minHeight: 120, background: '#0a0a0a', border: '1px solid #222',
-            borderRadius: 8, padding: 12, color: '#e8e8e8', fontSize: 13, lineHeight: 1.6,
+            borderRadius: 8, padding: 12, color: '#e8e8e8', fontSize: 16, lineHeight: 1.6,
             fontFamily: 'inherit', resize: 'vertical',
           }}
         />

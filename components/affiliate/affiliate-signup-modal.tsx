@@ -72,7 +72,7 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
             className="relative w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 max-h-[90dvh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <button onClick={onClose} className="absolute top-4 right-4 z-20 text-gray-400 hover:text-white">
+            <button onClick={onClose} className="absolute top-2 right-2 z-20 inline-flex h-11 w-11 items-center justify-center text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
 
@@ -106,10 +106,10 @@ export function AffiliateSignupModal({ isOpen, onClose }: Props) {
                       onChange={(e) => setWebsite(e.target.value)}
                     />
                   </div>
-                  <Input placeholder="Full name" value={name} onChange={(e) => setName(e.target.value)} />
-                  <Input placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-                  <Input placeholder="Phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-                  <Input placeholder="Your audience / channel (optional)" value={audience} onChange={(e) => setAudience(e.target.value)} />
+                  <Input placeholder="Full name" aria-label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+                  <Input placeholder="Email" aria-label="Email address" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                  <Input placeholder="Phone" aria-label="Phone number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+                  <Input placeholder="Your audience / channel (optional)" aria-label="Your audience or channel" value={audience} onChange={(e) => setAudience(e.target.value)} />
                   <Button onClick={submit} disabled={!valid || submitting} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold h-11">
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Create my affiliate account"}
                   </Button>

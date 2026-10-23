@@ -389,6 +389,7 @@ function ApplyForm({ landing }: { landing: Landing }) {
           name="name"
           required
           placeholder="Your name"
+          aria-label="Your name"
           style={inputStyle}
         />
         <input
@@ -396,17 +397,20 @@ function ApplyForm({ landing }: { landing: Landing }) {
           type="email"
           required
           placeholder="Email"
+          aria-label="Email address"
           style={inputStyle}
         />
         <input
           name="company"
           placeholder="Company"
+          aria-label="Company"
           style={inputStyle}
         />
         <textarea
           name="message"
           rows={4}
           placeholder="What would you sponsor?"
+          aria-label="What would you sponsor?"
           style={{ ...inputStyle, resize: 'vertical' }}
         />
         <button
@@ -435,6 +439,6 @@ const inputStyle: React.CSSProperties = {
   background: 'rgba(0,0,0,0.3)',
   border: '1px solid rgba(255,255,255,0.12)',
   color: '#fff',
-  fontSize: 15,
+  fontSize: 16,
   outline: 'none',
 };

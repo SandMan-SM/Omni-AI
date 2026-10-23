@@ -61,12 +61,12 @@ export default function SubscribeForm() {
             placeholder="you@company.com"
             aria-label="Email address"
             disabled={submitting}
-            className="flex-1 bg-transparent text-[15px] text-[hsl(var(--foreground))] placeholder:text-white/35 outline-none disabled:opacity-60"
+            className="flex-1 bg-transparent text-base text-[hsl(var(--foreground))] placeholder:text-white/35 outline-none disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={submitting}
-            className="shrink-0 rounded-full bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="shrink-0 min-h-[44px] rounded-full bg-[hsl(var(--primary))] px-6 py-2.5 text-sm font-semibold text-[hsl(var(--primary-foreground))] transition-opacity hover:opacity-90 disabled:opacity-60"
           >
             {submitting ? "Joining" : "Join Free"}
           </button>

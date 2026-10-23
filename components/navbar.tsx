@@ -39,6 +39,13 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  // Close the mobile menu on every client-side route change. Without
+  // this the overlay stays open over the new page whenever navigation
+  // happens from anywhere other than the menu's own links.
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+
   const navLinks = [
     { href: "/campaigns", label: "Campaigns" },
     { href: "/details", label: "Infographic" },
@@ -118,8 +125,11 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
           </div>
 
           <button
-            className="md:hidden p-2 text-white flex-shrink-0"
+            className="md:hidden inline-flex h-11 w-11 items-center justify-center text-white flex-shrink-0"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-menu"
             data-testid="button-mobile-menu"
           >
             {isMobileMenuOpen ? (
@@ -138,6 +148,7 @@ export function Navbar({ onBookDemo, onSignIn, onDashboard }: NavbarProps) {
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.2 }}
               className="md:hidden py-3 border-t border-white/5 bg-[#050505]/95 backdrop-blur-xl overflow-y-auto max-h-[80vh]"
+              id="mobile-menu"
             >
             <div className="flex flex-col gap-1 px-1">
               {navLinks.map((link) => (

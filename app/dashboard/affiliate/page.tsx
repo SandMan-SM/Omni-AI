@@ -273,7 +273,7 @@ export default function AffiliatePipelinePage() {
               onBlur={e => updateDealValue(editing.id, parseInt(e.target.value) || 0)}
               style={{
                 width: '100%', background: '#0a0a0a', border: '1px solid #222',
-                borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 13, marginBottom: 16,
+                borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 16, marginBottom: 16,
               }}
             />
             <button onClick={() => setEditing(null)} style={{

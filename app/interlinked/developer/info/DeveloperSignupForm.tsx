@@ -214,10 +214,11 @@ export function DeveloperSignupForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
+            aria-label="Your name"
             autoComplete="name"
             required
             disabled={status === "submitting"}
-            className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:bg-white/[0.10] focus:border-purple-400/50 transition-colors disabled:opacity-60"
+            className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-500 text-base focus:outline-none focus:bg-white/[0.10] focus:border-purple-400/50 transition-colors disabled:opacity-60"
           />
         </div>
         {/* Email */}
@@ -228,10 +229,11 @@ export function DeveloperSignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@domain.com"
+            aria-label="Email address"
             autoComplete="email"
             required
             disabled={status === "submitting"}
-            className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:bg-white/[0.10] focus:border-purple-400/50 transition-colors disabled:opacity-60"
+            className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-500 text-base focus:outline-none focus:bg-white/[0.10] focus:border-purple-400/50 transition-colors disabled:opacity-60"
           />
         </div>
         {/* Phone */}
@@ -242,10 +244,11 @@ export function DeveloperSignupForm() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="Phone number"
+            aria-label="Phone number"
             autoComplete="tel"
             required
             disabled={status === "submitting"}
-            className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-500 text-sm focus:outline-none focus:bg-white/[0.10] focus:border-purple-400/50 transition-colors disabled:opacity-60"
+            className="w-full h-12 pl-11 pr-4 rounded-xl bg-white/[0.06] border border-white/10 text-white placeholder-gray-500 text-base focus:outline-none focus:bg-white/[0.10] focus:border-purple-400/50 transition-colors disabled:opacity-60"
           />
         </div>
 

@@ -158,9 +158,10 @@ export default function Join() {
               <Input
                 type="text"
                 placeholder="Full Name"
+                aria-label="Full name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                 data-testid="input-name"
                 required
               />
@@ -171,9 +172,10 @@ export default function Join() {
               <Input
                 type="email"
                 placeholder="Email Address"
+                aria-label="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                 data-testid="input-email"
                 required
               />
@@ -184,9 +186,10 @@ export default function Join() {
               <Input
                 type="tel"
                 placeholder="Phone Number"
+                aria-label="Phone number"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                 data-testid="input-phone"
                 required
               />

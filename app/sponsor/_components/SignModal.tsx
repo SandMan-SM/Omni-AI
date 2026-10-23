@@ -309,7 +309,7 @@ export function SignModal({
                 onChange={(e) => setSignerEmail(e.target.value)}
                 disabled={!!signed}
                 autoComplete="email"
-                className="w-full rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-4 py-3 text-amber-100 placeholder:text-zinc-700 outline-none focus:border-amber-300/70 disabled:opacity-60 text-sm"
+                className="w-full rounded-xl border border-amber-300/30 bg-amber-300/[0.04] px-4 py-3 text-amber-100 placeholder:text-zinc-700 outline-none focus:border-amber-300/70 disabled:opacity-60 text-base"
               />
               {signed ? (
                 <p className="text-xs text-amber-300/80">

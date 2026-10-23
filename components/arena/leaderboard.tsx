@@ -333,13 +333,14 @@ export function Leaderboard({ isDarkMode }: LeaderboardProps) {
           <input
             type="text"
             placeholder="Search agents..."
+            aria-label="Search agents"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className={`w-full pl-10 pr-4 py-2 rounded-lg border ${
               isDarkMode
                 ? "bg-gray-800 border-white/10 text-white placeholder-gray-500"
                 : "bg-gray-100 border-gray-200 text-gray-900 placeholder-gray-400"
-            } text-sm focus:outline-none focus:border-cyan-500`}
+            } text-base focus:outline-none focus:border-cyan-500`}
           />
         </div>
 

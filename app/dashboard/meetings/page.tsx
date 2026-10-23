@@ -537,7 +537,7 @@ function MeetingPanel({
                   value={duration}
                   onChange={e => setDuration(Number(e.target.value))}
                   min={5} max={240} step={5}
-                  style={{ background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '6px 10px', borderRadius: 6, fontSize: 13, width: 80 }}
+                  style={{ background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '6px 10px', borderRadius: 6, fontSize: 16, width: 80 }}
                 /> min
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
@@ -575,7 +575,7 @@ function MeetingPanel({
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 rows={5}
-                style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '8px 10px', borderRadius: 6, fontSize: 12, fontFamily: 'inherit', resize: 'vertical' }}
+                style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '8px 10px', borderRadius: 6, fontSize: 16, fontFamily: 'inherit', resize: 'vertical' }}
               />
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={saveNotes} disabled={busy} style={primaryBtn}>Save</button>

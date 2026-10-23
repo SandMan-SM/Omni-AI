@@ -107,7 +107,7 @@ export function NewsletterCaptureMini({
             color: "#fafafa",
             padding: "10px 12px",
             borderRadius: 8,
-            fontSize: 14,
+            fontSize: 16,
           }}
         />
         <button

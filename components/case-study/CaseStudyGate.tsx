@@ -115,7 +115,7 @@ export default function CaseStudyGate({ children }: { children: React.ReactNode 
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Benji / Fred / $Mafi"
               required
-              className="mt-2 w-full rounded-md border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-amber-400 outline-none"
+              className="mt-2 w-full rounded-md border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-base text-zinc-100 placeholder:text-zinc-600 focus:border-amber-400 outline-none"
             />
           </label>
           <label className="block">
@@ -125,7 +125,7 @@ export default function CaseStudyGate({ children }: { children: React.ReactNode 
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="mt-2 w-full rounded-md border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-sm text-zinc-100 focus:border-amber-400 outline-none"
+              className="mt-2 w-full rounded-md border border-zinc-700 bg-zinc-900/60 px-4 py-3 text-base text-zinc-100 focus:border-amber-400 outline-none"
             />
           </label>
 

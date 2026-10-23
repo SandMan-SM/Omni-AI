@@ -201,7 +201,7 @@ export function WebinarRegistrationModal({ isOpen, onClose }: WebinarRegistratio
           >
             <button
               onClick={handleClose}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors z-20"
+              className="absolute top-2 right-2 z-20 inline-flex h-11 w-11 items-center justify-center text-gray-400 hover:text-white transition-colors"
               data-testid="button-close-registration"
             >
               <X className="w-5 h-5" />

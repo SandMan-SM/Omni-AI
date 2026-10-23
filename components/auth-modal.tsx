@@ -163,7 +163,7 @@ export function AuthModal({
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-20 text-gray-500 hover:text-white transition-colors"
+              className="absolute top-2 right-2 z-20 inline-flex h-11 w-11 items-center justify-center text-gray-500 hover:text-white transition-colors"
               data-testid="button-close-auth"
             >
               <X className="w-5 h-5" />
@@ -204,9 +204,10 @@ export function AuthModal({
                 <Input
                   type="text"
                   placeholder="Username"
+                  aria-label="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                   required
                   data-testid="input-username"
                 />
@@ -217,9 +218,10 @@ export function AuthModal({
                 <Input
                   type="password"
                   placeholder="Password"
+                  aria-label="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 py-5"
+                  className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                   required
                   data-testid="input-password"
                 />

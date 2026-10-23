@@ -495,7 +495,7 @@ function ReservationModal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
+      className="fixed inset-0 h-[100dvh] z-[100] flex items-center justify-center bg-black/80 p-4 backdrop-blur-md"
       role="dialog"
       aria-modal="true"
       aria-labelledby="reservation-title"
@@ -503,7 +503,7 @@ function ReservationModal({
         if (event.currentTarget === event.target) onClose();
       }}
     >
-      <div className="relative w-full max-w-lg overflow-hidden rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl shadow-purple-950/30 sm:p-9">
+      <div className="relative w-full max-w-lg max-h-[90dvh] overflow-y-auto overscroll-contain rounded-3xl border border-white/10 bg-zinc-950 p-6 shadow-2xl shadow-purple-950/30 sm:p-9">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-br from-purple-500/20 via-blue-500/10 to-transparent"

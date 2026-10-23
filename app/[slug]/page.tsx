@@ -175,7 +175,7 @@ export default async function TrendingLandingPage({ params }: Props) {
           </Link>
           <Link
             href="/interlinked"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="inline-flex items-center min-h-[44px] text-sm text-gray-400 hover:text-white transition-colors"
           >
             Book a Call →
           </Link>

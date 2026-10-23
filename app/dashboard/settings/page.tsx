@@ -268,7 +268,7 @@ function Field({ label, value, onChange, placeholder, icon: Icon }: {
         {Icon && <Icon size={13} color="#555" />}
         <input
           value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-          style={{ flex: 1, background: 'transparent', border: 'none', color: '#e8e8e8', fontSize: 13, outline: 'none' }}
+          style={{ flex: 1, background: 'transparent', border: 'none', color: '#e8e8e8', fontSize: 16, outline: 'none' }}
         />
       </div>
     </div>

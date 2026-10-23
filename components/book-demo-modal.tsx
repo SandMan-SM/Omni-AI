@@ -347,6 +347,7 @@ export function BookDemoModal({
                     <User className={`absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 ${isMetaVariant ? "text-purple-200/55" : "text-amber-200/45"}`} />
                     <Input
                       placeholder="Full Name"
+                      aria-label="Full name"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       className={`h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 ${
@@ -364,6 +365,7 @@ export function BookDemoModal({
                     <Input
                       type="email"
                       placeholder="Email"
+                      aria-label="Email address"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className={`h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 ${
@@ -381,6 +383,7 @@ export function BookDemoModal({
                     <Input
                       type="tel"
                       placeholder="Phone Number"
+                      aria-label="Phone number"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className={`h-12 rounded-xl border-white/10 bg-white/[0.055] pl-10 text-white shadow-inner shadow-black/20 placeholder:text-white/35 ${

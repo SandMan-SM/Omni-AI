@@ -205,13 +205,13 @@ function Field({ label, value, onChange, placeholder, type, textarea }: {
       {textarea ? (
         <textarea value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} style={{
           width: '100%', minHeight: 80, background: '#0a0a0a', border: '1px solid #222',
-          borderRadius: 8, padding: 12, color: '#e8e8e8', fontSize: 13, lineHeight: 1.6,
+          borderRadius: 8, padding: 12, color: '#e8e8e8', fontSize: 16, lineHeight: 1.6,
           fontFamily: 'inherit', resize: 'vertical',
         }} />
       ) : (
         <input
           type={type ?? 'text'} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-          style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 13 }}
+          style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 16 }}
         />
       )}
     </div>

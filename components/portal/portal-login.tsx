@@ -39,6 +39,7 @@ export function PortalLogin({
                 setError(null);
               }}
               placeholder="Username"
+              aria-label="Username"
               autoComplete="off"
               autoCapitalize="none"
               className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/30 focus:border-purple-400/50 focus:outline-none"
@@ -51,6 +52,7 @@ export function PortalLogin({
                 setError(null);
               }}
               placeholder="Password"
+              aria-label="Password"
               autoComplete="off"
               className="w-full rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-white placeholder:text-white/30 focus:border-purple-400/50 focus:outline-none"
             />

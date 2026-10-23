@@ -293,7 +293,7 @@ export default async function SearchPage({
           </Link>
           <Link
             href="/book-now"
-            className="text-sm text-gray-400 hover:text-white transition-colors"
+            className="inline-flex items-center min-h-[44px] text-sm text-gray-400 hover:text-white transition-colors"
           >
             Book a Call →
           </Link>
@@ -360,7 +360,7 @@ export default async function SearchPage({
                   "linear-gradient(135deg, #fff5b8 0%, #ffd700 20%, #b8860b 45%, #ffd700 70%, #fff5b8 100%) border-box",
                 border: "2px solid transparent",
               }}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center px-4 h-9 rounded-lg font-semibold text-xs text-[#ffd700] shadow-[0_0_10px_rgba(255,215,0,0.25)] transition-all hover:brightness-125 active:scale-[0.98]"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 inline-flex items-center justify-center px-4 h-11 rounded-lg font-semibold text-xs text-[#ffd700] shadow-[0_0_10px_rgba(255,215,0,0.25)] transition-all hover:brightness-125 active:scale-[0.98]"
             >
               Search
             </button>

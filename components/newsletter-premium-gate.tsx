@@ -96,7 +96,7 @@ function PremiumUpsellModal({
           >
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+              className="absolute top-2 right-2 inline-flex h-11 w-11 items-center justify-center text-gray-500 hover:text-white transition-colors"
               data-testid="button-close-upsell"
               aria-label="Close upsell"
             >
@@ -212,7 +212,7 @@ export function NewsletterHeader() {
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-400/[0.07] px-3 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-300/40 hover:bg-violet-400/[0.10]"
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-400/[0.07] px-3 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-300/40 hover:bg-violet-400/[0.10]"
             >
               Dashboard
             </Link>
@@ -220,7 +220,7 @@ export function NewsletterHeader() {
             <button
               type="button"
               onClick={() => setAuthOpen(true)}
-              className="inline-flex h-9 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-400/[0.07] px-3 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-300/40 hover:bg-violet-400/[0.10]"
+              className="inline-flex h-11 items-center justify-center rounded-lg border border-violet-400/20 bg-violet-400/[0.07] px-3 text-sm font-semibold text-violet-200 transition-colors hover:border-violet-300/40 hover:bg-violet-400/[0.10]"
               data-testid="button-newsletter-subscribe"
             >
               Subscribe
