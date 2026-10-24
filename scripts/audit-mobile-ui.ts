@@ -25,9 +25,6 @@
 //                            whose height lands under 44px. The Tailwind tap
 //                            rule can only see class names, so every
 //                            inline-styled button was invisible to it.
-//   icon-button-missing-name an icon-only <button> with no accessible name.
-//                            A screen reader announces it as "button", so the
-//                            control is unusable without sight of the icon.
 //   form-control-missing-label a form control with no aria-label, no matching
 //                            <label htmlFor>, and no wrapping <label>.
 //   dead-internal-link        an href that resolves to no route. Next.js
@@ -58,6 +55,26 @@ type Finding = {
 };
 
 const ROOT = path.resolve(process.cwd());
+
+/**
+ * Every rule this gate knows about. The summary line reports this count, not
+ * the count of rules that happened to fire — a gate that prints "0 findings
+ * across 0 rules" reads like a gate that ran nothing. Any rule name used in
+ * a finding must appear here, so a typo in a rule name cannot silently
+ * disable the check that owns it.
+ */
+const RULE_NAMES = [
+  "ios-input-font-floor",
+  "grid-1fr-min-content",
+  "dead-href",
+  "image-missing-alt",
+  "tap-target-under-44",
+  "fixed-width-overflow",
+  "icon-button-missing-name",
+  "form-control-missing-label",
+  "inline-tap-target-under-44",
+  "dead-internal-link",
+] as const;
 const SCAN_DIRS = ["app", "components", "lib"];
 const SKIP_DIRS = new Set(["node_modules", ".next", ".next-prod", ".turbo", "dist", "build"]);
 const QUIET = process.argv.includes("--quiet");
@@ -726,6 +743,16 @@ function main() {
     byRule.get(f.rule)!.push(f);
   }
 
+  const unknownRules = [...byRule.keys()].filter(
+    (rule) => !(RULE_NAMES as readonly string[]).includes(rule),
+  );
+  if (unknownRules.length > 0) {
+    console.error(
+      `audit-mobile-ui: unknown rule name(s): ${unknownRules.join(", ")} — a rule that reports under a name not in RULE_NAMES is not being counted`,
+    );
+    process.exit(1);
+  }
+
   if (!QUIET) {
     for (const [rule, list] of [...byRule.entries()].sort()) {
       console.log(`\n${rule} (${list.length})`);
@@ -737,7 +764,7 @@ function main() {
 
   const total = findings.length;
   console.log(
-    `\nscanned ${files.length} files — ${total} finding${total === 1 ? "" : "s"} across ${byRule.size} rule${byRule.size === 1 ? "" : "s"}`,
+    `\nscanned ${files.length} files — ${total} finding${total === 1 ? "" : "s"} across ${RULE_NAMES.length} rule${RULE_NAMES.length === 1 ? "" : "s"}`,
   );
   if (total > 0) {
     console.log("Fix the findings above, or document why each one is acceptable.");
