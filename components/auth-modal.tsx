@@ -163,6 +163,7 @@ export function AuthModal({
           >
             <button
               onClick={onClose}
+              aria-label="Close"
               className="absolute top-2 right-2 z-20 inline-flex h-11 w-11 items-center justify-center text-gray-500 hover:text-white transition-colors"
               data-testid="button-close-auth"
             >

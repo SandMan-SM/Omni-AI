@@ -102,7 +102,8 @@ export default function GlobalError({
             onClick={reset}
             style={{
               cursor: "pointer",
-              height: 40,
+              height: 44,
+              minHeight: 44,
               padding: "0 20px",
               borderRadius: 12,
               border: "2px solid #ffd700",

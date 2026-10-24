@@ -63,6 +63,7 @@ export function ArenaNotifications({ isOpen, onClose, notifications, onMarkAsRea
               </div>
               <button
                 onClick={onClose}
+                aria-label="Close notifications"
                 className={`p-1 rounded-full transition-colors ${isDarkMode ? "hover:bg-white/10" : "hover:bg-gray-100"}`}
               >
                 <X className={`w-4 h-4 ${isDarkMode ? "text-gray-400" : "text-gray-500"}`} />

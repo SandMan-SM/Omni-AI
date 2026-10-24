@@ -279,6 +279,7 @@ export function BookDemoModal({
           ) : null}
           <button
             onClick={onClose}
+            aria-label="Close"
             className={`absolute right-4 top-4 z-20 inline-flex h-11 w-11 md:h-9 md:w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-white/45 transition-colors focus:outline-none focus:ring-2 ${
               isMetaVariant
                 ? "hover:border-purple-300/30 hover:bg-purple-400/10 hover:text-white focus:ring-purple-300/40"
@@ -423,6 +424,7 @@ export function BookDemoModal({
                 <div className="flex items-center gap-2 mb-4">
                   <button
                     onClick={() => setModalStep("form")}
+                    aria-label="Back to form"
                     className={`rounded-full p-1 text-white/45 transition-colors hover:bg-white/[0.06] ${
                       isMetaVariant ? "hover:text-purple-100" : "hover:text-amber-100"
                     }`}
@@ -438,6 +440,7 @@ export function BookDemoModal({
                 <div className="flex items-center justify-between mb-4">
                   <button
                     onClick={() => navigateCalendar("prev")}
+                    aria-label="Previous month"
                     className={`rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors ${
                       isMetaVariant
                         ? "hover:border-purple-300/25 hover:bg-purple-300/10"
@@ -452,6 +455,7 @@ export function BookDemoModal({
                   </span>
                   <button
                     onClick={() => navigateCalendar("next")}
+                    aria-label="Next month"
                     className={`rounded-xl border border-white/10 bg-white/[0.05] p-1.5 transition-colors ${
                       isMetaVariant
                         ? "hover:border-purple-300/25 hover:bg-purple-300/10"

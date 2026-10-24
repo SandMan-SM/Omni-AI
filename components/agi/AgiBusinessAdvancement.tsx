@@ -441,7 +441,7 @@ function OnboardModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
             <div style={{ fontSize: 16, fontWeight: 700 }}>Onboard new business</div>
             <div style={{ fontSize: 11, color: "#666", marginTop: 3 }}>Creates a tenant in omni_businesses with its own pipeline.</div>
           </div>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: "#666", cursor: "pointer" }}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" style={{ background: "none", border: "none", color: "#666", cursor: "pointer" }}><X size={18} /></button>
         </div>
 
         {err && <div style={{ padding: 10, background: "#2a0d0d", border: "1px solid #f8717140", color: "#f87171", fontSize: 12, borderRadius: 8 }}>{err}</div>}

@@ -272,11 +272,11 @@ function CampaignCard({ campaign, onEdit, onDelete, onToggle }: {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <button onClick={onToggle} style={iconBtn}>
+          <button onClick={onToggle} aria-label={active ? 'Pause campaign' : 'Resume campaign'} style={iconBtn}>
             {active ? <Pause size={13} /> : <Play size={13} />}
           </button>
-          <button onClick={onEdit} style={iconBtn}><Edit3 size={13} /></button>
-          <button onClick={onDelete} style={{ ...iconBtn, color: '#f87171', borderColor: '#f8717140' }}><Trash2 size={13} /></button>
+          <button onClick={onEdit} aria-label="Edit campaign" style={iconBtn}><Edit3 size={13} /></button>
+          <button onClick={onDelete} aria-label="Delete campaign" style={{ ...iconBtn, color: '#f87171', borderColor: '#f8717140' }}><Trash2 size={13} /></button>
         </div>
       </div>
 
@@ -362,7 +362,7 @@ function CampaignEditor({ campaign, onSave, onCancel }: {
     }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
         <h3 style={{ fontSize: 16, fontWeight: 700 }}>{campaign ? 'Edit Campaign' : 'New Campaign'}</h3>
-        <button onClick={onCancel} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>
+        <button onClick={onCancel} aria-label="Close campaign editor" style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', minWidth: 44, minHeight: 44 }}>
           <X size={16} />
         </button>
       </div>
@@ -439,4 +439,6 @@ const iconBtn: React.CSSProperties = {
   background: '#161616', border: '1px solid #222', color: '#666',
   padding: 8, borderRadius: 6, cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
+  // 44px minimum touch target — the icon itself is only 13px.
+  minWidth: 44, minHeight: 44,
 };

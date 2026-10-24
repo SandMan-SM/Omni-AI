@@ -921,7 +921,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                   Imported {importResult.added} subscriber{importResult.added !== 1 ? "s" : ""}
                   {importResult.skipped > 0 && ` · ${importResult.skipped} skipped`}
                 </span>
-                <button onClick={() => setImportResult(null)} className="text-gray-500 hover:text-white">
+                <button onClick={() => setImportResult(null)} aria-label="Dismiss import result" className="text-gray-500 hover:text-white">
                   <X className="w-3 h-3" />
                 </button>
               </div>
@@ -942,7 +942,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 <CardContent className="p-4 space-y-2">
                   <div className="flex items-center justify-between">
                     <p className="text-xs font-medium text-white">Add Subscriber</p>
-                    <button onClick={() => setShowAddSub(false)} className="text-gray-500 hover:text-white">
+                    <button onClick={() => setShowAddSub(false)} aria-label="Close add subscriber" className="text-gray-500 hover:text-white">
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1156,7 +1156,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
             >
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-white">Edit Subscriber</h3>
-                <button onClick={() => setEditingSub(null)} className="text-gray-500 hover:text-white">
+                <button onClick={() => setEditingSub(null)} aria-label="Close edit subscriber" className="text-gray-500 hover:text-white">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -1272,7 +1272,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
                 <h3 className="text-sm font-semibold text-white flex items-center gap-2">
                   <UserPlus className="w-4 h-4 text-blue-400" /> Import Users as Subscribers
                 </h3>
-                <button onClick={() => setShowImportUsers(false)} className="text-gray-500 hover:text-white">
+                <button onClick={() => setShowImportUsers(false)} aria-label="Close import users" className="text-gray-500 hover:text-white">
                   <X className="w-4 h-4" />
                 </button>
               </div>

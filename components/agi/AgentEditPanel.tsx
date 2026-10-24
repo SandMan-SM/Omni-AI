@@ -188,7 +188,7 @@ export function AgentEditPanel({
               {isNew ? "Creates a row in profiles + ranks it in the arena" : `ID: ${agentId?.slice(0, 8)}…`}
             </div>
           </div>
-          <button onClick={onClose} style={iconBtn}><X size={18} /></button>
+          <button onClick={onClose} aria-label="Close" style={iconBtn}><X size={18} /></button>
         </div>
 
         {err && (
@@ -476,6 +476,10 @@ const iconBtn: React.CSSProperties = {
   display: "inline-flex",
   alignItems: "center",
   gap: 5,
+  // 44px minimum touch target — this style also sizes the icon-only close
+  // button, whose glyph is 18px.
+  minWidth: 44,
+  minHeight: 44,
   fontSize: 12,
   fontWeight: 600,
 };

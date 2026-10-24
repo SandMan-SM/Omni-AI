@@ -70,7 +70,7 @@ export function AffiliateConsultationModal({ isOpen, onClose }: Props) {
             className="relative w-full max-w-md rounded-2xl bg-gray-900 border border-white/10 max-h-[90dvh] flex flex-col overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
-            <button onClick={onClose} className="absolute top-2 right-2 z-20 inline-flex h-11 w-11 items-center justify-center text-gray-400 hover:text-white">
+            <button onClick={onClose} aria-label="Close" className="absolute top-2 right-2 z-20 inline-flex h-11 w-11 items-center justify-center text-gray-400 hover:text-white">
               <X className="w-5 h-5" />
             </button>
 

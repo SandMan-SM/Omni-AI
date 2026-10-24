@@ -504,7 +504,7 @@ function MeetingPanel({
               </span>
             </div>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 4 }}><X size={20} /></button>
+          <button onClick={onClose} aria-label="Close meeting details" style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 4, minWidth: 44, minHeight: 44 }}><X size={20} /></button>
         </div>
 
         {/* Time block — view or edit */}

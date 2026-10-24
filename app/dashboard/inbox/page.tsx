@@ -462,7 +462,7 @@ export default function InboxPage() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
               <h3 style={{ fontSize: 16, fontWeight: 700 }}>Log a manual reply</h3>
-              <button onClick={() => setLogOpen(false)} style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer' }}>
+              <button onClick={() => setLogOpen(false)} aria-label="Close reply logger" style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', minWidth: 44, minHeight: 44 }}>
                 <X size={16} />
               </button>
             </div>

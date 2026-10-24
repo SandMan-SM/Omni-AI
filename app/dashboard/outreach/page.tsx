@@ -153,10 +153,10 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
             {asset.replied_at && <span> · replied {timeAgo(asset.replied_at)}</span>}
           </div>
         </div>
-        <button onClick={() => setEditing(e => !e)} style={iconBtnStyle}>
+        <button onClick={() => setEditing(e => !e)} aria-label="Edit email draft" style={iconBtnStyle}>
           <Edit3 size={13} />
         </button>
-        <button onClick={() => onCopy(`${subj ? subj + '\n\n' : ''}${bodyOverride}`)} style={iconBtnStyle}>
+        <button onClick={() => onCopy(`${subj ? subj + '\n\n' : ''}${bodyOverride}`)} aria-label="Copy email" style={iconBtnStyle}>
           <Copy size={13} />
         </button>
       </div>
@@ -273,6 +273,8 @@ const iconBtnStyle: React.CSSProperties = {
   background: '#161616', border: '1px solid #222', color: '#666',
   padding: 6, borderRadius: 6, cursor: 'pointer',
   display: 'flex', alignItems: 'center', justifyContent: 'center',
+  // 44px minimum touch target — the icon itself is only 13px.
+  minWidth: 44, minHeight: 44,
 };
 
 /* ─── Lead Picker Sidebar ─── */

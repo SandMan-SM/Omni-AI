@@ -631,7 +631,7 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
                   <Button size="sm" className="bg-red-600 hover:bg-red-500 border-0 text-white h-7 text-xs gap-1 flex-shrink-0" onClick={handleDelete} disabled={deleting}>
                     {deleting ? <Loader2 className="w-3 h-3 animate-spin" /> : "Confirm Delete"}
                   </Button>
-                  <button className="text-gray-500 hover:text-white transition-colors ml-1" onClick={() => setConfirmDelete(false)}>
+                  <button aria-label="Cancel delete" className="text-gray-500 hover:text-white transition-colors ml-1" onClick={() => setConfirmDelete(false)}>
                     <X className="w-3.5 h-3.5" />
                   </button>
                 </div>
