@@ -738,6 +738,7 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
           <div className="relative">
             <select
               value={selectedProfile?.id || ""}
+              aria-label="Newsletter business"
               onChange={e => {
                 const id = e.target.value;
                 setSelectedProfile(id ? newsletterBusinesses.find(p => p.id === id) || null : null);

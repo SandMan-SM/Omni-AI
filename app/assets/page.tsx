@@ -295,6 +295,7 @@ export default function AssetsPage() {
           <select
             value={activeBizId ?? ""}
             onChange={e => setActiveBusiness(e.target.value || null)}
+            aria-label="Active business"
             style={{
               marginLeft: "auto",
               background: "#0a0a0a", border: "1px solid #2a2a2a", color: "#e8e8e8",

@@ -236,6 +236,30 @@ function jsxExprText(expr: ts.Expression): string | null {
   return null;
 }
 
+/**
+ * The accessible name of a form control, or null when it has none. A control
+ * is named by an aria-label, by a `<label htmlFor>` pointing at its id, or by
+ * being wrapped in a `<label>` element.
+ */
+function controlAccessibleName(
+  el: ts.JsxElement,
+  htmlFor: Set<string>,
+  wrappedInLabel: boolean,
+): string | null {
+  let id: string | null = null;
+  for (const attr of el.openingElement.attributes.properties) {
+    if (!ts.isJsxAttribute(attr)) continue;
+    const name = attr.name.text;
+    if (name === "aria-label" || name === "aria-labelledby") return name;
+    if (name === "id" && attr.initializer && ts.isStringLiteral(attr.initializer)) {
+      id = attr.initializer.text;
+    }
+  }
+  if (id && htmlFor.has(id)) return "label";
+  if (wrappedInLabel) return "label";
+  return null;
+}
+
 /** The accessible name of a `<button>` element, or null when it has none. */
 function buttonAccessibleName(el: ts.JsxElement): string | null {
   for (const attr of el.openingElement.attributes.properties) {
@@ -458,7 +482,23 @@ function auditFile(file: string, src: string, findings: Finding[]) {
   const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
   /** Start offsets of buttons whose only content is an icon (no text at all). */
   const iconOnlyButtons = new Set<number>();
-  const visit = (node: ts.Node) => {
+
+  // Every `htmlFor` in the file, so a control's id can be matched to its label.
+  const htmlFor = new Set<string>();
+  const collectHtmlFor = (node: ts.Node) => {
+    if (
+      ts.isJsxAttribute(node) &&
+      node.name.text === "htmlFor" &&
+      node.initializer &&
+      ts.isStringLiteral(node.initializer)
+    ) {
+      htmlFor.add(node.initializer.text);
+    }
+    ts.forEachChild(node, collectHtmlFor);
+  };
+  collectHtmlFor(sf);
+
+  const visit = (node: ts.Node, inLabel: boolean, inComponent: boolean) => {
     if (ts.isJsxElement(node)) {
       const tag = node.openingElement.tagName.getText(sf);
       if (tag === "button") {
@@ -474,10 +514,38 @@ function auditFile(file: string, src: string, findings: Finding[]) {
           });
         }
       }
+      if (tag === "input" || tag === "textarea" || tag === "select") {
+        let type = "";
+        for (const attr of node.openingElement.attributes.properties) {
+          if (!ts.isJsxAttribute(attr)) continue;
+          if (attr.name.text === "type" && attr.initializer && ts.isStringLiteral(attr.initializer)) {
+            type = attr.initializer.text;
+          }
+        }
+        const notNameable = ["hidden", "checkbox", "radio", "submit", "button", "range", "color", "file"];
+        if (!notNameable.includes(type)) {
+          // A control passed to a custom component may be wrapped in a label
+          // by that component's own markup, which this file cannot see.
+          if (!inComponent && controlAccessibleName(node, htmlFor, inLabel) === null) {
+            findings.push({
+              rule: "form-control-missing-label",
+              file: rel,
+              line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
+              detail: `<${tag}> has no aria-label, no matching <label htmlFor>, and no wrapping <label>`,
+            });
+          }
+        }
+      }
     }
-    ts.forEachChild(node, visit);
+    const isLabel = ts.isJsxElement(node) && node.openingElement.tagName.getText(sf) === "label";
+    const nextInLabel = inLabel || isLabel;
+    // A capitalised tag is a React component, not an HTML element.
+    const isComponent =
+      ts.isJsxElement(node) && /^[A-Z]/.test(node.openingElement.tagName.getText(sf));
+    const nextInComponent = inComponent || isComponent;
+    ts.forEachChild(node, (child) => visit(child, nextInLabel, nextInComponent));
   };
-  visit(sf);
+  visit(sf, false, false);
 
   // 8. Tap targets under 44px that are sized by an inline style.
   //    The Tailwind rule above only sees class names, so a button styled by a

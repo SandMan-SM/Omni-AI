@@ -415,7 +415,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
         <div className="px-5 py-4 space-y-3 max-h-[60vh] overflow-y-auto">
           {/* Assign to user */}
           <Field label="Assign to Business">
-            <select value={form.profile_id} onChange={e => set("profile_id")(e.target.value)}
+            <select value={form.profile_id} onChange={e => set("profile_id")(e.target.value)} aria-label="Assign to Business"
               className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-purple-500/50 h-11 md:h-9">
               <option value="" className="bg-[#111]">Unassigned (Admin only)</option>
               {users.map(u => (
@@ -434,7 +434,7 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Status">
-              <select value={form.status} onChange={e => set("status")(e.target.value)}
+              <select value={form.status} onChange={e => set("status")(e.target.value)} aria-label="Status"
                 className="w-full bg-white/5 border border-white/10 rounded-md px-3 py-2 text-base sm:text-sm text-white focus:outline-none focus:border-purple-500/50 h-11 md:h-9">
                 {STATUS_OPTIONS.map(s => (
                   <option key={s} value={s} className="bg-[#111]">{s.charAt(0).toUpperCase() + s.slice(1)}</option>
