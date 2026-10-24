@@ -18,6 +18,13 @@
 //   image-missing-alt        next/image without alt.
 //   tap-target-under-44      WCAG / iOS HIG minimum touch target.
 //   fixed-width-overflow     hardcoded px widths wider than a 375px viewport.
+//   icon-button-missing-name an icon-only <button> with no accessible name.
+//                            A screen reader announces it as "button", so the
+//                            control is unusable without sight of the icon.
+//   inline-tap-target-under-44 a <button> sized by an inline `style` object
+//                            whose height lands under 44px. The Tailwind tap
+//                            rule can only see class names, so every
+//                            inline-styled button was invisible to it.
 //
 // Read-only. It never writes a file and never touches the network.
 //
@@ -28,6 +35,7 @@
 
 import * as fs from "fs";
 import * as path from "path";
+import * as ts from "typescript";
 
 type Finding = {
   rule: string;
@@ -119,6 +127,186 @@ function lineOf(src: string, index: number): number {
   return line;
 }
 
+/**
+ * Blanks out comments, preserving every byte offset and newline, so a
+ * `<button` mentioned in a doc comment is not parsed as a real element.
+ */
+function stripComments(src: string): string {
+  let out = src;
+  // Block comments.
+  out = out.replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, " "));
+  // Line comments (// to end of line), but not `://` inside a URL string.
+  out = out.replace(/(^|[^:"'`\\])\/\/[^\n]*/g, (m, p1) => p1 + m.slice(p1.length).replace(/[^\n]/g, " "));
+  return out;
+}
+
+/**
+ * The inner content of a JSX element, matching nested tags of the same name.
+ * Returns undefined when the element is never closed.
+ */
+function innerOf(src: string, openTagEnd: number, tag: string): string | undefined {
+  const re = new RegExp(`<${tag}\\b|</${tag}>`, "g");
+  re.lastIndex = openTagEnd;
+  let depth = 1;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src))) {
+    if (m[0] === `</${tag}>`) {
+      depth--;
+      if (depth === 0) return src.slice(openTagEnd, m.index);
+    } else {
+      depth++;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * The accessible name of a JSX element, following the shape of the
+ * accessible-name computation: explicit labels first, then descendant text.
+ *
+ * This walks the TypeScript AST rather than the raw text, because the text
+ * form of a name is not decidable with a regex — `{active ? <Pause/> : <Play/>}`
+ * renders no text while `{u.name || u.email}` renders text, and both look
+ * alike in the source.
+ */
+function jsxText(node: ts.Node): string | null {
+  if (ts.isJsxText(node)) {
+    const t = node.text.trim();
+    return t.length ? t : null;
+  }
+  if (ts.isJsxExpression(node)) {
+    return node.expression ? jsxExprText(node.expression) : null;
+  }
+  if (ts.isJsxElement(node)) {
+    return jsxChildrenText(node.children);
+  }
+  if (ts.isJsxFragment(node)) {
+    return jsxChildrenText(node.children);
+  }
+  return null;
+}
+
+function jsxChildrenText(children: ts.NodeArray<ts.JsxChild> | ts.NodeArray<ts.JsxChild>): string | null {
+  for (const child of children) {
+    const t = jsxText(child);
+    if (t) return t;
+  }
+  return null;
+}
+
+/** The text an expression renders, if any. */
+function jsxExprText(expr: ts.Expression): string | null {
+  if (ts.isStringLiteral(expr) || ts.isNoSubstitutionTemplateLiteral(expr)) return expr.text;
+  if (ts.isNumericLiteral(expr)) return String(expr.text);
+  if (ts.isIdentifier(expr)) return expr.text;
+  if (ts.isPropertyAccessExpression(expr) || ts.isElementAccessExpression(expr)) return expr.getText();
+  if (ts.isNonNullExpression(expr)) return jsxExprText(expr.expression);
+  if (ts.isParenthesizedExpression(expr)) return jsxExprText(expr.expression);
+  if (ts.isConditionalExpression(expr)) {
+    return jsxExprText(expr.whenTrue) ?? jsxExprText(expr.whenFalse);
+  }
+  if (ts.isBinaryExpression(expr)) {
+    // `a || b` and `a ?? b` render whichever side is truthy; `a && b`
+    // renders only `b`.
+    const kind = expr.operatorToken.kind;
+    if (kind === ts.SyntaxKind.BarBarToken || kind === ts.SyntaxKind.QuestionQuestionToken) {
+      return jsxExprText(expr.left) ?? jsxExprText(expr.right);
+    }
+    if (kind === ts.SyntaxKind.AmpersandAmpersandToken) {
+      return jsxExprText(expr.right);
+    }
+    // String concatenation renders text.
+    if (kind === ts.SyntaxKind.PlusToken) {
+      return jsxExprText(expr.left) ?? jsxExprText(expr.right);
+    }
+    return null;
+  }
+  if (ts.isJsxElement(expr) || ts.isJsxFragment(expr)) return jsxText(expr);
+  if (ts.isCallExpression(expr)) {
+    // Array methods return a list of elements, not text.
+    if (ts.isPropertyAccessExpression(expr.expression)) {
+      const name = expr.expression.name.text;
+      if (["map", "filter", "forEach", "reduce", "flatMap", "some", "every"].includes(name)) {
+        return null;
+      }
+    }
+    // Anything else — a formatter, a string method — renders its return value.
+    return expr.getText();
+  }
+  return null;
+}
+
+/** The accessible name of a `<button>` element, or null when it has none. */
+function buttonAccessibleName(el: ts.JsxElement): string | null {
+  for (const attr of el.openingElement.attributes.properties) {
+    if (!ts.isJsxAttribute(attr)) continue;
+    const name = attr.name.text;
+    if (name === "aria-label" || name === "aria-labelledby") return name;
+    if (name === "title" && attr.initializer) return "title";
+  }
+  const text = buttonVisibleText(el);
+  if (text) return text;
+  // A visually hidden label also names the button.
+  const classes = classStrings(el.openingElement.getText()).join(" ");
+  if (/sr-only/.test(classes)) return "sr-only";
+  return null;
+}
+
+/**
+ * The text a `<button>` renders, or null when it renders nothing but an
+ * icon. This is what makes a control icon-only — it is independent of
+ * whether the button carries an aria-label.
+ */
+function buttonVisibleText(el: ts.JsxElement): string | null {
+  const text = jsxChildrenText(el.children);
+  if (text) return text;
+  // An image with alt text names the button it contains.
+  for (const child of el.children) {
+    if (!ts.isJsxElement(child)) continue;
+    const tag = child.openingElement.tagName.getText();
+    if (tag !== "img" && tag !== "Image") continue;
+    for (const attr of child.openingElement.attributes.properties) {
+      if (ts.isJsxAttribute(attr) && attr.name.text === "alt") return "alt";
+    }
+  }
+  return null;
+}
+
+/**
+ * Local `const NAME = { ... }` style objects, so a `style={iconBtn}` on a
+ * button can be resolved to the padding/height it actually applies.
+ */
+function localStyleObjects(src: string): Map<string, string> {
+  const out = new Map<string, string>();
+  const re = /const\s+([A-Za-z_$][\w$]*)\s*(?::\s*React\.CSSProperties\s*)?=\s*\{/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(src))) {
+    let i = m.index + m[0].length;
+    let depth = 1;
+    for (; i < src.length; i++) {
+      if (src[i] === "{") depth++;
+      else if (src[i] === "}") {
+        depth--;
+        if (depth === 0) break;
+      }
+    }
+    out.set(m[1], src.slice(m.index + m[0].length, i));
+  }
+  return out;
+}
+
+/** A numeric px value for a style key, if the style object sets one. */
+function stylePx(style: string, key: string): number | null {
+  // Bare number: `padding: 8`
+  const bare = style.match(new RegExp(`(?:^|[,{]\\s*)${key}\\s*:\\s*(\\d+(?:\\.\\d+)?)`));
+  if (bare) return parseFloat(bare[1]);
+  // Quoted px value: `padding: "8px 10px"`
+  const quoted = style.match(
+    new RegExp(`(?:^|[,{]\\s*)${key}\\s*:\\s*["'\`](\\d+(?:\\.\\d+)?)px`),
+  );
+  return quoted ? parseFloat(quoted[1]) : null;
+}
+
 /** The mobile (unprefixed) font size declared in a class list, if any. */
 function baseFontSize(classes: string): number | null {
   let size: number | null = null;
@@ -158,10 +346,13 @@ function fixedHeight(classes: string): number | null {
 function auditFile(file: string, src: string, findings: Finding[]) {
   const rel = path.relative(ROOT, file);
   const at = (index: number) => lineOf(src, index);
+  // Comments are blanked (offsets preserved) so a `<button` in a doc comment
+  // is not mistaken for a real element.
+  const code = stripComments(src);
 
   // 1. iOS input font floor.
   for (const tag of ["input", "textarea", "select"]) {
-    for (const { body, index } of tagBodies(src, tag)) {
+    for (const { body, index } of tagBodies(code, tag)) {
       if (/\btype\s*=\s*["'](hidden|checkbox|radio|submit|button|range|color|file)["']/.test(body)) continue;
       const classes = classStrings(body).join(" ");
       const inline = body.match(/fontSize\s*:\s*(\d+(?:\.\d+)?)/);
@@ -180,7 +371,7 @@ function auditFile(file: string, src: string, findings: Finding[]) {
   }
 
   // 2. Grid tracks with a min-content minimum.
-  for (const { body, index } of tagBodies(src, "div")) {
+  for (const { body, index } of tagBodies(code, "div")) {
     for (const classes of classStrings(body)) {
       const grids = classes.match(/grid-cols-\[([^\]]+)\]/g) ?? [];
       for (const g of grids) {
@@ -198,7 +389,7 @@ function auditFile(file: string, src: string, findings: Finding[]) {
   }
 
   // 3. Dead links.
-  for (const { body, index } of tagBodies(src, "a")) {
+  for (const { body, index } of tagBodies(code, "a")) {
     if (/href\s*=\s*(["']#["']|\{`#`\}|\{#\})/.test(body)) {
       findings.push({
         rule: "dead-href",
@@ -210,7 +401,7 @@ function auditFile(file: string, src: string, findings: Finding[]) {
   }
 
   // 4. Images without alt text.
-  for (const { body, index } of tagBodies(src, "Image")) {
+  for (const { body, index } of tagBodies(code, "Image")) {
     if (!/\balt\s*=/.test(body)) {
       findings.push({
         rule: "image-missing-alt",
@@ -223,7 +414,7 @@ function auditFile(file: string, src: string, findings: Finding[]) {
 
   // 5. Tap targets under 44px.
   for (const tag of ["button", "a"]) {
-    for (const { body, index } of tagBodies(src, tag)) {
+    for (const { body, index } of tagBodies(code, tag)) {
       if (tag === "a" && !/href\s*=/.test(body)) continue;
       const classes = classStrings(body).join(" ");
       if (!classes) continue;
@@ -242,7 +433,7 @@ function auditFile(file: string, src: string, findings: Finding[]) {
   // 6. Hardcoded widths wider than a 375px viewport.
   //    Decorative glows are absolutely positioned and clipped by their
   //    parent's `overflow-hidden`, so a wide box there is intentional.
-  for (const { body, index } of tagBodies(src, "div")) {
+  for (const { body, index } of tagBodies(code, "div")) {
     for (const classes of classStrings(body)) {
       if (/\b(absolute|fixed)\b/.test(classes) || /blur-/.test(classes)) continue;
       const w = classes.match(/(?<![a-z-])(?:min-)?w-\[\d+px\]/g) ?? [];
@@ -256,6 +447,101 @@ function auditFile(file: string, src: string, findings: Finding[]) {
             detail: `${decl} — wider than a 375px viewport`,
           });
         }
+      }
+    }
+  }
+
+  // 7. Icon-only buttons with no accessible name.
+  //    A button whose only content is an icon is announced as "button" by a
+  //    screen reader unless it carries an aria-label (or sr-only text), which
+  //    makes the control unusable without sight of the glyph.
+  const sf = ts.createSourceFile(file, src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+  /** Start offsets of buttons whose only content is an icon (no text at all). */
+  const iconOnlyButtons = new Set<number>();
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxElement(node)) {
+      const tag = node.openingElement.tagName.getText(sf);
+      if (tag === "button") {
+        const start = node.getStart(sf);
+        if (buttonVisibleText(node) === null) iconOnlyButtons.add(start);
+        if (buttonAccessibleName(node) === null) {
+          findings.push({
+            rule: "icon-button-missing-name",
+            file: rel,
+            line: sf.getLineAndCharacterOfPosition(start).line + 1,
+            detail:
+              "<button> renders only an icon and has no aria-label / sr-only text — a screen reader announces it as an unnamed button",
+          });
+        }
+      }
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(sf);
+
+  // 8. Tap targets under 44px that are sized by an inline style.
+  //    The Tailwind rule above only sees class names, so a button styled by a
+  //    `style={iconBtn}` object (dashboard surfaces) was invisible to it.
+  const styleObjects = localStyleObjects(code);
+  for (const { body, index } of tagBodies(code, "button")) {
+    const classes = classStrings(body).join(" ");
+    if (/\bh-11\b|\bh-12\b|\bmin-h-11\b|\bmin-h-\[44px\]/.test(classes)) continue;
+    const styleMatch = body.match(/\bstyle\s*=/);
+    if (!styleMatch) continue;
+    // Collect every style object referenced by this button: `style={{ ...a }}`,
+    // `style={a}`, `style={{ ...a, color: '#fff' }}`.
+    const refs = new Set<string>();
+    const inline = body.slice(styleMatch.index);
+    const spreadRe = /\.\.\.([A-Za-z_$][\w$]*)/g;
+    let m: RegExpExecArray | null;
+    while ((m = spreadRe.exec(inline))) refs.add(m[1]);
+    const direct = inline.match(/style\s*=\s*\{\{?\s*([A-Za-z_$][\w$]*)\s*[,}]/);
+    if (direct) refs.add(direct[1]);
+
+    let height: number | null = null;
+    let minHeight: number | null = null;
+    let padding: number | null = null;
+    for (const ref of refs) {
+      const obj = styleObjects.get(ref);
+      if (!obj) continue;
+      height = stylePx(obj, "height") ?? height;
+      minHeight = stylePx(obj, "minHeight") ?? minHeight;
+      padding = stylePx(obj, "padding") ?? stylePx(obj, "paddingTop") ?? padding;
+    }
+    // Keys set inline alongside the spread win over the shared object.
+    height = stylePx(inline, "height") ?? height;
+    minHeight = stylePx(inline, "minHeight") ?? minHeight;
+    padding = stylePx(inline, "padding") ?? stylePx(inline, "paddingTop") ?? padding;
+
+    // A full-width button is a large target whatever its height — the 44px
+    // rule is about small square icon buttons, not wide CTA rows.
+    if (/width\s*:\s*["']?100%/.test(inline)) continue;
+    const styleWidth = stylePx(inline, "width");
+    if (styleWidth !== null && styleWidth >= 44) continue;
+    const declared = height ?? minHeight;
+    if (declared !== null && declared < 44) {
+      findings.push({
+        rule: "inline-tap-target-under-44",
+        file: rel,
+        line: at(index),
+        detail: `<button> is ${declared}px tall via an inline style — under the 44px minimum touch target`,
+      });
+      continue;
+    }
+    // No explicit height. The rendered height is padding*2 + the content, and
+    // the content height is only knowable when the button renders nothing but
+    // an icon — a text button's line box can be tall enough on its own. So the
+    // padding heuristic is applied to icon-only buttons only, and only below
+    // 12px of padding, where even a 20px glyph cannot reach 44px.
+    if (declared === null && padding !== null && padding < 12) {
+      const start = code.indexOf("<button", index);
+      if (start >= 0 && iconOnlyButtons.has(start)) {
+        findings.push({
+          rule: "inline-tap-target-under-44",
+          file: rel,
+          line: at(index),
+          detail: `<button> renders only an icon with ${padding}px inline padding — under the 44px minimum touch target`,
+        });
       }
     }
   }
