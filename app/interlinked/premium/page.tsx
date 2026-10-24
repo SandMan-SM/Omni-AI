@@ -141,7 +141,7 @@ export default function PremiumPage() {
                   <ArrowRight className="w-4 h-4 ml-2" />
                 </Button>
               </Link>
-              <Link href="/auth" className="w-full sm:w-auto">
+              <Link href="/login" className="w-full sm:w-auto">
                 <Button variant="outline" className="w-full sm:w-auto border-white/20 text-white hover:bg-white/5 px-8 py-6 text-base rounded-xl">
                   Sign in
                 </Button>

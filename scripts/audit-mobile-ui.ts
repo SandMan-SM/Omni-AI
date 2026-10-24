@@ -25,6 +25,19 @@
 //                            whose height lands under 44px. The Tailwind tap
 //                            rule can only see class names, so every
 //                            inline-styled button was invisible to it.
+//   icon-button-missing-name an icon-only <button> with no accessible name.
+//                            A screen reader announces it as "button", so the
+//                            control is unusable without sight of the icon.
+//   form-control-missing-label a form control with no aria-label, no matching
+//                            <label htmlFor>, and no wrapping <label>.
+//   dead-internal-link        an href that resolves to no route. Next.js
+//                            serves the not-found page with a 200 status, so
+//                            the break is invisible to a status check.
+//
+// The accessible-name rules walk the TypeScript AST rather than the source
+// text: whether an expression renders text is not decidable with a regex —
+// {active ? <Pause/> : <Play/>} renders none while {u.name || u.email}
+// renders text, and both look alike in the source.
 //
 // Read-only. It never writes a file and never touches the network.
 //
@@ -367,7 +380,7 @@ function fixedHeight(classes: string): number | null {
   return max;
 }
 
-function auditFile(file: string, src: string, findings: Finding[]) {
+function auditFile(file: string, src: string, findings: Finding[], routes: string[]) {
   const rel = path.relative(ROOT, file);
   const at = (index: number) => lineOf(src, index);
   // Comments are blanked (offsets preserved) so a `<button` in a doc comment
@@ -613,14 +626,98 @@ function auditFile(file: string, src: string, findings: Finding[]) {
       }
     }
   }
+
+  // 9. Internal links that resolve to nothing.
+  //    Next.js serves the not-found page with a 200 status, so a link to a
+  //    route that does not exist is invisible to a status check and to the
+  //    build — it only shows up as a customer staring at "Not Found".
+  //
+  //    Only paths with two or more segments are checked. The root route
+  //    `/[slug]` is the daily landing page, which is backed by a database
+  //    row rather than the filesystem, so a single-segment path may be a
+  //    valid landing page or a typo — a static check cannot tell them apart.
+  const linkRe = /(?:href|redirect)\s*=\s*\{\s*["'`]([^"'`]+)["'`]/g;
+  const linkRe2 = /(?:href|redirect)\s*=\s*["'`]([^"'`]+)["'`]/g;
+  const seenLinks = new Set<string>();
+  for (const re of [linkRe, linkRe2]) {
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(code))) {
+      const raw = m[1];
+      if (!raw.startsWith("/")) continue;
+      if (raw.includes("{")) continue; // built at runtime
+      const href = raw.split("#")[0].split("?")[0];
+      if (!href || seenLinks.has(href)) continue;
+      seenLinks.add(href);
+      const normalized = href.length > 1 ? href.replace(/\/$/, "") : href;
+      if (normalized.split("/").filter(Boolean).length < 2) continue;
+      if (routes.some((r) => routeMatches(r, normalized))) continue;
+      if (isStaticFile(ROOT, normalized)) continue;
+      findings.push({
+        rule: "dead-internal-link",
+        file: rel,
+        line: at(m.index),
+        detail: `"${raw}" does not resolve to any route — Next.js serves the not-found page with a 200 status, so this looks like a working link`,
+      });
+    }
+  }
+}
+
+/**
+ * Every route the app serves, as path patterns. Route groups — `(group)` —
+ * do not appear in the URL, so they are dropped; dynamic segments stay as
+ * `[param]` so a link can be matched against them.
+ */
+function buildRouteTable(root: string): string[] {
+  const patterns: string[] = [];
+  const walkRoutes = (dir: string, prefix: string) => {
+    if (!fs.existsSync(dir)) return;
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name.startsWith("(") && entry.name.endsWith(")")) walkRoutes(full, prefix);
+        else walkRoutes(full, `${prefix}/${entry.name}`);
+      } else if (/^(page|route)\.(tsx|ts|jsx|js)$/.test(entry.name)) {
+        patterns.push(prefix === "" ? "/" : prefix);
+      }
+    }
+  };
+  walkRoutes(path.join(root, "app"), "");
+  return patterns;
+}
+
+/** Whether a URL path is served by a route pattern. */
+function routeMatches(pattern: string, href: string): boolean {
+  if (pattern === href) return true;
+  const p = pattern.split("/").filter(Boolean);
+  const h = href.split("/").filter(Boolean);
+  for (let i = 0; i < p.length; i++) {
+    const seg = p[i];
+    if (seg.startsWith("[...")) return h.length >= i; // catch-all
+    if (i >= h.length) return false;
+    if (seg.startsWith("[")) continue; // dynamic segment matches anything
+    if (seg !== h[i]) return false;
+  }
+  return p.length === h.length;
+}
+
+/**
+ * A path that resolves to a file rather than a route — a static asset in
+ * public/, or a metadata file served straight out of app/.
+ */
+function isStaticFile(root: string, href: string): boolean {
+  const rel = href.replace(/^\//, "");
+  if (fs.existsSync(path.join(root, "public", rel))) return true;
+  if (fs.existsSync(path.join(root, "app", rel))) return true;
+  return false;
 }
 
 function main() {
   const files = SCAN_DIRS.flatMap((d) => walk(path.join(ROOT, d)));
   const findings: Finding[] = [];
+  const routes = buildRouteTable(ROOT);
   for (const file of files) {
     const src = fs.readFileSync(file, "utf8");
-    auditFile(file, src, findings);
+    auditFile(file, src, findings, routes);
   }
 
   const byRule = new Map<string, Finding[]>();
