@@ -78,6 +78,15 @@ test('signed workflow binds all accepted fields and receiver purpose',()=>{
   assert.equal(trustedPartnerState(state,signingSecret,{...input,message:'changed'}),false);
 });
 
+test('application uses verified Mafi senders and the native human reply inbox',()=>{
+  const input=parsePartnerInput(valid());const state=buildPartnerState(input,'crm','1','lease');
+  assert.equal(state.customer.payload.from,'Mafi Empire <legacy@mafiempire.com>');
+  assert.equal(state.customer.payload.reply_to,'hello@mafiempire.com');
+  assert.equal(state.owner.payload.from,'New Lead Mafi Empire <notifications@mafiempire.com>');
+  assert.deepEqual(state.owner.payload.to,['sitanim8@gmail.com']);
+  assert.equal(state.owner.payload.reply_to,input.email);
+});
+
 test('unauthenticated intake fails before DB/provider initialization',async()=>{
   const {deps,store,sends}=setup();deps.authenticate=async()=>false;
   const response=await handleMafiPartner(request(valid()),false,deps);

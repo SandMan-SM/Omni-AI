@@ -6,8 +6,9 @@ export const MAFI_PAGE = 'https://mafiempire.com/partner';
 export const MAFI_META = 'mafiempire_partner_v1';
 export const MAFI_BUSINESS = '733b8da0-f8e6-4d50-8676-ccc4b0d2f5f6';
 export const MAFI_OWNER = 'sitanim8@gmail.com';
-export const MAFI_OWNER_FROM = 'New Lead Mafi Empire <mafiempire@leadfranchise.org>';
-export const MAFI_CUSTOMER_FROM = 'Mafi Empire <legacy@sitanimafi.com>';
+export const MAFI_OWNER_FROM = 'New Lead Mafi Empire <notifications@mafiempire.com>';
+export const MAFI_CUSTOMER_FROM = 'Mafi Empire <legacy@mafiempire.com>';
+export const MAFI_REPLY_TO = 'hello@mafiempire.com';
 export const MAFI_PATH = '/api/inbound/mafiempire/partners';
 
 export class MafiPartnerError extends Error {
@@ -111,7 +112,7 @@ export function buildPartnerState(input: PartnerInput, crmId: string, analyticsI
     version: 1, purpose: MAFI_SOURCE, submissionId: input.submissionId, leadId: input.submissionId, crmId, analyticsId,
     businessId: MAFI_BUSINESS, tenant: 'mafiempire', source: MAFI_SOURCE, pageUrl: MAFI_PAGE, fingerprint: partnerFingerprint(input),
     status: 'pending', lease, leaseUntil: new Date(now.getTime() + 75_000).toISOString(), createdAt: now.toISOString(), updatedAt: now.toISOString(),
-    customer: { status: 'pending', key: `${key}-customer`, payload: { from: MAFI_CUSTOMER_FROM, to: [input.email], reply_to: MAFI_OWNER,
+    customer: { status: 'pending', key: `${key}-customer`, payload: { from: MAFI_CUSTOMER_FROM, to: [input.email], reply_to: MAFI_REPLY_TO,
       subject: 'We received your application — Mafi Empire', text: customerText, html: html(customerText) } },
     owner: { status: 'pending', key: `${key}-owner`, payload: { from: MAFI_OWNER_FROM, to: [MAFI_OWNER], reply_to: input.email,
       subject: 'New Mafi Empire partner application', text: ownerText, html: html(ownerText) } },
