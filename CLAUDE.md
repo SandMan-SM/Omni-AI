@@ -28,6 +28,8 @@ npm run check        # tsc typecheck (guarded by clean-worktree check; ALLOW_DIR
 npm run build        # production build (writes .next/) — DO NOT run while dev is up (see Gotchas)
 npm run build:check  # safe local prod build into .next-prod/ (auto-cleaned, leaves dev's .next/ alone)
 npm run lint
+npm run audit:mobile   # static mobile/a11y gate (12 rules) — run before every ship
+npm run audit:publish  # publish-state gate — a newsletter write that sets published_at without status
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
 npm run preview:open # open that preview URL
 ```
@@ -84,6 +86,7 @@ single registered preview server instead.
 ## Conventions
 - **Design:** dark theme — base `bg-gray-900`/`bg-black`, **gold accents for CTAs**. All colors via Tailwind config tokens — **no hardcoded hex** in components. Consistent section padding `py-16 md:py-24`; max container `max-w-7xl mx-auto px-4`.
 - **SEO:** every page exports `metadata` (title + description); OG/Twitter/JSON-LD where it matters. `robots.ts`, `sitemap`, `llms.txt`, `opengraph-image.tsx` exist — keep them current.
+- **Newsletter publish:** `status` and `published_at` must be written in the **same** statement. Every reader of `newsletter_posts` filters on `status = 'published' AND published_at IS NOT NULL`, and the column defaults are `published_at DEFAULT now()` / `status DEFAULT 'draft'` — so a write that sets one without the other produces a row that looks published in the database and in every log but is invisible everywhere. This stranded 80 days of daily issues. `npm run audit:publish` fails the build if it comes back.
 - **JSX text:** escape raw quotes/apostrophes (`&apos;` `&ldquo;` `&rdquo;`) — raw `'`/`"` in JSX trips ESLint `react/no-unescaped-entities` and **fails the Vercel build**.
 - **Time:** anchor "today"/daily logic to **Pacific Time**. Vercel runs UTC, so naive `new Date()` makes briefings/digests/crons off by a day.
 - Forms POST to `app/api/*` handlers that insert into Supabase + notify via Resend.
