@@ -86,7 +86,9 @@ export default function PilotPage() {
 
         <h1
           style={{
-            fontSize: 52,
+            // clamp() so the display headline scales to a readable 32px
+            // on a 375px phone instead of overflowing the viewport.
+            fontSize: 'clamp(2rem, 7vw, 3.25rem)',
             lineHeight: 1.08,
             fontWeight: 700,
             letterSpacing: -1.5,

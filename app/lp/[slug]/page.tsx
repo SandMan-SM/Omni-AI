@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@supabase/supabase-js';
+import { todayPt } from '@/lib/tz';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -113,7 +114,7 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
           }} />
           <span style={{ fontWeight: 700, fontSize: 16 }}>{business?.name}</span>
         </div>
-        <span style={{ fontSize: 12, color: '#555' }}>Made for you · {new Date().toLocaleDateString()}</span>
+        <span style={{ fontSize: 12, color: '#94a3b8' }}>Made for you · {todayPt()}</span>
       </nav>
 
       {/* Hero */}
@@ -127,10 +128,14 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
             background: '#0d2a1e', border: '1px solid #10b98140',
             color: '#10b981', fontSize: 12, fontWeight: 600, marginBottom: 28,
           }}>
-            ✨ Personal — not a template
+            Personal — not a template
           </div>
           <h1 style={{
-            fontSize: 56, fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.1, marginBottom: 24,
+            // clamp() keeps the display headline readable at 375px (32px)
+            // while still hitting 56px on desktop. A fixed 56px overflowed
+            // the phone viewport on every personalized landing page.
+            fontSize: 'clamp(2rem, 8vw, 3.5rem)',
+            fontWeight: 800, letterSpacing: '-2px', lineHeight: 1.1, marginBottom: 24,
             background: 'linear-gradient(135deg, #fff 0%, #94a3b8 100%)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>
@@ -140,7 +145,7 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
             {page.subhead}
           </p>
           <a
-            href={business?.contact_email ? `mailto:${business.contact_email}?subject=${encodeURIComponent('Re: ' + page.headline)}` : '#'}
+            href={business?.contact_email ? `mailto:${business.contact_email}?subject=${encodeURIComponent('Re: ' + page.headline)}` : '/book-now'}
             style={{
               display: 'inline-block',
               background: 'linear-gradient(135deg, #10b981, #818cf8)',
@@ -177,7 +182,7 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
 
       {/* Footer */}
       <footer style={{
-        padding: '32px', textAlign: 'center', color: '#444', fontSize: 12,
+        padding: '32px', textAlign: 'center', color: '#94a3b8', fontSize: 12,
         borderTop: '1px solid #1e1e1e',
       }}>
         © {new Date().getFullYear()} {business?.name} · This page was personalized for you and only you.

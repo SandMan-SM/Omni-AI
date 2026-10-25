@@ -234,28 +234,50 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
             <Calendar size={12} /> Schedule
           </button>
         )}
-        {isLinkedin && (
-          <a href={lead.linkedin_url ?? '#'} target="_blank" rel="noreferrer" style={{
+        {isLinkedin && (lead.linkedin_url ? (
+          <a href={lead.linkedin_url} target="_blank" rel="noreferrer" style={{
             background: '#1d4ed8', color: '#fff', textDecoration: 'none',
             padding: '8px 16px', borderRadius: 8,
             fontSize: 12, fontWeight: 700,
             display: 'flex', alignItems: 'center', gap: 6,
-            opacity: lead.linkedin_url ? 1 : 0.4, pointerEvents: lead.linkedin_url ? 'auto' : 'none',
           }}>
             <MessageSquare size={12} /> Open LinkedIn → Paste DM
           </a>
-        )}
-        {isVoicemail && (
-          <a href={lead.phone ? `tel:${lead.phone}` : '#'} style={{
+        ) : (
+          // No LinkedIn URL on this lead — render a disabled button, not an
+          // <a href="#">. The old version shipped a real anchor pointing
+          // nowhere (invisible to a crawler, announced as a link to a
+          // screen reader).
+          <span aria-disabled="true" style={{
+            background: '#1d4ed8', color: '#fff',
+            padding: '8px 16px', borderRadius: 8,
+            fontSize: 12, fontWeight: 700,
+            display: 'flex', alignItems: 'center', gap: 6,
+            opacity: 0.4, cursor: 'not-allowed',
+          }}>
+            <MessageSquare size={12} /> No LinkedIn URL
+          </span>
+        ))}
+        {isVoicemail && (lead.phone ? (
+          <a href={`tel:${lead.phone}`} style={{
             background: '#fb923c', color: '#fff', textDecoration: 'none',
             padding: '8px 16px', borderRadius: 8,
             fontSize: 12, fontWeight: 700,
             display: 'flex', alignItems: 'center', gap: 6,
-            opacity: lead.phone ? 1 : 0.4, pointerEvents: lead.phone ? 'auto' : 'none',
           }}>
-            <Phone size={12} /> {lead.phone ? `Call ${lead.phone}` : 'No phone'}
+            <Phone size={12} /> Call {lead.phone}
           </a>
-        )}
+        ) : (
+          <span aria-disabled="true" style={{
+            background: '#fb923c', color: '#fff',
+            padding: '8px 16px', borderRadius: 8,
+            fontSize: 12, fontWeight: 700,
+            display: 'flex', alignItems: 'center', gap: 6,
+            opacity: 0.4, cursor: 'not-allowed',
+          }}>
+            <Phone size={12} /> No phone
+          </span>
+        ))}
         <button onClick={onRegenerate} style={{
           marginLeft: 'auto', background: 'transparent', border: '1px solid #222',
           color: '#666', padding: '8px 14px', borderRadius: 8,

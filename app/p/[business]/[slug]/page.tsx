@@ -198,7 +198,9 @@ export default async function MarketingLandingPage({
 
         <h1
           style={{
-            fontSize: 56,
+            // clamp() so the display headline scales down to a readable
+            // 32px on a 375px phone instead of overflowing the viewport.
+            fontSize: 'clamp(2rem, 8vw, 3.5rem)',
             lineHeight: 1.05,
             fontWeight: 700,
             margin: '24px 0 16px',

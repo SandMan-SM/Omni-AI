@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   Share2,
@@ -69,6 +69,21 @@ export function AssetClient({
   // the user never sees, or the platform URL is blocked, and the
   // button just sat there looking inert.
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Coarse-pointer detection AFTER mount — reading window.matchMedia
+  // during render makes the server HTML and the first client render
+  // disagree on a phone (the SMS / native-share buttons exist in one
+  // and not the other), which React reports as a hydration mismatch and
+  // then throws away the server HTML for a full client re-render.
+  const [isTouch, setIsTouch] = useState(false);
+  const [hasNativeShare, setHasNativeShare] = useState(false);
+  useEffect(() => {
+    const touch = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+    setIsTouch(touch);
+    setHasNativeShare(
+      touch && typeof navigator !== "undefined" && !!(navigator as Navigator & { share?: unknown }).share
+    );
+  }, []);
   function flash(msg: string) {
     setFeedback(msg);
     setTimeout(() => setFeedback(null), 2200);
@@ -568,13 +583,7 @@ export function AssetClient({
                 // entirely on desktop — both buttons looked broken.
                 // Gate on a coarse-pointer media query, which true-positives
                 // on phones/tablets and skips desktops + laptops.
-                const isTouch =
-                  typeof window !== "undefined" &&
-                  window.matchMedia?.("(pointer: coarse)").matches;
-                const hasNative =
-                  isTouch &&
-                  typeof navigator !== "undefined" &&
-                  !!(navigator as Navigator & { share?: unknown }).share;
+                const hasNative = hasNativeShare;
                 return (
                   <>
                     {hasNative && (

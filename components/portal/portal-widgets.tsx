@@ -43,11 +43,12 @@ const DONUT_PALETTE = [
 
 // ── animation helpers ────────────────────────────────────────────────
 
+// Only ever called from a useEffect, so `window` is guaranteed to exist.
+// A `typeof window !== "undefined"` guard here would read as a render-time
+// browser check (which is a hydration-mismatch bug when it is one) and
+// buys nothing.
 function prefersReducedMotion() {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true
-  );
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches === true;
 }
 
 // Count a number up from 0 → target on mount (easeOutCubic).

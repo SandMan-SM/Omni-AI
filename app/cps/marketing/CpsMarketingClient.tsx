@@ -6,7 +6,7 @@
 // background and why what looks unusual is actually working in your
 // favor" — not a pitch.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -60,6 +60,22 @@ export function CpsMarketingClient({
   // link copied, popup blocked, etc) so taps never feel inert.
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
+
+  // Coarse-pointer detection has to happen AFTER mount. Reading
+  // window.matchMedia during render makes the server HTML and the first
+  // client render disagree on a touch device — the SMS button (and the
+  // native-share button) exist in one and not the other, which React
+  // reports as a hydration mismatch and then throws away the server
+  // HTML and re-renders the whole page on the client.
+  const [isTouch, setIsTouch] = useState(false);
+  const [hasNativeShare, setHasNativeShare] = useState(false);
+  useEffect(() => {
+    const touch = window.matchMedia?.("(pointer: coarse)").matches ?? false;
+    setIsTouch(touch);
+    setHasNativeShare(
+      touch && typeof navigator !== "undefined" && !!(navigator as Navigator & { share?: unknown }).share
+    );
+  }, []);
   function flash(msg: string) {
     setFeedback(msg);
     setTimeout(() => setFeedback(null), 2200);
@@ -771,13 +787,7 @@ export function CpsMarketingClient({
                 const iconClass = "w-4 h-4 flex-shrink-0";
                 const baseBtn =
                   "inline-flex items-center justify-center gap-2 min-w-[110px] rounded-md border border-zinc-700 bg-zinc-900/60 px-5 py-3 text-xs font-semibold uppercase tracking-[0.18em] text-zinc-300 hover:border-amber-400 hover:text-amber-300 hover:bg-zinc-900/90 transition-colors";
-                const isTouch =
-                  typeof window !== "undefined" &&
-                  window.matchMedia?.("(pointer: coarse)").matches;
-                const hasNative =
-                  isTouch &&
-                  typeof navigator !== "undefined" &&
-                  !!(navigator as Navigator & { share?: unknown }).share;
+                const hasNative = hasNativeShare;
                 return (
                   <>
                     {hasNative && (

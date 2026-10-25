@@ -14,7 +14,17 @@
 //                            the 375px layout for the rest of the session.
 //   grid-1fr-min-content     `grid-cols-[1fr_auto_1fr]` tracks have a
 //                            min-content minimum, so long words overflow.
-//   dead-href                `href="#"` is a link that goes nowhere.
+//   dead-href                `href="#"` is a link that goes nowhere — either
+//                            literal, or an expression that can resolve to
+//                            "#" (`href={x ?? '#'}`).
+//   hydration-window-check  window.matchMedia read during render (behind a
+//                            typeof-window guard) — the server and the
+//                            phone disagree, so React discards the server
+//                            HTML and re-renders the page on the client.
+//   display-heading-overflow a display heading with a fixed inline font size
+//                            (40px+) never steps down at 375px. A Tailwind
+//                            `text-4xl sm:text-6xl` does; `fontSize: 56`
+//                            does not.
 //   image-missing-alt        next/image without alt.
 //   tap-target-under-44      WCAG / iOS HIG minimum touch target.
 //   fixed-width-overflow     hardcoded px widths wider than a 375px viewport.
@@ -67,6 +77,8 @@ const RULE_NAMES = [
   "ios-input-font-floor",
   "grid-1fr-min-content",
   "dead-href",
+  "display-heading-overflow",
+  "hydration-window-check",
   "image-missing-alt",
   "tap-target-under-44",
   "fixed-width-overflow",
@@ -443,6 +455,11 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
   }
 
   // 3. Dead links.
+  //    Two shapes count. A literal `href="#"`, and a conditional href whose
+  //    expression can RESOLVE to "#" (`href={lead.linkedin_url ?? '#'}`).
+  //    The conditional shape is the one the live audit found and the plain
+  //    rule missed — the anchor was disabled with pointer-events, but it was
+  //    still in the DOM as a link that goes nowhere.
   for (const { body, index } of tagBodies(code, "a")) {
     if (/href\s*=\s*(["']#["']|\{`#`\}|\{#\})/.test(body)) {
       findings.push({
@@ -451,10 +468,71 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
         line: at(index),
         detail: "href=\"#\" placeholder — the link goes nowhere",
       });
+      continue;
+    }
+    const expr = body.match(/href\s*=\s*\{([\s\S]*?)\}/);
+    if (!expr) continue;
+    const value = expr[1];
+    const fallsBackToHash =
+      /(\?\?|\|\|)\s*['"`]#['"`]/.test(value) || /:\s*['"`]#['"`]/.test(value);
+    if (fallsBackToHash) {
+      findings.push({
+        rule: "dead-href",
+        file: rel,
+        line: at(index),
+        detail: `href can resolve to "#" (${value.replace(/\s+/g, " ").trim().slice(0, 60)}) — render a disabled element instead of an anchor`,
+      });
     }
   }
 
-  // 4. Images without alt text.
+  // 4. Display headings with a fixed inline font size.
+  //    A Tailwind `text-4xl sm:text-6xl` steps down on a phone; an inline
+  //    `fontSize: 56` does not. A fixed 40px+ display heading overflows a
+  //    375px viewport as soon as the headline runs longer than a few words.
+  //    OG/Twitter image canvases are 1200×630 by definition, so they are
+  //    exempt — they are never rendered in a viewport.
+  if (!/opengraph-image|twitter-image/.test(rel)) {
+    for (const tag of ["h1", "h2"]) {
+      for (const { body, index } of tagBodies(code, tag)) {
+        if (/fontSize\s*:\s*['"]?clamp\(/.test(body)) continue;
+        const size = body.match(/fontSize\s*:\s*['"]?(\d+(?:\.\d+)?)/);
+        if (!size) continue;
+        const px = parseFloat(size[1]);
+        if (px < 40) continue;
+        findings.push({
+          rule: "display-heading-overflow",
+          file: rel,
+          line: at(index),
+          detail: `<${tag}> has a fixed inline fontSize of ${px}px — it does not step down at 375px; use clamp() or a responsive class`,
+        });
+      }
+    }
+  }
+
+  // 5. Render-time browser detection.
+  //    `typeof window !== "undefined" && window.matchMedia(...)` is how a
+  //    component asks "am I on a touch device?" — but if it is evaluated
+  //    during render, the server answers false and the phone answers true.
+  //    The server HTML and the first client render then disagree about
+  //    which buttons exist, React reports a hydration mismatch, and the
+  //    whole page is thrown away and re-rendered on the client. The
+  //    `typeof window` guard is itself the tell: inside a useEffect it is
+  //    redundant, because effects only ever run in the browser.
+  {
+    const re =
+      /typeof window\s*!==\s*["']undefined["'][\s\S]{0,240}?window\.matchMedia|window\.matchMedia[\s\S]{0,240}?typeof window\s*!==\s*["']undefined["']/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(code))) {
+      findings.push({
+        rule: "hydration-window-check",
+        file: rel,
+        line: at(m.index),
+        detail: "window.matchMedia is read with a typeof-window guard — if this runs during render the server and the phone disagree (hydration mismatch); move it into a useEffect",
+      });
+    }
+  }
+
+  // 6. Images without alt text.
   for (const { body, index } of tagBodies(code, "Image")) {
     if (!/\balt\s*=/.test(body)) {
       findings.push({
