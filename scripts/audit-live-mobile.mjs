@@ -27,11 +27,13 @@
 //   dead-href           an <a href="#"> that goes nowhere
 //   console-error       an uncaught exception or console.error on the page
 //   resource-error      a same-origin subresource answered 4xx/5xx
-//   soft-404            a page that says "not found" but answered HTTP 200.
-//                        Next.js serves its not-found UI with a 200 when a
-//                        loading.tsx boundary streams the shell before the
-//                        page component throws, so the break is invisible
-//                        to a status check but very visible to a crawler.
+//   soft-404            a page that says "not found" but answered HTTP 200,
+//                        OR a probe path that cannot exist and answered
+//                        anything other than 404. Next.js serves its
+//                        not-found UI with a 200 when a loading.tsx boundary
+//                        streams the shell before the page component throws,
+//                        so the break is invisible to a status check but very
+//                        visible to a crawler.
 //
 // Read-only against the target site. Exits non-zero when anything fires,
 // so it works as a pre-ship gate. The target host is never authenticated
@@ -265,6 +267,24 @@ const EXTRA_PATHS = [
   '/llms.txt', '/robots.txt',
 ];
 
+// Paths that MUST answer HTTP 404. One per dynamic route family that calls
+// notFound(). The sitemap can only prove that real URLs resolve — it can
+// never prove that a bogus one does not, and a route that answers 200 for a
+// slug that does not exist is exactly the soft-404 this gate exists to
+// catch. Add a probe here whenever a new dynamic route starts calling
+// notFound().
+const NOT_FOUND_PROBES = [
+  '/zzzz-not-a-real-page',
+  '/newsletter/zzzz-not-a-real-issue',
+  '/p/omnileads/zzzz-not-a-real-page',
+  '/lp/zzzz-not-a-real-page',
+  '/partners/zzzz-not-a-real-page',
+  '/vs/zzzz-not-a-real-page',
+  '/federation/case-studies/zzzz-not-a-real-page',
+  '/referral/renelaveau/ZZZZNOTACODE',
+  '/alira/referral/ZZZZNOTACODE',
+];
+
 // ── Main ────────────────────────────────────────────────────────────────────
 const chromePath = findChromium();
 const port = 9500 + Math.floor(Math.random() * 400);
@@ -305,9 +325,9 @@ let paths;
 if (ONLY) {
   paths = [ONLY];
 } else if (ALL) {
-  paths = [...new Set([...EXTRA_PATHS, ...allPaths])];
+  paths = [...new Set([...EXTRA_PATHS, ...NOT_FOUND_PROBES, ...allPaths])];
 } else {
-  paths = [...new Set([...EXTRA_PATHS, ...routeShapes(allPaths)])];
+  paths = [...new Set([...EXTRA_PATHS, ...NOT_FOUND_PROBES, ...routeShapes(allPaths)])];
 }
 
 console.log(`auditing ${paths.length} route(s) at ${VIEWPORT_W}px against ${BASE}`);
@@ -402,6 +422,11 @@ async function auditPath(p) {
     const softMarker = /\b(not found|404|nothing here|doesn'?t exist|page you'?re looking for|issue not found)\b/i;
     if (page.status === 200 && (softMarker.test(page.title || '') || softMarker.test(page.h1 || ''))) {
       findings.push({ rule: 'soft-404', path: p, detail: `answered HTTP 200 but the page reads as a not-found page — title "${page.title}", h1 "${page.h1}"` });
+    }
+    // A probe path is one that cannot exist. Anything other than 404 means the
+    // route rendered something for it — the soft-404 failure mode.
+    if (NOT_FOUND_PROBES.includes(p) && page.status !== 404) {
+      findings.push({ rule: 'soft-404', path: p, detail: `expected HTTP 404 but the route answered HTTP ${page.status} — this URL does not exist and should not resolve` });
     }
 
     summary.push({ path: p, scrollWidth: page.scrollWidth, count: findings.filter((f) => f.path === p).length });
