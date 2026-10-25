@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { COMPARISON_SLUGS } from "@/lib/comparison-data";
+import { isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 
 // ISR the sitemap hourly. The content pages themselves are `force-dynamic`,
 // but the sitemap is a discovery manifest — per-request DB hits are wasteful
@@ -107,6 +108,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   let newsletterRows: {
     slug: string;
     published_at: string | null;
+    subject: string | null;
+    intro: string | null;
+    keywords: unknown;
   }[] = [];
   let marketingLandingRows: {
     slug: string;
@@ -125,9 +129,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // newsletter_posts has no updated_at column — only published_at. If we
       // select updated_at Supabase returns an error and the table drops out
       // of the sitemap entirely.
+      //
+      // The filter has to match what /newsletter/[slug] will actually SERVE,
+      // or the sitemap advertises URLs that resolve to a not-found page.
+      // The page (app/newsletter/[slug]/page.tsx → getPost) only serves a
+      // row that is `status = 'published'`, has a published_at, and passes
+      // isOmniAiNewsletterPost — which is what keeps the client-niche masthead
+      // issues (ltb-*, prime_iv-*, youngs-*, …) off this site, since those
+      // live on their own domains. Filtering only on published_at left 319
+      // draft rows and ~140 client-niche rows in the sitemap: 340 of the 399
+      // newsletter URLs it advertised could not resolve.
       supabase
         .from("newsletter_posts")
-        .select("slug, published_at")
+        .select("slug, published_at, subject, intro, keywords")
+        .eq("status", "published")
         .not("slug", "is", null)
         .not("published_at", "is", null)
         .order("published_at", { ascending: false })
@@ -158,7 +173,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   const newsletterPages: MetadataRoute.Sitemap = newsletterRows
-    .filter((r) => r.slug)
+    .filter((r) => r.slug && isOmniAiNewsletterPost(r))
     .map((r) => ({
       url: `${baseUrl}/newsletter/${r.slug}`,
       lastModified: r.published_at
