@@ -2,6 +2,32 @@ import Link from "next/link";
 import { Compass } from "lucide-react";
 
 /**
+ * The site-wide 404 page.
+ *
+ * Why every not-found on this site used to answer HTTP **200**:
+ * a `loading.tsx` anywhere in a route's segment chain creates a Suspense
+ * boundary ABOVE the page component. Next flushes that boundary's fallback
+ * to the browser first, and the HTTP status is committed with the first
+ * flush — so when the page later threw `notFound()`, the status had
+ * already been sent as 200. The URL did not exist, the response said it
+ * did, and a crawler read that as an infinite supply of valid URLs while
+ * the root layout's "index, follow" told it to keep them.
+ *
+ * The fix was NOT a route segment config on this file (an earlier
+ * `export const dynamic = "force-dynamic"` here changed nothing — the
+ * status is committed by the first flush, wherever that happens). The fix
+ * was removing the loading boundaries from the chains of the routes that
+ * can 404: the root `app/loading.tsx` and the per-segment `loading.tsx`
+ * files under `app/[slug]`, `app/newsletter`, `app/newsletter/[slug]`,
+ * `app/p/[business]/[slug]`, `app/lp/[slug]`, `app/partners/[slug]`,
+ * `app/vs/[competitor]`, `app/federation/case-studies/[slug]`,
+ * `app/referral/renelaveau/[code]` and `app/alira/referral/[code]`.
+ *
+ * Every other route that lost the root spinner got its own
+ * `loading.tsx` back, so skeleton coverage is unchanged everywhere else.
+ */
+
+/**
  * 404 page. Previously this rendered a light-mode debug card that said
  * "Did you forget to add the page to the router?" — developer text that
  * shouldn't be visible to end users. Replaced with a branded dark-theme

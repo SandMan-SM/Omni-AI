@@ -13,6 +13,8 @@ import { Footer } from "@/components/footer";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 import { NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsletter-issue-card";
 import NewsletterOptin from "@/components/NewsletterOptin";
+import { Suspense } from "react";
+import PageLoading from "@/components/page-loading";
 
 export const metadata: Metadata = {
   title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
@@ -128,7 +130,19 @@ function normalizeFilteredPosts(rows: RawNewsletterSummary[], indexOffset = 0): 
     .map((p, index) => normalizePost(p, index + indexOffset));
 }
 
-export default async function NewsletterIndexPage() {
+/**
+ * The archive body.
+ *
+ * Split out from the page component so the page can wrap it in its own
+ * <Suspense>. This segment used to carry a `loading.tsx`, but that file
+ * was deleted: a segment-level loading boundary sits ABOVE
+ * /newsletter/[slug] in the segment chain, and a boundary above a
+ * component that throws notFound() flushes the shell with HTTP 200
+ * before the throw lands — which turns every bad newsletter slug into
+ * an indexable soft 404. An internal <Suspense> gives this page the
+ * same branded spinner with no boundary above the [slug] child.
+ */
+async function NewsletterIndexContent() {
   const supabase = createAdminClient();
 
   const [premiumRes, freeRes] = await Promise.all([
@@ -455,5 +469,13 @@ export default async function NewsletterIndexPage() {
       </main>
       <Footer />
     </div>
+  );
+}
+
+export default function NewsletterIndexPage() {
+  return (
+    <Suspense fallback={<PageLoading label="Loading the archive…" />}>
+      <NewsletterIndexContent />
+    </Suspense>
   );
 }

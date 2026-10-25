@@ -4,21 +4,19 @@ import { Compass } from "lucide-react";
 /**
  * Route-level 404 for /newsletter/[slug] posts.
  *
- * Same soft-404 fix as app/[slug]/not-found.tsx. Without this file, a
- * newsletter slug that doesn't exist in newsletter_posts was rendering
- * the root app/not-found.tsx with HTTP 200 — indexable as a live "Not
- * Found" page by Google and LLM retrievers.
- *
- * Placing not-found.tsx inside the route segment forces Next.js to
- * return HTTP 404 for the notFound() throw originating from
- * app/newsletter/[slug]/page.tsx. Together with the sibling
- * app/[slug]/not-found.tsx, this closes the soft-404 gap across both
- * dynamic public routes on the site.
+ * A newsletter slug that doesn't exist in newsletter_posts used to render
+ * this UI with HTTP **200** — indexable as a live "Not Found" page by
+ * Google and LLM retrievers. The status was committed as 200 because a
+ * `loading.tsx` in the chain (the root one, or the one in this segment)
+ * flushed its Suspense fallback before the page's `notFound()` throw
+ * landed. Removing those boundaries is what makes this page answer a
+ * real 404; see app/not-found.tsx for the full mechanism.
  *
  * Copy is newsletter-specific (points back to the archive + FAQ) so
  * a reader who followed a broken email link lands on an orientation
  * that matches the surface they were trying to reach.
  */
+
 export default function NewsletterNotFound() {
   return (
     <div className="min-h-screen bg-[#050508] text-white flex items-center justify-center px-6 noise-overlay">

@@ -8,9 +8,14 @@ import { GreenSparksBackdrop } from "@/components/green-sparks-backdrop";
 
 /**
  * Co-branded conversion landing page. Linked from every newsletter's
- * "Powered by Omni AI" footer. Slug → omni_businesses lookup; unknown
- * slugs render a generic "Powered by Omni AI" page so any future newsletter
- * still has somewhere to land.
+ * "Powered by Omni AI" footer. Slug → omni_businesses lookup.
+ *
+ * Unknown slugs now 404 instead of rendering a generic "our partners"
+ * page. The old fallback made /partners/<anything> answer HTTP 200 with
+ * boilerplate content — an unbounded set of indexable doorway URLs
+ * (the "root dynamic route swallows dead links" pattern). Every real
+ * partner slug is a row in omni_businesses, so a genuine footer link
+ * still resolves; a typo'd or stale slug correctly fails.
  */
 
 export const revalidate = 600; // 10-minute ISR — partner data doesn't churn often
@@ -73,10 +78,13 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
     getTrendingPosts(),
   ]);
 
-  const partnerName = partner?.name ?? "our partners";
-  const partnerWebsite = partner?.website;
+  // Unknown slug → real 404. See the note at the top of this file.
+  if (!partner) notFound();
+
+  const partnerName = partner.name;
+  const partnerWebsite = partner.website;
   const blurb =
-    partner?.partnership_blurb ??
+    partner.partnership_blurb ??
     `${partnerName} is one of the businesses we run agentic growth infrastructure for — autonomous lead generation, live site analytics, content engines, and a full agentic dashboard built around their goals.`;
 
   const orgJsonLd = {
