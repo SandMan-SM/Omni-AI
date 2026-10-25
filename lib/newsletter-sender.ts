@@ -1359,6 +1359,7 @@ export async function generateDrafts(supabase: any) {
     offer: freeContent.offer || null,
     keywords: freeContent.keywords || [],
     tier: 'free',
+    status: 'draft',
     published_at: null, // DRAFT — not published yet
   }).select('id');
   if (freeErr) {
@@ -1391,6 +1392,7 @@ export async function generateDrafts(supabase: any) {
     ai_recommendation: (premiumContent as any).ai_recommendation || null,
     keywords: premiumContent.keywords || [],
     tier: 'premium',
+    status: 'draft',
     published_at: null, // DRAFT
   }).select('id');
   if (premiumErr) {
@@ -1512,12 +1514,22 @@ export async function runDailyNewsletter(supabase: any = null, options: Newslett
         console.warn(`[publish guard] Partner post off-schedule, keeping as draft: ${content.slug}`);
       }
 
+      // `status` and `published_at` have to move together. Every reader of
+      // this table — the issue page, the archive, the sitemap, the RSS feed
+      // and /api/newsletter/posts — filters on `status = 'published' AND
+      // published_at IS NOT NULL`. Setting only `published_at` produced a
+      // half-published row: the cron logged "published: true" every day and
+      // the post never appeared anywhere. The column defaults to 'draft',
+      // so it has to be set explicitly.
+      const publishStatus = publishedStamp ? 'published' : 'draft';
+
       if (draftId) {
         // Publish the existing draft + stamp send tracking fields
         const { error: updateErr } = await supabase
           .from('newsletter_posts')
           .update({
             slug: content.slug,
+            status: publishStatus,
             published_at: publishedStamp,
             sent_at: publishOnly ? null : sentAt,
             recipients_count: freeSent,
@@ -1539,6 +1551,7 @@ export async function runDailyNewsletter(supabase: any = null, options: Newslett
           offer: content.offer || null,
           keywords: content.keywords || [],
           tier: 'free',
+          status: publishStatus,
           published_at: publishedStamp,
           sent_at: publishOnly ? null : sentAt,
           recipients_count: freeSent,
@@ -1686,12 +1699,17 @@ export async function runPremiumNewsletter(supabase: any = null, options: Newsle
         console.warn(`[publish guard] Premium post has partner slug, keeping as draft: ${content.slug}`);
       }
 
+      // Same rule as the free tier: `status` and `published_at` move
+      // together, or the post is invisible to every reader of the table.
+      const premiumPublishStatus = premiumPublishedStamp ? 'published' : 'draft';
+
       if (draftId) {
         // Publish the existing draft + stamp send tracking fields
         const { error: updateErr } = await supabase
           .from('newsletter_posts')
           .update({
             slug: content.slug,
+            status: premiumPublishStatus,
             published_at: premiumPublishedStamp,
             sent_at: publishOnly ? null : premiumSentAt,
             recipients_count: premiumSent,
@@ -1715,6 +1733,7 @@ export async function runPremiumNewsletter(supabase: any = null, options: Newsle
           ai_recommendation: content.ai_recommendation || null,
           keywords: content.keywords || [],
           tier: 'premium',
+          status: premiumPublishStatus,
           published_at: premiumPublishedStamp,
           sent_at: publishOnly ? null : premiumSentAt,
           recipients_count: premiumSent,
