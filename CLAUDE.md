@@ -155,6 +155,7 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - Read `docs/deployment-source-of-truth.md` before every build or deploy.
 - Canonical shared checkout: `/Users/janahasson/Desktop/Clients/Sitani Mafi/Omni AI/Website`; canonical remote/branch: `SandMan-SM/Omni-AI` / `main`; Vercel project: `omni-ai`.
 - Never run a direct production deploy from a dirty or behind checkout. Preserve desktop work, reconcile it into GitHub `main`, let the linked Vercel project deploy that exact SHA, and then verify the custom domain.
+- **A `vercel --prod` deploy is a transport, not a source of truth.** If any release was deployed from an isolated worktree instead of git, its code is not in `main` and the next git-triggered build silently removes it from production. After such a deploy, diff the deployed tree against git for every tracked file and commit the delta before the next push; check for uploaded-but-git-ignored files that are served live and track those. A production deployment with no `meta.githubCommitSha` is the tell — see `runbook.deploy/git-is-the-source-of-truth-after-a-cli-deploy` in omni-memory.
 - Newsletter releases must visibly verify artwork on both `/newsletter` and `/newsletter/archive`; keep the static default artwork fallback intact.
 
 ## Gotchas
