@@ -29,6 +29,8 @@ async function check(test) {
       if (name === '@/lib/rate-limit') return { getClientIp: () => '127.0.0.1', rateLimit: () => ({ ok: true }) };
       if (name === '@/lib/inbound-types') return { isInboundSlug: () => false };
       if (name === '@/lib/server/vercel-oidc') return { verifyVercelProjectToken: async () => false };
+      if (name === '@/lib/server/leadfranchise-trial-receipt') return { LEADFRANCHISE_TRIAL_SOURCE: 'website_trial_application' };
+      if (name === '@/lib/server/ais-service-application') return { AIS_APPLICATION_WORKFLOW: 'ais_service_application_v1' };
       if (name === '@/lib/server/analytics-ingest') return {
         isActiveTenant: async () => true,
         tenantOrigins: async () => [],

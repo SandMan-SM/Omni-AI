@@ -147,6 +147,7 @@ function fixture({ existingContact = null, rejectOwner = false, rejectCustomer =
         if (name === '@/lib/validation') return load('lib/validation.ts');
         if (name === '@/lib/inbound-types') return load('lib/inbound-types.ts');
         if (name === '@/lib/server/leadfranchise-trial-receipt') return load('lib/server/leadfranchise-trial-receipt.ts');
+        if (name === '@/lib/server/ais-service-application') return { AIS_APPLICATION_WORKFLOW: 'ais_service_application_v1' };
         if (name === '@/lib/server/ais-portfolio-application') return load('lib/server/ais-portfolio-application.ts');
         throw new Error(`Unmocked import blocked: ${name}`);
       },
