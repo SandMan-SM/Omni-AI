@@ -30,3 +30,9 @@ tests/
 scripts/migrate-auth.ts
 scripts/setup-auth.ts
 scripts/run-migrations.mjs
+
+# Host-only AIS application verification; not application runtime.
+scripts/check-ais-application-preflight.cjs
+scripts/check-ais-application-e2e.cjs
+scripts/run-ais-local-receiver.cjs
+scripts/check-ais-production-replay.cjs

@@ -15,6 +15,7 @@ import {
 } from '@/lib/inbound-types';
 import {
   notifyLeadCc,
+  notifyAisApplicationConfirmationWithReceipt,
   notifyEllieWaitlistConfirmationWithReceipt,
   notifyOwnerEmailInbound,
   notifyOwnerEmailInboundWithReceipt,
@@ -32,6 +33,19 @@ import {
   LEADFRANCHISE_TRIAL_SOURCE,
   leadfranchiseTrialReceipt,
 } from '@/lib/server/leadfranchise-trial-receipt';
+import {
+  AIS_APPLICATION_WORKFLOW,
+  aisApplicationClientIp,
+  parseAisServiceApplication,
+  recordAisServiceApplication,
+  persistAisRegistryApplication,
+  persistAisRegistryOwnerReceipt,
+  persistAisRegistryCustomerReceipt,
+  aisRegistryCustomerReceipt,
+  recordAisNotificationState,
+  claimAisNotificationAttempt,
+  type AisServiceApplication,
+} from '@/lib/server/ais-service-application';
 
 export const maxDuration = 30;
 
@@ -150,6 +164,7 @@ async function syncRegistryContact(input: {
   intakeId: string;
   analyticsLeadId: string;
   body: Record<string, unknown>;
+  preserveRawData?: boolean;
 }): Promise<RegistryContact | null> {
   const sb = createAdminClient();
   const { data: business, error: businessError } = await sb
@@ -241,11 +256,16 @@ async function syncRegistryContact(input: {
       : {}),
     updated_at: new Date().toISOString(),
   };
+  // New AIS applications merge metadata atomically in their scoped writer.
+  // Do not overwrite concurrently persisted receipt histories from a snapshot.
+  const contactUpdate = input.preserveRawData
+    ? Object.fromEntries(Object.entries(update).filter(([key]) => key !== 'raw_data'))
+    : update;
 
   if (contact) {
     const { data, error } = await sb
       .from('omni_leads_generated')
-      .update(update)
+      .update(contactUpdate)
       .eq('id', contact.id)
       .select('id')
       .maybeSingle();
@@ -307,7 +327,7 @@ async function syncRegistryContact(input: {
       };
       const { data, error } = await sb
         .from('omni_leads_generated')
-        .update({ ...update, raw_data: winnerRawData })
+        .update(input.preserveRawData ? contactUpdate : { ...update, raw_data: winnerRawData })
         .eq('id', winner.id)
         .select('id')
         .maybeSingle();
@@ -391,6 +411,113 @@ async function persistRegistryOwnerReceipt(
   return !error && Boolean(data?.id);
 }
 
+/** Complete AIS service applications independently of every legacy tenant flow. */
+async function completeAisServiceApplication(application: AisServiceApplication, cors: HeadersInit) {
+  const headers = { ...cors, 'Cache-Control': 'no-store' };
+  const fail = (code: string, status = 503, retryable = true) => NextResponse.json(
+    { ok: false, code, retryable, error: 'We could not confirm your application. Please try again.' },
+    { status, headers },
+  );
+  const stored = await recordAisServiceApplication(application);
+  if (!stored.ok) return fail(stored.code, stored.status, stored.status !== 409);
+  const lead = stored.lead;
+  const leadId = Number(lead.id);
+  if (!Number.isSafeInteger(leadId) || leadId <= 0) return fail('lead_identifier_invalid');
+  const contact = await syncRegistryContact({
+    slug: 'aisempire', name: application.name, email: application.email,
+    phone: application.phone, message: String(application.body.message),
+    source: String(application.body.source), intakeId: application.intakeId,
+    analyticsLeadId: lead.id, body: application.body, preserveRawData: true,
+  });
+  if (!contact) return fail('agentic_dashboard_sync_failed');
+  if (!(await persistAisRegistryApplication(contact.id, contact.businessId, application, lead.id))) {
+    return fail('agentic_dashboard_metadata_failed');
+  }
+  const notificationLead = {
+    id: lead.id, slug: 'aisempire' as InboundSlug, name: application.name,
+    email: application.email, phone: application.phone,
+    message: String(application.body.message), source: String(application.body.source),
+    pageUrl: application.pageUrl, intakeId: application.intakeId,
+    serviceName: application.serviceName, question: application.question,
+  };
+  let ownerId = lead.ownerMessageId || contact.ownerMessageId;
+  if (!ownerId) {
+    const attempt = await claimAisNotificationAttempt('owner', lead.id);
+    if (!attempt.ok) return fail(attempt.code, 503, attempt.retryable);
+    ownerId = attempt.providerId;
+  }
+  if (!ownerId) {
+    const receipt = await notifyOwnerEmailInboundWithReceipt(notificationLead)
+      .catch(() => ({ ok: false as const, error: 'resend_request_failed' }));
+    if (!receipt.ok || !receipt.providerId) {
+      await recordAisNotificationState('owner', lead.id, {
+        status: 'failed', provider: 'resend', retryable: true,
+        error: receipt.ok ? 'resend_missing_provider_id' : receipt.error,
+        updated_at: new Date().toISOString(),
+      });
+      return fail('owner_notification_failed');
+    }
+    ownerId = receipt.providerId;
+  }
+  if (!(await persistAisRegistryOwnerReceipt(contact.id, contact.businessId, lead.id, ownerId))) {
+    // Keep the accepted provider receipt even when its CRM mirror needs repair.
+    await recordAisNotificationState('owner', lead.id, {
+      status: 'failed', provider: 'resend', provider_id: ownerId, retryable: true,
+      error: 'crm_owner_receipt_persist_failed', updated_at: new Date().toISOString(),
+    });
+    return fail('crm_owner_receipt_persist_failed');
+  }
+  if (!(await recordAisNotificationState('owner', lead.id, {
+    status: 'accepted', provider: 'resend', provider_id: ownerId,
+    retryable: false, updated_at: new Date().toISOString(),
+  }))) return fail('notification_state_persist_failed');
+
+  let customerId = lead.customerMessageId || aisRegistryCustomerReceipt(contact.rawData, lead.id);
+  if (!customerId) {
+    const suppression = await registrySuppressionStatus(contact.businessId, application.email);
+    if (suppression !== 'clear') {
+      const code = suppression === 'error' ? 'suppression_lookup_failed' : 'customer_email_suppressed';
+      const persisted = await recordAisNotificationState('customer', lead.id, {
+        status: 'failed', provider: 'resend', retryable: suppression === 'error',
+        error: code, updated_at: new Date().toISOString(),
+      });
+      if (!persisted) return fail('customer_confirmation_state_persist_failed');
+      return fail(code, suppression === 'error' ? 503 : 409, suppression === 'error');
+    }
+    const attempt = await claimAisNotificationAttempt('customer', lead.id);
+    if (!attempt.ok) return fail(attempt.code, 503, attempt.retryable);
+    customerId = attempt.providerId;
+  }
+  if (!customerId) {
+    const receipt = await notifyAisApplicationConfirmationWithReceipt(notificationLead)
+      .catch(() => ({ ok: false as const, error: 'resend_request_failed' }));
+    if (!receipt.ok || !receipt.providerId) {
+      const persisted = await recordAisNotificationState('customer', lead.id, {
+        status: 'failed', provider: 'resend', retryable: true,
+        error: receipt.ok ? 'resend_missing_provider_id' : receipt.error,
+        updated_at: new Date().toISOString(),
+      });
+      return fail(persisted ? 'customer_confirmation_failed' : 'customer_confirmation_state_persist_failed');
+    }
+    customerId = receipt.providerId;
+  }
+  if (!(await persistAisRegistryCustomerReceipt(contact.id, contact.businessId, lead.id, customerId))) {
+    await recordAisNotificationState('customer', lead.id, {
+      status: 'failed', provider: 'resend', provider_id: customerId, retryable: true,
+      error: 'crm_customer_receipt_persist_failed', updated_at: new Date().toISOString(),
+    });
+    return fail('crm_customer_receipt_persist_failed');
+  }
+  if (!(await recordAisNotificationState('customer', lead.id, {
+    status: 'accepted', provider: 'resend', provider_id: customerId,
+    retryable: false, updated_at: new Date().toISOString(),
+  }))) return fail('customer_confirmation_state_persist_failed');
+  return NextResponse.json({
+    ok: true, lead_id: leadId, crm_contact_id: contact.id,
+    customer_message_id: customerId, owner_message_id: ownerId,
+  }, { headers });
+}
+
 function corsHeaders(slug: InboundSlug, origin: string | null): HeadersInit {
   const allowed = INBOUND_ORIGINS[slug];
   const ok = origin && allowed.includes(origin);
@@ -464,7 +591,13 @@ export async function POST(
       );
     }
 
-    const ip = getClientIp(request.headers);
+    // Only the authenticated AIS server may assert a visitor identity. Legacy
+    // callers and every other brand retain their prior rate-limit behavior.
+    const earlyAisBody = slug === 'aisempire' ? await request.json().catch(() => ({})) : null;
+    const isAisApplication = slug === 'aisempire' && earlyAisBody?.application_workflow === AIS_APPLICATION_WORKFLOW;
+    const ip = isAisApplication
+      ? aisApplicationClientIp(request.headers, getClientIp(request.headers))
+      : getClientIp(request.headers);
     if (slug !== 'leadfranchise') {
       const rl = rateLimit(`inbound-leads:${slug}:${ip}`, 5, 10 * 60 * 1000);
       if (!rl.ok) {
@@ -474,7 +607,7 @@ export async function POST(
       }
     }
 
-    const body = await request.json().catch(() => ({}));
+    const body = earlyAisBody ?? await request.json().catch(() => ({}));
 
     // The dedicated website-trial credential cannot invoke legacy workflows.
     if (dedicatedTrialCallerAuthorized(request, slug) && body.source !== LEADFRANCHISE_TRIAL_SOURCE) {
@@ -484,6 +617,15 @@ export async function POST(
     if (isBotSubmission(body)) {
       // Silent success so spammers don't tune their probes.
       return NextResponse.json({ ok: true }, { headers: cors });
+    }
+
+    if (isAisApplication) {
+      const parsed = parseAisServiceApplication(body);
+      if (!parsed.ok) return NextResponse.json(
+        { ok: false, code: parsed.code, error: 'Please complete all application fields.' },
+        { status: 422, headers: { ...cors, 'Cache-Control': 'no-store' } },
+      );
+      return await completeAisServiceApplication(parsed.application, cors);
     }
 
     const name = sanitizeText(body.name, 200);

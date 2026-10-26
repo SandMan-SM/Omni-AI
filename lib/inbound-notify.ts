@@ -267,6 +267,47 @@ export async function notifyEllieWaitlistConfirmationWithReceipt(
   }
 }
 
+/** AIS service applications only: transactional receipt, never newsletter consent. */
+export async function notifyAisApplicationConfirmationWithReceipt(
+  lead: InboundLead & { serviceName: string; question: string },
+): Promise<InboundEmailReceipt> {
+  if (!RESEND_API_KEY) return { ok: false, error: 'resend_not_configured' };
+  if ((lead.slug as string) !== 'aisempire' || !lead.email || !lead.intakeId) return { ok: false, error: 'customer_application_missing' };
+  const fromAddress = leadFromAddress('aisempire', await resolveLeadSender('aisempire'));
+  const service = escape(lead.serviceName);
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><title>AIS Empire application received</title></head><body style="margin:0;background:#071127;color:#edf5ff;font-family:Arial,sans-serif">
+    <div style="max-width:560px;margin:0 auto;padding:32px;line-height:1.6">
+      <p style="color:#6bdcea;font-weight:bold">AIS EMPIRE</p>
+      <h1 style="font-size:28px;line-height:1.2">We received your application.</h1>
+      <p style="font-size:16px">${escape(lead.name)}, thank you for reaching out about ${service}.</p>
+      <p style="font-size:16px">Our team will review what you would like to build and follow up about the right scope and next step.</p>
+      <h2 style="font-size:18px">What you would like to build</h2><p style="font-size:16px">${escape(lead.question)}</p>
+      <p style="font-size:14px">Your reference: ${escape(lead.intakeId)}</p>
+      <p style="font-size:16px">Questions? Reply to this email or call <a style="color:#6bdcea" href="tel:+18014581756">801-458-1756</a>.</p>
+      <p style="font-size:12px;color:#bdcce1">This is a confirmation of your application at <a style="color:#6bdcea" href="https://aisempire.org">aisempire.org</a>, not a marketing subscription. <a style="color:#6bdcea" href="https://aisempire.org/privacy">Privacy policy</a></p>
+    </div></body></html>`;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8_000);
+  try {
+    const response = await fetch('https://api.resend.com/emails', {
+      method: 'POST', cache: 'no-store', redirect: 'error',
+      headers: {
+        'Content-Type': 'application/json', Authorization: `Bearer ${RESEND_API_KEY}`,
+        'Idempotency-Key': `inbound-ais-application-customer-${lead.id}`,
+      },
+      body: JSON.stringify({ from: fromAddress, to: [lead.email], reply_to: 'desk@aisempire.org',
+        subject: `AIS Empire received your ${lead.serviceName} application`, html,
+        text: `${lead.name}, we received your AIS Empire application for ${lead.serviceName}.\n\nWhat you would like to build: ${lead.question}\n\nOur team will review your idea and follow up about the right next step.\nReference: ${lead.intakeId}\nReply to this email or call 801-458-1756.\nThis application does not subscribe you to marketing.\nPrivacy: https://aisempire.org/privacy`,
+      }), signal: controller.signal,
+    });
+    const payload = await response.json().catch(() => null) as { id?: unknown } | null;
+    if (!response.ok) return { ok: false, error: `resend_http_${response.status}` };
+    return { ok: true, providerId: typeof payload?.id === 'string' ? payload.id : null };
+  } catch {
+    return { ok: false, error: controller.signal.aborted ? 'resend_timeout' : 'resend_request_failed' };
+  } finally { clearTimeout(timeout); }
+}
+
 /**
  * Send the tenant's configured CC copy of a genuine lead.
  *
