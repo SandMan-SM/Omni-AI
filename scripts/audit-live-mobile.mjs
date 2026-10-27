@@ -39,7 +39,7 @@
 // so it works as a pre-ship gate. The target host is never authenticated
 // against, and nothing is written anywhere.
 
-import { readdirSync, statSync, existsSync } from 'node:fs';
+import { readdirSync, statSync, existsSync, rmSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
@@ -265,6 +265,9 @@ const EXTRA_PATHS = [
   '/cps/marketing', '/command', '/portfolio', '/search?q=ai',
   '/p/omnileads/federation-pilot', '/p/rene/rene-sacred-letter-test',
   '/llms.txt', '/robots.txt',
+  // A real booking link. `/book/[business]` is keyed by the business's
+  // uuid, so without this the gate never sees the live widget at all.
+  '/book/6ddda3b5-c51b-4965-822a-88d692fc2544',
 ];
 
 // Paths that MUST answer HTTP 404. One per dynamic route family that calls
@@ -283,12 +286,18 @@ const NOT_FOUND_PROBES = [
   '/federation/case-studies/zzzz-not-a-real-page',
   '/referral/renelaveau/ZZZZNOTACODE',
   '/alira/referral/ZZZZNOTACODE',
+  '/book/00000000-0000-0000-0000-000000000000',
 ];
 
 // ── Main ────────────────────────────────────────────────────────────────────
 const chromePath = findChromium();
 const port = 9500 + Math.floor(Math.random() * 400);
-const profile = `/tmp/omni-live-audit-${port}`;
+// The profile directory is per-run, not per-port. Chrome persists its HTTP
+// cache in the profile, so a reused directory can replay a chunk URL from a
+// previous build and report it as a 404 on a page that never referenced it —
+// a phantom finding that sends you chasing a bug that does not exist.
+const profile = `/tmp/omni-live-audit-${port}-${process.pid}`;
+rmSync(profile, { recursive: true, force: true });
 const chrome = spawn(chromePath, [
   `--remote-debugging-port=${port}`,
   `--user-data-dir=${profile}`,
@@ -301,7 +310,10 @@ const chrome = spawn(chromePath, [
   '--hide-scrollbars',
 ], { stdio: 'ignore' });
 
-const cleanup = () => { try { chrome.kill('SIGKILL'); } catch { /* already gone */ } };
+const cleanup = () => {
+  try { chrome.kill('SIGKILL'); } catch { /* already gone */ }
+  try { rmSync(profile, { recursive: true, force: true }); } catch { /* best effort */ }
+};
 process.on('exit', cleanup);
 process.on('SIGINT', () => { cleanup(); process.exit(130); });
 
