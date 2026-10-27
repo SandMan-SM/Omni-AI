@@ -1,19 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from '@supabase/supabase-js';
 import { notifyBooking } from '@/lib/agi/telegram';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
 import { requireAdminOrBrandMember } from '@/lib/admin-auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { rateLimit, getClientIp, rateLimitResponse } from '@/lib/rate-limit';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// `omni_meeting_bookings` is RLS-locked to `service_role`. The anon key
+// could not SELECT it (the dashboard's booking list came back empty) and
+// could not INSERT/UPDATE/DELETE it (every public booking 500'd, every
+// cancel 500'd, and the "slot already booked" guard never fired because
+// it read zero rows). Everything below therefore uses the service role.
+const supabase = createAdminClient();
 
 export async function GET(req: NextRequest) {
   noStore();
@@ -24,8 +26,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   if (business_id) {
-    const adminSupabase = createAdminClient();
-    const { data: biz, error: bizError } = await adminSupabase
+    const { data: biz, error: bizError } = await supabase
       .from('omni_businesses')
       .select('slug')
       .eq('id', business_id)
@@ -61,6 +62,14 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    // This endpoint is public — the booking widget posts here with no
+    // session — and it now writes with the service role, so it can
+    // insert for any business id. Rate-limit it and refuse ids that do
+    // not name a real business.
+    const ip = getClientIp(req.headers);
+    const limit = rateLimit(`meeting-book:${ip}`, 5, 10 * 60 * 1000);
+    if (!limit.ok) return rateLimitResponse(limit.resetMs);
+
     const {
       business_id, lead_id, start_at, duration_minutes,
       attendee_name, attendee_email, attendee_phone, attendee_notes,
@@ -68,6 +77,15 @@ export async function POST(req: NextRequest) {
 
     if (!business_id || !start_at || !attendee_name || !attendee_email) {
       return NextResponse.json({ error: 'business_id, start_at, attendee_name, attendee_email required' }, { status: 400 });
+    }
+
+    const { data: biz } = await supabase
+      .from('omni_businesses')
+      .select('id')
+      .eq('id', business_id)
+      .maybeSingle();
+    if (!biz) {
+      return NextResponse.json({ error: 'Unknown booking link' }, { status: 404 });
     }
 
     const { data: existing } = await supabase
