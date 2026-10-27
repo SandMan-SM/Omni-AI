@@ -251,14 +251,14 @@ export default function InboxPage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={() => setLogOpen(true)} style={{
+          <button className="min-h-11 md:min-h-0" onClick={() => setLogOpen(true)} style={{
             background: '#191919', border: '1px solid #222', color: '#94a3b8',
             padding: '7px 14px', borderRadius: 8, cursor: 'pointer',
             fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
           }}>
             <Edit3 size={11} /> Log a reply
           </button>
-          <button onClick={loadReplies} style={{
+          <button className="min-h-11 md:min-h-0" onClick={loadReplies} style={{
             background: 'none', border: '1px solid #222', color: '#555',
             padding: '7px 12px', borderRadius: 8, cursor: 'pointer',
             display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
@@ -385,7 +385,7 @@ export default function InboxPage() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.7px' }}>
                     <Sparkles size={11} /> AI Draft Response
                   </div>
-                  <button onClick={handleDraft} disabled={drafting} style={{
+                  <button className="min-h-11 md:min-h-0" onClick={handleDraft} disabled={drafting} style={{
                     background: 'transparent', border: '1px solid #10b98140',
                     color: '#10b981', padding: '4px 10px', borderRadius: 6,
                     fontSize: 11, fontWeight: 600, cursor: drafting ? 'not-allowed' : 'pointer',
@@ -394,6 +394,7 @@ export default function InboxPage() {
                   </button>
                 </div>
                 <textarea
+                  aria-label="Drafted reply"
                   value={draft}
                   onChange={e => setDraft(e.target.value)}
                   placeholder="Click 'Generate' to have Claude draft a response..."
@@ -404,7 +405,7 @@ export default function InboxPage() {
                   }}
                 />
                 <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
-                  <button onClick={handleSendDraft} disabled={!draft || !selected.lead?.email} style={{
+                  <button className="min-h-11 md:min-h-0" onClick={handleSendDraft} disabled={!draft || !selected.lead?.email} style={{
                     background: draft && selected.lead?.email ? '#10b981' : '#1a1a1a',
                     color: draft && selected.lead?.email ? '#fff' : '#555',
                     border: 'none', padding: '10px 20px', borderRadius: 10,
@@ -414,7 +415,7 @@ export default function InboxPage() {
                   }}>
                     <Send size={12} /> Send Reply
                   </button>
-                  <button onClick={handleMarkHandled} style={{
+                  <button className="min-h-11 md:min-h-0" onClick={handleMarkHandled} style={{
                     background: 'transparent', border: '1px solid #222',
                     color: '#94a3b8', padding: '10px 16px', borderRadius: 10,
                     fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -470,10 +471,11 @@ export default function InboxPage() {
               When a lead replies in Gmail (not via Resend), paste the reply here.
               Claude auto-categorizes + drafts a response.
             </p>
-            <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>
+            <label htmlFor="log-asset-id" style={{ display: 'block', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>
               Outreach Asset ID
             </label>
             <input
+              id="log-asset-id"
               value={logAsset}
               onChange={e => setLogAsset(e.target.value)}
               placeholder="UUID of the asset they replied to"
@@ -483,10 +485,11 @@ export default function InboxPage() {
                 fontFamily: 'ui-monospace, SFMono-Regular, monospace', marginBottom: 14,
               }}
             />
-            <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>
+            <label htmlFor="log-reply-text" style={{ display: 'block', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>
               Reply text
             </label>
             <textarea
+              id="log-reply-text"
               value={logText}
               onChange={e => setLogText(e.target.value)}
               placeholder="Paste the full reply..."

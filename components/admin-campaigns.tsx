@@ -48,6 +48,18 @@ const GRADIENT_OPTIONS = [
   "from-pink-500 to-rose-600",
 ];
 
+/**
+ * A readable name for a gradient swatch. The option itself is a pair of
+ * Tailwind class names ("from-purple-600 to-blue-500"), which means
+ * nothing to a screen reader — "purple to blue" does.
+ */
+function gradientLabel(gradient: string): string {
+  return gradient
+    .split(" ")
+    .map((part) => part.replace(/^(from|to)-/, "").replace(/-\d{2,3}$/, ""))
+    .join(" to ");
+}
+
 const statusColors: Record<string, string> = {
   active: "bg-green-500/10 text-green-400 border-green-500/20",
   paused: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
@@ -470,6 +482,8 @@ function CampaignDialog({ open, onClose, users, onSaved, campaign }: {
             <div className="flex flex-wrap gap-1.5">
               {GRADIENT_OPTIONS.map(g => (
                 <button key={g} onClick={() => set("thumbnail")(g)}
+                  aria-label={gradientLabel(g)}
+                  aria-pressed={form.thumbnail === g}
                   className={`h-11 w-11 md:h-7 md:w-7 rounded-md bg-gradient-to-br ${g} border-2 transition-all ${form.thumbnail === g ? "border-white scale-110" : "border-transparent opacity-60 hover:opacity-100"}`}
                 />
               ))}

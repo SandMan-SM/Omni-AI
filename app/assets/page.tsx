@@ -677,7 +677,7 @@ function ActionButton({ label, endpoint, method }: { label: string; endpoint: st
     }
   }
   return (
-    <button
+    <button className="min-h-11 md:min-h-0"
       onClick={fire}
       disabled={busy}
       style={{

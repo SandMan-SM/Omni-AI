@@ -171,7 +171,7 @@ export default function BillingPage() {
 
           <div style={{ display: 'flex', gap: 10 }}>
             {selectedBiz?.stripe_customer_id ? (
-              <button onClick={openPortal} disabled={loading} style={{
+              <button className="min-h-11 md:min-h-0" onClick={openPortal} disabled={loading} style={{
                 background: '#10b981', color: '#fff', border: 'none',
                 padding: '10px 20px', borderRadius: 10,
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',

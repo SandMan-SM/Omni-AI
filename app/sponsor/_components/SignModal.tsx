@@ -291,6 +291,7 @@ export function SignModal({
             <form onSubmit={onSign} className="mt-2 space-y-3">
               <input
                 type="text"
+                aria-label="Full legal name"
                 placeholder="Type your full legal name"
                 value={signerName}
                 onChange={(e) => setSignerName(e.target.value)}
@@ -304,6 +305,7 @@ export function SignModal({
               />
               <input
                 type="email"
+                aria-label="Email address"
                 placeholder="your.email@example.com"
                 value={signerEmail}
                 onChange={(e) => setSignerEmail(e.target.value)}

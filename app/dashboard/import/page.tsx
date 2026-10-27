@@ -201,7 +201,7 @@ export default function ImportPage() {
               Choose CSV file
               <input type="file" accept=".csv,.txt" onChange={handleFile} style={{ display: 'none' }} />
             </label>
-            <button onClick={() => setCsv(SAMPLE)} style={{
+            <button className="min-h-11 md:min-h-0" onClick={() => setCsv(SAMPLE)} style={{
               padding: '8px 14px', borderRadius: 8, cursor: 'pointer',
               background: 'transparent', border: '1px solid #222', fontSize: 12, color: '#666',
             }}>
@@ -210,6 +210,7 @@ export default function ImportPage() {
           </div>
 
           <textarea
+            aria-label="CSV data to import"
             value={csv}
             onChange={e => setCsv(e.target.value)}
             placeholder="Paste CSV here..."
@@ -221,7 +222,7 @@ export default function ImportPage() {
           />
 
           <div style={{ display: 'flex', gap: 10, marginTop: 12 }}>
-            <button onClick={handleParse} disabled={!csv} style={{
+            <button className="min-h-11 md:min-h-0" onClick={handleParse} disabled={!csv} style={{
               padding: '8px 16px', borderRadius: 8, cursor: csv ? 'pointer' : 'not-allowed',
               background: csv ? '#191919' : '#0d0d0d',
               border: '1px solid #222', fontSize: 12, color: csv ? '#94a3b8' : '#444',
@@ -229,7 +230,7 @@ export default function ImportPage() {
             }}>
               Preview rows
             </button>
-            <button onClick={handleImport} disabled={parsed.length === 0 || importing || !selectedBiz} style={{
+            <button className="min-h-11 md:min-h-0" onClick={handleImport} disabled={parsed.length === 0 || importing || !selectedBiz} style={{
               padding: '8px 20px', borderRadius: 8,
               cursor: parsed.length > 0 && selectedBiz ? 'pointer' : 'not-allowed',
               background: parsed.length > 0 && selectedBiz && !importing ? '#10b981' : '#0d2a1e',

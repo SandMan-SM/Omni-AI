@@ -183,7 +183,7 @@ export default function MeetingsPage() {
             )}
           </div>
         </div>
-        <button onClick={load} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+        <button className="min-h-11 md:min-h-0" onClick={load} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
           <RefreshCw size={12} /> Refresh
         </button>
       </header>
@@ -209,7 +209,7 @@ export default function MeetingsPage() {
           </code>
           {/* Buttons below — Copy + Preview side-by-side, full-width on mobile */}
           <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-            <button onClick={() => { navigator.clipboard.writeText(bookingUrl); showToast('Copied!'); }} style={{
+            <button className="min-h-11 md:min-h-0" onClick={() => { navigator.clipboard.writeText(bookingUrl); showToast('Copied!'); }} style={{
               background: '#191919', border: '1px solid #222', color: '#94a3b8',
               padding: '9px 14px', borderRadius: 8, cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 12,
@@ -520,12 +520,13 @@ function MeetingPanel({
                   {start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} · {booking.duration_minutes} min
                 </div>
               </div>
-              <button onClick={() => setEditingTime(true)} disabled={busy || cancelled} style={smallBtn}><RotateCcw size={11} /> Reschedule</button>
+              <button className="min-h-11 md:min-h-0" onClick={() => setEditingTime(true)} disabled={busy || cancelled} style={smallBtn}><RotateCcw size={11} /> Reschedule</button>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <input
                 type="datetime-local"
+                aria-label="New meeting start time"
                 value={newStart}
                 onChange={e => setNewStart(e.target.value)}
                 style={{ background: '#0a0a0a', border: '1px solid #222', color: '#e8e8e8', padding: '8px 10px', borderRadius: 6, fontSize: 16 }}
@@ -534,6 +535,7 @@ function MeetingPanel({
                 <span style={{ fontSize: 12, color: '#94a3b8' }}>Duration</span>
                 <input
                   type="number"
+                  aria-label="Duration in minutes"
                   value={duration}
                   onChange={e => setDuration(Number(e.target.value))}
                   min={5} max={240} step={5}
@@ -542,7 +544,7 @@ function MeetingPanel({
               </div>
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={saveTime} disabled={busy} style={primaryBtn}>Save</button>
-                <button onClick={() => setEditingTime(false)} style={smallBtn}>Cancel</button>
+                <button className="min-h-11 md:min-h-0" onClick={() => setEditingTime(false)} style={smallBtn}>Cancel</button>
               </div>
             </div>
           )}
@@ -567,11 +569,12 @@ function MeetingPanel({
         <div style={{ background: '#111', border: '1px solid #1e1e1e', borderRadius: 10, padding: 14 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <div style={{ fontSize: 10, color: '#666', textTransform: 'uppercase', letterSpacing: 0.7, fontWeight: 700 }}>Notes</div>
-            {!editingNotes && <button onClick={() => setEditingNotes(true)} disabled={busy} style={smallBtn}><Edit3 size={11} /> Edit</button>}
+            {!editingNotes && <button className="min-h-11 md:min-h-0" onClick={() => setEditingNotes(true)} disabled={busy} style={smallBtn}><Edit3 size={11} /> Edit</button>}
           </div>
           {editingNotes ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <textarea
+                aria-label="Meeting notes"
                 value={notes}
                 onChange={e => setNotes(e.target.value)}
                 rows={5}
@@ -579,7 +582,7 @@ function MeetingPanel({
               />
               <div style={{ display: 'flex', gap: 6 }}>
                 <button onClick={saveNotes} disabled={busy} style={primaryBtn}>Save</button>
-                <button onClick={() => { setNotes(booking.attendee_notes ?? ''); setEditingNotes(false); }} style={smallBtn}>Cancel</button>
+                <button className="min-h-11 md:min-h-0" onClick={() => { setNotes(booking.attendee_notes ?? ''); setEditingNotes(false); }} style={smallBtn}>Cancel</button>
               </div>
             </div>
           ) : (
@@ -594,10 +597,10 @@ function MeetingPanel({
           {!cancelled ? (
             <>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                <button onClick={markCompleted} disabled={busy} style={successBtn}><CheckCircle2 size={13} /> Mark completed</button>
-                <button onClick={markNoShow} disabled={busy} style={smallBtn}>No-show</button>
+                <button className="min-h-11 md:min-h-0" onClick={markCompleted} disabled={busy} style={successBtn}><CheckCircle2 size={13} /> Mark completed</button>
+                <button className="min-h-11 md:min-h-0" onClick={markNoShow} disabled={busy} style={smallBtn}>No-show</button>
               </div>
-              <button onClick={cancel} disabled={busy} style={dangerBtn}><CalendarX size={13} /> Cancel meeting</button>
+              <button className="min-h-11 md:min-h-0" onClick={cancel} disabled={busy} style={dangerBtn}><CalendarX size={13} /> Cancel meeting</button>
             </>
           ) : (
             <button onClick={reactivate} disabled={busy} style={primaryBtn}><RotateCcw size={13} /> Reactivate</button>

@@ -398,7 +398,7 @@ export function AgentEditPanel({
               <button onClick={onClose} style={{ ...iconBtn, flex: 1, justifyContent: "center", padding: "11px 14px", fontSize: 13 }}>
                 Cancel
               </button>
-              <button onClick={save} disabled={saving} style={{
+              <button className="min-h-11 md:min-h-0" onClick={save} disabled={saving} style={{
                 flex: 2, justifyContent: "center",
                 background: "linear-gradient(135deg, #10b981, #059669)",
                 color: "#fff", border: "none",

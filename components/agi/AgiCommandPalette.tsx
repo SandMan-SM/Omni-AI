@@ -107,7 +107,7 @@ export function AgiCommandPalette() {
   if (!open) {
     // Floating "⌘K" hint badge in the corner
     return (
-      <button
+      <button className="min-h-11 md:min-h-0"
         onClick={() => setOpen(true)}
         style={{
           position: "fixed", bottom: 18, right: 18, zIndex: 40,
@@ -160,6 +160,7 @@ export function AgiCommandPalette() {
           <Search size={16} color="#666" />
           <input
             ref={inputRef}
+            aria-label="Search commands"
             value={query}
             onChange={e => setQuery(e.target.value)}
             onKeyDown={onKeyDown}

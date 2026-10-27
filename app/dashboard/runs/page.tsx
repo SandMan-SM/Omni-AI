@@ -144,7 +144,7 @@ export default function RunsPage() {
             </div>
           )}
         </div>
-        <button onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+        <button className="min-h-11 md:min-h-0" onClick={load} style={{ marginLeft: 'auto', background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
           <RefreshCw size={12} /> Refresh
         </button>
       </header>

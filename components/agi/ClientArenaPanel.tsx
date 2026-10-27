@@ -187,11 +187,12 @@ export function ClientArenaPanel() {
 
       {/* Rename */}
       <div className="rounded-xl border border-white/10 bg-black/20 p-5">
-        <label className="block text-[11px] uppercase tracking-widest text-gray-400 mb-2">
+        <label htmlFor="arena-agent-name" className="block text-[11px] uppercase tracking-widest text-gray-400 mb-2">
           Your agent&apos;s name
         </label>
         <div className="flex gap-2 flex-wrap">
           <input
+            id="arena-agent-name"
             value={editingName}
             onChange={(e) => setEditingName(e.target.value)}
             placeholder="e.g. Apollo, Atlas, Mercury…"

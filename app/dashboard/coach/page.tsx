@@ -178,7 +178,7 @@ export default function CoachPage() {
             )}
           </div>
         </div>
-        <button onClick={regenerate} disabled={generating} style={{
+        <button className="min-h-11 md:min-h-0" onClick={regenerate} disabled={generating} style={{
           background: generating ? '#1a1a2e' : 'linear-gradient(135deg, #a78bfa, #818cf8)',
           color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8,
           fontSize: 13, fontWeight: 700, cursor: generating ? 'not-allowed' : 'pointer',
@@ -241,14 +241,14 @@ export default function CoachPage() {
                     )}
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                    <button onClick={() => markActed(r.id)} style={{
+                    <button className="min-h-11 md:min-h-0" onClick={() => markActed(r.id)} style={{
                       background: '#10b981', color: '#fff', border: 'none',
                       padding: '6px 12px', borderRadius: 6, cursor: 'pointer',
                       fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4,
                     }}>
                       <CheckCircle2 size={11} /> Done
                     </button>
-                    <button onClick={() => dismiss(r.id)} style={{
+                    <button className="min-h-11 md:min-h-0" onClick={() => dismiss(r.id)} style={{
                       background: 'transparent', color: '#666', border: '1px solid #222',
                       padding: '6px 12px', borderRadius: 6, cursor: 'pointer',
                       fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4,

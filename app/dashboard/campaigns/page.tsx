@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useId } from 'react';
 import Link from 'next/link';
 import { supabase, type Business, type Campaign } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
@@ -164,7 +164,7 @@ export default function CampaignsPage() {
             )}
           </div>
         </div>
-        <button onClick={() => setCreating(true)} style={{
+        <button className="min-h-11 md:min-h-0" onClick={() => setCreating(true)} style={{
           background: '#10b981', color: '#fff', border: 'none',
           padding: '8px 16px', borderRadius: 8,
           fontSize: 13, fontWeight: 700, cursor: 'pointer',
@@ -193,7 +193,7 @@ export default function CampaignsPage() {
             <div style={{ fontSize: 13, color: '#555', marginTop: 8 }}>
               Create a campaign to define an ICP. Imports and outreach can be linked to a campaign for tracking.
             </div>
-            <button onClick={() => setCreating(true)} style={{
+            <button className="min-h-11 md:min-h-0" onClick={() => setCreating(true)} style={{
               marginTop: 20, background: '#10b981', color: '#fff', border: 'none',
               padding: '10px 20px', borderRadius: 10,
               fontSize: 13, fontWeight: 700, cursor: 'pointer',
@@ -383,7 +383,7 @@ function CampaignEditor({ campaign, onSave, onCancel }: {
           {SENIORITY_OPTIONS.map(s => {
             const active = seniorities.includes(s);
             return (
-              <button key={s} onClick={() => toggleSeniority(s)} style={{
+              <button className="min-h-11 md:min-h-0" key={s} onClick={() => toggleSeniority(s)} style={{
                 padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600,
                 cursor: 'pointer', textTransform: 'capitalize',
                 border: `1.5px solid ${active ? '#10b981' : '#222'}`,
@@ -398,12 +398,12 @@ function CampaignEditor({ campaign, onSave, onCancel }: {
       </div>
 
       <div style={{ marginTop: 20, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-        <button onClick={onCancel} style={{
+        <button className="min-h-11 md:min-h-0" onClick={onCancel} style={{
           background: 'transparent', border: '1px solid #222',
           color: '#94a3b8', padding: '10px 18px', borderRadius: 8,
           fontSize: 13, fontWeight: 600, cursor: 'pointer',
         }}>Cancel</button>
-        <button onClick={handleSave} disabled={!name} style={{
+        <button className="min-h-11 md:min-h-0" onClick={handleSave} disabled={!name} style={{
           background: name ? '#10b981' : '#0d2a1e',
           color: name ? '#fff' : '#10b981', border: 'none',
           padding: '10px 20px', borderRadius: 8,
@@ -419,10 +419,14 @@ function CampaignEditor({ campaign, onSave, onCancel }: {
 }
 
 function Field({ label, value, onChange, placeholder }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string }) {
+  // The label is a sibling of the control, so it needs an explicit
+  // association — otherwise the field has no accessible name.
+  const id = useId();
   return (
     <div style={{ marginBottom: 12 }}>
-      <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
       <input
+        id={id}
         value={value}
         onChange={e => onChange(e.target.value)}
         placeholder={placeholder}

@@ -160,6 +160,7 @@ export default function CompaniesPage() {
             </div>
             <div style={{ display: 'flex', gap: 6 }}>
               <input
+                aria-label="Company domain"
                 value={domain}
                 onChange={e => setDomain(e.target.value)}
                 placeholder="domain.com"

@@ -169,7 +169,7 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
           </div>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {asset.subject_variants.map((s, i) => (
-              <button key={i} onClick={() => setSubjectIdx(i)} style={{
+              <button className="min-h-11 md:min-h-0" key={i} onClick={() => setSubjectIdx(i)} style={{
                 fontSize: 12, padding: '6px 10px', borderRadius: 6, cursor: 'pointer',
                 background: subjectIdx === i ? '#1a2e1e' : '#161616',
                 color: subjectIdx === i ? '#10b981' : '#94a3b8',
@@ -186,6 +186,7 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
       {/* Body */}
       {editing ? (
         <textarea
+          aria-label="Outreach message body"
           value={bodyOverride}
           onChange={e => setBodyOverride(e.target.value)}
           style={{
@@ -214,7 +215,7 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
       {/* Actions */}
       <div style={{ marginTop: 14, display: 'flex', gap: 8 }}>
         {isEmail && asset.status === 'draft' && (
-          <button onClick={() => onSend(asset.id)} disabled={!lead.email} style={{
+          <button className="min-h-11 md:min-h-0" onClick={() => onSend(asset.id)} disabled={!lead.email} style={{
             background: lead.email ? '#10b981' : '#1a1a1a',
             color: lead.email ? '#fff' : '#555',
             border: 'none', padding: '8px 16px', borderRadius: 8,
@@ -225,7 +226,7 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
           </button>
         )}
         {isEmail && asset.status === 'draft' && lead.email && (
-          <button style={{
+          <button className="min-h-11 md:min-h-0" style={{
             background: 'transparent', border: '1px solid #222',
             color: '#94a3b8', padding: '8px 16px', borderRadius: 8,
             fontSize: 12, fontWeight: 600, cursor: 'pointer',
@@ -278,7 +279,7 @@ function AssetCard({ asset, lead, onSend, onCopy, onRegenerate }: {
             <Phone size={12} /> No phone
           </span>
         ))}
-        <button onClick={onRegenerate} style={{
+        <button className="min-h-11 md:min-h-0" onClick={onRegenerate} style={{
           marginLeft: 'auto', background: 'transparent', border: '1px solid #222',
           color: '#666', padding: '8px 14px', borderRadius: 8,
           fontSize: 11, cursor: 'pointer',
@@ -355,7 +356,7 @@ function LeadSidebar({ leads, selectedId, onSelect, onEnrich }: {
                   ✓ Enriched
                 </span>
               ) : (
-                <button onClick={(e) => { e.stopPropagation(); onEnrich(l.id); }} style={{
+                <button className="min-h-11 md:min-h-0" onClick={(e) => { e.stopPropagation(); onEnrich(l.id); }} style={{
                   fontSize: 10, color: '#fb923c', background: '#2a1a0d',
                   border: '1px solid #fb923c40', padding: '2px 6px', borderRadius: 4,
                   cursor: 'pointer',
@@ -680,7 +681,7 @@ export default function OutreachPage() {
                     )}
                   </div>
                 </div>
-                <button className="agi-outreach-generate-btn" onClick={handleGenerate} disabled={generating} style={{
+                <button className="agi-outreach-generate-btn min-h-11 md:min-h-0" onClick={handleGenerate} disabled={generating} style={{
                   background: generating ? '#0d2a1e' : 'linear-gradient(135deg, #10b981, #818cf8)',
                   color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 10,
                   cursor: generating ? 'not-allowed' : 'pointer',

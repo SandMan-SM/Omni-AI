@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useId } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
@@ -228,7 +228,7 @@ export default function SettingsPage() {
 
         {/* Save */}
         <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-          <button onClick={handleSave} disabled={saving} style={{
+          <button className="min-h-11 md:min-h-0" onClick={handleSave} disabled={saving} style={{
             background: saving ? '#0d2a1e' : '#10b981',
             color: saving ? '#10b981' : '#fff', border: 'none',
             padding: '12px 24px', borderRadius: 10,
@@ -261,12 +261,16 @@ export default function SettingsPage() {
 function Field({ label, value, onChange, placeholder, icon: Icon }: {
   label: string; value: string; onChange: (v: string) => void; placeholder?: string; icon?: React.ElementType;
 }) {
+  // The label is a sibling of the control, so it needs an explicit
+  // association — otherwise the field has no accessible name.
+  const id = useId();
   return (
     <div>
-      <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#0a0a0a', border: '1px solid #222', borderRadius: 8, padding: '10px 12px' }}>
-        {Icon && <Icon size={13} color="#555" />}
+        {Icon && <Icon size={13} color="#94a3b8" />}
         <input
+          id={id}
           value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
           style={{ flex: 1, background: 'transparent', border: 'none', color: '#e8e8e8', fontSize: 16, outline: 'none' }}
         />

@@ -261,7 +261,7 @@ export default function PipelinePage() {
           </div>
         </div>
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={bulkScore} disabled={scoring} style={{
+          <button className="min-h-11 md:min-h-0" onClick={bulkScore} disabled={scoring} style={{
             background: scoring ? '#1a1a2e' : '#191919',
             border: '1px solid #a78bfa40', color: '#a78bfa',
             padding: '7px 14px', borderRadius: 8, cursor: scoring ? 'not-allowed' : 'pointer',
@@ -269,7 +269,7 @@ export default function PipelinePage() {
           }}>
             <Sparkles size={11} /> {scoring ? 'Scoring…' : 'AI re-score all'}
           </button>
-          <button onClick={load} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '7px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <button className="min-h-11 md:min-h-0" onClick={load} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '7px 12px', borderRadius: 8, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <RefreshCw size={12} /> Refresh
           </button>
         </div>
@@ -340,7 +340,7 @@ export default function PipelinePage() {
                 Open for 14+ days with no movement — total ${stuckLeads.reduce((s, l) => s + ((l.deal_value ?? 0) / 100), 0).toFixed(0)} sitting idle.
               </div>
             </div>
-            <button
+            <button className="min-h-11 md:min-h-0"
               onClick={() => setEditing(stuckLeads[0])}
               style={{
                 background: "#f87171", border: "none", color: "#000",
@@ -480,7 +480,7 @@ export default function PipelinePage() {
             <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 8 }}>Stage</label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 18 }}>
               {STAGES.map(s => (
-                <button key={s.key} onClick={() => moveStage(editing.id, s.key)} style={{
+                <button className="min-h-11 md:min-h-0" key={s.key} onClick={() => moveStage(editing.id, s.key)} style={{
                   padding: '6px 12px', borderRadius: 6, fontSize: 11, fontWeight: 600,
                   cursor: 'pointer',
                   border: `1.5px solid ${editing.deal_stage === s.key ? s.color : '#222'}`,
@@ -492,8 +492,9 @@ export default function PipelinePage() {
               ))}
             </div>
 
-            <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 8 }}>Deal Value (cents)</label>
+            <label htmlFor="deal-value-cents" style={{ display: 'block', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 8 }}>Deal Value (cents)</label>
             <input
+              id="deal-value-cents"
               type="number"
               defaultValue={editing.deal_value ?? 0}
               onBlur={e => updateDealValue(editing.id, parseInt(e.target.value) || 0)}

@@ -150,7 +150,7 @@ export default function TrackingSetupPage() {
           {INBOUND_SLUGS.map((s) => {
             const isActive = active === s;
             return (
-              <button
+              <button className="min-h-11 md:min-h-0"
                 key={s}
                 onClick={() => setActive(s)}
                 style={{
@@ -190,7 +190,7 @@ export default function TrackingSetupPage() {
         <div style={{ background: "#111", border: "1px solid #1e1e1e", borderRadius: 12, overflow: "hidden" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", borderBottom: "1px solid #1e1e1e" }}>
             <span style={{ fontSize: 12, color: "#94a3b8", fontWeight: 600 }}>{INBOUND_SLUG_LABELS[active]} install snippet</span>
-            <button
+            <button className="min-h-11 md:min-h-0"
               onClick={() => copy(active)}
               style={{
                 background: copied === active ? "#0d2a1e" : "#191919",

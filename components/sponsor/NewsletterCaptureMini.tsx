@@ -110,7 +110,7 @@ export function NewsletterCaptureMini({
             fontSize: 16,
           }}
         />
-        <button
+        <button className="min-h-11 md:min-h-0"
           type="submit"
           disabled={status === "sending" || status === "ok"}
           style={{

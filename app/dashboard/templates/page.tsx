@@ -205,7 +205,7 @@ export default function TemplatesPage() {
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                   <span style={{ fontSize: 11, color: '#555' }}>Used {t.use_count} times</span>
-                  <button
+                  <button className="min-h-11 md:min-h-0"
                     onClick={() => handleApply(t.id)}
                     disabled={isApplying || !selectedBiz}
                     style={{

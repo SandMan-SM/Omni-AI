@@ -415,7 +415,7 @@ function ApplyForm({ landing }: { landing: Landing }) {
           aria-label="What would you sponsor?"
           style={{ ...inputStyle, resize: 'vertical' }}
         />
-        <button
+        <button className="min-h-11 md:min-h-0"
           type="submit"
           style={{
             padding: '12px 24px',

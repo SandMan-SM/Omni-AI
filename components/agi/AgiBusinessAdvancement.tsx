@@ -127,7 +127,7 @@ export function AgiBusinessAdvancement() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button onClick={() => setOnboarding(true)} style={{
+          <button className="min-h-11 md:min-h-0" onClick={() => setOnboarding(true)} style={{
             background: "linear-gradient(135deg, #10b981, #818cf8)", border: "none", color: "#fff",
             padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 700,
             cursor: "pointer",
@@ -135,7 +135,7 @@ export function AgiBusinessAdvancement() {
           }}>
             <Plus size={12} /> Onboard business
           </button>
-          <button onClick={load} disabled={loading} style={{
+          <button className="min-h-11 md:min-h-0" onClick={load} disabled={loading} style={{
             background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#cbd5e1",
             padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600,
             cursor: loading ? "wait" : "pointer",
@@ -474,11 +474,11 @@ function OnboardModal({ onClose, onCreated }: { onClose: () => void; onCreated: 
         </Lbl>
 
         <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-          <button onClick={onClose} style={{
+          <button className="min-h-11 md:min-h-0" onClick={onClose} style={{
             flex: 1, background: "#191919", border: "1px solid #2a2a2a", color: "#cbd5e1",
             padding: "10px 14px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
           }}>Cancel</button>
-          <button onClick={submit} disabled={busy || !name.trim()} style={{
+          <button className="min-h-11 md:min-h-0" onClick={submit} disabled={busy || !name.trim()} style={{
             flex: 2,
             background: busy ? "#0d2a1e" : "linear-gradient(135deg, #10b981, #818cf8)",
             border: "none", color: "#fff",

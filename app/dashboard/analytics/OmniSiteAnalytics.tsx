@@ -256,7 +256,7 @@ export function OmniSiteAnalytics({
             {RANGES.map(r => {
               const active = r.id === range;
               return (
-                <button
+                <button className="min-h-11 md:min-h-0"
                   key={r.id}
                   onClick={() => setRange(r.id)}
                   disabled={loading && active}
@@ -277,7 +277,7 @@ export function OmniSiteAnalytics({
               );
             })}
           </div>
-          <button
+          <button className="min-h-11 md:min-h-0"
             onClick={() => setReloadAt(Date.now())}
             disabled={loading}
             style={{

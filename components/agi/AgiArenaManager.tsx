@@ -220,7 +220,7 @@ export function AgiArenaManager() {
           </div>
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <button
+          <button className="min-h-11 md:min-h-0"
             onClick={() => setEditing("new")}
             style={{
               background: "linear-gradient(135deg, #f59e0b, #f97316)",
@@ -245,7 +245,7 @@ export function AgiArenaManager() {
       <div style={{ padding: "12px 24px", borderBottom: "1px solid #1e1e1e" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#0a0a0a", border: "1px solid #1e1e1e", borderRadius: 8, padding: "8px 12px" }}>
           <Search size={13} color="#555" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search agents, business, or owner…" style={{ background: "transparent", border: "none", outline: "none", color: "#e8e8e8", fontSize: 16, flex: 1, minWidth: 0 }} />
+          <input aria-label="Search agents, business, or owner" value={search} onChange={e => setSearch(e.target.value)} placeholder="Search agents, business, or owner…" style={{ background: "transparent", border: "none", outline: "none", color: "#e8e8e8", fontSize: 16, flex: 1, minWidth: 0 }} />
           {search && <button onClick={() => setSearch("")} style={{ background: "none", border: "none", color: "#666", cursor: "pointer", fontSize: 12 }}>clear</button>}
         </div>
       </div>

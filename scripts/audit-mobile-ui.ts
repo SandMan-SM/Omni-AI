@@ -203,6 +203,46 @@ function innerOf(src: string, openTagEnd: number, tag: string): string | undefin
 }
 
 /**
+ * A JSX element in either of the two shapes the AST gives it.
+ *
+ * `<input />` parses as a `JsxSelfClosingElement` and `<input></input>` as a
+ * `JsxElement`. They are different node kinds, and an earlier version of this
+ * gate only walked `JsxElement` — which meant every self-closing control was
+ * invisible to the accessible-name rules. Since self-closing is how nearly
+ * every `<input />`, `<textarea />` and `<button />` is written, the
+ * `form-control-missing-label` rule silently audited almost nothing.
+ */
+type JsxEl = ts.JsxElement | ts.JsxSelfClosingElement;
+
+/**
+ * The two JSX node kinds do not have the same shape: a `JsxElement` wraps
+ * its tag in an `openingElement`, a `JsxSelfClosingElement` does not. These
+ * adapters are the only place that difference is handled.
+ */
+function jsxTagName(el: JsxEl, sf: ts.SourceFile): string {
+  return ts.isJsxElement(el)
+    ? el.openingElement.tagName.getText(sf)
+    : el.tagName.getText(sf);
+}
+
+/** The attributes of a JSX element, in either node shape. */
+function jsxAttrs(el: JsxEl): readonly ts.JsxAttributeLike[] {
+  return ts.isJsxElement(el)
+    ? el.openingElement.attributes.properties
+    : el.attributes.properties;
+}
+
+/** The opening tag's source text, for class-name extraction. */
+function jsxOpeningText(el: JsxEl): string {
+  return ts.isJsxElement(el) ? el.openingElement.getText() : el.getText();
+}
+
+/** The children of a JSX element. A self-closing element has none. */
+function jsxChildren(el: JsxEl): readonly ts.JsxChild[] {
+  return ts.isJsxElement(el) ? el.children : [];
+}
+
+/**
  * The accessible name of a JSX element, following the shape of the
  * accessible-name computation: explicit labels first, then descendant text.
  *
@@ -284,17 +324,17 @@ function jsxExprText(expr: ts.Expression): string | null {
  * being wrapped in a `<label>` element.
  */
 function controlAccessibleName(
-  el: ts.JsxElement,
+  el: JsxEl,
   htmlFor: Set<string>,
   wrappedInLabel: boolean,
 ): string | null {
   let id: string | null = null;
-  for (const attr of el.openingElement.attributes.properties) {
+  for (const attr of jsxAttrs(el)) {
     if (!ts.isJsxAttribute(attr)) continue;
     const name = attr.name.text;
     if (name === "aria-label" || name === "aria-labelledby") return name;
-    if (name === "id" && attr.initializer && ts.isStringLiteral(attr.initializer)) {
-      id = attr.initializer.text;
+    if (name === "id" && attr.initializer) {
+      id = attributeValueText(attr.initializer);
     }
   }
   if (id && htmlFor.has(id)) return "label";
@@ -302,9 +342,82 @@ function controlAccessibleName(
   return null;
 }
 
+/**
+ * The value of an attribute initializer, when it is a string literal, a bare
+ * identifier, or a template literal.
+ *
+ * `id="email"` and `id={fieldId}` both name the control. A template literal
+ * (`` id={`website-${key}`} ``) names it by a shape that depends on runtime
+ * data, but the *source* of two matching attributes is identical, so the
+ * template is normalised to its source text and a control's `id` can still be
+ * matched to a label's `htmlFor`.
+ */
+function attributeValueText(initializer: ts.JsxAttributeValue): string | null {
+  if (ts.isStringLiteral(initializer)) return initializer.text;
+  if (ts.isNoSubstitutionTemplateLiteral(initializer)) return initializer.text;
+  if (ts.isJsxExpression(initializer) && initializer.expression) {
+    const expr = initializer.expression;
+    if (ts.isStringLiteral(expr)) return expr.text;
+    if (ts.isIdentifier(expr)) return expr.text;
+    if (ts.isNoSubstitutionTemplateLiteral(expr)) return expr.text;
+    if (ts.isTemplateExpression(expr)) {
+      let out = expr.head.text;
+      for (const span of expr.templateSpans) {
+        out += `\${${span.expression.getText()}}${span.literal.text}`;
+      }
+      return out;
+    }
+  }
+  return null;
+}
+
+/**
+ * True when a control is removed from the accessibility tree and therefore
+ * does not need an accessible name.
+ *
+ * Three ways that happens in this codebase:
+ *  - `aria-hidden="true"` — the honeypot pattern (an off-screen field that
+ *    traps bot submissions) uses this so a screen reader never reaches it.
+ *  - `type="hidden"` — not rendered at all.
+ *  - the `hidden` utility class — `display: none`, so the control is not
+ *    in the tree. (A responsive variant such as `md:hidden` is NOT exempt:
+ *    the control is still visible on smaller viewports.)
+ */
+function isHiddenFromA11y(el: JsxEl): boolean {
+  for (const attr of jsxAttrs(el)) {
+    if (!ts.isJsxAttribute(attr)) continue;
+    const name = attr.name.text;
+    if (name === "aria-hidden" && attr.initializer) {
+      const value = attributeValueText(attr.initializer);
+      if (value === "true") return true;
+    }
+    if (name === "type" && attr.initializer) {
+      const value = attributeValueText(attr.initializer);
+      if (value === "hidden") return true;
+    }
+    if (name === "className") {
+      const classes = classStrings(attr.getText()).join(" ");
+      if (classes.split(/\s+/).includes("hidden")) return true;
+    }
+  }
+  return false;
+}
+
+/**
+ * True when a control spreads its props, so the caller may be the one that
+ * names it. The shared `Input` / `Textarea` primitives in `components/ui`
+ * forward every prop to the underlying element; their callers pass
+ * `aria-label` (or wrap them in a `<FormLabel>`), and the primitive itself
+ * cannot know which.
+ */
+function spreadsProps(el: JsxEl): boolean {
+  const attrs = jsxAttrs(el);
+  return attrs.some((a) => ts.isJsxSpreadAttribute(a));
+}
+
 /** The accessible name of a `<button>` element, or null when it has none. */
-function buttonAccessibleName(el: ts.JsxElement): string | null {
-  for (const attr of el.openingElement.attributes.properties) {
+function buttonAccessibleName(el: JsxEl): string | null {
+  for (const attr of jsxAttrs(el)) {
     if (!ts.isJsxAttribute(attr)) continue;
     const name = attr.name.text;
     if (name === "aria-label" || name === "aria-labelledby") return name;
@@ -313,7 +426,7 @@ function buttonAccessibleName(el: ts.JsxElement): string | null {
   const text = buttonVisibleText(el);
   if (text) return text;
   // A visually hidden label also names the button.
-  const classes = classStrings(el.openingElement.getText()).join(" ");
+  const classes = classStrings(jsxOpeningText(el)).join(" ");
   if (/sr-only/.test(classes)) return "sr-only";
   return null;
 }
@@ -323,11 +436,11 @@ function buttonAccessibleName(el: ts.JsxElement): string | null {
  * icon. This is what makes a control icon-only — it is independent of
  * whether the button carries an aria-label.
  */
-function buttonVisibleText(el: ts.JsxElement): string | null {
-  const text = jsxChildrenText(el.children);
+function buttonVisibleText(el: JsxEl): string | null {
+  const text = jsxChildrenText(jsxChildren(el) as ts.NodeArray<ts.JsxChild>);
   if (text) return text;
   // An image with alt text names the button it contains.
-  for (const child of el.children) {
+  for (const child of jsxChildren(el)) {
     if (!ts.isJsxElement(child)) continue;
     const tag = child.openingElement.tagName.getText();
     if (tag !== "img" && tag !== "Image") continue;
@@ -371,6 +484,40 @@ function stylePx(style: string, key: string): number | null {
     new RegExp(`(?:^|[,{]\\s*)${key}\\s*:\\s*["'\`](\\d+(?:\\.\\d+)?)px`),
   );
   return quoted ? parseFloat(quoted[1]) : null;
+}
+
+/**
+ * The vertical padding of a `padding` shorthand, in px.
+ *
+ * `padding: 14` → 28 (all four sides), `padding: "10px 12px"` → 20
+ * (top + bottom), `"10px 12px 14px"` → 24, `"10px 12px 14px 16px"` → 24.
+ * Returns null when the value is not a plain px shorthand (`%`, `rem`,
+ * a CSS variable), because those cannot be resolved to a pixel count.
+ */
+function styleVerticalPadding(style: string): number | null {
+  const match = style.match(
+    /(?:^|[,{]\s*)padding\s*:\s*(?:"([^"]*)"|'([^']*)'|([\d.]+))/,
+  );
+  if (!match) return null;
+  const raw = match[1] ?? match[2] ?? match[3];
+  if (raw === undefined) return null;
+
+  // Bare number: every side is the same.
+  if (/^[\d.]+$/.test(raw)) {
+    const n = parseFloat(raw);
+    return Number.isFinite(n) ? n * 2 : null;
+  }
+
+  const parts = raw.trim().split(/\s+/);
+  if (!parts.every(p => /^\d+(?:\.\d+)?px$/.test(p))) return null;
+  const nums = parts.map(p => parseFloat(p));
+  switch (nums.length) {
+    case 1: return nums[0] * 2;
+    case 2: return nums[0] * 2;
+    case 3: return nums[0] + nums[2];
+    case 4: return nums[0] + nums[2];
+    default: return null;
+  }
 }
 
 /** The mobile (unprefixed) font size declared in a class list, if any. */
@@ -592,27 +739,35 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
   const iconOnlyButtons = new Set<number>();
 
   // Every `htmlFor` in the file, so a control's id can be matched to its label.
+  // Both a literal (`htmlFor="email"`) and an identifier (`htmlFor={fieldId}`)
+  // are collected, so `id={fieldId}` on the control matches `htmlFor={fieldId}`
+  // on the label. A template literal names the control by a shape no static
+  // check can resolve, so it is not collected and the control falls back to
+  // its other naming mechanisms.
   const htmlFor = new Set<string>();
   const collectHtmlFor = (node: ts.Node) => {
-    if (
-      ts.isJsxAttribute(node) &&
-      node.name.text === "htmlFor" &&
-      node.initializer &&
-      ts.isStringLiteral(node.initializer)
-    ) {
-      htmlFor.add(node.initializer.text);
+    if (ts.isJsxAttribute(node) && node.name.text === "htmlFor" && node.initializer) {
+      const value = attributeValueText(node.initializer);
+      if (value) htmlFor.add(value);
     }
     ts.forEachChild(node, collectHtmlFor);
   };
   collectHtmlFor(sf);
 
   const visit = (node: ts.Node, inLabel: boolean, inComponent: boolean) => {
-    if (ts.isJsxElement(node)) {
-      const tag = node.openingElement.tagName.getText(sf);
+    // Both JSX shapes must be visited: `<input />` is a self-closing
+    // element and is a different AST node kind from `<input></input>`.
+    const el: JsxEl | null = ts.isJsxElement(node)
+      ? node
+      : ts.isJsxSelfClosingElement(node)
+        ? node
+        : null;
+    if (el) {
+      const tag = jsxTagName(el, sf);
       if (tag === "button") {
-        const start = node.getStart(sf);
-        if (buttonVisibleText(node) === null) iconOnlyButtons.add(start);
-        if (buttonAccessibleName(node) === null) {
+        const start = el.getStart(sf);
+        if (buttonVisibleText(el) === null) iconOnlyButtons.add(start);
+        if (buttonAccessibleName(el) === null) {
           findings.push({
             rule: "icon-button-missing-name",
             file: rel,
@@ -624,7 +779,7 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
       }
       if (tag === "input" || tag === "textarea" || tag === "select") {
         let type = "";
-        for (const attr of node.openingElement.attributes.properties) {
+        for (const attr of jsxAttrs(el)) {
           if (!ts.isJsxAttribute(attr)) continue;
           if (attr.name.text === "type" && attr.initializer && ts.isStringLiteral(attr.initializer)) {
             type = attr.initializer.text;
@@ -634,22 +789,26 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
         if (!notNameable.includes(type)) {
           // A control passed to a custom component may be wrapped in a label
           // by that component's own markup, which this file cannot see.
-          if (!inComponent && controlAccessibleName(node, htmlFor, inLabel) === null) {
+          if (
+            !inComponent &&
+            !isHiddenFromA11y(el) &&
+            !spreadsProps(el) &&
+            controlAccessibleName(el, htmlFor, inLabel) === null
+          ) {
             findings.push({
               rule: "form-control-missing-label",
               file: rel,
-              line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
+              line: sf.getLineAndCharacterOfPosition(el.getStart(sf)).line + 1,
               detail: `<${tag}> has no aria-label, no matching <label htmlFor>, and no wrapping <label>`,
             });
           }
         }
       }
     }
-    const isLabel = ts.isJsxElement(node) && node.openingElement.tagName.getText(sf) === "label";
+    const isLabel = !!el && jsxTagName(el, sf) === "label";
     const nextInLabel = inLabel || isLabel;
     // A capitalised tag is a React component, not an HTML element.
-    const isComponent =
-      ts.isJsxElement(node) && /^[A-Z]/.test(node.openingElement.tagName.getText(sf));
+    const isComponent = !!el && /^[A-Z]/.test(jsxTagName(el, sf));
     const nextInComponent = inComponent || isComponent;
     ts.forEachChild(node, (child) => visit(child, nextInLabel, nextInComponent));
   };
@@ -677,17 +836,23 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
     let height: number | null = null;
     let minHeight: number | null = null;
     let padding: number | null = null;
+    let fontSize: number | null = null;
+    let verticalPadding: number | null = null;
     for (const ref of refs) {
       const obj = styleObjects.get(ref);
       if (!obj) continue;
       height = stylePx(obj, "height") ?? height;
       minHeight = stylePx(obj, "minHeight") ?? minHeight;
       padding = stylePx(obj, "padding") ?? stylePx(obj, "paddingTop") ?? padding;
+      fontSize = stylePx(obj, "fontSize") ?? fontSize;
+      verticalPadding = styleVerticalPadding(obj) ?? verticalPadding;
     }
     // Keys set inline alongside the spread win over the shared object.
     height = stylePx(inline, "height") ?? height;
     minHeight = stylePx(inline, "minHeight") ?? minHeight;
     padding = stylePx(inline, "padding") ?? stylePx(inline, "paddingTop") ?? padding;
+    fontSize = stylePx(inline, "fontSize") ?? fontSize;
+    verticalPadding = styleVerticalPadding(inline) ?? verticalPadding;
 
     // A full-width button is a large target whatever its height — the 44px
     // rule is about small square icon buttons, not wide CTA rows.
@@ -717,6 +882,30 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
           file: rel,
           line: at(index),
           detail: `<button> renders only an icon with ${padding}px inline padding — under the 44px minimum touch target`,
+        });
+      }
+    }
+
+    // A text button with a known font size and known vertical padding has a
+    // computable rendered height: the text's line box (font-size × 1.2 for
+    // the UA default line-height) plus the padding above and below it. This
+    // is the case the icon-only heuristic above cannot see — a
+    // `padding: '10px 12px'` + `fontSize: 12` button renders ~34px tall and
+    // is a legal 44px target only if the author said so.
+    //
+    // It applies to text-only buttons: a child component (an icon) adds its
+    // own box, and the rendered height is then not the text's line box.
+    if (declared === null && fontSize !== null && verticalPadding !== null) {
+      const start = code.indexOf("<button", index);
+      const body = start >= 0 ? code.slice(start, code.indexOf(">", start) + 1) : "";
+      const hasIconChild = /<[A-Z][A-Za-z0-9]*[\s/>]/.test(body);
+      const rendered = Math.round(fontSize * 1.2 + verticalPadding);
+      if (!hasIconChild && rendered < 44) {
+        findings.push({
+          rule: "inline-tap-target-under-44",
+          file: rel,
+          line: at(index),
+          detail: `<button> renders ~${rendered}px tall (${fontSize}px text + ${verticalPadding}px padding) — under the 44px minimum touch target`,
         });
       }
     }

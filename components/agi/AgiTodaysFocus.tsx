@@ -114,7 +114,7 @@ export function AgiTodaysFocus() {
             </div>
           </div>
         </div>
-        <button onClick={load} disabled={loading} style={{
+        <button className="min-h-11 md:min-h-0" onClick={load} disabled={loading} style={{
           background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "#cbd5e1",
           padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600,
           cursor: loading ? "wait" : "pointer",

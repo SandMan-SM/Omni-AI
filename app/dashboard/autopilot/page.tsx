@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useId } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
@@ -221,7 +221,7 @@ export default function AutopilotPage() {
         </div>
 
         <div style={{ display: 'flex', gap: 10 }}>
-          <button onClick={runNow} disabled={running} style={{
+          <button className="min-h-11 md:min-h-0" onClick={runNow} disabled={running} style={{
             background: running ? '#0d2a1e' : 'linear-gradient(135deg, #10b981, #818cf8)',
             color: '#fff', border: 'none', padding: '8px 16px', borderRadius: 8,
             fontSize: 13, fontWeight: 700, cursor: running ? 'not-allowed' : 'pointer',
@@ -253,7 +253,7 @@ export default function AutopilotPage() {
                   Total runs: {config?.total_runs ?? 0} · Last run: {timeAgo(config?.last_run_at ?? null)}
                 </div>
               </div>
-              <button onClick={() => updateConfig({ enabled: !config?.enabled })} style={{
+              <button className="min-h-11 md:min-h-0" onClick={() => updateConfig({ enabled: !config?.enabled })} style={{
                 background: config?.enabled ? '#f87171' : '#10b981',
                 color: '#fff', border: 'none', padding: '10px 20px', borderRadius: 10,
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
@@ -310,7 +310,7 @@ export default function AutopilotPage() {
             <h3 style={{ fontSize: 14, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
               <Activity size={14} color="#10b981" /> Agent Action Log
             </h3>
-            <button onClick={loadAll} style={{ background: 'none', border: '1px solid #222', color: '#666', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11, display: 'flex', gap: 4, alignItems: 'center' }}>
+            <button className="min-h-11 md:min-h-0" onClick={loadAll} style={{ background: 'none', border: '1px solid #222', color: '#666', padding: '4px 10px', borderRadius: 6, cursor: 'pointer', fontSize: 11, display: 'flex', gap: 4, alignItems: 'center' }}>
               <RefreshCw size={11} /> Refresh
             </button>
           </div>
@@ -394,14 +394,18 @@ function Toggle({ label, checked, onChange }: { label: string; checked: boolean;
 }
 
 function NumberField({ label, value, onChange, hint }: { label: string; value: number; onChange: (v: number) => void; hint?: string }) {
+  // The label is a sibling of the control, so it needs an explicit
+  // association — otherwise the field has no accessible name.
+  const id = useId();
   return (
     <div style={{ marginBottom: 14 }}>
-      <label style={{ display: 'block', fontSize: 11, color: '#555', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
+      <label htmlFor={id} style={{ display: 'block', fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.7px', marginBottom: 6 }}>{label}</label>
       <input
+        id={id}
         type="number" value={value} onChange={e => onChange(parseInt(e.target.value) || 0)}
         style={{ width: '100%', background: '#0a0a0a', border: '1px solid #222', borderRadius: 8, padding: '10px 12px', color: '#e8e8e8', fontSize: 16 }}
       />
-      {hint && <div style={{ fontSize: 11, color: '#555', marginTop: 4 }}>{hint}</div>}
+      {hint && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>{hint}</div>}
     </div>
   );
 }

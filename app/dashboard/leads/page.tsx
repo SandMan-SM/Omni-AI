@@ -338,15 +338,15 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
         {/* Quick log buttons + activity stream */}
         <Section title={`Activity${activity.length > 0 ? ` · ${activity.length}` : ''}`}>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            <button onClick={() => logActivity('call', { event_subtype: 'made' })} disabled={logging}
+            <button className="min-h-11 md:min-h-0" onClick={() => logActivity('call', { event_subtype: 'made' })} disabled={logging}
               style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', color: '#10b981', padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: logging ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Phone size={11} /> Log call
             </button>
-            <button onClick={() => logActivity('email', { event_subtype: 'sent' })} disabled={logging}
+            <button className="min-h-11 md:min-h-0" onClick={() => logActivity('email', { event_subtype: 'sent' })} disabled={logging}
               style={{ background: '#0a0a0a', border: '1px solid #1e1e1e', color: '#818cf8', padding: '6px 10px', borderRadius: 6, fontSize: 11, fontWeight: 600, cursor: logging ? 'wait' : 'pointer', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
               <Mail size={11} /> Log email
             </button>
-            <button onClick={() => {
+            <button className="min-h-11 md:min-h-0" onClick={() => {
               const note = prompt('Add a note to this lead:');
               if (note?.trim()) logActivity('note', { note });
             }} disabled={logging}
@@ -463,7 +463,7 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
               const c = STATUS_CONFIG[s];
               const active = lead.status === s;
               return (
-                <button key={s} className="agi-status-btn" onClick={() => onStatusChange(lead.id, s)} style={{
+                <button key={s} className="agi-status-btn min-h-11 md:min-h-0" onClick={() => onStatusChange(lead.id, s)} style={{
                   padding: '6px 14px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                   border: `1.5px solid ${active ? c.color : '#222'}`,
                   background: active ? c.bg : 'transparent',
@@ -477,7 +477,7 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
         {/* Actions */}
         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
           {profileId && (
-            <button
+            <button className="min-h-11 md:min-h-0"
               onClick={() => setAgentEditOpen(true)}
               title="Open the full agent editor — edit tier, arena card stats (value/rating/reach), premium flag, linked business, and confidential contact info."
               style={{
@@ -491,7 +491,7 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
               <Pencil size={12} /> Edit full profile · tier, card &amp; stats
             </button>
           )}
-          <button
+          <button className="min-h-11 md:min-h-0"
             onClick={async () => {
               const r = await authFetch('/api/agi/leads/score-ai', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -998,10 +998,10 @@ export default function DashboardPage() {
 
         <div className="agi-leads-actions" style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           {selectedBiz && <div className="agi-credit-meter"><CreditMeter businessId={selectedBiz.id} /></div>}
-          <button className="agi-leads-action-refresh" onClick={() => loadData(selectedBiz ? selectedBiz.id : null)} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
+          <button className="agi-leads-action-refresh min-h-11 md:min-h-0" onClick={() => loadData(selectedBiz ? selectedBiz.id : null)} style={{ background: 'none', border: '1px solid #222', color: '#555', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 12 }}>
             <RefreshCw size={12} /><span>Refresh</span>
           </button>
-          <button
+          <button className="min-h-11 md:min-h-0"
             onClick={rescoreAll}
             disabled={scoringAll || !selectedBiz || leads.length === 0}
             title={!selectedBiz ? 'Select a specific business to re-score' : ''}
@@ -1019,7 +1019,7 @@ export default function DashboardPage() {
             <Brain size={12} />
             {scoringAll ? 'Re-scoring…' : 'Re-score all'}
           </button>
-          <button onClick={runAgent} disabled={generating || !campaigns.length || !selectedBiz} title={!selectedBiz ? 'Select a specific business to run the agent' : ''} style={{ background: generating || !selectedBiz ? '#0d2a1e' : '#10b981', color: generating || !selectedBiz ? '#10b981' : '#fff', border: generating || !selectedBiz ? '1px solid #10b981' : 'none', padding: '7px 16px', borderRadius: 8, cursor: generating || !selectedBiz ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, opacity: !selectedBiz ? 0.6 : 1 }}>
+          <button className="min-h-11 md:min-h-0" onClick={runAgent} disabled={generating || !campaigns.length || !selectedBiz} title={!selectedBiz ? 'Select a specific business to run the agent' : ''} style={{ background: generating || !selectedBiz ? '#0d2a1e' : '#10b981', color: generating || !selectedBiz ? '#10b981' : '#fff', border: generating || !selectedBiz ? '1px solid #10b981' : 'none', padding: '7px 16px', borderRadius: 8, cursor: generating || !selectedBiz ? 'not-allowed' : 'pointer', fontSize: 13, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, opacity: !selectedBiz ? 0.6 : 1 }}>
             <Zap size={13} />
             {generating ? 'Generating…' : 'Run Agent'}
           </button>
@@ -1056,7 +1056,7 @@ export default function DashboardPage() {
               const active = statusFilter === s;
               const cfg = s !== 'all' ? STATUS_CONFIG[s as keyof typeof STATUS_CONFIG] : null;
               return (
-                <button key={s} className="agi-filter-btn" onClick={() => setStatusFilter(s)} style={{
+                <button key={s} className="agi-filter-btn min-h-11 md:min-h-0" onClick={() => setStatusFilter(s)} style={{
                   padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: 'pointer',
                   border: `1px solid ${active ? (cfg?.color ?? '#555') : '#222'}`,
                   background: active ? (cfg?.bg ?? 'rgba(255,255,255,0.06)') : 'transparent',
@@ -1100,7 +1100,7 @@ export default function DashboardPage() {
                           } catch {}
                           if (!isAdmin) return null;
                           return (
-                            <button
+                            <button className="min-h-11 md:min-h-0"
                               onClick={() => {
                                 localStorage.setItem('omni_active_business_id', 'all');
                                 window.dispatchEvent(new StorageEvent('storage', { key: 'omni_active_business_id', newValue: 'all' }));
