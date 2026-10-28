@@ -163,6 +163,7 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - **One dev server per checkout.** Don't spawn a second on another port — they fight over `.next/` too. If a port's held: `lsof -iTCP:3001 -sTCP:LISTEN -t | xargs -r kill -9` then `npm run dev:clean`.
 - **Turbopack BorrowMutError panic** under rapid file edits is cosmetic to prod — TypeScript still passes and Vercel builds fine. Recover with `dev:clean` or fall back to `npm run dev:slow`.
 - `npm run check` / `build:check` are wrapped by `scripts/ensure-clean-worktree.mjs`; set `ALLOW_DIRTY_WORKTREE=1` if you intentionally have uncommitted work.
+- **Every `omni_*` table is `service_role_all`.** A `supabase.from(...)` read from the browser or from a server route using the anon key returns HTTP 200 with an empty array, and a write silently no-ops — `tsc` and `next build` cannot see either. Reach locked tables through `createAdminClient()` on the server, with the tenancy gate in `lib/server/dashboard-access.ts` (`gateLeadAccess` / `gateBusinessAccess`) when the data is per-tenant. `npm run audit:rls` fails the build when a file touches a locked table with a non-admin client; the live table list is `scripts/anon-locked-tables.json`.
 
 ## Do / Don't
 - **Do** keep working continuously — the owner runs a "continuous execution" doctrine and explicitly does not want "should I continue?" pauses. Ship, verify against the live DB, move to the next fix. Stop only on a new instruction, completion+verification, a safety boundary, or unrecoverable failure.
@@ -172,6 +173,7 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - **Don't** post more than one business shoutout per week, or put other businesses in premium newsletters.
 - **Don't** modify `.env` / `.env.local` (never modify env files), run Supabase migrations autonomously, or touch `drizzle.config.ts` / `node_modules/`.
 - **Don't** leave a write/PATCH API route un-gated by `authorizeCronOrAdmin`.
+- **Don't** read or write an `omni_*` table with the anon key — RLS answers 200 with an empty array and the write no-ops. Use the server route + `createAdminClient()`.
 
 ## Do NOT Touch
 - `.env` / `.env.local` — never modify env files.

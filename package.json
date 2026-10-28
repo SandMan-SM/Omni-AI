@@ -23,6 +23,8 @@
     "check:dirty": "tsc",
     "audit:mobile": "tsx scripts/audit-mobile-ui.ts",
     "audit:publish": "tsx scripts/audit-publish-state.ts",
+    "audit:rls": "tsx scripts/audit-anon-rls.ts",
+    "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs"
   },
   "dependencies": {
