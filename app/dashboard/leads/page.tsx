@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
-import { supabase, type Business, type Lead, type Campaign } from '@/lib/agi-supabase';
+import { type Business, type Lead, type Campaign } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import {
@@ -148,19 +148,23 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
 
   useEffect(() => {
     let cancelled = false;
-    supabase
-      .from('omni_lead_email_aliases')
-      .select('alias_email')
-      .eq('primary_lead_id', lead.id)
-      .order('alias_email')
-      .then(({ data }) => {
-        if (cancelled || !data) return;
+    // omni_lead_email_aliases is service_role_all — the browser anon
+    // client always returned [], so the alias list was silently empty.
+    // The server route runs on the admin client with the same tenancy
+    // gate as the rest of the lead panel.
+    authFetch(`/api/dashboard/leads/${lead.id}/aliases`, { cache: 'no-store' })
+      .then(r => (r.ok ? r.json() : { aliases: [] }))
+      .then(d => {
+        if (cancelled) return;
+        const list = Array.isArray(d?.aliases) ? d.aliases : [];
         // Drop the primary email — it sometimes self-aliases
-        const others = data
-          .map(r => r.alias_email as string)
-          .filter(e => e && e !== lead.email);
+        const others = list.filter(
+          (e: unknown): e is string =>
+            typeof e === 'string' && e.length > 0 && e !== lead.email,
+        );
         setAliases(Array.from(new Set(others)));
-      });
+      })
+      .catch(() => {});
 
     // Status history timeline — fire in parallel via authFetch.
     authFetch(`/api/agi/leads/history?lead_id=${lead.id}`, { cache: 'no-store' })

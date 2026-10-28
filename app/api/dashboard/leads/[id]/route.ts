@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { cookies, headers } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
-import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
+import { gateLeadAccess } from "@/lib/server/dashboard-access";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -34,46 +32,6 @@ function dashboardDataUnavailable(reason: string, error: unknown) {
   );
 }
 
-async function resolveCallerProfileId(): Promise<string | null> {
-  try {
-    const hdrs = await headers();
-    const bearer = (hdrs.get("authorization") || "")
-      .replace(/^Bearer\s+/i, "")
-      .trim();
-    if (bearer) {
-      const payload = decodeOmniToken(bearer);
-      if (isOmniTokenPayloadFresh(payload)) {
-        return payload.sub;
-      }
-    }
-  } catch {
-    /* fall through */
-  }
-  try {
-    const cookieStore = await cookies();
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-      {
-        cookies: {
-          getAll() {
-            return cookieStore.getAll();
-          },
-          setAll() {
-            /* read-only */
-          },
-        },
-      },
-    );
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    return user?.id || null;
-  } catch {
-    return null;
-  }
-}
-
 // Shared admin/membership gate. Returns `{ ok: true, leadBizId, isAdmin }`
 // or a Response with the right error code.
 async function gate(
@@ -82,50 +40,14 @@ async function gate(
   | { ok: true; lead: { id: string; business_id: string }; isAdmin: boolean }
   | { ok: false; res: NextResponse }
 > {
-  const callerId = await resolveCallerProfileId();
-  if (!callerId) {
-    return { ok: false, res: NextResponse.json({ error: "Unauthorized" }, { status: 401 }) };
+  const result = await gateLeadAccess(id);
+  if (!result.ok) {
+    return {
+      ok: false,
+      res: NextResponse.json({ error: result.error }, { status: result.status }),
+    };
   }
-  const sb = createAdminClient();
-  const { data: profile } = await sb
-    .from("profiles")
-    .select("id, role, is_admin")
-    .eq("id", callerId)
-    .single();
-  if (!profile) {
-    return { ok: false, res: NextResponse.json({ error: "Forbidden" }, { status: 403 }) };
-  }
-  const profileRow = profile as { role?: unknown; is_admin?: unknown };
-  const isAdmin =
-    profileRow.is_admin === true ||
-    (typeof profileRow.role === "string" &&
-      ["admin", "owner", "platform"].includes(
-        (profileRow.role || "").toLowerCase(),
-      ));
-  const { data: lead } = await sb
-    .from("omni_leads_generated")
-    .select("id, business_id")
-    .eq("id", id)
-    .maybeSingle();
-  if (!lead) {
-    return { ok: false, res: NextResponse.json({ error: "Lead not found" }, { status: 404 }) };
-  }
-  const leadRow = lead as { id: string; business_id: string };
-  if (!isAdmin) {
-    const { data: membership } = await sb
-      .from("omni_business_users")
-      .select("id")
-      .eq("business_id", leadRow.business_id)
-      .eq("user_id", callerId)
-      .maybeSingle();
-    if (!membership) {
-      return {
-        ok: false,
-        res: NextResponse.json({ error: "Forbidden — not a member of this workspace" }, { status: 403 }),
-      };
-    }
-  }
-  return { ok: true, lead: leadRow, isAdmin };
+  return { ok: true, lead: result.lead, isAdmin: result.isAdmin };
 }
 
 export async function GET(_req: Request, ctx: { params: Promise<{ id: string }> }) {

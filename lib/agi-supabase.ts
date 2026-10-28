@@ -51,6 +51,11 @@ export type Business = {
   website: string | null;
   plan: 'starter' | 'pro' | 'enterprise';
   contact_email: string | null;
+  // Editable workspace settings, served by /api/dashboard/businesses.
+  sender_name?: string | null;
+  sender_email?: string | null;
+  sender_phone?: string | null;
+  booking_url?: string | null;
   partnership_blurb?: string | null;
   brand_logo_url?: string | null;
   // Google Analytics 4 measurement ID (e.g. "G-6JZP5C4NMQ"). Null until

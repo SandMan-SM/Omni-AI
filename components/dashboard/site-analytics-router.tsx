@@ -64,14 +64,14 @@ export default function SiteAnalyticsRouter() {
           if (!cancelled) setSlug(null);
           return;
         }
-        const { supabase } = await import("@/lib/agi-supabase");
-        const { data } = await supabase
-          .from("omni_businesses")
-          .select("slug,name")
-          .eq("id", bizId)
-          .maybeSingle();
+        // omni_businesses is service_role_all — the anon client returned
+        // null for every business, so this router always fell through to
+        // the "no slug" branch. Resolve through the authed server route.
+        const { loadBusinesses } = await import("@/lib/dashboard-businesses");
+        const { data } = await loadBusinesses();
         if (cancelled) return;
-        const resolved = (data?.slug ?? data?.name ?? "").toLowerCase();
+        const found = data.find((b) => b.id === bizId);
+        const resolved = (found?.slug ?? found?.name ?? "").toLowerCase();
         setSlug(resolved || null);
       } catch {
         if (!cancelled) setSlug(null);

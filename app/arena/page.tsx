@@ -246,9 +246,13 @@ export default function Arena() {
         return;
       }
       try {
-        const { supabase } = await import('@/lib/agi-supabase');
-        const { data } = await supabase.from('omni_businesses').select('name').eq('id', stored).maybeSingle();
-        if (!cancelled) setActiveBusinessName(data?.name ?? null);
+        // omni_businesses is service_role_all — the anon client always
+        // returned null here, so the arena card filter silently did
+        // nothing. Resolve through the authed server route instead.
+        const { loadBusinesses } = await import('@/lib/dashboard-businesses');
+        const { data } = await loadBusinesses();
+        const found = data.find((b) => b.id === stored);
+        if (!cancelled) setActiveBusinessName(found?.name ?? null);
       } catch {
         if (!cancelled) setActiveBusinessName(null);
       }

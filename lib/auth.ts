@@ -258,17 +258,32 @@ export function authFetch(input: RequestInfo | URL, init: RequestInit = {}): Pro
   return fetch(input, { credentials: 'include', ...init, headers: authHeaders(extra) });
 }
 
+/**
+ * Submit an account request (the /join form).
+ *
+ * Previously this wrote to the `leads` table directly from the browser
+ * with the anon key. That could never succeed: the table is
+ * service_role_all (RLS denies the anon write) and the column names used
+ * here (`name`, `status`) don't exist on it. The request is now posted
+ * to /api/join, which writes the row on the service-role client with
+ * the real columns and notifies the owner.
+ */
 export async function createLead(name: string, email: string, phone: string): Promise<{ error: string | null }> {
   try {
-    const supabase = createBrowserClient();
-    const { error } = await supabase.from('leads').insert({
-      name,
-      email,
-      phone,
-      status: 'pending'
+    const res = await authFetch('/api/join', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone }),
     });
-    return { error: error?.message || null };
-  } catch (err) {
+    if (res.ok) return { error: null };
+    const body = await res.json().catch(() => ({}));
+    return {
+      error:
+        typeof body?.error === 'string'
+          ? body.error
+          : 'Could not submit your request. Please try again.',
+    };
+  } catch {
     return { error: 'Connection error. Please try again.' };
   }
 }

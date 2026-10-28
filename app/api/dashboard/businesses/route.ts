@@ -4,6 +4,7 @@ import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasPlatformDashboardAccess } from "@/lib/mafi-access";
+import { gateBusinessAccess } from "@/lib/server/dashboard-access";
 import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
 
 export const dynamic = "force-dynamic";
@@ -64,6 +65,10 @@ const BUSINESS_SELECT = [
   "website",
   "plan",
   "contact_email",
+  "sender_name",
+  "sender_email",
+  "sender_phone",
+  "booking_url",
   "partnership_blurb",
   "brand_logo_url",
   "ga4_measurement_id",
@@ -218,5 +223,88 @@ export async function GET() {
   return NextResponse.json({
     businesses: applyLiveBetterOverrides((data ?? []) as unknown as BusinessRow[]),
     isAdmin: false,
+  });
+}
+
+/**
+ * PATCH /api/dashboard/businesses
+ *
+ * Updates the editable workspace settings (sender identity, booking URL,
+ * contact email, industry, location, website).
+ *
+ * omni_businesses is service_role_all, so the settings page's original
+ * `supabase.from('omni_businesses').update(form)` from the browser was
+ * rejected by RLS — the form reported "Failed: new row violates
+ * row-level security policy" and nothing was ever saved. This route runs
+ * on the service-role client and applies the same tenancy gate as the
+ * GET above.
+ *
+ * Only the allowlisted columns below can be written; `name`, `slug`,
+ * `plan`, `ga4_measurement_id` and the Stripe ids are deliberately not
+ * editable from this surface.
+ */
+const BUSINESS_PATCH_FIELDS = new Set([
+  "sender_name",
+  "sender_email",
+  "sender_phone",
+  "booking_url",
+  "contact_email",
+  "industry",
+  "location",
+  "website",
+]);
+
+export async function PATCH(req: Request) {
+  noStore();
+
+  let body: Record<string, unknown>;
+  try {
+    body = (await req.json()) as Record<string, unknown>;
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const businessId =
+    typeof body.business_id === "string"
+      ? body.business_id
+      : typeof body.id === "string"
+        ? body.id
+        : "";
+  if (!businessId) {
+    return NextResponse.json({ error: "business_id required" }, { status: 400 });
+  }
+
+  const gate = await gateBusinessAccess(businessId);
+  if (!gate.ok) {
+    return NextResponse.json({ error: gate.error }, { status: gate.status });
+  }
+
+  const patch: Record<string, string | null> = {};
+  for (const [k, v] of Object.entries(body)) {
+    if (!BUSINESS_PATCH_FIELDS.has(k)) continue;
+    if (v === null) {
+      patch[k] = null;
+    } else if (typeof v === "string") {
+      patch[k] = v.trim();
+    }
+  }
+  if (Object.keys(patch).length === 0) {
+    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+  }
+
+  const sb = createAdminClient();
+  const { data, error } = await sb
+    .from("omni_businesses")
+    .update(patch)
+    .eq("id", businessId)
+    .select(BUSINESS_SELECT)
+    .maybeSingle();
+  if (error) {
+    return dashboardDataUnavailable("business_update_failed", error);
+  }
+  return NextResponse.json({
+    business: applyLiveBetterOverrides(
+      data ? [data as unknown as BusinessRow] : [],
+    )[0],
   });
 }

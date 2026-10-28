@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useId } from 'react';
 import Link from 'next/link';
-import { supabase, type Business } from '@/lib/agi-supabase';
+import { type Business } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import {
@@ -103,15 +103,28 @@ export default function SettingsPage() {
   async function handleSave() {
     if (!selectedBiz) return;
     setSaving(true);
-    const { error } = await supabase
-      .from('omni_businesses')
-      .update(form)
-      .eq('id', selectedBiz.id);
-    setSaving(false);
-    if (error) showToast(`Failed: ${error.message}`, false);
-    else {
+    try {
+      // omni_businesses is service_role_all — a direct browser update is
+      // rejected by RLS and never saved. Go through the server route.
+      const r = await authFetch('/api/dashboard/businesses', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ business_id: selectedBiz.id, ...form }),
+      });
+      if (!r.ok) {
+        const j = await r.json().catch(() => ({}));
+        showToast(`Failed: ${j?.error || r.status}`, false);
+        return;
+      }
       showToast('Saved');
       setSelectedBiz({ ...selectedBiz, ...form } as Business);
+    } catch (err) {
+      showToast(
+        `Failed: ${err instanceof Error ? err.message : 'Network error'}`,
+        false,
+      );
+    } finally {
+      setSaving(false);
     }
   }
 
