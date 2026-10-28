@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from '@supabase/supabase-js';
+
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { createAdminClient } from '@/lib/supabase/admin';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 // 5-step onboarding: 0=business basics, 1=sender identity, 2=ICP/campaign, 3=integrations, 4=first lead
 const TOTAL_STEPS = 5;

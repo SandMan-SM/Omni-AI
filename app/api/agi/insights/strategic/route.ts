@@ -7,17 +7,15 @@
 // rationale) + a Markdown Telegram-friendly digest.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
 import Anthropic from "@anthropic-ai/sdk";
 import { sendTelegram } from "@/lib/agi/telegram";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = "force-dynamic";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+const sb = createAdminClient();
 const anthropic = process.env.ANTHROPIC_API_KEY
   ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
   : null;

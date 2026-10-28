@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
@@ -23,7 +23,7 @@ export async function GET(req: Request) {
   const denied = await authorizeCronOrAdmin(req);
   if (denied) return denied;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("website_deployments")
       .select("*")
@@ -41,7 +41,7 @@ export async function POST(req: Request) {
   const denied = await authorizeCronOrAdmin(req);
   if (denied) return denied;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await req.json();
     const { data, error } = await supabase
       .from("website_deployments")

@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
@@ -27,7 +27,7 @@ export async function GET(req: Request) {
   const denied = await authorizeCronOrAdmin(req);
   if (denied) return denied;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { searchParams } = new URL(req.url);
     const since = searchParams.get("since");
     const rawLimit = parseInt(searchParams.get("limit") || "20", 10);
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
   const denied = await authorizeCronOrAdmin(req);
   if (denied) return denied;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const body = await req.json();
 
     const command = {

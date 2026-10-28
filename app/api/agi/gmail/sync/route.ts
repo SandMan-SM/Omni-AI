@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { createAdminClient } from '@/lib/supabase/admin';
+
+const supabase = createAdminClient();
 
 // Gmail inbound parser. The user's Gmail MCP is connected at the Claude
 // Code level (not server-side), so this endpoint accepts pushed Gmail

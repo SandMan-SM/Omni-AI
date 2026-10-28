@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+
 import { sendOutreachEmail } from '@/lib/agi/resend';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { createAdminClient } from '@/lib/supabase/admin';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 export async function POST(req: NextRequest) {
   // Auth-gate. CRITICAL: this endpoint sends a real email through

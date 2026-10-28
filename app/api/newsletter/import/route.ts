@@ -1,5 +1,5 @@
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'CSV must have an "email" column' }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     let added = 0;
     let skipped = 0;
 

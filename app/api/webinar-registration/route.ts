@@ -2,8 +2,8 @@ import { HOUSE_LEAD_FROM } from "@/lib/lead-sender";
 
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/admin-auth';
 import { generateICS, parseBookingDateTime } from '@/lib/calendar-utils';
 import { logEvent } from '@/lib/events';
 import {
@@ -28,8 +28,13 @@ const FROM_EMAIL = 'Omni AI <bookings@omnios.news>';
 
 export async function GET() {
   noStore();
+  // The registration list is PII (name, email). It is served with the
+  // service-role client, so RLS cannot protect it — the gate has to.
+  // POST stays public: it is the public registration form.
+  const auth = await requireAdmin();
+  if ('error' in auth && auth.error) return auth.error;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('webinar_registrations')
       .select('*')

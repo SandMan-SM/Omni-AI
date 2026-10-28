@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+
 import { generateOutreachAssets } from '@/lib/agi/outreach';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { createAdminClient } from '@/lib/supabase/admin';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 // Generate outreach for many leads at once. Useful after a CSV import
 // or after a campaign agent run. Returns per-lead results.

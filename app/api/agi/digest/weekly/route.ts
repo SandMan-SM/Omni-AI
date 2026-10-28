@@ -4,16 +4,14 @@
 // Mondays at 7am local.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
 import { AGENTIC_DASHBOARD_URL } from "@/lib/agentic-dashboard";
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = "force-dynamic";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+const sb = createAdminClient();
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || "";
 const TO_EMAIL = "sitanim8@gmail.com";

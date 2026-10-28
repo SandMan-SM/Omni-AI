@@ -3,18 +3,16 @@
 // event_type / event_subtype / details(jsonb) shape.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
 import { unstable_noStore as noStore } from "next/cache";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+const sb = createAdminClient();
 
 // GET ?lead_id=… returns all activity rows desc
 export async function GET(req: NextRequest) {

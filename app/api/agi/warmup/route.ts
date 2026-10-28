@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from '@supabase/supabase-js';
+
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { createAdminClient } from '@/lib/supabase/admin';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 // Domain warmup status: today's send count, daily limit, reputation,
 // 14-day history. Used by the dashboard widget + cron pre-flight check.

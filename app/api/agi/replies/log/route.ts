@@ -1,23 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { authorizeCronOrAdmin } from '@/lib/api-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 export const fetchCache = 'force-no-store';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 // Manual reply logger — when you receive a reply outside Resend webhooks
 // (e.g. someone replies in Gmail), log it here to feed the categorizer.
 //
 // GET — list replied assets for a business, optionally filtered by category
 // POST — log a reply to an asset, mark as 'replied', auto-categorize, draft response
+//
+// Admin-gated: the route reads and writes every business's outreach
+// replies, and the service-role client bypasses RLS. It was previously
+// ungated and unauthenticated — an anonymous caller could read the reply
+// log and mark arbitrary replies as handled.
 export async function GET(req: NextRequest) {
   noStore();
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { searchParams } = new URL(req.url);
   const business_id = searchParams.get('business_id');
   const category = searchParams.get('category');
@@ -40,6 +45,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   try {
     const { asset_id, reply_text, auto_categorize = true } = await req.json();
     if (!asset_id || !reply_text) {
@@ -95,6 +102,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const denied = await authorizeCronOrAdmin(req);
+  if (denied) return denied;
   const { asset_id, reply_handled } = await req.json();
   await supabase
     .from('omni_outreach_assets')

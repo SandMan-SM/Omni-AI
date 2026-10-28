@@ -1,9 +1,10 @@
 /* eslint-disable @next/next/no-img-element */
 import { ImageResponse } from "next/og";
-import { createClient } from "@supabase/supabase-js";
+
 import { getNewsletterFallbackPost } from "@/lib/newsletter-fallback";
 import { newsletterShareDescription } from "@/lib/newsletter-share-copy";
 import { newsletterIssueImageUrl } from "@/components/newsletter-issue-card";
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const runtime = "edge";
 export const alt = "Interlinked Newsletter";
@@ -22,10 +23,7 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
 
   // Fetch the post data
   // Use service role so OG images always generate — no RLS gating on shared links
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const supabase = createAdminClient();
 
   const result = await withTimeout(
     supabase

@@ -10,16 +10,14 @@
 // delta and any business that newly converted a lead in the past 24h.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+
 import { sendTelegram } from "@/lib/agi/telegram";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
+import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = "force-dynamic";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+const sb = createAdminClient();
 
 interface SnapshotRow {
   business_id: string;

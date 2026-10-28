@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
+import {
+  rateLimit,
+  getClientIp,
+  rateLimitResponse,
+} from '@/lib/rate-limit';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 // Quick-add lead capture endpoint. Designed to be hit by a bookmarklet
 // or browser extension. Accepts loose data, normalizes, dedupes, returns lead.
@@ -21,6 +23,14 @@ const supabase = createClient(
 //   })();
 export async function POST(req: NextRequest) {
   try {
+    // Rate-limit FIRST. This route creates a lead row on every accepted
+    // call and is reachable from any page via the bookmarklet, so it is
+    // public by design — the limit is what keeps it from being a lead
+    // injection valve. Same shape as /api/landing-lead.
+    const ip = getClientIp(req.headers);
+    const rl = rateLimit(`quick-add:${ip}`, 5, 10 * 60 * 1000);
+    if (!rl.ok) return rateLimitResponse(rl.resetMs);
+
     const body = await req.json();
     const {
       business_id, first_name, last_name, email, phone, title,
@@ -32,7 +42,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Log the capture for audit
-    const { data: capture } = await supabase
+    const { data: capture, error: captureError } = await supabase
       .from('omni_quick_captures')
       .insert({
         business_id,
@@ -43,6 +53,16 @@ export async function POST(req: NextRequest) {
       })
       .select()
       .single();
+
+    // A failed insert used to be reported as `ok: true` with a null
+    // capture, which reads as success while nothing was saved. Say so.
+    if (captureError) {
+      console.error('[quick-add] capture insert failed:', captureError);
+      return NextResponse.json(
+        { error: 'Could not save the capture. Please try again.' },
+        { status: 500 },
+      );
+    }
 
     // If we have enough to make a lead, do it now
     if (first_name || email || company) {
@@ -67,7 +87,7 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      const { data: lead } = await supabase
+      const { data: lead, error: leadError } = await supabase
         .from('omni_leads_generated')
         .insert({
           business_id,
@@ -86,6 +106,14 @@ export async function POST(req: NextRequest) {
         })
         .select()
         .single();
+
+      if (leadError) {
+        console.error('[quick-add] lead insert failed:', leadError);
+        return NextResponse.json(
+          { error: 'Could not create the lead. Please try again.' },
+          { status: 500 },
+        );
+      }
 
       if (lead) {
         await supabase

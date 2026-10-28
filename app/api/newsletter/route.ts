@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
 import { logEvent } from "@/lib/events";
 import { requireAdmin } from "@/lib/admin-auth";
 import { isValidEmail, isBotSubmission, sanitizeText } from "@/lib/validation";
@@ -147,7 +146,7 @@ export async function POST(request: Request) {
   // anon and the events policy rejects — the subscribe itself already
   // succeeded via the admin client above).
   try {
-    const logger = await createClient();
+    const logger = createAdminClient();
     logEvent(logger as any, {
       actor_type: "user",
       actor_id: rawEmail,
@@ -182,7 +181,7 @@ export async function GET() {
   if ('error' in auth && auth.error) return auth.error;
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from("newsletter_subscriptions")
       .select("*")

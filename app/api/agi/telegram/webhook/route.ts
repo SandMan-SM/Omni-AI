@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegram } from '@/lib/agi/telegram';
+import { verifyTelegramWebhook } from '@/lib/agi/telegram-webhook';
 import { ptStartOfDayIso } from '@/lib/tz';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 // Telegram bot webhook for 2-way commands.
 // Setup:
@@ -20,6 +18,14 @@ const supabase = createClient(
 //   /help       — list commands
 export async function POST(req: NextRequest) {
   try {
+    // Auth FIRST: prove the delivery came from Telegram before doing any
+    // work. The webhook URL is public, and these commands trigger real
+    // outbound activity (autopilot sends outreach, /hot fires alerts).
+    const auth = verifyTelegramWebhook(req.headers);
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.reason }, { status: auth.status });
+    }
+
     const update = await req.json();
     const message = update.message;
     if (!message?.text) return NextResponse.json({ ok: true });
@@ -27,8 +33,10 @@ export async function POST(req: NextRequest) {
     const chatId = String(message.chat.id);
     const text = message.text.trim();
 
-    // Auth: only respond to configured chat
-    if (process.env.TELEGRAM_CHAT_ID && chatId !== process.env.TELEGRAM_CHAT_ID) {
+    // Auth: only respond to configured chat. Fail closed when the chat id
+    // is not configured — previously the check was skipped entirely when
+    // TELEGRAM_CHAT_ID was unset, which left the route open to anyone.
+    if (!process.env.TELEGRAM_CHAT_ID || chatId !== process.env.TELEGRAM_CHAT_ID) {
       await sendTelegram('🚫 Not authorized.', chatId);
       return NextResponse.json({ ok: true });
     }

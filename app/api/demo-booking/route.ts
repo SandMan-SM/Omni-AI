@@ -1,7 +1,7 @@
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { randomUUID } from 'crypto';
-import { createClient } from '@/lib/supabase/server';
 import { requireAdmin } from '@/lib/admin-auth';
 import { parseBookingDateTime, buildGoogleCalendarUrl } from '@/lib/calendar-utils';
 import { persistBookingSubmission } from '@/lib/server/direct-postgres';
@@ -117,7 +117,7 @@ export async function GET() {
   if ('error' in auth && auth.error) return auth.error;
 
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
 
     const [bookingsRes, trainingsRes] = await Promise.all([
       supabase

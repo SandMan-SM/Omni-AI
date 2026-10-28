@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+
 import { getStripe } from '@/lib/agi/stripe';
 import type Stripe from 'stripe';
+import { createAdminClient } from '@/lib/supabase/admin';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+const supabase = createAdminClient();
 
 // Stripe webhook handler. Configure in Stripe dashboard:
 //   Endpoint: https://omnileadsagi.com/api/billing/webhook

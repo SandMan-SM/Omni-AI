@@ -1,6 +1,6 @@
+import { createAdminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
-import { createClient } from '@/lib/supabase/server';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
   const denied = await authorizeCronOrAdmin(req);
   if (denied) return denied;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data, error } = await supabase
       .from('newsletter_subscriptions')
       .select('id, email, first_name, subscription_tier, subscribed, created_at')
