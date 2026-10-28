@@ -7,7 +7,7 @@
 //      every send must carry (sender persona, Reply-To, List-Unsubscribe,
 //      CAN-SPAM footer, suppression-list check at both enqueue + send).
 //
-// The 10 verified domains live in VERIFIED_DOMAINS below; sender_email
+// The verified domains live in VERIFIED_DOMAINS below; sender_email
 // validation rejects any campaign whose domain isn't in the list. That
 // guard is what keeps us from accidentally trying to send from a
 // non-DKIM-signed address and getting bounced.
@@ -20,12 +20,17 @@ import { buildUnsubscribeUrl } from '@/lib/unsubscribe-token';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://omnileadsagi.com';
 const OMNI_PHYSICAL_ADDRESS =
-  process.env.OMNI_PHYSICAL_ADDRESS ||
-  'Omni AI · 1234 Federation Way · Salt Lake City, UT 84101';
+  (process.env.OMNI_PHYSICAL_ADDRESS || '').trim();
+
+function readinessError(): string | null {
+  if (!OMNI_PHYSICAL_ADDRESS || /1234\s+Federation\s+Way/i.test(OMNI_PHYSICAL_ADDRESS)) return 'physical_address_not_configured';
+  if (!RESEND_API_KEY) return 'no_resend_key';
+  return null;
+}
 
 // ── verified domains ────────────────────────────────────────────────
 // Source: the Resend account's live domain list, status `verified`.
-// Reconciled 2026-10-22 against the account (10 domains). Keep this in
+// Reconciled 2026-10-28 against the account; CPS and Rene were verified during the email repair. Keep this in
 // sync with `resend.list-domains` — enqueueCampaign rejects any
 // sender_email whose host doesn't appear here, which is the guard that
 // stops a campaign from being queued against a domain that cannot send.
@@ -38,15 +43,18 @@ const OMNI_PHYSICAL_ADDRESS =
 // 403 at send time instead of a clean rejection at enqueue time.
 //
 // To give a brand its own sending domain: verify it in Resend first,
-// then add it here. `cpsutah.org` is pending that verification.
+// then add it here. Pending domains must remain excluded.
 
 export const VERIFIED_DOMAINS = [
   'alira.live',
+  'cpsutah.org',
   'highteawithellieg.com',
   'leadfranchise.org',
   'lovethybarber.shop',
+  'mafiempire.com',
   'omniltd.app',
   'omnios.news',
+  'renelaveau.com',
   'secretimperium.com',
   'sitanimafi.com',
   'theixnetwork.com',
@@ -183,20 +191,22 @@ export async function selectAudience(
   campaign: Pick<MarketingCampaign, 'audience_kind' | 'business_slug'>,
 ): Promise<Recipient[]> {
   if (campaign.audience_kind === 'owner_network') {
-    const { data: owners } = await sb
+    const { data: owners, error: ownersError } = await sb
       .from('federation_owners')
       .select('email, first_name')
       .is('unsubscribed_at', null);
+    if (ownersError) throw new Error('audience_lookup_failed');
 
     if (!owners || owners.length === 0) return [];
 
     // Filter out anyone with a global suppression (business_id IS NULL).
     const emails = owners.map((o) => o.email.toLowerCase());
-    const { data: suppressed } = await sb
+    const { data: suppressed, error: suppressionError } = await sb
       .from('omni_suppressions')
       .select('email')
       .is('business_id', null)
       .in('email', emails);
+    if (suppressionError) throw new Error('suppression_lookup_failed');
     const suppressedSet = new Set((suppressed ?? []).map((s) => s.email.toLowerCase()));
 
     return owners
@@ -205,13 +215,21 @@ export async function selectAudience(
   }
 
   // brand_deal_prospects: only 'approved' rows.
-  const { data: prospects } = await sb
+  const { data: prospects, error: prospectsError } = await sb
     .from('brand_deal_prospects')
     .select('prospect_email, first_name')
     .eq('target_business_slug', campaign.business_slug)
     .eq('status', 'approved');
+  if (prospectsError) throw new Error('audience_lookup_failed');
 
-  return (prospects ?? []).map((p) => ({
+  const emails = (prospects ?? []).map(p => p.prospect_email.toLowerCase());
+  if (!emails.length) return [];
+  const { data: suppressed, error: suppressionError } = await sb.from('omni_suppressions')
+    .select('email').is('business_id', null).in('email', emails);
+  if (suppressionError) throw new Error('suppression_lookup_failed');
+  const suppressedSet = new Set((suppressed ?? []).map(s => s.email.toLowerCase()));
+
+  return (prospects ?? []).filter(p => !suppressedSet.has(p.prospect_email.toLowerCase())).map((p) => ({
     email: p.prospect_email,
     first_name: p.first_name,
   }));
@@ -252,6 +270,8 @@ export async function enqueueCampaign(
   campaign_id: string,
   opts: { dry_run: boolean },
 ): Promise<EnqueueResult> {
+  const notReady = readinessError();
+  if (notReady) return { ok: false, audience_size: 0, scheduled: [], throttle_ok: false, skipped: [], error: notReady };
   const campaign = await loadCampaign(sb, campaign_id);
   if (!campaign) {
     return {
@@ -298,11 +318,14 @@ export async function enqueueCampaign(
   }
 
   // Audience + dedup against already-enqueued rows.
-  const audience = await selectAudience(sb, campaign);
-  const { data: existing } = await sb
+  let audience: Recipient[];
+  try { audience = await selectAudience(sb, campaign); }
+  catch (error) { return { ok: false, audience_size: 0, scheduled: [], throttle_ok: false, skipped: [], error: error instanceof Error ? error.message : 'audience_lookup_failed' }; }
+  const { data: existing, error: existingError } = await sb
     .from('marketing_sends')
     .select('recipient_email')
     .eq('campaign_id', campaign.id);
+  if (existingError) return { ok: false, audience_size: audience.length, scheduled: [], throttle_ok: false, skipped: [], error: 'existing_sends_lookup_failed' };
   const existingSet = new Set(
     (existing ?? []).map((r) => (r.recipient_email || '').toLowerCase()),
   );
@@ -431,6 +454,7 @@ export function renderEmailHtml(args: {
   senderDisplay: string;
   businessName: string;
 }): string {
+  if (!OMNI_PHYSICAL_ADDRESS || /1234\s+Federation\s+Way/i.test(OMNI_PHYSICAL_ADDRESS)) throw new Error('physical_address_not_configured');
   const cta = args.ctaLabel
     ? `<p style="margin:24px 0"><a href="${args.ctaUrl}" style="display:inline-block;background:#9C27B0;color:#fff;padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600">${escapeHtml(args.ctaLabel)}</a></p>`
     : '';
@@ -455,6 +479,7 @@ export type SendArgs = {
   subject: string;
   html: string;
   unsubscribe_url: string;
+  idempotency_key: string;
 };
 
 export async function sendMarketingEmail(args: SendArgs): Promise<{
@@ -462,13 +487,18 @@ export async function sendMarketingEmail(args: SendArgs): Promise<{
   resend_id?: string;
   error?: string;
 }> {
-  if (!RESEND_API_KEY) return { ok: false, error: 'no_resend_key' };
+  const notReady = readinessError();
+  if (notReady) return { ok: false, error: notReady };
+  if (!/^marketing-send:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(args.idempotency_key)) return { ok: false, error: 'invalid_send_idempotency_key' };
 
+  try {
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
+    signal: AbortSignal.timeout(15_000),
     headers: {
       Authorization: `Bearer ${RESEND_API_KEY}`,
       'Content-Type': 'application/json',
+      'Idempotency-Key': args.idempotency_key,
     },
     body: JSON.stringify({
       from: `${args.from_display} <${args.from_email}>`,
@@ -484,11 +514,12 @@ export async function sendMarketingEmail(args: SendArgs): Promise<{
   });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    return { ok: false, error: `resend_${res.status}:${text.slice(0, 200)}` };
+    return { ok: false, error: `resend_${res.status}` };
   }
   const j = (await res.json().catch(() => ({}))) as { id?: string };
+  if (typeof j.id !== 'string' || !j.id.trim()) return { ok: false, error: 'resend_missing_receipt' };
   return { ok: true, resend_id: j.id };
+  } catch { return { ok: false, error: 'resend_acceptance_unknown' }; }
 }
 
 // ── runner ──────────────────────────────────────────────────────────
@@ -499,10 +530,11 @@ export type RunResult = {
   sent: number;
   suppressed: number;
   failed: number;
+  error?: string;
   details: Array<{
     send_id: string;
     email: string;
-    status: 'sent' | 'suppressed' | 'failed';
+    status: 'sent' | 'suppressed' | 'failed' | 'needs_manual';
     error?: string;
     resend_id?: string;
   }>;
@@ -518,6 +550,8 @@ export async function runScheduledSends(
   now: Date = new Date(),
   options: { limit?: number; campaign_id?: string } = {},
 ): Promise<RunResult> {
+  const notReady = readinessError();
+  if (notReady) return { ok: false, error: notReady, picked: 0, sent: 0, suppressed: 0, failed: 0, details: [] };
   let q = sb
     .from('marketing_sends')
     .select(
@@ -533,7 +567,7 @@ export async function runScheduledSends(
 
   const { data: due, error } = await q;
   if (error || !due) {
-    return { ok: false, picked: 0, sent: 0, suppressed: 0, failed: 0, details: [] };
+    return { ok: false, error: 'due_sends_lookup_failed', picked: 0, sent: 0, suppressed: 0, failed: 0, details: [] };
   }
 
   const result: RunResult = {
@@ -544,14 +578,16 @@ export async function runScheduledSends(
     failed: 0,
     details: [],
   };
+  if (!due.length) return result;
 
   // Last-mile suppression check.
   const emails = due.map((d) => (d.recipient_email || '').toLowerCase());
-  const { data: supRows } = await sb
+  const { data: supRows, error: suppressionError } = await sb
     .from('omni_suppressions')
     .select('email')
     .is('business_id', null)
     .in('email', emails);
+  if (suppressionError) return { ...result, ok: false, error: 'suppression_lookup_failed', failed: due.length, details: due.map(row => ({ send_id: row.id, email: row.recipient_email, status: 'failed' as const, error: 'suppression_lookup_failed' })) };
   const suppressedSet = new Set((supRows ?? []).map((s) => (s.email || '').toLowerCase()));
 
   for (const row of due) {
@@ -566,17 +602,27 @@ export async function runScheduledSends(
       });
       continue;
     }
-    if (campaign.status === 'paused') {
+    if (campaign.status !== 'active') {
       // Don't send paused campaigns even if rows are due.
+      continue;
+    }
+    if (!isVerifiedDomain(senderDomain(campaign.sender_email))) {
+      result.failed++;
+      result.details.push({ send_id: row.id, email: row.recipient_email, status: 'failed', error: 'sender_domain_not_verified' });
       continue;
     }
 
     const recipientEmail = (row.recipient_email || '').toLowerCase();
     if (suppressedSet.has(recipientEmail)) {
-      await sb
+      const { error: suppressionWriteError } = await sb
         .from('marketing_sends')
         .update({ suppressed_reason: 'suppressed_global' })
         .eq('id', row.id);
+      if (suppressionWriteError) {
+        result.failed++;
+        result.details.push({ send_id: row.id, email: row.recipient_email, status: 'failed', error: 'suppression_receipt_failed' });
+        continue;
+      }
       result.suppressed++;
       result.details.push({
         send_id: row.id,
@@ -629,6 +675,18 @@ export async function runScheduledSends(
       businessName: campaign.business_slug,
     });
 
+    // This schema has no attempt timestamp or immutable outbox payload. Claim
+    // before dispatch and require manual reconciliation after any uncertainty;
+    // automatic retries must never outlive the provider's 24-hour key window.
+    const { data: claimed, error: claimError } = await sb.from('marketing_sends')
+      .update({ suppressed_reason: 'needs_manual_reconciliation:dispatch_started' })
+      .eq('id', row.id).is('sent_at', null).is('suppressed_reason', null).select('id').maybeSingle();
+    if (claimError || !claimed) {
+      result.failed++;
+      result.details.push({ send_id: row.id, email: row.recipient_email, status: 'failed', error: 'send_claim_failed' });
+      continue;
+    }
+
     const send = await sendMarketingEmail({
       from_display: campaign.sender_display,
       from_email: campaign.sender_email,
@@ -637,6 +695,7 @@ export async function runScheduledSends(
       subject,
       html,
       unsubscribe_url: unsubUrl,
+      idempotency_key: `marketing-send:${row.id}`,
     });
 
     if (!send.ok) {
@@ -644,22 +703,27 @@ export async function runScheduledSends(
       result.details.push({
         send_id: row.id,
         email: row.recipient_email,
-        status: 'failed',
-        error: send.error,
+        status: 'needs_manual',
+        error: `needs_manual_reconciliation:${send.error}`,
       });
       continue;
     }
 
-    await sb
+    const { error: receiptError } = await sb
       .from('marketing_sends')
-      .update({ sent_at: now.toISOString(), resend_id: send.resend_id ?? null })
-      .eq('id', row.id);
+      .update({ resend_id: send.resend_id })
+      .eq('id', row.id).select('id').single();
+    if (receiptError) {
+      result.failed++;
+      console.error('[marketing] receipt persistence failed', { send_id: row.id, resend_id: send.resend_id });
+      result.details.push({ send_id: row.id, email: row.recipient_email, status: 'needs_manual', resend_id: send.resend_id, error: 'needs_manual_reconciliation:provider_receipt_failed' });
+      continue;
+    }
 
-    // Mirror into the universal email_sends log so the AGI dashboard
-    // sees every federation marketing send alongside transactional
-    // and outreach mail. Best-effort: failures don't break the send.
+    // Required dashboard mirror. A failed write keeps the manual marker;
+    // provider acceptance alone is not a completed send workflow.
     if (send.resend_id) {
-      await sb
+      const { error: mirrorError } = await sb
         .from('email_sends')
         .insert({
           resend_id: send.resend_id,
@@ -677,8 +741,20 @@ export async function runScheduledSends(
             audience_kind: campaign.audience_kind,
             landing_id: campaign.landing_id,
           },
-        })
-        .then(() => {}, () => {});
+        });
+      if (mirrorError) {
+        result.failed++;
+        result.details.push({ send_id: row.id, email: row.recipient_email, status: 'needs_manual', resend_id: send.resend_id, error: 'needs_manual_reconciliation:dashboard_mirror_failed' });
+        continue;
+      }
+    }
+
+    const { error: completionError } = await sb.from('marketing_sends')
+      .update({ sent_at: now.toISOString(), suppressed_reason: null }).eq('id', row.id).select('id').single();
+    if (completionError) {
+      result.failed++;
+      result.details.push({ send_id: row.id, email: row.recipient_email, status: 'needs_manual', resend_id: send.resend_id, error: 'needs_manual_reconciliation:completion_receipt_failed' });
+      continue;
     }
 
     result.sent++;
@@ -695,6 +771,7 @@ export async function runScheduledSends(
   // domain to 'paused'. Run after each batch.
   await autoPauseUnhealthyDomains(sb);
 
+  if (result.failed) { result.ok = false; result.error = result.details.find(row => row.error)?.error || 'marketing_send_failed'; }
   return result;
 }
 

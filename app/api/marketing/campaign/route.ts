@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     const result = await runScheduledSends(sb, new Date(), {
       campaign_id: campaign_id || undefined,
     });
-    return NextResponse.json(result);
+    return NextResponse.json(result, { status: result.ok ? 200 : 503 });
   }
 
   if (action === 'enrich_brand_deal') {

@@ -6,6 +6,7 @@ import { runCEOBriefing } from '@/lib/ceo-briefing';
 import { logEvent } from '@/lib/events';
 import { constantTimeEqual } from '@/lib/api-auth';
 import { ptStartOfDayIso, ptEndOfDayIso } from '@/lib/tz';
+import { findPublishedIssueForToday } from './publication';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -18,44 +19,6 @@ export const fetchCache = "force-no-store";
  * ?action=publish-public: Publish today's public web/RSS issues without sending email
  * Default (9:00 AM ET): Send FREE + PREMIUM newsletters, then send ONE clean Telegram debrief
  */
-
-function todayIssueDate(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function todayUtcRange() {
-  const start = new Date();
-  start.setUTCHours(0, 0, 0, 0);
-  const end = new Date(start);
-  end.setUTCDate(end.getUTCDate() + 1);
-  return { start: start.toISOString(), end: end.toISOString() };
-}
-
-async function findPublishedIssueForToday(supabase: any, tier: 'free' | 'premium') {
-  const { start, end } = todayUtcRange();
-  const slug = `interlinked-${tier}-${todayIssueDate()}`;
-
-  const { data: bySlug } = await supabase
-    .from('newsletter_posts')
-    .select('id, slug, subject, tier, published_at')
-    .eq('slug', slug)
-    .maybeSingle();
-
-  if (bySlug?.published_at) return bySlug;
-
-  const { data: byDate } = await supabase
-    .from('newsletter_posts')
-    .select('id, slug, subject, tier, published_at')
-    .eq('tier', tier)
-    .not('published_at', 'is', null)
-    .gte('published_at', start)
-    .lt('published_at', end)
-    .order('published_at', { ascending: false })
-    .limit(1)
-    .maybeSingle();
-
-  return byDate ?? null;
-}
 
 export async function GET(request: Request) {
   noStore();

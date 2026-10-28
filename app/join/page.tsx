@@ -3,7 +3,7 @@
 // Signup page — pure client component. Auth hooks run on the client, so
 // the shell can be statically prerendered and edge-cached.
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { User, Phone, Mail, ArrowRight, Loader2, Check } from "lucide-react";
@@ -39,9 +39,13 @@ export default function Join() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [website, setWebsite] = useState("");
+  const pendingSubmission = useRef<{ fingerprint: string; id: string } | null>(null);
+  const submitting = useRef(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting.current) return;
     
     if (!name.trim()) {
       toast({ title: "Required", description: "Please enter your name.", variant: "destructive" });
@@ -56,9 +60,26 @@ export default function Join() {
       return;
     }
 
+    const normalized = { name: name.trim(), email: email.trim().toLowerCase(), phone: phone.trim() };
+    submitting.current = true;
     setIsLoading(true);
     try {
-      const { error } = await signUp(name.trim(), email.trim(), phone.trim());
+      const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(normalized)));
+      const fingerprint = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, "0")).join("");
+      let pending = pendingSubmission.current?.fingerprint === fingerprint ? pendingSubmission.current : null;
+      if (!pending) {
+        try {
+          const stored = JSON.parse(sessionStorage.getItem("omni-join-pending") || "null");
+          if (stored?.fingerprint === fingerprint && typeof stored.id === "string" &&
+            /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(stored.id)) {
+            pending = { fingerprint, id: stored.id };
+          }
+        } catch { /* A blocked browser store still permits in-page retries. */ }
+      }
+      pending ||= { fingerprint, id: crypto.randomUUID() };
+      pendingSubmission.current = pending;
+      try { sessionStorage.setItem("omni-join-pending", JSON.stringify(pending)); } catch { /* Keep the in-memory retry ID. */ }
+      const { error } = await signUp(normalized.name, normalized.email, normalized.phone, pending.id, website);
       
       if (error) {
         toast({ title: "Error", description: error, variant: "destructive" });
@@ -66,10 +87,13 @@ export default function Join() {
         return;
       }
       
+      pendingSubmission.current = null;
+      try { sessionStorage.removeItem("omni-join-pending"); } catch { /* The verified response remains authoritative. */ }
       setStep("success");
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Something went wrong.", variant: "destructive" });
     } finally {
+      submitting.current = false;
       setIsLoading(false);
     }
   };
@@ -153,6 +177,10 @@ export default function Join() {
           </p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="hidden" aria-hidden="true">
+              <label htmlFor="join-website">Website</label>
+              <Input id="join-website" name="website" tabIndex={-1} autoComplete="off" value={website} onChange={(e) => setWebsite(e.target.value)} />
+            </div>
             <div className="relative">
               <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" />
               <Input
@@ -163,6 +191,9 @@ export default function Join() {
                 onChange={(e) => setName(e.target.value)}
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                 data-testid="input-name"
+                maxLength={200}
+                autoComplete="name"
+                disabled={isLoading}
                 required
               />
             </div>
@@ -177,6 +208,9 @@ export default function Join() {
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                 data-testid="input-email"
+                maxLength={254}
+                autoComplete="email"
+                disabled={isLoading}
                 required
               />
             </div>
@@ -191,6 +225,9 @@ export default function Join() {
                 onChange={(e) => setPhone(e.target.value)}
                 className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-gray-500 h-12"
                 data-testid="input-phone"
+                maxLength={50}
+                autoComplete="tel"
+                disabled={isLoading}
                 required
               />
             </div>

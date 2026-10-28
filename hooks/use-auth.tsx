@@ -18,7 +18,7 @@ interface AuthContextType {
   loading: boolean;
   signIn: (username: string, password: string) => Promise<{ error: string | null }>;
   signInWithProvider: (provider: OAuthProvider, redirectTo?: string | null) => Promise<{ error: string | null }>;
-  signUp: (name: string, email: string, phone: string) => Promise<{ error: string | null }>;
+  signUp: (name: string, email: string, phone: string, submissionId?: string, website?: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
 }
 
@@ -70,8 +70,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return result;
   };
 
-  const signUp = async (name: string, email: string, phone: string) => {
-    return await createLead(name, email, phone);
+  const signUp = async (name: string, email: string, phone: string, submissionId?: string, website?: string) => {
+    return await createLead(name, email, phone, submissionId, website);
   };
 
   const signInWithProvider = async (

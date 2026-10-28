@@ -327,8 +327,8 @@ export function CpsMarketingClient({
               </p>
               <p className="mt-3 text-xs text-zinc-400 leading-relaxed">
                 Each evaluation isn&apos;t one case. It&apos;s a family
-                system that gets re-routed. The 100 leads on your
-                dashboard represent 100 trajectories — not 100
+                system that gets re-routed. The {leadMix.total} leads on your
+                dashboard represent {leadMix.total} trajectories — not {leadMix.total}
                 transactions.
               </p>
             </div>

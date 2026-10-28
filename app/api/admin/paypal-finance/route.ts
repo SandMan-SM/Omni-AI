@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { serverErrorResponse } from "@/lib/api-errors";
-import { normalizeTokenExpiry } from "@/lib/omni-token";
+import { verifyOmniToken } from "@/lib/server/omni-session-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -18,19 +18,6 @@ const FINANCE_ALLOWLIST = (
   .map((s) => s.trim().toLowerCase())
   .filter(Boolean);
 
-function decodeOmniToken(token: string): { sub?: string; exp?: number } | null {
-  // Tokens minted by the auth-login edge function are base64(JSON({sub, exp, ...})),
-  // not Supabase JWTs. Decode directly and treat the DB as the source of truth.
-  try {
-    const json = Buffer.from(token, "base64").toString("utf8");
-    const payload = JSON.parse(json);
-    if (typeof payload !== "object" || !payload) return null;
-    return payload;
-  } catch {
-    return null;
-  }
-}
-
 async function requireFinanceAdmin(
   request: Request,
 ): Promise<{ email: string; profileId: string } | { error: NextResponse }> {
@@ -42,20 +29,14 @@ async function requireFinanceAdmin(
     };
   }
 
-  const payload = decodeOmniToken(token);
+  const payload = verifyOmniToken(token);
   if (!payload?.sub) {
     return {
       error: NextResponse.json({ error: "Unauthorized — invalid token" }, { status: 401 }),
     };
   }
-  const expMs = normalizeTokenExpiry(payload.exp);
-  if (expMs !== null && expMs < Date.now()) {
-    return {
-      error: NextResponse.json({ error: "Unauthorized — token expired" }, { status: 401 }),
-    };
-  }
 
-  // Source of truth: profiles table. Token is only used to identify the profile id.
+  // Signed token authenticates identity; the profile row determines finance access.
   const sb = createAdminClient();
   const { data: profile, error } = await sb
     .from("profiles")

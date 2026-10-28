@@ -25,7 +25,7 @@ async function handle(req: Request) {
   const limit = Number(url.searchParams.get('limit') || '100');
   const sb = createAdminClient();
   const result = await runScheduledSends(sb, new Date(), { limit });
-  return NextResponse.json(result);
+  return NextResponse.json(result, { status: result.ok ? 200 : 503 });
 }
 
 export async function POST(req: Request) {

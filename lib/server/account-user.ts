@@ -2,11 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import type { User as SupabaseUser } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import {
-  decodeOmniToken,
-  isOmniTokenPayloadFresh,
-  type OmniTokenPayload,
-} from "@/lib/omni-token";
+import type { OmniTokenPayload } from "@/lib/omni-token";
+import { verifyOmniToken } from "./omni-session-token";
 
 export type AccountUser = {
   id: string;
@@ -107,8 +104,8 @@ async function resolveBearerUser(req: Request): Promise<AccountUser | null> {
     .trim();
   if (!bearer) return null;
 
-  const payload = decodeOmniToken(bearer);
-  if (!isOmniTokenPayloadFresh(payload)) return null;
+  const payload = verifyOmniToken(bearer);
+  if (!payload) return null;
 
   const profile = await findProfile(payload.sub);
   const email = profile?.email || tokenString(payload, "email");

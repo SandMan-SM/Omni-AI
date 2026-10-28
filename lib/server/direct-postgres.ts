@@ -1,6 +1,7 @@
 import { Pool, type PoolClient } from "pg";
 import { randomUUID } from "node:crypto";
 import { hasPlatformDashboardAccess } from "@/lib/mafi-access";
+import { signOmniToken } from "./omni-session-token";
 
 type BookingInput = {
   id: string;
@@ -508,7 +509,7 @@ export async function authenticateLocalLogin(
     };
 
     return {
-      access_token: Buffer.from(JSON.stringify(tokenData)).toString("base64"),
+      access_token: signOmniToken(tokenData),
       user: {
         id: profileId,
         username: canonicalUsername,

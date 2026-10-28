@@ -4,7 +4,7 @@ import { headers, cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { INBOUND_SLUGS, INBOUND_SLUG_LABELS } from "@/lib/inbound-types";
-import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
+import { verifyOmniToken } from "@/lib/server/omni-session-token";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -51,8 +51,8 @@ async function resolveAdminProfileId(): Promise<string | null> {
       .replace(/^Bearer\s+/i, "")
       .trim();
     if (bearer) {
-      const payload = decodeOmniToken(bearer);
-      if (isOmniTokenPayloadFresh(payload)) {
+      const payload = verifyOmniToken(bearer);
+      if (payload) {
         return payload.sub;
       }
     }

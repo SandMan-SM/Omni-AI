@@ -23,6 +23,7 @@ scripts/.sitanim-payments*
 scripts/sitanim-payments-live-*
 scripts/sitanim-payments-operator.mjs
 tests/
+docs/private-email-previews/
 **/runtime.env
 
 # Local-only database administration scripts contain operator credentials and

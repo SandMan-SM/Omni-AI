@@ -2,9 +2,6 @@ import { createClient as createBrowserClient } from '@/lib/supabase/client';
 import { decodeOmniToken, isOmniTokenPayloadFresh } from '@/lib/omni-token';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/auth-login`;
 const LOCAL_LOGIN_URL = '/api/auth/login';
 
 export interface OmniUser {
@@ -33,25 +30,13 @@ export async function login(username: string, password: string): Promise<{ error
     for (const candidateUsername of usernamesToTry) {
       const local = await postLogin(LOCAL_LOGIN_URL, candidateUsername, password, {}, 8_500);
       if (local.ok) {
-        storeLoginPayload(local.data);
-        return { error: null };
+        return storeLoginPayload(local.data)
+          ? { error: null }
+          : { error: 'Please sign in again. A secure session could not be created.' };
       }
       lastError = local.error || lastError;
-      if (local.status === 401 || local.status === 400) continue;
-
-      const edge = await postLogin(EDGE_FUNCTION_URL, candidateUsername, password, {
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'apikey': SUPABASE_ANON_KEY
-      }, 5_500);
-
-      if (!edge.ok) {
-        console.error('Login error:', edge.error);
-        lastError = edge.error || 'Login failed';
-        continue;
-      }
-
-      storeLoginPayload(edge.data);
-      return { error: null };
+      // The legacy edge fallback returns unsigned JSON sessions. Only the
+      // local API can issue the signed token accepted by server routes.
     }
 
     return { error: lastError };
@@ -97,9 +82,14 @@ async function postLogin(
   }
 }
 
-function storeLoginPayload(data: any) {
+function storeLoginPayload(data: any): boolean {
+  const payload = typeof data?.access_token === 'string'
+    ? decodeOmniToken(data.access_token)
+    : null;
+  if (!isOmniTokenPayloadFresh(payload) || data?.user?.id !== payload.sub) return false;
   localStorage.setItem('omni_token', data.access_token);
   localStorage.setItem('omni_user', JSON.stringify(data.user));
+  return true;
 }
 
 export async function logout(): Promise<void> {
@@ -113,12 +103,13 @@ export async function logout(): Promise<void> {
 }
 
 /**
- * Decode the base64(JSON) omni_token and return its payload, or null if the
- * token is missing / malformed / expired. Side-effect: when the token is
- * expired, the stored token + user are cleared so callers that previously
+ * Decode the signed token for client display. Missing, legacy unsigned,
+ * malformed, and expired sessions need a fresh login. The server verifies
+ * the signature independently; client decoding grants no server access.
+ * Invalid stored token + user are cleared so callers that previously
  * thought they were "logged in" via getStoredUser() correctly see null.
  *
- * The server (`requireAdmin`) does the same exp check — we mirror it here so
+ * The server (`requireAdmin`) also checks expiry — we mirror it here so
  * the client can detect the stale-token state proactively (instead of only
  * after a 401 round-trip).
  */
@@ -128,10 +119,8 @@ function decodeStoredTokenPayload(): { sub?: string; exp?: number } | null {
   if (!raw) return null;
   const payload = decodeOmniToken(raw);
   if (!isOmniTokenPayloadFresh(payload)) {
-    // Token expired or malformed — purge it so subsequent reads don't keep
-    // returning a user that the server has stopped accepting. The helper
-    // accepts both current millisecond expirations and legacy second-based
-    // expirations, so older valid sessions don't get falsely evicted.
+    // A legacy unsigned session cannot be upgraded without authenticating.
+    // Clear it so the regular sign-in flow can issue a signed replacement.
     localStorage.removeItem('omni_token');
     localStorage.removeItem('omni_user');
     return null;
@@ -233,7 +222,7 @@ export async function loginWithOAuth(
 
 /**
  * Build headers that forward the omni_token bearer when the user is
- * authed via the edge-function login path. Used by admin-only UI fetches
+ * authed via the signed local login path. Used by admin-only UI fetches
  * so they pass `requireAdmin()` regardless of whether the user has a
  * Supabase cookie session.
  *
@@ -268,15 +257,15 @@ export function authFetch(input: RequestInfo | URL, init: RequestInit = {}): Pro
  * to /api/join, which writes the row on the service-role client with
  * the real columns and notifies the owner.
  */
-export async function createLead(name: string, email: string, phone: string): Promise<{ error: string | null }> {
+export async function createLead(name: string, email: string, phone: string, submissionId = crypto.randomUUID(), website = ''): Promise<{ error: string | null }> {
   try {
     const res = await authFetch('/api/join', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, phone }),
+      body: JSON.stringify({ name, email, phone, submission_id: submissionId, website }),
     });
-    if (res.ok) return { error: null };
     const body = await res.json().catch(() => ({}));
+    if (res.ok && body.success === true && body.workflow_complete === true) return { error: null };
     return {
       error:
         typeof body?.error === 'string'

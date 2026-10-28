@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies, headers } from 'next/headers';
 import { createAdminClient } from './supabase/admin';
-import { decodeOmniToken, isOmniTokenPayloadFresh, type OmniTokenPayload } from './omni-token';
+import type { OmniTokenPayload } from './omni-token';
+import { verifyOmniToken } from './server/omni-session-token';
 import { hasPlatformDashboardAccess } from './mafi-access';
 
 /**
@@ -58,8 +59,8 @@ function withDbTimeout<T>(p: PromiseLike<T>, ms: number, label: string): Promise
  * Admin Auth Guard — verifies the request comes from an authenticated admin user.
  * Supports two auth schemes:
  *   1. Supabase cookie session (server actions / SSR flows)
- *   2. Bearer token in the Authorization header — the custom base64(JSON) `omni_token`
- *      minted by the `auth-login` edge function (localStorage-based client auth).
+ *   2. Bearer token in the Authorization header — the signed `omni_token`
+ *      minted by the local login API (localStorage-based client auth).
  *
  * Status contract (read this before changing return codes):
  *   200  → { user, profile }      caller is an authenticated admin
@@ -79,14 +80,11 @@ export async function requireAdmin(): Promise<
     const bearer = authz.replace(/^Bearer\s+/i, '').trim();
 
     if (bearer) {
-      // Decode the token structurally. A malformed token is NOT a valid
-      // session → fall through to the cookie path. A well-formed,
-      // unexpired token IS a genuine session → from here on, DB failures
-      // are transient (503), never auth failures (401).
-      const payload = decodeOmniToken(bearer);
-      const tokenValid = isOmniTokenPayloadFresh(payload);
+      // Verify the signature and expiry before trusting any claim. Unsigned
+      // legacy tokens fall through to the verified Supabase cookie path.
+      const payload = verifyOmniToken(bearer);
 
-      if (tokenValid && payload) {
+      if (payload) {
         if (hasPlatformDashboardAccess(tokenIdentity(payload))) {
           return {
             user: { id: payload.sub, email: tokenEmail(payload) },
@@ -270,8 +268,8 @@ async function resolveCallerProfile(): Promise<
     const authz = hdrs.get('authorization') || '';
     const bearer = authz.replace(/^Bearer\s+/i, '').trim();
     if (bearer) {
-      const payload = decodeOmniToken(bearer);
-      if (isOmniTokenPayloadFresh(payload)) {
+      const payload = verifyOmniToken(bearer);
+      if (payload) {
         if (hasPlatformDashboardAccess(tokenIdentity(payload))) {
           return {
             id: payload.sub,

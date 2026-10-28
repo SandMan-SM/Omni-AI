@@ -66,6 +66,7 @@ export async function GET(req: Request) {
       complained: number;
       unsubscribed: number;
       suppressed: number;
+      manual_reconciliation: number;
     }
   >();
   for (const r of (sendsRes.data || []) as SendRow[]) {
@@ -78,6 +79,7 @@ export async function GET(req: Request) {
       complained: 0,
       unsubscribed: 0,
       suppressed: 0,
+      manual_reconciliation: 0,
     };
     cur.scheduled++;
     if (r.sent_at) cur.sent++;
@@ -86,7 +88,8 @@ export async function GET(req: Request) {
     if (r.bounced_at) cur.bounced++;
     if (r.complained_at) cur.complained++;
     if (r.unsubscribed_at) cur.unsubscribed++;
-    if (r.suppressed_reason) cur.suppressed++;
+    if (r.suppressed_reason === 'suppressed_global') cur.suppressed++;
+    if (r.suppressed_reason?.startsWith('needs_manual_reconciliation:')) cur.manual_reconciliation++;
     rollup.set(r.campaign_id, cur);
   }
 

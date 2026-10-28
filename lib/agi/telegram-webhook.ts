@@ -26,8 +26,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * value registered with Telegram and the value computed at request time
  * always agree.
  */
-export function telegramWebhookSecret(): string | null {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
+export function telegramWebhookSecret(token = process.env.TELEGRAM_BOT_TOKEN): string | null {
   if (!token) return null;
   return createHmac("sha256", token)
     .update("telegram-webhook-secret")

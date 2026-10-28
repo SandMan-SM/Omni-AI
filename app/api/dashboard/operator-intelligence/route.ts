@@ -3,7 +3,7 @@ import { cookies, headers } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
 import { createServerClient } from "@supabase/ssr";
 import { hasPlatformDashboardAccess } from "@/lib/mafi-access";
-import { decodeOmniToken, isOmniTokenPayloadFresh } from "@/lib/omni-token";
+import { verifyOmniToken } from "@/lib/server/omni-session-token";
 import {
   fetchOperatorIntelligenceSnapshot,
   resolveOperatorIntelligenceScope,
@@ -497,8 +497,8 @@ async function resolveCallerProfileId(): Promise<string | null> {
       .replace(/^Bearer\s+/i, "")
       .trim();
     if (bearer) {
-      const payload = decodeOmniToken(bearer);
-      if (isOmniTokenPayloadFresh(payload)) {
+      const payload = verifyOmniToken(bearer);
+      if (payload) {
         return payload.sub;
       }
     }

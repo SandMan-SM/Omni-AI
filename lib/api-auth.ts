@@ -44,7 +44,7 @@ export function constantTimeEqual(a: string, b: string): boolean {
  *      — for CLI / cron / ops-automation scripts that don't carry a
  *      user session (same pattern as portfolio/ship + cron/weekly-review)
  *   2. Admin session via requireAdmin()
- *      — Supabase cookie session OR localStorage omni_token base64
+ *      — Supabase cookie session OR signed localStorage omni_token
  *      bearer. Same pattern used across 16+ admin mutation routes.
  *
  * Returns `null` when the request is authorized, or a 401/403
@@ -77,7 +77,7 @@ export async function authorizeCronOrAdmin(
   }
 
   // Fall through to the shared admin auth (cookie session or
-  // omni_token base64 bearer forwarded by the client).
+  // signed omni_token bearer forwarded by the client).
   const auth = await requireAdmin();
   if ("error" in auth && auth.error) return auth.error;
   return null;

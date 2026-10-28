@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegram } from '@/lib/agi/telegram';
 import { verifyTelegramWebhook } from '@/lib/agi/telegram-webhook';
+import { TelegramInternalError, telegramInternalJson } from '@/lib/agi/telegram-internal';
 import { ptStartOfDayIso } from '@/lib/tz';
 
 const supabase = createAdminClient();
@@ -17,6 +18,7 @@ const supabase = createAdminClient();
 //   /pipeline   — quick pipeline numbers
 //   /help       — list commands
 export async function POST(req: NextRequest) {
+  let authorizedChatId: string | null = null;
   try {
     // Auth FIRST: prove the delivery came from Telegram before doing any
     // work. The webhook URL is public, and these commands trigger real
@@ -40,6 +42,7 @@ export async function POST(req: NextRequest) {
       await sendTelegram('🚫 Not authorized.', chatId);
       return NextResponse.json({ ok: true });
     }
+    authorizedChatId = chatId;
 
     // Pull the default (first) business for now
     const { data: businesses } = await supabase
@@ -68,20 +71,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    const baseUrl = req.url.replace(/\/api\/agi\/telegram\/webhook.*/, '').replace(/\/api\/telegram\/webhook.*/, '');
-
-    // Forward CRON_SECRET on every internal fetch so auth-gated routes
-    // (bulk-score, hot-lead-alerts, autopilot/run, etc.) accept this
-    // webhook's calls. The webhook itself is authenticated via chat-id
-    // match above; this re-uses the cron path's auth surface.
-    const internalAuth: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-    if (process.env.CRON_SECRET) internalAuth.Authorization = `Bearer ${process.env.CRON_SECRET}`;
-
     if (text.startsWith('/focus')) {
-      const r = await fetch(`${baseUrl}/api/agi/focus`, { cache: 'no-store' });
-      const f = await r.json();
+      const f = await telegramInternalJson(req.url, '/api/agi/focus');
       const lines: string[] = [`✨ *Today's Focus*\n`];
       if ((f.hot_new_leads ?? []).length) {
         lines.push(`🔥 *${f.hot_new_leads.length} hot new leads* — first contact needed`);
@@ -112,10 +103,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (text.startsWith('/hot')) {
-      const r = await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, {
-        method: 'POST', headers: internalAuth,
-      });
-      const j = await r.json();
+      const j = await telegramInternalJson(req.url, '/api/agi/leads/hot-lead-alerts', { method: 'POST' });
       await sendTelegram(
         j.ok
           ? `🔥 Scanned ${j.scanned ?? 0} · already alerted ${j.already_alerted ?? 0} · *${j.alerted ?? 0} new alerts fired*`
@@ -126,8 +114,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (text.startsWith('/businesses')) {
-      const r = await fetch(`${baseUrl}/api/agi/businesses/advancement`, { cache: 'no-store' });
-      const j = await r.json();
+      const j = await telegramInternalJson(req.url, '/api/agi/businesses/advancement');
       const list = (j.businesses ?? []).slice(0, 8);
       const lines: string[] = ['🏢 *Business Advancement*\n'];
       for (const b of list) {
@@ -139,12 +126,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (text.startsWith('/score')) {
-      await sendTelegram(`🧠 Re-scoring all leads for ${business.name}…`, chatId);
-      const r = await fetch(`${baseUrl}/api/agi/leads/bulk-score`, {
-        method: 'POST', headers: internalAuth,
+      const j = await telegramInternalJson(req.url, '/api/agi/leads/bulk-score', {
+        method: 'POST',
         body: JSON.stringify({ business_id: business.id }),
       });
-      const j = await r.json();
       await sendTelegram(
         j.error
           ? `🚨 Bulk score failed: ${j.error}`
@@ -152,9 +137,7 @@ export async function POST(req: NextRequest) {
         chatId
       );
       // Chain hot-lead alerts (auth-forwarded).
-      await fetch(`${baseUrl}/api/agi/leads/hot-lead-alerts`, {
-        method: 'POST', headers: internalAuth,
-      }).catch(() => {});
+      await telegramInternalJson(req.url, '/api/agi/leads/hot-lead-alerts', { method: 'POST' });
       return NextResponse.json({ ok: true });
     }
 
@@ -220,17 +203,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (text.startsWith('/run')) {
-      // Both base regex and target path were wrong — this route is mounted
-      // at /api/agi/telegram/webhook and the autopilot endpoint at
-      // /api/agi/autopilot/run. With the old paths the fetch hit a 404
-      // and the bot replied "Autopilot failed: undefined" without ever
-      // running the autopilot.
-      const baseUrl = req.url.replace(/\/api\/agi\/telegram\/webhook.*/, '');
-      const r = await fetch(`${baseUrl}/api/agi/autopilot/run`, {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
+      const j = await telegramInternalJson(req.url, '/api/agi/autopilot/run', {
+        method: 'POST',
         body: JSON.stringify({ business_id: business.id }),
       });
-      const j = await r.json();
       await sendTelegram(
         j.ok
           ? `🤖 *Autopilot run complete*\n\n✓ ${j.succeeded} succeeded\n⏭ ${j.skipped} skipped\n✗ ${j.failed} failed`
@@ -244,7 +220,19 @@ export async function POST(req: NextRequest) {
     await sendTelegram(`Unknown command. Try /help.`, chatId);
     return NextResponse.json({ ok: true });
   } catch (err) {
-    console.error('[telegram/webhook]', err);
-    return NextResponse.json({ ok: true }); // Always 200 so Telegram doesn't retry
+    const message = err instanceof TelegramInternalError ? err.message : 'Telegram command failed';
+    console.error('[telegram/webhook]', message);
+    const missingInternalAuth = err instanceof TelegramInternalError && err.status === 503;
+    if (authorizedChatId && !missingInternalAuth) {
+      // An accepted command may already have caused outreach or scoring.
+      // Acknowledge delivery to prevent Telegram automatically repeating it,
+      // while explicitly reporting failure to both the operator and caller.
+      const notification = await sendTelegram(`⚠️ ${message}. Please check before retrying.`, authorizedChatId);
+      if (!notification.ok) console.error('[telegram/webhook] Command failure notification was not accepted');
+      return NextResponse.json({ ok: false, error: message });
+    }
+    return NextResponse.json({ ok: false, error: message }, {
+      status: err instanceof TelegramInternalError ? err.status : 500,
+    });
   }
 }

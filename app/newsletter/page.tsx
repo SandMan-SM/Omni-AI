@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description:
       "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium tiers available.",
     url: "https://omnileadsagi.com/newsletter",
-    siteName: "Interlinked",
+    siteName: "Omni AI",
   },
   twitter: {
     site: "@SitaniMafi",

@@ -19,6 +19,7 @@ type Stats = {
   complained: number;
   unsubscribed: number;
   suppressed: number;
+  manual_reconciliation: number;
 } | null;
 
 type Campaign = {
@@ -305,6 +306,9 @@ export default function MarketingDashboard() {
                       <Stat label="Suppressed" value={c.stats.suppressed} fg="#9ba2b8" />
                     </div>
                   ) : null}
+                  {!!c.stats?.manual_reconciliation && <p role="status" className="mb-3 text-sm text-amber-300">
+                    Needs review: {c.stats.manual_reconciliation} send(s). Reconcile provider receipts before any manual replay.
+                  </p>}
 
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button
