@@ -10,13 +10,20 @@
 //
 // The table makes this failure silent by construction:
 //
-//   published_at  timestamptz  DEFAULT now()
+//   published_at  timestamptz          (no default since 2026-10-28)
 //   status        text         DEFAULT 'draft'
 //
-// An INSERT that omits `published_at` is stamped with the current time as if
-// it were published, and an INSERT that omits `status` is a draft. A writer
-// that sets one and forgets the other produces a row that is half-published,
-// and no type checker, linter or build step will ever say so.
+// The `published_at DEFAULT now()` half of the trap was closed by migration
+// `20261028082555_newsletter_published_at_requires_explicit_value.sql`, which
+// dropped the default: an INSERT that omits `published_at` now stores NULL
+// instead of being stamped with the current time. The `status` half is still
+// open, and it is the half that matters — a writer that sets `published_at`
+// and forgets `status` still produces a row that is half-published, and no
+// type checker, linter or build step will ever say so.
+//
+// The 325 rows that carry a timestamp and a `'draft'` status predate that
+// migration. They are still in the table, and a reader that trusts
+// `published_at` still advertises them.
 //
 //   publish-write-must-set-status
 //       A write to `newsletter_posts` that sets `published_at` to anything
@@ -25,7 +32,8 @@
 //       status — the column default is already 'draft'.)
 //
 //   newsletter-reader-must-filter-status
-//       A READ of `newsletter_posts` that constrains `published_at` (to
+//       A READ of a governed newsletter table (`newsletter_posts` or
+//       `federation_newsletter_posts`) that constrains `published_at` (to
 //       non-null, or to a date range) must also constrain
 //       `status = 'published'` in the same chain.
 //
@@ -82,7 +90,28 @@ const SCAN_DIRS = ["app", "lib", "components", "scripts"];
 
 const SOURCE_EXTENSIONS = [".ts", ".tsx", ".js", ".mjs", ".cjs"];
 
-const TABLE = "newsletter_posts";
+/**
+ * The tables this gate governs.
+ *
+ * Both are newsletter tables owned by this repo, and both carry the same
+ * dual-marker shape: a `published_at` timestamp and a `status` column that
+ * defaults to `'draft'`. `federation_newsletter_posts` is the other
+ * mastheads' pipeline (statuses `draft | approved | published | rejected`);
+ * it happens to be handled correctly today — every write sets both markers
+ * and every reader filters on `status` — but nothing was keeping it that
+ * way. A gate that only covers the table that already had a defect is a
+ * gate that only covers the past.
+ *
+ * The other newsletter-shaped tables in the database (`success_empire_entries`,
+ * `leadfranchise_newsletter_issues`) belong to a separate Python ops pipeline
+ * outside this repo, and `success_empire_entries` additionally carries a
+ * database-level CHECK constraint that makes the half-published state
+ * impossible — which is the stronger fix, and the one this gate cannot do.
+ */
+const TABLES = ["newsletter_posts", "federation_newsletter_posts"] as const;
+
+/** The table whose public reads should go through `publishedNewsletterOnly()`. */
+const CANONICAL_TABLE = "newsletter_posts";
 
 function walk(dir: string, out: string[] = []): string[] {
   let entries: fs.Dirent[];
@@ -150,8 +179,8 @@ function resolvePayload(
 }
 
 /**
- * True when the call is a write on the `newsletter_posts` table — i.e. the
- * receiver chain reaches a `.from('newsletter_posts')` call.
+ * True when the call is a write on one of the governed newsletter tables —
+ * i.e. the receiver chain reaches a `.from('<table>')` call.
  */
 function isNewsletterPostsChain(expr: ts.Expression): boolean {
   let current: ts.Expression = expr;
@@ -166,7 +195,7 @@ function isNewsletterPostsChain(expr: ts.Expression): boolean {
   return (
     !!tableArg &&
     (ts.isStringLiteral(tableArg) || ts.isNoSubstitutionTemplateLiteral(tableArg)) &&
-    tableArg.text === TABLE
+    (TABLES as readonly string[]).includes(tableArg.text)
   );
 }
 
@@ -268,7 +297,7 @@ function pinsStatusToPublished(steps: ChainStep[]): boolean {
 function auditFile(file: string): Finding[] {
   const findings: Finding[] = [];
   const text = fs.readFileSync(file, "utf8");
-  if (!text.includes(TABLE)) return findings;
+  if (!TABLES.some((table) => text.includes(table))) return findings;
 
   const source = ts.createSourceFile(
     file,
@@ -339,7 +368,7 @@ function auditFile(file: string): Finding[] {
       const fromStep = steps.find((step) => step.name === "from");
       const table = fromStep ? stringValue(fromStep.args[0]) : null;
       const isWrite = steps.some((step) => WRITE_METHODS.has(step.name));
-      if (table === TABLE && !isWrite) {
+      if (table && (TABLES as readonly string[]).includes(table) && !isWrite) {
         const offending = steps.find(constrainsPublishedAt);
         if (offending && !pinsStatusToPublished(steps)) {
           const { line } = source.getLineAndCharacterOfPosition(offending.node.getStart());
@@ -348,7 +377,9 @@ function auditFile(file: string): Finding[] {
             file: path.relative(ROOT, file),
             line: line + 1,
             detail:
-              "this read constrains published_at without pinning status = 'published' — it will include draft-with-a-date rows, so every slug it lists can point at an issue that 404s; use publishedNewsletterOnly() from lib/newsletter-posts.ts",
+              table === CANONICAL_TABLE
+                ? "this read constrains published_at without pinning status = 'published' — it will include draft-with-a-date rows, so every slug it lists can point at an issue that 404s; use publishedNewsletterOnly() from lib/newsletter-posts.ts"
+                : `this read constrains published_at without pinning status = 'published' — it will include draft-with-a-date rows from ${table}, so every slug it lists can point at an issue that 404s`,
           });
         }
       }
