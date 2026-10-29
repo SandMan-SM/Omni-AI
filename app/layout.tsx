@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { Suspense } from "react";
 import "./globals.css";
@@ -70,16 +70,6 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png",
   },
-  // Paints the mobile browser chrome (the address bar / toolbar above the
-  // page) in the site's own near-black instead of the browser's default
-  // light. `color-scheme: dark` below already tells the UA the page is
-  // dark, but on a phone the toolbar colour is what the visitor sees first,
-  // and a white bar over a near-black site reads as a broken page. The hex
-  // is the same literal as the inline critical background below, and for
-  // the same reason: a `<meta>` tag cannot reference a CSS custom property,
-  // and the token it mirrors lives in the stylesheet that may not have
-  // loaded yet.
-  themeColor: "#050505",
   robots: {
     index: true,
     follow: true,
@@ -88,6 +78,34 @@ export const metadata: Metadata = {
       follow: true,
     },
   },
+};
+
+/**
+ * Viewport export — NOT the `metadata` export.
+ *
+ * `themeColor` is a documented field of the `Metadata` type, so setting it
+ * there type-checks, builds, and lints clean — and emits **nothing**. In
+ * the App Router the `<meta name="theme-color">` tag is generated only from
+ * the `viewport` export (`node_modules/next/dist/lib/metadata/generate/basic.js`
+ * reads `viewport.themeColor`; the `metadata.themeColor` field is resolved
+ * and then dropped). That was verified against the deployed site: the tag was
+ * absent from the served `<head>` after a clean build and deploy.
+ *
+ * This paints the mobile browser chrome — the address bar / toolbar above the
+ * page — in the site's own near-black instead of the browser's default
+ * light. `color-scheme: dark` in the `<head>` below already tells the UA the
+ * *page* is dark, but on a phone the toolbar colour is what the visitor sees
+ * first, and a white bar over a near-black site reads as a broken page.
+ *
+ * `colorScheme` is deliberately NOT set here: the `<head>` below already
+ * emits `<meta name="color-scheme" content="dark">`, and declaring it twice
+ * would put two identical tags in every page's head. The hex is the same
+ * literal as the inline critical background below, and for the same reason: a
+ * `<meta>` tag cannot reference a CSS custom property, and the token it
+ * mirrors lives in the stylesheet that may not have loaded yet.
+ */
+export const viewport: Viewport = {
+  themeColor: "#050505",
 };
 
 export default function RootLayout({
