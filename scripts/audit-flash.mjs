@@ -293,7 +293,10 @@ async function sitemapRoutes() {
     const paths = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)]
       .map((m) => new URL(m[1].trim()).pathname)
       .filter((p) => p.startsWith('/'));
-    return paths.slice(0, 40);
+    // The whole sitemap. The flash is a property of the root layout, so one
+    // route would normally be enough — but a route that ships its own layout
+    // could reintroduce a light canvas, and the only way to know is to look.
+    return paths.slice(0, 250);
   } catch {
     return [];
   }

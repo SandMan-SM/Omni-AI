@@ -70,6 +70,16 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png",
   },
+  // Paints the mobile browser chrome (the address bar / toolbar above the
+  // page) in the site's own near-black instead of the browser's default
+  // light. `color-scheme: dark` below already tells the UA the page is
+  // dark, but on a phone the toolbar colour is what the visitor sees first,
+  // and a white bar over a near-black site reads as a broken page. The hex
+  // is the same literal as the inline critical background below, and for
+  // the same reason: a `<meta>` tag cannot reference a CSS custom property,
+  // and the token it mirrors lives in the stylesheet that may not have
+  // loaded yet.
+  themeColor: "#050505",
   robots: {
     index: true,
     follow: true,
