@@ -88,6 +88,28 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Critical background, inlined.
+            The site's canvas is near-black (`--background: 0 0% 2%` in
+            globals.css), but that rule only applies once the stylesheet has
+            downloaded and parsed. Measured under a realistic mobile profile
+            (1.6 Mbps / 150 ms RTT) the document streamed at ~0.8 s while
+            the stylesheet did not land until ~2.5 s — so for ~1.7 s the
+            user was looking at the browser's default WHITE canvas with the
+            page's content painted on it, on a dark site.
+
+            This style is inline, so it applies the moment the <head> is
+            parsed — the first flush — with no stylesheet fetch. The hex is
+            a deliberate literal: the token `--background` lives in the very
+            stylesheet that has not loaded yet, so there is nothing to
+            reference here. It is the value that variable resolves to
+            (hsl(0 0% 2%) = rgb(5,5,5)). */}
+        <style dangerouslySetInnerHTML={{ __html: "html{background-color:#050505}" }} />
+        {/* Tell the UA the page is dark BEFORE any CSS arrives: this sets the
+            canvas, scrollbars, form controls and overscroll area to the dark
+            palette rather than the light one. It is the standard
+            dark-mode-site recommendation and it is also what stops the
+            scrollbar from flashing white on the long newsletter pages. */}
+        <meta name="color-scheme" content="dark" />
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <JsonLd data={softwareSchema} />
