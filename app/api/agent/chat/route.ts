@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Anthropic from "@anthropic-ai/sdk";
+import { getClientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -839,6 +840,22 @@ function fallbackReply(
 
 export async function POST(req: NextRequest) {
   const headers = cors(req.headers.get("origin"));
+
+  // This endpoint is public by design — the widget on the masthead calls it
+  // with no session — and every call spends the operator's model credit. The
+  // CORS allowlist does not stop a server-side caller, so without a limit
+  // the endpoint is an open meter. 30 a minute is far above what a person
+  // typing a conversation produces (a full thread is capped at 16 turns)
+  // and low enough to stop a runaway script.
+  const ip = getClientIp(req.headers);
+  const limit = rateLimit(`agent-chat:${ip}`, 30, 60 * 1000);
+  if (!limit.ok) {
+    const retryAfter = Math.max(1, Math.ceil(limit.resetMs / 1000));
+    return NextResponse.json(
+      { reply: "I've been answering a lot just now — give it a minute and ask me again." },
+      { status: 429, headers: { ...headers, "Retry-After": String(retryAfter) } },
+    );
+  }
 
   let body: { messages?: Array<{ role?: string; content?: string }>; known?: Record<string, unknown>; pageUrl?: string };
   try {
