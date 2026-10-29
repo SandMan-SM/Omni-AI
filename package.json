@@ -24,6 +24,7 @@
     "audit:mobile": "tsx scripts/audit-mobile-ui.ts",
     "audit:publish": "tsx scripts/audit-publish-state.ts",
     "audit:rls": "tsx scripts/audit-anon-rls.ts",
+    "audit:flash": "node scripts/audit-flash.mjs",
     "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs",
     "audit:env-drift": "tsx scripts/audit-env-drift.ts"
