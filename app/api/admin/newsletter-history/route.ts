@@ -75,7 +75,7 @@ export async function GET() {
       .order("business_name", { ascending: true }),
     sb
       .from("newsletter_posts")
-      .select("id, slug, subject, tier, keywords, quote, published_at, created_at, sent_at, recipients_count, email_sent, telegram_sent, send_feedback")
+      .select("id, slug, subject, tier, status, keywords, quote, published_at, created_at, sent_at, recipients_count, email_sent, telegram_sent, send_feedback")
       .order("published_at", { ascending: false, nullsFirst: true }),
     sb
       .from("newsletter_subscriptions")
@@ -96,12 +96,16 @@ export async function GET() {
   // totalPosts = published only. The Newsletter Posts KPI on the command
   // center is meant to read as "things readers can see" — counting drafts
   // here was misleading (it showed 248 when only 58 were actually live).
-  const totalPosts = posts.filter((p: any) => p.published_at).length;
-  const freePosts = posts.filter((p: any) => p.tier === "free" && p.published_at).length;
-  const premiumPosts = posts.filter((p: any) => p.tier === "premium" && p.published_at).length;
-  const drafts = posts.filter((p: any) => !p.published_at).length;
+  // "Published" means the same thing it means to every public reader:
+  // status = 'published' AND published_at IS NOT NULL. Testing published_at
+  // alone counted the 325 draft-with-a-date rows as live issues.
+  const isPublished = (p: any) => p.status === "published" && !!p.published_at;
+  const totalPosts = posts.filter(isPublished).length;
+  const freePosts = posts.filter((p: any) => p.tier === "free" && isPublished(p)).length;
+  const premiumPosts = posts.filter((p: any) => p.tier === "premium" && isPublished(p)).length;
+  const drafts = posts.filter((p: any) => !isPublished(p)).length;
   const sentThisWeek = posts.filter(
-    (p: any) => p.published_at && new Date(p.published_at) >= weekAgo
+    (p: any) => isPublished(p) && new Date(p.published_at) >= weekAgo
   ).length;
 
   const res = NextResponse.json({

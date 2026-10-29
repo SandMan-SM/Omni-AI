@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 import { unstable_noStore as noStore } from "next/cache";
 
 /**
@@ -58,14 +59,17 @@ export async function GET() {
   noStore();
   const supabase = createAdminClient();
   const result = await withTimeout(
-    supabase
-      .from("newsletter_posts")
-      .select("slug, subject, intro, keywords, published_at, created_at, tier")
-      // Keep this aligned with /api/newsletter/posts. `published_at` is
-      // the stable public-publish marker; adding newer/optional columns to
-      // the public RSS query can make PostgREST reject the whole request and
-      // produce a false-green empty feed while the API/archive still have rows.
-      .not("published_at", "is", null)
+    // The select list is kept deliberately narrow: adding newer/optional
+    // columns to the public RSS query can make PostgREST reject the whole
+    // request and produce a false-green empty feed while the API/archive
+    // still have rows. The VISIBILITY filter is shared with every other
+    // public reader via `publishedNewsletterOnly` — filtering on
+    // `published_at` alone used to advertise draft slugs that 404.
+    publishedNewsletterOnly(
+      supabase
+        .from("newsletter_posts")
+        .select("slug, subject, intro, keywords, published_at, created_at, tier"),
+    )
       .order("published_at", { ascending: false })
       .limit(50),
     8000

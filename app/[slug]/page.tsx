@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -54,11 +55,15 @@ async function getRecentTrends(excludeSlug: string) {
 // Google reads the two clusters as one topical hub.
 async function getLatestNewsletterPost() {
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("newsletter_posts")
-    .select("slug, subject, intro, published_at, tier")
-    .not("slug", "is", null)
-    .not("published_at", "is", null)
+  // The shared visibility filter keeps this handoff pointing at an issue a
+  // reader can actually open. Filtering on `published_at` alone used to
+  // hand visitors the newest draft — a link that 404s.
+  const { data } = await publishedNewsletterOnly(
+    supabase
+      .from("newsletter_posts")
+      .select("slug, subject, intro, published_at, tier")
+      .not("slug", "is", null),
+  )
     .lte("published_at", new Date().toISOString())
     .order("published_at", { ascending: false })
     .limit(1)

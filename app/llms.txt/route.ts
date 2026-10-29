@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 
 /**
  * /llms.txt — structured LLM-retrieval manifest served dynamically so
@@ -44,10 +45,9 @@ export async function GET() {
   // would fragment the retrieval surface and LLMs tend to cite the
   // headline, not the tier flag. The order is strict reverse-chron
   // (newest first) so the manifest always leads with today's drop.
-  const { data: posts } = await supabase
-    .from("newsletter_posts")
-    .select("slug, subject, published_at")
-    .not("published_at", "is", null)
+  const { data: posts } = await publishedNewsletterOnly(
+    supabase.from("newsletter_posts").select("slug, subject, published_at"),
+  )
     .lte("published_at", new Date().toISOString())
     .order("published_at", { ascending: false })
     .limit(3);

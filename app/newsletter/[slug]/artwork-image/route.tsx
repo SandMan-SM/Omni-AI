@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 import { createClient } from "@supabase/supabase-js";
 import { getNewsletterFallbackPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 
 export const runtime = "edge";
 
@@ -64,11 +65,11 @@ async function getArtworkPost(slug: string): Promise<ArtworkPost | null> {
   try {
     const supabase = createClient(url, key);
     const result = await withTimeout(
-      supabase
-        .from("newsletter_posts")
-        .select("subject, intro, keywords")
-        .eq("slug", slug)
-        .maybeSingle(),
+      // Unpublished issues get no themed artwork — the shared filter is the
+      // same one the issue page uses to decide whether the post exists.
+      publishedNewsletterOnly(
+        supabase.from("newsletter_posts").select("subject, intro, keywords").eq("slug", slug),
+      ).maybeSingle(),
       1200
     );
     return (result as { data?: ArtworkPost | null } | null)?.data || null;

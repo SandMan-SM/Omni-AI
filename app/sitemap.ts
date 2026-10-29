@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { COMPARISON_SLUGS } from "@/lib/comparison-data";
 import { isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 
 // ISR the sitemap hourly. The content pages themselves are `force-dynamic`,
 // but the sitemap is a discovery manifest — per-request DB hits are wasteful
@@ -139,12 +140,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       // live on their own domains. Filtering only on published_at left 319
       // draft rows and ~140 client-niche rows in the sitemap: 340 of the 399
       // newsletter URLs it advertised could not resolve.
-      supabase
-        .from("newsletter_posts")
-        .select("slug, published_at, subject, intro, keywords")
-        .eq("status", "published")
-        .not("slug", "is", null)
-        .not("published_at", "is", null)
+      //
+      // The visibility half of that rule now lives in one place
+      // (`publishedNewsletterOnly`) so the sitemap, the RSS feed, the news
+      // sitemap, llms.txt and on-site search cannot drift apart again.
+      publishedNewsletterOnly(
+        supabase
+          .from("newsletter_posts")
+          .select("slug, published_at, subject, intro, keywords")
+          .not("slug", "is", null),
+      )
         .order("published_at", { ascending: false })
         .limit(5000),
       // Federation Marketing System landings — every published row gets a

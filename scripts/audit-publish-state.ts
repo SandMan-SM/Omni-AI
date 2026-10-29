@@ -24,6 +24,24 @@
 //       (Setting `published_at: null` explicitly is a draft and needs no
 //       status — the column default is already 'draft'.)
 //
+//   newsletter-reader-must-filter-status
+//       A READ of `newsletter_posts` that constrains `published_at` (to
+//       non-null, or to a date range) must also constrain
+//       `status = 'published'` in the same chain.
+//
+//       Why: the two markers can disagree, and 325 rows in the live table
+//       DO disagree — `status = 'draft'` with a `published_at` timestamp.
+//       Every reader that decided "this row is public" from `published_at`
+//       alone advertised slugs that 404. The RSS feed, the Google News
+//       sitemap, `llms.txt`, on-site search and the daily landing page's
+//       newsletter handoff all shipped dead links until this rule existed;
+//       `app/sitemap.ts` had already been fixed by hand, which is exactly
+//       the drift a rule prevents.
+//
+//       Readers that legitimately want drafts (the studio, the admin
+//       history, the sender) do not constrain `published_at` to non-null,
+//       so they are not flagged.
+//
 // The rule walks the TypeScript AST rather than the source text, so a payload
 // built as a variable (`const row = { … }; insert(row)`) is resolved and
 // checked as well.
@@ -55,7 +73,7 @@ const ROOT = path.resolve(process.cwd());
  * a finding must appear here, so a typo in a rule name cannot silently
  * disable the check that owns it.
  */
-const RULE_NAMES = ["publish-write-must-set-status"];
+const RULE_NAMES = ["publish-write-must-set-status", "newsletter-reader-must-filter-status"];
 
 const QUIET = process.argv.includes("--quiet");
 
@@ -152,6 +170,101 @@ function isNewsletterPostsChain(expr: ts.Expression): boolean {
   );
 }
 
+/**
+ * One method call in a Supabase query chain.
+ */
+type ChainStep = {
+  name: string;
+  args: readonly ts.Expression[];
+  node: ts.CallExpression;
+};
+
+/**
+ * Flatten a chained query builder call into its steps, outermost first.
+ *
+ * `supabase.from("newsletter_posts").select("*").eq("status", "published")`
+ * becomes `[{name:"from"}, {name:"select"}, {name:"eq"}]`. The chain has to
+ * be walked as a whole because the question the reader rule asks — "does
+ * THIS query constrain status?" — is a property of the chain, not of any
+ * single call.
+ */
+function chainSteps(root: ts.CallExpression): ChainStep[] {
+  const steps: ChainStep[] = [];
+  let current: ts.Expression = root;
+  while (ts.isCallExpression(current)) {
+    const callee = current.expression;
+    if (!ts.isPropertyAccessExpression(callee)) break;
+    steps.push({ name: callee.name.text, args: current.arguments, node: current });
+    current = callee.expression;
+  }
+  return steps.reverse();
+}
+
+/** True when the expression is a string literal (plain or template). */
+function stringValue(expr: ts.Expression | undefined): string | null {
+  if (!expr) return null;
+  if (ts.isStringLiteral(expr) || ts.isNoSubstitutionTemplateLiteral(expr)) return expr.text;
+  return null;
+}
+
+/**
+ * True when the call is a receiver inside a longer chain — i.e. it is not
+ * the outermost call of its chain. Only the outermost call is analysed, so
+ * one query produces one finding rather than one per step.
+ */
+function isChainReceiver(node: ts.CallExpression): boolean {
+  const parent = node.parent;
+  if (!parent || !ts.isPropertyAccessExpression(parent)) return false;
+  const grandParent = parent.parent;
+  return !!grandParent && ts.isCallExpression(grandParent) && grandParent.expression === parent;
+}
+
+/** Methods that write. The reader rule does not apply to them. */
+const WRITE_METHODS = new Set(["insert", "update", "upsert", "delete"]);
+
+/**
+ * True when the chain constrains `published_at` in a way that treats a
+ * non-null timestamp as meaningful — the exact decision that has to be
+ * backed by `status`.
+ *
+ *   .not("published_at", "is", null)          → non-null
+ *   .or("published_at.not.is.null,…")         → non-null (inside an OR group)
+ *   .gte("published_at", …) / .lte(…)         → a date range
+ *
+ * `.is("published_at", null)` is the opposite — it selects drafts — and is
+ * deliberately not counted.
+ */
+function constrainsPublishedAt(step: ChainStep): boolean {
+  const first = stringValue(step.args[0]);
+  if (first === null) return false;
+  if (step.name === "not") return first === "published_at";
+  if (step.name === "or") return first.includes("published_at");
+  if (["gte", "lte", "gt", "lt"].includes(step.name)) return first === "published_at";
+  return false;
+}
+
+/**
+ * True when the chain pins `status` to 'published'.
+ *
+ * An `.or()` group that merely mentions `status.eq.published` does NOT
+ * count: `published_at.not.is.null,status.eq.published` is satisfied by any
+ * row with a published_at, which is the defect this rule exists to catch.
+ */
+function pinsStatusToPublished(steps: ChainStep[]): boolean {
+  return steps.some((step) => {
+    if (step.name === "eq") {
+      return stringValue(step.args[0]) === "status" && stringValue(step.args[1]) === "published";
+    }
+    if (step.name === "in") {
+      if (stringValue(step.args[0]) !== "status") return false;
+      const values = step.args[1];
+      if (!values || !ts.isArrayLiteralExpression(values)) return false;
+      return values.elements.some((element) => stringValue(element) === "published");
+    }
+    return false;
+  });
+}
+
 function auditFile(file: string): Finding[] {
   const findings: Finding[] = [];
   const text = fs.readFileSync(file, "utf8");
@@ -216,6 +329,33 @@ function auditFile(file: string): Finding[] {
     ts.forEachChild(node, scan);
   };
   scan(source);
+
+  // Reader rule — a read that decides visibility from `published_at` alone
+  // advertises draft slugs that 404. The chain is analysed as a whole,
+  // outermost call only, so one query yields one finding.
+  const scanReaders = (node: ts.Node) => {
+    if (ts.isCallExpression(node) && !isChainReceiver(node)) {
+      const steps = chainSteps(node);
+      const fromStep = steps.find((step) => step.name === "from");
+      const table = fromStep ? stringValue(fromStep.args[0]) : null;
+      const isWrite = steps.some((step) => WRITE_METHODS.has(step.name));
+      if (table === TABLE && !isWrite) {
+        const offending = steps.find(constrainsPublishedAt);
+        if (offending && !pinsStatusToPublished(steps)) {
+          const { line } = source.getLineAndCharacterOfPosition(offending.node.getStart());
+          findings.push({
+            rule: "newsletter-reader-must-filter-status",
+            file: path.relative(ROOT, file),
+            line: line + 1,
+            detail:
+              "this read constrains published_at without pinning status = 'published' — it will include draft-with-a-date rows, so every slug it lists can point at an issue that 404s; use publishedNewsletterOnly() from lib/newsletter-posts.ts",
+          });
+        }
+      }
+    }
+    ts.forEachChild(node, scanReaders);
+  };
+  scanReaders(source);
 
   return findings;
 }

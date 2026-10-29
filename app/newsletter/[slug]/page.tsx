@@ -16,6 +16,7 @@ import { NewsletterStarCredit } from "@/components/newsletter/NewsletterStarCred
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 import { newsletterShareDescription } from "@/lib/newsletter-share-copy";
 import {
   NewsletterIssueCard,
@@ -195,13 +196,9 @@ async function getPost(slug: string) {
 
   const supabase = createAdminClient();
   const result = await withTimeout(
-    supabase
-      .from("newsletter_posts")
-      .select("*")
-      .eq("slug", slug)
-      .eq("status", "published")
-      .not("published_at", "is", null)
-      .maybeSingle(),
+    publishedNewsletterOnly(
+      supabase.from("newsletter_posts").select("*").eq("slug", slug),
+    ).maybeSingle(),
     2500
   );
 
@@ -269,23 +266,23 @@ async function getMoreIssueShelves(currentSlug: string) {
 
   const [premiumRes, freeRes] = await Promise.all([
     withTimeout(
-      supabase
-        .from("newsletter_posts")
-        .select("slug, subject, intro, keywords, tier, published_at, created_at")
-        .eq("tier", "premium")
-        .eq("status", "published")
-        .not("published_at", "is", null)
+      publishedNewsletterOnly(
+        supabase
+          .from("newsletter_posts")
+          .select("slug, subject, intro, keywords, tier, published_at, created_at")
+          .eq("tier", "premium"),
+      )
         .order("published_at", { ascending: false })
         .limit(5),
       2500
     ),
     withTimeout(
-      supabase
-        .from("newsletter_posts")
-        .select("slug, subject, intro, keywords, tier, published_at, created_at")
-        .neq("tier", "premium")
-        .eq("status", "published")
-        .not("published_at", "is", null)
+      publishedNewsletterOnly(
+        supabase
+          .from("newsletter_posts")
+          .select("slug, subject, intro, keywords, tier, published_at, created_at")
+          .neq("tier", "premium"),
+      )
         .order("published_at", { ascending: false })
         .limit(5),
       2500

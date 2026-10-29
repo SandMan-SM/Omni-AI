@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 
 /**
  * Google News sitemap at /sitemap-news.xml.
@@ -59,10 +60,14 @@ export async function GET() {
   const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
 
   const [newsletterRes, landingRes] = await Promise.all([
-    supabase
-      .from("newsletter_posts")
-      .select("slug, subject, published_at")
-      .or("published_at.not.is.null,status.eq.published")
+    // The visibility filter is shared with every other public reader. The
+    // previous `.or("published_at.not.is.null,status.eq.published")` admitted
+    // ANY row with a published_at — including the 325 draft-with-a-date rows
+    // — so this file advertised newsletter URLs that 404. A Google News
+    // sitemap full of dead links is exactly what gets a site demoted.
+    publishedNewsletterOnly(
+      supabase.from("newsletter_posts").select("slug, subject, published_at"),
+    )
       .gte("published_at", cutoff)
       .lte("published_at", new Date().toISOString())
       .order("published_at", { ascending: false })

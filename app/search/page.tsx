@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Search } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 import { JsonLd, breadcrumbSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
@@ -189,10 +190,11 @@ async function runSearch(q: string): Promise<SearchResult[]> {
       .or(`title.ilike.${pattern},description.ilike.${pattern},topic.ilike.${pattern},slug.ilike.${pattern}`)
       .order("date", { ascending: false })
       .limit(20),
-    supabase
-      .from("newsletter_posts")
-      .select("slug, subject, intro, tier, published_at")
-      .not("published_at", "is", null)
+    publishedNewsletterOnly(
+      supabase
+        .from("newsletter_posts")
+        .select("slug, subject, intro, tier, published_at"),
+    )
       .or(`subject.ilike.${pattern},intro.ilike.${pattern},slug.ilike.${pattern}`)
       .order("published_at", { ascending: false })
       .limit(20),

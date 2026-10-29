@@ -11,6 +11,7 @@ import { Breadcrumb } from "@/components/breadcrumb";
 // hub. Matches the pattern added to /about and /faq in the same cycle.
 import { Footer } from "@/components/footer";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 import { NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsletter-issue-card";
 import NewsletterOptin from "@/components/NewsletterOptin";
 import { Suspense } from "react";
@@ -147,24 +148,24 @@ async function NewsletterIndexContent() {
 
   const [premiumRes, freeRes] = await Promise.all([
     withTimeout(
-      supabase
-        .from("newsletter_posts")
-        .select("slug, subject, intro, keywords, tier, published_at, created_at")
-        .eq("tier", "premium")
-        .eq("status", "published")
-        .not("published_at", "is", null)
+      publishedNewsletterOnly(
+        supabase
+          .from("newsletter_posts")
+          .select("slug, subject, intro, keywords, tier, published_at, created_at")
+          .eq("tier", "premium"),
+      )
         .order("published_at", { ascending: false })
         .limit(5),
       2500
     ),
     withTimeout(
-      supabase
-        .from("newsletter_posts")
-        .select("slug, subject, intro, keywords, tier, published_at, created_at")
-        .eq("tier", "free")
-        .eq("status", "published")
-        .ilike("slug", "%interlinked%")
-        .not("published_at", "is", null)
+      publishedNewsletterOnly(
+        supabase
+          .from("newsletter_posts")
+          .select("slug, subject, intro, keywords, tier, published_at, created_at")
+          .eq("tier", "free")
+          .ilike("slug", "%interlinked%"),
+      )
         .lte("published_at", new Date().toISOString())
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5),

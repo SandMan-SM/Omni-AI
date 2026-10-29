@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 
 // Route config: serve from cache for 60s, edge-revalidate in the background
 // for another 10min. This is a public list of published posts that changes
@@ -61,18 +62,15 @@ export async function GET() {
 
   const result = await withAbortTimeout(
     (signal) =>
-      sb
-        .from("newsletter_posts")
-        // Keep this public endpoint aligned with the archive/RSS fields only.
-        // Some legacy newsletter tables were created before later admin `id`
-        // references were standardized; selecting `id` made the endpoint 500
-        // even when public posts existed. Slug is the stable public key.
-        .select("slug, subject, tier, published_at, created_at")
-        // A post is public only when both publication markers agree. This
-        // fail-closed pair prevents malformed drafts with an accidental
-        // published_at timestamp from leaking onto public surfaces.
-        .eq("status", "published")
-        .not("published_at", "is", null)
+      publishedNewsletterOnly(
+        sb
+          .from("newsletter_posts")
+          // Keep this public endpoint aligned with the archive/RSS fields only.
+          // Some legacy newsletter tables were created before later admin `id`
+          // references were standardized; selecting `id` made the endpoint 500
+          // even when public posts existed. Slug is the stable public key.
+          .select("slug, subject, tier, published_at, created_at"),
+      )
         .order("published_at", { ascending: false })
         .limit(100)
         .abortSignal(signal),

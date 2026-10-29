@@ -7,6 +7,7 @@
  * in `docs/email-design-system.md`.
  */
 import { createAdminClient } from '@/lib/supabase/admin';
+import { publishedNewsletterOnly } from '@/lib/newsletter-posts';
 import {
   wrapper,
   header,
@@ -45,7 +46,10 @@ export async function gatherExecDebrief(commits30d: number): Promise<ExecDebrief
   const [{ data: portfolio }, { data: ships }, { count: newsletterCount }, { count: lpCount }] = await Promise.all([
     s.from('client_portfolio').select('*').order('current_mrr_usd', { ascending: false }),
     s.from('build_log').select('id, kind, created_at').gte('created_at', new Date(Date.now() - 30 * 86400000).toISOString()),
-    s.from('newsletter_posts').select('*', { count: 'exact', head: true }).not('published_at', 'is', null),
+    // "Published posts" has to mean what a reader can open. Counting on
+    // `published_at` alone included every draft-with-a-date row and made the
+    // brief claim ~4x more issues were live than actually resolve.
+    publishedNewsletterOnly(s.from('newsletter_posts').select('*', { count: 'exact', head: true })),
     s.from('landing_pages').select('*', { count: 'exact', head: true }),
   ]);
 

@@ -2,6 +2,7 @@
 import { ImageResponse } from "next/og";
 
 import { getNewsletterFallbackPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 import { newsletterShareDescription } from "@/lib/newsletter-share-copy";
 import { newsletterIssueImageUrl } from "@/components/newsletter-issue-card";
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -26,11 +27,15 @@ export default async function OGImage({ params }: { params: { slug: string } }) 
   const supabase = createAdminClient();
 
   const result = await withTimeout(
-    supabase
-      .from("newsletter_posts")
-      .select("subject, intro, tier, keywords, published_at, quote, insights, power_move")
-      .eq("slug", slug)
-      .single(),
+    // Same visibility rule as the issue page: an unpublished issue must not
+    // get a share card. The static fallback snapshot still serves the 53
+    // archived issues whose rows were rotated out of the table.
+    publishedNewsletterOnly(
+      supabase
+        .from("newsletter_posts")
+        .select("subject, intro, tier, keywords, published_at, quote, insights, power_move")
+        .eq("slug", slug),
+    ).single(),
     1200
   );
   const post = (result as { data?: ReturnType<typeof getNewsletterFallbackPost> } | null)?.data || getNewsletterFallbackPost(slug);

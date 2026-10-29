@@ -12,6 +12,7 @@ import {
   type NewsletterCardPost,
 } from "@/components/newsletter-issue-card";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
+import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
 
 // Publication state must never be served from a stale archive after an
 // operator unpublishes a malformed or duplicate issue.
@@ -156,11 +157,11 @@ function buildTagFilters(posts: NewsletterCardPost[]) {
 async function getArchivePosts(): Promise<{ posts: NewsletterCardPost[]; unavailable: boolean }> {
   const supabase = createAdminClient();
   const result = await withTimeout(
-    supabase
-      .from("newsletter_posts")
-      .select("slug, subject, intro, keywords, tier, published_at, created_at")
-      .eq("status", "published")
-      .not("published_at", "is", null)
+    publishedNewsletterOnly(
+      supabase
+        .from("newsletter_posts")
+        .select("slug, subject, intro, keywords, tier, published_at, created_at"),
+    )
       .order("published_at", { ascending: false })
       .limit(500),
     4000

@@ -66,7 +66,7 @@ export async function GET() {
     supabase.from("profiles").select("id,email,total_spent,last_contacted,satisfaction_score,newsletter_subscribed"),
     supabase.from("campaigns").select("id,profile_id,name,status,type,budget,platform,created_at"),
     supabase.from("newsletter_sends").select("id,subject,sent_at,recipients_total").order("sent_at", { ascending: false }),
-    supabase.from("newsletter_posts").select("id,slug,subject,tier,published_at,keywords").order("published_at", { ascending: false }),
+    supabase.from("newsletter_posts").select("id,slug,subject,tier,status,published_at,keywords").order("published_at", { ascending: false }),
     supabase.from("activity_log").select("id,profile_id,type,subject,channel,created_at").order("created_at", { ascending: false }).limit(20),
     supabase.from("newsletter_subscriptions").select("subscribed,subscription_tier"),
     // Pull the SAME rows the Clients tab reads — Omni AI's pipeline only.
@@ -183,9 +183,13 @@ export async function GET() {
   }).length;
   const totalNewslettersSent = allSends.length;
   // Only count published issues — drafts shouldn't inflate the public-facing
-  // "posts shipped" KPIs the operator reads on the command center.
-  const premiumPosts = allPosts.filter(p => p.tier === "premium" && p.published_at).length;
-  const freePosts = allPosts.filter(p => p.tier === "free" && p.published_at).length;
+  // "posts shipped" KPIs the operator reads on the command center. "Published"
+  // means what it means to every public reader: status = 'published' AND a
+  // published_at. Testing published_at alone counted the draft-with-a-date
+  // rows as shipped issues.
+  const isPublishedPost = (p: any) => p.status === "published" && !!p.published_at;
+  const premiumPosts = allPosts.filter(p => p.tier === "premium" && isPublishedPost(p)).length;
+  const freePosts = allPosts.filter(p => p.tier === "free" && isPublishedPost(p)).length;
   const premiumSubscribers = allSubs.filter(s => s.subscription_tier === "premium" && s.subscribed !== false).length;
   const freeSubscribers = allSubs.filter(s => s.subscribed !== false).length;
 

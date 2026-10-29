@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
+import { publishedNewsletterOnly } from '@/lib/newsletter-posts';
 import { requireAdmin } from '@/lib/admin-auth';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -27,8 +28,12 @@ export async function GET() {
     const supabase = createAdminClient();
     const [{ data, error }, { count: postsCount, error: postsErr }] = await Promise.all([
       supabase.from('newsletter_subscriptions').select('subscribed, subscription_tier'),
-      // Published posts only — drafts/scheduled excluded.
-      supabase.from('newsletter_posts').select('id', { count: 'exact', head: true }).not('published_at', 'is', null),
+      // Published posts only — drafts/scheduled excluded. The count has to
+      // use the same visibility rule as every public reader, otherwise it
+      // counted the 325 draft-with-a-date rows as live issues.
+      publishedNewsletterOnly(
+        supabase.from('newsletter_posts').select('id', { count: 'exact', head: true }),
+      ),
     ]);
 
     if (error) throw error;
