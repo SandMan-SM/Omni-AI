@@ -12,7 +12,7 @@
     "dev:slow": "NODE_OPTIONS='--max-old-space-size=3072' next dev",
     "dev:clean": "rm -rf .next .turbo && NODE_OPTIONS='--max-old-space-size=3072' next dev --turbo",
     "dev:prod": "rm -rf .next-local && NEXT_DIST_DIR=.next-local next build && NEXT_DIST_DIR=.next-local next start",
-    "preview": "git push origin HEAD:dev --force && echo '\\n\u2192 Preview building at: https://omni-ai-git-dev-sandman-sms-projects.vercel.app\\n  (refresh in 60-90s for the new build)'",
+    "preview": "git push origin HEAD:dev --force && echo '\\n→ Preview building at: https://omni-ai-git-dev-sandman-sms-projects.vercel.app\\n  (refresh in 60-90s for the new build)'",
     "preview:open": "open 'https://omni-ai-git-dev-sandman-sms-projects.vercel.app'",
     "build": "npm run audit:publish && npm run audit:rls && next build",
     "build:check": "node scripts/ensure-clean-worktree.mjs --phase before-build-check && npm run build:check:dirty && node scripts/ensure-clean-worktree.mjs --phase after-build-check",
@@ -25,7 +25,8 @@
     "audit:publish": "tsx scripts/audit-publish-state.ts",
     "audit:rls": "tsx scripts/audit-anon-rls.ts",
     "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls",
-    "worktree:clean": "node scripts/ensure-clean-worktree.mjs"
+    "worktree:clean": "node scripts/ensure-clean-worktree.mjs",
+    "audit:env-drift": "tsx scripts/audit-env-drift.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

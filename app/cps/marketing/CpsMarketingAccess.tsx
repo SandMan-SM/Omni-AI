@@ -12,11 +12,17 @@ export function CpsMarketingAccess() {
   const [report, setReport] = useState<ComponentProps<typeof CpsMarketingClient> | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
+
   useEffect(() => {
     const controller = new AbortController();
     setReport(null);
     setError("");
     if (loading) return () => controller.abort();
+    // Do not ask for the report before there is a session to ask with. The
+    // endpoint answers 401 to an anonymous caller, and an unauthorised
+    // request that is guaranteed to fail is noise in the network log, in
+    // the browser console, and in the live audit gate.
+    if (!user) return () => controller.abort();
     authFetch("/api/dashboard/cps-marketing", { cache: "no-store", signal: controller.signal })
       .then(async response => {
         const data = await response.json();
@@ -26,15 +32,22 @@ export function CpsMarketingAccess() {
       .catch(reason => { if (!controller.signal.aborted) setError(reason.message || "Report temporarily unavailable."); });
     return () => controller.abort();
   }, [user?.id, loading, attempt]);
+
   if (report) return <CpsMarketingClient {...report} />;
+
+  const signedOut = !loading && !user;
+  const message = signedOut
+    ? "This report is for authorized CPS operators. Sign in to view it."
+    : error || "Checking access…";
+
   return <main className="min-h-screen px-6 py-32 text-white flex items-center justify-center">
     <div className="max-w-lg text-center space-y-6">
       <p className="text-sm text-purple-300">CPS · Private operator report</p>
       <h1 className="text-3xl font-bold">CPS marketing</h1>
-      <p role="status">{error || "Checking access…"}</p>
-      {error && <div className="flex flex-wrap justify-center gap-4">
-        <Link href="/login?next=/cps/marketing" className="rounded-lg bg-purple-600 px-5 py-3">Sign in</Link>
-        <button type="button" className="rounded-lg border border-white/30 px-5 py-3" onClick={() => setAttempt(value => value + 1)}>Try again</button>
+      <p role="status">{message}</p>
+      {(signedOut || error) && <div className="flex flex-wrap justify-center gap-4">
+        <Link href="/login?next=/cps/marketing" className="rounded-lg bg-purple-600 px-5 py-3 min-h-11 inline-flex items-center">Sign in</Link>
+        {error && !signedOut && <button type="button" className="rounded-lg border border-white/30 px-5 py-3 min-h-11 inline-flex items-center" onClick={() => setAttempt(value => value + 1)}>Try again</button>}
       </div>}
     </div>
   </main>;

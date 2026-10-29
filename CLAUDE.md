@@ -30,6 +30,8 @@ npm run build:check  # safe local prod build into .next-prod/ (auto-cleaned, lea
 npm run lint
 npm run audit:mobile   # static mobile/a11y gate (12 rules) — run before every ship
 npm run audit:publish  # publish-state gate — a newsletter write that sets published_at without status
+npm run audit:rls      # RLS gate — a locked table reached with a non-admin client
+npm run audit:env-drift  # local vs production secret drift (needs the Vercel CLI; NOT part of build)
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
 npm run preview:open # open that preview URL
 ```
@@ -39,7 +41,7 @@ npm run preview:open # open that preview URL
   - **`main` → production** (omnileadsagi.com). Push to main to ship live.
   - **`dev` → preview** (use `npm run preview`, which force-pushes HEAD:dev).
 - Preferred build path is **Vercel, not local** — Vercel has clean infra. When a local Tailwind/Turbopack cache wedges (ENOENT on a file that exists), deploy and verify in prod rather than fighting it.
-- Env files are **never edited** by the agent. To inspect prod vars: `vercel env pull .env.local --environment=production`.
+- Env files are **never edited** by the agent. To inspect prod vars: `vercel env pull .env.local --environment=production`. **Do not run that against `.env.local` in place** — Vercel's `sensitive` variables (`SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`, `RESEND_API_KEY`) come back **empty**, so the pull silently blanks them and breaks local sends. Pull to a temp file, read what you need, delete it. `npm run audit:env-drift` reports which watched secrets no longer match production.
 - Env var NAMES (never values): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `DATABASE_URL`/`POSTGRES_URL`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_WEBHOOK_SECRET`, `ANTHROPIC_API_KEY`/`ANTHROPIC_MODEL`, `CRON_SECRET`, `ADMIN_API_KEY`, plus federation/cron/telegram/twilio/namecheap secrets. **Never print or commit secret values.**
 
 ## Dev server hygiene (READ THIS BEFORE TROUBLESHOOTING)
