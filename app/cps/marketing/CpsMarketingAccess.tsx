@@ -9,6 +9,12 @@ import { CpsMarketingClient } from "./CpsMarketingClient";
 
 export function CpsMarketingAccess() {
   const { user, loading } = useAuth();
+  // The effect only needs to know WHETHER there is a signed-in operator, and
+  // it must not re-run every time `useAuth` hands back a fresh object for the
+  // same session. The user's id is the stable primitive for that: it flips
+  // exactly when the session changes, and depending on the id keeps the
+  // effect's dependency list honest instead of silencing the lint rule.
+  const userId = user?.id ?? null;
   const [report, setReport] = useState<ComponentProps<typeof CpsMarketingClient> | null>(null);
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -22,7 +28,7 @@ export function CpsMarketingAccess() {
     // endpoint answers 401 to an anonymous caller, and an unauthorised
     // request that is guaranteed to fail is noise in the network log, in
     // the browser console, and in the live audit gate.
-    if (!user) return () => controller.abort();
+    if (!userId) return () => controller.abort();
     authFetch("/api/dashboard/cps-marketing", { cache: "no-store", signal: controller.signal })
       .then(async response => {
         const data = await response.json();
@@ -31,7 +37,7 @@ export function CpsMarketingAccess() {
       })
       .catch(reason => { if (!controller.signal.aborted) setError(reason.message || "Report temporarily unavailable."); });
     return () => controller.abort();
-  }, [user?.id, loading, attempt]);
+  }, [userId, loading, attempt]);
 
   if (report) return <CpsMarketingClient {...report} />;
 
