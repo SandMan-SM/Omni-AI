@@ -118,7 +118,7 @@ test('invalid bearer is denied before assurance, while Auth network failures ret
 });
 
 test('receiving API preserves explicit MFA/recovery denial codes and private response headers', async () => {
- for (const endpoint of ['portfolio', 'seo']) {
+ for (const endpoint of ['portfolio', 'seo', 'domains']) {
   for (const [scenario, expected] of [
     [{ next: 'aal2' }, 'mfa_required'],
     [{ methods: [{ method: 'recovery' }] }, 'recovery_session_restricted']
@@ -131,6 +131,10 @@ test('receiving API preserves explicit MFA/recovery denial codes and private res
         detailLimit: () => 50,
         readSeoReport: async () => { reportReads++; throw Error('must not read'); },
         readSeoDetail: async () => { reportReads++; throw Error('must not read'); },
+      },
+      '@/lib/reporting-domains': {
+        readDomainReport: async () => { reportReads++; throw Error('must not read'); },
+        readDomainDetail: async () => { reportReads++; throw Error('must not read'); },
       },
       '@/lib/reporting-portfolio': { ...f.api, verifiedActor: token => f.api.verifiedActor(token, f.query), readPortfolio: async () => { reportReads++; throw Error('must not read'); } }
     });

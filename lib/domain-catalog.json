@@ -1,0 +1,1635 @@
+{
+  "inventoryVerifiedAt": "2026-10-29T23:37:12.176075+00:00",
+  "registrarCount": 82,
+  "domains": [
+    {
+      "domain": "agiarena.online",
+      "kind": "namecheap",
+      "assetId": "agiarena",
+      "tenantSlug": "agiarena",
+      "displayName": "AGI Arena",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "agi-arena",
+          "url": "https://vercel.com/sandman-sms-projects/agi-arena",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-02",
+      "notes": []
+    },
+    {
+      "domain": "aidigitalmarketingsolution.com",
+      "kind": "namecheap",
+      "assetId": "aidigital",
+      "tenantSlug": "aidigital",
+      "displayName": "AI Digital Marketing",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "ai-digital-marketing-solution",
+          "url": "https://vercel.com/sandman-sms-projects/ai-digital-marketing-solution",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-06",
+      "notes": []
+    },
+    {
+      "domain": "aiintergratedsolution.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "aiintegrated",
+      "displayName": "AI Integrated Solutions",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-19",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "aisempire.org",
+      "kind": "namecheap",
+      "assetId": "aisempire",
+      "tenantSlug": "aisempire",
+      "displayName": "AIS Empire",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "aisempire",
+          "url": "https://vercel.com/sandman-sms-projects/aisempire",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-22",
+      "notes": []
+    },
+    {
+      "domain": "alira.live",
+      "kind": "namecheap",
+      "assetId": "alira",
+      "tenantSlug": "alira",
+      "displayName": "Alira",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "alira-site",
+          "url": "https://vercel.com/sandman-sms-projects/alira-site",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-28",
+      "notes": []
+    },
+    {
+      "domain": "alirafoundation.com",
+      "kind": "namecheap",
+      "assetId": "alira",
+      "tenantSlug": "alira",
+      "displayName": "Alira",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "alira-site",
+          "url": "https://vercel.com/sandman-sms-projects/alira-site",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-09-19",
+      "notes": []
+    },
+    {
+      "domain": "arizonaphoenixrentals.com",
+      "kind": "namecheap",
+      "assetId": "arizonaphoenixrentals",
+      "tenantSlug": "arizonaphoenixrentals",
+      "displayName": "Arizona Phoenix Rentals",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "arizonaphoenixrentals",
+          "url": "https://vercel.com/sandman-sms-projects/arizonaphoenixrentals",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-10",
+      "notes": []
+    },
+    {
+      "domain": "austintx.news",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-04",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "beehivebizpulse.com",
+      "kind": "namecheap",
+      "assetId": "beehive",
+      "tenantSlug": "beehive",
+      "displayName": "Beehive Biz Pulse",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "beehive-biz-pulse",
+          "url": "https://vercel.com/sandman-sms-projects/beehive-biz-pulse",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-06",
+      "notes": []
+    },
+    {
+      "domain": "boaqg.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "boaqg",
+      "displayName": "BOAQG",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-12",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "coldweatherventure.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "coldweatherventure",
+      "displayName": "Cold Weather Venture",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-24",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "convergemurray.com",
+      "kind": "namecheap",
+      "assetId": "converge",
+      "tenantSlug": "converge",
+      "displayName": "Converge PT",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "convergept",
+          "url": "https://vercel.com/sandman-sms-projects/convergept",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-25",
+      "notes": []
+    },
+    {
+      "domain": "convergesaltlakecity.com",
+      "kind": "namecheap",
+      "assetId": "converge",
+      "tenantSlug": "converge",
+      "displayName": "Converge PT",
+      "usage": "Alternate business domain",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "convergept",
+          "url": "https://vercel.com/sandman-sms-projects/convergept",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-25",
+      "notes": [
+        "Actual Vercel attachment exists without federation routing registration; display as unregistered and do not deploy from this catalog."
+      ]
+    },
+    {
+      "domain": "corbinroye.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-09-30",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "cpsutah.org",
+      "kind": "namecheap",
+      "assetId": "cpsutah",
+      "tenantSlug": "cpsutah",
+      "displayName": "Clinical and Professional Solutions",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "cpsutah",
+          "url": "https://vercel.com/sandman-sms-projects/cpsutah",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-25",
+      "notes": []
+    },
+    {
+      "domain": "deptofcreatvs.com",
+      "kind": "namecheap",
+      "assetId": "deptofcreatvs",
+      "tenantSlug": "deptofcreatvs",
+      "displayName": "Dept. of Creatvs",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "deptofcreatvs",
+          "url": "https://vercel.com/sandman-sms-projects/deptofcreatvs",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-22",
+      "notes": []
+    },
+    {
+      "domain": "dykerogers.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-09-30",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "ellietalks.live",
+      "kind": "namecheap",
+      "assetId": "ellietalks",
+      "tenantSlug": "ellietalks",
+      "displayName": "Ellie Talks",
+      "usage": "Redirect domain",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "ellie-talks",
+          "url": "https://vercel.com/sandman-sms-projects/ellie-talks",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": "highteawithellieg.com",
+      "expiresAt": "2027-08-14",
+      "notes": []
+    },
+    {
+      "domain": "gmsekingsavage.com",
+      "kind": "namecheap",
+      "assetId": "gmsekingsavage",
+      "tenantSlug": "gmsekingsavage",
+      "displayName": "GMSE King Savage",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "gmse-king-savage",
+          "url": "https://vercel.com/sandman-sms-projects/gmse-king-savage",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-23",
+      "notes": []
+    },
+    {
+      "domain": "hiddencamera.studio",
+      "kind": "namecheap",
+      "assetId": "hiddencamerastudios",
+      "tenantSlug": "hiddencamerastudios",
+      "displayName": "Hidden Camera Studios",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "hiddencamerastudios",
+          "url": "https://vercel.com/sandman-sms-projects/hiddencamerastudios",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-23",
+      "notes": []
+    },
+    {
+      "domain": "highteawithellieg.com",
+      "kind": "namecheap",
+      "assetId": "ellietalks",
+      "tenantSlug": "ellietalks",
+      "displayName": "Ellie Talks",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "ellie-talks",
+          "url": "https://vercel.com/sandman-sms-projects/ellie-talks",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-19",
+      "notes": []
+    },
+    {
+      "domain": "huronsanmarcos.com",
+      "kind": "namecheap",
+      "assetId": "huron",
+      "tenantSlug": "huron",
+      "displayName": "Huron Roofing and Construction",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "huron-roofing",
+          "url": "https://vercel.com/sandman-sms-projects/huron-roofing",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-29",
+      "notes": []
+    },
+    {
+      "domain": "joemutifoundation.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-26",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "joshuaelkington.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "joshuaelkington",
+      "displayName": "Joshua Elkington",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "joshuaelkington",
+          "url": "https://vercel.com/sandman-sms-projects/joshuaelkington",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-10-15",
+      "notes": []
+    },
+    {
+      "domain": "lanretealone.com",
+      "kind": "namecheap",
+      "assetId": "lanretealone",
+      "tenantSlug": "lanretealone",
+      "displayName": "Lanrete Alone",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "lanretealone",
+          "url": "https://vercel.com/sandman-sms-projects/lanretealone",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-24",
+      "notes": []
+    },
+    {
+      "domain": "laytonbarney.estate",
+      "kind": "namecheap",
+      "assetId": "layton-barney",
+      "tenantSlug": "layton-barney",
+      "displayName": "Layton Barney",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "layton-barney",
+          "url": "https://vercel.com/sandman-sms-projects/layton-barney",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-09-22",
+      "notes": []
+    },
+    {
+      "domain": "leadfranchise.org",
+      "kind": "namecheap",
+      "assetId": "leadfranchise",
+      "tenantSlug": "leadfranchise",
+      "displayName": "Lead Franchise",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "lead-franchise",
+          "url": "https://vercel.com/sandman-sms-projects/lead-franchise",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-05",
+      "notes": []
+    },
+    {
+      "domain": "leotaempire.com",
+      "kind": "namecheap",
+      "assetId": "leotaempire",
+      "tenantSlug": "leotaempire",
+      "displayName": "Leota Empire",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "leotaempire",
+          "url": "https://vercel.com/sandman-sms-projects/leotaempire",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-26",
+      "notes": []
+    },
+    {
+      "domain": "losangels.shop",
+      "kind": "namecheap",
+      "assetId": "losangels",
+      "tenantSlug": "losangels",
+      "displayName": "Los Angels",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "losangels",
+          "url": "https://vercel.com/sandman-sms-projects/losangels",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-09-18",
+      "notes": []
+    },
+    {
+      "domain": "lovethybarber.shop",
+      "kind": "namecheap",
+      "assetId": "ltb",
+      "tenantSlug": "ltb",
+      "displayName": "Love Thy Barber",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "love-thy-barber",
+          "url": "https://vercel.com/sandman-sms-projects/love-thy-barber",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-06",
+      "notes": []
+    },
+    {
+      "domain": "luxurybran.com",
+      "kind": "namecheap",
+      "assetId": "luxurybran",
+      "tenantSlug": "luxurybran",
+      "displayName": "Luxury Bran",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "luxurybran",
+          "url": "https://vercel.com/sandman-sms-projects/luxurybran",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-24",
+      "notes": []
+    },
+    {
+      "domain": "mafenterprises.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "mafi",
+      "displayName": "The Mafi Family (Mafi Enterprises)",
+      "usage": "Registered redirect; destination unverified",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "mafi-live",
+          "url": "https://vercel.com/sandman-sms-projects/mafi-live",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-23",
+      "notes": [
+        "The registry marks this domain as a redirect, but no cross-root HTTP destination was independently observed. Root/www redirects are grouped within this row."
+      ]
+    },
+    {
+      "domain": "mafi.live",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "mafi",
+      "displayName": "The Mafi Family (Mafi Enterprises)",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "mafi-live",
+          "url": "https://vercel.com/sandman-sms-projects/mafi-live",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-23",
+      "notes": []
+    },
+    {
+      "domain": "mafiempire.com",
+      "kind": "namecheap",
+      "assetId": "mafiempire",
+      "tenantSlug": "mafiempire",
+      "displayName": "Mafi Legacy",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "mafiempire",
+          "url": "https://vercel.com/sandman-sms-projects/mafiempire",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-10-11",
+      "notes": []
+    },
+    {
+      "domain": "mafienterprises.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "mafienterprises",
+      "displayName": "Mafi Enterprises",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "mafi-live",
+          "url": "https://vercel.com/sandman-sms-projects/mafi-live",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-23",
+      "notes": [
+        "The registry marks this domain as a redirect, but no cross-root HTTP destination was independently observed. Root/www redirects are grouped within this row.",
+        "Tracking/approved business identity differs from routing tenant; retain both identities and do not merge unrelated business metrics.",
+        "Current HTTPS root serves the Mafi Enterprises website with a self-canonical URL (observed October 29); the federation redirect role is older than this live observation."
+      ]
+    },
+    {
+      "domain": "masondayy.com",
+      "kind": "namecheap",
+      "assetId": "masondayy",
+      "tenantSlug": "masondayy",
+      "displayName": "Maison Dayy",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "masondayy",
+          "url": "https://vercel.com/sandman-sms-projects/masondayy",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-22",
+      "notes": []
+    },
+    {
+      "domain": "masonthomas.live",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "masonthomas",
+      "displayName": "Mason Thomas",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-22",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "miamiltd.news",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-04",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "moderndayhemp.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-01",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "mushinjournal.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "mushin",
+      "displayName": "Mushin Journal",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-05",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "mythosais.app",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-26",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "mythosais.com",
+      "kind": "namecheap",
+      "assetId": "mythosais",
+      "tenantSlug": "mythosais",
+      "displayName": "Mythos AIS",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "mythosais",
+          "url": "https://vercel.com/sandman-sms-projects/mythosais",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-25",
+      "notes": []
+    },
+    {
+      "domain": "newsletterstudio.dev",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "newsletterstudio",
+      "displayName": "Newsletter Studio",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "newsletter-studio",
+          "url": "https://vercel.com/sandman-sms-projects/newsletter-studio",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-30",
+      "notes": [
+        "Actual Vercel attachment exists without federation routing registration; display as unregistered and do not deploy from this catalog."
+      ]
+    },
+    {
+      "domain": "obsidian.casino",
+      "kind": "namecheap",
+      "assetId": "obsidiancasino",
+      "tenantSlug": "obsidiancasino",
+      "displayName": "Obsidian Casino",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "obsidian-casino",
+          "url": "https://vercel.com/sandman-sms-projects/obsidian-casino",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-13",
+      "notes": []
+    },
+    {
+      "domain": "omniclaw.live",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "omniclaw",
+      "displayName": "OmniClaw",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-27",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "omnileads.shop",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "omnileadsshop",
+      "displayName": "Omni Leads Shop",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "omni-leads",
+          "url": "https://vercel.com/sandman-sms-projects/omni-leads",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-06",
+      "notes": [
+        "Actual Vercel attachment exists without federation routing registration; display as unregistered and do not deploy from this catalog."
+      ]
+    },
+    {
+      "domain": "omniltd.app",
+      "kind": "namecheap",
+      "assetId": "omniltd",
+      "tenantSlug": "omniltd",
+      "displayName": "Omni Limited",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "omniltd",
+          "url": "https://vercel.com/sandman-sms-projects/omniltd",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-25",
+      "notes": []
+    },
+    {
+      "domain": "omnios.casino",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-26",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "omnios.news",
+      "kind": "namecheap",
+      "assetId": "omnios",
+      "tenantSlug": "omnios",
+      "displayName": "Omni OS",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "omnios",
+          "url": "https://vercel.com/sandman-sms-projects/omnios",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-23",
+      "notes": []
+    },
+    {
+      "domain": "omnios.shop",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-26",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "osirus.app",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "osirus",
+      "displayName": "Osirus",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-25",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "oswaldofreeman.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "oswaldofreeman",
+      "displayName": "Oswaldo Freeman",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "oswaldofreeman",
+          "url": "https://vercel.com/sandman-sms-projects/oswaldofreeman",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-10-16",
+      "notes": []
+    },
+    {
+      "domain": "psychandcustodyevaluations.com",
+      "kind": "namecheap",
+      "assetId": "cps",
+      "tenantSlug": "cps",
+      "displayName": "UTAC Resources",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "cps-website",
+          "url": "https://vercel.com/sandman-sms-projects/cps-website",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-06",
+      "notes": []
+    },
+    {
+      "domain": "renelaveau.com",
+      "kind": "namecheap",
+      "assetId": "rene",
+      "tenantSlug": "rene",
+      "displayName": "Rene Laveau",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "renelaveau-website",
+          "url": "https://vercel.com/sandman-sms-projects/renelaveau-website",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-08",
+      "notes": []
+    },
+    {
+      "domain": "sanmarcosbest.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-30",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "secretimperium.com",
+      "kind": "namecheap",
+      "assetId": "imperium",
+      "tenantSlug": "imperium",
+      "displayName": "Imperium",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "imperium",
+          "url": "https://vercel.com/sandman-sms-projects/imperium",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-06",
+      "notes": []
+    },
+    {
+      "domain": "seoandppcmarketing.com",
+      "kind": "namecheap",
+      "assetId": "seoppc",
+      "tenantSlug": "seoppc",
+      "displayName": "SEO & PPC Marketing",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "seo-ppc-marketing",
+          "url": "https://vercel.com/sandman-sms-projects/seo-ppc-marketing",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-06",
+      "notes": []
+    },
+    {
+      "domain": "siliconvalleyltd.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-04",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "sitanimafi.com",
+      "kind": "namecheap",
+      "assetId": "sitanim",
+      "tenantSlug": "sitanim",
+      "displayName": "Sitani Mafi",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "sitanimafi-website",
+          "url": "https://vercel.com/sandman-sms-projects/sitanimafi-website",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-04",
+      "notes": []
+    },
+    {
+      "domain": "sitanimafi.live",
+      "kind": "namecheap",
+      "assetId": "sitanim",
+      "tenantSlug": "sitanim",
+      "displayName": "Sitani Mafi",
+      "usage": "Alternate business domain",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "sitanimafi-website",
+          "url": "https://vercel.com/sandman-sms-projects/sitanimafi-website",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-23",
+      "notes": []
+    },
+    {
+      "domain": "slingingbatterbakery.shop",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-24",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "societyfeen.shop",
+      "kind": "namecheap",
+      "assetId": "societyfeen",
+      "tenantSlug": "societyfeen",
+      "displayName": "Society Feen",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "societyfeen",
+          "url": "https://vercel.com/sandman-sms-projects/societyfeen",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-24",
+      "notes": []
+    },
+    {
+      "domain": "tanielafiefia.com",
+      "kind": "namecheap",
+      "assetId": "tanielafiefia",
+      "tenantSlug": "tanielafiefia",
+      "displayName": "Taniela Fiefia",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "taniela-fiefia",
+          "url": "https://vercel.com/sandman-sms-projects/taniela-fiefia",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-09",
+      "notes": []
+    },
+    {
+      "domain": "theixnetwork.com",
+      "kind": "namecheap",
+      "assetId": "theixnetwork",
+      "tenantSlug": "theixnetwork",
+      "displayName": "The IX Network",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "theixnetwork",
+          "url": "https://vercel.com/sandman-sms-projects/theixnetwork",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-23",
+      "notes": []
+    },
+    {
+      "domain": "theluxesocialist.com",
+      "kind": "namecheap",
+      "assetId": "theluxesocialist",
+      "tenantSlug": "theluxesocialist",
+      "displayName": "The Luxe Socialist",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "theluxesocialist",
+          "url": "https://vercel.com/sandman-sms-projects/theluxesocialist",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-24",
+      "notes": []
+    },
+    {
+      "domain": "thewasatchpost.com",
+      "kind": "namecheap",
+      "assetId": "wasatch",
+      "tenantSlug": "wasatch",
+      "displayName": "The Wasatch Post",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "the-wasatch-post",
+          "url": "https://vercel.com/sandman-sms-projects/the-wasatch-post",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-06",
+      "notes": []
+    },
+    {
+      "domain": "truetides.org",
+      "kind": "namecheap",
+      "assetId": "truetides",
+      "tenantSlug": "truetides",
+      "displayName": "True Tides",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "truetides",
+          "url": "https://vercel.com/sandman-sms-projects/truetides",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-10-01",
+      "notes": []
+    },
+    {
+      "domain": "tupuleota.com",
+      "kind": "namecheap",
+      "assetId": "tupuleota",
+      "tenantSlug": "tupuleota",
+      "displayName": "Tupu Leota",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "tupuleota",
+          "url": "https://vercel.com/sandman-sms-projects/tupuleota",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-26",
+      "notes": []
+    },
+    {
+      "domain": "umsempire.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-08-02",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "umsnews.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "umsnews",
+      "displayName": "UMS News",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-07",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "utahaddictioncenterseaglemountain.com",
+      "kind": "namecheap",
+      "assetId": "utahaddiction",
+      "tenantSlug": "utahaddiction",
+      "displayName": "Utah Trauma & Addiction Centers",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "utac-eagle-mountain",
+          "url": "https://vercel.com/sandman-sms-projects/utac-eagle-mountain",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-23",
+      "notes": []
+    },
+    {
+      "domain": "utahaddictioncenterseaglemoutain.com",
+      "kind": "namecheap",
+      "assetId": "utahaddiction",
+      "tenantSlug": "utahaddiction",
+      "displayName": "Utah Trauma & Addiction Centers",
+      "usage": "Registered redirect; destination unverified",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "utac-eagle-mountain",
+          "url": "https://vercel.com/sandman-sms-projects/utac-eagle-mountain",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-23",
+      "notes": [
+        "The registry marks this domain as a redirect, but no cross-root HTTP destination was independently observed. Root/www redirects are grouped within this row."
+      ]
+    },
+    {
+      "domain": "utahdeckandbasementremodel.com",
+      "kind": "namecheap",
+      "assetId": "leifson",
+      "tenantSlug": "leifson",
+      "displayName": "Leifson Built",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "leifson-built",
+          "url": "https://vercel.com/sandman-sms-projects/leifson-built",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-06",
+      "notes": []
+    },
+    {
+      "domain": "utahmainstreet.com",
+      "kind": "namecheap",
+      "assetId": "mainst",
+      "tenantSlug": "mainst",
+      "displayName": "Utah Main Street",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "utah-main-street",
+          "url": "https://vercel.com/sandman-sms-projects/utah-main-street",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-05-06",
+      "notes": []
+    },
+    {
+      "domain": "utahmainstreet.news",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-07-23",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "vanth.casino",
+      "kind": "namecheap",
+      "assetId": "vanth",
+      "tenantSlug": "vanth",
+      "displayName": "Vanth",
+      "usage": "Redirect domain",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "vanthlegacy",
+          "url": "https://vercel.com/sandman-sms-projects/vanthlegacy",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": "vanthlegacy.com",
+      "expiresAt": "2027-10-04",
+      "notes": []
+    },
+    {
+      "domain": "vanth.shop",
+      "kind": "namecheap",
+      "assetId": "vanth",
+      "tenantSlug": "vanth",
+      "displayName": "Vanth",
+      "usage": "Redirect domain",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "vanthlegacy",
+          "url": "https://vercel.com/sandman-sms-projects/vanthlegacy",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": "vanthlegacy.com",
+      "expiresAt": "2027-10-04",
+      "notes": []
+    },
+    {
+      "domain": "vanthlegacy.com",
+      "kind": "namecheap",
+      "assetId": "vanth",
+      "tenantSlug": "vanth",
+      "displayName": "Vanth",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "vanthlegacy",
+          "url": "https://vercel.com/sandman-sms-projects/vanthlegacy",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-10-05",
+      "notes": []
+    },
+    {
+      "domain": "verticochino.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": null,
+      "displayName": null,
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-09-30",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "wikios.app",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "wikios",
+      "displayName": "Wikios",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-25",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "youngscabinetrefinishing.com",
+      "kind": "namecheap",
+      "assetId": "youngs",
+      "tenantSlug": "youngs",
+      "displayName": "Youngs Cabinet Refinishing",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "youngs-cabinets",
+          "url": "https://vercel.com/sandman-sms-projects/youngs-cabinets",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": "2027-04-06",
+      "notes": []
+    },
+    {
+      "domain": "zactocherr.com",
+      "kind": "namecheap",
+      "assetId": null,
+      "tenantSlug": "zactocherr",
+      "displayName": "Zactocherr",
+      "usage": "Parked at Namecheap",
+      "platform": "unmapped",
+      "projects": [],
+      "destinationDomain": null,
+      "expiresAt": "2027-06-23",
+      "notes": [
+        "Namecheap parking template observed; this row has no business website deployment or measured visitor count implied by its registration."
+      ]
+    },
+    {
+      "domain": "achatwithliz.com",
+      "kind": "client_managed",
+      "assetId": "achatwithliz",
+      "tenantSlug": "achatwithliz",
+      "displayName": "A Chat with Liz",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "a-chat-with-liz",
+          "url": "https://vercel.com/sandman-sms-projects/a-chat-with-liz",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": null,
+      "notes": []
+    },
+    {
+      "domain": "flextides.org",
+      "kind": "client_managed",
+      "assetId": "flextides",
+      "tenantSlug": "flextides",
+      "displayName": "Flex Tides",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "flextides",
+          "url": "https://vercel.com/sandman-sms-projects/flextides",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": null,
+      "notes": []
+    },
+    {
+      "domain": "livebetteronthedrip.com",
+      "kind": "client_managed",
+      "assetId": null,
+      "tenantSlug": "otd",
+      "displayName": "On The Drip",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "on-the-drip-deploy",
+          "url": "https://vercel.com/sandman-sms-projects/on-the-drip-deploy",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": null,
+      "notes": [
+        "Tracking/approved business identity differs from routing tenant; retain both identities and do not merge unrelated business metrics."
+      ]
+    },
+    {
+      "domain": "livebetterpodcast.com",
+      "kind": "client_managed",
+      "assetId": null,
+      "tenantSlug": "otd",
+      "displayName": "On The Drip",
+      "usage": "Alternate business domain",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "on-the-drip-deploy",
+          "url": "https://vercel.com/sandman-sms-projects/on-the-drip-deploy",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": null,
+      "notes": [
+        "Actual Vercel attachment exists without federation routing registration; display as unregistered and do not deploy from this catalog."
+      ]
+    },
+    {
+      "domain": "omnileadsagi.com",
+      "kind": "client_managed",
+      "assetId": "omnileads",
+      "tenantSlug": "omnileads",
+      "displayName": "Omni AI",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "omni-ai",
+          "url": "https://vercel.com/sandman-sms-projects/omni-ai",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": null,
+      "notes": []
+    },
+    {
+      "domain": "sfdempire.com",
+      "kind": "client_managed",
+      "assetId": "sfdempire",
+      "tenantSlug": "sfdempire",
+      "displayName": "SFD Empire",
+      "usage": "Business website",
+      "platform": "vercel",
+      "projects": [
+        {
+          "name": "sfd-empire",
+          "url": "https://vercel.com/sandman-sms-projects/sfd-empire",
+          "platform": "vercel"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": null,
+      "notes": []
+    },
+    {
+      "domain": "ecocityjunkremoval.com",
+      "kind": "client_managed",
+      "assetId": null,
+      "tenantSlug": "eco-city-junk-removal",
+      "displayName": "Eco City Junk Removal",
+      "usage": "Business website",
+      "platform": "wix",
+      "projects": [
+        {
+          "name": "Eco City Junk Removal",
+          "url": "https://manage.wix.com/dashboard/c9be49b4-cd99-4368-b06c-712a33323eaf",
+          "platform": "wix"
+        }
+      ],
+      "destinationDomain": null,
+      "expiresAt": null,
+      "notes": []
+    }
+  ],
+  "accessibleWixPlatformSites": [
+    {
+      "name": "1k Productions",
+      "url": "https://deantehart00.wixsite.com/1k-productions",
+      "status": "published",
+      "siteId": "46a1e86b-4e42-4e13-bb69-1656a1621e73"
+    },
+    {
+      "name": "West Jordan Concrete",
+      "url": null,
+      "status": "draft",
+      "siteId": "65d15722-ac36-4610-bb53-7b8cf52a9578"
+    },
+    {
+      "name": "West Jordan Concrete",
+      "url": "https://sitanim8.wixsite.com/west-jordan-concre-1",
+      "status": "published",
+      "siteId": "4322a9ca-79dd-44bd-a74c-2fc76382d2c1"
+    }
+  ]
+}

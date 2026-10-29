@@ -1,4 +1,5 @@
 import { leadSenderFor } from '@/lib/lead-sender';
+import { resolveAnalyticsPageUrl } from '@/lib/server/analytics-page-url';
 
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -348,7 +349,8 @@ export async function POST(
     if (!(await isActiveTenant(slug))) {
       return NextResponse.json({ error: 'Unknown brand' }, { status: 404 });
     }
-    const rcors = registryCors(await tenantOrigins(slug), origin);
+    const allowedOrigins = await tenantOrigins(slug);
+    const rcors = registryCors(allowedOrigins, origin);
     try {
       const b = (sfdAnonymousEvent ??
         (await request.json().catch(() => ({})))) as Record<string, unknown>;
@@ -360,7 +362,7 @@ export async function POST(
         event_type: sanitizeText(b.event_type, 50) || 'page_view',
         event_category: sanitizeText(b.event_category, 50) || 'navigation',
         action: sanitizeText(b.action, 50) || 'view',
-        page_url: sanitizeText(b.page_url, 2048) || undefined,
+        page_url: resolveAnalyticsPageUrl(sanitizeText(b.page_url, 2048) || undefined,b.page_path,origin,allowedOrigins),
         target_id: sanitizeText(b.target_id, 200) || undefined,
         value_text: sanitizeText(b.value_text, 500) || undefined,
         value_numeric: typeof b.value_numeric === 'number' ? b.value_numeric : undefined,
@@ -435,7 +437,12 @@ export async function POST(
     }
 
     const fallbackHost = INBOUND_ORIGINS[slug][0] ?? 'https://omnileadsagi.com';
-    const pageUrl = sanitizeText(body.page_url, 2048) || referer || undefined;
+    const providedPageUrl = sanitizeText(body.page_url, 2048) || undefined;
+    const providedPagePath = typeof body.page_path==='string'?body.page_path:undefined;
+    const relative = providedPageUrl?.startsWith('/')||(!providedPageUrl&&providedPagePath);
+    const allowedOrigins = relative&&origin&&!INBOUND_ORIGINS[slug].includes(origin)?[...INBOUND_ORIGINS[slug],...await tenantOrigins(slug)]:INBOUND_ORIGINS[slug];
+    const pageUrl = resolveAnalyticsPageUrl(providedPageUrl,providedPagePath,origin,allowedOrigins) ||
+      (!providedPageUrl&&!providedPagePath?referer||undefined:undefined);
     let pagePath: string | undefined;
     try {
       if (pageUrl) pagePath = new URL(pageUrl, fallbackHost).pathname;
