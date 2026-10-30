@@ -33,6 +33,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { vercelJson } from "./vercel-token.mjs";
 
 /**
  * Vercel has two kinds of secret in production:
@@ -82,29 +83,21 @@ function projectId(): string | null {
 /**
  * Ask Vercel which production variables are readable. Returns a map of
  * variable name to kind. Variables Vercel will not return are `sensitive`.
+ *
+ * The credential comes from `scripts/vercel-token.mjs`, which refreshes an
+ * expired token through the CLI's OAuth flow. The previous version read the
+ * auth file directly and treated any failure as "no kinds known" — so an
+ * expired token made the script report that every production variable was
+ * unreadable, which is the opposite of what had happened.
  */
-function productionEnvKinds(): Map<string, EnvKind> {
+async function productionEnvKinds(): Map<string, EnvKind> {
   const kinds = new Map<string, EnvKind>();
   const id = projectId();
   if (!id) return kinds;
-  const token = (() => {
-    const authPath = join(process.env.HOME ?? "", "Library/Application Support/com.vercel.cli/auth.json");
-    if (!existsSync(authPath)) return null;
-    try {
-      const parsed = JSON.parse(readFileSync(authPath, "utf8")) as { token?: string };
-      return parsed.token ?? null;
-    } catch {
-      return null;
-    }
-  })();
-  if (!token) return kinds;
   try {
-    const raw = execFileSync(
-      "curl",
-      ["-s", "-H", `Authorization: Bearer ${token}`, `https://api.vercel.com/v9/projects/${id}/env`],
-      { encoding: "utf8", maxBuffer: 8 * 1024 * 1024 },
-    );
-    const parsed = JSON.parse(raw) as { envs?: { key: string; target?: string[]; type?: string }[] };
+    const parsed = (await vercelJson(
+      `https://api.vercel.com/v9/projects/${id}/env`,
+    )) as { envs?: { key: string; target?: string[]; type?: string }[] };
     for (const entry of parsed.envs ?? []) {
       if (!entry.target?.includes("production")) continue;
       kinds.set(entry.key, entry.type === "sensitive" ? "sensitive" : "readable");
@@ -153,7 +146,7 @@ function pullProductionEnv(): Record<string, string> {
   }
 }
 
-function main(): number {
+async function main(): Promise<number> {
   const reportOnly = process.argv.includes("--report");
   const local = parseEnvFile(join(process.cwd(), ".env.local"));
   let production: Record<string, string>;
@@ -169,7 +162,7 @@ function main(): number {
   const drifted: string[] = [];
   const absentLocally: string[] = [];
   const notComparable: string[] = [];
-  const kinds = productionEnvKinds();
+  const kinds = await productionEnvKinds();
   console.log(`[env-drift] comparing ${WATCHED.length} watched secrets against production (values are never printed)`);
   for (const name of WATCHED) {
     const localValue = local[name];
@@ -233,4 +226,4 @@ function main(): number {
   return reportOnly ? 0 : 1;
 }
 
-process.exit(main());
+process.exit(await main());

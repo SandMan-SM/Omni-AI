@@ -43,8 +43,8 @@
  */
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
-import { homedir } from "node:os";
 import { join } from "node:path";
+import { vercelJson } from "./vercel-token.mjs";
 
 const reportOnly = process.argv.includes("--report");
 
@@ -91,25 +91,17 @@ function linkedProject() {
 }
 
 /**
- * The Vercel token. The CLI keeps one in its own auth file; `VERCEL_TOKEN`
- * wins so the gate can run in CI. The token is never printed.
+ * The Vercel API access.
+ *
+ * `vercelJson` throws when the API cannot be reached with a valid credential
+ * and refreshes an expired token first. The old local helper flattened every
+ * non-OK response to `null`, so an expired token was reported as "the Vercel
+ * API returned no production deployments" — the most misleading message this
+ * gate can print, because it says *nothing is running* when the truth is
+ * *I could not look*.
  */
-function vercelToken() {
-  if (process.env.VERCEL_TOKEN) return process.env.VERCEL_TOKEN;
-  const path = join(homedir(), "Library/Application Support/com.vercel.cli/auth.json");
-  if (!existsSync(path)) return null;
-  try {
-    const parsed = JSON.parse(readFileSync(path, "utf8"));
-    return typeof parsed.token === "string" ? parsed.token : null;
-  } catch {
-    return null;
-  }
-}
-
-async function vercelJson(url, token) {
-  const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-  if (!response.ok) return null;
-  return response.json().catch(() => null);
+async function apiJson(url) {
+  return vercelJson(url);
 }
 
 const findings = [];
@@ -126,16 +118,9 @@ async function main() {
     console.error("[deploy-truth] run `npx vercel link` in this checkout first.");
     return 2;
   }
-  const token = vercelToken();
-  if (!token) {
-    console.error("[deploy-truth] no Vercel token. Authenticate the CLI (`npx vercel whoami`) or set VERCEL_TOKEN.");
-    return 2;
-  }
-
   // The connected branch is whatever Vercel auto-deploys to production.
-  const projectInfo = await vercelJson(
+  const projectInfo = await apiJson(
     `https://api.vercel.com/v9/projects/${project.projectId}`,
-    token,
   );
   const branch = projectInfo?.link?.productionBranch || "main";
 
@@ -193,9 +178,8 @@ async function main() {
     );
   }
 
-  const deployments = await vercelJson(
+  const deployments = await apiJson(
     `https://api.vercel.com/v6/deployments?projectId=${project.projectId}&target=production&limit=5`,
-    token,
   );
   const list = deployments?.deployments ?? [];
   if (!list.length) {
@@ -235,9 +219,8 @@ async function main() {
     }
   }
 
-  const aliasInfo = await vercelJson(
+  const aliasInfo = await apiJson(
     `https://api.vercel.com/v9/deployments/${list[0].uid}`,
-    token,
   );
   const aliases = aliasInfo?.alias ?? [];
   const readyState = aliasInfo?.readyState ?? aliasInfo?.state ?? null;
@@ -298,4 +281,19 @@ async function main() {
   return reportOnly ? 0 : 1;
 }
 
-process.exit(await main());
+/**
+ * A credential problem is not a clean result.
+ *
+ * The gate exists to stop a release that git cannot reproduce. If it cannot
+ * reach the Vercel API, it does not know what production is running, so it
+ * must fail — loudly, and with the reason. Reporting "no production
+ * deployments" for an expired token sends the operator looking for missing
+ * deployments instead of re-authenticating.
+ */
+try {
+  process.exit(await main());
+} catch (error) {
+  console.error(`[deploy-truth] ${error instanceof Error ? error.message : String(error)}`);
+  console.error("[deploy-truth] the result is UNKNOWN — authenticate the CLI (`npx vercel whoami`) and re-run.");
+  process.exit(2);
+}
