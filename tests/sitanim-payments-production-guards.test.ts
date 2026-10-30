@@ -139,9 +139,13 @@ test("runtime uses platform CRON_SECRET without falling back to a payment-specif
 
 test("payment worker cron is five-minute and offset from unchanged daily newsletter cron", async () => {
   const config = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8"));
+  // The whole list is asserted exactly: a cron that is added, moved or
+  // removed is a change to what runs against production, and it has to be a
+  // deliberate edit here rather than a silent one.
   assert.deepEqual(config.crons, [
     { path: "/api/cron/newsletter?action=publish-public", schedule: "5 14 * * *" },
     { path: "/api/internal/sitanim/payments/worker", schedule: "1-59/5 * * * *" },
+    { path: "/api/cron/seo-sync", schedule: "17 * * * *" },
   ]);
 });
 
