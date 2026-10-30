@@ -166,6 +166,49 @@ function runRlsAudit(root) {
   }
 }
 
+/**
+ * Every tree in the fleet that carries the RLS rule set.
+ *
+ * The rule set file is the marker of an omni-ai-family tree: it was synced
+ * into the copies so their own gates tell the truth, and a tree without it
+ * cannot run the locked-table rules at all.
+ *
+ * The linked phase walks `.vercel` links, which means it only ever sees a
+ * tree that can be deployed *right now*. The defect travels by copy, and a
+ * tree with no link is one `vercel --prod` away from having one — so the
+ * family is wider than the linked population.
+ */
+function ruleSetTrees(dir) {
+  const found = [];
+  const walk = (current, depth) => {
+    if (depth > 6) return;
+    let entries;
+    try {
+      entries = readdirSync(current);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry === "node_modules" || entry === ".git") continue;
+      const path = join(current, entry);
+      let stats;
+      try {
+        stats = statSync(path);
+      } catch {
+        continue;
+      }
+      if (!stats.isDirectory()) continue;
+      if (existsSync(join(path, "scripts", "anon-locked-tables.json"))) {
+        found.push(path);
+        continue; // do not descend — a nested tree is a copy of a copy
+      }
+      walk(path, depth + 1);
+    }
+  };
+  walk(dir, 0);
+  return found.sort();
+}
+
 function main() {
   const { reportOnly, dir } = parseArgs(process.argv.slice(2));
   if (!existsSync(dir)) {
@@ -186,10 +229,12 @@ function main() {
   const divergences = [];
   const skipped = [];
   const fixSha = findFixCommit(canonical.dir);
+  const covered = new Set();
   for (const checkout of deployableCheckouts(dir)) {
     if (!looksLikeSite(checkout.dir)) continue;
     if (checkout.projectId !== canonical.projectId) continue;
     if (checkout.dir === canonical.dir) continue;
+    covered.add(checkout.dir);
 
     const result = runRlsAudit(checkout.dir);
     if (result.rulesDidNotRun) {
@@ -209,6 +254,27 @@ function main() {
     });
   }
 
+  // The rest of the family.
+  //
+  // The phase above only walked trees carrying a Vercel link. A tree with
+  // the rule set and NO link is not a deployable surface today, and it is
+  // one `vercel --prod` away from being one — the same blind spot the
+  // cron-auth sweep had. These trees are reported the same way, because a
+  // defect that answers 200 with an empty array is just as wrong in a tree
+  // that is not linked yet.
+  const family = [];
+  for (const tree of ruleSetTrees(dir)) {
+    if (tree === canonical.dir) continue;
+    if (covered.has(tree)) continue;
+    const result = runRlsAudit(tree);
+    if (result.rulesDidNotRun) {
+      skipped.push({ dir: tree, reason: "the tree has no scripts/anon-locked-tables.json, so its rule set cannot run" });
+      continue;
+    }
+    if (!result.findings) continue;
+    family.push({ dir: tree, findings: result.findings, hasFix: containsCommit(tree, fixSha) });
+  }
+
   for (const divergence of divergences) {
     const history =
       divergence.hasFix === null
@@ -220,16 +286,24 @@ function main() {
       `  DIVERGE  ${relative(dir, divergence.dir)} — ${divergence.findings} anon-key RLS finding(s)${history}`,
     );
   }
+  for (const entry of family) {
+    console.log(
+      `  FAMILY   ${relative(dir, entry.dir)} — ${entry.findings} anon-key RLS finding(s), ` +
+        "and this tree carries no Vercel link, so it cannot be deployed today — " +
+        "but it is one `vercel --prod` away from being able to",
+    );
+  }
   for (const skip of skipped) {
     console.log(`  note     ${relative(dir, skip.dir)} — ${skip.reason}`);
   }
 
-  if (!divergences.length && !skipped.length) {
-    console.log("\n[fleet-rls] no divergences — no deployable copy carries the anon-key RLS defect.");
+  if (!divergences.length && !family.length && !skipped.length) {
+    console.log("\n[fleet-rls] no divergences — no tree in the fleet carries the anon-key RLS defect.");
     return 0;
   }
   console.error(
     `\n[fleet-rls] ${divergences.length} deployable copy/copies carry ${divergences.length ? "the anon-key RLS defect the canonical surface has fixed" : ""}` +
+      `${family.length ? `, ${family.length} tree(s) with no Vercel link carry it too` : ""}` +
       `${skipped.length ? `, ${skipped.length} copy/copies could not be checked` : ""}. ` +
       "A copy that reads a locked table with the anon key answers 200 with an empty array, so the " +
       "dashboard shows no rows and nobody can tell why. These trees must not be deployed as-is; " +
