@@ -458,14 +458,30 @@ function main() {
     }
   }
 
+  // A gate whose rules did not run has not established anything.
+  //
+  // The locked-table list is the RULE SET: without it the three rules have
+  // no tables to check, the scan finds nothing because there is nothing to
+  // find, and the gate exits 0 — a clean result it never earned. This is
+  // not theoretical: running this gate in any tree that predates
+  // `scripts/anon-locked-tables.json` (30 of the 32 deployable copies of
+  // this repo) printed "0 findings" and exited 0 while checking nothing.
+  //
+  // So the precondition is checked FIRST and fails closed: exit 2 with the
+  // reason, and never print the "scanned N files — 0 findings" line, which
+  // reads as a clean scan.
+  if (LOCKED.size === 0) {
+    console.error(
+      "[anon-rls] scripts/anon-locked-tables.json is empty or missing, so the locked-table rules " +
+        "did NOT run. This is not a clean result — the gate checked nothing. " +
+        "Refresh it with: node scripts/probe-anon-rls.mjs --json",
+    );
+    process.exit(2);
+  }
+
   console.log(
     `\nscanned ${files.length} files — ${findings.length} finding(s) across ${RULE_NAMES.length} rules`,
   );
-  if (LOCKED.size === 0) {
-    console.log(
-      "WARNING: scripts/anon-locked-tables.json is empty or missing — the locked-table rules did not run. Refresh it with: node scripts/probe-anon-rls.mjs --json",
-    );
-  }
   if (findings.length > 0) process.exit(1);
 }
 
