@@ -14,7 +14,7 @@
     "dev:prod": "rm -rf .next-local && NEXT_DIST_DIR=.next-local next build && NEXT_DIST_DIR=.next-local next start",
     "preview": "git push origin HEAD:dev --force && echo '\\n→ Preview building at: https://omni-ai-git-dev-sandman-sms-projects.vercel.app\\n  (refresh in 60-90s for the new build)'",
     "preview:open": "open 'https://omni-ai-git-dev-sandman-sms-projects.vercel.app'",
-    "build": "npm run audit:publish && npm run audit:rls && next build",
+    "build": "npm run audit:publish && npm run audit:rls && npm run audit:cron-auth && next build",
     "build:check": "node scripts/ensure-clean-worktree.mjs --phase before-build-check && npm run build:check:dirty && node scripts/ensure-clean-worktree.mjs --phase after-build-check",
     "build:check:dirty": "NEXT_DIST_DIR=.next-prod next build && rm -rf .next-prod",
     "start": "next start",
@@ -26,7 +26,8 @@
     "audit:rls": "tsx scripts/audit-anon-rls.ts",
     "audit:flash": "node scripts/audit-flash.mjs",
     "audit:deploy": "node scripts/audit-deploy-source-of-truth.mjs",
-    "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls",
+    "audit:cron-auth": "node scripts/audit-cron-auth.mjs",
+    "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls && npm run audit:cron-auth",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs",
     "audit:env-drift": "tsx scripts/audit-env-drift.ts"
   },

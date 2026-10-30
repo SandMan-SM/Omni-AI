@@ -31,6 +31,7 @@ npm run lint
 npm run audit:mobile   # static mobile/a11y gate (12 rules) — run before every ship
 npm run audit:publish  # publish-state gate — a newsletter write that sets published_at without status
 npm run audit:rls      # RLS gate — a locked table reached with a non-admin client
+npm run audit:cron-auth # auth gate — a route authenticating with a client-set header, or an unguarded secret
 npm run audit:deploy   # deploy source-of-truth gate — is the running production deployment described by git?
 npm run audit:env-drift  # local vs production secret drift (needs the Vercel CLI; NOT part of build)
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
@@ -69,6 +70,8 @@ single registered preview server instead.
 - `lib/api-auth.ts` → **`authorizeCronOrAdmin()`** gates write routes; accepts `CRON_SECRET` via Bearer or an admin session. Use it on EVERY new write/PATCH route under `app/api/`.
 - Cron-fired routes that call other internal routes must **forward `CRON_SECRET`** as `Authorization: Bearer ${CRON_SECRET}` or the downstream gate 404s/401s silently.
 - Secret comparisons use constant-time (`constantTimeEqual`). Don't weaken to `===`.
+- **A request header is not a credential.** `x-vercel-cron`, `x-forwarded-*` and `User-Agent` are chosen by the caller, so they can never stand in for a secret or a session. Two routes did exactly that until 2026-10-30: the cron gate accepted `User-Agent: vercel-cron/1.0` (five routes behind it, four of them writing) and the federation-newsletter generator accepted `x-vercel-cron: 1` whenever its secret was unset — an unauthenticated request with the header returned 200 and ran the handler. `npm run audit:cron-auth` fails the build when that comes back.
+- **Fail closed when the secret is unset.** An unset secret and a wrong secret must both deny. `assertCronCaller` answers 503 when `CRON_SECRET` is missing; it never falls back to a header.
 
 ## Agent Priorities (in order)
 1. **Fix TypeScript errors** — run `npm run check` first, fix every error.
