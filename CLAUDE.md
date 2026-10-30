@@ -31,6 +31,7 @@ npm run lint
 npm run audit:mobile   # static mobile/a11y gate (12 rules) — run before every ship
 npm run audit:publish  # publish-state gate — a newsletter write that sets published_at without status
 npm run audit:rls      # RLS gate — a locked table reached with a non-admin client
+npm run audit:deploy   # deploy source-of-truth gate — is the running production deployment described by git?
 npm run audit:env-drift  # local vs production secret drift (needs the Vercel CLI; NOT part of build)
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
 npm run preview:open # open that preview URL
@@ -159,6 +160,7 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - Never run a direct production deploy from a dirty or behind checkout. Preserve desktop work, reconcile it into GitHub `main`, let the linked Vercel project deploy that exact SHA, and then verify the custom domain.
 - **A `vercel --prod` deploy is a transport, not a source of truth.** If any release was deployed from an isolated worktree instead of git, its code is not in `main` and the next git-triggered build silently removes it from production. After such a deploy, diff the deployed tree against git for every tracked file and commit the delta before the next push; check for uploaded-but-git-ignored files that are served live and track those. A production deployment with no `meta.githubCommitSha` is the tell — see `runbook.deploy/git-is-the-source-of-truth-after-a-cli-deploy` in omni-memory.
 - Newsletter releases must visibly verify artwork on both `/newsletter` and `/newsletter/archive`; keep the static default artwork fallback intact.
+- **Run `npm run audit:deploy` before every push and after every release.** It compares the running production deployment's commit against the connected branch and fails when git does not describe what is live. This is not theoretical: on 2026-10-29 production ran three commits that `origin/main` did not contain, and the next push would have deleted three live route families without an error.
 
 ## Gotchas
 - **Never `npm run build` while `npm run dev` is running** in the same checkout — both touch `.next/`, causing stale chunks → `Cannot find module './XXXX.js'` → 500s. Use `npm run build:check` (writes `.next-prod/`) or just push and let Vercel build.
