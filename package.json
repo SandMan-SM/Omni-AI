@@ -27,6 +27,7 @@
     "audit:flash": "node scripts/audit-flash.mjs",
     "audit:deploy": "node scripts/audit-deploy-source-of-truth.mjs",
     "audit:cron-auth": "node scripts/audit-cron-auth.mjs",
+    "audit:fleet-auth": "node scripts/audit-fleet-auth.mjs",
     "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls && npm run audit:cron-auth",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs",
     "audit:env-drift": "tsx scripts/audit-env-drift.ts"
