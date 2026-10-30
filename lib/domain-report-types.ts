@@ -9,6 +9,7 @@ export type DomainCatalogEntry = {
   destinationDomain: string | null; expiresAt: string | null; notes: string[];
 };
 export type DomainMetrics = DomainCatalogEntry & {
+  providerSnapshot?: DomainProviderSnapshot;
   traffic: {
     status: DomainStatus; pageViews: number | null; ctaClicks: number | null; sessions: number | null;
     firstRecord: string | null; lastRecord: string | null;
@@ -16,6 +17,11 @@ export type DomainMetrics = DomainCatalogEntry & {
   };
   pages: { status: DomainStatus; listed: number | null; checkedAt: string | null };
   keywords: { status: DomainStatus; libraryCount: number | null; observedCount: number | null; checkedAt: string | null };
+};
+export type DomainProviderSnapshot = {
+  provider: 'Wix Analytics'; checkedAt: string;
+  period: { startDate: string; endDate: string; timeZone: string };
+  pageViews: number; sessions: number; uniqueVisitors: number; viewedPagePaths: number;
 };
 export type DomainReport = {
   schemaVersion: 1; generatedAt: string; scope: 'portfolio_owner' | 'brand_member';

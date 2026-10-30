@@ -1,0 +1,15 @@
+{
+  "ecocityjunkremoval.com": {
+    "provider": "Wix Analytics",
+    "checkedAt": "2026-10-30T00:12:03.000Z",
+    "period": {
+      "startDate": "2026-09-29",
+      "endDate": "2026-10-28",
+      "timeZone": "America/Phoenix"
+    },
+    "pageViews": 353,
+    "sessions": 245,
+    "uniqueVisitors": 185,
+    "viewedPagePaths": 17
+  }
+}

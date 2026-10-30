@@ -15,9 +15,27 @@ const portfolio=load('lib/reporting-portfolio.ts');
 const seo=load('lib/reporting-seo.ts',{'./reporting-portfolio':portfolio});
 const catalog=JSON.parse(fs.readFileSync('lib/domain-catalog.json','utf8'));
 const analyticsScope=JSON.parse(fs.readFileSync('lib/domain-analytics-scope.json','utf8'));
-const api=load('lib/reporting-domains.ts',{'./domain-catalog.json':catalog,'./domain-analytics-scope.json':analyticsScope,'./reporting-portfolio':portfolio,'./reporting-seo':seo});
+const snapshots=JSON.parse(fs.readFileSync('lib/domain-provider-snapshots.json','utf8'));
+const api=load('lib/reporting-domains.ts',{'./domain-catalog.json':catalog,'./domain-analytics-scope.json':analyticsScope,'./domain-provider-snapshots.json':snapshots,'./reporting-portfolio':portfolio,'./reporting-seo':seo});
 const owner={id:'owner',isPlatform:true,businessSlugs:[]},member={id:'member',isPlatform:false,businessSlugs:['youngs']},now=new Date('2026-10-29T23:24:50.774Z');
 const domain='youngscabinetrefinishing.com';
+test('Wix snapshot retains its fixed provider period and never fills or adds to central metrics',async()=>{
+ for(const days of [7,30,90]){
+  const report=await api.readDomainReport(owner,'ecocityjunkremoval.com',days,async()=>({rows:[]}),new Date('2026-10-30T00:20:00Z'));
+  const row=report.domains[0],s=row.providerSnapshot;
+  assert.equal(s.provider,'Wix Analytics');assert.equal(s.pageViews,353);assert.equal(s.sessions,245);assert.equal(s.uniqueVisitors,185);assert.equal(s.viewedPagePaths,17);
+  assert.equal(s.period.startDate,'2026-09-29');assert.equal(s.period.endDate,'2026-10-28');assert.equal(s.period.timeZone,'America/Phoenix');assert.equal(s.checkedAt,'2026-10-30T00:12:03.000Z');
+  assert.equal(row.traffic.pageViews,null);assert.equal(row.pages.listed,null);assert.equal(row.keywords.observedCount,null);assert.equal(report.totals.pageViews,null);assert.equal(report.totals.sessions,null);assert.equal(report.coverage.tracked,0);
+ }
+ const mixed=await api.readDomainReport(owner,'ecocityjunkremoval.com',30,async sql=>({rows:sql===api.DOMAIN_TRAFFIC_SQL?[{domain:'ecocityjunkremoval.com',first_view:'2026-10-29T23:00:00Z',last_view:'2026-10-29T23:00:00Z',last_record:'2026-10-29T23:00:00Z',page_views:9,sessions:4,lifetime_clicks:1,cta_clicks:1}]:[]}),new Date('2026-10-30T00:20:00Z'));
+ assert.equal(mixed.domains[0].traffic.pageViews,9);assert.equal(mixed.domains[0].traffic.sessions,4);assert.equal(mixed.domains[0].providerSnapshot.pageViews,353);assert.equal(mixed.totals.pageViews,9);assert.equal(mixed.totals.sessions,4);assert.equal(mixed.totals.ctaClicks,1);
+});
+test('provider snapshot is scoped before attachment and never leaks into another member or domain',async()=>{
+ let reads=0;const query=async()=>{reads++;return{rows:[]};};
+ await assert.rejects(api.readDomainReport(member,'ecocityjunkremoval.com',30,query),e=>e.status===403);assert.equal(reads,0);
+ const report=await api.readDomainReport(member,null,30,query);assert.equal(report.domains.length,1);assert.equal(report.domains[0].providerSnapshot,undefined);
+ const all=await api.readDomainReport(owner,null,30,query);assert.equal(all.domains.filter(d=>d.providerSnapshot).length,1);assert.equal(all.domains.find(d=>d.providerSnapshot).domain,'ecocityjunkremoval.com');
+});
 test('catalog is82purchased roots plus7 approved client roots with no preview/www/shared Wix host rows',()=>{
  assert.equal(api.DOMAIN_CATALOG.length,89);assert.equal(catalog.registrarCount,82);
  assert.equal(new Set(api.DOMAIN_CATALOG.map(d=>d.domain)).size,89);

@@ -1,8 +1,9 @@
 import catalog from './domain-catalog.json';
 import analyticsScope from './domain-analytics-scope.json';
+import providerSnapshots from './domain-provider-snapshots.json';
 import { ReportingError, type Actor, type Query } from './reporting-portfolio';
 import { detailLimit, seoQuery } from './reporting-seo';
-import type { DomainCatalogEntry, DomainDetail, DomainMetrics, DomainReport } from './domain-report-types';
+import type { DomainCatalogEntry, DomainDetail, DomainMetrics, DomainProviderSnapshot, DomainReport } from './domain-report-types';
 import type { SeoKeywordItem, SeoPageItem } from './seo-report-types';
 
 export const DOMAIN_CATALOG: readonly DomainCatalogEntry[] = catalog.domains as DomainCatalogEntry[];
@@ -70,7 +71,8 @@ export async function readDomainReport(actor:Actor,requested:string|null,days:7|
   const clicksKnown=n(t?.lifetime_clicks)>0,measured=n(t?.measured_views),uninstrumented=n(t?.uninstrumented_views);
   const ctaTracking:DomainMetrics['traffic']['ctaTracking']=!traffic.ok?'unknown':views>0&&measured===views&&n(t?.legacy_window_clicks)===0?'measured':clicksKnown||measured>0?'partial':views>0&&uninstrumented===views?'not_instrumented':'unknown';
   const checked=text(p?.checked_at),keywordAt=text(k?.checked_at),observed=text(q?.checked_at)||text(q?.synced_at);
-  return {...d,notes:[...d.notes,...(d.destinationDomain?['Redirect destination traffic is not attributed to this root domain.']:[]),...(actor.isPlatform&&(verified[d.domain]?.length||0)>1?['Owner traffic combines the explicit registered tenant IDs for this exact root; member access retains its singular membership scope.']:[])],
+  const providerSnapshot=(providerSnapshots as Record<string,DomainProviderSnapshot>)[d.domain];
+  return {...d,...(providerSnapshot?{providerSnapshot}:{}),notes:[...d.notes,...(d.destinationDomain?['Redirect destination traffic is not attributed to this root domain.']:[]),...(actor.isPlatform&&(verified[d.domain]?.length||0)>1?['Owner traffic combines the explicit registered tenant IDs for this exact root; member access retains its singular membership scope.']:[])],
    traffic:{status:!traffic.ok?'unavailable':lastView?(stale(lastView,now,168)?'stale':'ready'):last?'event_only':'not_connected',pageViews:traffic.ok&&first?views:null,
     ctaClicks:traffic.ok&&(clicksKnown||measured>0)?n(t?.cta_clicks):null,sessions:traffic.ok&&first&&(views===0||n(t?.sessions)>0)?n(t?.sessions):null,firstRecord:first,lastRecord:last,ctaTracking},
    pages:{status:!pages.ok?'unavailable':checked?(stale(checked,now,48)?'stale':'ready'):'pending',listed:pages.ok&&checked?n(p?.listed):null,checkedAt:checked},
