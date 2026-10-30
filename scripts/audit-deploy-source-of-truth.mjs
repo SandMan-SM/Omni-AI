@@ -240,11 +240,20 @@ async function main() {
     token,
   );
   const aliases = aliasInfo?.alias ?? [];
-  if (aliasInfo && aliasInfo.aliasAssigned === false) {
+  const readyState = aliasInfo?.readyState ?? aliasInfo?.state ?? null;
+  if (aliasInfo && readyState && readyState !== "READY") {
+    // A deployment that is still building has not been given the alias yet.
+    // That is a normal state between a push and the build finishing, not a
+    // defect — reporting it as a finding would cry wolf on every release.
+    console.log(
+      `  note  the newest production deployment ${list[0].uid} is ${readyState} — ` +
+        `the alias flips when it is READY, so re-run this gate after the build settles`,
+    );
+  } else if (aliasInfo && aliasInfo.aliasAssigned === false) {
     finding(
       "deployment-without-alias",
-      `the newest production deployment ${list[0].uid} does not hold the production alias`,
-      "a deploy may be in flight — re-run once it settles",
+      `the newest production deployment ${list[0].uid} is READY but does not hold the production alias`,
+      "the deployment did not take production — check its alias assignment in the Vercel dashboard",
     );
   } else if (aliases.length) {
     console.log(`  ok  production alias held by ${list[0].uid}: ${aliases.filter((a) => !a.includes("vercel.app") || a.includes("-git-")).join(", ") || aliases[0]}`);
@@ -254,9 +263,28 @@ async function main() {
     console.log("[deploy-truth] no findings — git describes the running production deployment.");
     return 0;
   }
+  // The footer names the consequences of the rules that actually fired —
+  // a generic sentence would be wrong for half of them.
+  const rules = new Set(findings.map((f) => f.rule));
+  const consequences = [];
+  if (rules.has("deployed-commit-not-on-branch") || rules.has("deployed-commit-unverifiable")) {
+    consequences.push(
+      "the running deployment is not described by the branch — the next git build removes it, silently",
+    );
+  }
+  if (rules.has("local-unpushed-commits")) {
+    consequences.push(
+      "commits exist locally but not on the branch — push them before releasing",
+    );
+  }
+  if (rules.has("deployment-without-alias")) {
+    consequences.push("the newest deployment is not serving the production alias");
+  }
+  if (rules.has("dirty-worktree")) {
+    consequences.push("a release from a dirty checkout is not reproducible");
+  }
   console.log(
-    `[deploy-truth] ${findings.length} finding(s). A production deployment that git cannot reproduce is ` +
-      `removed by the next ordinary push, silently.`,
+    `[deploy-truth] ${findings.length} finding(s): ${consequences.join("; ") || "see the rules above"}.`,
   );
   return reportOnly ? 0 : 1;
 }
