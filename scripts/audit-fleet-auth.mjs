@@ -38,11 +38,24 @@
  * so a script run from that folder reports the wrong thing — a stale
  * credential read as "the endpoint is broken".
  *
+ * The third phase covers the trees neither of the first two could see: a
+ * scratch tree that carries the defect and carries NO Vercel link. It is
+ * not a deployable surface, and the phase does not pretend otherwise — but
+ * it is one `vercel --prod` away from being one, and the defect class
+ * travels by copy. Twenty-three trees across the fleet carried the
+ * session-54 cron bypass this way, invisible to every gate, because they
+ * were worktrees without a link.
+ *
  * Usage:
  *   node scripts/audit-fleet-auth.mjs                    # sweep ~/Desktop/Clients
  *   node scripts/audit-fleet-auth.mjs --dir <path>       # sweep another root
  *   node scripts/audit-fleet-auth.mjs --no-copies        # canonical surfaces only
+ *   node scripts/audit-fleet-auth.mjs --no-unlinked      # skip the unlinked-tree phase
  *   node scripts/audit-fleet-auth.mjs --report           # always exit 0
+ *
+ * The unlinked phase is the slow one — it runs the analyzer over roughly a
+ * hundred scratch trees, so the full sweep takes a couple of minutes
+ * rather than seconds.
  *
  * Exit codes: 0 no findings, 1 findings, 2 the fleet root is unusable.
  */
@@ -69,10 +82,12 @@ function parseArgs(argv) {
     reportOnly: false,
     dir: join(homedir(), "Desktop", "Clients"),
     copies: true,
+    unlinked: true,
   };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--report") options.reportOnly = true;
     else if (argv[i] === "--no-copies") options.copies = false;
+    else if (argv[i] === "--no-unlinked") options.unlinked = false;
     else if (argv[i] === "--dir") options.dir = resolve(argv[++i] || "");
   }
   return options;
@@ -130,6 +145,60 @@ export function deployableCheckouts(dir) {
   };
   walk(dir, 0);
   return found;
+}
+
+/**
+ * Site trees that carry NO Vercel link.
+ *
+ * The canonical phase skips worktrees, release copies and scratch
+ * directories — they are not deployed surfaces. The copy phase only looks
+ * at trees that DO carry a `.vercel` link, because a linked tree is one
+ * `vercel --prod` away from shipping.
+ *
+ * Together those two phases left a hole: a tree with the defect and no
+ * link. It is invisible to both — not a canonical surface, not a copy —
+ * and it becomes visible only at the moment someone runs `vercel --prod`
+ * from it or copies it into a canonical slot. That is not theoretical:
+ * twenty-three trees across the fleet carried the session-54 cron bypass
+ * in source, and every one of them was invisible to the gate, because
+ * they were scratch trees without a Vercel link.
+ *
+ * So this phase exists to make the population a command. A tree with no
+ * link is not a deployable surface, and the findings are reported as
+ * such — but a defect sitting in a tree that can become a deployable
+ * surface in one command is a finding, not a curiosity.
+ */
+export function unlinkedSites(dir) {
+  const found = [];
+  const walk = (current, depth) => {
+    if (depth > 6) return;
+    let entries;
+    try {
+      entries = readdirSync(current);
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry === "node_modules" || entry === ".git") continue;
+      const path = join(current, entry);
+      let stats;
+      try {
+        stats = statSync(path);
+      } catch {
+        continue;
+      }
+      if (!stats.isDirectory()) continue;
+      if (looksLikeSite(path)) {
+        // A linked tree is the copy phase's business; a tree that is not a
+        // site at all is not this phase's business either.
+        if (!vercelProjectId(path)) found.push(path);
+        continue; // do not descend — nested checkouts are copies
+      }
+      walk(path, depth + 1);
+    }
+  };
+  walk(dir, 0);
+  return found.sort();
 }
 
 /**
@@ -296,7 +365,7 @@ function hasRouteHandler(dir, depth) {
 }
 
 function main() {
-  const { reportOnly, dir, copies } = parseArgs(process.argv.slice(2));
+  const { reportOnly, dir, copies, unlinked } = parseArgs(process.argv.slice(2));
   if (!existsSync(dir)) {
     console.error(`[fleet-auth] fleet root not found: ${dir}`);
     return 2;
@@ -390,7 +459,41 @@ function main() {
     }
   }
 
-  if (!totalFindings && !divergences.length) {
+  // Phase three: trees that carry no Vercel link.
+  //
+  // A scratch tree is not a deployable surface, and this phase does not
+  // pretend otherwise — but the defect class travels by copy, and a tree
+  // with the defect and no link becomes a deployable surface the moment
+  // someone runs `vercel --prod` from it or copies it into a canonical
+  // slot. Before this phase existed, twenty-three trees carrying the
+  // session-54 bypass were invisible to the gate.
+  const unlinkedFindings = [];
+  let unlinkedScanned = 0;
+  if (unlinked) {
+    for (const tree of unlinkedSites(dir)) {
+      unlinkedScanned += 1;
+      const { findings } = runAudit(tree);
+      if (findings.length) {
+        unlinkedFindings.push({ dir: tree, findings });
+      }
+    }
+    console.log(
+      `\n[fleet-auth] unlinked tree scan — ${unlinkedScanned} tree(s) with no Vercel link, ` +
+        `${unlinkedFindings.length} carrying a defect`,
+    );
+    for (const entry of unlinkedFindings) {
+      console.log(
+        `  FIND  ${relative(dir, entry.dir)} — ${entry.findings.length} finding(s) in a tree with no Vercel link`,
+      );
+      for (const finding of entry.findings) {
+        console.log(
+          `          ${finding.rule}  ${finding.file}${finding.line ? `:${finding.line}` : ""} — ${finding.detail}`,
+        );
+      }
+    }
+  }
+
+  if (!totalFindings && !divergences.length && !unlinkedFindings.length) {
     console.log("\n[fleet-auth] no findings — no surface authenticates with a client-set header, and no secret comparison is unguarded.");
     return 0;
   }
@@ -408,6 +511,13 @@ function main() {
         "A `vercel --prod` from one of them ships that tree to production — patch it or delete it. " +
         "A `stale-operator-tooling` finding means the copy's operator script does not carry the " +
         "canonical fix, so a script run from that folder reports the wrong thing.",
+    );
+  }
+  if (unlinkedFindings.length) {
+    summary.push(
+      `${unlinkedFindings.length} tree(s) with no Vercel link still carry a defect. ` +
+        "They cannot be shipped as they stand, and they are one `vercel --prod` away from shipping — " +
+        "patch them, or delete the tree. A tree that is not linked today can be linked tomorrow.",
     );
   }
   console.error(`\n[fleet-auth] ${summary.join(" ")}`);
