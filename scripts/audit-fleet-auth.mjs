@@ -32,6 +32,12 @@
  * already reported, and a copy of a project with no canonical checkout here
  * cannot be compared at all (reported as a note).
  *
+ * The second phase also compares the *operator tooling* of a copy against
+ * its canonical surface: a copy whose `audit-env-drift.ts` or
+ * `telegram-webhook-setup.mjs` is an older version does not carry the fix,
+ * so a script run from that folder reports the wrong thing — a stale
+ * credential read as "the endpoint is broken".
+ *
  * Usage:
  *   node scripts/audit-fleet-auth.mjs                    # sweep ~/Desktop/Clients
  *   node scripts/audit-fleet-auth.mjs --dir <path>       # sweep another root
@@ -126,6 +132,98 @@ export function deployableCheckouts(dir) {
   return found;
 }
 
+/**
+ * Operator tooling whose stale version reports the WRONG thing.
+ *
+ * These are not routes — they are the scripts an operator runs to probe
+ * production, and a stale copy of one is a script that lies. The old
+ * `audit-env-drift.ts` reads the CLI auth file directly and treats any API
+ * failure as "no kinds known", so an expired token makes it report every
+ * production variable as unreadable. The old `telegram-webhook-setup.mjs`
+ * requires a local `CRON_SECRET` that has drifted from production, so it is
+ * rejected with a 401 that reads like an endpoint fault rather than a
+ * credential mismatch.
+ *
+ * The check is: if a copy HAS one of these files and its content differs from
+ * the canonical surface's, the copy is carrying a version the canonical
+ * surface has already fixed. A copy that simply predates the tooling (no file
+ * at that path) is not a finding — it never had the problem.
+ *
+ * The list is deliberately short. `provision-voice-agent.mjs` differs across
+ * the fleet too, but its stale version fails with a clear "VOICE_AGENT_SECRET
+ * is required" rather than a misleading answer, so including it would report
+ * twenty-one copies that are not actually wrong. A gate that cries wolf is a
+ * gate that gets ignored.
+ */
+const SECURITY_TOOLING = [
+  "scripts/audit-env-drift.ts",
+  "scripts/telegram-webhook-setup.mjs",
+];
+
+/** The content of a file, or null when it does not exist. */
+function readIfPresent(path) {
+  try {
+    return readFileSync(path, "utf8");
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The security-relevant tooling in a copy that differs from its canonical
+ * surface. Each entry is a finding.
+ */
+/**
+ * The sibling modules a script imports by relative path.
+ *
+ * `import { x } from "./vercel-token.mjs"` in `scripts/audit-env-drift.ts`
+ * resolves to `scripts/vercel-token.mjs`. A copy that ships the script
+ * without the module throws on import, so the operator gets a stack trace
+ * instead of a report.
+ */
+function localImports(content) {
+  const found = new Set();
+  for (const match of content.matchAll(/from\s+["']\.\/([^"']+)["']/g)) {
+    found.add(`scripts/${match[1]}`);
+  }
+  return [...found];
+}
+
+function toolingDivergences(copyDir, canonicalDir) {
+  const findings = [];
+  for (const relativePath of SECURITY_TOOLING) {
+    const copyContent = readIfPresent(join(copyDir, relativePath));
+    if (copyContent === null) continue; // the copy predates this tool
+    const canonicalContent = readIfPresent(join(canonicalDir, relativePath));
+    if (canonicalContent === null) continue; // the canonical surface has no such tool
+    if (copyContent !== canonicalContent) {
+      findings.push({
+        rule: "stale-operator-tooling",
+        file: relativePath,
+        line: 0,
+        detail:
+          "the copy's version of this operator script differs from the canonical surface's, " +
+          "so it does not carry the fix the canonical surface has already made",
+      });
+    }
+    // The module the current version imports has to be in the copy too —
+    // otherwise bringing the script up to date leaves a script that throws
+    // on import.
+    for (const modulePath of localImports(canonicalContent)) {
+      if (readIfPresent(join(copyDir, modulePath)) !== null) continue;
+      findings.push({
+        rule: "missing-tooling-module",
+        file: modulePath,
+        line: 0,
+        detail:
+          "the canonical surface's version of this operator script imports it, but the copy " +
+          "does not carry it, so the current script cannot be run from this folder",
+      });
+    }
+  }
+  return findings;
+}
+
 /** Whether a path segment marks a non-surface copy. */
 function isSkippedSegment(segment) {
   return segment.startsWith(".") || SKIP_SEGMENTS.includes(segment);
@@ -208,14 +306,16 @@ function main() {
   console.log(`[fleet-auth] ${roots.length} site checkout(s) under ${dir}\n`);
 
   let totalFindings = 0;
-  /** Findings per Vercel project, from the canonical surfaces only. */
+  /** The canonical surface and finding count per Vercel project. */
   const canonicalByProject = new Map();
   for (const root of roots) {
     const { findings, files } = runAudit(root);
     const label = relative(dir, root) || ".";
     const projectId = vercelProjectId(root);
     if (projectId) {
-      canonicalByProject.set(projectId, (canonicalByProject.get(projectId) ?? 0) + findings.length);
+      const entry = canonicalByProject.get(projectId);
+      if (entry) entry.findings += findings.length;
+      else canonicalByProject.set(projectId, { dir: root, findings: findings.length });
     }
     if (!findings.length) {
       console.log(`  ok    ${label} — ${files} files`);
@@ -254,8 +354,18 @@ function main() {
         orphans.push(checkout.dir);
         continue;
       }
-      if (canonical > 0) continue; // already reported on the canonical surface
-      const { findings } = runAudit(checkout.dir);
+      const findings = [];
+      // The cron-auth rules: only *divergences* count. A copy of an
+      // already-dirty project repeats a defect the canonical surface already
+      // reported.
+      if (canonical.findings === 0) {
+        findings.push(...runAudit(checkout.dir).findings);
+      }
+      // The operator tooling: a copy whose script differs from the
+      // canonical surface's is carrying a version the canonical surface has
+      // already fixed. This is checked whether or not the canonical surface
+      // is clean — the two classes are unrelated.
+      findings.push(...toolingDivergences(checkout.dir, canonical.dir));
       if (findings.length) divergences.push({ ...checkout, findings });
     }
   }
@@ -295,7 +405,9 @@ function main() {
   if (divergences.length) {
     summary.push(
       `${divergences.length} deployable copy/copies still carry a defect the canonical surface has fixed. ` +
-        "A `vercel --prod` from one of them ships that tree to production — patch it or delete it.",
+        "A `vercel --prod` from one of them ships that tree to production — patch it or delete it. " +
+        "A `stale-operator-tooling` finding means the copy's operator script does not carry the " +
+        "canonical fix, so a script run from that folder reports the wrong thing.",
     );
   }
   console.error(`\n[fleet-auth] ${summary.join(" ")}`);
