@@ -241,10 +241,12 @@ async function main() {
   );
   const aliases = aliasInfo?.alias ?? [];
   const readyState = aliasInfo?.readyState ?? aliasInfo?.state ?? null;
+  let pendingDeployment = null;
   if (aliasInfo && readyState && readyState !== "READY") {
     // A deployment that is still building has not been given the alias yet.
     // That is a normal state between a push and the build finishing, not a
     // defect — reporting it as a finding would cry wolf on every release.
+    pendingDeployment = { uid: list[0].uid, state: readyState };
     console.log(
       `  note  the newest production deployment ${list[0].uid} is ${readyState} — ` +
         `the alias flips when it is READY, so re-run this gate after the build settles`,
@@ -260,7 +262,14 @@ async function main() {
   }
 
   if (!findings.length) {
-    console.log("[deploy-truth] no findings — git describes the running production deployment.");
+    if (pendingDeployment) {
+      console.log(
+        `[deploy-truth] no findings, but deployment ${pendingDeployment.uid} is still ${pendingDeployment.state} — ` +
+          `production is serving the previous deployment until it is READY and aliased.`,
+      );
+    } else {
+      console.log("[deploy-truth] no findings — git describes the running production deployment.");
+    }
     return 0;
   }
   // The footer names the consequences of the rules that actually fired —

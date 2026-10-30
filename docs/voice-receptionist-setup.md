@@ -35,10 +35,22 @@ Caller → Twilio number → ElevenLabs agent (Claude + voice)
 | `VOICE_AGENT_SECRET` | Shared bearer secret the ElevenLabs tools send to `/api/voice/*`. Generate a long random string; put the same value here and in the tool auth header. Until set, the tool routes fail closed (401). |
 | `VOICE_POSTCALL_WEBHOOK_SECRET` | The signing secret ElevenLabs shows when you create the post-call webhook. Paste it here so the webhook signature verifies. |
 
-Already present and reused: `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`,
-`TWILIO_FROM_NUMBER`, `RESEND_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`,
-`SUPABASE_SERVICE_ROLE_KEY`. (The Claude LLM is hosted by ElevenLabs — **no
-Anthropic key needed** for the agent.)
+> **Status (2026-10-30): neither variable is set in the `omni-ai` Vercel project
+> yet**, and neither is `ELEVENLABS_API_KEY` or a Twilio number. The backend is
+> deployed and the routes fail closed, so nothing is open to abuse — but the
+> agent cannot be launched until step 1 is done. `scripts/provision-voice-agent.mjs`
+> now reads the production `VOICE_AGENT_SECRET` itself (via
+> `scripts/production-secret.mjs`) and **refuses to create the agent** when Vercel
+> has no secret or when the value in your shell differs from the deployed one —
+> a mismatched secret produces a live agent whose every tool call answers 401.
+
+Already present and reused: `RESEND_API_KEY`, `NEXT_PUBLIC_SUPABASE_URL`,
+`SUPABASE_SERVICE_ROLE_KEY`. The Twilio credentials (`TWILIO_ACCOUNT_SID`,
+`TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`) are **not** set in the `omni-ai`
+project yet either — they belong to whichever Twilio account holds the Omni AI
+number, and they are only needed for step 3 (importing and binding a number).
+(The Claude LLM is hosted by ElevenLabs — **no Anthropic key needed** for the
+agent.)
 
 ## 2. Provision the agent (one command)
 

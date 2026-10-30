@@ -12,7 +12,12 @@
  *
  * Required env:
  *   ELEVENLABS_API_KEY     your ElevenLabs API key (xi-api-key)
- *   VOICE_AGENT_SECRET     shared bearer secret the tools send to /api/voice/* (must match Vercel)
+ *   VOICE_AGENT_SECRET     shared bearer secret the tools send to /api/voice/*.
+ *                           Optional here: when it is not in the environment the
+ *                           script reads the PRODUCTION value from Vercel (see
+ *                           scripts/production-secret.mjs). The value that ends
+ *                           up in the tool headers MUST be the one Vercel has,
+ *                           or every tool call answers 401.
  * Optional env:
  *   VOICE_BASE_URL         default https://omnileadsagi.com
  *   ELEVENLABS_VOICE_ID    ElevenLabs voice id (default: a professional preset below)
@@ -22,16 +27,49 @@
  * Usage:
  *   ELEVENLABS_API_KEY=... VOICE_AGENT_SECRET=... node scripts/provision-voice-agent.mjs
  */
+import { productionSecret } from "./production-secret.mjs";
 
 const API = "https://api.elevenlabs.io";
 const KEY = process.env.ELEVENLABS_API_KEY;
-const VOICE_AGENT_SECRET = process.env.VOICE_AGENT_SECRET;
 const BASE = (process.env.VOICE_BASE_URL || "https://omnileadsagi.com").replace(/\/$/, "");
 const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || "cgSgspJ2msm6clMCkdW9"; // "Jessica" — warm, professional preset
 const LLM = process.env.ELEVENLABS_LLM || "claude-haiku-4-5";
 
 if (!KEY) throw new Error("ELEVENLABS_API_KEY is required");
-if (!VOICE_AGENT_SECRET) throw new Error("VOICE_AGENT_SECRET is required (must match the value set in Vercel)");
+
+/**
+ * The bearer the tools will present to /api/voice/*.
+ *
+ * The routes fail closed: they compare against `VOICE_AGENT_SECRET` in the
+ * deployed environment. A secret that is not the deployed one produces an
+ * agent whose every tool call answers 401 — a live agent that cannot book a
+ * call and cannot capture a lead, with no error anywhere except the tool
+ * response.
+ *
+ * So the value is resolved from production (via `production-secret.mjs`,
+ * which reads it out of Vercel without touching any env file) and the
+ * environment copy is only allowed to confirm it. If the two differ, the
+ * script refuses rather than creating a broken agent.
+ */
+function resolveVoiceSecret() {
+  const local = (process.env.VOICE_AGENT_SECRET || "").trim();
+  const production = (productionSecret("VOICE_AGENT_SECRET") || "").trim();
+  if (!production) {
+    throw new Error(
+      "VOICE_AGENT_SECRET is not set in Vercel for production. The /api/voice/* routes fail closed " +
+        "without it, so every tool call would answer 401. Set it in Vercel first, then re-run.",
+    );
+  }
+  if (local && local !== production) {
+    throw new Error(
+      "VOICE_AGENT_SECRET in this environment does not match the production value. " +
+        "Unset it to use the production value, or set the same value in Vercel.",
+    );
+  }
+  return production;
+}
+
+const VOICE_AGENT_SECRET = resolveVoiceSecret();
 
 async function api(path, body, method = "POST") {
   const res = await fetch(`${API}${path}`, {
