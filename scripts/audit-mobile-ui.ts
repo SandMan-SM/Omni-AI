@@ -680,14 +680,23 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
   }
 
   // 6. Images without alt text.
-  for (const { body, index } of tagBodies(code, "Image")) {
-    if (!/\balt\s*=/.test(body)) {
-      findings.push({
-        rule: "image-missing-alt",
-        file: rel,
-        line: at(index),
-        detail: "<Image> has no alt attribute",
-      });
+  //
+  // Both `<Image>` and a raw `<img>` count. The raw one is the interesting
+  // case: it is the escape hatch people reach for when next/image would
+  // need a domain allowlisted, so it is exactly where an alt attribute
+  // gets forgotten — and a screen reader then announces the file name.
+  // `alt=""` is accepted: a decorative image is correctly marked by an
+  // EMPTY alt, not by an absent one.
+  for (const tag of ["Image", "img"]) {
+    for (const { body, index } of tagBodies(code, tag)) {
+      if (!/\balt\s*=/.test(body)) {
+        findings.push({
+          rule: "image-missing-alt",
+          file: rel,
+          line: at(index),
+          detail: `<${tag}> has no alt attribute`,
+        });
+      }
     }
   }
 
