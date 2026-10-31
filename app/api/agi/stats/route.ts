@@ -2,18 +2,27 @@
 // by the Agentic Assets console to show platform-health at a glance.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { unstable_noStore as noStore } from "next/cache";
 import { authorizeCronOrAdmin } from "@/lib/api-auth";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
 
-const sb = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-);
+// The SERVICE ROLE, not the anon key.
+//
+// Every `omni_*` table below is RLS-locked to `service_role`, so an anon
+// count answers 200 with `count: 0` and no error — the console showed
+// "0 leads, 0 businesses, 0 activity" on a platform holding 490 leads
+// and 24 businesses, and reported the zeros as if they were results.
+//
+// The route is gated by `authorizeCronOrAdmin` above the query, so the
+// privileged client is only reachable by an operator. The table name is
+// dynamic, which is also why the static RLS gate cannot prove this by
+// reading the table name: `npm run audit:rls` now flags a non-admin
+// client with a dynamic table name for exactly this reason.
+const sb = createAdminClient();
 
 const TABLES = [
   // Agentic

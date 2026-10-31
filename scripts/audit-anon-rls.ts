@@ -37,6 +37,24 @@
 //                                locked table. The browser can never hold
 //                                the service role, so this has to be
 //                                proxied through an admin-gated API route.
+//   server-dynamic-anon-table     A server-side file queries a table whose
+//                                NAME IS NOT A LITERAL on a non-admin
+//                                client. The table cannot be checked
+//                                against the rule set, so the read cannot
+//                                be cleared — at runtime the name may be
+//                                a locked table, and the anon key would
+//                                answer 200 with an empty array. This is
+//                                exactly how `/api/agi/stats` reported
+//                                "0 leads, 0 businesses, 0 activity" on a
+//                                platform holding 490 leads: the table
+//                                names came from an array, so no static
+//                                rule could see them.
+//   browser-dynamic-anon-table    The same, in a browser file.
+//   table-not-in-schema           A file queries a table NAME THAT THE LIVE
+//                                SCHEMA DOES NOT HAVE. PostgREST answers
+//                                that with an error, so the feature is
+//                                broken at runtime: the rows never come
+//                                back and the code reports "no data".
 //
 // Read-only. Never writes a file, never touches the network.
 //
@@ -70,6 +88,9 @@ const RULE_NAMES = [
   "server-stateless-anon-locked-table",
   "server-session-anon-locked-table",
   "browser-anon-locked-table",
+  "server-dynamic-anon-table",
+  "browser-dynamic-anon-table",
+  "table-not-in-schema",
 ];
 
 /**
@@ -94,18 +115,54 @@ const ROOT = path.resolve(process.cwd());
 
 const LOCKED_TABLES_FILE = path.join(ROOT, "scripts", "anon-locked-tables.json");
 
-function loadLockedTables(): Set<string> {
+function loadRuleSet(): {
+  locked: Set<string>;
+  indeterminate: Set<string>;
+  anonReadable: Set<string>;
+  schemaTables: Set<string>;
+} {
+  const empty = {
+    locked: new Set<string>(),
+    indeterminate: new Set<string>(),
+    anonReadable: new Set<string>(),
+    schemaTables: new Set<string>(),
+  };
   try {
     const raw = JSON.parse(fs.readFileSync(LOCKED_TABLES_FILE, "utf8")) as {
       locked?: string[];
+      indeterminate?: string[];
+      anonReadable?: string[];
+      schemaTables?: string[];
     };
-    return new Set(raw.locked || []);
+    return {
+      locked: new Set(raw.locked || []),
+      indeterminate: new Set(raw.indeterminate || []),
+      anonReadable: new Set(raw.anonReadable || []),
+      schemaTables: new Set(raw.schemaTables || []),
+    };
   } catch {
-    return new Set();
+    return empty;
   }
 }
 
-const LOCKED = loadLockedTables();
+const RULE_SET = loadRuleSet();
+
+/**
+ * The tables the anon key cannot read.
+ *
+ * `indeterminate` is folded in on purpose: those are the tables the live
+ * probe could not classify without risking a write, and the gate fails
+ * closed — an unknown table is treated as a locked one, because the cost
+ * of a false positive is one line of review and the cost of a false
+ * negative is a screen that reports zeros as if they were results.
+ */
+const LOCKED = new Set<string>([
+  ...RULE_SET.locked,
+  ...RULE_SET.indeterminate,
+]);
+
+/** Every table the live schema has, so a name can be checked for existence. */
+const SCHEMA_TABLES = RULE_SET.schemaTables;
 
 const SKIP_DIRS = new Set([
   "node_modules",
@@ -151,10 +208,15 @@ function isAnonKeyExpression(node: ts.Node): boolean {
  *  admin    — service role. Bypasses RLS. Correct behind an auth gate.
  *  session  — cookie-bound, carries `auth.uid()`. Correct for a user's own
  *             rows; sees nothing for service-role-only tables.
+ *  browser  — a browser client (`createBrowserClient`). It carries the
+ *             user's persisted session, so `auth.uid()` resolves exactly
+ *             like the cookie-bound server client. It is a DIFFERENT case
+ *             from `stateless`, and conflating the two produces false
+ *             positives on every user-scoped table.
  *  stateless— built from the anon key with NO session. Never carries an
  *             `auth.uid()`, so it can only see publicly-readable tables.
  */
-type ClientKind = "admin" | "session" | "stateless";
+type ClientKind = "admin" | "session" | "browser" | "stateless";
 
 type FileInfo = {
   file: string;
@@ -223,6 +285,7 @@ function isSessionBuilder(calleeText: string, args: readonly ts.Expression[]): b
 function classifyInitializer(
   init: ts.Expression,
   source: ts.SourceFile,
+  info?: FileInfo,
 ): ClientKind | null {
   // `await createClient()` and `(createClient())` are the same call.
   let expr = init;
@@ -249,7 +312,19 @@ function classifyInitializer(
     calleeText.endsWith("createServerClient") ||
     calleeText.endsWith("createBrowserClient")
   ) {
+    if (calleeText.endsWith("createBrowserClient")) return "browser";
     return isSessionBuilder(calleeText, expr.arguments) ? "session" : "stateless";
+  }
+  // A client obtained by CALLING one of the imported helpers, e.g.
+  // `const supabase = await getSupabase()`. Without this, the client
+  // resolved as "unknown" and every rule that depends on knowing which
+  // key a client carries quietly stopped applying to it.
+  if (info) {
+    if (info.adminImported.has(calleeText)) return "admin";
+    if (info.anonImported.has(calleeText)) {
+      const kind = info.clients.get(calleeText);
+      if (kind) return kind;
+    }
   }
   return null;
 }
@@ -279,23 +354,27 @@ function analyzeFile(abs: string): FileInfo {
     if (!clause) continue;
 
     if (ANON_CLIENT_MODULES.has(mod)) {
+      // Which module a client comes from decides what it can see:
+      //   `@/lib/supabase/server`  — cookie-bound, carries auth.uid()
+      //   `@/lib/supabase/client`  — browser client, carries the session
+      //   `@/lib/supabase`         — re-exports the browser client
+      //   `@/lib/agi-supabase`     — a bare anon client, no session
+      const kind: ClientKind =
+        mod === "@/lib/supabase/server"
+          ? "session"
+          : mod === "@/lib/agi-supabase"
+            ? "stateless"
+            : "browser";
       if (clause.namedBindings && ts.isNamedImports(clause.namedBindings)) {
         for (const el of clause.namedBindings.elements) {
           const local = el.name.text;
           info.anonImported.add(local);
-          // `@/lib/supabase/server` is cookie-bound; the other two are not.
-          info.clients.set(
-            local,
-            mod === "@/lib/supabase/server" ? "session" : "stateless",
-          );
+          info.clients.set(local, kind);
         }
       }
       if (clause.name) {
         info.anonImported.add(clause.name.text);
-        info.clients.set(
-          clause.name.text,
-          mod === "@/lib/supabase/server" ? "session" : "stateless",
-        );
+        info.clients.set(clause.name.text, kind);
       }
     }
 
@@ -316,7 +395,7 @@ function analyzeFile(abs: string): FileInfo {
   const visit = (node: ts.Node) => {
     if (ts.isVariableDeclaration(node) && node.initializer) {
       const name = node.name.getText(source);
-      const kind = classifyInitializer(node.initializer, source);
+      const kind = classifyInitializer(node.initializer, source, info);
       if (kind) {
         info.clients.set(name, kind);
       } else {
@@ -382,26 +461,74 @@ function scanFromCalls(abs: string, info: FileInfo): Finding[] {
       if (
         ts.isPropertyAccessExpression(callee) &&
         callee.name.text === "from" &&
-        node.arguments.length > 0 &&
-        ts.isStringLiteral(node.arguments[0])
+        node.arguments.length > 0
       ) {
-        const table = node.arguments[0].text;
+        const arg = node.arguments[0];
         const kind = resolveClientKind(callee.expression, info);
         const line =
           source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
+
+        // The table name is not a literal, so the rule set cannot say
+        // which table this is. On a non-admin client that is unresolvable:
+        // the name may be a locked table at runtime, and the anon key
+        // answers 200 with an empty array. `/api/agi/stats` was exactly
+        // this — an array of table names, read with the anon key, and
+        // every count came back 0 while the platform held 490 leads.
+        if (!ts.isStringLiteral(arg)) {
+          if (kind === "stateless" || kind === "session" || kind === "browser") {
+            findings.push({
+              rule: info.isClient || kind === "browser"
+                ? "browser-dynamic-anon-table"
+                : "server-dynamic-anon-table",
+              file: info.file,
+              line,
+              detail:
+                `${kind} client reads a table whose name is not a literal ` +
+                `(${arg.getText(source).slice(0, 40)}) — the rule set cannot ` +
+                `clear it, and at runtime it may be a locked table the anon ` +
+                `key cannot see`,
+            });
+          }
+          ts.forEachChild(node, visit);
+          return;
+        }
+
+        const table = arg.text;
+
+        // The table does not exist. PostgREST answers that with an error,
+        // so the read never returns rows and the feature reports "no
+        // data" for a reason that has nothing to do with the data.
+        if (SCHEMA_TABLES.size > 0 && !SCHEMA_TABLES.has(table)) {
+          if (kind !== "unknown") {
+            findings.push({
+              rule: "table-not-in-schema",
+              file: info.file,
+              line,
+              detail: `queries table "${table}" — the live schema has no such table, so this read errors and always yields nothing`,
+            });
+          }
+          ts.forEachChild(node, visit);
+          return;
+        }
 
         if (!LOCKED.has(table) || kind === "admin") {
           ts.forEachChild(node, visit);
           return;
         }
 
-        if (info.isClient) {
-          findings.push({
-            rule: "browser-anon-locked-table",
-            file: info.file,
-            line,
-            detail: `browser reads locked table "${table}" — the anon key sees 0 rows, so this always renders empty`,
-          });
+        if (info.isClient || kind === "browser") {
+          // A browser client carries the user's session, so it may read
+          // the caller's OWN rows (the user-scoped tables) and nothing
+          // else. Everything else is service-role-only, and the browser
+          // answers 200 with an empty array.
+          if (!USER_SCOPED_TABLES.has(table)) {
+            findings.push({
+              rule: "browser-anon-locked-table",
+              file: info.file,
+              line,
+              detail: `browser reads locked table "${table}" — the anon key sees 0 rows, so this always renders empty`,
+            });
+          }
         } else if (kind === "stateless") {
           findings.push({
             rule: "server-stateless-anon-locked-table",
@@ -470,7 +597,7 @@ function main() {
   // So the precondition is checked FIRST and fails closed: exit 2 with the
   // reason, and never print the "scanned N files — 0 findings" line, which
   // reads as a clean scan.
-  if (LOCKED.size === 0) {
+  if (LOCKED.size === 0 || SCHEMA_TABLES.size === 0) {
     console.error(
       "[anon-rls] scripts/anon-locked-tables.json is empty or missing, so the locked-table rules " +
         "did NOT run. This is not a clean result — the gate checked nothing. " +

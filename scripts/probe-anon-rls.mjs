@@ -1,11 +1,42 @@
 /**
- * Probe: for every table in the live Supabase schema, compare what the
- * ANON key can see against what the SERVICE ROLE key can see.
+ * Probe: for every table in the live Supabase schema, determine whether the
+ * ANON key can see it.
  *
  * An anon read of an RLS-locked table returns HTTP 200 with an empty
  * array -- not an error. That is the silent-failure class: the caller
  * cannot distinguish "no rows" from "not allowed to see rows", so the
  * defect is invisible in the response and loud in the product.
+ *
+ * WHY THIS PROBE IS NOT COUNT-BASED
+ *
+ * The first version of this probe classified a table as "locked" when the
+ * anon key saw 0 rows and the service role saw some. That is a
+ * DATA-dependent signal, and it has a hole the same size as an empty
+ * table: a locked table with no rows is indistinguishable from a public
+ * table with no rows, so it fell out of the rule set. The shipped rule
+ * set was 119 tables where the live permission model locks 255 — 136
+ * locked tables, every `inbound_*` and `federation_*` table among them,
+ * were invisible to `npm run audit:rls`. The gate could not see a read of
+ * them because it had never been told they exist.
+ *
+ * So lockedness is now decided by the PERMISSION MODEL, not by the data:
+ *
+ *   1. service role sees rows, anon sees none      -> LOCKED
+ *   2. table is empty -> the RLS write probe        -> LOCKED / PUBLIC
+ *   3. table is empty and cannot be probed safely    -> INDETERMINATE
+ *
+ * The write probe (see canAnonWrite) asks RLS to rule on an insert that
+ * is guaranteed to fail the NOT NULL constraint. Postgres evaluates the
+ * RLS WITH CHECK qual BEFORE the not-null constraint, so:
+ *
+ *   42501 "new row violates row-level security policy" -> RLS denied it
+ *   23502 "null value in column ... violates not-null"  -> RLS allowed it
+ *
+ * Neither outcome creates a row. A table with NO required column that
+ * lacks a default would insert successfully, so those are SKIPPED -- this
+ * probe must never be able to write. A skipped table is reported as
+ * INDETERMINATE rather than as public, and the gate treats
+ * indeterminate as locked (fail closed).
  *
  * Usage: node scripts/probe-anon-rls.mjs [--json]
  */
@@ -93,7 +124,6 @@ for (const table of tables) {
     locked: a.count === 0 && (s.count ?? 0) > 0,
   });
 }
-
 /**
  * Can the ANON key WRITE to a table?
  *
@@ -104,16 +134,24 @@ for (const table of tables) {
  *   42501 "new row violates row-level security policy"  -> RLS denied it
  *   23502 "null value in column ... violates not-null"   -> RLS allowed it
  *
- * Neither outcome creates a row. A table with NO required column that lacks
- * a default would insert successfully, so those are SKIPPED — this probe
- * must never be able to write.
+ * Neither outcome creates a row. A table whose every required column
+ * carries a default would insert successfully, so those are SKIPPED — this
+ * probe must never be able to write.
+ *
+ * A required column that the OpenAPI spec does not describe at all is
+ * treated as BLOCKING (we cannot prove it has a default, so we must
+ * assume the insert will fail). The original version of this function
+ * only counted a column as blocking when the spec described it *and*
+ * showed no default, which is the less safe of the two readings.
  */
 async function canAnonWrite(table) {
   const def = defs[table];
   const props = (def && def.properties) || {};
   const required = (def && def.required) || [];
-  const missing = required.filter((c) => props[c] && props[c].default === undefined);
-  if (missing.length === 0) return { writable: null, skipped: true };
+  const blocking = required.filter(
+    (c) => !(props[c] && props[c].default !== undefined),
+  );
+  if (blocking.length === 0) return { writable: null, skipped: true };
 
   const res = await fetch(`${url}/rest/v1/${table}`, {
     method: "POST",
@@ -141,34 +179,107 @@ async function canAnonWrite(table) {
 
 
 const json = process.argv.includes("--json");
-const locked = results.filter((r) => r.locked);
 const errored = results.filter((r) => r.anonError);
 
-if (!process.argv.includes("--no-write-probe")) {
-  for (const r of locked) {
-    const w = await canAnonWrite(r.table);
-    r.anonWritable = w.writable;
-    r.anonWriteCode = w.code;
+/**
+ * Classify every table as LOCKED, PUBLIC or INDETERMINATE.
+ *
+ * LOCKED      the anon key cannot read it.
+ * PUBLIC      the anon key can read it.
+ * INDETERMINATE we could not decide without risking a write.
+ *
+ * A table with rows is easy: the service role sees them and the anon key
+ * does not -> LOCKED. A table with NO rows needs the permission model, so
+ * the write probe rules on it. A table that cannot be probed safely is
+ * INDETERMINATE, and the gate treats indeterminate as locked.
+ */
+const locked = [];
+const publicTables = [];
+const indeterminate = [];
+
+for (const r of results) {
+  if (r.anonError) {
+    indeterminate.push({ ...r, reason: "anon read errored" });
+    continue;
+  }
+  if ((r.service ?? 0) > 0) {
+    if ((r.anon ?? 0) === 0) locked.push({ ...r, via: "row-count" });
+    else publicTables.push({ ...r, via: "row-count" });
+    continue;
+  }
+  // Empty table: row counts cannot decide. Ask the permission model.
+  const w = await canAnonWrite(r.table);
+  r.anonWritable = w.writable;
+  r.anonWriteCode = w.code;
+  // Safety net: the write probe must never create a row. If the table's
+  // service-role count changed, the insert went through and this table is
+  // NOT safe to probe — report it loudly and treat it as indeterminate
+  // rather than classifying it from a probe that wrote to the database.
+  if (!w.skipped && w.writable === null) {
+    const after = await count(admin, r.table);
+    if ((after.count ?? 0) !== (r.service ?? 0)) {
+      console.error(
+        `[probe] ${r.table}: row count changed during the write probe ` +
+          `(${r.service} -> ${after.count}). The probe is not safe on this table.`,
+      );
+      indeterminate.push({
+        ...r,
+        via: "rls-write-probe",
+        reason: "row count changed during the write probe",
+      });
+      continue;
+    }
+  }
+  if (w.skipped) {
+    indeterminate.push({
+      ...r,
+      via: "write-probe-skipped",
+      reason:
+        "table has no required column, so an RLS probe would risk inserting a row",
+    });
+  } else if (w.writable === false) {
+    locked.push({ ...r, via: "rls-write-probe" });
+  } else if (w.writable === true) {
+    publicTables.push({ ...r, via: "rls-write-probe" });
+  } else {
+    indeterminate.push({ ...r, via: "rls-write-probe", reason: w.code });
   }
 }
 
 if (json) {
   console.log(
-    JSON.stringify({ total: tables.length, locked, errored, results }, null, 2),
+    JSON.stringify(
+      {
+        total: tables.length,
+        totalTables: tables.length,
+        generatedAt: new Date().toISOString(),
+        source: "scripts/probe-anon-rls.mjs",
+        locked: locked.map((r) => r.table).sort(),
+        indeterminate: indeterminate.map((r) => r.table).sort(),
+        public: publicTables.map((r) => r.table).sort(),
+        results,
+      },
+      null,
+      2,
+    ),
   );
 } else {
   console.log(`probed ${tables.length} tables`);
   console.log(
-    `\nANON-LOCKED (anon sees 0, service role sees rows) — ${locked.length}:`,
+    `\nANON-LOCKED — ${locked.length} (anon cannot read; service role can):`,
   );
   for (const r of locked) {
-    const w =
-      r.anonWritable === undefined
-        ? ""
-        : `  anonWrite=${r.anonWritable ? "ALLOWED" : "denied"}`;
     console.log(
-      `  ${r.table.padEnd(38)} service=${String(r.service).padStart(6)}${w}`,
+      `  ${r.table.padEnd(38)} service=${String(r.service).padStart(6)} via=${r.via}`,
     );
+  }
+  console.log(`\nPUBLIC to anon — ${publicTables.length}:`);
+  for (const r of publicTables) {
+    console.log(`  ${r.table.padEnd(38)} service=${String(r.service).padStart(6)}`);
+  }
+  console.log(`\nINDETERMINATE — ${indeterminate.length} (treated as locked):`);
+  for (const r of indeterminate) {
+    console.log(`  ${r.table.padEnd(38)} ${r.reason || r.anonWriteCode || ""}`);
   }
   console.log(`\nANON ERRORS (${errored.length}):`);
   for (const r of errored) {

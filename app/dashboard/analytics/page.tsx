@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { supabase, type Business } from '@/lib/agi-supabase';
+import type { Business } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
 import { authFetch } from '@/lib/auth';
 import {
@@ -115,18 +115,22 @@ export default function AnalyticsPage() {
       return;
     }
     (async () => {
-      // omni_leads_generated is RLS-locked to service_role; the browser
-      // anon client silently returns zero rows. Pull leads via the server
-      // endpoint instead and keep outreach assets on the direct client
-      // (no equivalent RLS lock there).
+      // BOTH tables the page needs are RLS-locked to service_role:
+      // `omni_leads_generated` and `omni_outreach_assets`. The browser anon
+      // client silently returns zero rows for either, so the page reported
+      // "0 leads, 0 assets, 0 sent, 0 replied" and reported the zeros as
+      // if they were results. Both now come from server endpoints that
+      // hold the service role and check the tenancy themselves.
       const leadsUrl = `/api/dashboard/leads?business_id=${encodeURIComponent(selectedBiz.id)}&limit=5000`;
-      const [leadsRes, { data: assets }] = await Promise.all([
+      const assetsUrl = `/api/dashboard/outreach-assets?business_id=${encodeURIComponent(selectedBiz.id)}`;
+      const [leadsRes, assetsRes] = await Promise.all([
         authFetch(leadsUrl).then(r => (r.ok ? r.json() : { leads: [] })).catch(() => ({ leads: [] })),
-        supabase.from('omni_outreach_assets').select('status, asset_type').eq('business_id', selectedBiz.id),
+        authFetch(assetsUrl).then(r => (r.ok ? r.json() : { byStatus: {}, total: 0 })).catch(() => ({ byStatus: {}, total: 0 })),
       ]);
 
       const leadsArr = ((leadsRes?.leads as Array<{ status: string; source: string; score: number }> | undefined) ?? []);
-      const assetsArr = assets ?? [];
+      const assetStatusCounts = ((assetsRes?.byStatus as Record<string, number> | undefined) ?? {});
+      const totalAssets = Number(assetsRes?.total ?? 0);
 
       const statusCounts = leadsArr.reduce<Record<string, number>>((acc, l) => {
         acc[l.status] = (acc[l.status] ?? 0) + 1;
@@ -138,20 +142,18 @@ export default function AnalyticsPage() {
         return acc;
       }, {});
 
-      const assetStatusCounts = assetsArr.reduce<Record<string, number>>((acc, a) => {
-        acc[a.status] = (acc[a.status] ?? 0) + 1;
-        return acc;
-      }, {});
+      const assetCount = (...statuses: string[]) =>
+        statuses.reduce((sum, s) => sum + (assetStatusCounts[s] ?? 0), 0);
 
       setStats({
         totalLeads: leadsArr.length,
         qualifiedLeads: leadsArr.filter(l => ['qualified', 'converted'].includes(l.status)).length,
         convertedLeads: leadsArr.filter(l => l.status === 'converted').length,
         avgScore: leadsArr.length > 0 ? Math.round(leadsArr.reduce((s, l) => s + l.score, 0) / leadsArr.length) : 0,
-        totalAssets: assetsArr.length,
-        sentAssets: assetsArr.filter(a => ['sent', 'opened', 'replied'].includes(a.status)).length,
-        openedAssets: assetsArr.filter(a => ['opened', 'replied'].includes(a.status)).length,
-        repliedAssets: assetsArr.filter(a => a.status === 'replied').length,
+        totalAssets,
+        sentAssets: assetCount('sent', 'opened', 'replied'),
+        openedAssets: assetCount('opened', 'replied'),
+        repliedAssets: assetCount('replied'),
       });
 
       setLeadsByStatus(Object.entries(statusCounts).map(([status, count]) => ({ status, count })));
