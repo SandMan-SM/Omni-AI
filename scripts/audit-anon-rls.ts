@@ -115,34 +115,64 @@ const ROOT = path.resolve(process.cwd());
 
 const LOCKED_TABLES_FILE = path.join(ROOT, "scripts", "anon-locked-tables.json");
 
+/**
+ * Why the rule set could not be used, if it could not be used.
+ *
+ * "Could not be checked" is not one condition. A tree with no rule set at
+ * all, a tree with a rule set in the OLD format (which carried the locked
+ * table names but not the schema's table list), and a tree whose rule set is
+ * empty are three different problems with three different fixes, and a
+ * sweep that reports them all as "the copy has no rule set" teaches the
+ * reader the wrong thing about the fleet.
+ */
+type RuleSetStatus = "ok" | "missing" | "unreadable" | "stale" | "empty";
+
 function loadRuleSet(): {
   locked: Set<string>;
   indeterminate: Set<string>;
   anonReadable: Set<string>;
   schemaTables: Set<string>;
+  status: RuleSetStatus;
 } {
   const empty = {
     locked: new Set<string>(),
     indeterminate: new Set<string>(),
     anonReadable: new Set<string>(),
     schemaTables: new Set<string>(),
+    status: "missing" as RuleSetStatus,
+  };
+  let text: string;
+  try {
+    text = fs.readFileSync(LOCKED_TABLES_FILE, "utf8");
+  } catch {
+    return { ...empty, status: fs.existsSync(LOCKED_TABLES_FILE) ? "unreadable" : "missing" };
+  }
+  let raw: {
+    locked?: string[];
+    indeterminate?: string[];
+    anonReadable?: string[];
+    schemaTables?: string[];
   };
   try {
-    const raw = JSON.parse(fs.readFileSync(LOCKED_TABLES_FILE, "utf8")) as {
-      locked?: string[];
-      indeterminate?: string[];
-      anonReadable?: string[];
-      schemaTables?: string[];
-    };
-    return {
-      locked: new Set(raw.locked || []),
-      indeterminate: new Set(raw.indeterminate || []),
-      anonReadable: new Set(raw.anonReadable || []),
-      schemaTables: new Set(raw.schemaTables || []),
-    };
+    raw = JSON.parse(text);
   } catch {
-    return empty;
+    return { ...empty, status: "unreadable" };
   }
+  const locked = new Set(raw.locked || []);
+  const indeterminate = new Set(raw.indeterminate || []);
+  const anonReadable = new Set(raw.anonReadable || []);
+  const schemaTables = new Set(raw.schemaTables || []);
+  // A rule set without the schema's table list is the previous format. It
+  // can still say which tables are locked, but the gate cannot tell "this
+  // table does not exist" from "this table is locked", so it cannot run the
+  // full rule set — and it is missing 136 locked tables besides.
+  const status: RuleSetStatus =
+    !schemaTables.size
+      ? "stale"
+      : !locked.size && !indeterminate.size
+        ? "empty"
+        : "ok";
+  return { locked, indeterminate, anonReadable, schemaTables, status };
 }
 
 const RULE_SET = loadRuleSet();
@@ -598,9 +628,18 @@ function main() {
   // reason, and never print the "scanned N files — 0 findings" line, which
   // reads as a clean scan.
   if (LOCKED.size === 0 || SCHEMA_TABLES.size === 0) {
+    const why =
+      RULE_SET.status === "stale"
+        ? "scripts/anon-locked-tables.json is in the OLD format — it carries the locked table names " +
+          "but not the schema's table list, so the gate cannot tell a missing table from a locked one"
+        : RULE_SET.status === "missing"
+          ? "scripts/anon-locked-tables.json is missing"
+          : RULE_SET.status === "unreadable"
+            ? "scripts/anon-locked-tables.json could not be parsed"
+            : "scripts/anon-locked-tables.json is empty";
     console.error(
-      "[anon-rls] scripts/anon-locked-tables.json is empty or missing, so the locked-table rules " +
-        "did NOT run. This is not a clean result — the gate checked nothing. " +
+      `[anon-rls] ${why}, so the locked-table rules did NOT run. ` +
+        "This is not a clean result — the gate checked nothing. " +
         "Refresh it with: node scripts/probe-anon-rls.mjs --json",
     );
     process.exit(2);

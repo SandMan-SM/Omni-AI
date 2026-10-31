@@ -30,6 +30,7 @@
     "audit:fleet-auth": "node scripts/audit-fleet-auth.mjs",
     "audit:fleet-rls": "node scripts/audit-fleet-rls.mjs",
     "patch:fleet-cron-auth": "node scripts/patch-fleet-cron-auth.mjs",
+    "patch:fleet-rls-ruleset": "node scripts/patch-fleet-rls-ruleset.mjs",
     "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls && npm run audit:cron-auth",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs",
     "audit:env-drift": "tsx scripts/audit-env-drift.ts"

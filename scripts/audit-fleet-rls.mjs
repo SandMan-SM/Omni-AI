@@ -161,7 +161,17 @@ function runRlsAudit(root) {
     const match = String(stdout).match(/—\s*(\d+)\s+finding\(s\)\s+across\s+(\d+)\s+rules/);
     if (match) return { findings: Number(match[1]), rules: Number(match[2]) };
     const stderr = String(error?.stderr ?? "");
-    if (/did NOT run/.test(stderr)) return { findings: null, rules: null, rulesDidNotRun: true };
+    if (/did NOT run/.test(stderr)) {
+      // Carry the gate's own reason through. "Could not be checked" is not
+      // one condition — a tree with no rule set, a tree with a rule set in
+      // the old format, and a tree with an empty rule set are three
+      // different problems, and collapsing them into one sentence
+      // ("the copy has no scripts/anon-locked-tables.json") tells the
+      // reader something false about the fleet.
+      const reason = (stderr.match(/\[anon-rls\]\s*(.+?),\s*so the locked-table rules did NOT run/s) ||
+        [])[1];
+      return { findings: null, rules: null, rulesDidNotRun: true, reason: reason || null };
+    }
     return { findings: null, rules: null, failed: true };
   }
 }
@@ -238,7 +248,12 @@ function main() {
 
     const result = runRlsAudit(checkout.dir);
     if (result.rulesDidNotRun) {
-      skipped.push({ dir: checkout.dir, reason: "the copy has no scripts/anon-locked-tables.json, so its rule set cannot run" });
+      skipped.push({
+        dir: checkout.dir,
+        reason:
+          (result.reason || "its rule set could not be used") +
+          ", so its rule set cannot run — sync it with: node scripts/patch-fleet-rls-ruleset.mjs",
+      });
       continue;
     }
     if (result.findings === null) {
@@ -268,7 +283,12 @@ function main() {
     if (covered.has(tree)) continue;
     const result = runRlsAudit(tree);
     if (result.rulesDidNotRun) {
-      skipped.push({ dir: tree, reason: "the tree has no scripts/anon-locked-tables.json, so its rule set cannot run" });
+      skipped.push({
+        dir: tree,
+        reason:
+          (result.reason || "its rule set could not be used") +
+          ", so its rule set cannot run — sync it with: node scripts/patch-fleet-rls-ruleset.mjs",
+      });
       continue;
     }
     if (!result.findings) continue;
