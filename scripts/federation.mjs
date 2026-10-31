@@ -15,6 +15,7 @@
  * Usage:
  *   node scripts/federation.mjs surface <domain>
  *   node scripts/federation.mjs acquire <domain> <agent> <kind> <session> <note> [ttl]
+ *   node scripts/federation.mjs renew <leaseId> <agent> [ttl]
  *   node scripts/federation.mjs release <leaseId> <agent> <action> '<json detail>'
  *   node scripts/federation.mjs log <agent> <domain> <action> '<json detail>' [leaseId]
  *
@@ -79,6 +80,17 @@ if (cmd === "surface") {
   });
   console.log(JSON.stringify(r, null, 2));
   if (!r?.granted) process.exit(3);
+} else if (cmd === "renew") {
+  // The protocol says a long job renews its lease before expiry, but the
+  // CLI did not expose the RPC — so the instruction could not be followed
+  // from a shell, only from SQL.
+  const [leaseId, agent, ttl] = rest;
+  const r = await rpc("hermes_federation_renew_lease", {
+    p_lease_id: Number(leaseId),
+    p_agent: agent,
+    p_ttl_minutes: Number(ttl || 45),
+  });
+  console.log(JSON.stringify(r, null, 2));
 } else if (cmd === "release") {
   const [leaseId, agent, action, detail] = rest;
   const r = await rpc("hermes_federation_release_lease", {
@@ -99,6 +111,6 @@ if (cmd === "surface") {
   });
   console.log(JSON.stringify(r, null, 2));
 } else {
-  console.error("usage: federation.mjs surface|acquire|release|log ...");
+  console.error("usage: federation.mjs surface|acquire|renew|release|log ...");
   process.exit(2);
 }
