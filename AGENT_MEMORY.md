@@ -153,7 +153,29 @@
 > Proven against the real file: the pre-fix `app/api/agents/rankings/route.ts` was restored in
 > place, the gate reported **both** rules on it, and the file was restored byte-identical.
 >
-> Shipped in `b026a4d4`, `cb9be49c`, `5d084228`, `ddbd5ec4`; federation leases 1074, 1075.
+> **7. Shipping the gate to the fleet found a second instance of the same class, on the day it
+> shipped.** The public-PII gate now travels **with** the RLS rule set (`npm run
+> patch:fleet-rls-ruleset` writes the rule set, the RLS gate, the schema-drift gate and the
+> PII gate into every tree that carries the rule set), so every copy can measure itself. The
+> first thing it found was not the rankings leak — it was `GET /api/newsletter` answering an
+> **unauthenticated** caller with `select("*")` over `newsletter_subscriptions`, the whole
+> subscriber list, every reader's email. The canonical route had closed that years ago; **four
+> copies had not**. And those four are the four whose **git link is broken** — each `.git` file
+> points at `…/Clients/Omni AI/Omni AI Website/.git/worktrees/…`, a path that no longer exists —
+> so `git` refuses to operate in all of them, their contents cannot be committed or reviewed,
+> they are ~59 route files behind, and **all four still hold the production `.vercel` link**. A
+> `vercel --prod` from any of them would delete ~59 live routes from omnileadsagi.com: the
+> 2026-10-29 failure, one folder away. All four are patched and now report **0 findings**;
+> **33 of 33** rule-set trees measure themselves clean. Retiring, re-syncing or re-initialising
+> them is the owner's decision (emailed to `sitanim8@gmail.com`, `01a195db`) — the agent will not
+> delete a tree holding work only the owner can judge.
+>
+> Shipped in `b026a4d4`, `cb9be49c`, `5d084228`, `ddbd5ec4`, `ff50ab0b`, `c62ea8d4`; federation
+> leases 1074, 1075 (both released with the deploy journal). Live after the final deploy:
+> `/api/agents/rankings` answers 200 with 10 rows and **no** `ownerName` / `email` / `name`,
+> `/api/newsletter` answers **401** to an anonymous caller, and `npm run audit:deploy` reports
+> that git describes the running production deployment (`dpl_DYHogeHQakMtT3JFp2pX1jucKZpE` on
+> `c62ea8d4`, holding `omnileadsagi.com` and `www.omnileadsagi.com`).
 >
 > **Session 57 (2026-10-31) — read this first; two of its findings invalidate earlier notes.**
 >
