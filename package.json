@@ -79,6 +79,7 @@
     "react-hook-form": "^7.53.2",
     "recharts": "^2.15.2",
     "resend": "^6.10.0",
+    "sharp": "0.35.5",
     "stripe": "^21.0.1",
     "stripe-sitanim": "npm:stripe@^22.6.0",
     "tailwind-merge": "^2.6.0",

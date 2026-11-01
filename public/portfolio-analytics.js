@@ -6,7 +6,7 @@
  var last='',session,script=document.currentScript;
  var local=script&&script.getAttribute('data-ais-local-metrics')==='true'&&script.src==='http://127.0.0.1:3002/portfolio-analytics.js'&&location.origin==='http://127.0.0.1:4024';
  var destination=local?'http://127.0.0.1:3002/api/public/portfolio-events':'https://omnileadsagi.com/api/public/portfolio-events';
- var privatePath=/^\/(api|_next|admin|dashboard|portal|login|auth|account|checkout|reset|unsubscribe|instagram)(\/|$)/i;
+ var privatePath=/^\/(api|_next|admin|dashboard|crm|portal|login|auth|account|checkout|reset|unsubscribe|instagram)(\/|$)/i;
  window.__aisPortfolioAnalyticsCapabilities={version:2,pageViews:true,ctaClicks:true};
  function id(prefix){var bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return prefix+Array.from(bytes,function(value){return value.toString(16).padStart(2,'0');}).join('');}
  try{session=sessionStorage.getItem('ais_public_session');if(!/^s_[a-f0-9]{32}$/.test(session||'')){session=id('s_');sessionStorage.setItem('ais_public_session',session);}}catch(e){session=id('s_');}
