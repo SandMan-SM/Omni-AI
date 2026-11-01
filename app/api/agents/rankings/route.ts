@@ -256,7 +256,22 @@ export async function GET() {
   });
 
   // Deduplicate by business name (keep highest ELO)
-  agents.sort((a, b) => b.elo - a.elo);
+  //
+  // The comparator must be a TOTAL order. `elo` alone is not: two agents
+  // can share a rating, and the query sorts on `elo_rating` alone, so
+  // Postgres returns tied rows in an arbitrary order. `Array.prototype.sort`
+  // is stable, so a 0 comparator preserves that arbitrary input order — and
+  // the public leaderboard reshuffled between requests (the same agents in
+  // a different order on every page load, and no two responses alike to
+  // cache). Older agent first, then by id, makes the order total and
+  // reproducible. This also decides the dedup below: with a tie, which
+  // duplicate row survives used to depend on the same arbitrary order.
+  agents.sort((a, b) => {
+    if (b.elo !== a.elo) return b.elo - a.elo;
+    const byAge = String(a.createdAt || '').localeCompare(String(b.createdAt || ''));
+    if (byAge !== 0) return byAge;
+    return a.id.localeCompare(b.id);
+  });
   const seen = new Set<string>();
   const deduped = agents.filter(a => {
     const key = a.businessName?.toLowerCase();
