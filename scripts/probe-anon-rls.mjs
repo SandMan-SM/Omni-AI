@@ -38,9 +38,10 @@
  * INDETERMINATE rather than as public, and the gate treats
  * indeterminate as locked (fail closed).
  *
- * Usage: node scripts/probe-anon-rls.mjs [--json]
+ * Usage: node scripts/probe-anon-rls.mjs [--json] [--write]
  */
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 
 function loadEnv(file) {
@@ -179,6 +180,7 @@ async function canAnonWrite(table) {
 
 
 const json = process.argv.includes("--json");
+const write = process.argv.includes("--write");
 const errored = results.filter((r) => r.anonError);
 
 /**
@@ -246,7 +248,49 @@ for (const r of results) {
   }
 }
 
-if (json) {
+/**
+ * The canonical RULE SET of `npm run audit:rls`.
+ *
+ * `scripts/anon-locked-tables.json` is not a report — it is the list of
+ * tables the gate checks, and the gate FAILS CLOSED when that list does not
+ * cover the schema. It therefore has to be regenerated whenever the schema
+ * changes, and until this `--write` mode existed that was a manual step:
+ * someone had to run the probe, read its JSON, and hand-assemble the file.
+ * A rule set that is maintained by hand is a rule set that silently rots.
+ *
+ * It carries the schema's own table list as well as the three
+ * classifications, because the gate needs all three:
+ *
+ *   locked         the anon key cannot read it
+ *   indeterminate  we could not decide; the gate treats it as locked
+ *   anonReadable   the anon key can read it
+ *   schemaTables   every table the live schema has
+ */
+function buildRuleSet() {
+  return {
+    generatedAt: new Date().toISOString(),
+    source: "scripts/probe-anon-rls.mjs",
+    note: "Lockedness is decided by the PERMISSION MODEL, not by row counts: a table the service role can read and the anon key cannot is locked; an EMPTY table is decided by the RLS write probe (a probe that can only fail, never insert). Tables the probe could not classify safely are listed under indeterminate and the gate treats them as locked.",
+    totalTables: tables.length,
+    locked: locked.map((r) => r.table).sort(),
+    indeterminate: indeterminate.map((r) => r.table).sort(),
+    anonReadable: publicTables.map((r) => r.table).sort(),
+    schemaTables: [...tables].sort(),
+  };
+}
+
+if (write) {
+  const out = join(process.cwd(), "scripts", "anon-locked-tables.json");
+  writeFileSync(out, JSON.stringify(buildRuleSet(), null, 2) + "\n");
+  console.log(
+    `[probe] wrote ${out}\n` +
+      `        ${tables.length} tables — ${locked.length} locked, ` +
+      `${indeterminate.length} indeterminate, ${publicTables.length} anon-readable.`,
+  );
+  console.log(
+    "[probe] Now sync it to the fleet:  npm run patch:fleet-rls-ruleset",
+  );
+} else if (json) {
   console.log(
     JSON.stringify(
       {
