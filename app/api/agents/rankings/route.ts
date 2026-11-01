@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
+import { requireAdmin } from '@/lib/admin-auth';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -89,19 +90,42 @@ export async function GET() {
   noStore();
   const sb = createAdminClient();
 
+  // Is the caller an operator? The leaderboard is a PUBLIC surface (the
+  // /arena cards read it), and the response carries one field that is not
+  // public data: `ownerName`, the personal name of each business's owner.
+  // Ten real names — including the operator's own — were being published
+  // to anyone who asked, and NO public surface renders them; only the
+  // internal AGI arena manager uses them, to search its own list.
+  //
+  // So the name is ADMIN-ONLY: for an anonymous caller the column is not
+  // even selected, exactly like `email` below. The operator's manager
+  // still gets it, because that request carries the admin session.
+  const auth = await requireAdmin();
+  const isAdmin = !("error" in auth);
+
   // Fetch profiles with business names (include admins with agent_name set).
   //
   // Deliberately NOT selecting `email` — this is a public leaderboard
   // endpoint and the response doesn't render emails. Keeping `email` out of
   // the underlying query is defense-in-depth: if a future edit to the
   // response shape accidentally spreads the raw profile row, emails don't
-  // leak.
-  const { data: profiles, error } = await sb
-    .from('profiles')
-    .select('id, name, business_name, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at, arena_value_override, arena_reach_override, arena_rating, website')
+  // leak. `name` is handled the same way: it is only selected for an
+  // admin caller. (Two literal selects rather than one interpolated one:
+  // supabase-js parses the select string at the type level, so a template
+  // literal is a parse error rather than a query.)
+  const baseQuery = isAdmin
+    ? sb
+        .from('profiles')
+        .select('id, name, business_name, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at, arena_value_override, arena_reach_override, arena_rating, website')
+    : sb
+        .from('profiles')
+        .select('id, business_name, role, tier, crm_status, lead_score, is_premium, is_admin, newsletter_subscribed, gross_revenue, total_spent, purchase_count, agent_name, elo_rating, elo_rank, elo_wins, elo_losses, elo_streak, elo_peak, agent_status, created_at, arena_value_override, arena_reach_override, arena_rating, website');
+
+  const { data, error } = await baseQuery
     .not('business_name', 'is', null)
     .or('role.neq.admin,agent_name.not.is.null')
     .order('elo_rating', { ascending: false });
+  const profiles = (data ?? []) as any[];
 
   if (error) {
     console.error('[agents/rankings] profiles query error:', error);
@@ -199,7 +223,10 @@ export async function GET() {
       id: p.id,
       agentName: p.agent_name || p.business_name || p.name,
       businessName: p.business_name,
-      ownerName: p.name,
+      // Admin-only: `undefined` is dropped by JSON.stringify, so an
+      // anonymous caller gets no ownerName field at all rather than an
+      // empty string that a future edit could mistake for a value.
+      ownerName: isAdmin ? p.name : undefined,
       rank,
       elo: computed.elo,
       // winRate + streak intentionally omitted — public arena cards don't show
