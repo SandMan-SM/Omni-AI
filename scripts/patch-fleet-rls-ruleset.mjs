@@ -17,12 +17,13 @@
  * sweep had: a gate that reports "could not be checked" for most of the
  * fleet is not a measurement.
  *
- * Only three files are written, and only into trees that already carry the
+ * Only four files are written, and only into trees that already carry the
  * rule set or the gate:
  *
  *   scripts/anon-locked-tables.json      — the rule set
  *   scripts/audit-anon-rls.ts            — the gate that reads it
  *   scripts/audit-rls-schema-drift.mjs   — the gate that checks the rule set
+ *   scripts/audit-public-pii.mjs         — the gate that checks public PII
  *
  * The third file is the DRIFT gate. The rule set is a measurement of the
  * live schema, and a measurement can go stale: a table added to the database
@@ -32,6 +33,15 @@
  * snapshot against the live schema instead of trusting a date on a file.
  * It is read-only (it fetches the schema listing and compares it), so
  * adding it to a copy changes no behaviour there.
+ *
+ * The fourth is the PUBLIC-PII gate: the check that catches an
+ * unauthenticated route carrying somebody else's identity. That defect
+ * class travels BY COPY — the canonical rankings route was fixed by hand,
+ * and all 32 copies kept the byte-identical pre-fix file — and a copy is
+ * exactly where such a defect survives, because nobody re-reviewed it. The
+ * gate is read-only (it walks the route tree and reads files), so adding
+ * it to a copy changes no behaviour there either. Giving a copy the gate
+ * means it can measure itself.
  *
  * No application code is touched: the 30 deployable copies of this repo
  * carry their own commits and uncommitted work, and re-syncing app code
@@ -49,6 +59,7 @@ const CANONICAL = process.cwd();
 const RULE_SET = join("scripts", "anon-locked-tables.json");
 const GATE = join("scripts", "audit-anon-rls.ts");
 const DRIFT_GATE = join("scripts", "audit-rls-schema-drift.mjs");
+const PII_GATE = join("scripts", "audit-public-pii.mjs");
 const DRY_RUN = process.argv.includes("--dry-run");
 
 /** Every tree in the fleet that carries the rule set (the family marker). */
@@ -96,6 +107,8 @@ function main() {
   let gateAdded = 0;
   let driftWritten = 0;
   let driftAdded = 0;
+  let piiWritten = 0;
+  let piiAdded = 0;
 
   for (const tree of trees) {
     const changes = [];
@@ -129,6 +142,21 @@ function main() {
       driftWritten += 1;
     }
 
+    // The public-PII gate travels with the rule set: it is the check that
+    // catches an unauthenticated route carrying somebody else's identity,
+    // and a copy is exactly where that class of defect survives, because
+    // the copy's route was never fixed by hand.
+    const treePii = join(tree, PII_GATE);
+    if (!existsSync(treePii)) {
+      changes.push("PII gate (added)");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, PII_GATE), treePii);
+      piiAdded += 1;
+    } else if (!sameFile(treePii, join(CANONICAL, PII_GATE))) {
+      changes.push("PII gate");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, PII_GATE), treePii);
+      piiWritten += 1;
+    }
+
     if (changes.length) {
       console.log(
         `  ${DRY_RUN ? "would sync" : "synced"}  ${relative(FLEET_ROOT, tree)} — ${changes.join(", ")}`,
@@ -138,10 +166,10 @@ function main() {
 
   console.log(
     `\n[fleet-ruleset] ${trees.length} tree(s) carry the rule set. ` +
-      `${ruleSetWritten} rule set(s), ${gateWritten + gateAdded} gate(s) and ` +
-      `${driftWritten + driftAdded} drift gate(s) ` +
-      `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s) and ${driftAdded} drift gate(s) ` +
-      `added where the tree had none).`,
+      `${ruleSetWritten} rule set(s), ${gateWritten + gateAdded} gate(s), ` +
+      `${driftWritten + driftAdded} drift gate(s) and ${piiWritten + piiAdded} PII gate(s) ` +
+      `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s), ${driftAdded} drift gate(s) ` +
+      `and ${piiAdded} PII gate(s) added where the tree had none).`,
   );
   console.log(
     "[fleet-ruleset] No application code was touched. A copy that reads a locked table with the " +
