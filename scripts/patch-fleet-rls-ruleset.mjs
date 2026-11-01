@@ -17,11 +17,21 @@
  * sweep had: a gate that reports "could not be checked" for most of the
  * fleet is not a measurement.
  *
- * Only two files are written, and only into trees that already carry the
+ * Only three files are written, and only into trees that already carry the
  * rule set or the gate:
  *
- *   scripts/anon-locked-tables.json  — the rule set
- *   scripts/audit-anon-rls.ts        — the gate that reads it
+ *   scripts/anon-locked-tables.json      — the rule set
+ *   scripts/audit-anon-rls.ts            — the gate that reads it
+ *   scripts/audit-rls-schema-drift.mjs   — the gate that checks the rule set
+ *
+ * The third file is the DRIFT gate. The rule set is a measurement of the
+ * live schema, and a measurement can go stale: a table added to the database
+ * after the snapshot is invisible to every gate that reads it — in the
+ * canonical tree and in every copy that carries the same file. Syncing the
+ * drift gate alongside the rule set means each copy can check its own
+ * snapshot against the live schema instead of trusting a date on a file.
+ * It is read-only (it fetches the schema listing and compares it), so
+ * adding it to a copy changes no behaviour there.
  *
  * No application code is touched: the 30 deployable copies of this repo
  * carry their own commits and uncommitted work, and re-syncing app code
@@ -38,6 +48,7 @@ const FLEET_ROOT = process.env.OMNI_FLEET_ROOT || join(process.env.HOME, "Deskto
 const CANONICAL = process.cwd();
 const RULE_SET = join("scripts", "anon-locked-tables.json");
 const GATE = join("scripts", "audit-anon-rls.ts");
+const DRIFT_GATE = join("scripts", "audit-rls-schema-drift.mjs");
 const DRY_RUN = process.argv.includes("--dry-run");
 
 /** Every tree in the fleet that carries the rule set (the family marker). */
@@ -83,6 +94,8 @@ function main() {
   let ruleSetWritten = 0;
   let gateWritten = 0;
   let gateAdded = 0;
+  let driftWritten = 0;
+  let driftAdded = 0;
 
   for (const tree of trees) {
     const changes = [];
@@ -105,6 +118,17 @@ function main() {
       gateWritten += 1;
     }
 
+    const treeDrift = join(tree, DRIFT_GATE);
+    if (!existsSync(treeDrift)) {
+      changes.push("drift gate (added)");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, DRIFT_GATE), treeDrift);
+      driftAdded += 1;
+    } else if (!sameFile(treeDrift, join(CANONICAL, DRIFT_GATE))) {
+      changes.push("drift gate");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, DRIFT_GATE), treeDrift);
+      driftWritten += 1;
+    }
+
     if (changes.length) {
       console.log(
         `  ${DRY_RUN ? "would sync" : "synced"}  ${relative(FLEET_ROOT, tree)} — ${changes.join(", ")}`,
@@ -114,8 +138,10 @@ function main() {
 
   console.log(
     `\n[fleet-ruleset] ${trees.length} tree(s) carry the rule set. ` +
-      `${ruleSetWritten} rule set(s) and ${gateWritten + gateAdded} gate(s) ` +
-      `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s) added where the tree had none).`,
+      `${ruleSetWritten} rule set(s), ${gateWritten + gateAdded} gate(s) and ` +
+      `${driftWritten + driftAdded} drift gate(s) ` +
+      `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s) and ${driftAdded} drift gate(s) ` +
+      `added where the tree had none).`,
   );
   console.log(
     "[fleet-ruleset] No application code was touched. A copy that reads a locked table with the " +

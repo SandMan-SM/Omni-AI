@@ -52,7 +52,7 @@
  * unusable.
  */
 import { execFileSync } from "node:child_process";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -111,6 +111,29 @@ function findFixCommit(canonicalDir) {
     return /^[0-9a-f]{40}$/.test(out) ? out : null;
   } catch {
     return null;
+  }
+}
+
+/**
+ * A copy's rule set, as the schema snapshot it carries.
+ *
+ * The rule set is a MEASUREMENT of the live schema, so it can go stale: a
+ * table added to the database after the snapshot was taken is invisible to
+ * every gate that reads it, in this copy and everywhere else that carries
+ * it. The canonical surface's own drift gate catches that for the canonical
+ * tree; this is the same check for the copies, which is the population the
+ * defect actually travels through.
+ */
+function ruleSetSnapshot(dir) {
+  try {
+    const parsed = JSON.parse(
+      readFileSync(join(dir, "scripts", "anon-locked-tables.json"), "utf8"),
+    );
+    const tables = parsed.schemaTables;
+    if (!Array.isArray(tables) || !tables.length) return { tables: null, generatedAt: null };
+    return { tables: new Set(tables), generatedAt: parsed.generatedAt || null };
+  } catch {
+    return { tables: null, generatedAt: null };
   }
 }
 
@@ -177,6 +200,30 @@ function runRlsAudit(root) {
 }
 
 /**
+ * Is this error a filesystem error (the path is not readable) rather than a
+ * bug in this script?
+ *
+ * The distinction matters, because the walk used to catch EVERYTHING. A
+ * `ReferenceError` from an unimported `readdirSync` was indistinguishable
+ * from an unreadable directory, so every walk threw, the catch ate it, and
+ * the phase reported an empty population — which reads exactly like a clean
+ * sweep. It is the same failure shape this repo keeps paying for: a phase
+ * that did not run, reported as a phase that found nothing.
+ */
+function isFilesystemError(error) {
+  const code = error && error.code;
+  return [
+    "ENOENT",
+    "ENOTDIR",
+    "EACCES",
+    "EPERM",
+    "ELOOP",
+    "EMFILE",
+    "ENFILE",
+  ].includes(code);
+}
+
+/**
  * Every tree in the fleet that carries the RLS rule set.
  *
  * The rule set file is the marker of an omni-ai-family tree: it was synced
@@ -195,7 +242,8 @@ function ruleSetTrees(dir) {
     let entries;
     try {
       entries = readdirSync(current);
-    } catch {
+    } catch (error) {
+      if (!isFilesystemError(error)) throw error;
       return;
     }
     for (const entry of entries) {
@@ -204,7 +252,8 @@ function ruleSetTrees(dir) {
       let stats;
       try {
         stats = statSync(path);
-      } catch {
+      } catch (error) {
+        if (!isFilesystemError(error)) throw error;
         continue;
       }
       if (!stats.isDirectory()) continue;
@@ -238,13 +287,44 @@ function main() {
 
   const divergences = [];
   const skipped = [];
+  const staleRuleSets = [];
   const fixSha = findFixCommit(canonical.dir);
+  const canonicalSnapshot = ruleSetSnapshot(canonical.dir);
   const covered = new Set();
+
+  /**
+   * Record a copy whose rule set no longer describes the same schema the
+   * canonical surface does.
+   */
+  const checkRuleSetFreshness = (tree) => {
+    if (!canonicalSnapshot.tables) return;
+    const snapshot = ruleSetSnapshot(tree);
+    if (!snapshot.tables) {
+      staleRuleSets.push({
+        dir: tree,
+        detail: "its rule set carries no schema table list, so it cannot be compared",
+      });
+      return;
+    }
+    const unknown = [...snapshot.tables].filter((t) => !canonicalSnapshot.tables.has(t));
+    const missing = [...canonicalSnapshot.tables].filter((t) => !snapshot.tables.has(t));
+    if (unknown.length || missing.length) {
+      staleRuleSets.push({
+        dir: tree,
+        detail:
+          `its rule set describes ${snapshot.tables.size} table(s) against the canonical ` +
+          `${canonicalSnapshot.tables.size} — ${unknown.length} it has that the canonical does not, ` +
+          `${missing.length} it is missing`,
+      });
+    }
+  };
+
   for (const checkout of deployableCheckouts(dir)) {
     if (!looksLikeSite(checkout.dir)) continue;
     if (checkout.projectId !== canonical.projectId) continue;
     if (checkout.dir === canonical.dir) continue;
     covered.add(checkout.dir);
+    checkRuleSetFreshness(checkout.dir);
 
     const result = runRlsAudit(checkout.dir);
     if (result.rulesDidNotRun) {
@@ -278,9 +358,13 @@ function main() {
   // defect that answers 200 with an empty array is just as wrong in a tree
   // that is not linked yet.
   const family = [];
-  for (const tree of ruleSetTrees(dir)) {
+  const familyTrees = ruleSetTrees(dir);
+  let familyExamined = 0;
+  for (const tree of familyTrees) {
     if (tree === canonical.dir) continue;
     if (covered.has(tree)) continue;
+    familyExamined++;
+    checkRuleSetFreshness(tree);
     const result = runRlsAudit(tree);
     if (result.rulesDidNotRun) {
       skipped.push({
@@ -316,15 +400,33 @@ function main() {
   for (const skip of skipped) {
     console.log(`  note     ${relative(dir, skip.dir)} — ${skip.reason}`);
   }
+  for (const stale of staleRuleSets) {
+    console.log(
+      `  STALE    ${relative(dir, stale.dir)} — ${stale.detail}. ` +
+        "A table this rule set has never heard of is invisible to the gate, in this copy and " +
+        "everywhere else that carries it — sync it with: node scripts/patch-fleet-rls-ruleset.mjs",
+    );
+  }
 
-  if (!divergences.length && !family.length && !skipped.length) {
-    console.log("\n[fleet-rls] no divergences — no tree in the fleet carries the anon-key RLS defect.");
+  // Say how many trees each phase EXAMINED, not only how many it found. A
+  // phase that found nothing and a phase that never ran produce the same
+  // output otherwise, and that ambiguity is what let the unlinked-tree
+  // phase sit broken without anyone noticing.
+  console.log(
+    `\n[fleet-rls] examined ${covered.size} deployable copy/copies ` +
+      `and ${familyExamined} unlinked tree(s) carrying the rule set; ` +
+      `${staleRuleSets.length} carried a rule set that no longer matches the canonical schema.`,
+  );
+
+  if (!divergences.length && !family.length && !skipped.length && !staleRuleSets.length) {
+    console.log("[fleet-rls] no divergences — no tree in the fleet carries the anon-key RLS defect.");
     return 0;
   }
   console.error(
     `\n[fleet-rls] ${divergences.length} deployable copy/copies carry ${divergences.length ? "the anon-key RLS defect the canonical surface has fixed" : ""}` +
       `${family.length ? `, ${family.length} tree(s) with no Vercel link carry it too` : ""}` +
-      `${skipped.length ? `, ${skipped.length} copy/copies could not be checked` : ""}. ` +
+      `${skipped.length ? `, ${skipped.length} copy/copies could not be checked` : ""}` +
+      `${staleRuleSets.length ? `, ${staleRuleSets.length} carry a rule set that no longer describes the live schema` : ""}. ` +
       "A copy that reads a locked table with the anon key answers 200 with an empty array, so the " +
       "dashboard shows no rows and nobody can tell why. These trees must not be deployed as-is; " +
       "most carry commits and uncommitted work that the canonical surface does not have, so " +
