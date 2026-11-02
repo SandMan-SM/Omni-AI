@@ -6,7 +6,7 @@ const assert = require('node:assert/strict');
 const {parseEnv} = require('node:util');
 const {spawn} = require('node:child_process');
 const net = require('node:net');
-const ROOT = '/Users/janahasson/Desktop/Clients/_deploy-worktrees/omni-ais-studio-20261101';
+const ROOT = '/Users/janahasson/Desktop/Clients/_deploy-worktrees/omni-review-stories-20261102';
 const EXISTING = '/Users/janahasson/Desktop/Clients/_deploy-worktrees/seo-metrics-receiver-20261014/.env.local';
 const CALLER = '/Users/janahasson/Desktop/Clients/AIS Empire/Website/.env.local';
 const CANONICAL = '/Users/janahasson/Desktop/Clients/Sitani Mafi/Omni AI/Website/.env.local';
@@ -41,11 +41,12 @@ async function databaseCheck(env) {
   const {ixPostgresConfig} = require('../lib/server/ix-postgres-config.ts');
   const pool = new Pool({...ixPostgresConfig(env.POSTGRES_URL, env), max: 1, connectionTimeoutMillis: 8000, query_timeout: 10000});
   try {
-    const result = await pool.query("select current_database() as database, current_setting('ssl') as ssl, to_regclass('public.lead_franchise_social_connections') is not null as lf_connections_exist, to_regclass('public.lead_franchise_social_posts') is not null as lf_posts_exist");
+    const result = await pool.query("select current_database() as database, current_setting('ssl') as ssl, to_regclass('public.lead_franchise_social_connections') is not null as lf_connections_exist, to_regclass('public.lead_franchise_social_posts') is not null as lf_posts_exist, to_regclass('public.review_story_posts') is not null as story_posts_exist");
     assert.equal(pool.options.ssl.rejectUnauthorized, true);
     assert.ok(pool.options.ssl.ca);
     return {database: result.rows[0].database, strictTls: true, caVerified: true, serverSsl: result.rows[0].ssl,
-      leadFranchiseTablesPresent: result.rows[0].lf_connections_exist && result.rows[0].lf_posts_exist};
+      leadFranchiseTablesPresent: result.rows[0].lf_connections_exist && result.rows[0].lf_posts_exist,
+      reviewStoryTablePresent: result.rows[0].story_posts_exist};
   } finally {await pool.end();}
 }
 async function main() {

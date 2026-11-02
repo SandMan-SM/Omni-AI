@@ -17,7 +17,7 @@ type ConnectionState = 'connected' | 'not_connected' | 'expired' | 'access_requi
 // null means the legacy queue has no stored switch this receiver can verify.
 export type SocialCalendarAccount = Account & { connectionState: ConnectionState; publishingEnabled: boolean | null };
 export type SocialCalendarPost = {
-  id: string; accountId: string; caption: string; format: 'photo' | 'carousel' | 'text' | 'link';
+  id: string; accountId: string; caption: string; format: 'photo' | 'carousel' | 'text' | 'link' | 'story';
   mediaUrls: string[]; scheduledAt: string;
   status: 'scheduled' | 'processing' | 'publishing' | 'published' | 'needs_review' | 'failed';
   // Legacy Instagram rows do not have an authoritative published-at field.
@@ -27,7 +27,9 @@ export type SocialCalendarReport = {
   schemaVersion: 1; month: string; timeZone: typeof SOCIAL_CALENDAR_TIMEZONE;
   accounts: SocialCalendarAccount[]; posts: SocialCalendarPost[];
 };
-const MAX_POSTS = 1000;
+// A 42-day six-account window can exceed 1,000 when daily review Stories are
+// added alongside feed posts. Match the caller's bounded display contract.
+const MAX_POSTS = 2000;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const STATUSES = new Set(['scheduled', 'processing', 'publishing', 'published', 'needs_review', 'failed']);
 const civil = new Intl.DateTimeFormat('en-CA', {
@@ -68,7 +70,8 @@ export function socialCalendarWindow(month: string) {
 // snapshot. A count mismatch/overflow is an explicit error, never a partial month.
 // Lead Franchise is isolated from the four legacy queues. Its additive migration
 // and grant_source column must exist before this reader is released; a missing
-// dependency fails the whole read.
+// dependency fails the whole read. The independent review_story_posts migration
+// must likewise precede this release; Stories never enter a feed queue.
 export const SOCIAL_CALENDAR_SQL = `WITH connections AS (
   SELECT 'legacy'::text AS source_family, owner_user_id, 'instagram:' || instagram_user_id AS account_id,
     instagram_username AS username, account_key, granted_scopes, token_expires_at,
@@ -109,6 +112,16 @@ export const SOCIAL_CALENDAR_SQL = `WITH connections AS (
   FROM public.lead_franchise_social_posts
   WHERE owner_user_id=$1::uuid
     AND ((platform='facebook' AND account_id=$7::text) OR (platform='instagram' AND account_id=$8::text))
+    AND scheduled_at >= $4::timestamptz AND scheduled_at < $5::timestamptz
+    AND status IN ('scheduled','processing','publishing','published','needs_review','failed')
+  UNION ALL
+  SELECT 'review_story'::text, owner_user_id, platform || ':' || id::text, platform || ':' || account_id,
+    caption, post_format, NULL::jsonb, image_url, ARRAY[image_url]::text[], scheduled_at, status, published_at
+  FROM public.review_story_posts
+  WHERE owner_user_id=$1::uuid AND placement='story' AND post_format='story'
+    AND ((brand='mafi-empire' AND platform='instagram' AND account_id=ANY($2::text[]))
+      OR (brand='lead-franchise' AND platform='facebook' AND account_id=$7::text)
+      OR (brand='lead-franchise' AND platform='instagram' AND account_id=$8::text))
     AND scheduled_at >= $4::timestamptz AND scheduled_at < $5::timestamptz
     AND status IN ('scheduled','processing','publishing','published','needs_review','failed')
 ), bounded_posts AS (SELECT * FROM posts ORDER BY scheduled_at,id LIMIT $6::int)
@@ -198,7 +211,8 @@ export async function readSocialCalendar(actor: Actor, month: string, run: Query
   let previousOrder = '';
   const posts = snapshot.posts.map(value => {
     const row = object(value), account = SOCIAL_CALENDAR_ACCOUNTS.find(a => a.id === row.account_id);
-    if (!account || row.source_family !== sourceFamily(account) || row.owner_user_id !== SOCIAL_CALENDAR_OWNER || typeof row.id !== 'string'
+    const story = row.source_family === 'review_story';
+    if (!account || (story ? !['instagram:17841447083280836', 'instagram:17841455380168782', 'facebook:1369654166234751'].includes(account.id) : row.source_family !== sourceFamily(account)) || row.owner_user_id !== SOCIAL_CALENDAR_OWNER || typeof row.id !== 'string'
       || !row.id.startsWith(`${account.platform}:`) || !UUID.test(row.id.split(':')[1] || '') || seen.has(row.id)
       || typeof row.caption !== 'string' || row.caption.length > 5000 || typeof row.status !== 'string' || !STATUSES.has(row.status)) return unavailable();
     const at = timestamp(row.scheduled_at), order = `${at.order}/${row.id}`;
@@ -206,7 +220,10 @@ export async function readSocialCalendar(actor: Actor, month: string, run: Query
     previousOrder = order; seen.add(row.id);
     let mediaUrls: string[];
     const isolated = sourceFamily(account) === 'lead_franchise';
-    if (isolated) {
+    if (story) {
+      if (row.format !== 'story' || row.caption.length > 2200) return unavailable();
+      mediaUrls = strings(row.media_urls).map(mediaUrl);
+    } else if (isolated) {
       if (!['photo', 'carousel'].includes(String(row.format)) || row.caption.length > 2200) return unavailable();
       mediaUrls = strings(row.media_urls).map(mediaUrl);
     } else if (account.platform === 'instagram') {
@@ -222,7 +239,7 @@ export async function readSocialCalendar(actor: Actor, month: string, run: Query
       mediaUrls = strings(row.media_urls).map(mediaUrl);
     }
     const format = row.format === 'multi_photo' ? 'carousel' : row.format as SocialCalendarPost['format'];
-    if ((format === 'photo' && mediaUrls.length !== 1) || (format === 'carousel' && (mediaUrls.length < 2 || mediaUrls.length > (isolated ? 5 : 10)))
+    if ((['photo', 'story'].includes(format) && mediaUrls.length !== 1) || (format === 'carousel' && (mediaUrls.length < 2 || mediaUrls.length > (isolated ? 5 : 10)))
       || (['text', 'link'].includes(format) && mediaUrls.length !== 0)) return unavailable();
     return { id: row.id, accountId: account.id, caption: row.caption, format, mediaUrls,
       scheduledAt: at.value, status: row.status as SocialCalendarPost['status'],

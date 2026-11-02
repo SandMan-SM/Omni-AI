@@ -80,14 +80,17 @@ test('snapshot is one owner-and-destination-bounded SELECT with a matching atomi
   assert.deepEqual(clone(parameters[2]), ['1268547113014915', '355463557640262', '535787756287721']);
   assert.equal(parameters[3], '2026-11-01T06:00:00.000Z');
   assert.equal(parameters[4], '2026-12-13T07:00:00.000Z');
-  assert.equal(parameters[5], 1000);
+  assert.equal(parameters[5], 2000);
   assert.equal(parameters[6], '1369654166234751'); assert.equal(parameters[7], '17841455380168782');
-  assert.equal((sql.match(/owner_user_id=\$1::uuid/g) || []).length, 6);
-  assert.equal((sql.match(/platform='facebook' AND account_id=\$7::text/g) || []).length, 2);
-  assert.equal((sql.match(/platform='instagram' AND account_id=\$8::text/g) || []).length, 2);
+  assert.equal((sql.match(/owner_user_id=\$1::uuid/g) || []).length, 7);
+  assert.equal((sql.match(/platform='facebook' AND account_id=\$7::text/g) || []).length, 3);
+  assert.equal((sql.match(/platform='instagram' AND account_id=\$8::text/g) || []).length, 3);
   assert.match(sql, /FROM public\.lead_franchise_social_connections/);
   assert.match(sql, /page_name, validated_at, grant_source\s+FROM public\.lead_franchise_social_connections/);
   assert.match(sql, /FROM public\.lead_franchise_social_posts/);
+  assert.match(sql, /FROM public\.review_story_posts/);
+  assert.match(sql, /placement='story' AND post_format='story'/);
+  assert.match(sql, /brand='mafi-empire' AND platform='instagram' AND account_id=ANY\(\$2::text\[\]\)/);
   assert.match(sql, /count\(\*\)::int FROM posts/);
   assert.match(sql, /ORDER BY scheduled_at,id LIMIT \$6::int/);
   assert.doesNotMatch(sql, /\b(?:insert|update|delete|create|alter|drop|grant|revoke)\b/i);
@@ -233,7 +236,7 @@ test('empty text/link posts, legacy Instagram photo and historical publication t
 });
 test('truncated, overflowing, duplicate, out-of-window and wrong-owner responses fail as a whole', async () => {
   for (const mutate of [
-    f => f.snapshot.total++, f => { f.snapshot.posts = Array(1001).fill(post()); f.snapshot.total = 1001; },
+    f => f.snapshot.total++, f => { f.snapshot.posts = Array(2001).fill(post()); f.snapshot.total = 2001; },
     f => { f.snapshot.posts.push(post()); f.snapshot.total++; }, f => { f.snapshot.posts[0].owner_user_id = 'other'; },
     f => { f.snapshot.posts[0].account_id = 'instagram:unapproved'; }, f => { f.snapshot.posts[0].scheduled_at = '2026-12-13T07:00:00Z'; },
     f => { f.snapshot.posts[0].status = 'cancelled'; }, f => { f.snapshot.posts[0].media_items[0].url = 'http://assets.example.com/a.jpg'; },
@@ -248,6 +251,50 @@ test('microsecond ordering is preserved instead of rounded to Date milliseconds'
   const second = post('instagram', { id: 'instagram:22222222-2222-4222-8222-222222222222', scheduled_at: '2026-11-02T15:00:00.000002Z' });
   assert.equal((await fixture([], [first, second]).read()).posts.length, 2);
   await assert.rejects(fixture([], [second, first]).read(), error => error.status === 503);
+});
+
+function storyPost(accountId = 'instagram:17841447083280836', extra = {}) {
+  return post(accountId.split(':')[0], {source_family: 'review_story', account_id: accountId,
+    format: 'story', media_items: null, media_urls: ['https://assets.example.com/story.jpg'], ...extra});
+}
+test('Story projection preserves one image, exact saved text, publication time and public status for only approved targets', async () => {
+  for (const accountId of ['instagram:17841447083280836', 'instagram:17841455380168782', 'facebook:1369654166234751']) {
+    for (const status of ['scheduled', 'processing', 'publishing', 'published', 'failed', 'needs_review']) {
+      const row = storyPost(accountId, {status, published_at: status === 'published' ? '2026-11-02T15:00:01Z' : null,
+        claim_token: 'private-claim', provider_container_id: 'private-provider', reviewer: 'Internal reviewer field'});
+      const report = await fixture([], [row]).read();
+      assert.equal(report.posts[0].format, 'story'); assert.equal(report.posts[0].accountId, accountId);
+      assert.deepEqual(clone(report.posts[0].mediaUrls), ['https://assets.example.com/story.jpg']);
+      assert.equal(report.posts[0].caption, row.caption); assert.equal(report.posts[0].status, status);
+      assert.equal(report.posts[0].publishedAt, row.published_at);
+      assert.doesNotMatch(JSON.stringify(report), /private-|claim_token|provider_container|source_family|reviewer/);
+    }
+  }
+});
+test('Stories fail closed for wrong destination, feed provenance, format, media count, unsafe URL and cancelled state', async () => {
+  for (const patch of [
+    {account_id: 'facebook:535787756287721'}, {account_id: 'facebook:1268547113014915'},
+    {source_family: 'legacy'}, {format: 'photo'}, {format: 'carousel'}, {media_urls: []},
+    {media_urls: ['https://assets.example.com/a.jpg', 'https://assets.example.com/b.jpg']},
+    {media_urls: ['http://assets.example.com/a.jpg']}, {media_urls: ['https://assets.example.com/a.jpg?access_token=hidden']},
+    {status: 'cancelled'}, {caption: 'x'.repeat(2201)},
+  ]) await assert.rejects(fixture([], [storyPost(undefined, patch)]).read(), error => error.status === 503);
+});
+test('feed and Story rows share one bounded chronological snapshot without rewriting feed records', async () => {
+  const feed = post(), story = storyPost(undefined, {id: 'instagram:22222222-2222-4222-8222-222222222222', scheduled_at: '2026-11-02T15:00:01Z'});
+  const f = fixture([], [feed, story]), before = JSON.stringify(f.snapshot);
+  const result = await f.read();
+  assert.equal(result.posts.length, 2); assert.equal(result.posts[0].format, 'photo'); assert.equal(result.posts[1].format, 'story');
+  assert.equal(JSON.stringify(f.snapshot), before); assert.equal(f.calls.length, 1);
+});
+test('a complete mixed month above the old 1000-row bound is accepted without truncating', async () => {
+  const rows = Array.from({length: 1001}, (_, index) => {
+    const patch = {id: `instagram:${String(index + 1).padStart(8, '0')}-1111-4111-8111-111111111111`};
+    return index % 2 ? storyPost(undefined, patch) : post('instagram', patch);
+  });
+  const result = await fixture([], rows).read();
+  assert.equal(result.posts.length, 1001);
+  assert.equal(result.posts.filter(row => row.format === 'story').length, 500);
 });
 
 function routeFixture(options = {}) {
