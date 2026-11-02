@@ -52,6 +52,8 @@ const RULE_NAMES = [
   'console-error',
   'resource-error',
   'soft-404',
+  'light-canvas',
+  'light-surface',
 ];
 
 const argv = process.argv.slice(2);
@@ -220,6 +222,45 @@ const PAGE_AUDIT = `(() => {
       out.deadHrefs.push({ text: (a.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 60), href: h });
     }
   }
+
+  // ── Dark theme ────────────────────────────────────────────────────────────
+  // The visible canvas on a dark site is the HTML element's background, not
+  // the body's: the body is transparent by default and the UA paints the
+  // canvas with the html background whenever it is. A body-only probe reads
+  // rgba(0,0,0,0) forever and looks like a healthy no-op.
+  const parse = (value) => {
+    const m = /rgba?\\(([^)]+)\\)/.exec(value || '');
+    if (!m) return null;
+    const parts = m[1].split(',').map((n) => parseFloat(n));
+    if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) return null;
+    return { r: parts[0], g: parts[1], b: parts[2], a: parts.length > 3 ? parts[3] : 1 };
+  };
+  // Relative luminance proxy: the perceptual weights, on 0-255 channels.
+  const luma = (c) => 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  const htmlBg = parse(getComputedStyle(document.documentElement).backgroundColor);
+  const bodyBg = parse(getComputedStyle(document.body).backgroundColor);
+  const canvas = bodyBg && bodyBg.a > 0.05 ? bodyBg : htmlBg;
+  out.canvas = canvas ? 'rgb(' + Math.round(canvas.r) + ',' + Math.round(canvas.g) + ',' + Math.round(canvas.b) + ')' : 'none';
+  out.canvasLuma = canvas ? Math.round(luma(canvas)) : null;
+
+  // A large light surface on a dark site is the classic theme break: one
+  // section, card or embed rendered with the light palette. Only surfaces
+  // that cover a meaningful share of the viewport count — a white CTA button
+  // is an intentional inversion, not a broken theme.
+  const viewportArea = vw * window.innerHeight;
+  const lightSurfaces = [];
+  for (const el of document.body ? document.body.querySelectorAll('*') : []) {
+    const cs = getComputedStyle(el);
+    if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+    const bg = parse(cs.backgroundColor);
+    if (!bg || bg.a < 0.6 || luma(bg) < 170) continue;
+    const r = el.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0) continue;
+    if (r.width * r.height < viewportArea * 0.2) continue;
+    lightSurfaces.push({ desc: desc(el), area: Math.round((r.width * r.height / viewportArea) * 100), bg: cs.backgroundColor });
+    if (lightSurfaces.length >= 3) break;
+  }
+  out.lightSurfaces = lightSurfaces;
   return out;
 })()`;
 
@@ -440,10 +481,20 @@ async function auditPath(p) {
     if (NOT_FOUND_PROBES.includes(p) && page.status !== 404) {
       findings.push({ rule: 'soft-404', path: p, detail: `expected HTTP 404 but the route answered HTTP ${page.status} — this URL does not exist and should not resolve` });
     }
+    // Dark theme: the canvas must stay dark on every public page. The site
+    // is a near-black design; a page that paints a light canvas is a theme
+    // break that no other rule can see — the markup is valid, the images
+    // load, and the page is technically "fine".
+    if (page.canvasLuma !== null && page.canvasLuma > 60) {
+      findings.push({ rule: 'light-canvas', path: p, detail: `the page canvas is ${page.canvas} (luminance ${page.canvasLuma}) — this site is a dark theme and the canvas should be near-black` });
+    }
+    for (const s of page.lightSurfaces || []) {
+      findings.push({ rule: 'light-surface', path: p, detail: `a light surface covers ${s.area}% of the viewport — ${s.desc} (${s.bg})` });
+    }
 
     summary.push({ path: p, scrollWidth: page.scrollWidth, count: findings.filter((f) => f.path === p).length });
     if (argv.includes('--debug')) {
-      console.log(`   ${p} — status=${page.status} scrollWidth=${page.scrollWidth} vw=${page.width} imgs=${page.imgs} links=${page.links} text=${page.bodyLen} title="${(page.title || '').slice(0, 50)}" errs=${consoleErrors.length} res=${resourceErrors.length}`);
+      console.log(`   ${p} — status=${page.status} scrollWidth=${page.scrollWidth} vw=${page.width} imgs=${page.imgs} links=${page.links} text=${page.bodyLen} canvas=${page.canvas} luma=${page.canvasLuma} lightSurfaces=${(page.lightSurfaces || []).length} title="${(page.title || '').slice(0, 50)}" errs=${consoleErrors.length} res=${resourceErrors.length}`);
     }
   } catch (e) {
     findings.push({ rule: 'console-error', path: p, detail: `audit failed: ${e.message}` });
