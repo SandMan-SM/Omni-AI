@@ -33,6 +33,16 @@
  *                                    hold the production alias (a deploy may
  *                                    be in flight; re-run).
  *   - dirty-worktree              uncommitted changes in this checkout.
+ *   - failed-build                the build of the branch TIP errored or was
+ *                                    canceled. Production is healthy and
+ *                                    quiet, and the change is not live.
+ *   - no-deployment-for-tip       the branch tip has no deployment at all,
+ *                                    long after the push — the Git
+ *                                    integration never built it.
+ *   - production-alias-held-elsewhere  the tip built and is READY, but a
+ *                                    different deployment holds production.
+ *   - production-behind-branch    production serves an ancestor of the tip
+ *                                    and no other rule explains why.
  *
  * Usage:
  *   node scripts/audit-deploy-source-of-truth.mjs            # gate, exit 1 on findings
@@ -47,6 +57,16 @@ import { join } from "node:path";
 import { vercelJson } from "./vercel-token.mjs";
 
 const reportOnly = process.argv.includes("--report");
+
+/**
+ * How long the branch tip may wait for a build before its absence counts.
+ *
+ * A push is not a build: the Git integration picks it up in seconds, but the
+ * build itself takes minutes, and a build can also be skipped entirely. The
+ * window between "pushed" and "built" is normal and must not be reported —
+ * a gate that cries wolf on every release is a gate nobody reads.
+ */
+const TIP_GRACE_MINUTES = 10;
 
 /** Run a command and return stdout, or null when it fails. */
 function run(command, args, options = {}) {
@@ -179,7 +199,7 @@ async function main() {
   }
 
   const deployments = await apiJson(
-    `https://api.vercel.com/v6/deployments?projectId=${project.projectId}&target=production&limit=5`,
+    `https://api.vercel.com/v6/deployments?projectId=${project.projectId}&target=production&limit=10`,
   );
   const list = deployments?.deployments ?? [];
   if (!list.length) {
@@ -244,6 +264,111 @@ async function main() {
     console.log(`  ok  production alias held by ${list[0].uid}: ${aliases.filter((a) => !a.includes("vercel.app") || a.includes("-git-")).join(", ") || aliases[0]}`);
   }
 
+  // ---------------------------------------------------------------------------
+  // Did the tip of the production branch actually reach production?
+  // ---------------------------------------------------------------------------
+  //
+  // The rules above answer ONE question: "is what production is running
+  // described by git?" They cannot answer "did my last push ship?" — and the
+  // difference is a whole class of silent failure.
+  //
+  // A deployment of an OLDER commit is still on the branch, so every rule
+  // above stays quiet while the pushed tip sits unbuilt, or built and failed.
+  // A failed Vercel build produces no error anywhere an operator is looking:
+  // the push succeeded, the site is up (it is the previous build), and nothing
+  // says the new code is not live. This repo ships through agents that push
+  // and then verify by reading the site — so a failed build reads as "the
+  // change is live" until somebody diffs a route that was supposed to change.
+  //
+  // So the question is asked directly, and it is asked of the DEPLOYMENT of
+  // the branch tip — not of production. A build that failed or was canceled
+  // is a defect even though production is perfectly healthy.
+  //
+  // The grace period matters: a push has not been picked up by the Git
+  // integration in the first seconds, and a build takes minutes. Reporting
+  // that window as a finding would cry wolf on every release, and a gate
+  // that cries wolf is a gate nobody reads.
+  const shaOf = (d) => d?.meta?.githubCommitSha || d?.meta?.gitCommitSha || null;
+  const stateOf = (d) => d?.readyState || d?.state || null;
+  const IN_FLIGHT = new Set(["BUILDING", "QUEUED", "INITIALIZING", "PENDING", "UPLOADING", "DEPLOYING"]);
+  const FAILED = new Set(["ERROR", "CANCELED"]);
+
+  const tipSha = remoteSha;
+  const tipDeployments = list.filter((d) => shaOf(d) === tipSha);
+  // The deployment serving production is the newest READY one — a build that
+  // is still in flight has not been given the alias yet.
+  const serving = list.find((d) => stateOf(d) === "READY");
+  const servingSha = serving ? shaOf(serving) : null;
+
+  // How long has the tip been waiting? The commit's own timestamp is a good
+  // enough proxy for "how long since the push" and needs no extra API call.
+  const tipCommitTime = Number(git(["log", "-1", "--format=%ct", remoteCommit]) ?? "0");
+  const tipAgeMinutes = tipCommitTime ? Math.round((Date.now() / 1000 - tipCommitTime) / 60) : null;
+  const tipIsOld = tipAgeMinutes !== null && tipAgeMinutes >= TIP_GRACE_MINUTES;
+
+  const tipInFlight = tipDeployments.some((d) => IN_FLIGHT.has(stateOf(d)));
+  const tipFailed = tipDeployments.find((d) => FAILED.has(stateOf(d)));
+  const tipReady = tipDeployments.find((d) => stateOf(d) === "READY");
+
+  if (tipFailed) {
+    finding(
+      "failed-build",
+      `the build of ${tipSha.slice(0, 8)} ${stateOf(tipFailed) === "ERROR" ? "FAILED" : "was CANCELED"} ` +
+        `(deployment ${tipFailed.uid}) — production is still serving ${servingSha ? servingSha.slice(0, 8) : "an older release"}`,
+      `read that deployment's build log, fix it, and push again — a failed build is not a release`,
+    );
+  } else if (!tipDeployments.length) {
+    if (tipIsOld) {
+      finding(
+        "no-deployment-for-tip",
+        `origin/${branch} is at ${tipSha.slice(0, 8)} but no production deployment exists for that commit ` +
+          `(${tipAgeMinutes} min old) — the push did not produce a build`,
+        "check the Vercel project's Git integration for this branch, or deploy that commit explicitly",
+      );
+    } else {
+      console.log(
+        `  note  no deployment of ${tipSha.slice(0, 8)} yet (pushed ${tipAgeMinutes} min ago) — ` +
+          `the Git integration has not picked it up; re-run this gate in a few minutes`,
+      );
+    }
+  } else if (tipInFlight) {
+    console.log(
+      `  note  the build of ${tipSha.slice(0, 8)} is still in flight — production flips to it when it is READY`,
+    );
+  } else if (tipReady && serving && serving.uid === tipReady.uid) {
+    console.log(`  ok  the branch tip ${tipSha.slice(0, 8)} built and is serving production`);
+  } else if (tipReady && serving) {
+    const behindCount = servingSha ? (git(["rev-list", "--count", `${servingSha}..${tipSha}`]) ?? "?") : "?";
+    finding(
+      "production-alias-held-elsewhere",
+      `the build of ${tipSha.slice(0, 8)} is READY but production is served by ${serving.uid}` +
+        `${servingSha ? ` (${servingSha.slice(0, 8)}, ${behindCount} commit(s) behind)` : ""} — the alias was taken by another deployment`,
+      "check which deployment holds the production alias; a newer CLI deploy can take it from a git build",
+    );
+  } else {
+    console.log(
+      `  note  the build of ${tipSha.slice(0, 8)} is ${tipDeployments.map((d) => stateOf(d)).join(", ")} — re-run this gate when it settles`,
+    );
+  }
+
+  // The umbrella statement: production is serving an ancestor of the branch
+  // tip, so the last push did not reach production. The cause-specific rules
+  // above already say WHY, so this only fires when nothing else explains it.
+  const servingIsOlder =
+    servingSha &&
+    servingSha !== tipSha &&
+    git(["merge-base", "--is-ancestor", servingSha, tipSha]) !== null;
+  const explained = Boolean(tipFailed) || tipInFlight || Boolean(tipReady) || (tipDeployments.length === 0 && !tipIsOld);
+  if (servingIsOlder && !explained) {
+    const behindCount = git(["rev-list", "--count", `${servingSha}..${tipSha}`]) ?? "?";
+    finding(
+      "production-behind-branch",
+      `production is serving ${servingSha.slice(0, 8)} while origin/${branch} is at ${tipSha.slice(0, 8)} ` +
+        `(${behindCount} commit(s) behind) — the last push did not reach production`,
+      "find out why that commit did not deploy, then deploy it — a commit on the branch is not a release",
+    );
+  }
+
   if (!findings.length) {
     if (pendingDeployment) {
       console.log(
@@ -251,7 +376,10 @@ async function main() {
           `production is serving the previous deployment until it is READY and aliased.`,
       );
     } else {
-      console.log("[deploy-truth] no findings — git describes the running production deployment.");
+      console.log(
+        "[deploy-truth] no findings — git describes the running production deployment, " +
+          "and the branch tip is the release serving production.",
+      );
     }
     return 0;
   }
@@ -274,6 +402,17 @@ async function main() {
   }
   if (rules.has("dirty-worktree")) {
     consequences.push("a release from a dirty checkout is not reproducible");
+  }
+  if (rules.has("failed-build") || rules.has("no-deployment-for-tip")) {
+    consequences.push(
+      "the branch tip was never released — production is serving an older commit than the one you pushed",
+    );
+  }
+  if (rules.has("production-alias-held-elsewhere")) {
+    consequences.push("the release built, but another deployment took the production alias");
+  }
+  if (rules.has("production-behind-branch")) {
+    consequences.push("the last push did not reach production");
   }
   console.log(
     `[deploy-truth] ${findings.length} finding(s): ${consequences.join("; ") || "see the rules above"}.`,
