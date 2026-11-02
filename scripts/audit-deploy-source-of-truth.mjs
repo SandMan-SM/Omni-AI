@@ -68,6 +68,17 @@ const reportOnly = process.argv.includes("--report");
  */
 const TIP_GRACE_MINUTES = 10;
 
+/**
+ * The states a deployment can be in.
+ *
+ * `IN_FLIGHT` is the normal window between a push and a release — the build
+ * is running, and the alias has not moved yet. `FAILED` is not: an ERROR or
+ * CANCELED deployment will never become READY, so calling it "still building"
+ * sends the operator away to wait for a build that is never coming.
+ */
+const IN_FLIGHT = new Set(["BUILDING", "QUEUED", "INITIALIZING", "PENDING", "UPLOADING", "DEPLOYING"]);
+const FAILED = new Set(["ERROR", "CANCELED"]);
+
 /** Run a command and return stdout, or null when it fails. */
 function run(command, args, options = {}) {
   try {
@@ -245,7 +256,16 @@ async function main() {
   const aliases = aliasInfo?.alias ?? [];
   const readyState = aliasInfo?.readyState ?? aliasInfo?.state ?? null;
   let pendingDeployment = null;
-  if (aliasInfo && readyState && readyState !== "READY") {
+  if (aliasInfo && readyState && FAILED.has(readyState)) {
+    // A failed deployment never took the alias — production is still served
+    // by the previous READY one. Saying "the alias flips when it is READY"
+    // here would send the operator away to wait for a build that is never
+    // coming.
+    console.log(
+      `  note  the newest production deployment ${list[0].uid} is ${readyState} — ` +
+        `it does not hold production; the failed-build rule below names the failure`,
+    );
+  } else if (aliasInfo && readyState && readyState !== "READY") {
     // A deployment that is still building has not been given the alias yet.
     // That is a normal state between a push and the build finishing, not a
     // defect — reporting it as a finding would cry wolf on every release.
@@ -290,8 +310,6 @@ async function main() {
   // that cries wolf is a gate nobody reads.
   const shaOf = (d) => d?.meta?.githubCommitSha || d?.meta?.gitCommitSha || null;
   const stateOf = (d) => d?.readyState || d?.state || null;
-  const IN_FLIGHT = new Set(["BUILDING", "QUEUED", "INITIALIZING", "PENDING", "UPLOADING", "DEPLOYING"]);
-  const FAILED = new Set(["ERROR", "CANCELED"]);
 
   const tipSha = remoteSha;
   const tipDeployments = list.filter((d) => shaOf(d) === tipSha);
