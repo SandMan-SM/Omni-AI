@@ -67,22 +67,23 @@ export function socialCalendarWindow(month: string) {
 // One statement gives the count, connections and bounded records the same MVCC
 // snapshot. A count mismatch/overflow is an explicit error, never a partial month.
 // Lead Franchise is isolated from the four legacy queues. Its additive migration
-// must exist before this reader is released; a missing table fails the whole read.
+// and grant_source column must exist before this reader is released; a missing
+// dependency fails the whole read.
 export const SOCIAL_CALENDAR_SQL = `WITH connections AS (
   SELECT 'legacy'::text AS source_family, owner_user_id, 'instagram:' || instagram_user_id AS account_id,
     instagram_username AS username, account_key, granted_scopes, token_expires_at,
     NULL::text[] AS page_tasks, NULL::boolean AS publishing_enabled,
-    NULL::text AS page_name, NULL::timestamptz AS validated_at
+    NULL::text AS page_name, NULL::timestamptz AS validated_at, NULL::text AS grant_source
   FROM public.mafi_instagram_connections
   WHERE owner_user_id=$1::uuid AND instagram_user_id=ANY($2::text[])
   UNION ALL
   SELECT 'legacy'::text, owner_user_id, 'facebook:' || page_id, NULL::text, NULL::text,
-    granted_scopes, token_expires_at, page_tasks, publishing_enabled, NULL::text, NULL::timestamptz
+    granted_scopes, token_expires_at, page_tasks, publishing_enabled, NULL::text, NULL::timestamptz, NULL::text
   FROM public.mafi_facebook_connections
   WHERE owner_user_id=$1::uuid AND page_id=ANY($3::text[])
   UNION ALL
   SELECT 'lead_franchise'::text, owner_user_id, platform || ':' || account_id, username, NULL::text,
-    granted_scopes, token_expires_at, page_tasks, publishing_enabled, page_name, validated_at
+    granted_scopes, token_expires_at, page_tasks, publishing_enabled, page_name, validated_at, grant_source
   FROM public.lead_franchise_social_connections
   WHERE owner_user_id=$1::uuid
     AND ((platform='facebook' AND account_id=$7::text) OR (platform='instagram' AND account_id=$8::text))
@@ -168,6 +169,11 @@ export async function readSocialCalendar(actor: Actor, month: string, run: Query
     if ((account.platform === 'facebook' || sourceFamily(account) === 'lead_franchise') && typeof row.publishing_enabled !== 'boolean') return unavailable();
     if (sourceFamily(account) === 'lead_franchise') {
       timestamp(row.validated_at);
+      if (row.grant_source !== 'accounts_tasks' && row.grant_source !== 'direct_page') return unavailable();
+      // Direct Page grants are provider-validated by the isolated connector.
+      // Their provenance must never be represented as fabricated Page tasks.
+      const tasks = strings(row.page_tasks);
+      if (row.grant_source === 'direct_page' && tasks.length !== 0) return unavailable();
       if (account.platform === 'facebook' && (row.page_name !== 'Lead Franchise' || row.username !== null)) return unavailable();
     }
     if (row.token_expires_at !== null) timestamp(row.token_expires_at);
@@ -180,9 +186,11 @@ export async function readSocialCalendar(actor: Actor, month: string, run: Query
     const isolated = sourceFamily(account) === 'lead_franchise';
     const required = account.platform === 'instagram' ? ['instagram_basic', 'instagram_content_publish', 'pages_read_engagement', ...(isolated ? ['pages_show_list'] : [])]
       : ['pages_show_list', 'pages_read_engagement', 'pages_manage_posts'];
-    const tasksValid = account.platform === 'instagram' && !isolated || strings(row.page_tasks).some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT', 'FULL_CONTROL'].includes(task));
+    const pageGrantValid = isolated && row.grant_source === 'direct_page'
+      || account.platform === 'instagram' && !isolated
+      || strings(row.page_tasks).some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT', 'FULL_CONTROL'].includes(task));
     const expired = row.token_expires_at !== null && timestamp(row.token_expires_at).instant <= now.getTime();
-    const connectionState: ConnectionState = expired ? 'expired' : required.every(scope => scopes.includes(scope)) && tasksValid ? 'connected' : 'access_required';
+    const connectionState: ConnectionState = expired ? 'expired' : required.every(scope => scopes.includes(scope)) && pageGrantValid ? 'connected' : 'access_required';
     return { ...account, connectionState, publishingEnabled: connectionState !== 'connected' ? false
       : account.platform === 'instagram' && !isolated ? null : row.publishing_enabled === true };
   });

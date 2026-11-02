@@ -86,6 +86,7 @@ test('snapshot is one owner-and-destination-bounded SELECT with a matching atomi
   assert.equal((sql.match(/platform='facebook' AND account_id=\$7::text/g) || []).length, 2);
   assert.equal((sql.match(/platform='instagram' AND account_id=\$8::text/g) || []).length, 2);
   assert.match(sql, /FROM public\.lead_franchise_social_connections/);
+  assert.match(sql, /page_name, validated_at, grant_source\s+FROM public\.lead_franchise_social_connections/);
   assert.match(sql, /FROM public\.lead_franchise_social_posts/);
   assert.match(sql, /count\(\*\)::int FROM posts/);
   assert.match(sql, /ORDER BY scheduled_at,id LIMIT \$6::int/);
@@ -118,7 +119,7 @@ function leadConnection(platform = 'instagram', patch = {}) {
     username: platform === 'instagram' ? 'lead.franchise' : null, account_key: null,
     page_name: platform === 'facebook' ? 'Lead Franchise' : null,
     granted_scopes: ['pages_show_list', 'pages_read_engagement', platform === 'facebook' ? 'pages_manage_posts' : 'instagram_basic', ...(platform === 'instagram' ? ['instagram_content_publish'] : [])],
-    page_tasks: ['CREATE_CONTENT'], publishing_enabled: false, validated_at: '2026-11-01T06:00:00Z', ...patch});
+    page_tasks: ['CREATE_CONTENT'], grant_source: 'accounts_tasks', publishing_enabled: false, validated_at: '2026-11-01T06:00:00Z', ...patch});
 }
 function leadPost(platform = 'instagram', patch = {}) {
   return post(platform, {source_family: 'lead_franchise',
@@ -132,8 +133,50 @@ test('isolated Lead Franchise uses saved enable flags for BOTH destinations and 
       const account = result.accounts.find(a => a.id === leadConnection(platform).account_id);
       assert.equal(account.connectionState, 'connected'); assert.equal(account.publishingEnabled, enabled);
       assert.equal(result.posts[0].format, 'carousel'); assert.equal(result.posts[0].mediaUrls[1], 'https://assets.example.com/detail.jpg');
-      assert.doesNotMatch(JSON.stringify(result), /source_family|validated_at|page_tasks/);
+      assert.doesNotMatch(JSON.stringify(result), /source_family|validated_at|page_tasks|grant_source/);
     }
+  }
+});
+test('verified direct Page provenance supports both Lead Franchise destinations without invented tasks or DTO changes', async () => {
+  for (const platform of ['instagram', 'facebook']) {
+    for (const enabled of [false, true]) {
+      const result = await fixture([leadConnection(platform, {grant_source: 'direct_page', page_tasks: [], publishing_enabled: enabled})], []).read();
+      const account = result.accounts.find(a => a.id === leadConnection(platform).account_id);
+      assert.equal(account.connectionState, 'connected'); assert.equal(account.publishingEnabled, enabled);
+      assert.deepEqual(Object.keys(account).sort(), ['id', 'platform', 'name', 'handle', 'connectionState', 'publishingEnabled'].sort());
+      assert.doesNotMatch(JSON.stringify(result), /grant_source|direct_page|page_tasks|validated_at/);
+    }
+    for (const patch of [{granted_scopes: []}, {token_expires_at: '2026-10-31T06:00:00Z'}]) {
+      const result = await fixture([leadConnection(platform, {grant_source: 'direct_page', page_tasks: [], publishing_enabled: true, ...patch})], []).read();
+      const account = result.accounts.find(a => a.id === leadConnection(platform).account_id);
+      assert.notEqual(account.connectionState, 'connected'); assert.equal(account.publishingEnabled, false);
+    }
+  }
+});
+test('Lead Franchise requires explicit known grant provenance and direct Page grants require exactly empty tasks', async () => {
+  for (const platform of ['instagram', 'facebook']) {
+    for (const grant_source of [undefined, null, '', 'direct', 'DIRECT_PAGE', 'unknown', true]) {
+      await assert.rejects(fixture([leadConnection(platform, {grant_source})], []).read(), error => error.status === 503);
+    }
+    for (const page_tasks of [null, undefined, 'CREATE_CONTENT', ['CREATE_CONTENT'], ['FULL_CONTROL'], ['ANALYZE'], [null]]) {
+      await assert.rejects(fixture([leadConnection(platform, {grant_source: 'direct_page', page_tasks})], []).read(), error => error.status === 503);
+    }
+    for (const page_tasks of [['CREATE_CONTENT'], ['PROFILE_PLUS_CREATE_CONTENT'], ['FULL_CONTROL']]) {
+      const result = await fixture([leadConnection(platform, {grant_source: 'accounts_tasks', page_tasks})], []).read();
+      assert.equal(result.accounts.find(a => a.id === leadConnection(platform).account_id).connectionState, 'connected');
+    }
+    for (const page_tasks of [[], ['ANALYZE'], ['PROFILE_PLUS_FULL_CONTROL']]) {
+      const result = await fixture([leadConnection(platform, {grant_source: 'accounts_tasks', page_tasks, publishing_enabled: true})], []).read();
+      const account = result.accounts.find(a => a.id === leadConnection(platform).account_id);
+      assert.equal(account.connectionState, 'access_required'); assert.equal(account.publishingEnabled, false);
+    }
+  }
+});
+test('Lead Franchise grant provenance does not alter any legacy connection gate', async () => {
+  for (const grant_source of [undefined, null, 'direct_page', 'accounts_tasks', 'unknown']) {
+    const result = await fixture([connection('instagram', {grant_source}), connection('facebook', {grant_source, page_tasks: []})], []).read();
+    assert.equal(result.accounts[0].connectionState, 'connected'); assert.equal(result.accounts[0].publishingEnabled, null);
+    assert.equal(result.accounts[1].connectionState, 'access_required'); assert.equal(result.accounts[1].publishingEnabled, false);
   }
 });
 test('Lead Franchise grant checks and source isolation fail closed', async () => {
