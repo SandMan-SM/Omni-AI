@@ -54,6 +54,33 @@ moment of the push:
 - Deliberate skip: `OMNI_SKIP_DEPLOY_TRUTH=1 git push ...` prints what was
   skipped.
 
+## "Git describes production" is not "my push shipped"
+
+`audit:deploy` originally answered one question: is the running deployment
+described by a commit on the connected branch? A commit on the branch that was
+**never built** — because the build failed, or because the push never
+triggered one — satisfies that question perfectly. The site is up, it serves
+the previous release, and every rule stays quiet.
+
+That is a release failure with no symptom: a failed Vercel build produces no
+error anywhere an operator is looking, and an agent that pushes and then reads
+the site sees a healthy site.
+
+So the gate now asks the second question directly, and asks it of the
+**deployment of the branch tip** rather than of production:
+
+- `failed-build` — the tip's deployment errored or was canceled.
+- `no-deployment-for-tip` — the tip has no deployment at all, long after the
+  push.
+- `production-alias-held-elsewhere` — the tip built and is READY, but another
+  deployment took the production alias.
+- `production-behind-branch` — production serves an ancestor of the tip and
+  nothing else explains it.
+
+A ten-minute grace period covers the normal window between a push and a build;
+inside it the gate prints a note instead of a finding, because a gate that
+cries wolf on every release is a gate nobody reads.
+
 **The remedy the hook names is a merge, not a rebase.** A rebase rewrites the
 deployed SHA, so the deployment's commit stops being an ancestor of `main`
 and the gate keeps refusing — which is correct, because the tree still would
