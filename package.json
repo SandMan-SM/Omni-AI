@@ -38,7 +38,10 @@
     "patch:fleet-public-pii": "node scripts/patch-fleet-public-pii.mjs",
     "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls && npm run audit:cron-auth && npm run audit:routes && npm run audit:public-pii",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs",
-    "audit:env-drift": "tsx scripts/audit-env-drift.ts"
+    "audit:env-drift": "tsx scripts/audit-env-drift.ts",
+    "audit:pre-push": "node scripts/audit-pre-push.mjs",
+    "hooks:install": "node scripts/install-git-hooks.mjs",
+    "hooks:check": "node scripts/install-git-hooks.mjs --check"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

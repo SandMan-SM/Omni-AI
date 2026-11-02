@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# pre-push — refuse a push that would delete the live production release.
+#
+# This repo's release path is `git push origin main`: Vercel rebuilds
+# production from the connected branch. That rebuild is built from the pushed
+# tree, so a push whose tree does not contain the commit production is
+# currently running DELETES that release — silently, with no build error.
+#
+# That has happened here three times (2026-10-25, 2026-10-29, 2026-11-01),
+# each time after a `vercel --prod` release whose commit never reached main.
+#
+# The gate asks one question: is the commit production is running an ancestor
+# of the commit this push would publish? If not, the push is refused.
+#
+# The script is resolved from THIS file's own directory, not from the working
+# tree, so the hook works unchanged from any worktree of this repository — and
+# `core.hooksPath` is set to an absolute path for the same reason. The
+# worktrees are where the CLI releases happen, so they are where the hook has
+# to be live.
+#
+# Install:  npm run hooks:install     (sets core.hooksPath to the absolute path)
+# Override: OMNI_SKIP_DEPLOY_TRUTH=1 git push ...   (prints what was skipped)
+set -e
+
+HOOK_DIR=$(cd "$(dirname "$0")" && pwd)
+SCRIPT="$HOOK_DIR/../scripts/audit-pre-push.mjs"
+
+if [ ! -f "$SCRIPT" ]; then
+  ROOT=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+  if [ -n "$ROOT" ] && [ -f "$ROOT/scripts/audit-pre-push.mjs" ]; then
+    SCRIPT="$ROOT/scripts/audit-pre-push.mjs"
+  fi
+fi
+
+if [ ! -f "$SCRIPT" ]; then
+  echo "[pre-push] the deploy source-of-truth gate could not be located — the result is UNKNOWN." >&2
+  echo "[pre-push] refusing the push. Fix the hook, or push with OMNI_SKIP_DEPLOY_TRUTH=1 to record a deliberate skip." >&2
+  exit 1
+fi
+
+exec node "$SCRIPT"
