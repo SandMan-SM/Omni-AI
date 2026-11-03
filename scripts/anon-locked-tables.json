@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-02T07:09:03.579Z",
+  "generatedAt": "2026-11-03T06:46:22.541Z",
   "source": "scripts/probe-anon-rls.mjs",
   "note": "Lockedness is decided by the PERMISSION MODEL, not by row counts: a table the service role can read and the anon key cannot is locked; an EMPTY table is decided by the RLS write probe (a probe that can only fail, never insert). Tables the probe could not classify safely are listed under indeterminate and the gate treats them as locked.",
-  "totalTables": 308,
+  "totalTables": 309,
   "locked": [
     "actions",
     "activity_log",
@@ -245,6 +245,7 @@
     "renelaveau_campaign_sends",
     "renelaveau_campaigns",
     "renelaveau_contact_events",
+    "review_story_posts",
     "secrets_inventory",
     "sfd_artist_submissions",
     "sponsorships",
@@ -586,6 +587,7 @@
     "renelaveau_campaigns",
     "renelaveau_contact_events",
     "renelaveau_contacts",
+    "review_story_posts",
     "secrets_inventory",
     "sfd_artist_submissions",
     "sponsorships",
