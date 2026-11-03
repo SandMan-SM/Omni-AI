@@ -55,6 +55,24 @@
  *                                  sitemap does not carry
  *   sitemap-url-without-route      a URL the sitemap advertises that no
  *                                  route serves
+ *   sitemap-url-disallowed         a URL the sitemap advertises that
+ *                                  app/robots.ts disallows — a crawler is
+ *                                  never allowed to fetch it
+ *
+ * The three artifacts
+ *
+ * Three files on this site answer "should this URL be indexed?", and all
+ * three are maintained by hand:
+ *
+ *   app/sitemap.ts    the URLs the site asks a crawler to index
+ *   app/robots.ts     the URLs a crawler is not allowed to fetch at all
+ *   the route metadata  the per-page answer, which the sitemap and
+ *                       robots.ts are both supposed to agree with
+ *
+ * A URL that robots.txt disallows is a URL the crawler never even
+ * requests, so advertising it in the sitemap is a dead entry — the same
+ * class of defect as a sitemap URL that 404s, and just as invisible to
+ * every other gate here.
  *
  * How the effective robots directive is computed
  *
@@ -238,6 +256,23 @@ for (const m of sitemapSrc.matchAll(/\$\{baseUrl\}([^`"'\s]*)/g)) {
 // The root is advertised as the bare `baseUrl` rather than a template.
 if (/\burl\s*:\s*baseUrl\b/.test(sitemapSrc)) advertised.add("/");
 
+// The paths app/robots.ts disallows. A disallowed path is one a crawler is
+// never allowed to request, so advertising it in the sitemap is a dead
+// entry. robots.txt uses prefix matching, so "/api/" covers every URL
+// under it.
+const disallowed: string[] = [];
+const robotsFile = path.join(APP_DIR, "robots.ts");
+if (fs.existsSync(robotsFile)) {
+  const robotsSrc = stripComments(fs.readFileSync(robotsFile, "utf8"));
+  const list = robotsSrc.match(/disallow\s*:\s*\[([\s\S]*?)\]/);
+  if (list) {
+    for (const m of list[1].matchAll(/["'`]([^"'`]*)["'`]/g)) {
+      const p = m[1].trim();
+      if (p) disallowed.push(p);
+    }
+  }
+}
+
 /* ── The rules ──────────────────────────────────────────────────────────── */
 
 const routeByUrl = new Map(routes.map((r) => [r.url, r]));
@@ -268,6 +303,19 @@ for (const url of [...advertised].sort()) {
         "declaration replaces the inherited one), or remove the URL from the sitemap.",
     });
   }
+}
+
+for (const url of [...advertised].sort()) {
+  const blocked = disallowed.find((d) => url === d || url.startsWith(d));
+  if (!blocked) continue;
+  findings.push({
+    rule: "sitemap-url-disallowed",
+    file: path.relative(ROOT, robotsFile),
+    detail:
+      `the sitemap advertises "${url}" but app/robots.ts disallows "${blocked}". A ` +
+      "disallowed path is never fetched by a compliant crawler, so this entry can never " +
+      "be crawled — it is a dead entry in the discovery manifest.",
+  });
 }
 
 for (const route of routes.sort((a, b) => a.url.localeCompare(b.url))) {
