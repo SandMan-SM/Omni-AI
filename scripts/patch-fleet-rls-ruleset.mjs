@@ -60,6 +60,7 @@ const RULE_SET = join("scripts", "anon-locked-tables.json");
 const GATE = join("scripts", "audit-anon-rls.ts");
 const DRIFT_GATE = join("scripts", "audit-rls-schema-drift.mjs");
 const PII_GATE = join("scripts", "audit-public-pii.mjs");
+const SITEMAP_GATE = join("scripts", "audit-sitemap-parity.ts");
 const DRY_RUN = process.argv.includes("--dry-run");
 
 /** Every tree in the fleet that carries the rule set (the family marker). */
@@ -109,6 +110,8 @@ function main() {
   let driftAdded = 0;
   let piiWritten = 0;
   let piiAdded = 0;
+  let sitemapWritten = 0;
+  let sitemapAdded = 0;
 
   for (const tree of trees) {
     const changes = [];
@@ -157,6 +160,22 @@ function main() {
       piiWritten += 1;
     }
 
+    // The sitemap-parity gate travels too: it is the check that compares
+    // what the site advertises with what the site actually serves, and a
+    // copy's app/sitemap.ts drifts from its own app/ exactly the way the
+    // canonical one did — a noindex layout de-indexing a page the sitemap
+    // still advertises.
+    const treeSitemap = join(tree, SITEMAP_GATE);
+    if (!existsSync(treeSitemap)) {
+      changes.push("sitemap gate (added)");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, SITEMAP_GATE), treeSitemap);
+      sitemapAdded += 1;
+    } else if (!sameFile(treeSitemap, join(CANONICAL, SITEMAP_GATE))) {
+      changes.push("sitemap gate");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, SITEMAP_GATE), treeSitemap);
+      sitemapWritten += 1;
+    }
+
     if (changes.length) {
       console.log(
         `  ${DRY_RUN ? "would sync" : "synced"}  ${relative(FLEET_ROOT, tree)} — ${changes.join(", ")}`,
@@ -167,9 +186,10 @@ function main() {
   console.log(
     `\n[fleet-ruleset] ${trees.length} tree(s) carry the rule set. ` +
       `${ruleSetWritten} rule set(s), ${gateWritten + gateAdded} gate(s), ` +
-      `${driftWritten + driftAdded} drift gate(s) and ${piiWritten + piiAdded} PII gate(s) ` +
-      `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s), ${driftAdded} drift gate(s) ` +
-      `and ${piiAdded} PII gate(s) added where the tree had none).`,
+      `${driftWritten + driftAdded} drift gate(s), ${piiWritten + piiAdded} PII gate(s) and ` +
+      `${sitemapWritten + sitemapAdded} sitemap gate(s) ` +
+      `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s), ${driftAdded} drift gate(s), ` +
+      `${piiAdded} PII gate(s) and ${sitemapAdded} sitemap gate(s) added where the tree had none).`,
   );
   console.log(
     "[fleet-ruleset] No application code was touched. A copy that reads a locked table with the " +
