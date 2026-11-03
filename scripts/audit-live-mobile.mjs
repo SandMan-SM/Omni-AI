@@ -266,7 +266,25 @@ const PAGE_AUDIT = `(() => {
     const cs = getComputedStyle(el);
     if (cs.display === 'none' || cs.visibility === 'hidden') continue;
     const bg = parse(cs.backgroundColor);
-    if (!bg || bg.a < 0.6 || luma(bg) < 170) continue;
+    if (!bg) continue;
+    // A surface's own alpha is only half its effective opacity: the CSS
+    // opacity property multiplies the whole element. A decorative glow
+    // painted #ffd700 at 18% opacity is a warm brown smear on a near-black
+    // canvas, not a light surface — scoring it on the raw background colour
+    // reported it as a theme break.
+    const opacity = cs.opacity === "" ? 1 : parseFloat(cs.opacity);
+    const alpha = bg.a * (Number.isNaN(opacity) ? 1 : opacity);
+    if (alpha < 0.6) continue;
+    // Composite over the canvas before judging lightness: what the eye sees
+    // is the blend, not the paint.
+    const over = canvas
+      ? {
+          r: bg.r * alpha + canvas.r * (1 - alpha),
+          g: bg.g * alpha + canvas.g * (1 - alpha),
+          b: bg.b * alpha + canvas.b * (1 - alpha),
+        }
+      : { r: bg.r, g: bg.g, b: bg.b };
+    if (luma(over) < 170) continue;
     const r = el.getBoundingClientRect();
     if (r.width === 0 || r.height === 0) continue;
     if (r.width * r.height < viewportArea * 0.2) continue;
