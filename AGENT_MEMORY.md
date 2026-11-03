@@ -87,7 +87,33 @@
 > reading of the *previous* 100 was somewhere in the low 90s. **A score that asserts rather
 > than measures is worse than a low score, because it retires the question.**
 >
-> Shipped in `a4fae5f9`, `60aa3d32`, `9982c251`; federation lease 1169.
+> **9. The dark-theme gate had a false positive, and only a newly-audited page exposed
+> it.** `light-surface` scored an element on the raw `background-color` and ignored the CSS
+> `opacity` property that multiplies the whole element, so the `#ffd700` glow on
+> `/interlinked/developer/info` — composited over the near-black canvas, a dark warm brown —
+> was reported as a theme break covering **58% of the viewport**. The rule now multiplies the
+> background alpha by the computed opacity and composites the colour over the canvas before
+> the luma test. **Proven on a probe page carrying both cases**: the solid white section
+> still fires, the translucent glow does not. The live site measures **0 findings across 194
+> routes and 11 rules**. What exposed it is the point: that page had never been audited
+> because it was one of the thirteen missing from the sitemap — widening the sweep's
+> population surfaced a bug in the instrument.
+>
+> **10. The same shape appeared again: robots.txt and the routes, compared by nothing.**
+> The disallow list blocks `/admin/`, `/dashboard/`, `/command/` and `/void-preview/` — and
+> robots.txt matches by **prefix**, so those cover the sub-routes and **not** the bare paths.
+> `/admin`, `/dashboard`, `/command` and `/void-preview` were still fetchable by a compliant
+> crawler, which is the one thing the list exists to prevent ("not tipping off
+> pattern-matching bots that an admin / command surface even exists at that URL"). The pages
+> render noindex, so nothing entered the index — the leak was the **existence** of the
+> surface. Every entry is now a bare prefix (`Disallow: /admin`), which covers the index and
+> its sub-routes together, and `npm run audit:sitemap` gained `robots-bare-path-crawlable` —
+> proven against the pre-fix file (**4 findings**, one per surface, then 0). It is the same
+> defect class as the sitemap: **two hand-maintained artifacts answering the same question,
+> with nothing comparing them.**
+>
+> Shipped in `a4fae5f9`, `60aa3d32`, `9982c251`, `11ca67e5`, `5f6de426`, `296e6153`,
+> `206c9b49`, `f8ba34c5`; federation leases 1169, 1171, 1172.
 
 > SEO 100 is now earned rather than asserted. It was scored 100 while every 404-capable
 > route answered **200** and the sitemap advertised **468** URLs of which **136** resolved.
