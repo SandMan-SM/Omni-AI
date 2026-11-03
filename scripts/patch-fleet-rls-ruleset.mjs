@@ -17,13 +17,18 @@
  * sweep had: a gate that reports "could not be checked" for most of the
  * fleet is not a measurement.
  *
- * Only four files are written, and only into trees that already carry the
+ * Only five files are written, and only into trees that already carry the
  * rule set or the gate:
  *
  *   scripts/anon-locked-tables.json      — the rule set
  *   scripts/audit-anon-rls.ts            — the gate that reads it
  *   scripts/audit-rls-schema-drift.mjs   — the gate that checks the rule set
  *   scripts/audit-public-pii.mjs         — the gate that checks public PII
+ *   scripts/audit-sitemap-parity.ts      — the gate that compares the sitemap
+ *                                         with the routes' indexability
+ *   scripts/audit-live-mobile.mjs        — the gate that measures the RENDERED
+ *                                         truth of a site (overflow, broken
+ *                                         images, dead hrefs, dark theme)
  *
  * The third file is the DRIFT gate. The rule set is a measurement of the
  * live schema, and a measurement can go stale: a table added to the database
@@ -61,6 +66,7 @@ const GATE = join("scripts", "audit-anon-rls.ts");
 const DRIFT_GATE = join("scripts", "audit-rls-schema-drift.mjs");
 const PII_GATE = join("scripts", "audit-public-pii.mjs");
 const SITEMAP_GATE = join("scripts", "audit-sitemap-parity.ts");
+const LIVE_MOBILE_GATE = join("scripts", "audit-live-mobile.mjs");
 const DRY_RUN = process.argv.includes("--dry-run");
 
 /** Every tree in the fleet that carries the rule set (the family marker). */
@@ -112,6 +118,8 @@ function main() {
   let piiAdded = 0;
   let sitemapWritten = 0;
   let sitemapAdded = 0;
+  let liveWritten = 0;
+  let liveAdded = 0;
 
   for (const tree of trees) {
     const changes = [];
@@ -176,8 +184,26 @@ function main() {
       sitemapWritten += 1;
     }
 
-    if (changes.length) {
-      console.log(
+    // The live mobile audit is the instrument that measures a copy's RENDERED
+    // truth — overflow, broken images, dead hrefs, dark theme, and the
+    // sitemap's own indexability. A copy carrying an older copy of that
+    // instrument measures a different site than the canonical one does: the
+    // copies in the fleet were missing the dark-theme rules entirely, and
+    // the canonical light-surface rule had a false positive on translucent
+    // surfaces until 2026-11-03. It is read-only (it drives a browser at a
+    // URL), so adding it to a copy changes no behaviour there.
+    const treeLive = join(tree, LIVE_MOBILE_GATE);
+    if (!existsSync(treeLive)) {
+      changes.push("live mobile gate (added)");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, LIVE_MOBILE_GATE), treeLive);
+      liveAdded += 1;
+    } else if (!sameFile(treeLive, join(CANONICAL, LIVE_MOBILE_GATE))) {
+      changes.push("live mobile gate");
+      if (!DRY_RUN) copyFileSync(join(CANONICAL, LIVE_MOBILE_GATE), treeLive);
+      liveWritten += 1;
+    }
+
+    if (changes.length) {      console.log(
         `  ${DRY_RUN ? "would sync" : "synced"}  ${relative(FLEET_ROOT, tree)} — ${changes.join(", ")}`,
       );
     }
@@ -187,9 +213,11 @@ function main() {
     `\n[fleet-ruleset] ${trees.length} tree(s) carry the rule set. ` +
       `${ruleSetWritten} rule set(s), ${gateWritten + gateAdded} gate(s), ` +
       `${driftWritten + driftAdded} drift gate(s), ${piiWritten + piiAdded} PII gate(s) and ` +
-      `${sitemapWritten + sitemapAdded} sitemap gate(s) ` +
+      `${sitemapWritten + sitemapAdded} sitemap gate(s) and ` +
+      `${liveWritten + liveAdded} live mobile gate(s) ` +
       `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s), ${driftAdded} drift gate(s), ` +
-      `${piiAdded} PII gate(s) and ${sitemapAdded} sitemap gate(s) added where the tree had none).`,
+      `${piiAdded} PII gate(s), ${sitemapAdded} sitemap gate(s) and ${liveAdded} live mobile gate(s) ` +
+      `added where the tree had none).`,
   );
   console.log(
     "[fleet-ruleset] No application code was touched. A copy that reads a locked table with the " +
