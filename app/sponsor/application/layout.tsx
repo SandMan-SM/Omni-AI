@@ -32,6 +32,16 @@ export const metadata: Metadata = {
   description:
     "Apply to become an Omni AI sponsor. Fund AI-managed marketing campaigns for local businesses and gain premium brand exposure across our platform.",
   alternates: { canonical: pageUrl },
+  // The parent app/sponsor/layout.tsx declares `robots: { index: false,
+  // follow: false }` because /sponsor itself is a logged-in portal. That
+  // directive is inherited by every route in the /sponsor subtree, so
+  // /sponsor/application — the public apply form, and a URL the sitemap
+  // advertises — has been rendering `noindex, nofollow` in production
+  // since the portal was unlisted (bc87f11d, 2026-04-23).
+  //
+  // Next.js replaces the `robots` field wholesale at each level of the
+  // layout chain, so declaring it here overrides the parent's noindex.
+  robots: { index: true, follow: true },
   openGraph: {
     title: "Sponsor Application — Apply to Fund AI Marketing",
     description:

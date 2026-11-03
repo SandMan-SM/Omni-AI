@@ -17,6 +17,18 @@ export const metadata: Metadata = {
     "sponsor AI agents",
   ],
   alternates: { canonical: pageUrl },
+  // The parent app/sponsor/layout.tsx declares `robots: { index: false,
+  // follow: false }` because /sponsor itself is a logged-in portal. That
+  // directive is inherited by every route in the /sponsor subtree, so
+  // /sponsor/info — the canonical public marketing page, and the entry
+  // the sitemap advertises — has been rendering `noindex, nofollow` in
+  // production since the portal was unlisted (bc87f11d, 2026-04-23).
+  // The sitemap and this page have disagreed ever since: the sitemap
+  // says "index this", the rendered page says "do not".
+  //
+  // Next.js replaces the `robots` field wholesale at each level of the
+  // layout chain, so declaring it here overrides the parent's noindex.
+  robots: { index: true, follow: true },
   openGraph: {
     title: "Become a Sponsor — AI-Powered Lead Generation & Automation",
     description:

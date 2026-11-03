@@ -32,6 +32,7 @@ npm run audit:mobile   # static mobile/a11y gate (12 rules) — run before every
 npm run audit:publish  # publish-state gate — a newsletter write that sets published_at without status
 npm run audit:rls      # RLS gate — a locked table reached with a non-admin client
 npm run audit:cron-auth # auth gate — a route authenticating with a client-set header, or an unguarded secret
+npm run audit:sitemap  # sitemap-parity gate — a sitemap URL the page marks noindex, or an indexable route the sitemap omits
 npm run audit:deploy   # deploy source-of-truth gate — is the running production deployment described by git, AND did the pushed tip reach production?
 npm run audit:env-drift  # local vs production secret drift (needs the Vercel CLI; NOT part of build)
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
@@ -92,6 +93,7 @@ single registered preview server instead.
 ## Conventions
 - **Design:** dark theme — base `bg-gray-900`/`bg-black`, **gold accents for CTAs**. All colors via Tailwind config tokens — **no hardcoded hex** in components. Consistent section padding `py-16 md:py-24`; max container `max-w-7xl mx-auto px-4`.
 - **SEO:** every page exports `metadata` (title + description); OG/Twitter/JSON-LD where it matters. `robots.ts`, `sitemap`, `llms.txt`, `opengraph-image.tsx` exist — keep them current.
+- **Indexability and the sitemap must agree.** A route that ships `robots: { index: true }` belongs in `app/sitemap.ts`; a URL the sitemap advertises must not render `noindex`. Next.js **replaces** the `robots` field at each level of the layout chain, so a noindex layout (`app/sponsor/layout.tsx`) de-indexes its whole subtree unless a child declares `robots: { index: true, follow: true }` itself — which is how `/sponsor/info` and `/sponsor/application` were silently de-indexed while the sitemap kept advertising them. `npm run audit:sitemap` fails the build when the two disagree; `node scripts/audit-live-mobile.mjs --all` measures the rendered truth (`sitemap-noindex`, `sitemap-dead-url`).
 - **Newsletter publish:** `status` and `published_at` must be written in the **same** statement. Every reader of `newsletter_posts` filters on `status = 'published' AND published_at IS NOT NULL`, and the column defaults are `published_at DEFAULT now()` / `status DEFAULT 'draft'` — so a write that sets one without the other produces a row that looks published in the database and in every log but is invisible everywhere. This stranded 80 days of daily issues. `npm run audit:publish` fails the build if it comes back.
 - **JSX text:** escape raw quotes/apostrophes (`&apos;` `&ldquo;` `&rdquo;`) — raw `'`/`"` in JSX trips ESLint `react/no-unescaped-entities` and **fails the Vercel build**.
 - **Time:** anchor "today"/daily logic to **Pacific Time**. Vercel runs UTC, so naive `new Date()` makes briefings/digests/crons off by a day.

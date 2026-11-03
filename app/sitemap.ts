@@ -100,6 +100,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // endpoint is discoverable to the search-engine parsers validating
     // the Searchbox schema.
     { url: `${baseUrl}/search`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
+    // ── Public pages that ship `robots: index, follow` ──────────────────────
+    // Every route in this block declares `robots: { index: true, follow: true }`
+    // in its own metadata, which means it asks to be indexed — but the
+    // sitemap is the site's discovery manifest, and an indexable page the
+    // sitemap never names is a page crawlers only reach by accident. These
+    // were all missing; `npm run audit:sitemap` now fails the build if a
+    // route asks to be indexed and the sitemap does not carry it.
+    //
+    // /terms — legal. /privacy is already listed; the two halves of the
+    // policy belong together, and a terms page that only exists at a URL
+    // nobody is told about is not a terms page.
+    { url: `${baseUrl}/terms`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
+    // /subscribe — the newsletter signup form. The funnel it belongs to
+    // (/newsletter) is already advertised; the form itself was not.
+    { url: `${baseUrl}/subscribe`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // /newsletter/archive — every published issue in one indexable page.
+    // The individual issues are already advertised from the database; the
+    // archive that lists them was not.
+    { url: `${baseUrl}/newsletter/archive`, lastModified: now, changeFrequency: "daily", priority: 0.7 },
+    // /solutions — à la carte service menu. A direct commercial-intent
+    // entry point ("ai services pricing", "ai agency services") that was
+    // reachable only through the homepage.
+    { url: `${baseUrl}/solutions`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    // /meta — Meta Ads managed at $1,500/mo. Commercial intent, and the
+    // page declares itself indexable on purpose.
+    { url: `${baseUrl}/meta`, lastModified: now, changeFrequency: "monthly", priority: 0.9 },
+    // /meta/proposal — the 90-day Meta Growth Program breakdown. Kept
+    // crawlable on purpose ("keep it crawlable so Sita can share the
+    // link freely but ranking isn't the point").
+    { url: `${baseUrl}/meta/proposal`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // /master/info — the Master Tier offer page.
+    { url: `${baseUrl}/master/info`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // /interlinked/developer/info — the $50,000 Interlinked Developer
+    // Curriculum. The highest-ticket offer on the site had no sitemap
+    // entry at all.
+    { url: `${baseUrl}/interlinked/developer/info`, lastModified: now, changeFrequency: "monthly", priority: 0.8 },
+    // /interlinked/book-now — the Interlinked booking call CTA.
+    { url: `${baseUrl}/interlinked/book-now`, lastModified: now, changeFrequency: "weekly", priority: 0.8 },
+    // /federation/case-studies — social proof for the federation model.
+    { url: `${baseUrl}/federation/case-studies`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    // /network — the Omni Partner Network.
+    { url: `${baseUrl}/network`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    // /campaign/pilot — the Federation Pilot Wave campaign page.
+    { url: `${baseUrl}/campaign/pilot`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    // /asset/development/renelaveau — the bespoke-development offer
+    // landing page.
+    { url: `${baseUrl}/asset/development/renelaveau`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
 
   // Pull dynamic rows in parallel. Fail-soft: if either query errors we still

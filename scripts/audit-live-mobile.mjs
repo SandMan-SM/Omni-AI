@@ -34,6 +34,10 @@
 //                        streams the shell before the page component throws,
 //                        so the break is invisible to a status check but very
 //                        visible to a crawler.
+//   sitemap-dead-url     a URL the sitemap advertises that did not answer
+//                        HTTP 200 — a dead entry in the discovery manifest
+//   sitemap-noindex      a URL the sitemap advertises whose own page says
+//                        "noindex" — the manifest and the page disagree
 //
 // Read-only against the target site. Exits non-zero when anything fires,
 // so it works as a pre-ship gate. The target host is never authenticated
@@ -54,6 +58,8 @@ const RULE_NAMES = [
   'soft-404',
   'light-canvas',
   'light-surface',
+  'sitemap-dead-url',
+  'sitemap-noindex',
 ];
 
 const argv = process.argv.slice(2);
@@ -165,6 +171,13 @@ const PAGE_AUDIT = `(() => {
   const status = nav ? nav.responseStatus : 0;
   const h1 = document.querySelector('h1');
   const out = { width: vw, scrollWidth: document.documentElement.scrollWidth, title: document.title, h1: h1 ? (h1.textContent || '').trim().slice(0, 80) : '', status, bodyLen: document.body ? document.body.innerText.length : 0, links: document.querySelectorAll('a[href]').length, imgs: document.images.length, overflow: [], brokenImages: [], missingAlt: [], deadHrefs: [] };
+
+  // The page's own indexability directives. A sitemap URL whose page says
+  // "noindex" is a contradiction the sitemap alone cannot show.
+  const robotsMeta = document.querySelector('meta[name="robots"]');
+  const googleBotMeta = document.querySelector('meta[name="googlebot"]');
+  out.robots = robotsMeta ? (robotsMeta.getAttribute('content') || '') : '';
+  out.googleBot = googleBotMeta ? (googleBotMeta.getAttribute('content') || '') : '';
 
   const desc = (el) => {
     const id = el.id ? '#' + el.id : '';
@@ -383,6 +396,11 @@ if (ONLY) {
   paths = [...new Set([...EXTRA_PATHS, ...NOT_FOUND_PROBES, ...routeShapes(allPaths)])];
 }
 
+// The routes the sitemap itself advertises. Everything else in `paths` is
+// either a hand-picked extra or a 404 probe. This set is what the sitemap
+// rules below judge.
+const sitemapSet = new Set(allPaths);
+
 console.log(`auditing ${paths.length} route(s) at ${VIEWPORT_W}px against ${BASE}`);
 
 const findings = [];
@@ -480,6 +498,20 @@ async function auditPath(p) {
     // route rendered something for it — the soft-404 failure mode.
     if (NOT_FOUND_PROBES.includes(p) && page.status !== 404) {
       findings.push({ rule: 'soft-404', path: p, detail: `expected HTTP 404 but the route answered HTTP ${page.status} — this URL does not exist and should not resolve` });
+    }
+    // The sitemap advertises URLs to crawlers. An advertised URL that does
+    // not resolve is a dead entry in the discovery manifest, and nothing
+    // else in this gate would say so: the route simply fails to load.
+    if (sitemapSet.has(p) && page.status !== 200) {
+      findings.push({ rule: 'sitemap-dead-url', path: p, detail: `the sitemap advertises this URL but it answered HTTP ${page.status} — a crawler that follows the manifest is sent to a page that does not exist` });
+    }
+    // A sitemap URL whose own page says "noindex" is a contradiction: the
+    // manifest says index this, the page says do not. The page wins, so the
+    // entry never enters the index and the manifest is advertising a URL it
+    // has just been told to hide.
+    const robotsText = [page.robots, page.googleBot].filter(Boolean).join(' / ');
+    if (sitemapSet.has(p) && /noindex/i.test(robotsText)) {
+      findings.push({ rule: 'sitemap-noindex', path: p, detail: `the sitemap advertises this URL but the page renders robots "${robotsText}" — the manifest and the page disagree about whether it should be indexed` });
     }
     // Dark theme: the canvas must stay dark on every public page. The site
     // is a near-black design; a page that paints a light canvas is a theme
