@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — OMNI-AI
-> Synthetic Intelligence Memory | Updated: November 02, 2026 11:43 PM
+> Synthetic Intelligence Memory | Updated: November 03, 2026 12:40 AM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
@@ -11,6 +11,83 @@
 | Backend | 96/100 | █████████░ |
 | Mobile | 96/100 | ██████████ |
 | **OVERALL** | **95/100** | █████████░ |
+
+> **Session 60 (2026-11-03) — the SEO score was 100 while the sponsor program had been
+> de-indexed for six months.**
+>
+> **1. The sitemap and the routes disagreed, and nothing compared them.** The sitemap is
+> the site's discovery manifest — the list of URLs it asks a crawler to index. A route's
+> `robots` metadata is the same answer, per page. When the two disagree, one is lying:
+> `/sponsor/info` and `/sponsor/application` were **in the sitemap** and **rendering
+> `noindex, nofollow`**, so the manifest said "index this" and the page said "do not", and
+> the page won. The site's only sponsorship conversion path had been invisible to search
+> since 2026-04-23 — the day `bc87f11d` put `robots: { index: false, follow: false }` in
+> **`app/sponsor/layout.tsx`**, because `/sponsor` itself is a logged-in portal. Next.js
+> **replaces** the `robots` field at each level of the layout chain, so the directive was
+> inherited by the whole `/sponsor` subtree, and the two public pages declared no robots of
+> their own. The commit that introduced it states the opposite intent in its own message:
+> *"keep /sponsor/info at priority 0.5 as the canonical public marketing page"*. The intent
+> was right; the implementation was one level too broad. **Proven live before the fix**: the
+> rendered `<meta name="robots" content="noindex, nofollow">` on both pages, and the
+> sitemap carrying both URLs.
+>
+> **2. Thirteen indexable public pages were absent from the sitemap entirely** — `/solutions`,
+> `/terms`, `/subscribe`, `/newsletter/archive`, `/meta`, `/meta/proposal`, `/master/info`,
+> `/interlinked/book-now`, `/interlinked/developer/info`, `/federation/case-studies`,
+> `/network`, `/campaign/pilot`, `/asset/development/renelaveau`. Each one declares
+> `robots: { index: true, follow: true }` in its own metadata — it asks to be indexed — and
+> is only reachable by accident. `/terms` is the sharpest one: `/privacy` was advertised and
+> `/terms` was not. All thirteen are now in `app/sitemap.ts`.
+>
+> **3. Nothing in the toolchain could see either defect.** `tsc` cannot (the metadata is
+> valid). `next build` cannot (the merge is correct Next.js behaviour). The RLS, cron-auth
+> and public-PII gates cannot (it is not an access-control question). The live mobile gate
+> could not (it measures overflow, images, links and theme — **not indexability**). The
+> route-structure gate could not (the sitemap is not a route). **The general form: a
+> contract between two artifacts is only enforced if something compares them** — and the
+> sitemap and the routes are two artifacts that both answer "what should be indexed?".
+>
+> **4. The prevention is a gate, in the build chain, and it was proven on the real
+> pre-fix files.** `npm run audit:sitemap` (`scripts/audit-sitemap-parity.ts`, new) computes
+> each route's **effective** robots directive from its layout chain — the deepest source that
+> declares one wins, because that is what Next.js does — and compares it with
+> `app/sitemap.ts`. Three rules: `sitemap-url-noindex`, `indexable-route-not-in-sitemap`,
+> `sitemap-url-without-route`. **Proven by restoring the pre-fix files in place**: the gate
+> reported **15 findings across 2 rules** — the exact defect set found in production — and
+> **0** after the fix. `npm run audit:publish` is the precedent for this shape: a rule
+> written in prose did not hold, so it became a gate.
+>
+> **5. The live audit gained the two rules that need the rendered truth.**
+> `sitemap-dead-url` (a sitemap URL that did not answer 200 — a dead entry in the manifest,
+> which nothing else could see because the route simply fails to load) and `sitemap-noindex`
+> (a sitemap URL whose own page says noindex). The live gate runs **11 rules** now. **Proven
+> against production, which was still serving the old build**: `/sponsor/info` fired
+> `sitemap-noindex`.
+>
+> **6. The class is not a repo property.** The gate travels with the rule set
+> (`npm run patch:fleet-rls-ruleset` now writes it into every tree that carries the rule
+> set) — measurement, not application. **24 fleet copies measured 12–24 findings each**,
+> every one of them carrying the same de-indexed sponsor funnel and the same unsitemapped
+> indexable pages the canonical tree had.
+>
+> **7. The standing RLS drift fired again, and the remedy was still one command.** The
+> schema had grown from 308 to **309** tables (`review_story_posts`, created by the codex
+> agent's Stories work). `npm run refresh:rls-ruleset` re-probed every table and produced
+> **275 locked / 13 indeterminate / 21 anon-readable**; the diff was **only** the new table
+> — no existing classification changed. Synced to all **34** trees. The new table is read
+> through the direct Postgres pool (`lib/reporting-social-calendar.ts`), which bypasses RLS,
+> so nothing was broken in production; the *measurement* was blind, which is the shape this
+> repo keeps paying for.
+>
+> **8. The score was asserted, not measured — the same failure as session 53.** SEO was
+> carrying **100/100** while the sponsorship funnel was de-indexed and thirteen indexable
+> pages were unsitemapped. Nothing had asked the question; the "SEO 100" was a belief about
+> the shape of the site, not a measurement of it. The score stays 100 **now** because it is
+> earned by a gate that fails the build when the two artifacts disagree — but the honest
+> reading of the *previous* 100 was somewhere in the low 90s. **A score that asserts rather
+> than measures is worse than a low score, because it retires the question.**
+>
+> Shipped in `a4fae5f9`, `60aa3d32`, `9982c251`; federation lease 1169.
 
 > SEO 100 is now earned rather than asserted. It was scored 100 while every 404-capable
 > route answered **200** and the sitemap advertised **468** URLs of which **136** resolved.
@@ -344,8 +421,14 @@
 44. Next: **when you create a public dynamic route that calls `notFound()`, add its probe** — the gate now tells you the exact string to add to `NOT_FOUND_PROBES` in `scripts/audit-live-mobile.mjs`, and the build fails until you do.
 45. ~~**"Git describes production" was answering a different question than "did my push ship?"**~~ — **DONE (session 59, shipped `497ad811` / `3f03fca7` / `6fcec86a`)**: `npm run audit:deploy` gained four release-reachability rules (`failed-build`, `no-deployment-for-tip`, `production-alias-held-elsewhere`, `production-behind-branch`), asked of the **deployment of the branch tip** rather than of production. **Proven on a real failed build**: a commit carrying a deliberate type error was pushed, Vercel's deployment went to `ERROR`, and the gate reported `failed-build` and exited 1 — and the proof exposed a second defect, that the pre-existing code described an `ERROR` deployment as *"still building… re-run after the build settles"*, sending the operator to wait for a build that was never coming. That wording is fixed and the deliberate failure is removed. The gate carries a **ten-minute grace period** so the normal window between a push and a build prints a note rather than a finding.
 46. Next: **re-run `npm run audit:deploy` a few minutes after every push** — a push is not a release, and the build takes minutes. Inside the grace window the gate prints a note instead of a finding; after it, a tip that never built is a finding.
+47. ~~**the sitemap and the routes' indexability must agree**~~ — **DONE (session 60, shipped `60aa3d32`)**: `npm run audit:sitemap` (`scripts/audit-sitemap-parity.ts`, **in the build chain**) computes each route's effective robots from its layout chain and compares it with `app/sitemap.ts`. Three rules: `sitemap-url-noindex`, `indexable-route-not-in-sitemap`, `sitemap-url-without-route`. Proven against the restored pre-fix files: **15 findings across 2 rules**, then 0. The gate ships to the fleet with the rule set (`npm run patch:fleet-rls-ruleset`) — **24 copies measured 12–24 findings each**.
+48. Next: **run `node scripts/audit-live-mobile.mjs --all` AFTER the deploy** — it now carries **11 rules**, the two new ones being `sitemap-noindex` and `sitemap-dead-url`, which read the rendered truth (the static gate cannot see a robots directive set at runtime, e.g. in `generateMetadata`).
+49. Next: **a page that asks to be indexed belongs in `app/sitemap.ts`; a URL the sitemap advertises must not render noindex.** Next.js **replaces** the `robots` field at each level of the layout chain — it does not merge key by key — so a noindex layout de-indexes its whole subtree unless a child declares `robots: { index: true, follow: true }` itself. The repo already uses that convention on `/privacy`, `/terms`, `/oracle`, `/solutions`.
 
 ## 🔬 Why
+- **Session 60's finding was a contract nobody compared.** The sitemap and the route metadata are two artifacts that both answer "what should be indexed?", and they are maintained by hand in two different files — one in `app/sitemap.ts`, one in each route's metadata. Every other contract in this repo got a gate: the publish rule got `audit:publish`, the loading.tsx rule got `audit:routes`, the RLS rule got `audit:rls`. This one got a prose rule ("keep them current") and a score of 100. The general form: **a contract between two artifacts is only enforced if something compares them**, and a hand-maintained pair of artifacts drifts silently — the drift here was visible only in the rendered output, six months after it started. The fix was not "write a better comparison", it was to write the comparison and put it in the build chain.
+- **The mechanism of the defect was a one-level-too-broad fix.** `bc87f11d` wanted to de-index `/sponsor` and did it in `/sponsor`'s **layout**, which covers the whole `/sponsor` subtree. The intent — de-index a portal, keep its two public siblings indexed — was correct and was stated in the commit message. The implementation was a level too broad, and Next.js makes that mistake silent because metadata inheritance is the documented behaviour. The general form: **a fix applied at a shared ancestor inherits the ancestor's scope**; when the intent is narrower than the scope of the mechanism, the intent has to be restated at the narrower level, or it will be silently widened.
+- **The score was the second defect.** SEO had carried 100/100 across several sessions while the sponsorship funnel was invisible to search and thirteen indexable pages were unsitemapped. The score was a belief about the site's *shape* — "every page has metadata, there is a sitemap, SEO is done" — and nothing measured the property it claimed. The general form, and the third time this repo has learned it: **a score that asserts rather than measures is worse than a low score, because it retires the question.** The score is now backed by a gate that fails the build, which is the only thing that makes a 100 mean anything.
 - **Session 59's release-deleting push was detectable and not preventable, and that gap was the whole finding.** `audit:deploy` has caught this defect three times — but it is a *command someone remembers to run*, and every time it caught the state, the release was already live and already unreproducible from git. The window in which the damage happens (the push) was unguarded, and the gate that could have guarded it lived somewhere else entirely. The general form: **a check that runs on demand can only describe a state that already exists; a check that runs in the path of the harm can prevent it.** The move is not "write a better detector" — the detector was already correct and had already been right three times — it is **move the check into the path where the damage occurs**. A `pre-push` hook is that path: it is the last moment at which the release can still be saved, and it runs whether or not anybody remembers to ask.
 - **Session 59's release-reachability gap is the same lesson one level down, and it was only visible because the gate was made to fire on a real failure.** The deploy gate knew exactly what production was running and whether git described it — and neither question is *"did the thing I pushed reach production?"* A commit on the branch that never built is perfectly described by git. The general form: **a green check answers the question it was written to answer, and the question it does not answer is invisible precisely because the check is green.** The move was to ask the second question of a different subject — of the **deployment of the branch tip** — rather than of production, because the failure is a property of the build, not of the release. And the only way to know the rule works is to make a build genuinely fail: a rule that has never fired has never been tested, and the proof immediately exposed a second defect (an `ERROR` deployment described as *"still building"*) that no amount of reading the code would have surfaced.
 - **The three decisions that make the hook hold are all about scope, and each one was a false-positive risk.** Failing closed means the gate refuses pushes when it cannot measure — a blocked push is recoverable in seconds, a deleted route family is not, so the asymmetry is decisive. Checking only the deployment **holding the alias** means a superseded CLI deployment whose commit is not on the branch does not block forever — the alternative is a gate that cries wolf on every push after the first mistake. And matching on the **remote** ref rather than the local one is the difference between covering `git push origin HEAD:main` and silently skipping it. The general form: **a preventive gate that has not been scoped is a gate that gets switched off**, and the scoping questions are always the same three — what is the population that is actually wrong, what happens when the measurement fails, and does the check match every shape of the action it is meant to catch.
@@ -389,12 +472,14 @@
 - **Four fleet trees have lost their git link and are one `vercel --prod` away from overwriting production.** `Sitani Mafi/Omni AI/.deploy-worktrees/login-fix`, `Sitani Mafi/Omni AI/_deploy-worktrees/dashboard-fix`, `_tmp/omni-newsletter-fix` and `_tmp/omni-premium-newsletter-fix` each carry a `.git` file pointing at `…/Clients/Omni AI/Omni AI Website/.git/worktrees/<name>`, a path that no longer exists (the repo moved to `Sitani Mafi/Omni AI/Website` and the worktree metadata went with it). `git` refuses to operate in all four; they hold 193 route files against canonical's 252, each carries work no other tree has, and **all four are linked to the production Vercel project** — so a CLI deploy from any of them would delete ~59 live route families from omnileadsagi.com, exactly as happened on 2026-10-29. Session 58 patched the privacy leak in all four on disk and gave them the gates, so their content is safe; **retiring them, re-syncing them, or re-initialising them as fresh repos is the owner's decision** — the agent will not `git init` over a tree that holds unversioned work, and will not delete a tree the owner may still need.
 
 ## 📚 Stats
-- Sessions: 59
+- Sessions: 60
 - Lines written: 3392
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-03 | seo | **The sponsor program had been de-indexed for six months while the sitemap kept advertising it.** `/sponsor/info` and `/sponsor/application` were **in the sitemap** and **rendering `noindex, nofollow`** — the manifest said "index this", the page said "do not", and the page won. The cause was `app/sponsor/layout.tsx` declaring `robots: { index: false, follow: false }` (correct for `/sponsor`, a logged-in portal) on 2026-04-23: Next.js **replaces** the `robots` field at each level of the layout chain, so the directive was inherited by the whole subtree, and the two public pages declared no robots of their own. The commit that introduced it states the opposite intent in its own message — "keep /sponsor/info at priority 0.5 as the canonical public marketing page". **Thirteen indexable public pages** (`/solutions`, `/terms`, `/subscribe`, `/newsletter/archive`, `/meta`, `/meta/proposal`, `/master/info`, `/interlinked/book-now`, `/interlinked/developer/info`, `/federation/case-studies`, `/network`, `/campaign/pilot`, `/asset/development/renelaveau`) each declare `robots: { index: true, follow: true }` and were absent from the sitemap entirely. Nothing could see it: `tsc` cannot, `next build` cannot, the RLS / cron-auth / public-PII gates cannot, the live mobile gate never read indexability, and the sitemap is not a route. **A contract between two artifacts is only enforced if something compares them.** `npm run audit:sitemap` (new, **in the build chain**) computes each route's effective robots from its layout chain and compares it with `app/sitemap.ts` — three rules, proven against the restored pre-fix files (**15 findings across 2 rules**, then 0). The live audit gained `sitemap-noindex` and `sitemap-dead-url`, proven against production still serving the old build. The gate travels to the fleet with the rule set: **24 copies measured 12–24 findings each** | 406 |
+| 2026-11-03 | tooling | **The standing RLS drift fired again, and the remedy was still one command.** The schema had grown from 308 to **309** tables — `review_story_posts`, created by the codex agent's Stories work — so the rule set could not classify it and the RLS gate could not judge code that reads it. `npm run refresh:rls-ruleset` re-probed every table and produced **275 locked / 13 indeterminate / 21 anon-readable**; the diff was **only** the new table (locked), no existing classification changed. Synced to all **34** trees. Nothing was broken in production — the new table is read through the direct Postgres pool (`lib/reporting-social-calendar.ts`), which bypasses RLS — but the *measurement* was blind, which is the shape this repo keeps paying for | 12 |
 | 2026-11-02 | tooling | **"Git describes production" was answering a different question than "did my push ship?"** `npm run audit:deploy` knew exactly what production was running and whether git described it — and neither question is whether the thing that was pushed ever reached production. A commit on the branch that was **never built** is perfectly described by git, so every rule stayed quiet; a Vercel build that fails produces **no error anywhere an operator is looking** (the push succeeds, the site is up serving the previous release, and the agent that pushed sees a healthy site). The gate now asks the second question of the **deployment of the branch tip** rather than of production: `failed-build`, `no-deployment-for-tip`, `production-alias-held-elsewhere`, `production-behind-branch`, with a **ten-minute grace period** so the normal window between a push and a build prints a note instead of a finding. **Proven on a real failed build**: a commit carrying a deliberate type error was pushed, Vercel's deployment went to `ERROR`, and the gate reported `failed-build` and exited 1 — and the proof exposed a second defect the reading had missed, that the pre-existing code called an `ERROR` deployment *"still building… re-run after the build settles"*, telling the operator to wait for a build that was never coming. Both fixed (`6fcec86a`), the deliberate failure removed, and the gate goes quiet again on the next green release | 162 |
 | 2026-11-02 | tooling | **The live audit's 404 probes were a hand-maintained list that could not know it had gone stale.** `NOT_FOUND_PROBES` is the only instrument in this repo that can prove a route still answers a REAL 404 rather than a 200 soft-404 — it is what caught the session-57 regression — and it is a list somebody has to remember to extend. Item 12 says to add a probe when a route is created, which is a sentence in a file, and this repo has learned twice that a sentence in a file is not a control. `scripts/audit-route-probes.ts` (new, `npm run audit:route-probes`, **in the build chain**) derives the coverage instead: it enumerates the app's public dynamic routes, works out which ones can 404 (the page calls `notFound()`, or the segment sets `dynamicParams = false`), and checks each against the probe list **by shape** — the probes carry real segments where the route carries a parameter, so `/p/omnileads/zzzz-not-a-real-page` is the probe for `/p/[business]/[slug]` and `/book/00000000-0000-0000-0000-000000000000` is the probe for `/book/[business]`. A route that can neither 404 is not demanded a probe, so `app/command/client/[slug]` — a client component that renders "Admin only" or "Client not found." at 200 by design — does not make the gate cry wolf. All **10** 404-capable public routes are covered today. Proven against a scratch route with no probe: the gate fires, names the probe to add, and the build stops | 150 |
 | 2026-11-02 | tooling | **The release-deleting push is now impossible, and the gate that detects it could only ever run after the damage.** `npm run audit:deploy` found production's alias held by `dpl_CTcef24o7HDFTLn7uW5LNBeEUQX8` — a `vercel --prod` deployment of `009abe4c`, a commit made on `feature/ais-studio-calendar-20261101` and never pushed. `origin/main` did not contain it, so the next ordinary push would have rebuilt production from a tree without the Lead Franchise grant-source fix and **silently deleted the route family** — the third recurrence of a defect that has cost this repo two live releases already. Reconciled by **merging** `009abe4c` into `main` (a merge, not a rebase: a rebase rewrites the deployed SHA, so the ancestry test keeps failing and the tree still would not carry the released content). The live dependency `lead_franchise_social_connections.grant_source` was verified present before the merge, and the deployed worktree carried no uncommitted delta. The prevention is `scripts/audit-pre-push.mjs` (new) running as a `pre-push` hook: it asks whether the commit production is running is an **ancestor** of the commit the push would publish, and refuses if not. It fails **closed** (unreachable API, unidentifiable alias holder, or a deployed commit absent from the repository all refuse the push), checks only the deployment **holding the production alias** (a superseded deployment is history, not a live release), and matches on the **remote** ref so `git push origin HEAD:main` is not skipped. `core.hooksPath` is set to an **absolute** path, because a relative one resolves against each worktree's own root — and the worktrees are where CLI releases happen; proven by running the hook from a worktree with no `.githooks/` in its checkout. The Vercel project is resolved from the **canonical checkout root**, not the push's directory, because a fleet receiver worktree holds a different `.vercel` link. Proven against the real failure: the pre-merge commit is refused and the remedy named; HEAD passes. Runbook `runbook.deploy/pre-push-gate-refuses-release-deleting-push` | 190 |
