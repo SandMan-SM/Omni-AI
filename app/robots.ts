@@ -13,41 +13,50 @@ export default function robots(): MetadataRoute.Robots {
         // the request at all, saving crawl budget and (more important)
         // not tipping off pattern-matching bots that an admin /
         // command surface even exists at that URL.
+        //
+        // The entries are PREFIXES with no trailing slash. robots.txt
+        // matches by prefix, so "Disallow: /admin" covers "/admin" AND
+        // "/admin/info"; "Disallow: /admin/" covers the sub-routes but
+        // NOT "/admin" itself — the bare URL, which is exactly the one
+        // a probing bot tries first, stayed crawlable. Every entry
+        // below is written in the bare form so the surface's own index
+        // is blocked with it.
+        //
         //   /api/          — all server routes, no human-readable UI
-        //   /admin/        — Supabase-authed admin console
-        //   /dashboard/    — authed customer dashboard
-        //   /auth/         — SSO callback + magic-link handlers
-        //   /command/      — synthetic intelligence command center
-        //   /void-preview/ — internal hero component preview
+        //   /admin         — Supabase-authed admin console
+        //   /dashboard     — authed customer dashboard
+        //   /auth          — SSO callback + magic-link handlers
+        //   /command       — synthetic intelligence command center
+        //   /void-preview  — internal hero component preview
         //   /fray          — personalized VIP sponsor dashboard, not a
         //                    public marketing page. Layout already sets
         //                    noindex,nofollow; this disallow blocks the
         //                    request before the crawler fetches the HTML
-        //                    at all. Exact-match (no trailing slash)
-        //                    because /fray has no sub-routes.
+        //                    at all.
         //   /portal        — client demo-dashboard portal behind a simple
-        //                    sign-in. Layout sets noindex,nofollow; exact-
-        //                    match because /portal has no sub-routes.
+        //                    sign-in. Layout sets noindex,nofollow.
         //   /assets        — owner-only federation asset surface that
         //                    redirects into the dashboard. Layout sets
-        //                    noindex,nofollow.
+        //                    noindex,nofollow. Note the plural: the
+        //                    PUBLIC /asset/… pages are a different tree
+        //                    and stay crawlable.
         //   /login         — authentication form. No public content to
         //                    index; the layout sets noindex,nofollow.
-        //   /club-obsidian/ — private referral share links. Each share
+        //   /club-obsidian — private referral share links. Each share
         //                    surface sets noindex,nofollow; the disallow
         //                    keeps invite codes out of the crawl graph.
         disallow: [
           "/api/",
-          "/admin/",
-          "/dashboard/",
-          "/auth/",
-          "/command/",
-          "/void-preview/",
+          "/admin",
+          "/dashboard",
+          "/auth",
+          "/command",
+          "/void-preview",
           "/fray",
           "/portal",
           "/assets",
           "/login",
-          "/club-obsidian/",
+          "/club-obsidian",
         ],
       },
       {

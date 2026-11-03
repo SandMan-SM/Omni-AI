@@ -58,6 +58,9 @@
  *   sitemap-url-disallowed         a URL the sitemap advertises that
  *                                  app/robots.ts disallows — a crawler is
  *                                  never allowed to fetch it
+ *   robots-bare-path-crawlable     the index of a blocked subtree that the
+ *                                  block does not cover — "Disallow: /admin/"
+ *                                  blocks "/admin/info" but NOT "/admin"
  *
  * The three artifacts
  *
@@ -277,6 +280,12 @@ if (fs.existsSync(robotsFile)) {
 
 const routeByUrl = new Map(routes.map((r) => [r.url, r]));
 
+/** Uncovered subtree indexes already reported — index URL + the rule that blocks its children. */
+const uncoveredIndexes = new Map<string, string>();
+
+/** Bare paths already reported as crawlable, so the two shapes do not double-report. */
+const reportedIndexes = new Set<string>();
+
 for (const url of [...advertised].sort()) {
   const route = routeByUrl.get(url);
   if (!route) {
@@ -315,6 +324,77 @@ for (const url of [...advertised].sort()) {
       `the sitemap advertises "${url}" but app/robots.ts disallows "${blocked}". A ` +
       "disallowed path is never fetched by a compliant crawler, so this entry can never " +
       "be crawled — it is a dead entry in the discovery manifest.",
+  });
+}
+
+/**
+ * The index of a blocked subtree must be blocked with it.
+ *
+ * robots.txt matches by PREFIX, so "Disallow: /admin/" covers every
+ * sub-route ("/admin/info") but NOT "/admin" itself — the bare URL, which
+ * is the one a probing bot tries first. The sub-tree's own pages render
+ * noindex, so the page itself never enters the index either way; what
+ * leaks is the fact that the surface EXISTS at that URL, which is exactly
+ * what the disallow list says it is there to prevent.
+ *
+ * Two shapes are checked:
+ *
+ *   1. A trailing-slash disallow whose bare path is a route ("/admin/"
+ *      while "/admin" exists). The index is crawlable.
+ *   2. A blocked route whose ancestor route is not covered — the same
+ *      leak, seen from the child.
+ */
+for (const d of disallowed) {
+  if (!d.endsWith("/")) continue;
+  const bare = d.slice(0, -1);
+  if (!bare || !routeByUrl.has(bare)) continue;
+  if (disallowed.some((other) => other !== d && (bare === other || bare.startsWith(other)))) continue;
+
+  findings.push({
+    rule: "robots-bare-path-crawlable",
+    file: path.relative(ROOT, robotsFile),
+    detail:
+      `app/robots.ts disallows "${d}", which covers the sub-routes of "${bare}", but ` +
+      `not "${bare}" itself. robots.txt matches by prefix, so a trailing slash blocks ` +
+      `the sub-routes and leaves the bare path crawlable — and the bare path is the one ` +
+      `a bot probes first. Disallow "${bare}" instead of (or as well as) "${d}".`,
+  });
+  reportedIndexes.add(bare);
+}
+
+for (const route of routes) {
+  const blockedBy = disallowed.find((d) => route.url === d || route.url.startsWith(d));
+  if (!blockedBy) continue;
+
+  // The longest route URL that is a proper ancestor of this one — the
+  // index of the subtree the route belongs to.
+  let index: Route | undefined;
+  for (const candidate of routes) {
+    if (candidate.url === route.url) continue;
+    if (!route.url.startsWith(candidate.url + "/")) continue;
+    if (!index || candidate.url.length > index.url.length) index = candidate;
+  }
+  if (!index) continue;
+  if (reportedIndexes.has(index.url)) continue;
+
+  const indexCovered = disallowed.find((d) => index.url === d || index.url.startsWith(d));
+  if (indexCovered) continue;
+
+  // One finding per uncovered index, not one per sub-route: the defect is
+  // the index path, and 25 findings for 25 dashboard pages would bury it.
+  const key = `${index.url}|${blockedBy}`;
+  if (uncoveredIndexes.has(key)) continue;
+  uncoveredIndexes.set(key, route.url);
+
+  findings.push({
+    rule: "robots-bare-path-crawlable",
+    file: path.relative(ROOT, robotsFile),
+    detail:
+      `app/robots.ts disallows "${blockedBy}", which covers "${route.url}", but the ` +
+      `index of that subtree — "${index.url}" — is not disallowed. robots.txt matches ` +
+      "by prefix, so a trailing slash blocks the sub-routes and leaves the bare path " +
+      `crawlable, and the bare path is the one a bot probes first. Disallow "${index.url}" ` +
+      "instead of (or as well as) the trailing-slash form.",
   });
 }
 
