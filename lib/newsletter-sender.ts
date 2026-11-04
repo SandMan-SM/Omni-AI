@@ -1018,6 +1018,7 @@ import {
   THEME as EMAIL_THEME,
 } from '@/lib/email-template';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { buildUnsubscribeUrl } from '@/lib/unsubscribe-token';
 import {
   getNewsletterAudience,
   audienceSendList,
@@ -1052,7 +1053,11 @@ function teaserExcerpt(text: string, maxLength = 260): string {
   return `${clipped.slice(0, boundary > 120 ? boundary : maxLength).trim()}…`;
 }
 
-function buildNewsletterEmailHtml(content: NewsletterContent, tier: 'free' | 'premium'): string {
+function buildNewsletterEmailHtml(
+  content: NewsletterContent,
+  tier: 'free' | 'premium',
+  unsubscribeUrl: string,
+): string {
   const isPremium = tier === 'premium';
   const accent = isPremium ? 'amber' : 'purple';
   const title = isPremium ? 'Interlinked Premium' : 'Interlinked';
@@ -1088,13 +1093,23 @@ function buildNewsletterEmailHtml(content: NewsletterContent, tier: 'free' | 'pr
         accent: accent as any,
       },
     }),
+    // CAN-SPAM: every commercial email carries a working unsubscribe. The
+    // URL is per-recipient (HMAC token over the address) so the link only
+    // ever unsubscribes the person who received that copy.
+    //
+    // These links used to point at `${SITE_URL}/dashboard` — the legacy
+    // INTERNAL operator surface (noindex, robots-disallowed, sign-in
+    // required, and explicitly NOT the canonical operator dashboard, which
+    // is mythosais.com/dashboard). A subscriber clicking "Manage
+    // subscription" landed on a command center they cannot use, and the
+    // one mechanism the law requires was not there at all.
     tplFooter({
       tagline: `Omni AI · ${title}`,
       links: isPremium
-        ? [{ label: 'Manage account', href: `${SITE_URL}/dashboard` }]
+        ? [{ label: 'Unsubscribe', href: unsubscribeUrl }]
         : [
-            { label: 'Manage subscription', href: `${SITE_URL}/dashboard` },
             { label: 'Upgrade to Premium', href: `${SITE_URL}/interlinked/premium` },
+            { label: 'Unsubscribe', href: unsubscribeUrl },
           ],
     }),
   ].join('');
@@ -1110,12 +1125,12 @@ function esc(s: string): string {
   return String(s).replace(/[&<>"']/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[m] as string);
 }
 
-function buildFreeEmailHtml(content: NewsletterContent): string {
-  return buildNewsletterEmailHtml(content, 'free');
+function buildFreeEmailHtml(content: NewsletterContent, unsubscribeUrl: string): string {
+  return buildNewsletterEmailHtml(content, 'free', unsubscribeUrl);
 }
 
-function buildPremiumEmailHtml(content: PremiumContent): string {
-  return buildNewsletterEmailHtml(content, 'premium');
+function buildPremiumEmailHtml(content: PremiumContent, unsubscribeUrl: string): string {
+  return buildNewsletterEmailHtml(content, 'premium', unsubscribeUrl);
 }
 
 // ── Telegram ─────────────────────────────────────────────────────────────────
@@ -1256,15 +1271,46 @@ export async function sendEmail(content: NewsletterContent, to: string): Promise
     return false;
   }
 
+  // One-click unsubscribe, per recipient. The token is HMAC-signed over
+  // the recipient address (lib/unsubscribe-token.ts), so the link only
+  // unsubscribes the person this copy was sent to — a forwarded copy
+  // cannot unsubscribe anyone else.
+  //
+  // If the token cannot be minted there is no compliant way to send this
+  // copy, so the send is refused rather than going out without the
+  // mechanism the law requires. The refusal is counted (the caller only
+  // counts a fulfilled `true`) and logged loudly.
+  let unsubscribeUrl: string;
+  try {
+    unsubscribeUrl = buildUnsubscribeUrl(to, SITE_URL, 'nl');
+  } catch (e) {
+    console.error(
+      '[newsletter] refusing to send without an unsubscribe URL:',
+      e instanceof Error ? e.message : e,
+    );
+    return false;
+  }
+
   const html = content.tier === 'premium'
-    ? buildPremiumEmailHtml(content as PremiumContent)
-    : buildFreeEmailHtml(content);
+    ? buildPremiumEmailHtml(content as PremiumContent, unsubscribeUrl)
+    : buildFreeEmailHtml(content, unsubscribeUrl);
 
   try {
     const res = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ from: NEWSLETTER_FROM, to: [to], subject: content.subject, html }),
+      body: JSON.stringify({
+        from: NEWSLETTER_FROM,
+        to: [to],
+        subject: content.subject,
+        html,
+        // RFC 8058 / Gmail-native unsubscribe. Without these, a bulk
+        // sender cannot offer one-click and lands in the spam folder.
+        headers: {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+        },
+      }),
     });
     return res.ok;
   } catch (e) {

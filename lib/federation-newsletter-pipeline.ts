@@ -31,6 +31,7 @@ import {
 } from '@/lib/federation-newsletter-briefs';
 import { sendTelegram } from '@/lib/telegram';
 import { resolveSender } from '@/lib/sender-registry';
+import { buildUnsubscribeUrl } from '@/lib/unsubscribe-token';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
@@ -548,38 +549,79 @@ async function dispatchPublishedToOwner(
     return { ok: false, error: `Resend ${r.status}: ${await r.text().catch(() => '')}` };
   }
 
-  // Fan out to active newsletter subscribers, BCC'd (everyone gets their
-  // own copy without seeing the rest of the list). Each batched send is
-  // best-effort — a single Resend failure on the subscriber batch does
-  // NOT roll back the owner dispatch since the public post already
-  // published. We log + continue.
+  // Fan out to active newsletter subscribers — ONE message per recipient.
+  //
+  // This used to be a BCC'd batch of 50 sharing a single HTML body. That
+  // is the shape that cannot satisfy CAN-SPAM: the unsubscribe link in a
+  // shared body is one token, so it can only ever unsubscribe the one
+  // address that token was minted for, and a recipient clicking it would
+  // unsubscribe somebody else (or nobody). The masthead welcome email
+  // carries a per-recipient tokenized link and both RFC 8058 headers —
+  // every issue after it dropped the link entirely, so a subscriber had
+  // no way out of the list except an email to the operator.
+  //
+  // Per-recipient sends are the only correct form here. It also removes
+  // the cross-recipient exposure of BCC. Each send is best-effort: a
+  // failure does NOT roll back the owner dispatch, because the public
+  // post has already published.
   if (subscribers.length > 0) {
-    // Resend's max recipients-per-call is 50; batch as needed.
-    for (let i = 0; i < subscribers.length; i += 50) {
-      const batch = subscribers.slice(i, i + 50);
-      try {
-        await fetch('https://api.resend.com/emails', {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            from: fromEmail.includes('<') ? fromEmail : `${brief.brandName} <${fromEmail}>`,
-            to: [fromEmail],   // dummy primary; real recipients on BCC
-            bcc: batch,
-            subject: row.title,
-            html,
-          }),
-        });
-      } catch {
-        // continue — owner already got it; per-batch subscriber failure
-        // is logged in Resend dashboard
-      }
+    const CHUNK = 10; // bounded concurrency — Resend rate-limits on volume
+    for (let i = 0; i < subscribers.length; i += CHUNK) {
+      const chunk = subscribers.slice(i, i + CHUNK);
+      await Promise.all(
+        chunk.map(async (email) => {
+          const unsubscribeUrl = buildUnsubscribeUrl(email, SITE_BASE, 'nl');
+          try {
+            const res = await fetch('https://api.resend.com/emails', {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${RESEND_API_KEY}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                from: fromEmail.includes('<') ? fromEmail : `${brief.brandName} <${fromEmail}>`,
+                to: [email],
+                subject: row.title,
+                html: subscriberHtml(html, brief.domain, unsubscribeUrl),
+                headers: {
+                  'List-Unsubscribe': `<${unsubscribeUrl}>`,
+                  'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+                },
+              }),
+            });
+            if (!res.ok) {
+              console.error(
+                `[federation-newsletter] subscriber send failed for ${email}: Resend ${res.status}`,
+              );
+            }
+          } catch (e) {
+            console.error(
+              `[federation-newsletter] subscriber send failed for ${email}:`,
+              e instanceof Error ? e.message : e,
+            );
+          }
+        }),
+      );
     }
   }
 
   return { ok: true };
+}
+
+/**
+ * Append the CAN-SPAM footer to a subscriber copy.
+ *
+ * The URL is per-recipient (HMAC token over the address), so this link
+ * can only ever unsubscribe the person the message was sent to.
+ */
+function subscriberHtml(baseHtml: string, siteDomain: string, unsubscribeUrl: string): string {
+  return `
+    ${baseHtml}
+    <p style="margin-top:24px;padding-top:16px;border-top:1px solid #e5e5e5;font-size:12px;color:#78716c;line-height:1.6;">
+      You subscribed at ${escapeHtml(siteDomain)}. You can
+      <a href="${unsubscribeUrl}" style="color:#78716c;text-decoration:underline;">unsubscribe in one click</a> at any time.
+    </p>
+  `;
 }
 
 function escapeHtml(s: string): string {
