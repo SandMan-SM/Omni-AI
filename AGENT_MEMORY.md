@@ -192,6 +192,82 @@
 
 ## 🎯 This Session: Do These In Order
 
+> **Session 62 (2026-11-04) — the failed-lookup class was fixed in the flagship, and the
+> sweep found the same class already copied into four other trees.**
+>
+> **1. The flagship fix is the one recorded in items 56/58.** `lib/server/content-lookup.ts`
+> classifies a read as found / missing / failed, `requireLookup` throws on a failure so the
+> route renders a retryable 500, and only a genuine absence reaches `notFound()`.
+> `npm run audit:content-lookup` (in the build chain) and `npm run test:content-lookup` are
+> the instruments. What was missing was the question that every other gate in this repo had
+> already answered once: **does the class exist in the other checkouts?** A gate that cannot
+> see a copy is a gate that has not been applied.
+>
+> **2. The sweep found the class in four trees, and two of them are live surfaces.**
+> `npm run audit:fleet-content-lookup` (`scripts/audit-fleet-content-lookup.mjs`) walks every
+> canonical checkout under `~/Desktop/Clients`: **65 checkouts, 1063 pages, 13 findings.**
+> Two were in client surfaces — `Love Thy Barber/Website` and `Omni Leads/Website` — and two
+> were in the archived copies of this repo (`Website-omniclaw-newsletter-artwork`,
+> `Website-omniclaw-newsletter-final`), each of which carries the **production Vercel
+> project id** `prj_TRmLRTqEhjJj8ZlV4MQk0zjFGtU4`. A `vercel --prod` from either archived
+> folder would have shipped the defect back to omnileadsagi.com.
+>
+> **3. The detector had to grow a rule, and the rule had to be proven on the real files.**
+> The canonical gate had two rules; a third — `failed-read-answered-as-absent` — catches the
+> shape where a falsy test guards a branch that ANSWERS WITH AN ABSENCE ("Not found", "Link
+> not recognized", "No token provided") without a `notFound()`. That is the LTB unsubscribe
+> page's defect exactly: it told a subscriber their token was invalid, while they were still
+> subscribed, because the read had failed. The rule is proven by restoring the real pre-fix
+> LTB files (it fires) and by the fixed LTB tree (it is quiet across 23 pages).
+>
+> **4. Love Thy Barber was fixed under a lease and shipped.** Lease 1184 →
+> `app/preferences/page.tsx` and `app/unsubscribe/page.tsx` now read through
+> `requireLookup(await lookupContent(...))`; a branded `app/error.tsx` renders the 500
+> instead of Next's raw error page. Commits `7a16897` + `cd4bdf1`, deployed as
+> `love-thy-barber-8wcsxurxr` (aliased to www.lovethybarber.shop). Live probes: a bad token
+> still answers **404**, a missing token still answers **"No token provided"**, and the
+> FAILURE path was proven locally to answer **500 + "Something didn't load"** with
+> `⨯ Error: content lookup failed: TypeError: fetch failed ()` — the 500 is the proof that
+> the two outcomes are now different answers. Lease released with the deploy journal.
+>
+> **5. Omni Leads' checkout carried a SECOND defect, and the fix is committed but not
+> deployed.** `app/lp/[slug]/page.tsx` read `omni_landing_pages` and `omni_businesses` with
+> the **anon client** — both are `service_role_all`, so the read answered 200 with nothing and
+> the route could never render. It now uses the service-role client and classifies both reads
+> (commit `6be51ec`). It is **not deployed**: `federation.surfaces` has **no row for
+> `omnileads.shop`**, the federation protocol says a missing row means *stop*, and this agent
+> has **no write path to that table** (there is no `federation.surfaces` writer in the
+> Supabase wrappers). Lease 1185 was released with the exact row to add.
+>
+> **6. The archived copies were patched and committed, because they can deploy.**
+> `Website-omniclaw-newsletter-artwork` (`11dd1fc1`) and `Website-omniclaw-newsletter-final`
+> (`60d18de3`) each had four routes answering 404 for pages that exist: `/[slug]`,
+> `/lp/[slug]`, `/newsletter/[slug]`, `/p/[business]/[slug]`. All four now route their
+> single-row reads through the classifier, the newsletter route retries a timed-out read once
+> before giving up (`withTimeoutStrict`, which REJECTS rather than resolving to a `null`
+> sentinel), and each tree carries the gate **armed in its own build chain**. Both builds are
+> green; both trees still carry their pre-existing uncommitted work untouched. Their HEAD
+> commits are **not in `main`** — that is a separate, owner-level decision, and this session
+> did not touch it.
+>
+> **7. The gate became installable, because the class travels by copy.** Three pieces:
+> `scripts/fleet-trees.mjs` (**one** definition of what a surface is, imported by the sweep
+> and the patcher so they cannot disagree about the fleet), `scripts/patch-fleet-content-lookup.mjs`
+> (carries the classifier, the gate and the unit test into a copy, and **arms the gate in the
+> build chain only in a tree that passes it** — a build that fails for a defect its owner has
+> not been told about is a build that gets force-pushed around), and a **portable** unit test
+> (`node --test tests/content-lookup.test.ts`, no `tsx` needed, via
+> `allowImportingTsExtensions`) so a copy can run it without a toolchain it does not have.
+>
+> **8. The fleet is clean: 1063 pages, 65 checkouts, 0 findings — and 4 trees measure
+> themselves.** `npm run audit:fleet-content-lookup` reports no findings; the patcher reports
+> **4 trees with the gate armed in the build chain** (LTB, Omni Leads and the two archived
+> copies) and 0 still carrying the defect.
+>
+> Shipped in the flagship: `f8ba34c5`-class fleet tooling (see the commit list in this
+> section's items); the client surfaces under federation leases **1184** and **1185** (both
+> released).
+
 > **Session 61 (2026-11-04) — two bulk subscriber emails sent with no unsubscribe at
 > all, while four other mail paths in this same repo complied.**
 >
@@ -605,6 +681,12 @@
 57. Next: **never let a failed read reach `notFound()`.** `const row = requireLookup(await lookupContent(() => sb.from(…).maybeSingle())); if (!row) notFound();` — a 404 tells a crawler to forget the URL, a 500 tells it to come back, and only the second is true when the database merely failed to answer.
 58. ~~**the classifier had to learn that `.single()` reports absence as an error**~~ — **DONE (session 62, shipped `9539f1e8` / `e442939c`)**: the first version made `/[slug]`, `/lp/[slug]` and `/p/[business]/[slug]` serve 500 for a page that does not exist, and the live probe suite caught it the day it shipped. PGRST116 is now mapped to "missing" unless the details say the query returned more than one row, and `tests/content-lookup.test.ts` pins all ten shapes and runs in the build chain. The build then FAILED once, because `.vercelignore` excluded `tests/` — a scoped exception now ships that one file.
 59. Next: **a `.single()` read is an absence reported as an error; `.maybeSingle()` is an absence reported as data.** Pick the one that matches the outcome you mean, and let `lookupContent` do the mapping.
+60. ~~**the failed-lookup class has to be swept across the fleet, not just fixed in one repo**~~ — **DONE (session 62)**: `npm run audit:fleet-content-lookup` walks every canonical checkout under `~/Desktop/Clients` — **65 checkouts, 1063 pages** — applying the SAME detector (`scanFile` is imported from the canonical gate, so the fleet answer and the canonical answer cannot disagree about what the rule IS). The first run reported **13 findings in 4 trees**: `Love Thy Barber/Website`, `Omni Leads/Website`, and the two archived copies of this repo that carry the **production** Vercel project id. All four are fixed; the sweep now reports **0 findings**.
+61. Next: **run `npm run audit:fleet-content-lookup` before a cross-project release.** A single-repo gate cannot see a defect copied into another checkout, and this is how the class travels: the same single-row-read shape is written from scratch in every surface.
+62. Next: **a copy's build chain may only be armed with a gate the copy passes.** `npm run patch:fleet-content-lookup` writes the classifier, the gate and the unit test into a copy, and arms `audit:content-lookup` in that copy's `build` script **only when the copy has zero findings**. A build that fails for a defect its owner has not been told about is a build that gets force-pushed around — worse than the defect.
+63. Next: **a checkout that holds a live `.vercel` project link is a surface, even when it is a worktree.** The patcher skips scratch worktrees of this repo, because a worktree is a throw-away branch — **unless** it carries `.vercel/project.json`, which means `vercel --prod` from that folder ships it. That is why the two archived copies were patched and committed rather than refreshed.
+64. Next: **`federation.surfaces` must have a row for every surface this fleet deploys.** `omnileads.shop` has **no row**, so the federation protocol's RESOLVE step says stop, and this agent has no write path to that table. The Omni Leads checkout is fixed and committed (`6be51ec`) but **not deployed** until the row exists — see Owner Decisions Pending.
+65. Next: **a timeout that resolves to `null` is a failed read wearing an absence's clothes.** In `app/newsletter/[slug]/page.tsx` the old `withTimeout` resolved to `null` on expiry, which the page read as "no such slug" and answered 404 for five published issues the sitemap advertises. The timeout now REJECTS (`withTimeoutStrict`), so the failure stays in the failure channel, and the lookup retries once before giving up.
 
 
 
@@ -654,13 +736,19 @@
 - **Some `profiles.agent_name` values are real people's names on a public showcase.** The arena leaderboard renders `agent_name` (falling back to `business_name`) as the agent's display name, and several rows carry a human name — "Jana Hasson" among them. This is **database content the owner manages**, not a code defect: the route returns what the row says, and the row is the owner's choice. Session 58 removed the *separate* `ownerName` field from the public response (that one was the route publishing data no surface needed), but the `agent_name` column itself stays as the owner set it. Changing those rows is a data decision, not the agent's.
 - **Four fleet trees have lost their git link and are one `vercel --prod` away from overwriting production.** `Sitani Mafi/Omni AI/.deploy-worktrees/login-fix`, `Sitani Mafi/Omni AI/_deploy-worktrees/dashboard-fix`, `_tmp/omni-newsletter-fix` and `_tmp/omni-premium-newsletter-fix` each carry a `.git` file pointing at `…/Clients/Omni AI/Omni AI Website/.git/worktrees/<name>`, a path that no longer exists (the repo moved to `Sitani Mafi/Omni AI/Website` and the worktree metadata went with it). `git` refuses to operate in all four; they hold 193 route files against canonical's 252, each carries work no other tree has, and **all four are linked to the production Vercel project** — so a CLI deploy from any of them would delete ~59 live route families from omnileadsagi.com, exactly as happened on 2026-10-29. Session 58 patched the privacy leak in all four on disk and gave them the gates, so their content is safe; **retiring them, re-syncing them, or re-initialising them as fresh repos is the owner's decision** — the agent will not `git init` over a tree that holds unversioned work, and will not delete a tree the owner may still need.
 
+- **`omnileads.shop` has no row in `federation.surfaces`, so its fix cannot be deployed.** The Omni Leads checkout (`/Users/janahasson/Desktop/Clients/Omni Leads/Website`) was fixed and committed locally (`6be51ec`): `app/lp/[slug]/page.tsx` read `omni_landing_pages` and `omni_businesses` with the **anon client** — both are `service_role_all`, so the read answered 200 with nothing and the route could never render — and both reads are now classified through `requireLookup(await lookupContent(...))`. The federation protocol's RESOLVE step says a missing row means **stop**, and there is **no write path to `federation.surfaces`** from this agent's Supabase wrappers, so the deploy was not attempted. The row to add: domain `omnileads.shop`, its Vercel project, codebase `/Users/janahasson/Desktop/Clients/Omni Leads/Website`, deploy method CLI (`vercel --prod`). Until it exists, that surface ships the defect.
+
 ## 📚 Stats
 - Sessions: 62
-- Lines written: 3846
+- Lines written: 4028
+- Fleet surfaces swept by `audit:fleet-content-lookup`: **65 checkouts / 1063 pages, 0 findings**
+- Trees carrying the content-lookup gate with the build chain armed: **4**
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-04 | correctness | **A defect class that travels by copy needs a sweep, not a fix in one repo.** The flagship's failed-lookup fix (item 56) made one checkout safe; the same single-row-read shape is written from scratch in every surface, so the class had already been copied into four other trees. `npm run audit:fleet-content-lookup` (`scripts/audit-fleet-content-lookup.mjs`) walks every canonical checkout under `~/Desktop/Clients` — **65 checkouts, 1063 pages** — importing `scanFile` from the canonical gate so the two answers cannot disagree about what the rule IS, and `scripts/fleet-trees.mjs` gives the sweep and the patcher ONE definition of what a surface is (a directory with a `page.tsx` under `app/`), because two tools that discover the fleet separately will eventually disagree about it. The first run reported **13 findings in 4 trees**: `Love Thy Barber/Website` (2 routes — the unsubscribe page told a subscriber their token was invalid while they were still subscribed, because the read had failed), `Omni Leads/Website` (2 reads, plus an anon client against `service_role_all` tables, which means the route could never render), and the two archived copies of this repo, each carrying the **production** Vercel project id — a `vercel --prod` from either folder would have shipped the defect back to production. All four are fixed and the sweep now reports **0 findings across 1063 pages** | 200 |
+| 2026-11-04 | tooling | **A gate that is installed in a copy it would fail is a gate that gets force-pushed around.** `scripts/patch-fleet-content-lookup.mjs` carries the classifier, the gate and the unit test into a copy and arms `audit:content-lookup` in that copy's `build` script — **but only when the copy has zero findings**. Arming it in a copy that still carries the defect would block that copy's next deploy for a reason that has nothing to do with what it was deploying, and a blocked deploy gets skipped. So a copy with findings gets the instruments and a printed to-do list; the gate is armed on the next run, after the fix. Two supporting decisions: the unit test was made **portable** (`node --test tests/content-lookup.test.ts`, no `tsx`, via `allowImportingTsExtensions`) so a copy can run it without a toolchain it does not have, and the patcher **skips scratch worktrees of this repo unless they hold a live `.vercel/project.json`** — a worktree is a throw-away branch, but one that can DEPLOY is a surface, which is why the two archived copies were patched rather than refreshed | 160 |
 | 2026-11-04 | correctness | **The fix for the failed lookup turned three 404s into 500s — and the live probe suite caught it the day it shipped.** `lookupContent` classified a Supabase read as found / missing / failed by looking at `error`. That is right for a real failure and **wrong for an absent row read with `.single()`**: PostgREST cannot represent "no rows" as `application/vnd.pgrst.object+json`, so `.single()` answers **406 / PGRST116** where `.maybeSingle()` answers `{ data: null, error: null }`. The classifier therefore called an absent row a FAILURE, and `/[slug]`, `/lp/[slug]` and `/p/[business]/[slug]` served **HTTP 500 for a page that does not exist**. PostgREST uses that ONE code for both "no rows" and "more than one row", and the two want opposite answers — no rows is a 404, more than one row is a data-integrity failure that must never become a 404 — so the `details` string ("Results contain N rows") is what separates them. `lookupContent` now maps PGRST116 to "missing" unless the details say otherwise, and `tests/content-lookup.test.ts` pins all ten response shapes, is proven to fail without the mapping, and runs in the build chain | 30 |
 | 2026-11-04 | tooling | **A local build and a deployment build do not have the same inputs, and a control that only one of them can see is a control that does not hold.** The new `npm run test:content-lookup` step passed locally and **failed the Vercel build** — `.vercelignore` excludes all of `tests/`, because that directory holds local test OPERATOR artifacts (previews, operator scripts) that must not enter a deployment bundle. The local checkout has the file; the bundle does not. The deploy was FAILED, production kept serving the previous commit, and `npm run audit:deploy` said so ("the build of 9539f1e8 FAILED") rather than letting a broken release look like a release. The fix was a **scoped exception**: `tests/*` plus `!tests/content-lookup.test.ts`, so the one pure unit test (no credentials, no network) reaches the build and every operator artifact stays out — verified with gitignore semantics rather than assumed | 30 |
 | 2026-11-04 | correctness | **Five published newsletter issues were answering HTTP 404 because the database was slow, and every one of them was real.** The live sweep flagged `/newsletter/interlinked-{free,premium}-2026-11-{01,02,03}` as dead sitemap URLs — five URLs the sitemap advertises. They were not dead: their read ran past a 2.5 s timeout, and the timeout's `null` was read as "no row with that slug", so `notFound()` answered 404 for a page that exists. Every one of them answered HTTP 200 a minute later. The root cause is that **Supabase never throws**: a failed read returns `{ data: null, error }`, byte-identical to a read that found nothing, so every page that destructured `{ data }` and tested it for falsiness was making a claim it could not support. To a crawler the two answers mean opposite things — a 404 says forget this URL, a 500 says come back. `lib/server/content-lookup.ts` now classifies a read as found / missing / failed, and `requireLookup` throws on a failed lookup so the route's `error.tsx` renders a retryable 500; only a genuine absence reaches `notFound()`. Six routes were fixed, the newsletter route retries once before giving up, the live sweep re-fetches a URL before calling it dead, and `npm run audit:content-lookup` now fails the build when a page reaches `notFound()` from an unclassified read | 30 |
@@ -866,6 +954,10 @@
 - **a-monitor-that-drives-a-site-harder-than-a-reader-does-must-distinguish-the-site-refusing-it-from-the-site-breaking** — the same sweep, one defect earlier, reported five *dead sitemap URLs* because a read had timed out; a re-fetch a minute later returned 200 for all five. The general form: **a finding is a claim about the world, and a claim built on one sample of a system under artificial load is a claim about the load, not the world.** Re-fetch before declaring death, and say which of the two answers you got.
 - **the same query can report absence as data or as an error, and a classifier that reads one of them will be wrong on the other** — `.maybeSingle()` answers `{ data: null, error: null }` for no rows; `.single()` answers `{ data: null, error: PGRST116 }` for the same absence, because PostgREST's `application/vnd.pgrst.object+json` cannot represent "no rows". Worse, PostgREST uses that ONE code for "no rows" AND "more than one row" — two outcomes that want opposite answers (404 versus a data-integrity failure that must never be a 404) — and only the `details` string separates them. The general form: **an API that encodes one outcome in two different channels does not remove the ambiguity, it relocates it**, and the code that consumes the API has to know which channel the outcome came in. The move is to read the OUTCOME, not the CHANNEL: classify found / missing / failed, and map the absence channel explicitly rather than inferring it from the presence of an error.
 - **a local build and a deployment build do not have the same inputs** — `npm run build` passed locally and the Vercel build failed, because `.vercelignore` excluded the very file the new build-chain step needed. The general form: **a build that runs on a machine you control is not the build that runs on the platform**, and the difference is a file manifest, not a compiler version. The control here was already right — `audit:deploy` reported "the build of 9539f1e8 FAILED" and refused to call a broken release a release — but the *local* build had said nothing, because it had a file the bundle did not. When a build-chain step depends on a file, the question to ask is **is that file in the bundle**, and the answer has to be checked with the same ignore semantics the platform uses, not with the local filesystem.
+- **a defect class that travels by copy needs a sweep — and the sweep needs ONE definition of the fleet** — The failed-lookup fix made one checkout safe; the same single-row-read shape is written from scratch in every surface, and the fleet sweep found the class already copied into **four** other trees (65 checkouts, 1063 pages, 13 findings), two of which held the **production** Vercel project id. The general form: **a fix in one repository is a fix in one repository** — a rule that only exists where it was written cannot hold a fleet, and the fleet is where the copies live. Two sub-patterns make the sweep trustworthy: (a) the sweep **imports the canonical detector** rather than re-implementing the rules, so the fleet answer and the canonical answer cannot disagree about what the rule IS; and (b) the discovery of "what counts as a surface" lives in **one shared module**, because three tools that each discover the fleet separately will eventually disagree about it — and two tools that disagree about their subject area cannot both be right.
+- **a gate installed in a copy it would fail is a gate that gets force-pushed around** — `patch:fleet-content-lookup` carries the classifier, the gate and the unit test into a copy and arms the gate in that copy's `build` script **only when the copy has zero findings**. The general form: **a control that fires before the owner has been told what it found is not a control, it is an obstacle** — a blocked deploy gets skipped, and a skipped gate is not a gate. The instrument and the arming are therefore **separate decisions**: install the instruments everywhere, arm the gate only where it passes, and re-run after the fix so the arming happens as a consequence of the work rather than as a favour.
+- **a worktree that can deploy is a surface** — the patcher skips scratch worktrees of the canonical repo, because a worktree is a throw-away branch, not a surface — **unless** it holds a live `.vercel/project.json`, which means `vercel --prod` from that folder ships it. The general form: **"throwaway" is a claim about intent, and the mechanism is the evidence** — the two archived copies of this repo were stale by construction and one command away from production, and the established precedent in this file was to patch them rather than refresh them, for exactly that reason. The tell is a file on disk, not a naming convention.
+- **a timeout that resolves to a sentinel is a failed read wearing an absence's clothes** — the newsletter route's `withTimeout` resolved to `null` when its 2.5 s budget expired, and the page read that `null` as "no row with that slug" and answered 404 for five published issues the sitemap advertises. The general form: **a sentinel value is an absence by construction**, so a timeout expressed as one is indistinguishable from the absence it is imitating, and the ambiguity compounds at every layer that reads it. The timeout now **rejects** (`withTimeoutStrict`), keeping the failure in the failure channel where the classifier can see it, and the lookup retries once before giving up — because the correct answer to "the database was slow" is "ask again", not "this page does not exist".
 
 
 ## ⚡ Rules
@@ -929,6 +1021,10 @@
 - Run `npm run audit:email-unsubscribe` before every ship — the only check that sees a bulk email with **no working way out of it**. A shared body cannot carry a per-recipient token, so a bulk send needs per-recipient sends, a `List-Unsubscribe` header, and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` — and the mechanism you tell a subscriber about in the welcome email must still be in the next issue
 - Run `npm run audit:image-aspect` before every ship — the only check that compares a declared `<Image width/height>` with the **real pixel dimensions** read from the file header. A declared aspect that disagrees with the file is a stretched render, and `next/image` trusts the declaration it was given
 - Run `npm run audit:fleet-email-unsubscribe` before a cross-project release — the defect class travels by copy, and the fleet sweep is how it is found in a tree the canonical surface never sees
+- Run `npm run audit:fleet-content-lookup` before a cross-project release — same reason, same class: a page that answers 404 because a read FAILED. It applies the canonical detector to **65 checkouts / 1063 pages**
+- Run `npm run patch:fleet-content-lookup` to carry the classifier, the gate and the unit test into a copy — and arm the gate in that copy's build chain **only when the copy passes it**
+- A copy holding a live `.vercel/project.json` can DEPLOY — treat it as a surface and patch it, even when it is a worktree of this repo
+- A timeout that resolves to `null` is indistinguishable from an absent row — make the timeout REJECT, and retry the lookup once before giving up
 - Commit every logical unit: `agent: [what]`
 - Push when done
 - Ship through the federation protocol: resolve the surface, acquire the lease, push `main`, poll the deployment for the pushed SHA, verify the live HTML, release the lease with the deploy journal

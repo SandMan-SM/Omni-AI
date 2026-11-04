@@ -48,6 +48,20 @@
  *      helper functions, because the read almost never sits in the
  *      same function as the guard.
  *
+ *   3. `failed-read-answered-as-absent` — the value a branch tests for
+ *      ABSENCE traces back to a single-row Supabase read that is not
+ *      routed through `lookupContent`, and that branch answers with an
+ *      absence ("link not recognized", "expired", "no such record").
+ *      This is the same defect wearing a different hat: rule 2 catches
+ *      the page that says 404, this catches the page that says "that
+ *      link is invalid" — and a page that WRITES on render (a
+ *      one-click unsubscribe) then tells the subscriber they are
+ *      unsubscribed while leaving them subscribed. Found on
+ *      2026-11-04 in `Love Thy Barber/Website` at
+ *      `app/unsubscribe/page.tsx`, which had been telling subscribers
+ *      their unsubscribe link was invalid whenever the database read
+ *      failed — and not unsubscribing them.
+ *
  * The scanned surface is indexable pages (`app/…/page.tsx`) plus any
  * file passed on the command line. API route handlers are deliberately
  * OUT of scope: a 404 from an authenticated, non-indexed API endpoint
@@ -160,8 +174,24 @@ function testedIdentifiers(condition) {
   const re = /!\s*\(?\s*([A-Za-z_$][\w$]*)\s*\)?/g;
   let m;
   while ((m = re.exec(condition))) ids.add(m[1]);
+  // `row === null` / `row == null` / `row === undefined` are the same test
+  // written out.
+  const explicit = /([A-Za-z_$][\w$]*)\s*(?:===|==)\s*(?:null|undefined)/g;
+  while ((m = explicit.exec(condition))) ids.add(m[1]);
   return [...ids];
 }
+
+/**
+ * The words a page uses when it tells the reader that a record does not
+ * exist.
+ *
+ * This is the vocabulary of an ABSENCE ANSWER, and it is what separates
+ * rule 3 from a page that simply degrades gracefully when an optional
+ * piece of content is missing. A page that renders "we couldn't find
+ * that" has made a CLAIM about the record; a page that renders less
+ * content has not.
+ */
+const ABSENCE_ANSWER = /\b(?:invalid|not\s+found|notfound|not\s+recognized|unrecognized|expired|doesn'?t\s+exist|does\s+not\s+exist|no\s+such|no\s+longer\s+(?:valid|found|active)|unknown\s+link|bad\s+link)\b/i;
 
 /**
  * Every single-row read in `text`, each as the statement that contains it.
@@ -336,6 +366,26 @@ function resolveReads(expr, fns, depth = 0) {
   return unclassified;
 }
 
+/**
+ * The body of the branch that follows an `if (...)` condition.
+ *
+ * A branch is either a block (`{ … }`) or a single statement
+ * (`state = 'invalid';`). Both are answers to the condition, so both are
+ * read.
+ */
+function branchBody(src, parenEnd) {
+  let after = parenEnd + 1;
+  while (after < src.length && /\s/.test(src[after])) after++;
+  if (src[after] === "{") {
+    const end = matchPair(src, after, "{", "}");
+    if (end < 0) return null;
+    return { body: src.slice(after, end), start: after };
+  }
+  const semi = src.indexOf(";", after);
+  if (semi < 0) return null;
+  return { body: src.slice(after, semi), start: after };
+}
+
 /** Rule 1 — an error branch that answers "not found". */
 function findErrorNotFound(src) {
   const findings = [];
@@ -352,21 +402,10 @@ function findErrorNotFound(src) {
     // A compound test like `if (error && !notFound)` is not our shape.
     if (/&&|\|\|/.test(condition)) continue;
 
-    let body;
-    let bodyStart;
-    let after = parenEnd + 1;
-    while (after < src.length && /\s/.test(src[after])) after++;
-    if (src[after] === "{") {
-      const end = matchPair(src, after, "{", "}");
-      if (end < 0) continue;
-      body = src.slice(after, end);
-      bodyStart = after;
-    } else {
-      const semi = src.indexOf(";", after);
-      if (semi < 0) continue;
-      body = src.slice(after, semi);
-      bodyStart = after;
-    }
+    const branch = branchBody(src, parenEnd);
+    if (!branch) continue;
+    const body = branch.body;
+    const bodyStart = branch.start;
     if (!body.includes("notFound(")) continue;
     findings.push({
       rule: "lookup-error-becomes-notfound",
@@ -401,18 +440,82 @@ function findUnclassifiedGuard(src) {
       const binding = findBinding(src, id, callStart);
       if (!binding) continue;
       const reads = resolveReads(binding.expr, fns);
-      for (const read of reads) {
-        const via = read.via ? ` (read inside \`${read.via}()\`)` : "";
-        findings.push({
-          rule: "missing-lookup-not-distinguished",
-          line: lineAt(src, binding.start),
-          detail:
-            `\`${id}\` — tested by \`if (${condition.trim()})\` before notFound(), ` +
-            `traces to a single-row Supabase read${via} that does not go through ` +
-            `lookupContent(). A failed read is then indistinguishable from an ` +
-            `absent row, so the page answers 404 for a page that exists.`,
-        });
-      }
+      if (!reads.length) continue;
+      // One finding per guarded value, not one per read: a helper that
+      // reads two rows is one defect, and two identical lines would train
+      // the reader to skip past them.
+      const via = reads[0].via ? ` (read inside \`${reads[0].via}()\`)` : "";
+      const howMany =
+        reads.length > 1 ? `${reads.length} single-row Supabase reads` : "a single-row Supabase read";
+      findings.push({
+        rule: "missing-lookup-not-distinguished",
+        line: lineAt(src, binding.start),
+        detail:
+          `\`${id}\` — tested by \`if (${condition.trim()})\` before notFound(), ` +
+          `traces to ${howMany}${via} that does not go through ` +
+          `lookupContent(). A failed read is then indistinguishable from an ` +
+          `absent row, so the page answers 404 for a page that exists.`,
+      });
+    }
+  }
+  return findings;
+}
+
+/**
+ * Rule 3 — an ABSENCE ANSWER built on an unclassified read.
+ *
+ * Rule 2 catches the page that answers "this page does not exist" with a
+ * 404. This catches the page that answers "that link is invalid" — the
+ * same defect in a different hat, and in one shape it is worse than a 404:
+ *
+ *   /unsubscribe?token=…
+ *     const { data: lead } = await sb.from('leads')…maybeSingle();
+ *     if (!lead) { state = 'invalid'; }        // ← a FAILED read lands here
+ *     else { await sb.from('leads').update({ newsletter_status: 'unsubscribed' }) }
+ *
+ * When the read fails, the subscriber is told their link is invalid AND
+ * the unsubscribe write never happens. The subscriber believes they left
+ * the list and is still on it.
+ */
+function findAbsenceAnswer(src) {
+  const findings = [];
+  const fns = collectLocalFunctions(src);
+  const re = /\bif\s*\(/g;
+  let m;
+  while ((m = re.exec(src))) {
+    const parenStart = m.index + m[0].length - 1;
+    const parenEnd = matchPair(src, parenStart, "(", ")");
+    if (parenEnd < 0) continue;
+    const condition = src.slice(parenStart + 1, parenEnd);
+    const ids = testedIdentifiers(condition);
+    if (!ids.length) continue;
+
+    const branch = branchBody(src, parenEnd);
+    if (!branch) continue;
+    // A branch that calls notFound() is rule 2's business. Reporting it
+    // twice would train the reader to ignore the gate.
+    if (branch.body.includes("notFound(")) continue;
+    if (!ABSENCE_ANSWER.test(branch.body)) continue;
+
+    for (const id of ids) {
+      const binding = findBinding(src, id, m.index);
+      if (!binding) continue;
+      const reads = resolveReads(binding.expr, fns);
+      if (!reads.length) continue;
+      const via = reads[0].via ? ` (read inside \`${reads[0].via}()\`)` : "";
+      const howMany =
+        reads.length > 1 ? `${reads.length} single-row Supabase reads` : "a single-row Supabase read";
+      findings.push({
+        rule: "failed-read-answered-as-absent",
+        line: lineAt(src, binding.start),
+        detail:
+          `\`${id}\` — tested by \`if (${condition.trim()})\`, whose branch answers ` +
+          `with an absence ("${(branch.body.match(ABSENCE_ANSWER) || [""])[0]}"), ` +
+          `traces to ${howMany}${via} that does not go through ` +
+          `lookupContent(). A failed read is then answered as "no such record", ` +
+          `which is a claim the page cannot support. Route the read through ` +
+          `lookupContent() and requireLookup() so a failure is a retryable 500.`,
+      });
     }
   }
   return findings;
@@ -425,7 +528,11 @@ function scanFile(path, root) {
   }
   const file = relative(root, path);
   const findings = [];
-  for (const f of [...findErrorNotFound(src), ...findUnclassifiedGuard(src)]) {
+  for (const f of [
+    ...findErrorNotFound(src),
+    ...findUnclassifiedGuard(src),
+    ...findAbsenceAnswer(src),
+  ]) {
     findings.push({ ...f, file });
   }
   return findings;
@@ -437,7 +544,13 @@ function scanFile(path, root) {
  * what it does — the defect class travels by copy, so the rule has to be
  * installable wherever a copy is.
  */
-export { scanFile, collectFiles, findErrorNotFound, findUnclassifiedGuard };
+export {
+  scanFile,
+  collectFiles,
+  findErrorNotFound,
+  findUnclassifiedGuard,
+  findAbsenceAnswer,
+};
 
 function main() {
   const { reportOnly, root, files } = parseArgs(process.argv.slice(2));

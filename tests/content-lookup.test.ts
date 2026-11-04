@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { lookupContent, requireLookup } from '../lib/server/content-lookup';
+import { lookupContent, requireLookup } from '../lib/server/content-lookup.ts';
 
 /**
  * The classifier that keeps a failed database read from answering 404.

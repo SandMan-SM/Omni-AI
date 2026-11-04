@@ -32,32 +32,13 @@
  *
  * Exit codes: 0 no findings, 1 findings, 2 the fleet root is unusable.
  */
-import { existsSync, readdirSync, statSync } from "node:fs";
+import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
 import { scanFile } from "./audit-content-lookup.mjs";
-
-/** Directories that hold copies, not the surfaces themselves. */
-const SKIP_SEGMENTS = [
-  "node_modules",
-  "_tmp",
-  "_release",
-  "_agent-worktrees",
-  "_codex-worktrees",
-  "_deploy-worktrees",
-  "worktrees",
-  "__pycache__",
-  ".git",
-  ".next",
-  ".next-prod",
-  "dist",
-  "build",
-  "out",
-  "coverage",
-  "docs",
-];
+import { candidateRoots, pageFiles } from "./fleet-trees.mjs";
 
 function parseArgs(argv) {
   const options = {
@@ -70,107 +51,6 @@ function parseArgs(argv) {
     else if (a === "--dir") options.dir = resolve(argv[++i]);
   }
   return options;
-}
-
-function isSkippedSegment(entry) {
-  return SKIP_SEGMENTS.includes(entry) || entry.startsWith(".");
-}
-
-function hasPage(dir, depth) {
-  if (depth > 5) return false;
-  let entries;
-  try {
-    entries = readdirSync(dir);
-  } catch {
-    return false;
-  }
-  for (const entry of entries) {
-    const path = join(dir, entry);
-    let stats;
-    try {
-      stats = statSync(path);
-    } catch {
-      continue;
-    }
-    if (stats.isDirectory()) {
-      if (hasPage(path, depth + 1)) return true;
-    } else if (/^page\.(tsx|jsx)$/.test(entry)) {
-      return true;
-    }
-  }
-  return false;
-}
-
-function looksLikeSite(path) {
-  for (const app of [join(path, "app"), join(path, "src", "app")]) {
-    if (existsSync(app) && hasPage(app, 0)) return true;
-  }
-  return false;
-}
-
-/** Canonical site checkouts under `dir` — copies and worktrees excluded. */
-function candidateRoots(dir) {
-  const found = [];
-  const walk = (current, depth) => {
-    if (depth > 5) return;
-    let entries;
-    try {
-      entries = readdirSync(current);
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (isSkippedSegment(entry)) continue;
-      const path = join(current, entry);
-      let stats;
-      try {
-        stats = statSync(path);
-      } catch {
-        continue;
-      }
-      if (!stats.isDirectory()) continue;
-      if (looksLikeSite(path)) {
-        found.push(path);
-        continue; // do not descend into a site — nested checkouts are copies
-      }
-      walk(path, depth + 1);
-    }
-  };
-  walk(dir, 0);
-  return found.sort();
-}
-
-/** Every page in a checkout. */
-function pageFiles(root) {
-  const out = [];
-  const walk = (dir, depth) => {
-    if (depth > 6) return;
-    let entries;
-    try {
-      entries = readdirSync(dir);
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      const path = join(dir, entry);
-      let stats;
-      try {
-        stats = statSync(path);
-      } catch {
-        continue;
-      }
-      if (stats.isDirectory()) {
-        if (entry === "node_modules" || entry === ".next") continue;
-        walk(path, depth + 1);
-      } else if (/^page\.(tsx|jsx)$/.test(entry)) {
-        out.push(path);
-      }
-    }
-  };
-  for (const app of [join(root, "app"), join(root, "src", "app")]) {
-    if (existsSync(app)) walk(app, 0);
-  }
-  return out;
 }
 
 function main() {
