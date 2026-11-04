@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { lookupContent, requireLookup } from '@/lib/server/content-lookup';
 import PageLoading from '@/components/page-loading';
 import BookingSlots from './BookingSlots';
 
@@ -24,16 +25,23 @@ export default async function BookingPage({
   // Service role, not the anon key: `omni_businesses` is RLS-locked to
   // `service_role`, so an anon read returns an empty list for every id
   // and the page could never tell a real business from a dead link.
-  const { data: business, error } = await createAdminClient()
-    .from('omni_businesses')
-    .select('id, name, industry, sender_name')
-    .eq('id', bizId)
-    .maybeSingle();
-
-  if (error) {
-    console.error('[book] business lookup failed:', error);
-    notFound();
-  }
+  //
+  // A FAILED read is not a dead link. This used to log the error and call
+  // `notFound()` anyway, so a database blip answered HTTP 404 for a
+  // business that exists — telling a crawler the booking page was never
+  // published, and telling a customer who followed a link from an email
+  // that the business does not accept bookings. A failed lookup now
+  // throws (a 500, which says "try again"); only a read that succeeded
+  // and found no row produces the 404.
+  const business = requireLookup(
+    await lookupContent(() =>
+      createAdminClient()
+        .from('omni_businesses')
+        .select('id, name, industry, sender_name')
+        .eq('id', bizId)
+        .maybeSingle(),
+    ),
+  );
 
   if (!business) {
     notFound();

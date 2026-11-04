@@ -3,22 +3,31 @@ import { notFound } from 'next/navigation';
 
 import { todayPt } from '@/lib/tz';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { lookupContent, requireLookup } from '@/lib/server/content-lookup';
 
 const supabase = createAdminClient();
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const { slug } = await params;
-  const { data: page } = await supabase
-    .from('omni_landing_pages')
-    .select('headline, subhead, business_id')
-    .eq('slug', slug)
-    .single();
-  if (!page) return { title: 'Omni AI', description: 'AI marketing and automation for local businesses.' };
-  const { data: business } = await supabase
-    .from('omni_businesses')
-    .select('name')
-    .eq('id', page.business_id)
-    .single();
+  // A failed read is not a missing page. The page body handles the
+  // distinction with `requireLookup` (a failure is a 500, not a 404);
+  // here the outcome only decides the title, so a failure degrades to the
+  // generic title rather than taking the whole request down.
+  const pageLookup = await lookupContent(() =>
+    supabase
+      .from('omni_landing_pages')
+      .select('headline, subhead, business_id')
+      .eq('slug', slug)
+      .single(),
+  );
+  if (pageLookup.kind !== 'found') {
+    return { title: 'Omni AI', description: 'AI marketing and automation for local businesses.' };
+  }
+  const page = pageLookup.value as { headline: string; subhead: string; business_id: string };
+  const businessLookup = await lookupContent(() =>
+    supabase.from('omni_businesses').select('name').eq('id', page.business_id).single(),
+  );
+  const business = businessLookup.kind === 'found' ? (businessLookup.value as { name: string }) : null;
   const title = business?.name ? `${page.headline} — ${business.name}` : page.headline;
   const description = page.subhead || 'AI-powered solutions tailored to your business.';
   const url = `https://omnileadsagi.com/lp/${slug}`;
@@ -62,11 +71,18 @@ type Business = {
 };
 
 async function loadPage(slug: string): Promise<{ page: LandingPage; business: Business } | null> {
-  const { data: page } = await supabase
-    .from('omni_landing_pages')
-    .select('*')
-    .eq('slug', slug)
-    .single();
+  // A failed read is not a missing landing page. `requireLookup` throws on
+  // a failed lookup so the route renders a 500 rather than a 404 that
+  // would drop a live campaign page out of the index.
+  const page = requireLookup(
+    await lookupContent(() =>
+      supabase
+        .from('omni_landing_pages')
+        .select('*')
+        .eq('slug', slug)
+        .single(),
+    ),
+  );
 
   if (!page) return null;
 
@@ -76,11 +92,15 @@ async function loadPage(slug: string): Promise<{ page: LandingPage; business: Bu
     .update({ views: (page.views ?? 0) + 1 })
     .eq('id', page.id);
 
-  const { data: business } = await supabase
-    .from('omni_businesses')
-    .select('name, industry, contact_email')
-    .eq('id', page.business_id)
-    .single();
+  const business = requireLookup(
+    await lookupContent(() =>
+      supabase
+        .from('omni_businesses')
+        .select('name, industry, contact_email')
+        .eq('id', page.business_id)
+        .single(),
+    ),
+  );
 
   return { page: page as LandingPage, business: business as Business };
 }

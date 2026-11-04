@@ -13,6 +13,7 @@ import Link from 'next/link';
 import CaseCosmicBackground from '@/components/case-study/CaseCosmicBackground';
 import ShareRow from '@/components/case-study/ShareRow';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { lookupContent, requireLookup } from '@/lib/server/content-lookup';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -39,13 +40,19 @@ type Landing = {
 
 async function fetchLanding(business: string, slug: string): Promise<Landing | null> {
   const sb = createAdminClient();
-  const { data } = await sb
-    .from('marketing_landings')
-    .select('*')
-    .eq('business_slug', business)
-    .eq('slug', slug)
-    .single();
-  return (data as Landing) || null;
+  // A failed read is not a missing landing. `requireLookup` throws on a
+  // failed lookup so the route renders a 500 rather than a 404 for a page
+  // that exists.
+  return requireLookup(
+    await lookupContent(() =>
+      sb
+        .from('marketing_landings')
+        .select('*')
+        .eq('business_slug', business)
+        .eq('slug', slug)
+        .single(),
+    ),
+  ) as Landing | null;
 }
 
 async function fetchMetrics(business_slug: string): Promise<{

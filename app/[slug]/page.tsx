@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
+import { lookupContent, requireLookup } from "@/lib/server/content-lookup";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -19,12 +20,20 @@ interface Props {
 
 async function getLandingPage(slug: string) {
   const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("landing_pages")
-    .select("slug, topic, title, description, date, tweet_url")
-    .eq("slug", slug)
-    .single();
-  return data;
+  // A failed read is not a missing landing page. These daily pages are the
+  // site's largest traffic surface — each one is a tweet landing page — so
+  // a database blip must not answer 404 for a page that exists. A failed
+  // lookup throws (a 500, which says "try again"); only a read that
+  // succeeded and found no row produces the 404.
+  return requireLookup(
+    await lookupContent(() =>
+      supabase
+        .from("landing_pages")
+        .select("slug, topic, title, description, date, tweet_url")
+        .eq("slug", slug)
+        .single(),
+    ),
+  );
 }
 
 // Pull the 3 most recent daily landing pages (excluding the current
@@ -58,17 +67,23 @@ async function getLatestNewsletterPost() {
   // The shared visibility filter keeps this handoff pointing at an issue a
   // reader can actually open. Filtering on `published_at` alone used to
   // hand visitors the newest draft — a link that 404s.
-  const { data } = await publishedNewsletterOnly(
-    supabase
-      .from("newsletter_posts")
-      .select("slug, subject, intro, published_at, tier")
-      .not("slug", "is", null),
-  )
-    .lte("published_at", new Date().toISOString())
-    .order("published_at", { ascending: false })
-    .limit(1)
-    .single();
-  return data;
+  //
+  // A failed read here drops the handoff card; it does not 404 the page.
+  // `lookupContent` makes that distinction explicit instead of letting a
+  // null result do it by accident.
+  const lookup = await lookupContent(() =>
+    publishedNewsletterOnly(
+      supabase
+        .from("newsletter_posts")
+        .select("slug, subject, intro, published_at, tier")
+        .not("slug", "is", null),
+    )
+      .lte("published_at", new Date().toISOString())
+      .order("published_at", { ascending: false })
+      .limit(1)
+      .single(),
+  );
+  return lookup.kind === "found" ? lookup.value : null;
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {

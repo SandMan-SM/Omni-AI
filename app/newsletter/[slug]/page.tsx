@@ -1,4 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import { cache } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -17,6 +18,7 @@ import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
+import { lookupContent } from "@/lib/server/content-lookup";
 import { newsletterShareDescription } from "@/lib/newsletter-share-copy";
 import {
   NewsletterIssueCard,
@@ -184,29 +186,98 @@ function withTimeout<T>(promise: PromiseLike<T>, ms: number): Promise<T | null> 
   ]);
 }
 
+/**
+ * A timeout that REJECTS instead of resolving to a sentinel.
+ *
+ * `withTimeout` resolves to `null` when its budget is exceeded, and `null`
+ * is indistinguishable from "no such row" — which is exactly how a slow
+ * database turned into a 404 for a published issue. A rejection keeps the
+ * failure in the failure channel, where `lookupContent` can tell it apart
+ * from an absent row.
+ */
+function withTimeoutStrict<T>(promise: PromiseLike<T>, ms: number): Promise<T> {
+  const guarded = Promise.resolve(promise);
+  // The original promise keeps running after the race is lost. If it later
+  // rejects, that rejection would be unhandled — attach a handler so it is
+  // not. `guarded` itself keeps its own type and is what the race awaits.
+  guarded.catch(() => undefined);
+  return Promise.race([
+    guarded,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`timed out after ${ms} ms`)), ms),
+    ),
+  ]);
+}
+
 // Use admin client so shared links always work — no auth/RLS gating on individual posts.
 // Filter to published rows only: when an admin unpublishes a post (sets
 // published_at = NULL) it should drop out of search-engine indexes AND stop
 // resolving via direct URL, otherwise the "remove from feed" cleanup leaks
 // content the operator explicitly took down. Drafts and removed issues now
 // 404 cleanly here.
-async function getPost(slug: string) {
+//
+// WHY A FAILED LOOKUP IS NOT A MISSING POST
+//
+// `withTimeout` resolves to `null` when its budget is exceeded, and this
+// function used to treat that `null` exactly like "no row with that slug"
+// — so a slow database made the page call `notFound()` and serve **HTTP
+// 404 for a genuinely published issue that the sitemap advertises**. A
+// crawler following the sitemap was told the page did not exist; a reader
+// who clicked a link to today's issue was told it was never published.
+//
+// The two answers have to be different, because they mean opposite things
+// to a search engine:
+//
+//   no row             -> 404 is correct — the URL should leave the index
+//   the lookup FAILED  -> 404 is a lie — the URL should stay, and be retried
+//
+// So a timed-out or errored lookup is retried once, and if it still fails
+// the error propagates to the segment's `error.tsx`, which renders "We
+// couldn't load this issue. Try again." with a 500. A 500 tells a crawler
+// to come back; a 404 tells it to forget the page.
+async function lookupPost(slug: string) {
   const fallbackPost = getNewsletterFallbackPost(slug);
   if (fallbackPost) return fallbackPost;
 
   const supabase = createAdminClient();
-  const result = await withTimeout(
-    publishedNewsletterOnly(
-      supabase.from("newsletter_posts").select("*").eq("slug", slug),
-    ).maybeSingle(),
-    2500
-  );
 
-  if (!result) return fallbackPost;
-  const { data, error } = result as { data: ReturnType<typeof getNewsletterFallbackPost>; error?: unknown };
-  const post = data || (error ? fallbackPost : fallbackPost);
-  return post && isOmniAiNewsletterPost(post) ? post : null;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    const result = await lookupContent(() =>
+      withTimeoutStrict(
+        publishedNewsletterOnly(
+          supabase.from("newsletter_posts").select("*").eq("slug", slug),
+        ).maybeSingle(),
+        2500
+      ),
+    );
+
+    if (result.kind !== "failed") {
+      const post = result.kind === "found" ? result.value : fallbackPost;
+      return post && isOmniAiNewsletterPost(post) ? post : null;
+    }
+    // The lookup failed (timed out, or the database returned an error).
+    // That is not a missing row — retry once.
+  }
+
+  throw new Error(
+    `newsletter lookup for "${slug}" failed twice — the database did not answer in time`,
+  );
 }
+
+/**
+ * The single lookup both `generateMetadata` and the page component use.
+ *
+ * React's `cache()` memoises for the length of one request, so the two
+ * callers share a single database read instead of making two. That matters
+ * here because the lookup is the thing that can time out: two independent
+ * reads each with a retry would put the request's worst case at 10 s, on a
+ * platform whose default function timeout is 10 s. Sharing one read halves
+ * it, and it also halves the load the page puts on the database — which is
+ * the condition that produced the original timeouts.
+ */
+const getPost = cache(async (slug: string) => {
+  return lookupPost(slug);
+});
 
 function archiveDateForIndex(index: number): string {
   const date = new Date(Date.UTC(2026, 4, 31, 14, 0, 0));

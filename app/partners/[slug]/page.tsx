@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, Sparkles, Target, Activity, Mail, Trophy, Rocket, Gift } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { lookupContent, requireLookup } from "@/lib/server/content-lookup";
 import PartnerShareButtons from "./PartnerShareButtons";
 import { GreenSparksBackdrop } from "@/components/green-sparks-backdrop";
 
@@ -24,13 +25,19 @@ type Params = { slug: string };
 
 async function getPartner(slug: string) {
   const sb = createAdminClient();
-  const { data: byField } = await sb
-    .from("omni_businesses")
-    .select("id, name, slug, website, brand_logo_url, partnership_blurb, industry, location")
-    .or(`slug.ilike.${slug},name.ilike.${slug}`)
-    .limit(1)
-    .maybeSingle();
-  return byField ?? null;
+  // A failed read is not an unknown partner. `requireLookup` throws on a
+  // failed lookup, so the page renders a 500 ("try again") instead of a
+  // 404 that would tell a crawler the partner page never existed.
+  return requireLookup(
+    await lookupContent(() =>
+      sb
+        .from("omni_businesses")
+        .select("id, name, slug, website, brand_logo_url, partnership_blurb, industry, location")
+        .or(`slug.ilike.${slug},name.ilike.${slug}`)
+        .limit(1)
+        .maybeSingle(),
+    ),
+  );
 }
 
 async function getOmniAiBookingUrl(): Promise<string> {
