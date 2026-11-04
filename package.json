@@ -48,7 +48,8 @@
     "audit:email-unsubscribe": "node scripts/audit-email-unsubscribe.mjs",
     "audit:image-aspect": "node scripts/audit-image-aspect.mjs",
     "audit:content-lookup": "node scripts/audit-content-lookup.mjs",
-    "test:content-lookup": "tsx --test tests/content-lookup.test.ts"
+    "test:content-lookup": "tsx --test tests/content-lookup.test.ts",
+    "audit:fleet-content-lookup": "node scripts/audit-fleet-content-lookup.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

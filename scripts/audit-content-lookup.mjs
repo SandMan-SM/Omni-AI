@@ -431,6 +431,14 @@ function scanFile(path, root) {
   return findings;
 }
 
+/**
+ * The detector, exposed so the fleet sweep can apply the SAME rules to a
+ * copy. A control's reach is a property of where it is installed, not of
+ * what it does — the defect class travels by copy, so the rule has to be
+ * installable wherever a copy is.
+ */
+export { scanFile, collectFiles, findErrorNotFound, findUnclassifiedGuard };
+
 function main() {
   const { reportOnly, root, files } = parseArgs(process.argv.slice(2));
   const targets = collectFiles(root, files);
