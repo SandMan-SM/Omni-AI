@@ -34,6 +34,7 @@ npm run audit:rls      # RLS gate — a locked table reached with a non-admin cl
 npm run audit:cron-auth # auth gate — a route authenticating with a client-set header, or an unguarded secret
 npm run audit:sitemap  # sitemap-parity gate — a sitemap URL the page marks noindex, or an indexable route the sitemap omits
 npm run audit:content-lookup  # failed-lookup gate — a page that answers 404 because a database read FAILED
+npm run test:content-lookup  # classifier unit tests — a `.single()` read with no rows is an ABSENCE, not a failure
 npm run audit:deploy   # deploy source-of-truth gate — is the running production deployment described by git, AND did the pushed tip reach production?
 npm run audit:env-drift  # local vs production secret drift (needs the Vercel CLI; NOT part of build)
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
@@ -103,6 +104,7 @@ single registered preview server instead.
   if (!row) notFound();   // only a genuine absence reaches here
   ```
   `requireLookup` throws on a failed lookup, so the route's `error.tsx` renders a retryable 500. `npm run audit:content-lookup` fails the build when a page reaches `notFound()` from an unclassified read.
+  - **`.single()` reports "no row" as an ERROR.** PostgREST cannot represent zero rows as `application/vnd.pgrst.object+json`, so `.single()` answers 406 / PGRST116 while `.maybeSingle()` answers `{ data: null, error: null }`. A classifier that only looks at `error` therefore calls an absent row a FAILURE, and the route serves **500 for a page that does not exist** — which is what the first version of this classifier did, caught by the live probe suite on the three routes that use `.single()`. `lookupContent` maps PGRST116 to "missing", except when the details string says the query returned *more than one* row (a data-integrity failure, never a 404). `npm run test:content-lookup` pins every response shape.
 - **JSX text:** escape raw quotes/apostrophes (`&apos;` `&ldquo;` `&rdquo;`) — raw `'`/`"` in JSX trips ESLint `react/no-unescaped-entities` and **fails the Vercel build**.
 - **Time:** anchor "today"/daily logic to **Pacific Time**. Vercel runs UTC, so naive `new Date()` makes briefings/digests/crons off by a day.
 - Forms POST to `app/api/*` handlers that insert into Supabase + notify via Resend.

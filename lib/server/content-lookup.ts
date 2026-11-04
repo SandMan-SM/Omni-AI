@@ -25,6 +25,21 @@
  * A 404 tells a crawler to forget the page; a 500 tells it to come back.
  * Only the first is true when the row is genuinely missing.
  *
+ * THE OTHER HALF OF THE TRAP
+ *
+ * "No such row" does not always arrive as `{ data: null }`. Supabase's
+ * `.single()` asks PostgREST for `application/vnd.pgrst.object+json`,
+ * which cannot represent "no rows", so an absent row comes back as a
+ * PGRST116 **error**. A classifier that only looks at `error` therefore
+ * calls an absent row a FAILURE — and the route answers 500 for a page
+ * that does not exist. This was not hypothetical: the first version of
+ * this file did exactly that, and the live probe suite caught it on the
+ * three routes that use `.single()` (`/[slug]`, `/lp/[slug]`,
+ * `/p/[business]/[slug]`) the day it shipped. `lookupContent` maps
+ * PGRST116 to "missing" — except when the details string says the query
+ * returned MORE than one row, which is a data-integrity failure and must
+ * never become a 404.
+ *
  * THE RULE
  *
  *   const row = requireLookup(await lookupContent(() => sb.from(…).maybeSingle()));
@@ -55,6 +70,44 @@ export type ContentLookup<T> =
  * exactly.
  */
 type LookupResponse = { data: unknown; error: unknown };
+
+/**
+ * PostgREST's code for "the query did not return exactly one row".
+ *
+ * THIS IS THE SUBTLE PART. A read that finds nothing does not always come
+ * back as `{ data: null }`:
+ *
+ *   `.maybeSingle()`  ->  `{ data: null, error: null }`   (absence is not an error)
+ *   `.single()`       ->  `{ data: null, error: PGRST116 }` (absence IS an error)
+ *
+ * PostgREST's `single()` asks for `application/vnd.pgrst.object+json`,
+ * which cannot represent "no rows", so it answers 406 with a PGRST116
+ * error instead of an empty object.
+ *
+ * That matters here: a route that uses `.single()` and expects a clean 404
+ * for an absent row would, without this mapping, have its PGRST116 read as
+ * a FAILED lookup — and answer HTTP 500 for a page that does not exist.
+ * The live probe suite caught exactly that on 2026-11-04, on the three
+ * routes that use `.single()`.
+ */
+const POSTGREST_NOT_ONE_ROW = "PGRST116";
+
+/**
+ * Is this error the database saying "there is no such row"?
+ *
+ * PostgREST uses ONE code for both "no rows" and "more than one row", and
+ * the two want different answers: no rows is a 404, more than one row is a
+ * data-integrity failure and must never become a 404. The `details` string
+ * is what separates them — a multi-row result says "Results contain N
+ * rows", an empty result says nothing.
+ */
+function isAbsence(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const e = error as { code?: unknown; details?: unknown };
+  if (e.code !== POSTGREST_NOT_ONE_ROW) return false;
+  const details = typeof e.details === "string" ? e.details : "";
+  return !/results contain \d+ row/i.test(details);
+}
 
 /** Render an unknown error value as something a log line can carry. */
 function describeError(error: unknown): string {
@@ -87,7 +140,12 @@ export async function lookupContent<R extends LookupResponse>(
     // Some builders reject rather than resolving with an error object.
     return { kind: "failed", error };
   }
-  if (result?.error) return { kind: "failed", error: result.error };
+  if (result?.error) {
+    // A `.single()` read reports "no such row" as an error. That is an
+    // ABSENCE, not a failure — only a genuine absence may reach notFound().
+    if (isAbsence(result.error)) return { kind: "missing" };
+    return { kind: "failed", error: result.error };
+  }
   if (result?.data === null || result?.data === undefined) return { kind: "missing" };
   return { kind: "found", value: result.data as NonNullable<R["data"]> };
 }
