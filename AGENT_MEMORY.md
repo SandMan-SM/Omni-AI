@@ -264,9 +264,10 @@
 > **4 trees with the gate armed in the build chain** (LTB, Omni Leads and the two archived
 > copies) and 0 still carrying the defect.
 >
-> Shipped in the flagship: `f8ba34c5`-class fleet tooling (see the commit list in this
-> section's items); the client surfaces under federation leases **1184** and **1185** (both
-> released).
+> Shipped in the flagship: `d63bda5d` (the fleet sweep, the shared tree discovery, the
+> patcher, the third rule, the portable test) on top of `d4dee4b7` (the first sweep);
+> the client surfaces under federation leases **1184** and **1185** (both released); the two
+> archived copies as `11dd1fc1` and `60d18de3`.
 
 > **Session 61 (2026-11-04) — two bulk subscriber emails sent with no unsubscribe at
 > all, while four other mail paths in this same repo complied.**
