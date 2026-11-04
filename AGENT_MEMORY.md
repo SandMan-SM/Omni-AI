@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — OMNI-AI
-> Synthetic Intelligence Memory | Updated: November 04, 2026 12:04 AM
+> Synthetic Intelligence Memory | Updated: November 04, 2026 01:40 AM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
@@ -7,10 +7,10 @@
 |---|---|---|
 | Build | 92/100 | █████████░ |
 | SEO | 100/100 | ██████████ |
-| Performance | 92/100 | █████████░ |
+| Performance | 94/100 | █████████░ |
 | Backend | 96/100 | █████████░ |
 | Mobile | 96/100 | ██████████ |
-| **OVERALL** | **95/100** | █████████░ |
+| **OVERALL** | **96/100** | █████████░ |
 
 > **Session 60 (2026-11-03) — the SEO score was 100 while the sponsor program had been
 > de-indexed for six months.**
@@ -191,6 +191,114 @@
 > 336–342 findings each**, which the old 119-table rule set saw none of.
 
 ## 🎯 This Session: Do These In Order
+
+> **Session 61 (2026-11-04) — two bulk subscriber emails sent with no unsubscribe at
+> all, while four other mail paths in this same repo complied.**
+>
+> **1. The flagship newsletter had no way out of it.** `lib/newsletter-sender.ts` sends the
+> Interlinked free and premium issues to the whole audience. Its footer linked
+> *"Manage subscription"* and *"Manage account"* at `${SITE_URL}/dashboard` — the **legacy
+> INTERNAL operator surface**: noindex, robots-disallowed, sign-in-gated, and explicitly NOT
+> the canonical operator dashboard (which is `mythosais.com/dashboard`). A subscriber
+> clicking it landed on a command center they cannot use, and the mechanism CAN-SPAM
+> requires was not in the message at all. **No link, no `List-Unsubscribe` header, no
+> one-click.**
+>
+> **2. The federation masthead dispatch had the same defect in a worse shape.**
+> `lib/federation-newsletter-pipeline.ts` sent **one shared HTML body, BCC'd 50 subscribers
+> at a time** (136 live rows), carrying only *"Read on the web"*. A shared body **cannot**
+> carry a per-recipient token — one token in a shared body unsubscribes one person and
+> breaks the link for everyone else, which is worse than no link. The file's own CPS
+> comment already named the missing prerequisite: *"per-recipient, fail-closed delivery"*.
+>
+> **3. The infrastructure was complete and simply unused.** `buildUnsubscribeUrl()` (an
+> HMAC token over the recipient address, `lib/unsubscribe-token.ts`) and
+> `/api/newsletter/unsubscribe` (GET **and** RFC 8058 one-click POST, flipping
+> `profiles.newsletter_subscribed`, `newsletter_subscriptions`, the federation subscriber
+> table, `omni_suppressions`, scheduled Rene reminders and unsent `marketing_sends`) were
+> already used by **four** other mail paths in this repo: `lib/business-marketing.ts`,
+> `lib/server/cps-newsletter-intake.ts`, `lib/server/sitanim-newsletter.ts` and
+> `app/api/federation-newsletter/subscribe/route.ts`. The contract *"a bulk email carries a
+> working unsubscribe"* held in four of six mail paths and **nothing compared them**.
+>
+> **4. The worst part was the shape of the contradiction.** The **welcome** email that
+> starts a subscription (`app/api/federation-newsletter/subscribe/route.ts`) carries the
+> tokenized link and both RFC 8058 headers. So the subscriber is *told how to unsubscribe*
+> and then **every issue after it silently drops the link**. The mechanism a service
+> introduces is not the mechanism it keeps.
+>
+> **5. It was latent, and a latent defect is still a defect.** Every `newsletter_posts` row
+> has `email_sent = false` / `sent_at = null`, and `vercel.json` only schedules
+> `action=publish-public` — the audience send is dormant *today* and fires the moment the
+> operator re-enables it. A defect that is one configuration change away from production is
+> a defect, and it was sitting in the tree that sends the product's flagship email.
+>
+> **6. Both paths now mint a per-recipient token and advertise it.** Per-recipient sends
+> (the BCC fan-out is replaced by one message per recipient, chunked 10 at a time), a
+> tokenized *Unsubscribe* link in the body, and `List-Unsubscribe` +
+> `List-Unsubscribe-Post: List-Unsubscribe=One-Click` on every copy. When the token cannot
+> be minted the send is **refused** — a copy without the mechanism is not sent, because
+> there is no compliant way to send it.
+>
+> **7. The prevention is a gate in the build chain, proven on the real pre-fix files.**
+> `npm run audit:email-unsubscribe` (`scripts/audit-email-unsubscribe.mjs`, new) finds every
+> Resend send site by parsing with the TypeScript compiler API. Three rules:
+> `bulk-bcc-send-missing-unsubscribe`, `audience-send-missing-unsubscribe`,
+> `unsubscribe-url-not-used`. **Proven by restoring the pre-fix files from HEAD**: the gate
+> reported **3 findings** — the BCC fan-out and both audience sends — and **0** after the
+> fix. The third rule needed the gate fixed before it could be proven: it was counting the
+> declaration and the assignment target as "uses" of the URL, and counting same-named
+> parameters in *other* functions; the read count is now scoped to the mint's own function,
+> and it fires on a URL that is minted and dropped.
+>
+> **8. The class is not a repo property, and the fleet sweep found it twice.** `npm run
+> audit:fleet-email-unsubscribe` (`scripts/audit-fleet-email-unsubscribe.mjs`, new) walks
+> every canonical checkout under `~/Desktop/Clients`: **58 checkouts**, **13** with Resend
+> send sites, **146 send sites**. It found the same defect in **two local copies of this
+> repo** (`Website-omniclaw-newsletter-artwork`, `Website-omniclaw-newsletter-final`) that
+> carry the **production Vercel project id** `prj_TRmLRTqEhjJj8ZlV4MQk0zjFGtU4` — a
+> `vercel --prod` from either folder would have **reverted the fix to production**. Both
+> are patched and committed locally. Getting the detector right mattered: the first pass
+> reported **110 findings, nearly all false** — `to: [email]` is ONE recipient, not a list,
+> and *reading* a subscriber table is not *resolving recipients from* it (the landing-lead
+> form checks whether one person subscribes; the CEO briefing COUNTS subscribers for a
+> metric). The rules are now: a `bcc` payload needs the header; an audience **helper**
+> (`getNewsletterAudience` / `audienceSendList` / `loadSubscriberEmails`) needs it; a `to`
+> that resolves to a list needs it, with the identifier resolved against its declaration.
+>
+> **9. The visual sweep found two defects that no tool in the repo could see.** The
+> dashboard screenshot is **2000×1372** (1.458:1) and **both** sponsor pages declared it
+> `1200×675` (16:9) — with `w-full h-auto` the declared ratio wins, so the artwork was
+> **stretched 18% shorter than it is** and the dashboard read as squashed. It is now
+> declared at the asset's own proportions. And the **browser icon was the 1024px
+> `/favicon.png` — 543,620 bytes fetched on every page view to draw a 16-pixel square**;
+> it is now 23 KB and 1.6 KB, with the 1024 kept as the JSON-LD logo where a search engine
+> wants it. The gate is `npm run audit:image-aspect`
+> (`scripts/audit-image-aspect.mjs`, new, in the build chain): it compares every declared
+> `<Image>` size against the pixel dimensions read from the **file header** (PNG / JPEG /
+> GIF / WebP / SVG — no external tool, so it runs the same on a laptop and in CI), and it
+> was proven by restoring the pre-fix markup: **1 finding**, then **0**.
+>
+> **10. The build refused a fix that was wrong, which is the point of a gate.** Nine
+> data-fetching routes had no `loading.tsx`. Adding them made `npm run audit:routes`
+> report **9 findings** and **fail the build**: a `loading.tsx` above a segment that calls
+> `notFound()` commits the status with the first flush and turns the 404 into a **200
+> soft-404**. That is **item 12 of this file, already written down, already correct** — and
+> the agent broke it again anyway, exactly as session 57 did. The skeletons were removed:
+> for these routes the correct answer is *no skeleton*, because the 404 check and the fetch
+> are the same `await` and the `notFound()` decision cannot sit outside a Suspense
+> boundary. `/book/[business]` already shows the alternative.
+>
+> **11. Three gates were reporting the rules that FIRED instead of the rules that RAN.**
+> `audit:sitemap` printed *"0 finding(s) across 0 rule(s)"* on a clean tree — read
+> literally, that says the gate checked nothing, which is the opposite of what happened,
+> and it is the exact anti-pattern the fleet audits were built to kill. The sitemap-parity
+> (5), public-PII (2) and RLS-drift (4) gates now report the rules they **ran**, and the
+> last two say *"no rule fired"* instead of trailing off after a colon.
+>
+> **Performance 92 → 94** (measured: 543,620 → 23,354 bytes on every page view for the
+> icon; a 331,784-byte decorative PNG now goes through the image optimizer) and
+> **OVERALL 95 → 96**. Everything else is unchanged.
 
 > **Session 59 (2026-11-02) — the release-deleting push is now impossible, and the dark theme
 > is measured instead of assumed.**
@@ -450,6 +558,12 @@
 47. ~~**the sitemap and the routes' indexability must agree**~~ — **DONE (session 60, shipped `60aa3d32`)**: `npm run audit:sitemap` (`scripts/audit-sitemap-parity.ts`, **in the build chain**) computes each route's effective robots from its layout chain and compares it with `app/sitemap.ts`. Three rules: `sitemap-url-noindex`, `indexable-route-not-in-sitemap`, `sitemap-url-without-route`. Proven against the restored pre-fix files: **15 findings across 2 rules**, then 0. The gate ships to the fleet with the rule set (`npm run patch:fleet-rls-ruleset`) — **24 copies measured 12–24 findings each**.
 48. Next: **run `node scripts/audit-live-mobile.mjs --all` AFTER the deploy** — it now carries **11 rules**, the two new ones being `sitemap-noindex` and `sitemap-dead-url`, which read the rendered truth (the static gate cannot see a robots directive set at runtime, e.g. in `generateMetadata`).
 49. Next: **a page that asks to be indexed belongs in `app/sitemap.ts`; a URL the sitemap advertises must not render noindex.** Next.js **replaces** the `robots` field at each level of the layout chain — it does not merge key by key — so a noindex layout de-indexes its whole subtree unless a child declares `robots: { index: true, follow: true }` itself. The repo already uses that convention on `/privacy`, `/terms`, `/oracle`, `/solutions`.
+50. ~~**every bulk email must carry a working unsubscribe**~~ — **DONE (session 61, shipped `bfce5ea5`)**: the Interlinked newsletter and the federation masthead dispatch both sent to subscriber lists with **no link, no `List-Unsubscribe` header and no one-click**, while four other mail paths in this repo complied. Both now mint a per-recipient HMAC token, carry it in the body, and set `List-Unsubscribe` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click`. The BCC fan-out became per-recipient sends (a shared body cannot carry a per-recipient token). `npm run audit:email-unsubscribe` (`scripts/audit-email-unsubscribe.mjs`, **in the build chain**) — three rules, proven by restoring the pre-fix files: **3 findings** → **0**.
+51. Next: **run `npm run audit:email-unsubscribe` before every ship.** It is in the build chain, so Vercel refuses the deploy; running it locally explains the failure before the build does. It only examines files that call the Resend API, and it deliberately does **not** flag transactional one-to-one sends — a booking receipt has no list to unsubscribe from, and a gate that cries wolf is a gate nobody reads.
+52. Next: **run `npm run audit:fleet-email-unsubscribe` before a cross-project release.** The single-repo gate cannot see a mail path copied into another site's checkout, and that is how this class travels. It found the same defect in two local copies of this repo that carry the **production Vercel project id** — a `vercel --prod` from either would have reverted the fix.
+53. ~~**a declared image size must match the artwork it points at**~~ — **DONE (session 61, shipped `ef1dfdb0`)**: the dashboard screenshot (2000×1372) was declared 1200×675 on **both** sponsor pages, so it rendered stretched 18% shorter than it is. `npm run audit:image-aspect` (`scripts/audit-image-aspect.mjs`, **in the build chain**) compares every declared `<Image>` size against the pixel dimensions read from the **file header** — PNG / JPEG / GIF / WebP / SVG, no external tool, so it runs the same on a laptop and in CI. Proven by restoring the pre-fix markup: **1 finding** → **0**.
+54. Next: **when you add an image, declare its real proportions.** `next/image` with `width`/`height` and `w-full h-auto` renders the DECLARED ratio, not the file's. Use `fill` for a background whose box comes from its parent, and `sizes` when the rendered width is not the viewport's.
+55. Next: **a gate must say how many rules it RAN, not how many fired.** `audit:sitemap` printed *"0 finding(s) across 0 rule(s)"* on a clean tree — read literally that says it checked nothing. The sitemap-parity, public-PII and RLS-drift gates now report the rules they ran.
 
 ## 🔬 Why
 - **Session 60's finding was a contract nobody compared.** The sitemap and the route metadata are two artifacts that both answer "what should be indexed?", and they are maintained by hand in two different files — one in `app/sitemap.ts`, one in each route's metadata. Every other contract in this repo got a gate: the publish rule got `audit:publish`, the loading.tsx rule got `audit:routes`, the RLS rule got `audit:rls`. This one got a prose rule ("keep them current") and a score of 100. The general form: **a contract between two artifacts is only enforced if something compares them**, and a hand-maintained pair of artifacts drifts silently — the drift here was visible only in the rendered output, six months after it started. The fix was not "write a better comparison", it was to write the comparison and put it in the build chain.
@@ -498,12 +612,15 @@
 - **Four fleet trees have lost their git link and are one `vercel --prod` away from overwriting production.** `Sitani Mafi/Omni AI/.deploy-worktrees/login-fix`, `Sitani Mafi/Omni AI/_deploy-worktrees/dashboard-fix`, `_tmp/omni-newsletter-fix` and `_tmp/omni-premium-newsletter-fix` each carry a `.git` file pointing at `…/Clients/Omni AI/Omni AI Website/.git/worktrees/<name>`, a path that no longer exists (the repo moved to `Sitani Mafi/Omni AI/Website` and the worktree metadata went with it). `git` refuses to operate in all four; they hold 193 route files against canonical's 252, each carries work no other tree has, and **all four are linked to the production Vercel project** — so a CLI deploy from any of them would delete ~59 live route families from omnileadsagi.com, exactly as happened on 2026-10-29. Session 58 patched the privacy leak in all four on disk and gave them the gates, so their content is safe; **retiring them, re-syncing them, or re-initialising them as fresh repos is the owner's decision** — the agent will not `git init` over a tree that holds unversioned work, and will not delete a tree the owner may still need.
 
 ## 📚 Stats
-- Sessions: 60
-- Lines written: 3392
+- Sessions: 61
+- Lines written: 3518
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-04 | security | **The flagship newsletter had no way out of it, and neither did the federation dispatch.** `lib/newsletter-sender.ts` sends the Interlinked free/premium issues; its footer linked "Manage subscription" / "Manage account" at `${SITE_URL}/dashboard` — the **legacy internal operator surface** (noindex, robots-disallowed, sign-in-gated, and explicitly *not* the canonical operator dashboard, mythosais.com/dashboard). `lib/federation-newsletter-pipeline.ts` was worse: one shared HTML body **BCC'd 50 at a time to 136 live subscribers**, and the body carried only "Read on the web". A **shared body cannot carry a per-recipient token** — clicking it would unsubscribe somebody else — which is why the fix had to be per-recipient sends, not a link added to the shared template. So the two bulk paths had **no unsubscribe mechanism at all**: no link, no `List-Unsubscribe` header, no one-click. Meanwhile **four other mail paths in the same repo complied**, and the unsubscribe infrastructure (`buildUnsubscribeUrl()` + `/api/newsletter/unsubscribe`) was **complete and simply unused** by these two. The contradiction was visible in the product itself: the **welcome** email that starts a subscription carries the tokenized link and both RFC 8058 headers, so the subscriber is told how to unsubscribe and **every issue after it silently drops the link**. Both paths now mint a per-recipient HMAC token, carry it in the body, set `List-Unsubscribe` + `List-Unsubscribe-Post: List-Unsubscribe=One-Click`, and **refuse to send** when a token cannot be minted. `npm run audit:email-unsubscribe` (new, **in the build chain**) makes it a class: three rules over every file containing a Resend send site, proven against the restored pre-fix files (**3 findings**, then 0) | 130 |
+| 2026-11-04 | tooling | **The email gate's third rule needed three attempts before it could see its own subject — and a fleet detector that cries wolf is not a gate.** The rule `unsubscribe-url-not-used` asks whether a minted token is actually *used*, which means counting identifier reads. The first version counted the declaration and the assignment as uses; the second counted a bare declaration identifier as a read; the third was masked because the identifier `unsubscribeUrl` is also a **parameter name** in three HTML builders, so the count was satisfied by the signature. The fix was to scope the read count to the mint's **enclosing function** (`scopeOf`), which is the only place a token can be used. The fleet sweep had the mirror problem: its first run reported **110 findings, nearly all false** — a one-element `to: [email]` array was treated as a *list* (it is one recipient), "reads a subscriber table" was treated as "resolves recipients from it" (the landing-lead route checks one person; the ceo-briefing route **counts** subscribers for a metric), and an unresolved identifier was *guessed* to be a list. Tightening rule 2 to audience **helpers** and resolving identifiers through the declaration table cut it to **6 findings, all real**. The population: **58 canonical checkouts, 13 with Resend sends, 146 send sites**. Two of the six were in copies linked to the **production** Vercel project (`prj_TRmLRTqEhjJj8ZlV4MQk0zjFGtU4`) — patched and committed locally. The lesson: **a detector's credibility is spent on its first report**; a fleet sweep that reports 110 findings teaches the reader to ignore it | 150 |
+| 2026-11-04 | visual | **Two images were rendering wrong, and neither was visible in the diff.** `app/sponsor/page.tsx` and `app/sponsor/info/page.tsx` declared the dashboard screenshot as **1200×675 (16:9)** while the artwork is **2000×1372 (1.458:1)**, so `w-full h-auto` reserved a 16:9 box and stretched the screenshot **18% shorter than it is** — the dashboard read as vertically squashed. The declared numbers are now the asset's own proportions at 1200 wide (1200×823). Separately, `app/layout.tsx` shipped the **1024px / 543 KB** `favicon.png` as the browser icon, so every page view fetched half a megabyte to draw a 16-pixel square; the 1024px file is still the JSON-LD logo (a search engine wants a large image for that), but the icon is now `/favicon-192.png` (23 KB) and `/favicon-32.png` (1.6 KB). `app/lovethybarber/referral/` used a raw `<img>` for a 331 KB decorative PNG — now `next/image` with `fill`. `npm run audit:image-aspect` (new) reads the **real pixel dimensions from the file header** and compares them to the declared ones — a declared aspect that disagrees with the file is a stretched render, and no existing gate could see it. Proven against the pre-fix file (**1 finding**, then 0) | 90 |
 | 2026-11-03 | seo | **A trailing slash in a robots.txt disallow left the surface's own index crawlable.** The disallow list blocks `/admin/`, `/dashboard/`, `/command/` and `/void-preview/` — and robots.txt matches by **prefix**, so those cover the sub-routes and **not** the bare paths. `/admin`, `/dashboard`, `/command` and `/void-preview` were therefore still fetchable by a compliant crawler, which is the one thing the list exists to prevent ("not tipping off pattern-matching bots that an admin / command surface even exists at that URL"). The pages render `noindex`, so nothing entered the index — the leak was the **existence** of the surface. Every entry is now written in the bare prefix form (`Disallow: /admin`), which covers the index and its sub-routes together. The same contract is now a build gate: `npm run audit:sitemap` gained `robots-bare-path-crawlable`, which compares the disallow list with the route tree and fails when a trailing-slash disallow leaves a route's bare path crawlable — proven against the pre-fix file (**4 findings**, one per surface, then 0). The lesson is the same one the sitemap was: **robots.txt and the routes are two artifacts that both answer "what may a crawler see?", and nothing compared them** | 31 |
 | 2026-11-03 | visual | **The dark-theme rule had a false positive, and only a newly-audited page exposed it.** `light-surface` scored an element on the raw value of its `background-color`, ignoring the CSS `opacity` property that multiplies the whole element. A decorative glow painted `#ffd700` at `opacity: 0.18` — composited over the near-black canvas, a dark warm brown, not a light surface — was reported as a theme break covering **58% of the viewport**. The rule now multiplies the background's own alpha by the computed opacity and composites the colour over the canvas before the luma test, so a translucent glow is judged by what the eye actually sees. **Proven on a probe page carrying both**: the solid white section still fires, the 18%-opacity gold glow does not. The live site measures **0 findings across 194 routes and 11 rules**. Worth noting what exposed it: `/interlinked/developer/info` had never been audited before, because it was one of the thirteen pages absent from the sitemap — adding it to the sitemap put it in front of the gate for the first time, and the first thing the gate said was that the gate was wrong | 19 |
 | 2026-11-03 | seo | **The sponsor program had been de-indexed for six months while the sitemap kept advertising it.** `/sponsor/info` and `/sponsor/application` were **in the sitemap** and **rendering `noindex, nofollow`** — the manifest said "index this", the page said "do not", and the page won. The cause was `app/sponsor/layout.tsx` declaring `robots: { index: false, follow: false }` (correct for `/sponsor`, a logged-in portal) on 2026-04-23: Next.js **replaces** the `robots` field at each level of the layout chain, so the directive was inherited by the whole subtree, and the two public pages declared no robots of their own. The commit that introduced it states the opposite intent in its own message — "keep /sponsor/info at priority 0.5 as the canonical public marketing page". **Thirteen indexable public pages** (`/solutions`, `/terms`, `/subscribe`, `/newsletter/archive`, `/meta`, `/meta/proposal`, `/master/info`, `/interlinked/book-now`, `/interlinked/developer/info`, `/federation/case-studies`, `/network`, `/campaign/pilot`, `/asset/development/renelaveau`) each declare `robots: { index: true, follow: true }` and were absent from the sitemap entirely. Nothing could see it: `tsc` cannot, `next build` cannot, the RLS / cron-auth / public-PII gates cannot, the live mobile gate never read indexability, and the sitemap is not a route. **A contract between two artifacts is only enforced if something compares them.** `npm run audit:sitemap` (new, **in the build chain**) computes each route's effective robots from its layout chain and compares it with `app/sitemap.ts` — three rules, proven against the restored pre-fix files (**15 findings across 2 rules**, then 0). The live audit gained `sitemap-noindex` and `sitemap-dead-url`, proven against production still serving the old build. The gate travels to the fleet with the rule set: **24 copies measured 12–24 findings each** | 406 |
@@ -686,6 +803,12 @@
 - **grep-the-shape-not-the-substring** — A search for `x-vercel-cron` in the Imperium build cache matched the **legitimate** `x-vercel-cron-token` header — the secret-carrying one the gate explicitly allows — and produced six false positives that looked like live bypasses in two canonical checkouts. The precise pattern is `x-vercel-cron` **not** followed by `-token`; the cron-auth gate itself carries the same refinement (`/x-vercel-cron(?!-)/i`). A grep that finds a substring finds the *word*, not the *defect*, and a false positive in a security sweep is not a harmless thing: it makes the real findings easier to dismiss.
 - **a-tree-with-no-vercel-link-is-not-a-tree-with-no-defect** — The fleet sweep had a hole between its two phases: the canonical phase skipped scratch trees ("not deployed surfaces") and the copy phase only looked at trees carrying a `.vercel` link ("deployable surfaces"), so a tree with the defect and **no** link was invisible to both — and that is where **23 of them** were. Deployability is a property of a tree *today*, not a property of its code: `vercel --prod` from an unlinked folder, or a copy into a canonical slot, makes it deployable in one command. So the gate needs a third population — trees that carry the defect and cannot deploy *yet* — reported as findings, because the cost of the false negative is a shipped bypass and the cost of the finding is a patch. The same reasoning applies to any "this directory is inert" assumption: **an inert directory is a deployment waiting for a command, not an archive**.
 - **a-path-with-a-space-silently-splits-a-file-list** — `find … | xargs grep` (without `-print0`) splits the file list on whitespace, so every path under a directory whose name contains a space — `Sitani Mafi/Omni AI/` — is passed as two wrong filenames, and `grep` reports *no match* without saying why. This is not theoretical: the first fleet-wide search for the cron bypass missed three trees entirely because of it, and the "0 findings" it printed was an artifact of a broken command rather than a clean fleet. `find … -print0 | xargs -0 grep …` is the only correct form for a fleet that contains spaces, and a fleet sweep must be **re-run** when its command shape changes — the earlier count was not wrong by arithmetic, it was wrong by invocation.
+- **a-rule-one-path-obeys-and-another-path-in-the-same-repo-breaks-is-not-a-rule-yet** — Four mail paths in this repo carried a tokenized unsubscribe link and both RFC 8058 headers. Two more bulk paths did not: the flagship newsletter linked its "Manage subscription" footer at the **legacy internal dashboard** (noindex, robots-disallowed, sign-in-gated), and the federation pipeline BCC'd 50 subscribers at a time with a shared body. The rule "every bulk email carries a working unsubscribe" was **already implemented, tested and shipping in this same repo** — the infrastructure existed, complete and unused, and two paths simply did not call it. The general form: **a convention that some paths in the same codebase follow is a convention, not a control**, until something compares the paths to each other. The evidence that a rule is *not* holding is not "I did not see it in the code" — it is "I found a path in the same repo that breaks it". The move is the same as the sitemap gate's: enumerate the class (every file containing a Resend send site), and for each one ask whether the mechanism is present.
+- **a-shared-body-cannot-carry-a-per-recipient-token** — The federation pipeline BCC'd 50 recipients at a time with one HTML body. A per-recipient unsubscribe token cannot live in a shared body: the link in the body would be the *same* link for every recipient, so clicking it would unsubscribe whichever subscriber happened to open the message — including the wrong one. The naive fix ("add the unsubscribe link to the template") is therefore **worse than no fix**, because it makes the defect look fixed. The general form: **when a mechanism is per-recipient, the send shape has to be per-recipient too**; if the sending shape cannot change, the mechanism has to move to somewhere that *is* per-recipient — which, for email, is the `List-Unsubscribe` header. The right fix for this repo was both: split the dispatch into per-recipient sends, and set the headers so a client that cannot click can still unsubscribe.
+- **the-mechanism-you-tell-a-subscriber-about-must-still-be-there-in-the-next-message** — The welcome email — the one that starts the subscription — carried the tokenized link and both one-click headers. Every issue after it dropped the link. So the subscriber was told, once, exactly how to leave, and then the only thing standing between them and the list was **the memory of a button that stopped existing**. The general form: **an onboarding message that teaches a mechanism is a promise about every subsequent message**, and the failure is invisible to the mechanism's own gate (the welcome email passes — it has the link) and invisible to the subscriber (nothing errors; the list simply goes on). When a system teaches a self-service path, the gate has to check that the path survives in the *steady state*, not only at the moment of enrolment — which is why the email gate looks at every send site rather than at the enrolment path.
+- **a-detector-that-cries-wolf-spends-the-readers-trust-it-will-never-get-back** — The first fleet email sweep reported **110 findings**. Six were real. The 104 false positives came from three wrong assumptions: a one-element `to: [email]` array treated as a *list* (it is one recipient), "reads a subscriber table" treated as "resolves recipients from it" (one route checks a single person; another **counts** subscribers to report a metric), and an unresolved identifier *guessed* to be a list. The general form: **a security sweep that reports false positives is not a cheap annoyance — it is a tool the reader learns to dismiss**, and the cost lands on the real findings. The remedy is to tighten until every surviving finding is true, and to state the *reason* each rule is tight: "resolves recipients from an audience helper" is checkable; "reads a subscriber table" is not. Reporting the population and the rules-run count alongside the findings (the pattern already in this file) is what makes the tightening legible.
+- **a-gate-that-counts-identifier-reads-must-scope-the-count-to-the-scope-the-token-can-be-used-in** — The email gate's third rule asks whether a minted token is actually used, which means counting identifier reads, and every naive counting scheme gets it wrong: the declaration and the assignment count as reads, a bare declaration identifier counts as a read, and a **parameter name** in an unrelated function satisfies the count. The fix is to count reads inside the mint's **enclosing function** (`scopeOf`), which is the only scope where the token can reach a message. The general form: **a static check that reasons about a value's flow has to model the scope that value can travel in**, and a name collision elsewhere in the file is a false negative, not a false positive — the dangerous direction, because the gate reports 0 findings on a defect it cannot see.
+- **a-declared-image-size-is-a-claim-about-a-file-the-gate-can-read** — Two images rendered wrong, and no gate in this repo could see either. The dashboard screenshot was declared 1200×675 while the file is 2000×1372, so `w-full h-auto` reserved a 16:9 box and **stretched the artwork 18% shorter than it is**; the favicon was the 543 KB / 1024px master used to draw a 16-pixel square. The general form: **a dimension written in markup is a claim, and the file it names is the truth** — and the truth is cheap to read, because every common raster format keeps its dimensions in the first few hundred bytes of the header (PNG `IHDR`, GIF, WebP `VP8`/`VP8L`/`VP8X`, JPEG's `SOF` marker, SVG's `width`/`height`). Reading them needs no image library and no decode. A declared aspect that disagrees with the file is a stretched render, which is invisible in the diff, invisible to `tsc`, and invisible to `next build` — and `next/image` cannot catch it either, because it trusts the declaration it was given.
 
 ## ⚡ Rules
 - Read this file first, every session
@@ -739,6 +862,9 @@
 - The dark theme is **measured, not assumed** — the live audit reads the canvas from `documentElement` (the body is transparent, so the canvas is the html background) and flags a light surface only when it covers a fifth of the viewport, because a white CTA button is an intentional inversion
 - Run `npm run audit:route-probes` before every ship — it is in the build chain, and it is the only check that knows a **404-capable route has no live probe**. A probe is what proves a route answers a real 404 instead of a 200 soft-404, and a route added without one is invisible to the live audit
 - A route that can 404 is one whose page calls `notFound()` or whose segment sets `dynamicParams = false` — a route that can neither is not required to have a probe, so the gate does not demand one from a page that renders "not found" as a client-side state
+- Run `npm run audit:email-unsubscribe` before every ship — the only check that sees a bulk email with **no working way out of it**. A shared body cannot carry a per-recipient token, so a bulk send needs per-recipient sends, a `List-Unsubscribe` header, and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` — and the mechanism you tell a subscriber about in the welcome email must still be in the next issue
+- Run `npm run audit:image-aspect` before every ship — the only check that compares a declared `<Image width/height>` with the **real pixel dimensions** read from the file header. A declared aspect that disagrees with the file is a stretched render, and `next/image` trusts the declaration it was given
+- Run `npm run audit:fleet-email-unsubscribe` before a cross-project release — the defect class travels by copy, and the fleet sweep is how it is found in a tree the canonical surface never sees
 - Commit every logical unit: `agent: [what]`
 - Push when done
 - Ship through the federation protocol: resolve the surface, acquire the lease, push `main`, poll the deployment for the pushed SHA, verify the live HTML, release the lease with the deploy journal
