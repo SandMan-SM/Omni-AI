@@ -380,10 +380,12 @@ function main() {
     console.log(`  [${f.rule}] ${f.file} — ${f.detail}`);
   }
   console.log(
-    `\n[public-pii] ${findings.length} finding(s): ` +
-      Object.entries(byRule)
-        .map(([r, n]) => `${n} ${r}`)
-        .join(", "),
+    `\n[public-pii] ${findings.length} finding(s) across ${RULES.length} rule(s): ` +
+      (Object.keys(byRule).length
+        ? Object.entries(byRule)
+            .map(([r, n]) => `${n} ${r}`)
+            .join(", ")
+        : "no rule fired"),
   );
   console.log(
     "[public-pii] A personal field on a public response is public whether or not any UI renders it. " +

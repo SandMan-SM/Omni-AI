@@ -414,12 +414,29 @@ for (const route of routes.sort((a, b) => a.url.localeCompare(b.url))) {
 
 /* ── Report ─────────────────────────────────────────────────────────────── */
 
+/**
+ * Every rule this gate runs.
+ *
+ * The summary line must report how many rules RAN, not how many FIRED.
+ * A gate that prints "0 rule(s)" on a clean tree reads as "this gate
+ * checked nothing" — which is the opposite of what happened, and it is
+ * the exact anti-pattern the fleet audits were built to kill. "Found
+ * nothing" and "looked at nothing" must never print the same words.
+ */
+const RULE_NAMES = [
+  "sitemap-url-without-route",
+  "sitemap-url-noindex",
+  "sitemap-url-disallowed",
+  "robots-bare-path-crawlable",
+  "indexable-route-not-in-sitemap",
+];
+
 const byRule: Record<string, number> = {};
 for (const f of findings) byRule[f.rule] = (byRule[f.rule] || 0) + 1;
 
 console.log(
   `\n[sitemap-parity] ${routes.length} static route(s), ${advertised.size} advertised URL(s) — ` +
-    `${findings.length} finding(s) across ${Object.keys(byRule).length} rule(s)`,
+    `${findings.length} finding(s) across ${RULE_NAMES.length} rule(s)`,
 );
 for (const f of findings) {
   console.log(`\n  ${f.rule}  ${f.file}`);

@@ -144,6 +144,21 @@ const liveTables = Object.keys(defs)
   .sort();
 
 const findings = [];
+
+/**
+ * Every rule this gate runs.
+ *
+ * The summary must report how many rules RAN, not how many fired —
+ * "0 finding(s): " with an empty breakdown reads as "this gate looked
+ * at nothing", which is the opposite of what happened.
+ */
+const RULE_NAMES = [
+  "schema-table-not-in-ruleset",
+  "ruleset-table-not-in-schema",
+  "ruleset-table-misclassified",
+  "ruleset-table-unclassified",
+];
+
 const unknownTables = liveTables.filter((t) => !snapshotTables.has(t));
 const staleTables = [...snapshotTables].filter((t) => !liveTables.includes(t));
 
@@ -231,7 +246,7 @@ console.log(
 
 if (!findings.length) {
   console.log(
-    "[rls-drift] 0 findings — the rule set covers the live schema" +
+    `[rls-drift] 0 findings across ${RULE_NAMES.length} rule(s) — the rule set covers the live schema` +
       (DEEP ? ", and every classification still holds." : "."),
   );
   console.log(
@@ -244,10 +259,12 @@ for (const f of findings) {
   console.log(`  [${f.rule}] ${f.detail}`);
 }
 console.log(
-  `\n[rls-drift] ${findings.length} finding(s): ` +
-    Object.entries(byRule)
-      .map(([r, n]) => `${n} ${r}`)
-      .join(", "),
+  `\n[rls-drift] ${findings.length} finding(s) across ${RULE_NAMES.length} rule(s): ` +
+    (Object.keys(byRule).length
+      ? Object.entries(byRule)
+          .map(([r, n]) => `${n} ${r}`)
+          .join(", ")
+      : "no rule fired"),
 );
 console.log(
   "[rls-drift] Regenerate and re-sync the rule set:\n" +
