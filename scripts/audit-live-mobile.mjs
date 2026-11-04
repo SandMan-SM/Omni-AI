@@ -600,6 +600,50 @@ await Promise.all(
 
 cleanup();
 
+// A sitemap URL that answered 404 once is not yet a dead URL.
+//
+// The routes this gate audits read from the database behind a short
+// timeout, and a timeout that is mistaken for "the row is absent" serves a
+// 404 for a published issue. That happened to five newsletter issues on
+// 2026-11-04: the sweep drove 197 routes in a row, the reads ran past
+// their budget, and the manifest URLs 404'd — and every one of them
+// answered HTTP 200 when asked again a minute later.
+//
+// So a candidate is re-fetched before it is called dead. A URL that 404s
+// twice is a real dead entry; a URL that answers on the retry was a
+// transient, and reporting it would send the reader to fix a page that is
+// fine.
+const deadCandidates = findings.filter((f) => f.rule === 'sitemap-dead-url');
+if (deadCandidates.length) {
+  const survivors = [];
+  for (const c of deadCandidates) {
+    let retryStatus = 0;
+    try {
+      const r = await fetch(`${BASE}${c.path}`, {
+        headers: { 'User-Agent': 'omni-live-audit-retry' },
+        signal: AbortSignal.timeout(15000),
+      });
+      retryStatus = r.status;
+    } catch {
+      retryStatus = 0;
+    }
+    if (retryStatus === 200) {
+      console.log(
+        `note: ${c.path} answered HTTP 404 during the sweep but HTTP 200 on a retry — ` +
+          'a transient, not a dead sitemap entry, so it is not a finding.',
+      );
+      continue;
+    }
+    survivors.push({
+      ...c,
+      detail: `${c.detail} (a retry answered HTTP ${retryStatus || 'no response'})`,
+    });
+  }
+  const kept = findings.filter((f) => f.rule !== 'sitemap-dead-url');
+  findings.length = 0;
+  findings.push(...kept, ...survivors);
+}
+
 const byRule = {};
 for (const f of findings) byRule[f.rule] = (byRule[f.rule] || 0) + 1;
 
