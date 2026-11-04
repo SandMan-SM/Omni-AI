@@ -34,6 +34,7 @@
     "audit:cron-auth": "node scripts/audit-cron-auth.mjs",
     "audit:fleet-auth": "node scripts/audit-fleet-auth.mjs",
     "audit:fleet-rls": "node scripts/audit-fleet-rls.mjs",
+    "audit:fleet-email-unsubscribe": "node scripts/audit-fleet-email-unsubscribe.mjs",
     "patch:fleet-cron-auth": "node scripts/patch-fleet-cron-auth.mjs",
     "patch:fleet-rls-ruleset": "node scripts/patch-fleet-rls-ruleset.mjs",
     "patch:fleet-public-pii": "node scripts/patch-fleet-public-pii.mjs",
