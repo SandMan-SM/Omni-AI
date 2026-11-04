@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { PT_TZ } from "@/lib/tz";
 import {
   CalendarDays,
   Check,
@@ -69,6 +70,7 @@ function formatDate(dateKey: string) {
     weekday: "short",
     month: "short",
     day: "numeric",
+    timeZone: PT_TZ,
   });
 }
 
@@ -303,8 +305,7 @@ export function NewsletterBookingWidget({
   }
 
   const monthLabel = new Date(month.year, month.month, 1).toLocaleDateString(
-    "en-US",
-    { month: "long", year: "numeric" },
+    "en-US", { month: "long", year: "numeric", timeZone: PT_TZ },
   );
 
   return (
@@ -367,6 +368,7 @@ export function NewsletterBookingWidget({
                     weekday: "long",
                     month: "long",
                     day: "numeric",
+                    timeZone: PT_TZ,
                   })}
                   aria-pressed={selected}
                   className={`aspect-square rounded-lg text-xs font-medium transition-all ${

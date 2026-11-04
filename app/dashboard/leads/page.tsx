@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { type Business, type Lead, type Campaign } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
+import { PT_TZ } from '@/lib/tz';
 import { authFetch } from '@/lib/auth';
 import {
   Users, TrendingUp, Target, Zap, ChevronDown,
@@ -213,7 +214,7 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
   const fmtDate = (iso: string | null | undefined) => {
     if (!iso) return '—';
     const d = new Date(iso);
-    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', timeZone: PT_TZ });
   };
 
   return (
@@ -378,7 +379,7 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
                       </div>
                       {note && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>{note}</div>}
                       <div style={{ fontSize: 10, color: '#444', marginTop: 2 }}>
-                        {new Date(a.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                        {new Date(a.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: PT_TZ })}
                       </div>
                     </div>
                   </div>
@@ -414,7 +415,7 @@ function LeadPanel({ lead, onClose, onStatusChange, onProfileSaved }: { lead: Le
                         }
                       </div>
                       <div style={{ fontSize: 10, color: '#666', marginTop: 2 }}>
-                        {date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' })}
+                        {date.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', timeZone: PT_TZ })}
                         {i < history.length - 1 && (() => {
                           const next = new Date(history[i + 1].changed_at);
                           const days = Math.round((next.getTime() - date.getTime()) / 86_400_000);

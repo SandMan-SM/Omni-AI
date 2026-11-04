@@ -12,6 +12,7 @@
 // subscribe form on /newsletter.
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { PT_TZ } from "@/lib/tz";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -97,6 +98,7 @@ function fmtDate(s: string | null) {
     month: "short",
     day: "numeric",
     year: "numeric",
+    timeZone: PT_TZ,
   });
 }
 

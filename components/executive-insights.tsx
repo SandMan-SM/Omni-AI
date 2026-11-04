@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PT_TZ } from "@/lib/tz";
 import { motion } from "framer-motion";
 import {
   Users, Target, Flame, Bell, TrendingUp, Mail, Shield,
@@ -242,7 +243,7 @@ export function ExecutiveInsights() {
                   {a.body && <p className="text-[10px] text-gray-500 truncate">{a.body}</p>}
                 </div>
                 <span className="text-[10px] text-gray-600 flex-shrink-0">
-                  {new Date(a.created_at).toLocaleDateString()}
+                  {new Date(a.created_at).toLocaleDateString('en-US', { timeZone: PT_TZ })}
                 </span>
               </div>
             ))}

@@ -2,6 +2,7 @@
 
 import { useState, useId } from 'react';
 import { Calendar, Clock, CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
+import { PT_TZ } from '@/lib/tz';
 import type { MeetingSlot } from '@/lib/agi/meeting-slots';
 
 export type BookingBusiness = {
@@ -58,10 +59,18 @@ export default function BookingClient({
     else setError(j.error ?? 'Booking failed');
   }
 
-  // Group slots by day
+  // Group slots by day.
+  //
+  // Every date here is formatted with an EXPLICIT timezone. These slots
+  // are generated in Pacific wall-clock (see `lib/agi/meeting-slots.ts`),
+  // so "9 AM" means 9 AM Pacific — but a bare `toLocaleDateString()`
+  // renders in the runtime's timezone, which is UTC on the server and the
+  // visitor's zone in the browser. The two sides disagreed, React threw
+  // hydration error #425 on every booking page, and a customer could be
+  // shown a time that was not the time they booked.
   const byDay = new Map<string, MeetingSlot[]>();
   for (const s of slots) {
-    const d = new Date(s.start_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    const d = new Date(s.start_at).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric', timeZone: PT_TZ });
     if (!byDay.has(d)) byDay.set(d, []);
     byDay.get(d)!.push(s);
   }
@@ -107,6 +116,7 @@ export default function BookingClient({
                 {selected && new Date(selected).toLocaleString('en-US', {
                   weekday: 'long', month: 'long', day: 'numeric',
                   hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+                  timeZone: PT_TZ,
                 })}
               </strong>.<br />
               Confirmation sent to {form.email}.
@@ -131,6 +141,7 @@ export default function BookingClient({
                 {selected && new Date(selected).toLocaleString('en-US', {
                   weekday: 'long', month: 'long', day: 'numeric',
                   hour: 'numeric', minute: '2-digit', timeZoneName: 'short',
+                  timeZone: PT_TZ,
                 })}
               </div>
             </div>
@@ -162,7 +173,7 @@ export default function BookingClient({
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(110px, 1fr))', gap: 8 }}>
                   {daySlots.slice(0, 12).map(s => {
-                    const time = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                    const time = new Date(s.start_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: PT_TZ });
                     return (
                       <button
                         key={s.start_at}

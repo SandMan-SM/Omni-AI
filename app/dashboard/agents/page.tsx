@@ -7,6 +7,7 @@ import { ArrowLeft, Bot, CheckCircle2, DatabaseZap, ExternalLink, ShieldAlert, S
 import type { Business } from '@/lib/agi-supabase';
 import { useAuth } from '@/hooks/use-auth';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
+import { PT_TZ } from '@/lib/tz';
 import { CLIENT_AGENT_REGISTRY, findClientAgentEntry, normaliseAgentKey, type ClientAgentRegistryEntry } from '@/lib/client-agent-registry';
 
 type AgentCard = ClientAgentRegistryEntry & {
@@ -366,7 +367,7 @@ export default function AgentFleetPage() {
                 <MiniMetric label="30d events" value={liveHealth ? String(liveHealth.events_30d) : '—'} />
                 <MiniMetric label="30d leads" value={liveHealth ? String(liveHealth.leads_30d) : '—'} />
                 <MiniMetric label="lead rate" value={leadConversionLabel(liveHealth)} />
-                <MiniMetric label="last signal" value={liveHealth?.last_event_utc ? new Date(liveHealth.last_event_utc).toLocaleDateString() : 'needs data'} />
+                <MiniMetric label="last signal" value={liveHealth?.last_event_utc ? new Date(liveHealth.last_event_utc).toLocaleDateString('en-US', { timeZone: PT_TZ }) : 'needs data'} />
               </div>
 
               <Block icon={Target} title="Primary goal" text={agent.primaryGoal} color="#38bdf8" />

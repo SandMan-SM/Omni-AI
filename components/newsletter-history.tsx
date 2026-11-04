@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
+import { PT_TZ } from "@/lib/tz";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail, Search, Send, Users, Plus, Download, Upload, UserPlus,
@@ -94,6 +95,7 @@ function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
     month: "short", day: "numeric", year: "numeric",
     hour: "numeric", minute: "2-digit",
+    timeZone: PT_TZ,
   });
 }
 

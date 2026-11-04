@@ -14,6 +14,7 @@ import {
   type InboundSlug,
 } from '@/lib/inbound-types';
 import { authFetch } from '@/lib/auth';
+import { PT_TZ } from '@/lib/tz';
 
 type Props = {
   /** Click a leaderboard row to switch the parent dropdown back to a
@@ -349,7 +350,7 @@ export default function AggregateAnalytics({ onTenantClick }: Props) {
       </div>
 
       <div style={{ fontSize: 10, color: '#555', textAlign: 'right' }}>
-        Fetched {new Date(data.fetched_at).toLocaleString()}
+        Fetched {new Date(data.fetched_at).toLocaleString('en-US', { timeZone: PT_TZ })}
       </div>
     </div>
   );

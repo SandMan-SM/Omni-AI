@@ -15,6 +15,32 @@
 
 const PT_TZ = 'America/Los_Angeles';
 
+/**
+ * The Pacific timezone id, exported for anything that RENDERS a date.
+ *
+ * WHY IT IS EXPORTED
+ *
+ * A `toLocaleDateString()` / `toLocaleTimeString()` call with NO
+ * `timeZone` renders in the **runtime's** timezone — which is not the
+ * same on the server and in the browser. Vercel renders in UTC; a
+ * visitor's browser renders in theirs. So the same `toLocaleString`
+ * produces different text on each side, the server-rendered HTML
+ * disagrees with the hydrated tree, and React throws error #425 ("Text
+ * content does not match server-rendered HTML") followed by #422 (the
+ * hydration error that follows it).
+ *
+ * The console error is the visible symptom. The real damage is that a
+ * time shown to a customer can be a DIFFERENT time from the one they
+ * booked: the server painted "9:00 AM" (UTC) and the browser
+ * repainted "2:00 AM" (Pacific).
+ *
+ * Passing this constant makes both sides format identically, and makes
+ * the displayed time the one the schedule was actually built in — the
+ * booking slots are generated in PT wall-clock (see
+ * `lib/agi/meeting-slots.ts`).
+ */
+export { PT_TZ };
+
 const ptDateFormatter = new Intl.DateTimeFormat('en-CA', {
   timeZone: PT_TZ,
   year: 'numeric', month: '2-digit', day: '2-digit',

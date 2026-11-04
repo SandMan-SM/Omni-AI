@@ -8,6 +8,7 @@
 // (including other admins) gets redirected away.
 
 import { useEffect, useState } from "react";
+import { PT_TZ } from "@/lib/tz";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useProfile } from "@/hooks/use-profile";
@@ -349,7 +350,7 @@ export default function AssetsPage() {
               </div>
 
               <div style={{ fontSize: 10, color: "#444", textAlign: "right" }}>
-                Last mapped {new Date(assetIntel.fetched_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                Last mapped {new Date(assetIntel.fetched_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: PT_TZ })}
               </div>
             </div>
           )}
@@ -402,7 +403,7 @@ export default function AssetsPage() {
                 </div>
               ))}
               <div style={{ fontSize: 10, color: "#444", marginTop: 6, textAlign: "right" }}>
-                Snapshot taken {new Date(stats.fetched_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                Snapshot taken {new Date(stats.fetched_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: PT_TZ })}
               </div>
             </>
           )}
@@ -471,7 +472,7 @@ export default function AssetsPage() {
                   <span style={{ color: "#cbd5e1", fontWeight: 600 }}>{e.action}</span>
                   {e.target_type && <span style={{ color: "#666" }}>· {e.target_type}</span>}
                   {typeof e.metadata?.name === 'string' && <span style={{ color: "#94a3b8" }}>· {String(e.metadata.name)}</span>}
-                  <span style={{ marginLeft: "auto", color: "#444", fontSize: 10 }}>{new Date(e.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</span>
+                  <span style={{ marginLeft: "auto", color: "#444", fontSize: 10 }}>{new Date(e.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit", timeZone: PT_TZ })}</span>
                 </div>
               ))}
             </div>

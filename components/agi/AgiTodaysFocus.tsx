@@ -6,6 +6,7 @@
 // Pulls from /api/agi/focus.
 
 import { useEffect, useState, useCallback } from "react";
+import { PT_TZ } from "@/lib/tz";
 import {
   Sparkles, Flame, Clock, Calendar, CalendarX, PartyPopper,
   RefreshCw, Loader2, ChevronRight, Mail, Phone,
@@ -53,7 +54,7 @@ function leadName(l: FocusLead): string {
 }
 
 function fmtTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: PT_TZ });
 }
 
 function fmtRelative(iso: string | null | undefined): string {

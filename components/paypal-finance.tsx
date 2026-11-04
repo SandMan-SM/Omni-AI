@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { PT_TZ } from "@/lib/tz";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -95,7 +96,7 @@ const fmt = (n: number) =>
   }).format(n);
 
 const fmtDate = (s: string | null) =>
-  s ? new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+  s ? new Date(s).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: PT_TZ }) : "—";
 
 // Per-category icon + tint. Subscription & ads get the loudest colors
 // because they're the recurring costs that matter most on the monthly P&L.
@@ -223,7 +224,7 @@ export function PayPalFinance() {
           <p className="text-xs text-gray-500 mt-0.5">
             Last sync:{" "}
             {data.last_sync?.started_at
-              ? new Date(data.last_sync.started_at).toLocaleString()
+              ? new Date(data.last_sync.started_at).toLocaleString('en-US', { timeZone: PT_TZ })
               : "never"}{" "}
             •{" "}
             <span className={data.last_sync?.status === "ok" ? "text-emerald-400" : "text-red-400"}>

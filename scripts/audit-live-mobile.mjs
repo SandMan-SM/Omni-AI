@@ -27,6 +27,8 @@
 //   dead-href           an <a href="#"> that goes nowhere
 //   console-error       an uncaught exception or console.error on the page
 //   resource-error      a same-origin subresource answered 4xx/5xx
+//                        (a 429 is NOT one of them — see the note at the
+//                        responseReceived handler)
 //   soft-404            a page that says "not found" but answered HTTP 200,
 //                        OR a probe path that cannot exist and answered
 //                        anything other than 404. Next.js serves its
@@ -423,6 +425,14 @@ console.log(`auditing ${paths.length} route(s) at ${VIEWPORT_W}px against ${BASE
 
 const findings = [];
 const summary = [];
+/**
+ * Subresources the site REFUSED to serve because this audit asked too
+ * often. Not findings — see the `responseReceived` handler — but they are
+ * reported, because "the sweep tripped the site's own rate limiter" is
+ * something the operator should know: it means the audit is not measuring
+ * the site the way a reader experiences it.
+ */
+const rateLimitedHits = [];
 
 async function auditPath(p) {
   const url = `${BASE}${p}`;
@@ -433,6 +443,7 @@ async function auditPath(p) {
 
     const consoleErrors = [];
     const resourceErrors = [];
+    const rateLimited = [];
 
     cdp.on('Runtime.exceptionThrown', (params, sid) => {
       if (sid !== sessionId) return;
@@ -467,6 +478,25 @@ async function auditPath(p) {
       if (!status || status < 400) return;
       if (!resUrl || !resUrl.startsWith(BASE)) return;
       if (resUrl === url) return; // the page's own status is not a subresource
+      // A 429 is the endpoint WORKING, not a broken resource: it is a rate
+      // limiter refusing a client that asks too often. This audit is that
+      // client by construction — it drives every route in sequence, each
+      // one firing the page's own analytics beacon, from one IP, faster
+      // than any human browses. `/api/events/track` allows 120 requests a
+      // minute per IP, so a full sweep crosses that line and the beacon
+      // starts answering 429 on the later routes.
+      //
+      // Reporting those 429s as `resource-error` was a false positive: 22
+      // findings on a site with no broken subresource, which is exactly the
+      // shape of a gate that cries wolf until nobody reads it. So a 429 is
+      // counted and reported as an observation — the limiter is doing its
+      // job and the operator should know the sweep tripped it — but it is
+      // NOT a finding.
+      if (status === 429) {
+        rateLimited.push(`${resUrl.slice(BASE.length) || '/'}`);
+        rateLimitedHits.push(`${p} → ${resUrl.slice(BASE.length) || '/'}`);
+        return;
+      }
       resourceErrors.push(`${status} ${resUrl.slice(BASE.length) || '/'}`);
     });
 
@@ -574,6 +604,14 @@ const byRule = {};
 for (const f of findings) byRule[f.rule] = (byRule[f.rule] || 0) + 1;
 
 console.log('');
+if (rateLimitedHits.length) {
+  console.log(
+    `note: ${rateLimitedHits.length} subresource request(s) were refused with HTTP 429 — the site ` +
+      "rate-limited this sweep. That is the limiter working, not a broken resource, so it is not a " +
+      "finding; it does mean the audit drove the site harder than a reader does.",
+  );
+  console.log('');
+}
 if (!findings.length) {
   console.log(`scanned ${paths.length} live route(s) at ${VIEWPORT_W}px — 0 findings across ${RULE_NAMES.length} rules`);
   console.log('No live mobile findings.');

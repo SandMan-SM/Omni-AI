@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { PT_TZ } from "@/lib/tz";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
@@ -537,7 +538,7 @@ export function CommandCenter() {
                           {isDraft
                             ? "Scheduled for next send"
                             : <>
-                                {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "Pending"}
+                                {dateStr ? new Date(dateStr).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: PT_TZ }) : "Pending"}
                                 {post.recipients_count ? ` · ${post.recipients_count} sent` : ''}
                               </>
                           }

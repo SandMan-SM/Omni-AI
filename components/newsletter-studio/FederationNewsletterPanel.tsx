@@ -25,6 +25,7 @@
  */
 
 import { useEffect, useState } from "react";
+import { PT_TZ } from "@/lib/tz";
 import {
   Mail, CheckCircle2, XCircle, Loader2, ExternalLink, RefreshCw, AlertTriangle,
 } from "lucide-react";
@@ -167,7 +168,7 @@ export function FederationNewsletterPanel() {
                       <span className="text-gray-500">{p.kind}</span>
                       <span className="text-gray-600">·</span>
                       <span className="text-gray-500">
-                        {new Date(p.created_at).toLocaleString()}
+                        {new Date(p.created_at).toLocaleString('en-US', { timeZone: PT_TZ })}
                       </span>
                     </div>
                     <h4 className="mt-1 text-sm font-semibold text-white leading-snug">

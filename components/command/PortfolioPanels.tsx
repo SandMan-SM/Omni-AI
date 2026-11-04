@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
+import { PT_TZ } from "@/lib/tz";
 import Link from "next/link";
 import { TrendingUp, GitCommit, AlertTriangle, Target } from "lucide-react";
 
@@ -196,7 +197,7 @@ export function BuildLogPanel() {
           ships.map((s) => (
             <div key={s.id} className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-white/[.02]">
               <span className="text-[9px] font-mono text-gray-600 shrink-0 tabular-nums">
-                {new Date(s.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                {new Date(s.created_at).toLocaleTimeString('en-US', { hour: "2-digit", minute: "2-digit", timeZone: PT_TZ })}
               </span>
               <span className={`text-[9px] font-mono uppercase shrink-0 ${KIND_COLOR[s.kind] || "text-gray-400"}`}>
                 {s.kind}

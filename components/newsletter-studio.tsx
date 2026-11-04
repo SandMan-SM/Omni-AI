@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { PT_TZ } from "@/lib/tz";
 import { motion } from "framer-motion";
 import {
   Mail, Users, Crown, Zap, Download, Upload, Plus, Trash2,
@@ -470,7 +471,7 @@ export function NewsletterStudio() {
                       )}
                     </div>
                     <p className="text-xs text-gray-500 mt-0.5">
-                      {sub.created_at ? new Date(sub.created_at).toLocaleDateString() : ''}
+                      {sub.created_at ? new Date(sub.created_at).toLocaleDateString('en-US', { timeZone: PT_TZ }) : ''}
                     </p>
                   </div>
 

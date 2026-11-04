@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { PT_TZ } from "@/lib/tz";
 import type { ElementType } from "react";
 import Link from "next/link";
 import {
@@ -93,7 +94,7 @@ function formatMoneyFromCents(value: number | undefined | null) {
 
 function formatDate(value: string | null | undefined) {
   if (!value) return "Not set";
-  return new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: PT_TZ });
 }
 
 function formatSyncTime(value: string | null | undefined) {
@@ -101,6 +102,7 @@ function formatSyncTime(value: string | null | undefined) {
   return `Synced ${new Date(value).toLocaleTimeString("en-US", {
     hour: "numeric",
     minute: "2-digit",
+    timeZone: PT_TZ,
   })}`;
 }
 

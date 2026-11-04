@@ -40,6 +40,12 @@
 //   dead-internal-link        an href that resolves to no route. Next.js
 //                            serves the not-found page with a 200 status, so
 //                            the break is invisible to a status check.
+//   date-locale-without-timezone a client component formats a Date with
+//                            toLocaleDateString/toLocaleTimeString/
+//                            toLocaleString and no explicit `timeZone`, so
+//                            the server (UTC) and the browser (the
+//                            visitor's zone) render different text and
+//                            React throws hydration error #425.
 //
 // The accessible-name rules walk the TypeScript AST rather than the source
 // text: whether an expression renders text is not decidable with a regex —
@@ -86,6 +92,7 @@ const RULE_NAMES = [
   "form-control-missing-label",
   "inline-tap-target-under-44",
   "dead-internal-link",
+  "date-locale-without-timezone",
 ] as const;
 const SCAN_DIRS = ["app", "components", "lib"];
 const SKIP_DIRS = new Set(["node_modules", ".next", ".next-prod", ".turbo", "dist", "build"]);
@@ -340,6 +347,88 @@ function controlAccessibleName(
   if (id && htmlFor.has(id)) return "label";
   if (wrappedInLabel) return "label";
   return null;
+}
+
+/**
+ * Can this call ever be part of the SERVER-rendered HTML?
+ *
+ * A hydration mismatch needs the text to be in the HTML the server sent.
+ * Code that only ever runs in the browser cannot produce one:
+ *
+ *   - a `useEffect` / `useLayoutEffect` body — effects do not run on the
+ *     server at all
+ *   - an event handler — `onClick={() => ...}` runs when a person clicks,
+ *     which is after hydration
+ *   - an `async` function — in a client component that is a handler or a
+ *     loader, not the render pass
+ *
+ * A date formatted in one of those places is still worth pinning to a
+ * timezone, but it is not a hydration defect, and reporting it as one
+ * would be a false positive.
+ */
+function isClientOnlyPath(node: ts.Node): boolean {
+  let cur: ts.Node | undefined = node.parent;
+  while (cur) {
+    if (
+      ts.isFunctionDeclaration(cur) ||
+      ts.isFunctionExpression(cur) ||
+      ts.isArrowFunction(cur) ||
+      ts.isMethodDeclaration(cur)
+    ) {
+      if (ts.isFunctionDeclaration(cur) && cur.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)) {
+        return true;
+      }
+      if (ts.isFunctionExpression(cur) && cur.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)) {
+        return true;
+      }
+      if (ts.isArrowFunction(cur) && cur.modifiers?.some((m) => m.kind === ts.SyntaxKind.AsyncKeyword)) {
+        return true;
+      }
+      // An effect callback.
+      const owner = cur.parent;
+      if (
+        owner &&
+        ts.isCallExpression(owner) &&
+        ts.isIdentifier(owner.expression) &&
+        ["useEffect", "useLayoutEffect", "useInsertionEffect"].includes(owner.expression.text)
+      ) {
+        return true;
+      }
+      // An event handler: `onClick={() => ...}`.
+      if (owner && ts.isJsxAttribute(owner) && /^on[A-Z]/.test(owner.name.text)) {
+        return true;
+      }
+      // Anything else is a render-path function (a component body, a
+      // plain helper called during render) — keep walking up.
+    }
+    cur = cur.parent;
+  }
+  return false;
+}
+
+/**
+ * Is this file a client component?
+ *
+ * The `'use client'` directive has to be the FIRST statement in the file to
+ * count, so the check is anchored to the top rather than searching for the
+ * string anywhere (a doc comment mentioning "use client" is not a
+ * directive).
+ */
+function isClientComponent(src: string): boolean {
+  return /^\s*(?:\/\/[^\n]*\n|\/\*[\s\S]*?\*\/\s*)*(['"])use client\1/.test(src);
+}
+
+/**
+ * Is this type annotation a Date?
+ *
+ * `Date`, `Date | null`, `Date | undefined` and `readonly Date[]`-style
+ * unions that include `Date` all count. A type that does not mention Date
+ * does not.
+ */
+function typeIsDate(type: ts.TypeNode): boolean {
+  if (ts.isTypeReferenceNode(type)) return type.typeName.getText() === "Date";
+  if (ts.isUnionTypeNode(type)) return type.types.some((t) => typeIsDate(t));
+  return false;
 }
 
 /**
@@ -918,6 +1007,90 @@ function auditFile(file: string, src: string, findings: Finding[], routes: strin
         });
       }
     }
+  }
+
+  // 10. A client component that formats a Date without an explicit timezone.
+  //
+  // `toLocaleDateString()` / `toLocaleTimeString()` / `toLocaleString()`
+  // with no `timeZone` renders in the RUNTIME's timezone. A client
+  // component is rendered on the server too (SSR) and then hydrated, so
+  // the two sides have to agree: Vercel renders in UTC, the visitor's
+  // browser renders in their own zone, and the same call produces
+  // different text. React then throws error #425 ("Text content does not
+  // match server-rendered HTML") and #422 (the hydration error behind
+  // it), and the page is re-rendered on the client.
+  //
+  // The console error is the symptom. The damage is that the server
+  // painted "9:00 AM" (UTC) and the browser repainted "2:00 AM"
+  // (Pacific) — a customer can be shown a time that is not the time they
+  // booked.
+  //
+  // Scope: client components only. A server component's output is not
+  // hydrated, so a bare `toLocaleString()` there is a single rendering
+  // and cannot disagree with itself.
+  //
+  // The receiver must be a Date to be reported. `toLocaleString()` on a
+  // NUMBER is a different thing (a thousands separator) and is left
+  // alone; the receiver is resolved from a `new Date(...)` expression or
+  // from a variable whose declared type is `Date`.
+  if (isClientComponent(src)) {
+    const dateTyped = new Set<string>();
+    const collectDateVars = (node: ts.Node) => {
+      if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.type) {
+        if (typeIsDate(node.type)) dateTyped.add(node.name.text);
+      }
+      if (ts.isParameter(node) && ts.isIdentifier(node.name) && node.type) {
+        if (typeIsDate(node.type)) dateTyped.add(node.name.text);
+      }
+      ts.forEachChild(node, collectDateVars);
+    };
+    collectDateVars(sf);
+
+    const receiverIsDate = (recv: ts.Expression): boolean => {
+      if (ts.isNewExpression(recv)) {
+        return recv.expression.getText(sf) === "Date";
+      }
+      if (ts.isIdentifier(recv)) return dateTyped.has(recv.text);
+      return false;
+    };
+
+    const walkCalls = (node: ts.Node) => {
+      if (ts.isCallExpression(node)) {
+        const callee = node.expression;
+        if (
+          ts.isPropertyAccessExpression(callee) &&
+          ["toLocaleDateString", "toLocaleTimeString", "toLocaleString"].includes(callee.name.text) &&
+          receiverIsDate(callee.expression) &&
+          !isClientOnlyPath(node)
+        ) {
+          const options = node.arguments[1];
+          const hasTimeZone =
+            options !== undefined &&
+            ts.isObjectLiteralExpression(options) &&
+            options.properties.some(
+              (p) =>
+                ts.isPropertyAssignment(p) &&
+                ((ts.isIdentifier(p.name) && p.name.text === "timeZone") ||
+                  (ts.isStringLiteral(p.name) && p.name.text === "timeZone")),
+            );
+          if (!hasTimeZone) {
+            const start = node.getStart(sf);
+            findings.push({
+              rule: "date-locale-without-timezone",
+              file: rel,
+              line: sf.getLineAndCharacterOfPosition(start).line + 1,
+              detail:
+                `${callee.name.text}() on a Date with no explicit \`timeZone\` — the server ` +
+                "renders in UTC and the browser renders in the visitor's zone, so the two " +
+                "disagree (hydration error #425) and the displayed time can differ from " +
+                "the booked one. Pass `timeZone: PT_TZ` from `@/lib/tz`.",
+            });
+          }
+        }
+      }
+      ts.forEachChild(node, walkCalls);
+    };
+    walkCalls(sf);
   }
 
   // 9. Internal links that resolve to nothing.

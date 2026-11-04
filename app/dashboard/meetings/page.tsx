@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
+import { PT_TZ } from '@/lib/tz';
 import { authFetch } from '@/lib/auth';
 import { ArrowLeft, ChevronDown, Calendar, Clock, Mail, Phone, RefreshCw, Copy, ExternalLink, X, Edit3, CalendarX, RotateCcw, CheckCircle2 } from 'lucide-react';
 
@@ -319,7 +320,7 @@ function BookingCard({ booking, dim, onClick }: { booking: Booking; dim?: boolea
         flexShrink: 0,
       }}>
         <div style={{ fontSize: 10, color: cancelled ? '#666' : '#10b981', fontWeight: 700, textTransform: 'uppercase' }}>
-          {start.toLocaleString('en-US', { month: 'short' })}
+          {start.toLocaleString('en-US', { month: 'short', timeZone: PT_TZ })}
         </div>
         <div style={{ fontSize: 22, fontWeight: 800, lineHeight: 1, textDecoration: cancelled ? 'line-through' : undefined }}>{start.getDate()}</div>
       </div>
@@ -373,7 +374,7 @@ function BookingCard({ booking, dim, onClick }: { booking: Booking; dim?: boolea
       <div className="agi-booking-time" style={{ gridArea: 'time', textAlign: 'right', flexShrink: 0 }}>
         <div style={{ fontSize: 13, fontWeight: 600, color: cancelled ? '#666' : '#10b981', display: 'inline-flex', alignItems: 'center', gap: 4, whiteSpace: 'nowrap' }}>
           <Clock size={11} />
-          {start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}
+          {start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: PT_TZ })}
         </div>
         <div style={{ fontSize: 10, color: '#555', marginTop: 2, whiteSpace: 'nowrap' }}>{booking.duration_minutes} min</div>
       </div>
@@ -514,10 +515,10 @@ function MeetingPanel({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 600 }}>
-                  {start.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}
+                  {start.toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: PT_TZ })}
                 </div>
                 <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 3 }}>
-                  {start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })} · {booking.duration_minutes} min
+                  {start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: PT_TZ })} · {booking.duration_minutes} min
                 </div>
               </div>
               <button className="min-h-11 md:min-h-0" onClick={() => setEditingTime(true)} disabled={busy || cancelled} style={smallBtn}><RotateCcw size={11} /> Reschedule</button>

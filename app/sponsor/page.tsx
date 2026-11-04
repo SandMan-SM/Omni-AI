@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
  * Design contract: docs/web-design-system.md. Accent: purple.
  */
 import { useEffect, useState, useCallback } from "react";
+import { PT_TZ } from "@/lib/tz";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
@@ -349,10 +350,11 @@ export default function SponsorPortal() {
                 </div>
                 <p className="text-sm" style={{ color: WEB.textMuted }}>
                   Sponsored since{" "}
-                  {new Date(s.started_at).toLocaleDateString(undefined, {
+                  {new Date(s.started_at).toLocaleDateString('en-US', {
                     month: "long",
                     day: "numeric",
                     year: "numeric",
+                    timeZone: PT_TZ,
                   })}
                 </p>
               </div>

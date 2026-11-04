@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { supabase, type Business } from '@/lib/agi-supabase';
 import { loadBusinesses } from '@/lib/dashboard-businesses';
+import { PT_TZ } from '@/lib/tz';
 import { authFetch } from '@/lib/auth';
 import {
   ArrowLeft, ChevronDown, CreditCard, ExternalLink, CheckCircle2,
@@ -158,14 +159,14 @@ export default function BillingPage() {
                 ⏱ {trialDaysLeft} {trialDaysLeft === 1 ? 'day' : 'days'} left in trial
               </div>
               <div style={{ fontSize: 11, color: '#94a3b8' }}>
-                Pick a plan before {selectedBiz?.trial_ends_at && new Date(selectedBiz.trial_ends_at).toLocaleDateString()} to keep your dashboard active.
+                Pick a plan before {selectedBiz?.trial_ends_at && new Date(selectedBiz.trial_ends_at).toLocaleDateString('en-US', { timeZone: PT_TZ })} to keep your dashboard active.
               </div>
             </div>
           )}
 
           {selectedBiz?.subscription_renewal_at && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#666', marginBottom: 16 }}>
-              <Calendar size={11} /> Next renewal: {new Date(selectedBiz.subscription_renewal_at).toLocaleDateString()}
+              <Calendar size={11} /> Next renewal: {new Date(selectedBiz.subscription_renewal_at).toLocaleDateString('en-US', { timeZone: PT_TZ })}
             </div>
           )}
 

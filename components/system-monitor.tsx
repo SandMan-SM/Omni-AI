@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { PT_TZ } from "@/lib/tz";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Activity, Database, Mail, Shield, CheckCircle2,
@@ -318,7 +319,7 @@ function LiveAgentChat() {
                               </Badge>
                             )}
                             <span className="text-[9px] text-gray-600 ml-auto">
-                              {new Date(cmd.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              {new Date(cmd.created_at).toLocaleTimeString('en-US', { hour: "2-digit", minute: "2-digit", timeZone: PT_TZ })}
                             </span>
                           </div>
                           <p className="text-[13px] text-gray-200 leading-snug">{cmd.command}</p>

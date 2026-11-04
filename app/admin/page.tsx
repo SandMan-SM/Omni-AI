@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import { PT_TZ } from "@/lib/tz";
 import dynamicImport from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -261,7 +262,7 @@ function ActivityFeed({ profileId }: { profileId: string }) {
                 <div className="flex-1 min-w-0">
                   {a.subject && <p className="text-gray-300 font-medium truncate">{a.subject}</p>}
                   {a.body && <p className="text-gray-500 truncate">{a.body}</p>}
-                  <p className="text-gray-700 mt-0.5">{new Date(a.created_at).toLocaleDateString()} · {a.type}</p>
+                  <p className="text-gray-700 mt-0.5">{new Date(a.created_at).toLocaleDateString('en-US', { timeZone: PT_TZ })} · {a.type}</p>
                 </div>
               </div>
             );
