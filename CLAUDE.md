@@ -33,6 +33,7 @@ npm run audit:publish  # publish-state gate — a newsletter write that sets pub
 npm run audit:rls      # RLS gate — a locked table reached with a non-admin client
 npm run audit:cron-auth # auth gate — a route authenticating with a client-set header, or an unguarded secret
 npm run audit:sitemap  # sitemap-parity gate — a sitemap URL the page marks noindex, or an indexable route the sitemap omits
+npm run audit:content-lookup  # failed-lookup gate — a page that answers 404 because a database read FAILED
 npm run audit:deploy   # deploy source-of-truth gate — is the running production deployment described by git, AND did the pushed tip reach production?
 npm run audit:env-drift  # local vs production secret drift (needs the Vercel CLI; NOT part of build)
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
@@ -96,6 +97,12 @@ single registered preview server instead.
 - **Indexability and the sitemap must agree.** A route that ships `robots: { index: true }` belongs in `app/sitemap.ts`; a URL the sitemap advertises must not render `noindex`. Next.js **replaces** the `robots` field at each level of the layout chain, so a noindex layout (`app/sponsor/layout.tsx`) de-indexes its whole subtree unless a child declares `robots: { index: true, follow: true }` itself — which is how `/sponsor/info` and `/sponsor/application` were silently de-indexed while the sitemap kept advertising them. `npm run audit:sitemap` fails the build when the two disagree; `node scripts/audit-live-mobile.mjs --all` measures the rendered truth (`sitemap-noindex`, `sitemap-dead-url`).
 - **robots.txt disallows are PREFIXES, not directory globs.** `Disallow: /admin/` covers `/admin/info` but **not** `/admin` — the bare URL, which is the one a probing bot tries first, stays crawlable. Write every entry without the trailing slash (`Disallow: /admin`), which covers the index and its sub-routes together. `npm run audit:sitemap` fails the build if a trailing-slash disallow leaves a route's bare path crawlable.
 - **Newsletter publish:** `status` and `published_at` must be written in the **same** statement. Every reader of `newsletter_posts` filters on `status = 'published' AND published_at IS NOT NULL`, and the column defaults are `published_at DEFAULT now()` / `status DEFAULT 'draft'` — so a write that sets one without the other produces a row that looks published in the database and in every log but is invisible everywhere. This stranded 80 days of daily issues. `npm run audit:publish` fails the build if it comes back.
+- **A failed lookup is not a missing resource.** Supabase never throws: a read that fails (dropped connection, statement timeout, pool exhaustion) returns `{ data: null, error }` — byte-identical to a read that found nothing. A page that destructures `{ data }` and calls `notFound()` on a falsy value is therefore claiming "this page does not exist" when the truth is "I could not find out". To a crawler those mean opposite things: a 404 tells it to forget the URL, a 500 tells it to come back. On 2026-11-04 this served HTTP 404 to five published newsletter issues the sitemap advertises, because their read ran past a 2.5 s timeout. Use the classifier in `lib/server/content-lookup.ts`:
+  ```ts
+  const row = requireLookup(await lookupContent(() => sb.from(…).maybeSingle()));
+  if (!row) notFound();   // only a genuine absence reaches here
+  ```
+  `requireLookup` throws on a failed lookup, so the route's `error.tsx` renders a retryable 500. `npm run audit:content-lookup` fails the build when a page reaches `notFound()` from an unclassified read.
 - **JSX text:** escape raw quotes/apostrophes (`&apos;` `&ldquo;` `&rdquo;`) — raw `'`/`"` in JSX trips ESLint `react/no-unescaped-entities` and **fails the Vercel build**.
 - **Time:** anchor "today"/daily logic to **Pacific Time**. Vercel runs UTC, so naive `new Date()` makes briefings/digests/crons off by a day.
 - Forms POST to `app/api/*` handlers that insert into Supabase + notify via Resend.
