@@ -264,8 +264,13 @@ export default function SponsorInfo() {
                 <Image
                   src="/dashboard-screenshot.png"
                   alt="Omni AI Agentic Dashboard — live command center for your business"
+                  // The artwork is 2000×1372 (1.458:1). It was declared as
+                  // 1200×675 (16:9), so `w-full h-auto` reserved a 16:9 box
+                  // and stretched the screenshot 18% shorter than it is —
+                  // the dashboard read as vertically squashed. These are the
+                  // asset's own proportions at 1200 wide.
                   width={1200}
-                  height={675}
+                  height={823}
                   className="w-full h-auto block"
                 />
               </div>

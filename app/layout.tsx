@@ -68,7 +68,15 @@ export const metadata: Metadata = {
     creator: "@SitaniMafi",
   },
   icons: {
-    icon: "/favicon.png",
+    // The 1024px /favicon.png is still the JSON-LD logo (a search engine
+    // wants a large image for that), but it must NOT be the browser icon:
+    // every page view fetched a 543 KB PNG to draw a 16-pixel square.
+    // These two are 23 KB and 1.6 KB of the same artwork.
+    icon: [
+      { url: "/favicon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    shortcut: "/favicon-32.png",
   },
   robots: {
     index: true,

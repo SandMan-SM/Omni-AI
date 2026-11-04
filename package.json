@@ -14,7 +14,7 @@
     "dev:prod": "rm -rf .next-local && NEXT_DIST_DIR=.next-local next build && NEXT_DIST_DIR=.next-local next start",
     "preview": "git push origin HEAD:dev --force && echo '\\n→ Preview building at: https://omni-ai-git-dev-sandman-sms-projects.vercel.app\\n  (refresh in 60-90s for the new build)'",
     "preview:open": "open 'https://omni-ai-git-dev-sandman-sms-projects.vercel.app'",
-    "build": "npm run audit:publish && npm run audit:rls && npm run audit:cron-auth && npm run audit:routes && npm run audit:route-probes && npm run audit:public-pii && npm run audit:sitemap && npm run audit:email-unsubscribe && next build",
+    "build": "npm run audit:publish && npm run audit:rls && npm run audit:cron-auth && npm run audit:routes && npm run audit:route-probes && npm run audit:public-pii && npm run audit:sitemap && npm run audit:email-unsubscribe && npm run audit:image-aspect && next build",
     "build:check": "node scripts/ensure-clean-worktree.mjs --phase before-build-check && npm run build:check:dirty && node scripts/ensure-clean-worktree.mjs --phase after-build-check",
     "build:check:dirty": "NEXT_DIST_DIR=.next-prod next build && rm -rf .next-prod",
     "start": "next start",
@@ -38,14 +38,15 @@
     "patch:fleet-cron-auth": "node scripts/patch-fleet-cron-auth.mjs",
     "patch:fleet-rls-ruleset": "node scripts/patch-fleet-rls-ruleset.mjs",
     "patch:fleet-public-pii": "node scripts/patch-fleet-public-pii.mjs",
-    "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls && npm run audit:cron-auth && npm run audit:routes && npm run audit:route-probes && npm run audit:public-pii && npm run audit:sitemap && npm run audit:email-unsubscribe",
+    "audit": "npm run audit:mobile && npm run audit:publish && npm run audit:rls && npm run audit:cron-auth && npm run audit:routes && npm run audit:route-probes && npm run audit:public-pii && npm run audit:sitemap && npm run audit:email-unsubscribe && npm run audit:image-aspect",
     "worktree:clean": "node scripts/ensure-clean-worktree.mjs",
     "audit:env-drift": "tsx scripts/audit-env-drift.ts",
     "audit:pre-push": "node scripts/audit-pre-push.mjs",
     "hooks:install": "node scripts/install-git-hooks.mjs",
     "hooks:check": "node scripts/install-git-hooks.mjs --check",
     "audit:route-probes": "tsx scripts/audit-route-probes.ts",
-    "audit:email-unsubscribe": "node scripts/audit-email-unsubscribe.mjs"
+    "audit:email-unsubscribe": "node scripts/audit-email-unsubscribe.mjs",
+    "audit:image-aspect": "node scripts/audit-image-aspect.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",

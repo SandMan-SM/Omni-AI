@@ -20,6 +20,7 @@
 // /full page since they already point at live prices.
 
 import { useCallback, useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { GoldSparksBackdrop } from "@/components/gold-sparks-backdrop";
 import { ProposalBackdrop } from "@/components/proposal-backdrop";
@@ -273,12 +274,21 @@ export function LoveThyBarberReferralClient({
           {/* Love Thy Barber logo as the hero banner background — the
               logo's own black field blends into the cosmic page; a
               dark gradient over it keeps the headline + CTAs legible.
-              Sits behind the content (z-0); content is z-10. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+              Sits behind the content (z-0); content is z-10.
+
+              This was a raw <img> of a 331 KB PNG, so the browser
+              downloaded the full-resolution artwork for a decorative
+              background at 25% opacity. `fill` + `sizes` routes it
+              through the image optimizer, which serves a fraction of
+              the weight at the width actually rendered. The element's
+              box comes from the parent, so `fill` keeps the exact
+              `object-contain` behaviour the raw <img> had. */}
+          <Image
             src="/love-thy-barber-logo.png"
             alt="Love Thy Barber — Teach. Inspire. Elevate."
             aria-hidden="true"
+            fill
+            sizes="100vw"
             className="pointer-events-none absolute inset-0 z-0 h-full w-full object-contain object-center opacity-25"
           />
           <div
