@@ -65,6 +65,34 @@ async function rpc(name, payload) {
 
 const [, , cmd, ...rest] = process.argv;
 
+/**
+ * Parse a TTL argument.
+ *
+ * WHY THIS EXISTS
+ *
+ * `Number(ttl || 45)` silently turns a non-numeric argument into `NaN`,
+ * and `JSON.stringify(NaN)` is `null` — so a typo reached the RPC as a
+ * NULL ttl, and the server answered with a Postgres NOT NULL violation
+ * (`null value in column "expires_at"`). That error named a column in a
+ * table the caller had never heard of and said nothing about the argument
+ * the caller actually got wrong. A tool that reports the wrong thing sends
+ * the repair in the wrong direction: the reader goes looking for a schema
+ * problem instead of reading their own command line.
+ */
+function parseTtl(raw, fallback) {
+  if (raw === undefined || raw === null || raw === "") return fallback;
+  const n = Number(raw);
+  if (!Number.isFinite(n) || n <= 0) {
+    console.error(
+      `ttl must be a positive number of minutes — got ${JSON.stringify(raw)}. ` +
+        "Usage: renew <leaseId> <agent> [ttlMinutes] | " +
+        "acquire <domain> <agent> <kind> <session> <note> [ttlMinutes]",
+    );
+    process.exit(2);
+  }
+  return n;
+}
+
 if (cmd === "surface") {
   const r = await rpc("hermes_federation_surface", { p_domain: rest[0] });
   console.log(JSON.stringify(r, null, 2));
@@ -76,7 +104,7 @@ if (cmd === "surface") {
     p_kind: kind,
     p_session_ref: session,
     p_note: note,
-    p_ttl_minutes: Number(ttl || 45),
+    p_ttl_minutes: parseTtl(ttl, 45),
   });
   console.log(JSON.stringify(r, null, 2));
   if (!r?.granted) process.exit(3);
@@ -88,7 +116,7 @@ if (cmd === "surface") {
   const r = await rpc("hermes_federation_renew_lease", {
     p_lease_id: Number(leaseId),
     p_agent: agent,
-    p_ttl_minutes: Number(ttl || 45),
+    p_ttl_minutes: parseTtl(ttl, 45),
   });
   console.log(JSON.stringify(r, null, 2));
 } else if (cmd === "release") {
