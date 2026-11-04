@@ -41,6 +41,15 @@
 //       The page had content before the canvas was dark — the visitor saw a
 //       light canvas under dark content.
 //
+//   content-never-painted
+//       Nothing painted inside the sample window, so the canvas colour could
+//       not be measured at all. This is a DIFFERENT observation from a flash:
+//       the flash rule's premise is "content appeared while the canvas was
+//       still light", and here no content ever appeared. Reporting it under
+//       the flash rule's name tells the reader something that was not
+//       observed — the same failure as a rate limiter refusing the auditor
+//       being reported as a broken resource.
+//
 // Read-only against the target site. Exits non-zero when anything fires, so
 // it works as a pre-ship gate. Nothing is written and nothing is
 // authenticated against.
@@ -50,7 +59,7 @@ import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { spawn } from 'node:child_process';
 
-const RULE_NAMES = ['canvas-light-while-content-painted'];
+const RULE_NAMES = ['canvas-light-while-content-painted', 'content-never-painted'];
 
 const argv = process.argv.slice(2);
 const arg = (name, fallback) => {
@@ -319,17 +328,29 @@ async function main() {
   let worst = null;
 
   for (const route of routes) {
-    const r = await probeRoute(route);
+    let r = await probeRoute(route);
+    // A route that painted nothing inside the window is usually a cold start
+    // (DNS, TLS, an uncached SSR render), not a broken page — the same route
+    // measured in isolation paints in ~2 s. So an inconclusive sample is
+    // retried once before it is believed. Reporting the FIRST inconclusive
+    // sample turns a transient into a finding, and a finding the reader
+    // cannot reproduce is worse than no finding at all.
+    if (r.inconclusive && !r.error) {
+      console.log(
+        `  ${route}  INCONCLUSIVE on the first sample — retrying (no content painted within ${SAMPLE_WINDOW_MS} ms)`,
+      );
+      r = await probeRoute(route);
+    }
     if (r.error) {
       console.log(`  ${route}  ERROR ${r.error}`);
       continue;
     }
     if (r.inconclusive) {
-      console.log(`  ${route}  INCONCLUSIVE — no content painted within ${SAMPLE_WINDOW_MS} ms`);
+      console.log(`  ${route}  INCONCLUSIVE — no content painted within ${SAMPLE_WINDOW_MS} ms (twice)`);
       findings.push({
-        rule: 'canvas-light-while-content-painted',
+        rule: 'content-never-painted',
         route,
-        detail: `no content painted within ${SAMPLE_WINDOW_MS} ms, so the canvas colour could not be measured (last html background: ${r.lastHtmlBg})`,
+        detail: `no content painted within ${SAMPLE_WINDOW_MS} ms on two consecutive samples, so the canvas colour could not be measured (last html background: ${r.lastHtmlBg})`,
       });
       continue;
     }
