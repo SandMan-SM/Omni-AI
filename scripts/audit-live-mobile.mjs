@@ -421,6 +421,47 @@ if (ONLY) {
 // rules below judge.
 const sitemapSet = new Set(allPaths);
 
+/**
+ * The prefixes the site declares INTERNAL, read from its own robots.txt.
+ *
+ * Used for exactly one judgement: a 401 on a subresource of an
+ * INTERNAL page is the page's admin gate working, not a broken
+ * resource. An internal dashboard fetches its data from a
+ * `requireAdmin()` route, and this auditor is anonymous by
+ * construction — so the 401 is the correct answer, and reporting it
+ * as `resource-error` teaches the operator to ignore the rule.
+ *
+ * The judgement is deliberately narrow: a 401 on a PUBLIC page's
+ * subresource is still a finding, because a public page has no
+ * business calling an admin API. Only the internal page's own data
+ * fetch is excused.
+ *
+ * Derived, not hardcoded, so "internal" has one definition — the
+ * site's own — and the same idea holds on any site this runs against.
+ */
+const internalPrefixes = await (async () => {
+  try {
+    const res = await fetch(`${BASE}/robots.txt`);
+    if (!res.ok) return [];
+    const text = await res.text();
+    const out = [];
+    for (const line of text.split('\n')) {
+      const m = line.match(/^\s*disallow\s*:\s*(\S+)\s*$/i);
+      if (!m) continue;
+      const p = m[1].trim();
+      if (!p || p === '/') continue;
+      out.push(p.replace(/\/+$/, ''));
+    }
+    return out;
+  } catch {
+    return [];
+  }
+})();
+
+function isInternalPath(p) {
+  return internalPrefixes.some((prefix) => p === prefix || p.startsWith(`${prefix}/`));
+}
+
 console.log(`auditing ${paths.length} route(s) at ${VIEWPORT_W}px against ${BASE}`);
 
 const findings = [];
@@ -433,6 +474,11 @@ const summary = [];
  * the site the way a reader experiences it.
  */
 const rateLimitedHits = [];
+/**
+ * Subresources an INTERNAL page asked for and was correctly refused.
+ * Observations, not findings — the admin gate working.
+ */
+const authGatedHits = [];
 
 async function auditPath(p) {
   const url = `${BASE}${p}`;
@@ -495,6 +541,16 @@ async function auditPath(p) {
       if (status === 429) {
         rateLimited.push(`${resUrl.slice(BASE.length) || '/'}`);
         rateLimitedHits.push(`${p} → ${resUrl.slice(BASE.length) || '/'}`);
+        return;
+      }
+      // A 401/403 on an INTERNAL page's own data fetch is the admin gate
+      // answering correctly: this auditor carries no credential, and the
+      // page asked for privileged data. Not a broken resource — an
+      // expected refusal. On a PUBLIC page the same status is still a
+      // finding, because a public page has no business calling an admin
+      // API.
+      if ((status === 401 || status === 403) && isInternalPath(p)) {
+        authGatedHits.push(`${p} → ${resUrl.slice(BASE.length) || '/'}`);
         return;
       }
       resourceErrors.push(`${status} ${resUrl.slice(BASE.length) || '/'}`);
@@ -653,6 +709,14 @@ if (rateLimitedHits.length) {
     `note: ${rateLimitedHits.length} subresource request(s) were refused with HTTP 429 — the site ` +
       "rate-limited this sweep. That is the limiter working, not a broken resource, so it is not a " +
       "finding; it does mean the audit drove the site harder than a reader does.",
+  );
+  console.log('');
+}
+if (authGatedHits.length) {
+  console.log(
+    `note: ${authGatedHits.length} subresource request(s) on internal route(s) were refused ` +
+      "with HTTP 401/403 — the admin gate working. This audit carries no credential, so an " +
+      "internal page's privileged data fetch is expected to be refused; it is not a finding.",
   );
   console.log('');
 }
