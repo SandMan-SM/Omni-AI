@@ -1,16 +1,25 @@
+"use client";
+
 // Mafi admin view — the Council Codex + the latest acknowledgement
 // thread. Lives under /dashboard/* (the only namespace where personal
 // names from upstream may appear; this view is operator-only).
+//
+// WHY THIS IS A CLIENT COMPONENT
+//
+// The directive read used to happen here, in a server component, with the
+// service-role client. The middleware has no protected routes, so the
+// document request carried no credential, and `GET /dashboard/council`
+// answered 200 with the whole Codex to anyone with the URL. A `noindex`
+// directive keeps crawlers out; it does nothing about a person.
+//
+// The read now lives in `/api/dashboard/council` behind `requireAdmin()`,
+// and this page fetches it with the `omni_token` bearer — the same idiom
+// `/api/dashboard/metrics` and the Command Center tab already use.
+// Metadata moved to the sibling `layout.tsx` (a client component cannot
+// export `metadata`).
 
-import { createAdminClient } from "@/lib/supabase/admin";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
-export const metadata = {
-  title: "Council Codex · Omni AI",
-  description: "Active operator directives + latest training thread.",
-};
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const SEVERITY_BADGE: Record<string, { bg: string; fg: string; label: string }> = {
   prime: { bg: "rgba(251,191,36,0.16)", fg: "#fbbf24", label: "PRIME" },
@@ -36,30 +45,58 @@ type DialogueRow = {
   council_agents: { name: string; archetype_tier: string } | null;
 };
 
-async function loadCodex() {
-  const sb = createAdminClient();
-  const [{ data: directives }, { data: dialogues }] = await Promise.all([
-    sb
-      .from("council_directives")
-      .select("slug, title, body_md, severity, issued_by, version, updated_at")
-      .eq("status", "active")
-      .order("severity", { ascending: true }),
-    sb
-      .from("pantheon_dialogue")
-      .select("id, message_md, status, created_at, council_agents:from_agent_id (name, archetype_tier)")
-      .eq("topic", "council_directives_acknowledged_2026_05_08")
-      .order("created_at", { ascending: true })
-      .limit(40),
-  ]);
-  return {
-    directives: (directives || []) as Directive[],
-    dialogues: (dialogues || []) as unknown as DialogueRow[],
-  };
-}
+type Codex = { directives: Directive[]; dialogues: DialogueRow[] };
 
-export default async function CouncilCodexPage() {
-  const { directives, dialogues } = await loadCodex();
+export default function CouncilCodexPage() {
+  const [data, setData] = useState<Codex | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("omni_token") : null;
+    const headers: HeadersInit = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+    fetch("/api/dashboard/council", { cache: "no-store", headers })
+      .then(async (r) => {
+        if (!r.ok) {
+          const b = await r.json().catch(() => ({}));
+          throw new Error(b.error || `HTTP ${r.status}`);
+        }
+        return r.json();
+      })
+      .then((d: Codex) => setData(d))
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="flex min-h-[60vh] items-center justify-center bg-zinc-950 text-zinc-100">
+        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+      </main>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <main className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="mx-auto max-w-3xl px-6 py-16">
+          <div className="rounded-md border border-rose-500/40 bg-rose-950/30 px-6 py-5">
+            <p className="font-semibold text-rose-200">Council Codex unavailable</p>
+            <p className="mt-2 text-sm text-rose-200/80">{error}</p>
+            <p className="mt-4 text-xs text-zinc-500">
+              This page is admin-only. Sign in with an admin account to view the
+              Codex.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  const { directives, dialogues } = data;
   const grouped: Record<string, Directive[]> = { prime: [], standard: [], runbook: [] };
   for (const d of directives) {
     (grouped[d.severity] ||= []).push(d);

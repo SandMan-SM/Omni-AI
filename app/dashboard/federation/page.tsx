@@ -1,19 +1,29 @@
+"use client";
+
 // Stage N.4 — Federation dashboard tab.
-// Server-rendered. Reads cross_ad_impressions / clicks / conversions /
-// cross_brand_referrals over a 30-day window and renders three panels:
+// Renders three panels over a 30-day window:
 //   1. Cross-ad funnel (impressions → clicks → conversions)
 //   2. Attribution leaderboard (which originating slug drove the most)
 //   3. Creative roster (read-only — full creative manager comes later)
+//
+// WHY THIS IS A CLIENT COMPONENT
+//
+// The read used to happen here, in a server component, with the
+// service-role client. The middleware has no protected routes, so the
+// document request carried no credential and `GET /dashboard/federation`
+// answered 200 to anyone with the URL — with the whole cross-promo
+// funnel, the attribution leaderboard, the per-tenant creative roster,
+// and the "Revenue leak" / "AI CEO priority" analysis cards. A `noindex`
+// directive keeps crawlers out; it does nothing about a person.
+//
+// The read now lives in `/api/dashboard/federation` behind
+// `requireAdmin()`, and this page fetches it with the `omni_token`
+// bearer — the same idiom `/api/dashboard/metrics` uses. Metadata moved
+// to the sibling `layout.tsx` (a client component cannot export
+// `metadata`).
 
-import { createAdminClient } from "@/lib/supabase/admin";
-
-export const dynamic = "force-dynamic";
-export const runtime = "nodejs";
-
-export const metadata = {
-  title: "Federation · Omni AI",
-  description: "Cross-promo funnel, attribution, and creative roster for the federation.",
-};
+import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
 
 type FunnelRow = {
   creative_id: string;
@@ -32,65 +42,58 @@ type LeaderRow = {
   referrals: number;
 };
 
-async function loadFunnel(): Promise<FunnelRow[]> {
-  const sb = createAdminClient();
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+type FederationData = { funnel: FunnelRow[]; leaders: LeaderRow[] };
 
-  const { data: creatives } = await sb
-    .from("cross_ad_creatives")
-    .select("id, target_slug, eyebrow, headline_md, base_weight, pantheon_weight")
-    .eq("status", "active");
+export default function FederationDashboard() {
+  const [data, setData] = useState<FederationData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const rows: FunnelRow[] = [];
-  for (const c of (creatives || []) as Array<{
-    id: string; target_slug: string; eyebrow: string; headline_md: string; base_weight: number; pantheon_weight: number;
-  }>) {
-    const [{ count: imp }, { count: clk }, { count: cvr }] = await Promise.all([
-      sb.from("cross_ad_impressions").select("id", { count: "exact", head: true }).eq("creative_id", c.id).gte("ts", since),
-      sb.from("cross_ad_clicks").select("id", { count: "exact", head: true }).eq("creative_id", c.id).gte("ts", since),
-      sb.from("cross_ad_conversions").select("id", { count: "exact", head: true }).eq("creative_id", c.id).gte("attributed_at", since),
-    ]);
-    rows.push({
-      creative_id: c.id,
-      target_slug: c.target_slug,
-      eyebrow: c.eyebrow,
-      headline_md: c.headline_md,
-      base_weight: c.base_weight,
-      pantheon_weight: c.pantheon_weight,
-      impressions: imp || 0,
-      clicks: clk || 0,
-      conversions: cvr || 0,
-    });
+  useEffect(() => {
+    const token =
+      typeof window !== "undefined" ? localStorage.getItem("omni_token") : null;
+    const headers: HeadersInit = token
+      ? { Authorization: `Bearer ${token}` }
+      : {};
+    fetch("/api/dashboard/federation", { cache: "no-store", headers })
+      .then(async (r) => {
+        if (!r.ok) {
+          const b = await r.json().catch(() => ({}));
+          throw new Error(b.error || `HTTP ${r.status}`);
+        }
+        return r.json();
+      })
+      .then((d: FederationData) => setData(d))
+      .catch((e: Error) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="flex min-h-[60vh] items-center justify-center bg-zinc-950 text-zinc-100">
+        <Loader2 className="h-6 w-6 animate-spin text-zinc-500" />
+      </main>
+    );
   }
-  rows.sort((a, b) => b.impressions - a.impressions);
-  return rows;
-}
 
-async function loadLeaderboard(): Promise<LeaderRow[]> {
-  const sb = createAdminClient();
-  const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
-  const { data } = await sb
-    .from("cross_brand_referrals")
-    .select("originating_slug")
-    .gte("ts", since);
-
-  const counts = new Map<string, number>();
-  for (const row of (data || []) as Array<{ originating_slug: string | null }>) {
-    const k = row.originating_slug || "(unknown)";
-    counts.set(k, (counts.get(k) || 0) + 1);
+  if (error || !data) {
+    return (
+      <main className="min-h-screen bg-zinc-950 text-zinc-100">
+        <div className="mx-auto max-w-3xl px-6 py-16">
+          <div className="rounded-md border border-rose-500/40 bg-rose-950/30 px-6 py-5">
+            <p className="font-semibold text-rose-200">Federation dashboard unavailable</p>
+            <p className="mt-2 text-sm text-rose-200/80">{error}</p>
+            <p className="mt-4 text-xs text-zinc-500">
+              This page is admin-only. Sign in with an admin account to view the
+              cross-promo rollup.
+            </p>
+          </div>
+        </div>
+      </main>
+    );
   }
-  return Array.from(counts.entries())
-    .map(([originating_slug, referrals]) => ({ originating_slug, referrals }))
-    .sort((a, b) => b.referrals - a.referrals);
-}
 
-function pct(num: number, den: number): string {
-  if (!den) return "—";
-  return `${((num / den) * 100).toFixed(2)}%`;
-}
-
-export default async function FederationDashboard() {
-  const [funnel, leaders] = await Promise.all([loadFunnel(), loadLeaderboard()]);
+  const { funnel, leaders } = data;
 
   const totals = funnel.reduce(
     (acc, r) => {
@@ -162,7 +165,7 @@ export default async function FederationDashboard() {
                   <th className="text-right px-4 py-3">Weight</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y-zinc-800">
                 {funnel.length === 0 && (
                   <tr>
                     <td colSpan={8} className="px-4 py-6 text-center text-zinc-500">
@@ -203,7 +206,7 @@ export default async function FederationDashboard() {
                   <th className="text-right px-4 py-3">Referrals (30d)</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-800">
+              <tbody className="divide-y-zinc-800">
                 {leaders.length === 0 && (
                   <tr>
                     <td colSpan={2} className="px-4 py-6 text-center text-zinc-500">
@@ -234,6 +237,11 @@ export default async function FederationDashboard() {
       </div>
     </main>
   );
+}
+
+function pct(num: number, den: number): string {
+  if (!den) return "—";
+  return `${((num / den) * 100).toFixed(2)}%`;
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
