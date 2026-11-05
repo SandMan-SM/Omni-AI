@@ -205,7 +205,14 @@ export default function AgentFleetPage() {
   useEffect(() => {
     if (authLoading || !user) return;
     let cancelled = false;
-    fetch('/api/federation/health', { cache: 'no-store' })
+    // Forward the omni_token bearer. /api/federation/health is public, but
+    // the per-tenant detail it carries (lead volume, traffic volume and the
+    // health verdict for every client) is admin-only — an anonymous caller
+    // gets the aggregate summary alone.
+    const token =
+      typeof window !== 'undefined' ? localStorage.getItem('omni_token') : null;
+    const headers: HeadersInit = token ? { Authorization: `Bearer ${token}` } : {};
+    fetch('/api/federation/health', { cache: 'no-store', headers })
       .then(async (res) => {
         if (!res.ok) throw new Error(`federation health ${res.status}`);
         return res.json() as Promise<FederationHealthResponse>;

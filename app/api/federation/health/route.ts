@@ -1,7 +1,35 @@
 // /api/federation/health — single-call health check across the
-// federation. Same audit Claude runs manually. Public read-only;
-// returns JSON only (no secrets, no PII). CORS open so any agent
+// federation. Same audit Claude runs manually. CORS open so any agent
 // runtime, monitoring tool, or operator dashboard can hit it.
+//
+// SCOPE — WHY THE PER-TENANT DETAIL IS GATED
+//
+// This route is deliberately public, and it stays public: an operator's
+// monitoring cron and any agent runtime need a credential-free liveness
+// check. But "public" and "publishes the agency's book of business" are
+// different claims, and the route used to conflate them.
+//
+// Verified live before this change: an anonymous `curl` of
+// /api/federation/health returned, for all 16 portfolio clients, the
+// per-tenant 30-day LEAD COUNT and TRAFFIC VOLUME, the last-event
+// timestamp, and a per-tenant health verdict (active / quiet / stale).
+// That is a competitor's roadmap — which clients are growing, which have
+// gone quiet, which are one renewal away from churn — and it was served
+// with `Access-Control-Allow-Origin: *` and a CDN-cacheable response, so
+// any website on the internet could read it from a visitor's browser.
+//
+// What stays public: the AGGREGATE summary (federation-wide impression /
+// click / conversion totals, how many tenants are active vs stale, how
+// many directives are live). That is what a liveness check needs.
+//
+// What is now admin-only: the per-tenant `slugs` array and
+// `slugs_by_health`. The admin variant is served `private, no-store` —
+// a cacheable public response would otherwise hand the admin detail to
+// the next anonymous caller.
+//
+// "no secrets, no PII" was true and was not the question. A lead COUNT
+// is not personal data; it is confidential business data, and the answer
+// to "is this public?" is a credential check, not a field-name check.
 //
 // Round-22 audit rewrite. The original implementation fanned out
 // 16 slugs × 3 PostgREST queries + 8 outer count queries = 56
@@ -17,23 +45,30 @@
 // per-slug routes use.
 
 import { NextResponse } from "next/server";
+import { headers, cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/admin-auth";
 import { INBOUND_SLUGS, INBOUND_SLUG_LABELS, type InboundSlug } from "@/lib/inbound-types";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-function cors(): HeadersInit {
+function cors(admin: boolean): HeadersInit {
   return {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
-    "Cache-Control": "public, max-age=120, s-maxage=120, stale-while-revalidate=600",
+    // The admin variant carries per-tenant volumes, so it must never be
+    // written to a shared cache — a cached admin response would hand the
+    // detail to the next anonymous caller.
+    "Cache-Control": admin
+      ? "private, no-store"
+      : "public, max-age=120, s-maxage=120, stale-while-revalidate=600",
   };
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 204, headers: cors() });
+  return new NextResponse(null, { status: 204, headers: cors(false) });
 }
 
 type SlugHealth = {
@@ -110,6 +145,36 @@ type HealthRow = {
   leads_30d: number;
   last_event: string | null;
 };
+
+/**
+ * Is this caller an admin?
+ *
+ * Deliberately NOT `requireAdmin()`'s error path: an anonymous caller is
+ * a legitimate consumer of the aggregate summary, so it must get a 200 —
+ * it just must not get the per-tenant detail. The guard is only consulted
+ * when the request actually carries a credential, so the public path stays
+ * cheap (no auth round-trip on a liveness check).
+ *
+ * Fails closed: any error, any guard failure, an expired token — all of
+ * them mean "not an admin", which means the reduced payload.
+ */
+async function callerIsAdmin(): Promise<boolean> {
+  try {
+    const hdrs = await headers();
+    const bearer = (hdrs.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    const cookieStore = await cookies();
+    const hasSessionCookie = cookieStore
+      .getAll()
+      .some((c) => c.name.startsWith("sb-") && c.name.includes("-auth-token") && c.value);
+
+    if (!bearer && !hasSessionCookie) return false;
+
+    const auth = await requireAdmin();
+    return !("error" in auth && auth.error);
+  } catch {
+    return false;
+  }
+}
 
 export async function GET() {
   try {
@@ -323,6 +388,8 @@ export async function GET() {
     const totalCounts = [refCount, impCount, clkCount, cvrCount, agentsActive, directivesActive, creativesActive];
     const dataUnavailable = totalCounts.every((count) => count === null) && slugsByHealth.no_events.length === INBOUND_SLUGS.length;
 
+    const admin = await callerIsAdmin();
+
     return NextResponse.json(
       {
         ok: true,
@@ -331,6 +398,9 @@ export async function GET() {
         fetched_at: new Date().toISOString(),
         elapsed_ms: Date.now() - t0,
         window: "30d",
+        // "aggregate" = no credential on the request, so the per-tenant
+        // volumes are withheld. "admin" = the full detail is included.
+        scope: admin ? "admin" : "aggregate",
         summary: {
           slugs_total: INBOUND_SLUGS.length,
           slugs_active_24h: slugsByHealth.active_24h.length,
@@ -347,13 +417,19 @@ export async function GET() {
           cross_ad_creatives_active: creativesActive ?? 0,
           pantheon_weights_drifted: drifted,
         },
-        slugs: slugChecks.sort((a, b) => b.events_30d - a.events_30d),
-        slugs_by_health: slugsByHealth,
+        // Per-tenant detail — lead volume, traffic volume, last event and
+        // the health verdict for every client in the portfolio. Admin only.
+        ...(admin
+          ? {
+              slugs: slugChecks.sort((a, b) => b.events_30d - a.events_30d),
+              slugs_by_health: slugsByHealth,
+            }
+          : {}),
       },
-      { headers: cors() },
+      { headers: cors(admin) },
     );
   } catch (e) {
     console.error("[federation/health]", e);
-    return NextResponse.json({ ok: false, error: "handler_failed" }, { status: 500, headers: cors() });
+    return NextResponse.json({ ok: false, error: "handler_failed" }, { status: 500, headers: cors(false) });
   }
 }
