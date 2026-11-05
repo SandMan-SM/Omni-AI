@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-11-03T06:46:22.541Z",
+  "generatedAt": "2026-11-05T06:27:44.026Z",
   "source": "scripts/probe-anon-rls.mjs",
   "note": "Lockedness is decided by the PERMISSION MODEL, not by row counts: a table the service role can read and the anon key cannot is locked; an EMPTY table is decided by the RLS write probe (a probe that can only fail, never insert). Tables the probe could not classify safely are listed under indeterminate and the gate treats them as locked.",
-  "totalTables": 309,
+  "totalTables": 310,
   "locked": [
     "actions",
     "activity_log",
@@ -19,6 +19,7 @@
     "agent_promotions",
     "ai_decisions",
     "ai_learnings",
+    "ais_crm_contacts",
     "alira_campaign_sends",
     "alira_campaigns",
     "alira_contact_events",
@@ -335,6 +336,7 @@
     "agent_sessions",
     "ai_decisions",
     "ai_learnings",
+    "ais_crm_contacts",
     "alira_campaign_sends",
     "alira_campaigns",
     "alira_contact_events",
