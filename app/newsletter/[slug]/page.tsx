@@ -425,6 +425,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       images: [ogImage],
       site: "@SitaniMafi",
+      creator: "@SitaniMafi",
     },
   };
 }
