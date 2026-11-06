@@ -33,6 +33,7 @@ npm run audit:publish  # publish-state gate — a newsletter write that sets pub
 npm run audit:rls      # RLS gate — a locked table reached with a non-admin client
 npm run refresh:pii-ruleset  # regenerate the public-PII rule set from the live schema (needs the service role)
 npm run audit:pii-schema      # PII rule-set drift gate — a live personal-data table the rule set does not describe
+npm run audit:fleet-public-pii  # fleet sweep — can every copy measure its own public-PII exposure, and what does it say
 npm run audit:cron-auth # auth gate — a route authenticating with a client-set header, or an unguarded secret
 npm run audit:sitemap  # sitemap-parity gate — a sitemap URL the page marks noindex, or an indexable route the sitemap omits
 npm run audit:content-lookup  # failed-lookup gate — a page that answers 404 because a database read FAILED

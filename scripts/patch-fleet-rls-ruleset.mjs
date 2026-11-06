@@ -72,10 +72,11 @@
  */
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync, copyFileSync } from "node:fs";
 import { join, relative } from "node:path";
+import { ruleSetTrees, RULE_SET_MARKER } from "./fleet-ruleset-trees.mjs";
 
 const FLEET_ROOT = process.env.OMNI_FLEET_ROOT || join(process.env.HOME, "Desktop", "Clients");
 const CANONICAL = process.cwd();
-const RULE_SET = join("scripts", "anon-locked-tables.json");
+const RULE_SET = RULE_SET_MARKER;
 const GATE = join("scripts", "audit-anon-rls.ts");
 const DRIFT_GATE = join("scripts", "audit-rls-schema-drift.mjs");
 const PII_GATE = join("scripts", "audit-public-pii.mjs");
@@ -105,32 +106,14 @@ const PII_REFRESH = join("scripts", "refresh-pii-ruleset.mjs");
 const PII_DRIFT_GATE = join("scripts", "audit-pii-schema-drift.mjs");
 const DRY_RUN = process.argv.includes("--dry-run");
 
-/** Every tree in the fleet that carries the rule set (the family marker). */
-function ruleSetTrees(dir) {
-  const found = [];
-  const walk = (current, depth) => {
-    if (depth > 6) return;
-    let entries;
-    try {
-      entries = readdirSync(current, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      if (entry.name === "node_modules" || entry.name === ".git") continue;
-      const path = join(current, entry.name);
-      if (existsSync(join(path, RULE_SET))) {
-        found.push(path);
-        continue; // do not descend — a nested tree is a copy of a copy
-      }
-      walk(path, depth + 1);
-    }
-  };
-  walk(dir, 0);
-  return found.sort();
-}
-
+/**
+ * Every tree in the fleet that carries the rule set (the family marker).
+ *
+ * The definition lives in `scripts/fleet-ruleset-trees.mjs` so this patcher
+ * and `scripts/audit-fleet-public-pii.mjs` cannot disagree about the
+ * population — two tools that discover the fleet separately will eventually
+ * disagree, and the disagreement is invisible.
+ */
 function sameFile(a, b) {
   try {
     return readFileSync(a, "utf8") === readFileSync(b, "utf8");
