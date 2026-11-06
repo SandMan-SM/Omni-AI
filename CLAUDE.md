@@ -31,6 +31,8 @@ npm run lint
 npm run audit:mobile   # static mobile/a11y gate (12 rules) — run before every ship
 npm run audit:publish  # publish-state gate — a newsletter write that sets published_at without status
 npm run audit:rls      # RLS gate — a locked table reached with a non-admin client
+npm run refresh:pii-ruleset  # regenerate the public-PII rule set from the live schema (needs the service role)
+npm run audit:pii-schema      # PII rule-set drift gate — a live personal-data table the rule set does not describe
 npm run audit:cron-auth # auth gate — a route authenticating with a client-set header, or an unguarded secret
 npm run audit:sitemap  # sitemap-parity gate — a sitemap URL the page marks noindex, or an indexable route the sitemap omits
 npm run audit:content-lookup  # failed-lookup gate — a page that answers 404 because a database read FAILED
@@ -184,6 +186,7 @@ Run `date "+%Y-%m-%d (%A)"` first; use UTC date where the local-vs-UTC distincti
 - **Turbopack BorrowMutError panic** under rapid file edits is cosmetic to prod — TypeScript still passes and Vercel builds fine. Recover with `dev:clean` or fall back to `npm run dev:slow`.
 - `npm run check` / `build:check` are wrapped by `scripts/ensure-clean-worktree.mjs`; set `ALLOW_DIRTY_WORKTREE=1` if you intentionally have uncommitted work.
 - **Every `omni_*` table is `service_role_all`.** A `supabase.from(...)` read from the browser or from a server route using the anon key returns HTTP 200 with an empty array, and a write silently no-ops — `tsc` and `next build` cannot see either. Reach locked tables through `createAdminClient()` on the server, with the tenancy gate in `lib/server/dashboard-access.ts` (`gateLeadAccess` / `gateBusinessAccess`) when the data is per-tenant. `npm run audit:rls` fails the build when a file touches a locked table with a non-admin client; the live table list is `scripts/anon-locked-tables.json`.
+- **The public-PII gate's population is GENERATED, and it fails closed without it.** `npm run audit:public-pii` does not know which tables hold other people's rows — it reads `scripts/pii-tables.json`, which `npm run refresh:pii-ruleset` derives from the live schema (a table is personal when it has an email / phone / person's-name column). The gate's rule set and its notion of "this route authenticates" are both derived, not typed: a hand-written table list is only as good as the list, and a hand-written marker list silently classified four of this repo's own verifiers as absent (five authenticated routes read as PUBLIC). When the schema changes, **regenerate the rule set**; `npm run audit:pii-schema` reports the drift. A missing rule set, a missing TypeScript compiler, or a rule set measured from a different Supabase project all exit **2** with "the result is UNKNOWN" — never a clean "0 findings". The rule set carries the project ref it was measured from, so a copy carried to another project is told plainly rather than judging against somebody else's schema.
 
 ## Do / Don't
 - **Do** keep working continuously — the owner runs a "continuous execution" doctrine and explicitly does not want "should I continue?" pauses. Ship, verify against the live DB, move to the next fix. Stop only on a new instruction, completion+verification, a safety boundary, or unrecoverable failure.

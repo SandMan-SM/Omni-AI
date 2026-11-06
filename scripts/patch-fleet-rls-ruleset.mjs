@@ -17,13 +17,20 @@
  * sweep had: a gate that reports "could not be checked" for most of the
  * fleet is not a measurement.
  *
- * Only five files are written, and only into trees that already carry the
+ * Only these files are written, and only into trees that already carry the
  * rule set or the gate:
  *
  *   scripts/anon-locked-tables.json      — the rule set
  *   scripts/audit-anon-rls.ts            — the gate that reads it
  *   scripts/audit-rls-schema-drift.mjs   — the gate that checks the rule set
  *   scripts/audit-public-pii.mjs         — the gate that checks public PII
+ *   scripts/pii-tables.json              — the POPULATION of that gate: the
+ *                                         tables that hold other people's rows
+ *   scripts/pii-schema.mjs              — the ONE definition of what a personal
+ *                                         column is, shared by the three tools
+ *   scripts/refresh-pii-ruleset.mjs     — the generator of that population
+ *   scripts/audit-pii-schema-drift.mjs   — the gate that checks that
+ *                                         population against the live schema
  *   scripts/audit-sitemap-parity.ts      — the gate that compares the sitemap
  *                                         with the routes' indexability
  *   scripts/audit-live-mobile.mjs        — the gate that measures the RENDERED
@@ -48,6 +55,13 @@
  * it to a copy changes no behaviour there either. Giving a copy the gate
  * means it can measure itself.
  *
+ * The gate alone is not enough. Its population was six hand-typed table
+ * names, and the live schema holds 116 tables that carry somebody's
+ * identity — the gate could not judge the other 110, and said nothing about
+ * them. So the population travels as a GENERATED RULE SET that any copy can
+ * refresh and check, together with the shared definition of a personal
+ * column so the three tools cannot disagree about what the rule is.
+ *
  * No application code is touched: the 30 deployable copies of this repo
  * carry their own commits and uncommitted work, and re-syncing app code
  * would destroy it. That decision is the owner's (see AGENT_MEMORY).
@@ -67,6 +81,28 @@ const DRIFT_GATE = join("scripts", "audit-rls-schema-drift.mjs");
 const PII_GATE = join("scripts", "audit-public-pii.mjs");
 const SITEMAP_GATE = join("scripts", "audit-sitemap-parity.ts");
 const LIVE_MOBILE_GATE = join("scripts", "audit-live-mobile.mjs");
+/**
+ * The PUBLIC-PII rule set and the three scripts that make it work.
+ *
+ * The rule set is the POPULATION of the public-PII gate — the list of
+ * tables that hold other people's rows — and it is a measurement of ONE
+ * database. It carries the project ref it was measured from, so a copy that
+ * points at another project is told plainly that it is judging its routes
+ * against somebody else's schema, instead of quietly reporting a clean
+ * result about the wrong database.
+ *
+ * The other three travel with it because the rule set is not a thing you
+ * copy and forget: it has to be GENERATED (`refresh-pii-ruleset.mjs`), it
+ * has to be CHECKED against the live schema (`audit-pii-schema-drift.mjs`),
+ * and its definition of a personal column has to be the SAME definition the
+ * gate applies (`pii-schema.mjs`). A copy holding a rule set with no way to
+ * regenerate or check it has a measurement it can never refresh — the same
+ * staleness this sweep exists to end, one level down.
+ */
+const PII_RULE_SET = join("scripts", "pii-tables.json");
+const PII_SCHEMA = join("scripts", "pii-schema.mjs");
+const PII_REFRESH = join("scripts", "refresh-pii-ruleset.mjs");
+const PII_DRIFT_GATE = join("scripts", "audit-pii-schema-drift.mjs");
 const DRY_RUN = process.argv.includes("--dry-run");
 
 /** Every tree in the fleet that carries the rule set (the family marker). */
@@ -116,6 +152,8 @@ function main() {
   let driftAdded = 0;
   let piiWritten = 0;
   let piiAdded = 0;
+  let piiFilesWritten = 0;
+  let piiFilesAdded = 0;
   let sitemapWritten = 0;
   let sitemapAdded = 0;
   let liveWritten = 0;
@@ -168,6 +206,30 @@ function main() {
       piiWritten += 1;
     }
 
+    // The public-PII rule set travels with the gate that applies it: without
+    // it the gate has no population, fails closed, and a copy is left with
+    // no measurement at all. So do the three scripts that keep the
+    // measurement honest — the shared definition of a personal column, the
+    // generator, and the drift gate that compares the rule set with the
+    // live schema.
+    for (const [label, rel] of [
+      ["PII rule set", PII_RULE_SET],
+      ["PII schema", PII_SCHEMA],
+      ["PII refresh", PII_REFRESH],
+      ["PII drift gate", PII_DRIFT_GATE],
+    ]) {
+      const treeFile = join(tree, rel);
+      if (!existsSync(treeFile)) {
+        changes.push(`${label} (added)`);
+        if (!DRY_RUN) copyFileSync(join(CANONICAL, rel), treeFile);
+        piiFilesAdded += 1;
+      } else if (!sameFile(treeFile, join(CANONICAL, rel))) {
+        changes.push(label);
+        if (!DRY_RUN) copyFileSync(join(CANONICAL, rel), treeFile);
+        piiFilesWritten += 1;
+      }
+    }
+
     // The sitemap-parity gate travels too: it is the check that compares
     // what the site advertises with what the site actually serves, and a
     // copy's app/sitemap.ts drifts from its own app/ exactly the way the
@@ -212,12 +274,19 @@ function main() {
   console.log(
     `\n[fleet-ruleset] ${trees.length} tree(s) carry the rule set. ` +
       `${ruleSetWritten} rule set(s), ${gateWritten + gateAdded} gate(s), ` +
-      `${driftWritten + driftAdded} drift gate(s), ${piiWritten + piiAdded} PII gate(s) and ` +
+      `${driftWritten + driftAdded} drift gate(s), ${piiWritten + piiAdded} PII gate(s), ` +
+      `${piiFilesWritten + piiFilesAdded} PII rule-set file(s) and ` +
       `${sitemapWritten + sitemapAdded} sitemap gate(s) and ` +
       `${liveWritten + liveAdded} live mobile gate(s) ` +
       `${DRY_RUN ? "would be" : "were"} written (${gateAdded} gate(s), ${driftAdded} drift gate(s), ` +
-      `${piiAdded} PII gate(s), ${sitemapAdded} sitemap gate(s) and ${liveAdded} live mobile gate(s) ` +
+      `${piiAdded} PII gate(s), ${piiFilesAdded} PII rule-set file(s), ` +
+      `${sitemapAdded} sitemap gate(s) and ${liveAdded} live mobile gate(s) ` +
       `added where the tree had none).`,
+  );
+  console.log(
+    "[fleet-ruleset] A copy's PII rule set describes ONE database. In a copy that points at a " +
+      "different Supabase project the gate will refuse to answer and say so; regenerate it there " +
+      "with:  node scripts/refresh-pii-ruleset.mjs",
   );
   console.log(
     "[fleet-ruleset] No application code was touched. A copy that reads a locked table with the " +
