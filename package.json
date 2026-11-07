@@ -52,6 +52,7 @@
     "audit:content-lookup": "node scripts/audit-content-lookup.mjs",
     "test:content-lookup": "tsx --test tests/content-lookup.test.ts",
     "audit:fleet-content-lookup": "node scripts/audit-fleet-content-lookup.mjs",
+    "audit:fleet-internal-surface": "node scripts/audit-fleet-internal-surface.mjs",
     "patch:fleet-content-lookup": "node scripts/patch-fleet-content-lookup.mjs",
     "audit:fleet-public-pii": "node scripts/audit-fleet-public-pii.mjs",
     "audit:internal-surface": "node scripts/audit-internal-surface.mjs",

@@ -328,8 +328,27 @@ function loadRuleSet() {
 const CREDENTIAL_SIGNAL =
   /timingSafeEqual|createHmac|createSign|createPublicKey|verifySignature|jwtVerify|constantTimeEqual|safeSecretEqual|process\.env\.[A-Z0-9_]*(?:SECRET|TOKEN|KEY|PASSWORD)|Error\(\s*40[13]/;
 
-/** A name that says "this function checks a credential". */
-const VERIFIER_NAME = /^(?:verify|require|authorize|assert|authenticate)[A-Z]/;
+/**
+ * A name that says "this function checks a credential".
+ *
+ * The verb list is not the only way a codebase says it. A boolean
+ * decision — `isAuthed`, `isAuthorized` — is the same mechanism under a
+ * different name, and it is a common one: the operator dashboard at
+ * mythosais.com gates its per-tenant analytics behind `isAuthed(req)`,
+ * which compares a caller-supplied key against `CRM_ACCESS_KEY` and
+ * verifies a signed session cookie. Before this list learned the `is`
+ * shape, the fleet sweep reported that dashboard's two per-tenant routes
+ * as unauthenticated, and the report was right about the code and wrong
+ * about the tree. **A detector that cries wolf spends the reader's
+ * trust it will never get back**, so the name list has to cover the
+ * shapes that are actually written — while the BODY still has to prove
+ * the credential, which is what keeps a bare `isAdmin` from qualifying.
+ *
+ * The `is` branch is deliberately narrow: it admits only the
+ * authorisation vocabulary, not every `isSomething` in a codebase.
+ */
+const VERIFIER_NAME =
+  /^(?:verify|require|authorize|assert|authenticate)[A-Z]|^is(?:Authed|Authorized|Authenticated)[A-Z]?/;
 
 /**
  * Every function in a source file, with its body.

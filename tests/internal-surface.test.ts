@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 
 import { scanFile } from '../scripts/audit-internal-surface.mjs';
+import { deriveCredentialVerifiers } from '../scripts/audit-public-pii.mjs';
 
 /**
  * The internal-surface gate, pinned to the shapes it must fire on and
@@ -183,6 +184,82 @@ export async function GET(request: Request) {
   );
 
   assert.deepEqual(findings, []);
+});
+
+/**
+ * The derivation of "does this route authenticate the caller?" is shared
+ * with the public-PII gate, and it recognises a verifier by its NAME
+ * after its BODY has proved a credential.
+ *
+ * The `is` shape matters: the operator dashboard at mythosais.com gates its
+ * per-tenant analytics behind `isAuthed(req)`, and the fleet sweep read
+ * those two routes as anonymous — not because they were, but because the
+ * name list had never heard of `isAuthed`. A detector that cries wolf
+ * spends the reader's trust it will never get back, so the list has to
+ * cover the shapes that are actually written.
+ *
+ * These two cases pin that: the `is`-shaped verifier is recognised, and the
+ * route that carries NO check at all still fires.
+ */
+const IS_AUTHED_LIB = `
+export async function isAuthed(req: Request): Promise<boolean> {
+  const expected = process.env.CRM_ACCESS_KEY || '';
+  if (!expected) return false;
+  return req.headers.get('x-crm-key') === expected;
+}
+`;
+
+test('a route behind an is-shaped verifier is not a finding', () => {
+  const t = tree();
+  t.write('lib/registry.ts', REGISTRY);
+  t.write('lib/builder.ts', BUILDER);
+  t.write('lib/dashboard-auth.ts', IS_AUTHED_LIB);
+
+  const derived = deriveCredentialVerifiers(t.root);
+  assert.ok(
+    derived.has('isAuthed'),
+    `isAuthed should be derived as a verifier; derived: ${Array.from(derived).join(', ')}`,
+  );
+
+  const path = t.write(
+    'app/api/portfolio/route.ts',
+    `import { NextResponse } from 'next/server';
+import { isAuthed } from '@/lib/dashboard-auth';
+import { buildSnapshot } from '@/lib/builder';
+export async function GET(request: Request) {
+  if (!(await isAuthed(request))) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  return NextResponse.json(buildSnapshot(), { headers: { 'Cache-Control': 'private, no-store' } });
+}
+`,
+  );
+
+  const findings = scanFile(path, t.root, ['/dashboard'], derived);
+  assert.deepEqual(findings, []);
+});
+
+test('a route with no check at all still fires, whatever else the tree has', () => {
+  const t = tree();
+  t.write('lib/registry.ts', REGISTRY);
+  t.write('lib/builder.ts', BUILDER);
+  t.write('lib/dashboard-auth.ts', IS_AUTHED_LIB);
+
+  const derived = deriveCredentialVerifiers(t.root);
+
+  const path = t.write(
+    'app/api/portfolio/route.ts',
+    `import { NextResponse } from 'next/server';
+import { buildSnapshot } from '@/lib/builder';
+export async function GET() {
+  return NextResponse.json(buildSnapshot());
+}
+`,
+  );
+
+  const findings = scanFile(path, t.root, ['/dashboard'], derived);
+  assert.equal(findings.length, 1);
+  assert.equal(findings[0].rule, 'unauthenticated-tenant-collection');
 });
 
 test('an internal server component that renders the portfolio is a finding', () => {

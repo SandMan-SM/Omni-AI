@@ -349,12 +349,12 @@ function walkFiles(dir, out = []) {
 }
 
 /** Every `page.tsx` under `app/`. */
-function collectPages(root) {
+export function collectPages(root) {
   return walkFiles(join(root, "app")).filter((f) => /(^|\/)page\.tsx$/.test(f));
 }
 
 /** Every `route.ts` under `app/`. */
-function collectRoutes(root) {
+export function collectRoutes(root) {
   return walkFiles(join(root, "app")).filter((f) => /(^|\/)route\.ts$/.test(f));
 }
 
