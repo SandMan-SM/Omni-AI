@@ -23,13 +23,17 @@ scripts/.sitanim-payments*
 scripts/sitanim-payments-live-*
 scripts/sitanim-payments-operator.mjs
 tests/*
-# One exception, and it is deliberate. The content-lookup classifier's
+# Two exceptions, and they are deliberate. The content-lookup classifier's
 # unit test runs in the BUILD CHAIN (`npm run test:content-lookup`), and a
 # control that cannot run in the build is a control that does not hold — the
 # PGRST116 mapping it pins broke once already, on the day it shipped. The
-# file is a pure unit test: no credentials, no network, no operator
-# artifacts. Everything else under tests/ stays out of the bundle.
+# internal-surface gate's unit test (`npm run test:internal-surface`) is the
+# same argument: it pins the rules that caught the Omni OS control-plane
+# leak, and a build that cannot run it cannot say whether those rules still
+# fire. Both files are pure unit tests: no credentials, no network, no
+# operator artifacts. Everything else under tests/ stays out of the bundle.
 !tests/content-lookup.test.ts
+!tests/internal-surface.test.ts
 docs/private-email-previews/
 **/runtime.env
 
