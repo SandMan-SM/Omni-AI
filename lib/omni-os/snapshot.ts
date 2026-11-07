@@ -1,7 +1,11 @@
 import { CLIENT_AGENT_REGISTRY } from '@/lib/client-agent-registry';
 import { recommendedActionsForClient } from '@/lib/omni-os/actions';
 import { scoreClientAgent } from '@/lib/omni-os/scoring';
-import type { OmniOSSnapshot } from '@/lib/omni-os/types';
+import type {
+  OmniOSOperatorBusiness,
+  OmniOSOperatorSnapshot,
+  OmniOSSnapshot,
+} from '@/lib/omni-os/types';
 
 export function buildOmniOSSnapshot(now = new Date()): OmniOSSnapshot {
   const generatedAt = now.toISOString();
@@ -40,5 +44,50 @@ export function buildOmniOSSnapshot(now = new Date()): OmniOSSnapshot {
     },
     businesses,
     actionQueue,
+  };
+}
+
+/**
+ * The OPERATOR projection of the snapshot — the shape that is allowed to
+ * leave the server.
+ *
+ * WHY THIS EXISTS
+ *
+ * `buildOmniOSSnapshot()` is the internal control-plane state: every
+ * client in the portfolio, its score, its gaps, its revenue move, its
+ * next action, and the repository paths where its code lives on the
+ * operator's disk. It is the answer to "what should this agency do next",
+ * and it is exactly the thing that must not be published to anyone.
+ *
+ * The projection drops the fields the operator view never renders and
+ * that no other consumer in the fleet reads (verified: the endpoint had
+ * no consumer outside this repo). The rule is the repo's own, from
+ * session 58: **do not send the field at all rather than blank it** —
+ * a field that is never serialised cannot be exposed by a route that is
+ * only accidentally reachable.
+ */
+export function buildOmniOSOperatorSnapshot(now = new Date()): OmniOSOperatorSnapshot {
+  const snapshot = buildOmniOSSnapshot(now);
+
+  const businesses: OmniOSOperatorBusiness[] = snapshot.businesses.map((business) => ({
+    slug: business.slug,
+    businessName: business.businessName,
+    agentName: business.agentName,
+    tier: business.tier,
+    priority: business.priority,
+    primaryGoal: business.primaryGoal,
+    score: business.score,
+    statusLabel: business.statusLabel,
+    missingLoops: business.missingLoops,
+    connectedLoops: business.connectedLoops,
+    primaryAction: business.primaryAction,
+    secondaryActions: business.secondaryActions,
+  }));
+
+  return {
+    generatedAt: snapshot.generatedAt,
+    summary: snapshot.summary,
+    businesses,
+    actionQueue: snapshot.actionQueue,
   };
 }

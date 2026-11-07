@@ -63,3 +63,36 @@ export type OmniOSSnapshot = {
   businesses: OmniOSBusinessSnapshot[];
   actionQueue: OmniOSAction[];
 };
+
+/**
+ * The registry fields that are INTERNAL BOOKKEEPING and are deliberately
+ * not part of anything that leaves the server.
+ *
+ * `websitePath` / `aiCeoPath` / `telegramBotPath` are the agency's own
+ * repository layout — where each client's code lives on the operator's
+ * disk. `revenueMove` / `nextAction` are the internal strategy notes.
+ * `aliases` is the agent registry's match list, and `serviceArea` /
+ * `dataConnections` are registry bookkeeping.
+ *
+ * The operator view renders none of them, so none of them needs to
+ * travel to a browser — and a field that is never sent cannot be
+ * exposed by a route that is only accidentally reachable.
+ */
+export type OmniOSRegistryInternalFields =
+  | 'aliases'
+  | 'websitePath'
+  | 'aiCeoPath'
+  | 'telegramBotPath'
+  | 'revenueMove'
+  | 'nextAction'
+  | 'serviceArea'
+  | 'dataConnections';
+
+export type OmniOSOperatorBusiness = Omit<
+  OmniOSBusinessSnapshot,
+  OmniOSRegistryInternalFields
+>;
+
+export type OmniOSOperatorSnapshot = Omit<OmniOSSnapshot, 'businesses'> & {
+  businesses: OmniOSOperatorBusiness[];
+};
