@@ -153,8 +153,15 @@ const RULE_SET =
  * call. The DERIVED set (see deriveCredentialVerifiers) is added to them at
  * run time, so a verifier this repo grows later is recognised without
  * anyone editing this list.
+ *
+ * THE LIST IS EXPORTED, and `audit-internal-surface.mjs` reads it. "Does
+ * this route authenticate the caller?" had two hand-maintained answers in
+ * this repo, and session 65 showed what that costs: the internal-surface
+ * gate did not know `serviceAuthorized` or `verifiedActor`, so three
+ * reporting routes that authenticate with them read as anonymous. One
+ * list, two gates.
  */
-const AUTH_MARKERS = [
+export const AUTH_MARKERS = [
   "requireAdmin",
   "authorizeCronOrAdmin",
   "assertCronCaller",

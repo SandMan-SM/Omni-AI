@@ -48,6 +48,21 @@
  *      fine — that is what a liveness check needs. The per-tenant
  *      breakdown is not.
  *
+ *   3. `internal-page-tenant-collection` — a SERVER component under an
+ *      internal prefix RENDERS a per-tenant collection into the
+ *      document. The document request carries no credential (the
+ *      operator's token lives in `localStorage`), so the portfolio's
+ *      operating state ships to anyone with the URL. This is the shape
+ *      the control plane had: every client, its score, its gaps, its
+ *      next action — 47 KB of the agency's book of business, served to
+ *      an anonymous caller.
+ *
+ *   4. `unauthenticated-tenant-collection` — a route handler with NO
+ *      credential check whose RESPONSE is a per-tenant collection. The
+ *      shape is followed through the route's imports, because the
+ *      collection is almost never declared in the route file — it is
+ *      built in `lib/` and returned verbatim.
+ *
  * WHY THE POPULATION IS DERIVED, NOT HARDCODED
  *
  * Rule 1's page population comes from `app/robots.ts` — the same list
@@ -67,6 +82,23 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 
+const ts = (await import("typescript")).default;
+
+/**
+ * The DERIVED credential verifiers, imported from the public-PII gate.
+ *
+ * WHY THIS IS AN IMPORT AND NOT A SECOND LIST
+ *
+ * "Does this route authenticate the caller?" had TWO hand-maintained
+ * answers in this repo — a literal marker list here, and a list derived
+ * from `lib/` in `audit-public-pii.mjs` — and session 64 showed what a
+ * hand-typed list costs: it was missing four of this repo's own
+ * verifiers, so five authenticated routes were classified PUBLIC. A
+ * second list is how the same blindness comes back. There is now ONE
+ * derivation, and both gates read it.
+ */
+const { deriveCredentialVerifiers, AUTH_MARKERS: SHARED_AUTH_MARKERS } = await import("./audit-public-pii.mjs");
+
 const IGNORE_MARKER = "audit:internal-surface-ignore";
 
 /**
@@ -76,29 +108,42 @@ const IGNORE_MARKER = "audit:internal-surface-ignore";
  * session. A request header the caller chooses (`x-vercel-cron`,
  * `User-Agent`) is deliberately absent — the repo's own rule is that a
  * request header is not a credential, and `audit:cron-auth` enforces it.
+ *
+ * THE LIST IS SHARED WITH `audit-public-pii.mjs`, not re-typed here.
+ *
+ * Session 65 measured what a second hand-typed list costs. The
+ * internal-surface gate did not know `serviceAuthorized` or
+ * `verifiedActor` — the two helpers three reporting routes authenticate
+ * with — so those routes read as ANONYMOUS to this gate and produced
+ * findings on routes that are in fact gated. A second list is how the
+ * same blindness comes back, so there is now ONE list and both gates
+ * read it.
+ *
+ * The shared markers are matched as CALL SITES, not as bare words. A
+ * bare word is how "the route mentions a secret" becomes "the route
+ * checks a secret" — the exact confusion this repo's rules forbid. A
+ * secret's NAME on one side of a comparison is handled separately, by
+ * the comparison patterns below.
  */
-const AUTH_MARKERS = [
-  /requireAdmin\s*\(/,
-  /requireAdminOrBrandMember\s*\(/,
-  /authorizeCronOrAdmin\s*\(/,
-  /assertCronCaller\s*\(/,
-  /requireAuth\s*\(/,
-  /requireUser\s*\(/,
-  /requireSession\s*\(/,
-  /requireCredential\s*\(/,
-  /requireSocialCalendarOwner\s*\(/,
-  /constantTimeEqual\s*\(/,
-  /timingSafeEqual\s*\(/,
-  /CRON_SECRET/,
-  /ADMIN_API_KEY/,
-  /auth\.getUser\s*\(/,
-  /auth\.getSession\s*\(/,
-  /getUser\s*\(/,
-  /getSession\s*\(/,
-  // A webhook signature is a credential check too.
-  /constructEvent\s*\(/,
-  /verifySignature\s*\(/,
-];
+const AUTH_MARKERS = SHARED_AUTH_MARKERS.filter((m) => /[A-Za-z_$]/.test(m[0])).map((m) => {
+  const name = m.replace(/\($/, "");
+  return new RegExp(`\\b${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\(`);
+});
+
+/**
+ * A comparison against a SECRET — the shape a route uses when it checks
+ * a bearer against `process.env.CRON_SECRET` without a helper.
+ *
+ * The name has to be on one side of the comparison; a route that only
+ * NAMES the secret (in a comment, or by reading it) has not checked
+ * anything.
+ */
+const SECRET_COMPARISON =
+  /(?:constantTimeEqual|timingSafeEqual)\s*\([^)]*\b[A-Za-z_$][\w$]*(?:secret|token|key|credential)[\w$]*\b/i;
+
+/** A `===` / `!==` comparison where one side is named like a secret. */
+const SECRET_NAME_COMPARISON =
+  /\b[A-Za-z_$][\w$]*(?:secret|token|key|credential)[\w$]*\b\s*(?:===|!==|==|!=)/i;
 
 /**
  * A FIELD that carries a per-tenant BUSINESS METRIC.
@@ -129,6 +174,130 @@ const TENANT_COLLECTION_KEY =
 /** A privileged read: the service-role client that bypasses RLS. */
 const PRIVILEGED_READ =
   /createAdminClient\s*\(|SUPABASE_SERVICE_ROLE|service_role/i;
+
+/**
+ * A key that identifies ONE TENANT, unambiguously.
+ *
+ * The portfolio's clients are keyed `businessSlug` / `tenantSlug` /
+ * `clientSlug` / `assetId`. These names cannot be anything else.
+ */
+const STRONG_TENANT_KEYS = ["businessSlug", "tenantSlug", "clientSlug", "assetId"];
+
+/**
+ * `slug` — a tenant key ONLY when something else says the entry is a
+ * portfolio client.
+ *
+ * `slug` alone is the most overloaded word in this repo: a newsletter
+ * POST has a slug, a membership TIER has a slug, a landing page has a
+ * slug. None of those is a tenant, and treating them as one made the
+ * gate report three routes that were not leaks. A `slug` qualifies only
+ * alongside a field that names a client — a name, an agent, a surface, a
+ * domain. `CLIENT_AGENT_REGISTRY` qualifies (`slug` + `businessName`);
+ * a newsletter post does not (`slug` + `subject`).
+ */
+const WEAK_TENANT_KEYS = ["slug"];
+
+/** The fields that say "this entry is a CLIENT of the agency". */
+const PORTFOLIO_FIELDS = [
+  "businessName",
+  "agentName",
+  "displayName",
+  "assetId",
+  "domain",
+  "analyticsTenantSlugs",
+];
+
+/**
+ * Is this object literal an entry in the agency's book of business?
+ *
+ * TRUE when it carries an unambiguous tenant key, or a `slug` plus a
+ * field that only a portfolio client has.
+ */
+function isPortfolioEntry(keys) {
+  if (keys.some((k) => STRONG_TENANT_KEYS.includes(k))) return true;
+  if (keys.some((k) => WEAK_TENANT_KEYS.includes(k))) {
+    return keys.some((k) => PORTFOLIO_FIELDS.includes(k));
+  }
+  return false;
+}
+
+/**
+ * A key that holds a COLLECTION of tenants.
+ *
+ * Used by the render-side rule: a page that maps over one of these is
+ * rendering the whole portfolio (or its queue) into the document.
+ */
+const COLLECTION_KEYS = [
+  "businesses",
+  "clients",
+  "tenants",
+  "brands",
+  "portfolio",
+  "slugs",
+  "actionQueue",
+];
+
+function parseSource(src, fileName) {
+  return ts.createSourceFile(fileName, src, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+}
+
+function propertyName(node) {
+  if (!node) return null;
+  if (ts.isIdentifier(node) || ts.isStringLiteral(node)) return node.text;
+  return null;
+}
+
+/**
+ * Does this file RENDER a per-tenant collection?
+ *
+ * A `.map()` over a collection property, or over a local alias assigned
+ * from one (`const topActions = snapshot.actionQueue.slice(0, 10)`).
+ *
+ * This is the render-side half of the rule: the leak is not "a module
+ * holds a registry", it is "the registry is in the HTML".
+ */
+export function rendersTenantCollection(src, fileName = "page.tsx") {
+  const source = parseSource(src, fileName);
+  const aliases = new Set();
+  const hits = [];
+
+  // Pass 1 — local aliases derived from a collection.
+  const collectAliases = (node) => {
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer) {
+      const init = node.initializer;
+      const target =
+        ts.isCallExpression(init) && ts.isPropertyAccessExpression(init.expression)
+          ? init.expression.expression
+          : null;
+      const key = target && ts.isPropertyAccessExpression(target) ? propertyName(target.name) : null;
+      if (key && COLLECTION_KEYS.includes(key)) aliases.add(node.name.text);
+    }
+    ts.forEachChild(node, collectAliases);
+  };
+  collectAliases(source);
+
+  // Pass 2 — a `.map()` over a collection or an alias.
+  const collectMaps = (node) => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      node.expression.name.text === "map"
+    ) {
+      const receiver = node.expression.expression;
+      let key = null;
+      if (ts.isPropertyAccessExpression(receiver)) key = propertyName(receiver.name);
+      else if (ts.isIdentifier(receiver)) key = receiver.text;
+      if (key && (COLLECTION_KEYS.includes(key) || aliases.has(key))) {
+        const pos = source.getLineAndCharacterOfPosition(node.getStart(source));
+        hits.push({ line: pos.line + 1, key });
+      }
+    }
+    ts.forEachChild(node, collectMaps);
+  };
+  collectMaps(source);
+
+  return hits;
+}
 
 function parseArgs(argv) {
   const opts = { reportOnly: false, root: process.cwd(), files: [] };
@@ -241,30 +410,11 @@ function ignored(src) {
  */
 function localImports(src, file, root) {
   const out = new Set();
-  const dir = file.split("/").slice(0, -1);
   const re = /from\s+["']([^"']+)["']/g;
   let m;
   while ((m = re.exec(src))) {
-    const spec = m[1];
-    let base = null;
-    if (spec.startsWith("@/lib/")) base = join(root, "lib", spec.slice("@/lib/".length));
-    else if (spec.startsWith("@/")) base = join(root, spec.slice(2));
-    else if (spec.startsWith("./") || spec.startsWith("../")) {
-      base = resolve(dir.join("/"), spec);
-    }
-    if (!base) continue;
-    for (const cand of [
-      base,
-      `${base}.ts`,
-      `${base}.tsx`,
-      join(base, "index.ts"),
-      join(base, "index.tsx"),
-    ]) {
-      if (existsSync(cand) && statSync(cand).isFile()) {
-        out.add(cand);
-        break;
-      }
-    }
+    const target = resolveModulePath(m[1], file, root);
+    if (target) out.add(target);
   }
   return [...out];
 }
@@ -333,15 +483,14 @@ export function findInternalPageReads(src, file, root, prefixes) {
  * needs it — so the rule is about the per-tenant BREAKDOWN, not about
  * counting rows.
  */
-export function findUnauthenticatedTenantMetrics(src, file, root) {
+export function findUnauthenticatedTenantMetrics(src, file, root, derived) {
   const findings = [];
   const rel = relative(root, file);
   if (ignored(src)) return findings;
 
   const code = stripComments(src);
 
-  const hasAuth = AUTH_MARKERS.some((re) => re.test(code));
-  if (hasAuth) return findings;
+  if (hasCredentialCheck(code, derived)) return findings;
 
   // A collection of tenants, one entry per client in the portfolio.
   const collection = TENANT_COLLECTION_KEY.exec(code);
@@ -366,14 +515,532 @@ export function findUnauthenticatedTenantMetrics(src, file, root) {
   return findings;
 }
 
-/** Scan one file against both rules. */
-export function scanFile(path, root, prefixes) {
+/**
+ * Does this route authenticate the caller?
+ *
+ * ONE definition, three sources:
+ *   - the literal markers (a helper that checks a credential);
+ *   - a comparison against a secret (the name has to be ON one side of
+ *     the comparison — naming the secret is not checking it);
+ *   - the DERIVED verifiers from `lib/` — a function whose body proves
+ *     a credential, resolved transitively.
+ *
+ * The derived set is what keeps a new verifier from being invisible here
+ * (session 64's lesson: a hand-typed marker list was missing four of
+ * this repo's own verifiers, so five authenticated routes read as
+ * PUBLIC).
+ */
+export function hasCredentialCheck(code, derived = new Set()) {
+  if (AUTH_MARKERS.some((re) => re.test(code))) return true;
+  if (SECRET_COMPARISON.test(code)) return true;
+  if (SECRET_NAME_COMPARISON.test(code)) return true;
+  for (const name of derived) {
+    if (new RegExp(`\\b${name}\\s*\\(`).test(code)) return true;
+  }
+  return false;
+}
+
+/**
+ * Rule 3 — an internal SERVER component that RENDERS a per-tenant
+ * collection into the document.
+ *
+ * The document request carries no credential — the operator's token
+ * lives in `localStorage` — so whatever a server component renders
+ * travels to anyone with the URL. Every other page under an internal
+ * prefix in this repo is a CLIENT component for exactly that reason;
+ * the ones that were server components (the council view and the
+ * federation view, both fixed on 2026-11-04) were the ones that leaked.
+ */
+export function findInternalPageTenantCollections(src, file, root, prefixes) {
+  const findings = [];
+  const rel = relative(root, file);
+  const underPrefix = prefixes.find((p) => rel.startsWith(`app${p}/`));
+  if (!underPrefix) return findings;
+  if (isClientComponent(src)) return findings;
+  if (ignored(src)) return findings;
+
+  const hits = rendersTenantCollection(src, rel);
+  for (const hit of hits) {
+    findings.push({
+      rule: "internal-page-tenant-collection",
+      file: rel,
+      line: hit.line,
+      detail:
+        `\`${rel}\` is a SERVER component under the internal prefix \`${underPrefix}\` and ` +
+        `renders a PER-TENANT COLLECTION (\`${hit.key}\`) into the document. The document ` +
+        `request carries no credential — the operator's token lives in localStorage — so the ` +
+        `portfolio's operating state ships to anyone with the URL. Make the page a client ` +
+        `component and fetch the data from a route behind requireAdmin() with the ` +
+        `\`omni_token\` bearer (the idiom \`/api/dashboard/council\` already uses).`,
+    });
+  }
+  return findings;
+}
+
+/**
+ * Rule 4 — a route with NO credential check whose RESPONSE is a
+ * per-tenant collection.
+ *
+ * THE COLLECTION IS TRACED THROUGH THE RETURNED VALUE, NOT THROUGH THE
+ * IMPORT GRAPH.
+ *
+ * The first version of this rule asked a different question: "can this
+ * route reach a module that declares a tenant collection?" It produced
+ * twelve findings, and not one of them was a leak — an ingestion route
+ * that returns `{ ok, persisted }` reached a portfolio module and was
+ * reported for it; six payment routes reached a MEMBERSHIP-TIER table
+ * whose `slug` is a tier, not a tenant. A gate that cries wolf gets
+ * ignored, and a gate that reports twelve false positives a week is
+ * ignored.
+ *
+ * The question that finds the real defect is narrower and honest: "does
+ * the value this route RETURNS carry a per-tenant collection?" So the
+ * rule follows the returned expression — through `NextResponse.json(x)`,
+ * through the imported function that builds `x`, through the object
+ * literal that function returns, through the array it maps — and reports
+ * only if it lands on an array of portfolio clients.
+ *
+ * That is exactly the shape of the control plane that shipped:
+ *
+ *   return NextResponse.json(buildOmniOSSnapshot());
+ *            └─ lib/omni-os/snapshot.ts ─→ CLIENT_AGENT_REGISTRY.map(…)
+ *                                             └─ nine clients, their gaps,
+ *                                                their next action
+ */
+export function findUnauthenticatedTenantCollections(src, file, root, derived) {
+  const findings = [];
+  const rel = relative(root, file);
+  if (ignored(src)) return findings;
+
+  const code = stripComments(src);
+  if (hasCredentialCheck(code, derived)) return findings;
+
+  const returned = handlerReturnExpressions(src, rel);
+  if (!returned.length) return findings;
+
+  const ctx = { root, modules: new Map(), visited: new Set(), derived };
+  let hit = null;
+  for (const expr of returned) {
+    hit = traceCollection(expr, loadModule(file, ctx), ctx, 0);
+    if (hit) break;
+  }
+  if (!hit) return findings;
+
+  findings.push({
+    rule: "unauthenticated-tenant-collection",
+    file: rel,
+    line: hit.line,
+    detail:
+      `\`${rel}\` has NO credential check (no requireAdmin(), no authorizeCronOrAdmin(), ` +
+      `no session read) and RETURNS A PER-TENANT COLLECTION` +
+      (hit.file ? ` (declared in \`${hit.file}\`).` : ".") +
+      ` An anonymous caller reads the portfolio's book of business — every client, its ` +
+      `state, its gaps, its next action. Gate the route with requireAdmin() and serve it ` +
+      `\`private, no-store\`.`,
+  });
+  return findings;
+}
+
+// ---------------------------------------------------------------------------
+// The return-value tracer
+// ---------------------------------------------------------------------------
+
+const HTTP_METHODS = new Set(["GET", "POST", "PUT", "PATCH", "DELETE", "HEAD", "OPTIONS"]);
+
+/**
+ * The expressions a route's HTTP handler RETURNS.
+ *
+ * Only the exported handlers count. A helper elsewhere in the file that
+ * returns a collection is not the route's response — following it would
+ * be the same over-approximation the first version of this rule made.
+ */
+export function handlerReturnExpressions(src, fileName = "route.ts") {
+  const source = parseSource(src, fileName);
+  const exprs = [];
+
+  const collectReturns = (fn) => {
+    const walk = (node) => {
+      if (ts.isReturnStatement(node) && node.expression) exprs.push(node.expression);
+      ts.forEachChild(node, walk);
+    };
+    if (fn.body) ts.forEachChild(fn.body, walk);
+  };
+
+  const visit = (node) => {
+    if (ts.isFunctionDeclaration(node) && node.name && HTTP_METHODS.has(node.name.text)) {
+      collectReturns(node);
+    }
+    if (
+      ts.isVariableDeclaration(node) &&
+      ts.isIdentifier(node.name) &&
+      HTTP_METHODS.has(node.name.text) &&
+      node.initializer &&
+      (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+    ) {
+      collectReturns(node.initializer);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return exprs;
+}
+
+/** Resolve an import specifier to a file in this repo. */
+function resolveModulePath(spec, fromFile, root) {
+  const dir = fromFile.split("/").slice(0, -1);
+  let base = null;
+  if (spec.startsWith("@/lib/")) base = join(root, "lib", spec.slice("@/lib/".length));
+  else if (spec.startsWith("@/")) base = join(root, spec.slice(2));
+  else if (spec.startsWith("./") || spec.startsWith("../")) base = resolve(dir.join("/"), spec);
+  if (!base) return null;
+  for (const cand of [base, `${base}.ts`, `${base}.tsx`, join(base, "index.ts"), join(base, "index.tsx")]) {
+    if (existsSync(cand) && statSync(cand).isFile()) return cand;
+  }
+  return null;
+}
+
+/**
+ * A module, indexed: what it imports, what it declares, and in WHICH
+ * SCOPE it declares it.
+ *
+ * The index is built once per file and cached for the run.
+ *
+ * EVERY declaration in the file is indexed, not only the top-level ones,
+ * and each one is indexed under the scope that encloses it.
+ *
+ * WHY SCOPE MATTERS. Two versions of this index failed, both on the
+ * same route:
+ *
+ *   1. Top-level statements only. `CLIENT_AGENT_REGISTRY.map(…)` is
+ *      assigned to a `const` INSIDE a function body, so the name
+ *      `businesses` was not in the index, the walk gave up one step from
+ *      the registry, and the route that shipped the control plane read
+ *      as clean.
+ *   2. Every declaration, in one flat map. `buildOmniOSSnapshot` and
+ *      `buildOmniOSOperatorSnapshot` both declare a `businesses`, and
+ *      the flat map kept only the LAST one — the operator projection's,
+ *      which maps over a snapshot rather than over the registry. The
+ *      walk followed the wrong `businesses` and stopped.
+ *
+ * A name means different things in different scopes, so the index has to
+ * keep them apart.
+ */
+function loadModule(path, ctx) {
+  const cached = ctx.modules.get(path);
+  if (cached) return cached;
+
+  const src = readFileSync(path, "utf8");
+  const source = parseSource(src, path);
+  const imports = new Map();
+  const moduleScope = new Map();
+
+  for (const stmt of source.statements) {
+    if (ts.isImportDeclaration(stmt) && ts.isStringLiteral(stmt.moduleSpecifier)) {
+      const target = resolveModulePath(stmt.moduleSpecifier.text, path, ctx.root);
+      if (!target) continue;
+      const clause = stmt.importClause;
+      if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+        for (const spec of clause.namedBindings.elements) {
+          imports.set(spec.name.text, target);
+        }
+      }
+      if (clause?.name) imports.set(clause.name.text, target);
+    }
+  }
+
+  /** scope id → declarations in that scope. */
+  const scopes = new Map();
+  /** function node → its own scope id. */
+  const scopeOfFunction = new WeakMap();
+  /** node → the scope id that encloses it. */
+  const enclosingScope = new WeakMap();
+  let nextScopeId = 1;
+
+  const isFunctionLike = (node) =>
+    ts.isFunctionDeclaration(node) ||
+    ts.isFunctionExpression(node) ||
+    ts.isArrowFunction(node) ||
+    ts.isMethodDeclaration(node);
+
+  const visit = (node, scopeId) => {
+    let currentScope = scopeId;
+
+    if (isFunctionLike(node)) {
+      currentScope = nextScopeId++;
+      scopes.set(currentScope, new Map());
+      scopeOfFunction.set(node, currentScope);
+    }
+    enclosingScope.set(node, currentScope);
+
+    if (ts.isVariableStatement(node)) {
+      const scope = scopes.get(currentScope) || moduleScope;
+      for (const d of node.declarationList.declarations) {
+        if (!ts.isIdentifier(d.name)) continue;
+        const isFunction =
+          d.initializer &&
+          (ts.isArrowFunction(d.initializer) || ts.isFunctionExpression(d.initializer));
+        scope.set(d.name.text, {
+          kind: isFunction ? "function" : "const",
+          node: d,
+          scope: currentScope,
+        });
+      }
+    } else if (ts.isFunctionDeclaration(node) && node.name) {
+      const scope = scopes.get(scopeId) || moduleScope;
+      scope.set(node.name.text, { kind: "function", node, scope: scopeId });
+    }
+
+    ts.forEachChild(node, (child) => visit(child, currentScope));
+  };
+  visit(source, 0);
+
+  const mod = {
+    path,
+    src,
+    source,
+    imports,
+    moduleScope,
+    scopes,
+    scopeOfFunction,
+    enclosingScope,
+  };
+  ctx.modules.set(path, mod);
+  return mod;
+}
+
+function unwrapExpression(node) {
+  let current = node;
+  while (
+    current &&
+    (ts.isParenthesizedExpression(current) ||
+      ts.isAsExpression(current) ||
+      ts.isTypeAssertionExpression(current) ||
+      ts.isNonNullExpression(current) ||
+      ts.isAwaitExpression(current) ||
+      ts.isSatisfiesExpression(current))
+  ) {
+    current = current.expression;
+  }
+  return current;
+}
+
+/**
+ * The return expressions of a function declaration.
+ *
+ * The walk does NOT descend into a NESTED function: a callback's return
+ * is the callback's value, not the outer function's response, and
+ * following it sent the walk off into the per-tenant entry objects
+ * instead of the collection.
+ */
+function returnsOf(fnNode) {
+  const out = [];
+  const walk = (node) => {
+    if (ts.isReturnStatement(node) && node.expression) out.push(node.expression);
+    ts.forEachChild(node, (child) => {
+      if (
+        ts.isFunctionDeclaration(child) ||
+        ts.isFunctionExpression(child) ||
+        ts.isArrowFunction(child)
+      ) {
+        return;
+      }
+      walk(child);
+    });
+  };
+  if (fnNode.body) ts.forEachChild(fnNode.body, walk);
+  return out;
+}
+
+/**
+ * The return expressions of a declaration, whether it is a function
+ * declaration or a `const` holding an arrow function.
+ */
+function declarationReturns(decl) {
+  if (decl.kind !== "function") return [];
+  if (ts.isFunctionDeclaration(decl.node)) return returnsOf(decl.node);
+  const init = decl.node.initializer;
+  if (init && (ts.isArrowFunction(init) || ts.isFunctionExpression(init))) return returnsOf(init);
+  return [];
+}
+
+/**
+ * The scope a function's BODY lives in.
+ *
+ * This is not the scope the function is DECLARED in — it is the scope
+ * the names inside its body belong to. A builder that declares
+ * `const businesses = …` inside its body and returns it is only
+ * resolvable from inside that body.
+ */
+function bodyScopeOf(mod, decl) {
+  if (!decl) return 0;
+  const node = ts.isFunctionDeclaration(decl.node) ? decl.node : decl.node.initializer;
+  if (!node) return decl.scope ?? 0;
+  return mod.scopeOfFunction.get(node) ?? decl.scope ?? 0;
+}
+
+/**
+ * Follow an expression to the data it carries.
+ *
+ * Returns `{ file, line }` when the expression reaches an array of
+ * portfolio clients, and null otherwise. The walk is bounded by depth
+ * and by a visited set — the graph of a route's own code is small, but
+ * a recursive builder would otherwise loop.
+ *
+ * The depth budget is 12 because the real shape is long: route → the
+ * builder it calls → the object it returns → the array it maps → the
+ * registry it maps. A budget of 6 stopped the walk one step short of
+ * the registry, which is the difference between finding the control
+ * plane and missing it.
+ *
+ * `scope` is the id of the scope the expression sits in — it decides
+ * which `businesses` a name refers to.
+ */
+function traceCollection(expr, mod, ctx, depth, scope = 0) {
+  if (!expr || depth > 12) return null;
+  const node = unwrapExpression(expr);
+  if (!node) return null;
+
+  if (ts.isArrayLiteralExpression(node)) {
+    const hit = portfolioArrayHit(node, mod.source);
+    return hit ? { file: relative(ctx.root, mod.path), line: hit.line } : null;
+  }
+
+  if (ts.isObjectLiteralExpression(node)) {
+    for (const prop of node.properties) {
+      if (ts.isPropertyAssignment(prop)) {
+        const hit = traceCollection(prop.initializer, mod, ctx, depth + 1, scope);
+        if (hit) return hit;
+      } else if (ts.isShorthandPropertyAssignment(prop)) {
+        const hit = traceName(prop.name.text, mod, ctx, depth + 1, scope);
+        if (hit) return hit;
+      } else if (ts.isSpreadAssignment(prop)) {
+        const hit = traceCollection(prop.expression, mod, ctx, depth + 1, scope);
+        if (hit) return hit;
+      }
+    }
+    return null;
+  }
+
+  if (ts.isCallExpression(node)) {
+    // The arguments come first: `NextResponse.json(value)`.
+    for (const arg of node.arguments) {
+      const hit = traceCollection(arg, mod, ctx, depth + 1, scope);
+      if (hit) return hit;
+    }
+    const callee = node.expression;
+    if (ts.isIdentifier(callee)) return traceName(callee.text, mod, ctx, depth + 1, scope);
+    if (ts.isPropertyAccessExpression(callee)) {
+      return traceCollection(callee.expression, mod, ctx, depth + 1, scope);
+    }
+    if (ts.isElementAccessExpression(callee)) {
+      return traceCollection(callee.expression, mod, ctx, depth + 1, scope);
+    }
+    return null;
+  }
+
+  if (ts.isPropertyAccessExpression(node)) {
+    return traceCollection(node.expression, mod, ctx, depth + 1, scope);
+  }
+
+  if (ts.isIdentifier(node)) {
+    return traceName(node.text, mod, ctx, depth + 1, scope);
+  }
+
+  if (ts.isConditionalExpression(node)) {
+    return (
+      traceCollection(node.whenTrue, mod, ctx, depth + 1, scope) ||
+      traceCollection(node.whenFalse, mod, ctx, depth + 1, scope)
+    );
+  }
+
+  return null;
+}
+
+/**
+ * Follow a NAME to the data it holds.
+ *
+ * A local declaration is followed in place, in ITS OWN SCOPE; an
+ * imported one is followed into the module that declares it. If the
+ * module it lands in proves a credential of its own, the walk STOPS — a
+ * route whose response is built by an authenticating helper is not an
+ * anonymous route.
+ */
+function traceName(name, mod, ctx, depth, scope = 0) {
+  const key = `${mod.path}#${scope}#${name}`;
+  if (ctx.visited.has(key)) return null;
+  ctx.visited.add(key);
+
+  const local = (mod.scopes.get(scope) || mod.moduleScope).get(name);
+  const decl = local || mod.moduleScope.get(name);
+  if (decl) {
+    if (decl.kind === "const") {
+      return traceCollection(decl.node.initializer, mod, ctx, depth + 1, decl.scope ?? scope);
+    }
+    const bodyScope = bodyScopeOf(mod, decl);
+    for (const ret of declarationReturns(decl)) {
+      const hit = traceCollection(ret, mod, ctx, depth + 1, bodyScope);
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  const imported = mod.imports.get(name);
+  if (!imported) return null;
+
+  const target = loadModule(imported, ctx);
+  if (hasCredentialCheck(stripComments(target.src), ctx.derived)) return null;
+
+  const tdecl = target.moduleScope.get(name);
+  if (!tdecl) return null;
+  if (tdecl.kind === "const") {
+    return traceCollection(tdecl.node.initializer, target, ctx, depth + 1, tdecl.scope ?? 0);
+  }
+  const targetBodyScope = bodyScopeOf(target, tdecl);
+  for (const ret of declarationReturns(tdecl)) {
+    const hit = traceCollection(ret, target, ctx, depth + 1, targetBodyScope);
+    if (hit) return hit;
+  }
+  return null;
+}
+
+/** Is this array literal a collection of portfolio clients? */
+function portfolioArrayHit(node, source) {
+  const entries = node.elements.filter(ts.isObjectLiteralExpression);
+  if (!entries.length) return null;
+  for (const entry of entries) {
+    const keys = entry.properties
+      .map((p) =>
+        ts.isPropertyAssignment(p) || ts.isShorthandPropertyAssignment(p) ? propertyName(p.name) : null,
+      )
+      .filter(Boolean);
+    if (isPortfolioEntry(keys)) {
+      const pos = source.getLineAndCharacterOfPosition(node.getStart(source));
+      return { line: pos.line + 1 };
+    }
+  }
+  return null;
+}
+
+/**
+ * Scan one file against every rule that applies to it.
+ *
+ * A page is judged by the two page rules; a route by the two route rules.
+ * `derived` is the set of credential verifiers derived from lib/ — without
+ * it the route rules cannot tell a real check from a comment.
+ */
+export function scanFile(path, root, prefixes, derived = new Set()) {
   const src = readFileSync(path, "utf8");
   if (ignored(src)) return [];
-  const findings = [
-    ...findInternalPageReads(src, path, root, prefixes),
-    ...findUnauthenticatedTenantMetrics(src, path, root),
-  ];
+  const isPage = /page\.tsx$/.test(path);
+  const findings = isPage
+    ? [
+        ...findInternalPageReads(src, path, root, prefixes),
+        ...findInternalPageTenantCollections(src, path, root, prefixes),
+      ]
+    : [
+        ...findUnauthenticatedTenantMetrics(src, path, root, derived),
+        ...findUnauthenticatedTenantCollections(src, path, root, derived),
+      ];
   return findings;
 }
 
@@ -385,34 +1052,41 @@ function main() {
   const pages = explicit ? files.filter((f) => /page\.tsx$/.test(f)) : collectPages(root);
   const routes = explicit ? files.filter((f) => /route\.ts$/.test(f)) : collectRoutes(root);
 
+  let derived;
+  try {
+    derived = deriveCredentialVerifiers(root);
+  } catch (error) {
+    console.error(
+      `[internal-surface] the credential verifiers could not be derived ` +
+        `(${error && error.message}) — the routes cannot be judged. The result is UNKNOWN. ` +
+        `This gate did not run.`,
+    );
+    return 2;
+  }
+
   const findings = [];
-  let rule1Ran = 0;
-  let rule2Ran = 0;
 
   for (const page of pages) {
-    const src = readFileSync(page, "utf8");
-    const hits = findInternalPageReads(src, page, root, prefixes);
-    if (hits.length) findings.push(...hits);
-    else rule1Ran++;
+    findings.push(...scanFile(page, root, prefixes, derived));
   }
   for (const route of routes) {
-    const src = readFileSync(route, "utf8");
-    const hits = findUnauthenticatedTenantMetrics(src, route, root);
-    if (hits.length) findings.push(...hits);
-    else rule2Ran++;
+    findings.push(...scanFile(route, root, prefixes, derived));
   }
 
   const rules = [
     "internal-page-privileged-read",
+    "internal-page-tenant-collection",
     "unauthenticated-tenant-metrics",
+    "unauthenticated-tenant-collection",
   ];
 
   if (!findings.length) {
     console.log(
       `[internal-surface] ${rules.length} rule(s) ran — ` +
-        `internal-page-privileged-read over ${pages.length} page(s) ` +
-        `(${prefixes.length} internal prefix(es) from app/robots.ts), ` +
-        `unauthenticated-tenant-metrics over ${routes.length} route(s) — ` +
+        `internal-page-privileged-read + internal-page-tenant-collection over ` +
+        `${pages.length} page(s) (${prefixes.length} internal prefix(es) from app/robots.ts), ` +
+        `unauthenticated-tenant-metrics + unauthenticated-tenant-collection over ` +
+        `${routes.length} route(s), with ${derived.size} credential verifier(s) derived from lib/ — ` +
         `no findings. No internal surface serves privileged data to an anonymous caller.`,
     );
     return 0;
