@@ -1,5 +1,5 @@
 # 🧠 AGENT_MEMORY — OMNI-AI
-> Synthetic Intelligence Memory | Updated: November 06, 2026 11:21 PM
+> Synthetic Intelligence Memory | Updated: November 07, 2026 12:05 AM
 > READ THIS FIRST. Never repeat completed work.
 
 ## 📊 Health Scores
@@ -191,6 +191,65 @@
 > 336–342 findings each**, which the old 119-table rule set saw none of.
 
 ## 🎯 This Session: Do These In Order
+
+> **Session 66 (2026-11-07) — the control was carried to the fleet, and the fleet found a
+> live defect that the canonical repo could never have found: a fail-open admin secret in
+> a SIBLING product.**
+>
+> **1. The class travels by copy, so the class was measured by copy.** Session 65 wrote
+> `audit:internal-surface` for the flagship. The repo's own precedent (Pattern #4) says a
+> defect class that travels by copy needs a SWEEP, not a fix in one repo — the content-lookup
+> class was copied into four trees that way. `npm run audit:fleet-internal-surface`
+> (`scripts/audit-fleet-internal-surface.mjs`, new) walks **364 trees** — the population
+> comes from `scripts/fleet-trees.mjs` and `scripts/audit-fleet-auth.mjs`, the SAME two
+> definitions the other fleet tools use, because two tools that discover the fleet
+> separately will eventually disagree about it. It imports `scanFile` from the canonical
+> detector and derives the credential verifiers with the SHARED derivation, so the two
+> answers cannot disagree about what the rule IS. Measured: **10,658 pages, 14,738 routes,
+> 286 findings**, graded by how close each tree is to shipping — a live surface, a linked
+> copy of a live project, or an unlinked tree one `vercel link` away.
+>
+> **2. The one real live defect was a fail-open secret in a SIBLING product.**
+> `/Users/janahasson/Desktop/Clients/Omni Leads/Website` (the `omnileads.shop` surface)
+> had `lib/admin-api-key.ts` whose check was
+> `if (!process.env.ADMIN_API_KEY) return true;` — "open in dev". **ADMIN_API_KEY is NOT
+> set in that project's production environment**, so `GET /api/admin/businesses` answered an
+> anonymous caller with the whole portfolio and `PATCH /api/admin/system` accepted an
+> anonymous WRITE to the system config. A production route cannot tell dev from prod by
+> the absence of a variable: **an unset secret and a wrong secret must both deny.** The
+> guard now fails closed (503 "not configured" when unset or shorter than 16 chars, 401 on
+> a missing or wrong key), compares in constant time, serves `private, no-store` and
+> `X-Robots-Tag: noindex, nofollow`, and the portfolio read moved to the SERVICE-ROLE
+> client — `omni_businesses` is `service_role_all`, so the anon client could never see
+> the rows it was asked for and the route used to answer 200 with an empty list, which
+> reads as "there are no businesses" rather than "you may not see them".
+>
+> **3. The sweep's first run cried wolf, and the wolf was in the DERIVATION.** Two Mythos
+> AIS routes (`app/api/dashboard/analytics`, `app/api/dashboard/crm`) were reported as
+> anonymous — they are not; they gate behind `isAuthed(req)`, and the shared verifier-name
+> list had never heard of the `is` shape. **A boolean auth decision is the same mechanism
+> under a different name**, and a detector that cries wolf spends the reader's trust it
+> will never get back. `VERIFIER_NAME` now admits the authorisation vocabulary
+> (`is(Authed|Authorized|Authenticated)`) — narrowly, not every `isSomething` — and the
+> BODY must still prove a credential, so the name alone cannot grant a clean bill. Two
+> tests were added to `tests/internal-surface.test.ts`: the `is`-shaped verifier is
+> recognised, and a route with no check at all STILL FIRES whatever else the tree holds.
+> The canonical gates re-verified afterwards: **22 credential verifiers, 0 findings**.
+>
+> **4. Two releases were attempted and one of them was deliberately NOT made.**
+> The flagship commit `bd0742c7` ships. The Omni Leads fix is committed locally
+> (`3f33a89`) but **not pushed**: its local branch and `origin/main` have **no merge base**
+> (local history roots 2026-05-01; `origin/main` ends 2026-04-13 and contains
+> `app/blog/page.tsx`, absent locally), and a force-push would destroy real work. It is
+> also **not deployable**: `omnileads.shop` has **no row in `federation.surfaces`**, and the
+> protocol's RESOLVE step says a missing row means stop. Logged as `committed-not-deployed`
+> with the action required — the operator's decision, not the agent's.
+>
+> **5. What was deliberately NOT done.** 33 linked copies of the production Vercel project
+> and 16 unlinked scratch trees still carry the pre-fix code and the 6 findings each. They
+> are **reported and graded, not mass-deleted or force-patched**: the repo's own precedent
+> names two options — patch it or delete it — and picking one for 50 trees the owner may
+> still need is not the agent's call.
 
 > **Session 65 (2026-11-06) — the control plane was still open. The council and the
 > federation were closed in session 63; the THIRD internal surface was not, because the
@@ -832,18 +891,20 @@
 - **`omnileads.shop` has no row in `federation.surfaces`, so its fix cannot be deployed.** The Omni Leads checkout (`/Users/janahasson/Desktop/Clients/Omni Leads/Website`) was fixed and committed locally (`6be51ec`): `app/lp/[slug]/page.tsx` read `omni_landing_pages` and `omni_businesses` with the **anon client** — both are `service_role_all`, so the read answered 200 with nothing and the route could never render — and both reads are now classified through `requireLookup(await lookupContent(...))`. The federation protocol's RESOLVE step says a missing row means **stop**, and there is **no write path to `federation.surfaces`** from this agent's Supabase wrappers, so the deploy was not attempted. The row to add: domain `omnileads.shop`, its Vercel project, codebase `/Users/janahasson/Desktop/Clients/Omni Leads/Website`, deploy method CLI (`vercel --prod`). Until it exists, that surface ships the defect.
 
 ## 📚 Stats
-- Sessions: 65
-- Lines written: 4290
+- Sessions: 66
+- Lines written: 4690
 - Fleet surfaces swept by `audit:fleet-content-lookup`: **65 checkouts / 1063 pages, 0 findings**
 - Trees carrying the content-lookup gate with the build chain armed: **4**
 - Gates in the build chain: **14** (added `audit:internal-surface` — now 4 rules over 124 pages + 264 routes, with `test:internal-surface` pinning all 7 shapes — and `audit:metadata-parity` — 3 rules over 83 files)
 - Public-PII rule set: **310 live tables, 116 of them personal** (was a 6-name hand list); credential verifiers **derived from `lib/`**: 22 (was a literal list missing 4 of this repo's own)
 - Public-PII instrument in the fleet: **37 rule-set trees** carry the gate + the rule set + the generator + the drift gate; **26 measure themselves** (0 findings), 11 have no `node_modules` and fail closed
 - Fleet sweep for it: `npm run audit:fleet-public-pii` — **37 trees, 26 measured clean, 11 noted (cannot build either), 0 findings**; proven to fire on a removed rule set and on a rule set from another project
+- Fleet sweep for the internal-surface class: `npm run audit:fleet-internal-surface` — **364 trees, 10,658 pages, 14,738 routes, 286 findings**, graded by distance to shipping (live surface / linked copy / unlinked tree); **1 real live defect found and fixed** (the fail-open `ADMIN_API_KEY` in the `omnileads.shop` surface), 33 linked copies of the production project still carry the pre-fix code
 
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-07 | security | **The control was carried to the fleet, and the fleet found a live defect the canonical repo could never have found: a fail-open admin secret in a SIBLING product.** `npm run audit:fleet-internal-surface` (`scripts/audit-fleet-internal-surface.mjs`, new) walks **364 trees** — the population comes from `scripts/fleet-trees.mjs` and `scripts/audit-fleet-auth.mjs`, the SAME two definitions every other fleet tool uses, and the detector is IMPORTED from the canonical gate, so the two answers cannot disagree about what the rule IS. Measured **10,658 pages, 14,738 routes, 286 findings**, graded by how close each tree is to shipping (live surface / linked copy of a live project / unlinked tree one `vercel link` away) rather than as one undifferentiated red. The one real live defect: `/Users/janahasson/Desktop/Clients/Omni Leads/Website` (`omnileads.shop`) checked `if (!process.env.ADMIN_API_KEY) return true;` — "open in dev" — and **ADMIN_API_KEY is NOT set in that project's production**, so `GET /api/admin/businesses` answered an anonymous caller with the whole portfolio and `PATCH /api/admin/system` accepted an anonymous WRITE. A production route cannot tell dev from prod by the absence of a variable: **an unset secret and a wrong secret must both deny.** `lib/admin-api-key.ts` now fails closed (503 unconfigured / 401 missing-or-wrong), compares in constant time, serves `private, no-store` + `noindex`, and the portfolio read moved to the SERVICE-ROLE client — `omni_businesses` is `service_role_all`, so the anon read had been answering 200 with an EMPTY list, which reads as "there are no businesses" rather than "you may not see them". The sweep's first run also cried wolf: two Mythos AIS routes were reported anonymous when they gate behind `isAuthed(req)` — **a boolean auth decision is the same mechanism under a different name**, and the shared verifier-name list had never heard of the `is` shape. `VERIFIER_NAME` now admits the authorisation vocabulary narrowly (`is(Authed|Authorized|Authenticated)`), the BODY must still prove a credential, and two tests were added: the `is`-shaped verifier is recognised, and a route with no check at all STILL FIRES whatever else the tree holds. Canonical gates re-verified: 22 verifiers, 0 findings, 9/9 tests. **The flagship commit ships; the Omni Leads commit does not** — its branch and `origin/main` have no merge base, and `omnileads.shop` has no `federation.surfaces` row, so it is logged `committed-not-deployed` with the action required. 33 linked copies of the production project and 16 unlinked trees still carry the pre-fix code: **reported and graded, not mass-deleted or force-patched** — "patch it or delete it" is the operator's call, not the agent's | 400 |
 | 2026-11-06 | security | **The control plane was the third internal surface, and it stayed open because the gate written in session 63 could not see it.** `GET /api/omni-os/snapshot` answered an anonymous `curl` with **200 and 47,896 bytes** — every client in the portfolio, its score and operating status, the loops it has **NOT** connected, its revenue move, its next action, **the internal repository paths where its code lives on the operator's disk**, and a 43-item action queue. "No secrets, no PII" was true and was not the question: a score is confidential BUSINESS data, and the answer to "is this public?" is a credential check, not a field-name check. The endpoint's own plan had said *"should require existing dashboard auth or admin/cron auth if sensitive data is added"* — the auth was never added, and the endpoint grew into the control plane. `app/dashboard/omni-os/page.tsx` was the only internal page in that namespace still a SERVER component, so the document request carried the same data; it is now a client component that fetches with the `omni_token` bearer, with metadata moved to a sibling `layout.tsx`. The endpoint sits behind `requireAdmin()`, serves `private, no-store`, and returns the **OPERATOR PROJECTION** — the internal registry fields are DROPPED, not blanked. `audit:internal-surface` grew two rules (`internal-page-tenant-collection`, `unauthenticated-tenant-collection`), and building them was the real work: the first version asked "can this route REACH a collection?" and answered yes **twelve times on routes that leak nothing** — an ingestion route returning `{ ok, persisted }`, six payment routes reaching a MEMBERSHIP-TIER table whose `slug` is a tier, and three routes that authenticate with `serviceAuthorized` / `verifiedActor`, which the gate had never heard of because **"does this route authenticate?" had TWO hand-typed answers in this repo**. The markers are now **exported from the public-PII gate and shared**; the rule traces the **RETURNED VALUE** rather than the import graph; and a tenant key must be unambiguous, so `slug` alone (a newsletter post, a membership tier) no longer qualifies. The tracer had to be **scope-aware** — a flat name map kept the wrong `businesses` of the two in `lib/omni-os/snapshot.ts` and stopped one step short of `CLIENT_AGENT_REGISTRY`, so the route that shipped the control plane read as CLEAN. Both rules are **proven** on the pre-fix files restored from git, and `tests/internal-surface.test.ts` (`npm run test:internal-surface`, in the build chain) pins all seven shapes. The `.vercelignore` exception for the new test was added in the same pass, before the deployment could fail on a missing file | 260 |
 | 2026-11-05 | security | **The only instrument in this repo asking "does an unauthenticated route hand somebody else's identity to any caller?" was built on two hand-typed lists, and nothing compared them with the database.** `scripts/audit-public-pii.mjs` (in the build chain since session 58) names the tables that hold other people's rows in a list of **six** — `profiles`, `newsletter_subscriptions`, `federation_owners`, `federation_newsletter_subscribers`, `landing_page_leads`, `inbound_leads` — while the live schema holds **116** tables carrying a column that identifies a person. **110 of them were invisible to the gate**: a route reading one of them with the anon key was never reported, and the gate said nothing about the ones it had never heard of. Its authentication notion had the same defect: a literal marker list of ~40 names, from which **four of this repo's own credential verifiers were missing** (`verifyTelegramWebhook`, `verifyOmniToken`, `requireAdminOrBrandMember`, `authorizePaymentRequest`), so **5 authenticated routes were classified PUBLIC**. This is the same lesson the RLS rule set taught in session 57 — *a rule set derived from a hand-written list is only as good as the list, and nothing tells it the list has gone stale* — and it was still true of a gate written **after** that lesson. The population is now **derived from the mechanism**: `scripts/refresh-pii-ruleset.mjs` reads the OpenAPI listing with the service role and writes `scripts/pii-tables.json` — **310 tables, 116 personal** — and `scripts/pii-schema.mjs` holds the ONE definition of what a personal column is, imported by the generator, the drift gate and the gate that applies the rule, so the three cannot disagree. A bare `name` is deliberately **not** personal by derivation (`omni_businesses.name` is a business); the six tables where it IS a person's name are an explicit overlay. The auth markers are now **derived from `lib/`** by the TypeScript compiler API: an exported function whose body proves a credential directly or calls one that does is a verifier, so **22** verifiers are recognised without anyone editing a list. `scripts/audit-pii-schema-drift.mjs` (new, `npm run audit:pii-schema`) is the drift gate — four rules, and it fails closed (exit 2, "the result is UNKNOWN") when it cannot measure. **Proven on the real shape**: a probe route serving `email` and `full_name` from `inbound_ltb_leads` was reported by the new gate with file, table and column named, while the old gate reported "0 findings across 2 rules"; a route reading a table the rule set has never heard of is reported too. The instrument now travels **with its population** — `npm run patch:fleet-rls-ruleset` copies the rule set, the shared definition, the generator and the drift gate into every rule-set tree, and a rule set carries the **project ref it was measured from**, so a copy on another project is told plainly that it is judging its routes against somebody else's schema instead of quietly reporting a clean result. **26 of 37 copies measure themselves and report 0 findings; the other 11 have no `node_modules` and now fail closed with "the TypeScript compiler is not available" rather than crashing.** Shipping an instrument into 37 trees is not 37 trees measuring, so `npm run audit:fleet-public-pii` (new) asks each copy the question the canonical gate answers: **can it run, and what does it say?** Six rules — a missing rule set, a missing shared definition, a rule set that differs from the canonical's, a rule set measured from another project, a tree with no compiler, and a gate that reports a finding — and the tree population comes from `scripts/fleet-ruleset-trees.mjs`, which the patcher now imports too, because two tools that discover the fleet separately will eventually disagree and the disagreement is invisible. **Proven to fire**: removing one copy's rule set reported `missing-rule-set`, re-measuring it under another project ref reported `rule-set-other-project`, and the copy was restored byte-identical. A tree with no `node_modules` is reported as a **note** with its count, not a finding — it cannot build either, and a permanent red teaches the reader to ignore the sweep. No live leak exists today: the widened population surfaced only marker-gap artifacts | 420 |
 | 2026-11-05 | tooling | **A gate that cannot see the difference between a broken resource and a gate WORKING is a gate that gets ignored.** The live mobile auditor reported `resource-error 401 /api/dashboard/council` on the two dashboard views it had just been pointed at — but the auditor is anonymous by construction, and an internal dashboard fetches its data from a `requireAdmin()` route, so the 401 IS the admin gate working. A 401 on a PUBLIC page's subresource is still a finding, so the judgement is narrow: only an internal route's own privileged fetch is excused, and the internal prefixes are read from the site's own `robots.txt` rather than hardcoded. **Live verification of the whole session: the two dashboard documents now answer 200 with the shell and no data (37 KB, was 120 KB and 70 KB), `/api/federation/health` answers `scope=aggregate` with no `slugs` key for an anonymous caller, the admin bearer path answers `scope=admin` with all 16 tenants, the three fixed pages render `<meta name="twitter:creator">`, and the full live sweep is 200 routes / 0 findings across 11 rules** | 220 |
@@ -1096,6 +1157,10 @@
 - Run `npm run audit:fleet-auth` before a cross-project release — the defect class travels by copy, and an archived checkout with a live `.vercel` link will ship it if anyone deploys from it
 - A tree with **no** `.vercel` link is not a tree with no defect — `npm run audit:fleet-auth` now sweeps unlinked trees too, because a scratch tree is one `vercel --prod` away from shipping
 - Sweep the fleet with `find … -print0 | xargs -0 …` — a path containing a space splits the file list and hides findings without saying why
+- **A boolean auth decision is the same mechanism under a different name** — the verifier-name list must cover the shapes that are actually written (`isAuthed`, `isAuthorized`), not only the `require`/`verify` shapes. A detector that cries wolf spends the reader's trust it will never get back
+- **An unset secret must deny as hard as a wrong secret** — "open in dev" is not a policy a production route can express, because a production route cannot tell dev from prod by the absence of a variable. Fail closed (503 unconfigured / 401 wrong) and let the operator set a value if they want it open
+- **Grade a fleet finding by how close it is to shipping** — a live surface, a linked copy of a live project, and an unlinked scratch tree are not the same thing, and reporting them as one undifferentiated red teaches the reader to ignore the sweep
+- **A fleet sweep that finds a real defect in a tree the canonical repo cannot see has earned its keep** — sweep the class, not just the repo
 - A `catch {}` that swallows a programming error turns a broken phase into a clean result — narrow it to filesystem errors, and make every gate print the population it examined so "found nothing" and "looked at nothing" can never print the same line
 - A gate that did not run has established nothing — check the precondition first and exit non-zero; never print a "0 findings" line for a rule set that never loaded
 - **Ask "does this route AUTHENTICATE?" in ONE place, not two** — the answer was hand-typed twice (the internal-surface gate and the public-PII gate), and the gate that had the shorter list reported three routes that authenticate with `serviceAuthorized` / `verifiedActor` as anonymous. The list now lives in `audit-public-pii.mjs` and is exported; a second copy of a security list is how the same blindness comes back
