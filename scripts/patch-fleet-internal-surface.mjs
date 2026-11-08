@@ -70,6 +70,9 @@
  *   node scripts/patch-fleet-internal-surface.mjs               # report the fleet
  *   node scripts/patch-fleet-internal-surface.mjs --tree <path> # patch ONE tree
  *   node scripts/patch-fleet-internal-surface.mjs --all          # patch every eligible tree
+ *   node scripts/patch-fleet-internal-surface.mjs --all --production
+ *                                                            # patch only the trees that
+ *                                                            # ship to PRODUCTION
  *   node scripts/patch-fleet-internal-surface.mjs --dry-run
  *   node scripts/patch-fleet-internal-surface.mjs --dir <path>
  *
@@ -91,6 +94,7 @@ import {
 } from "./audit-internal-surface.mjs";
 import { deriveCredentialVerifiers } from "./audit-public-pii.mjs";
 import { candidateRoots } from "./fleet-trees.mjs";
+import { deployableCheckouts, looksLikeSite, unlinkedSites } from "./audit-fleet-auth.mjs";
 
 const CANONICAL = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -203,6 +207,7 @@ function parseArgs(argv) {
   const options = {
     apply: false,
     all: false,
+    production: false,
     dryRun: false,
     tree: null,
     dir: join(homedir(), "Desktop", "Clients"),
@@ -212,6 +217,7 @@ function parseArgs(argv) {
     if (a === "--tree") options.tree = resolve(argv[++i]);
     else if (a === "--dir") options.dir = resolve(argv[++i]);
     else if (a === "--all") options.all = true;
+    else if (a === "--production") options.production = true;
     else if (a === "--dry-run") options.dryRun = true;
     else if (a === "--apply") options.apply = true;
   }
@@ -519,13 +525,17 @@ function commit(tree, paths, message) {
   // unique per tree: a branch already checked out in another worktree
   // cannot be checked out here.
   const want = `agent/internal-surface-fix`;
-  const slug = tree
+  // Every archived copy of this repo is a WORKTREE of the flagship, so
+  // they all share ONE repository and ONE set of branch names. The name
+  // has to be unique per tree or the second tree with the same basename
+  // would find the first one's branch already checked out.
+  const slug = `${tree
     .split("/")
     .filter(Boolean)
     .pop()
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-|-$/g, "") || sha(tree).slice(0, 8);
+    .replace(/^-|-$/g, "")}-${sha(tree).slice(0, 6)}`;
   const held = git(["worktree", "list", "--porcelain"]);
   for (const name of [want, `${want}-${slug}`]) {
     // `git branch --list` exits 0 whether or not the branch exists, so a
@@ -576,6 +586,20 @@ function main() {
 
   // The population: the same discovery the fleet sweep uses, so the two
   // tools can never disagree about what the fleet is.
+  // The production project, DERIVED from the canonical checkout's own
+  // Vercel link — never a constant, so a copy of this script read from a
+  // different repo cannot judge production by a stale id.
+  const productionProject = (() => {
+    try {
+      const link = JSON.parse(
+        readFileSync(join(CANONICAL, ".vercel", "project.json"), "utf8"),
+      );
+      return typeof link.projectId === "string" ? link.projectId : null;
+    } catch {
+      return null;
+    }
+  })();
+
   const trees = new Set();
   if (options.tree) {
     if (!existsSync(options.tree)) {
@@ -584,7 +608,43 @@ function main() {
     }
     trees.add(options.tree);
   } else {
+    // THE SAME POPULATION THE SWEEP USES. The fleet has three: canonical
+    // sites, linked copies, and unlinked sites. A patcher that measures a
+    // DIFFERENT population than the sweep would report a fleet the sweep
+    // does not believe in — and two tools that disagree about their
+    // subject area cannot both be right.
     for (const root of candidateRoots(options.dir)) trees.add(root);
+    for (const checkout of deployableCheckouts(options.dir)) {
+      if (looksLikeSite(checkout.dir)) trees.add(checkout.dir);
+    }
+    for (const site of unlinkedSites(options.dir)) trees.add(site);
+  }
+
+  // `--production` narrows the target to the trees a `vercel --prod` from
+  // that folder SHIPS TO PRODUCTION. Those are the hazard: a finding in
+  // them is a leak, not a curiosity. The trees that cannot ship today are
+  // reported, not touched — "one `vercel link` away" is not the same as
+  // deployable, and the operator's decision covers the difference.
+  if (options.production) {
+    if (!productionProject) {
+      console.error(
+        "[fleet-internal-surface-patch] this checkout carries no Vercel link, so the " +
+          "production project cannot be derived — the target set would be a guess. " +
+          "Nothing was written.",
+      );
+      return 2;
+    }
+    for (const tree of [...trees]) {
+      let link = null;
+      try {
+        link = JSON.parse(readFileSync(join(tree, ".vercel", "project.json"), "utf8"));
+      } catch {
+        link = null;
+      }
+      // No link at all means the tree cannot ship — so it is not in the
+      // production hazard, and it is dropped with the rest.
+      if (!link || link.projectId !== productionProject) trees.delete(tree);
+    }
   }
 
   const targets = [...trees].filter((t) => t !== CANONICAL);
