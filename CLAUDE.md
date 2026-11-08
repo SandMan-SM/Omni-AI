@@ -34,6 +34,10 @@ npm run audit:rls      # RLS gate — a locked table reached with a non-admin cl
 npm run refresh:pii-ruleset  # regenerate the public-PII rule set from the live schema (needs the service role)
 npm run audit:pii-schema      # PII rule-set drift gate — a live personal-data table the rule set does not describe
 npm run audit:fleet-public-pii  # fleet sweep — can every copy measure its own public-PII exposure, and what does it say
+npm run audit:internal-surface  # internal-surface gate — a privileged read on a surface the operator marked internal, with no credential on the request
+npm run test:internal-surface   # internal-surface unit tests — pins all seven leak shapes
+npm run audit:fleet-internal-surface  # fleet sweep — does the internal-surface class exist in the other surfaces, graded by what each tree can DEPLOY
+npm run patch:fleet-internal-surface  # carry the internal-surface fix into the fleet copies (--all --production to narrow to the trees that ship)
 npm run audit:cron-auth # auth gate — a route authenticating with a client-set header, or an unguarded secret
 npm run audit:sitemap  # sitemap-parity gate — a sitemap URL the page marks noindex, or an indexable route the sitemap omits
 npm run audit:content-lookup  # failed-lookup gate — a page that answers 404 because a database read FAILED
@@ -84,7 +88,7 @@ single registered preview server instead.
 2. **Fix build errors** — run `npm run build`, fix every warning and error.
 3. **Complete missing pages** — check `app/` for empty or stub pages and finish them.
 4. **SEO improvements** — add `metadata` exports to every page; ensure `<title>` and `<description>` are present.
-5. **Performance** — add `loading.tsx` files, add `Suspense` boundaries around data-fetching components.
+5. **Performance** — add `loading.tsx` files, add `Suspense` boundaries around data-fetching components. **But NOT a segment `loading.tsx` above a route that calls `notFound()`** — see the soft-404 rule under Conventions.
 6. **UI polish** — follow the checklist in `/website-build-checklist.md` for every page.
 7. **Forms** — ensure all contact/lead forms submit data to Supabase correctly.
 8. **Mobile** — test all pages at 375px, fix any overflow or layout issues.
@@ -97,6 +101,7 @@ single registered preview server instead.
 
 ## Conventions
 - **Design:** dark theme — base `bg-gray-900`/`bg-black`, **gold accents for CTAs**. All colors via Tailwind config tokens — **no hardcoded hex** in components. Consistent section padding `py-16 md:py-24`; max container `max-w-7xl mx-auto px-4`.
+- **A segment `loading.tsx` above a route that calls `notFound()` turns the 404 into a soft 404.** A Suspense boundary at the segment level commits the HTTP status with the **first flush**, so the shell answers **200** before `notFound()` can set the status — and a crawler that gets 200 on a "page not found" document indexes it as a real page. This repo has been bitten by it twice (session 46 fixed it, session 57 reintroduced it across six routes). `npm run audit:routes` now fails the build with `loading-above-not-found` when a `loading.tsx` wraps a segment that calls `notFound()` anywhere beneath it. **The correct shape is an internal `<Suspense>` BELOW the 404 check**: resolve the existence read first, outside any boundary, call `notFound()` there, then open the boundary around the secondary reads. `app/book/[business]/page.tsx` is the reference implementation.
 - **SEO:** every page exports `metadata` (title + description); OG/Twitter/JSON-LD where it matters. `robots.ts`, `sitemap`, `llms.txt`, `opengraph-image.tsx` exist — keep them current.
 - **Indexability and the sitemap must agree.** A route that ships `robots: { index: true }` belongs in `app/sitemap.ts`; a URL the sitemap advertises must not render `noindex`. Next.js **replaces** the `robots` field at each level of the layout chain, so a noindex layout (`app/sponsor/layout.tsx`) de-indexes its whole subtree unless a child declares `robots: { index: true, follow: true }` itself — which is how `/sponsor/info` and `/sponsor/application` were silently de-indexed while the sitemap kept advertising them. `npm run audit:sitemap` fails the build when the two disagree; `node scripts/audit-live-mobile.mjs --all` measures the rendered truth (`sitemap-noindex`, `sitemap-dead-url`).
 - **robots.txt disallows are PREFIXES, not directory globs.** `Disallow: /admin/` covers `/admin/info` but **not** `/admin` — the bare URL, which is the one a probing bot tries first, stays crawlable. Write every entry without the trailing slash (`Disallow: /admin`), which covers the index and its sub-routes together. `npm run audit:sitemap` fails the build if a trailing-slash disallow leaves a route's bare path crawlable.
