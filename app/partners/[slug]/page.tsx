@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 import { ArrowRight, Sparkles, Target, Activity, Mail, Trophy, Rocket, Gift } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { lookupContent, requireLookup } from "@/lib/server/content-lookup";
+import PageLoading from "@/components/page-loading";
 import PartnerShareButtons from "./PartnerShareButtons";
 import { GreenSparksBackdrop } from "@/components/green-sparks-backdrop";
 
@@ -79,14 +81,38 @@ export default async function PartnerPage({ params }: { params: Promise<Params> 
   const { slug } = await params;
   if (!slug) notFound();
 
-  const [partner, omniBookingPath, trending] = await Promise.all([
-    getPartner(slug),
-    getOmniAiBookingUrl(),
-    getTrendingPosts(),
-  ]);
+  // The partner row decides whether this URL exists, so it is resolved
+  // BEFORE the Suspense boundary opens — a segment-level `loading.tsx`
+  // would flush a 200 first and turn every dead slug into a soft 404
+  // (the `loading-above-not-found` rule fails the build on that).
+  const partner = await getPartner(slug);
 
   // Unknown slug → real 404. See the note at the top of this file.
   if (!partner) notFound();
+
+  return (
+    <Suspense fallback={<PageLoading label="Loading…" />}>
+      <PartnerLanding slug={slug} partner={partner} />
+    </Suspense>
+  );
+}
+
+type PartnerRow = NonNullable<Awaited<ReturnType<typeof getPartner>>>;
+
+async function PartnerLanding({
+  slug,
+  partner,
+}: {
+  slug: string;
+  partner: PartnerRow;
+}) {
+  // These two reads are NOT existence checks — the booking path and the
+  // trending posts are site-wide — so they stream behind the boundary
+  // above instead of blocking the whole page.
+  const [omniBookingPath, trending] = await Promise.all([
+    getOmniAiBookingUrl(),
+    getTrendingPosts(),
+  ]);
 
   const partnerName = partner.name;
   const partnerWebsite = partner.website;

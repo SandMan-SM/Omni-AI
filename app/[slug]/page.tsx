@@ -4,6 +4,8 @@ import { lookupContent, requireLookup } from "@/lib/server/content-lookup";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
+import { Suspense } from "react";
+import PageLoading from "@/components/page-loading";
 import CTAButtons from "./CTAButtons";
 import { JsonLd, articleSchema, breadcrumbSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
@@ -126,16 +128,39 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function TrendingLandingPage({ params }: Props) {
   const { slug } = await params;
-  // Fetch the landing page + related content in parallel. Three Supabase
-  // calls fan-out at once — round-trip savings matter here because
-  // /[slug] is the single highest-traffic route on the site and every
-  // extra 50ms hurts tweet-landing conversion.
-  const [page, recentTrends, latestNewsletter] = await Promise.all([
-    getLandingPage(slug),
+  // The landing page itself decides whether this URL exists, so it is
+  // resolved BEFORE any Suspense boundary is opened. A `loading.tsx` at
+  // this segment would flush a 200 before `notFound()` could set the
+  // status, turning every dead daily slug into a soft 404 that crawlers
+  // index — the `loading-above-not-found` rule fails the build on that.
+  // The related-content reads below are NOT existence checks, so they
+  // stream behind an internal boundary and the skeleton covers them.
+  const page = await getLandingPage(slug);
+  if (!page) notFound();
+
+  return (
+    <Suspense fallback={<PageLoading label="Loading…" />}>
+      <TrendingLanding slug={slug} page={page} />
+    </Suspense>
+  );
+}
+
+type LandingRow = NonNullable<Awaited<ReturnType<typeof getLandingPage>>>;
+
+async function TrendingLanding({
+  slug,
+  page,
+}: {
+  slug: string;
+  page: LandingRow;
+}) {
+  // The related content fans out in parallel — round-trip savings matter
+  // here because /[slug] is the single highest-traffic route on the site
+  // and every extra 50ms hurts tweet-landing conversion.
+  const [recentTrends, latestNewsletter] = await Promise.all([
     getRecentTrends(slug),
     getLatestNewsletterPost(),
   ]);
-  if (!page) notFound();
 
   const title = page.title || page.topic;
   const description =

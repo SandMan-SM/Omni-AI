@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import { cache } from "react";
+import { cache, Suspense } from "react";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 import { FireSparksBackdrop } from "@/components/fire-sparks-backdrop";
 import { JsonLd, newsArticleSchema, breadcrumbSchema } from "@/components/json-ld";
 import { Breadcrumb } from "@/components/breadcrumb";
+import PageLoading from "@/components/page-loading";
 // Per-issue archive pages had no site footer — a reader who finished a post
 // could only share or click the CTA. Adding the shared Footer gives them a
 // path back into the site (FAQ, About, Campaigns, Newsletter index).
@@ -432,9 +433,33 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function NewsletterPostPage({ params }: Props) {
   const { slug } = await params;
+  // The issue itself decides whether this URL exists, so it is resolved
+  // BEFORE the Suspense boundary opens — a segment-level `loading.tsx`
+  // would flush a 200 first and turn every dead issue into a soft 404
+  // that crawlers index (the `loading-above-not-found` rule fails the
+  // build on that).
   const post = await getPost(slug);
   if (!post) notFound();
 
+  return (
+    <Suspense fallback={<PageLoading label="Loading issue…" />}>
+      <NewsletterIssue slug={slug} post={post} />
+    </Suspense>
+  );
+}
+
+type NewsletterPost = NonNullable<Awaited<ReturnType<typeof getPost>>>;
+
+async function NewsletterIssue({
+  slug,
+  post,
+}: {
+  slug: string;
+  post: NewsletterPost;
+}) {
+  // The "more issues" shelves are not an existence check — the issue is
+  // already resolved — so they stream behind the boundary above and the
+  // reader sees the issue itself without waiting on them.
   const { premiumPosts, freePosts } = await getMoreIssueShelves(slug);
 
   const date = new Date(post.published_at || post.created_at).toLocaleDateString("en-US", {

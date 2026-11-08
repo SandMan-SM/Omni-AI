@@ -1,9 +1,11 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { Suspense } from 'react';
 
 import { todayPt } from '@/lib/tz';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { lookupContent, requireLookup } from '@/lib/server/content-lookup';
+import PageLoading from '@/components/page-loading';
 
 const supabase = createAdminClient();
 
@@ -70,7 +72,7 @@ type Business = {
   contact_email: string | null;
 };
 
-async function loadPage(slug: string): Promise<{ page: LandingPage; business: Business } | null> {
+async function loadPageRow(slug: string): Promise<LandingPage | null> {
   // A failed read is not a missing landing page. `requireLookup` throws on
   // a failed lookup so the route renders a 500 rather than a 404 that
   // would drop a live campaign page out of the index.
@@ -92,25 +94,43 @@ async function loadPage(slug: string): Promise<{ page: LandingPage; business: Bu
     .update({ views: (page.views ?? 0) + 1 })
     .eq('id', page.id);
 
+  return page as LandingPage;
+}
+
+async function loadBusiness(businessId: string): Promise<Business> {
   const business = requireLookup(
     await lookupContent(() =>
       supabase
         .from('omni_businesses')
         .select('name, industry, contact_email')
-        .eq('id', page.business_id)
+        .eq('id', businessId)
         .single(),
     ),
   );
 
-  return { page: page as LandingPage, business: business as Business };
+  return business as Business;
 }
 
 export default async function LandingPageRoute({ params }: { params: { slug: string } }) {
   const { slug } = await params;
-  const data = await loadPage(slug);
-  if (!data) notFound();
+  // The landing row decides whether this URL exists, so it is resolved
+  // BEFORE the Suspense boundary opens — a segment-level `loading.tsx`
+  // would flush a 200 first and turn every dead slug into a soft 404
+  // (the `loading-above-not-found` rule fails the build on that).
+  const page = await loadPageRow(slug);
+  if (!page) notFound();
 
-  const { page, business } = data;
+  return (
+    <Suspense fallback={<PageLoading label="Loading…" />}>
+      <LandingBody page={page} />
+    </Suspense>
+  );
+}
+
+async function LandingBody({ page }: { page: LandingPage }) {
+  // The business read is not an existence check — the page already exists
+  // — so it streams behind the boundary above.
+  const business = await loadBusiness(page.business_id);
 
   return (
     <div style={{

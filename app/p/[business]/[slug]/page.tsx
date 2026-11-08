@@ -10,10 +10,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import { Suspense } from 'react';
 import CaseCosmicBackground from '@/components/case-study/CaseCosmicBackground';
 import ShareRow from '@/components/case-study/ShareRow';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { lookupContent, requireLookup } from '@/lib/server/content-lookup';
+import PageLoading from '@/components/page-loading';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -127,9 +129,31 @@ export default async function MarketingLandingPage({
   params: Promise<Params>;
 }) {
   const { business, slug } = await params;
+  // The landing row decides whether this URL exists, so it is resolved
+  // BEFORE the Suspense boundary opens — a segment-level `loading.tsx`
+  // would flush a 200 first and turn every dead slug into a soft 404
+  // (the `loading-above-not-found` rule fails the build on that).
   const landing = await fetchLanding(business, slug);
   if (!landing) notFound();
 
+  return (
+    <Suspense fallback={<PageLoading label="Loading…" />}>
+      <LandingBody business={business} slug={slug} landing={landing} />
+    </Suspense>
+  );
+}
+
+async function LandingBody({
+  business,
+  slug,
+  landing,
+}: {
+  business: string;
+  slug: string;
+  landing: Landing;
+}) {
+  // The audience metrics are not an existence check — the landing already
+  // exists — so they stream behind the boundary above.
   const isProduct = landing.kind === 'product';
   const metrics = isProduct ? null : await fetchMetrics(landing.business_slug);
   const url = `${SITE_URL}/p/${business}/${slug}`;
