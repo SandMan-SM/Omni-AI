@@ -267,7 +267,13 @@
 > dev server is up, so `npm run build` is forbidden); the live mobile sweep across **209
 > production routes at 375px** reports **0 findings across 11 rules**; the first-paint
 > flash gate reports **0 findings across 2 rules**; the static mobile gate reports **0
-> findings across 13 rules over 880 files**.
+> findings across 13 rules over 880 files**. **Pushed and verified live**: `cc56a4d2` is
+> serving production (`audit:deploy` — "git describes the running production
+> deployment, and the branch tip is the release serving production"), the live sweep
+> against the NEW production is still **0 findings across 11 rules**, and **all five
+> restructured routes still answer a real 404 for a dead slug** (`/[slug]`, `/lp/[slug]`,
+> `/partners/[slug]`, `/p/[business]/[slug]`, `/newsletter/[slug]` → 404, not 200) while
+> the streamed skeleton is present in the served HTML.
 
 > **Session 66 (2026-11-07) — the control was carried to the fleet, and the fleet found a
 > live defect that the canonical repo could never have found: a fail-open admin secret in
