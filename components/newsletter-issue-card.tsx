@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { newsletterSourceLinks } from "@/lib/newsletter-source-links";
 
 export type NewsletterCardPost = {
   slug: string;
@@ -51,8 +52,10 @@ export function NewsletterIssueCard({
   });
   const tagsToShow = normalizeNewsletterKeywords(post.keywords).slice(0, 3);
   const isPremium = post.tier === "premium";
+  const isGeneralNews = normalizeNewsletterKeywords(post.keywords).some(keyword => keyword.toLowerCase().replace(/[-_]/g, " ") === "general news");
   const targetHref = href || `/newsletter/${post.slug}`;
-  const tierLabel = isPremium ? "Interlinked Premium" : "Interlinked Free";
+  const tierLabel = isGeneralNews ? "General News" : isPremium ? "Interlinked Premium" : "Interlinked Free";
+  const preview = isGeneralNews ? newsletterSourceLinks(post.intro).map(part => part.text).join("") : post.intro;
 
   return (
     <Link
@@ -84,7 +87,7 @@ export function NewsletterIssueCard({
               {post.subject}
             </h3>
             <p className="mt-2 line-clamp-3 max-w-full break-words text-sm leading-relaxed text-gray-300">
-              {post.intro}
+              {preview}
             </p>
             <div className="mt-auto flex max-w-full flex-wrap gap-2 overflow-hidden pt-3">
               {/* Keep the tag row identical for premium and free cards.

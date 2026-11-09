@@ -163,8 +163,8 @@ async function NewsletterIndexContent() {
         supabase
           .from("newsletter_posts")
           .select("slug, subject, intro, keywords, tier, published_at, created_at")
-          .eq("tier", "free")
-          .ilike("slug", "%interlinked%"),
+          .in("tier", ["free", "general-news"])
+          .or("slug.ilike.%interlinked%,day_type.eq.general-news"),
       )
         .lte("published_at", new Date().toISOString())
         .order("published_at", { ascending: false, nullsFirst: false })

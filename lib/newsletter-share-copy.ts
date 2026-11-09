@@ -1,3 +1,5 @@
+import { newsletterSourceLinks } from './newsletter-source-links';
+
 export type NewsletterSharePost = {
   subject?: unknown;
   intro?: unknown;
@@ -5,6 +7,7 @@ export type NewsletterSharePost = {
   power_move?: unknown;
   keywords?: unknown;
   tier?: unknown;
+  day_type?: unknown;
 };
 
 function text(value: unknown): string {
@@ -73,6 +76,9 @@ const hooks = [
 
 /** Builds issue-specific teaser copy instead of repeating the headline. */
 export function newsletterShareDescription(post: NewsletterSharePost, maxLength = 155): string {
+  if (post.day_type === 'general-news') {
+    return clip(newsletterSourceLinks(text(post.intro)).map(part => part.text).join(''), maxLength);
+  }
   const subject = text(post.subject) || "this shift";
   const hook = hooks[hash(subject) % hooks.length];
   const candidate = [text(post.intro), firstInsight(post.insights), text(post.power_move)]

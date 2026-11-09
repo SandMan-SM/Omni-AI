@@ -69,7 +69,10 @@ export async function GET() {
           // Some legacy newsletter tables were created before later admin `id`
           // references were standardized; selecting `id` made the endpoint 500
           // even when public posts existed. Slug is the stable public key.
-          .select("slug, subject, tier, published_at, created_at"),
+          .select("slug, subject, tier, published_at, created_at")
+          // This legacy projection feeds Interlinked send/channel automation.
+          // General News is web-only and stays in the archive/owner catalog.
+          .in("tier", ["free", "premium"]),
       )
         .order("published_at", { ascending: false })
         .limit(100)
@@ -82,7 +85,7 @@ export async function GET() {
     // so the dashboard can render a "loading slow" notice instead of
     // silently displaying stale hardcoded posts as if they were real.
     const res = NextResponse.json({
-      posts: getNewsletterFallbackSummaries(),
+      posts: getNewsletterFallbackSummaries().filter(post => post.tier === 'free' || post.tier === 'premium'),
       source: "fallback",
       reason: "supabase_timeout",
     });
@@ -100,7 +103,7 @@ export async function GET() {
     // messages can leak schema/table details or transient provider state.
     console.error("[newsletter/posts] Supabase lookup failed:", error);
     const res = NextResponse.json({
-      posts: getNewsletterFallbackSummaries(),
+      posts: getNewsletterFallbackSummaries().filter(post => post.tier === 'free' || post.tier === 'premium'),
       source: "fallback",
       reason: "supabase_error",
     });
@@ -109,14 +112,14 @@ export async function GET() {
   }
 
   const normalizedPosts = (posts || [])
-    .filter((p) => p.slug && p.subject && isOmniAiNewsletterPost(p))
+    .filter((p) => p.slug && p.subject && (p.tier === 'free' || p.tier === 'premium') && isOmniAiNewsletterPost(p))
     .map((p, index) => ({
       ...p,
       published_at: p.published_at || archiveDateForIndex(index),
     }));
 
   const res = NextResponse.json({
-    posts: normalizedPosts.length ? normalizedPosts : getNewsletterFallbackSummaries(),
+    posts: normalizedPosts.length ? normalizedPosts : getNewsletterFallbackSummaries().filter(post => post.tier === 'free' || post.tier === 'premium'),
     source: normalizedPosts.length ? "supabase" : "fallback",
     count: normalizedPosts.length,
   });

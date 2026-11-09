@@ -15,6 +15,8 @@ import PageLoading from "@/components/page-loading";
 import { Footer } from "@/components/footer";
 import { FeaturedBusinessCard } from "@/components/newsletter/FeaturedBusinessCard";
 import { NewsletterStarCredit } from "@/components/newsletter/NewsletterStarCredit";
+import { NewsletterSourceText } from "@/components/newsletter/source-text";
+import { generalNewsSections } from "@/lib/newsletter-source-links";
 import { getShoutoutForSlug } from "@/lib/newsletter-shoutouts";
 import { SponsorBanner } from "@/components/sponsor/SponsorBanner";
 import { getNewsletterFallbackPost, getNewsletterFallbackSummaries, newsletterFallbackPosts, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
@@ -393,7 +395,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const ogImage = `${siteUrl}/newsletter/${encodeURIComponent(slug)}/opengraph-image?v=custom-art-20260728-v2`;
   const description = newsletterShareDescription(post, 155);
   return {
-    title: `${post.subject} | Interlinked by Omni AI`,
+    title: `${post.subject} | ${post.day_type === "general-news" ? "General News by Omni AI" : "Interlinked by Omni AI"}`,
     description,
     keywords,
     // Canonical URL — consolidates any UTM/referrer variations back to
@@ -414,7 +416,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       type: "article",
       publishedTime: post.published_at,
-      siteName: "Interlinked by Omni AI",
+      siteName: post.day_type === "general-news" ? "Omni AI" : "Interlinked by Omni AI",
       url: postUrl,
       images: [
         { url: ogImage, width: 1200, height: 630, alt: post.subject },
@@ -470,6 +472,7 @@ async function NewsletterIssue({
   });
 
   const isPremium = post.tier === "premium";
+  const isGeneralNews = post.day_type === "general-news";
   // Featured-business shoutout — only fires for free posts whose slug
   // prefix matches a registered partner (prime_iv-, ltb-, leifson-, …).
   // Premium posts always return null. When a shoutout exists, the
@@ -488,6 +491,7 @@ async function NewsletterIssue({
   const quote = parseQuote(post.quote);
   const powerMoveText = renderText(post.power_move);
   const insightBodies = normalizeInsights(post.insights);
+  const newsSections = isGeneralNews ? generalNewsSections(post.insights) : [];
 
   return (
     // No opaque bg — FireSparksBackdrop (and its dark radial wash) paints
@@ -574,7 +578,7 @@ async function NewsletterIssue({
           <div className="relative flex min-h-[360px] flex-col justify-end p-5 sm:min-h-[420px] sm:p-8 md:p-10">
             <div className="mb-4 flex flex-wrap items-center gap-3">
               <span className={`text-xs font-semibold uppercase tracking-widest ${isPremium ? "text-amber-400" : "text-amber-300"}`}>
-                {isPremium ? "Interlinked Premium" : "Interlinked Free"}
+                {isGeneralNews ? "General News" : isPremium ? "Interlinked Premium" : "Interlinked Free"}
               </span>
               <span className="text-xs text-gray-400">·</span>
               <span className="text-xs text-gray-300">{date}</span>
@@ -586,14 +590,14 @@ async function NewsletterIssue({
                 anchor LLMs use when asked "who wrote this?". Links to /about
                 so the attribution resolves to a real Person entity. */}
             <p className="mt-4 text-sm text-gray-200 drop-shadow-md">
-              By{" "}
+              {isGeneralNews ? "By Omni AI Editorial" : <>By{" "}
               <Link
                 href="/about"
                 className="text-white underline underline-offset-2 decoration-white/30 transition-colors hover:decoration-white/70"
               >
                 Alfred Belvedere
               </Link>{" "}
-              — Founder, Omni AI
+              — Founder, Omni AI</>}
             </p>
             {tagsToShow.length > 0 && (
               <details className="mt-5 group/tags">
@@ -615,6 +619,7 @@ async function NewsletterIssue({
             )}
           </div>
         </div>
+        {isGeneralNews && <p className="-mt-7 mb-10 text-xs leading-relaxed text-gray-400">Conceptual illustration; not a photograph of the people or events described.</p>}
 
         {/* Quote — centered in the article column so every issue uses the
             same balanced pull-quote treatment. Neutral lighter card bg
@@ -650,7 +655,7 @@ async function NewsletterIssue({
             data-speakable="intro"
             className="text-lg text-gray-200 leading-relaxed"
           >
-            {post.intro}
+            {isGeneralNews ? <NewsletterSourceText text={post.intro || ""} /> : post.intro}
           </p>
         </div>
 
@@ -675,7 +680,12 @@ async function NewsletterIssue({
             visual output: an evenly-spaced stack of paragraphs. The
             `heading` field stays in the DB for schema/metadata use (e.g.
             future RSS titles) but stays invisible on the page. */}
-        <div className="mb-10">
+        {isGeneralNews ? <div className="mb-10 space-y-8">
+          {newsSections.map((section, index) => <section key={index} className="space-y-4">
+            {section.heading && <h2 className="text-xl font-semibold text-amber-200">{section.heading}</h2>}
+            {section.paragraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className="text-gray-300 leading-relaxed"><NewsletterSourceText text={paragraph} /></p>)}
+          </section>)}
+        </div> : <div className="mb-10">
           <h2 className={`text-xl font-semibold mb-6 ${isPremium ? "text-amber-400" : "text-gradient"}`}>
             {isPremium ? "Premium Insights" : "Today\u2019s Key Insights"}
           </h2>
@@ -690,7 +700,7 @@ async function NewsletterIssue({
               },
             )}
           </div>
-        </div>
+        </div>}
 
         {/* Power Move */}
         {powerMoveText && (

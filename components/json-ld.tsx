@@ -618,6 +618,7 @@ export function newsArticleSchema(post: {
   created_at?: string | null;
   updated_at?: string | null;
   tier?: string | null;
+  day_type?: string | null;
   quote?: string | Record<string, unknown> | null;
   // Two insight shapes are valid — plain string (legacy) or
   // { heading, body } object (structured, introduced on the 2026-04-23
@@ -672,7 +673,7 @@ export function newsArticleSchema(post: {
   // premium analysis" / "what's in the free tier?" intents get cleaner
   // answers when the section is explicit.
   const articleSection =
-    post.tier === "premium" ? "Interlinked Premium" : "Daily Intelligence";
+    post.day_type === "general-news" ? "General News" : post.tier === "premium" ? "Interlinked Premium" : "Daily Intelligence";
 
   // Per-post OG image from the dynamic opengraph-image route
   // (app/newsletter/[slug]/opengraph-image.tsx). Every newsletter post
@@ -734,7 +735,11 @@ export function newsArticleSchema(post: {
       : {}),
     articleSection,
     ...(wordCount ? { wordCount } : {}),
-    author: {
+    author: post.day_type === "general-news" ? {
+      "@type": "Organization",
+      name: "Omni AI Editorial",
+      url: `${siteUrl}/about`,
+    } : {
       "@type": "Person",
       name: "Alfred Belvedere",
       url: `${siteUrl}/about`,
