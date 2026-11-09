@@ -6,6 +6,9 @@ const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const at=arg.index
 if(!args.registry)throw Error('Required: --registry=/absolute/path/to/federation-surfaces.json');
 const output=path.resolve(args.output||path.join(__dirname,'../lib/newsletter-source-catalog.generated.json'));
 const dbSlugs=args['database-slugs']?JSON.parse(fs.readFileSync(path.resolve(args['database-slugs']),'utf8')):{};
+const coverageIssues=args['coverage-issues']?JSON.parse(fs.readFileSync(path.resolve(args['coverage-issues']),'utf8')):{};
+if(!coverageIssues||typeof coverageIssues!=='object'||Array.isArray(coverageIssues)||Object.entries(coverageIssues).some(([id,issue])=>!/^[a-z0-9][a-z0-9_-]{0,119}$/.test(id)||typeof issue!=='string'||!issue.trim()||issue.length>400||/[\r\n]/.test(issue)))throw Error('invalid_coverage_issues');
+const appliedCoverageIssues=new Set();
 const rows=JSON.parse(fs.readFileSync(path.resolve(args.registry),'utf8')).filter(x=>x.role==='primary');
 const C={
  achatwithliz:{name:'A Chat with Liz',niche:'relationships',module:'lib/newsletter.ts',export:'ISSUES',route:'/newsletter/',family:'json-issues',archive:'/newsletter',date:'2026-09-17'},
@@ -114,8 +117,10 @@ for(const r of rows){
   }catch(e){s.available=false;s.issue='Markdown archive inventory incomplete';inv.error='markdown_archive_extraction_failed';}
  }
  s.state=c.family==='empty-public-newsletter'?'restricted':s.available?'archive':'unavailable';
+ if(coverageIssues[s.id]){s.available=false;s.state='unavailable';s.issue=coverageIssues[s.id];appliedCoverageIssues.add(s.id);}
  sources.push(s);inventory.push(inv);
 }
+if(Object.keys(coverageIssues).some(id=>!appliedCoverageIssues.has(id)))throw Error('unrecognized_coverage_issue_source');
 // Same tenant can appear under two primary domains in federation; retain one source per tenant.
 const uniqueSources=Array.from(new Map(sources.map(x=>[x.id,x])).values());
 const uniquePosts=Array.from(new Map(posts.map(x=>[x.sourceId+':'+x.path,x])).values());

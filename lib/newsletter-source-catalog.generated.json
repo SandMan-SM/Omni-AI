@@ -1,13 +1,14 @@
 {
-  "generatedAt": "2026-11-09T13:04:38.234Z",
+  "generatedAt": "2026-11-09T14:34:32.670Z",
   "sources": [
     {
       "id": "achatwithliz",
       "name": "A Chat with Liz",
       "siteUrl": "https://achatwithliz.com",
       "niche": "relationships",
-      "available": true,
-      "state": "archive"
+      "available": false,
+      "state": "unavailable",
+      "issue": "Article deployed; custom domain DNS returns no address. Public article link is unavailable."
     },
     {
       "id": "agiarena",
@@ -314,9 +315,8 @@
       "name": "Imperium",
       "siteUrl": "https://secretimperium.com",
       "niche": "leadership",
-      "available": false,
-      "issue": "Newsletter section exists; public letters intentionally unavailable pending tenant-scoped publication contract",
-      "state": "restricted"
+      "available": true,
+      "state": "archive"
     },
     {
       "id": "seoppc",
@@ -632,6 +632,35 @@
       ],
       "preview": "Want to meet people without dating apps? Build a realistic offline plan around recurring activities, natural conversations, and clear invitations.",
       "path": "/newsletter/meet-singles-without-apps"
+    },
+    {
+      "sourceId": "achatwithliz",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "aisempire",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News",
+        "news"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "aisempire",
@@ -1661,171 +1690,32 @@
     },
     {
       "sourceId": "cpsutah",
-      "key": "static:how-to-compare-counseling-options-in-utah",
-      "slug": "how-to-compare-counseling-options-in-utah",
-      "title": "How do I compare counseling options in Utah?",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
       "status": "published",
-      "publishedAt": "2026-10-20T00:00:00.000Z",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
       "createdAt": null,
       "tags": [
-        "Mental Health & Counseling"
+        "General News",
+        "news"
       ],
-      "preview": "A practical way to compare counseling providers in Utah: what to ask about credentials, approach, session format, cost, and availability before you book.",
-      "path": "/blog/how-to-compare-counseling-options-in-utah"
+      "preview": "Nvidia opens an independent review after Jensen Huang admits infidelity. What the board confirmed, what remains alleged, and why Congress wants answers.",
+      "path": "/blog/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
-      "sourceId": "cpsutah",
-      "key": "static:understanding-health-and-wellness-options-in-utah",
-      "slug": "understanding-health-and-wellness-options-in-utah",
-      "title": "What should you look for in health and wellness options?",
+      "sourceId": "deptofcreatvs",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
       "status": "published",
-      "publishedAt": "2026-10-18T00:00:00.000Z",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
       "createdAt": null,
       "tags": [
-        "Health & Wellness"
+        "General News"
       ],
-      "preview": "How to compare health and wellness services in Utah: provider roles and credentials, format, accessibility, cost, and the questions that separate a good fit.",
-      "path": "/blog/understanding-health-and-wellness-options-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:choosing-a-home-service-provider-in-utah",
-      "slug": "choosing-a-home-service-provider-in-utah",
-      "title": "How do you choose a home service provider in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-15T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Home & Property"
-      ],
-      "preview": "How to compare home service providers in Utah: written estimates, licensing, insurance, permits, payment milestones, and key questions.",
-      "path": "/blog/choosing-a-home-service-provider-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:finding-community-resources-in-your-utah-county",
-      "slug": "finding-community-resources-in-your-utah-county",
-      "title": "How do you find community resources in your Utah county?",
-      "status": "published",
-      "publishedAt": "2026-10-12T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Local Community Resources"
-      ],
-      "preview": "A step-by-step way to find local community resources in Utah: where programs come from, how to check eligibility and service area, and how to stay organized.",
-      "path": "/blog/finding-community-resources-in-your-utah-county"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:how-to-compare-financial-and-insurance-options-in-utah",
-      "slug": "how-to-compare-financial-and-insurance-options-in-utah",
-      "title": "How do I compare financial and insurance options in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Financial & Insurance"
-      ],
-      "preview": "A practical way to compare Utah financial advisers, lenders, and insurance options: what to ask about credentials, fees, conflicts, coverage, and terms.",
-      "path": "/blog/how-to-compare-financial-and-insurance-options-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:how-to-compare-in-home-care-options-in-utah",
-      "slug": "how-to-compare-in-home-care-options-in-utah",
-      "title": "How do I compare in-home care options in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Senior & Caregiver Support"
-      ],
-      "preview": "How to compare in-home care and caregiver support options in Utah: questions on services, worker qualifications, safety, coverage, fees, and contracts.",
-      "path": "/blog/how-to-compare-in-home-care-options-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:choosing-a-legal-representative-in-utah",
-      "slug": "choosing-a-legal-representative-in-utah",
-      "title": "How do I choose a legal representative in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Legal Guidance"
-      ],
-      "preview": "How to compare legal resources in Utah: practice area, jurisdiction, scope of help, fees, deadlines, and the questions to ask before you hire anyone.",
-      "path": "/blog/choosing-a-legal-representative-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:evaluating-business-service-providers-in-utah",
-      "slug": "evaluating-business-service-providers-in-utah",
-      "title": "How do I evaluate a business service provider in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Business & Professional"
-      ],
-      "preview": "How to compare business service providers in Utah: scope, deliverables, timeline, pricing model, ownership of work, data handling, and exit terms.",
-      "path": "/blog/evaluating-business-service-providers-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:how-to-compare-education-and-training-programs-in-utah",
-      "slug": "how-to-compare-education-and-training-programs-in-utah",
-      "title": "How do I compare education and training programs in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Education & Training"
-      ],
-      "preview": "How to compare education and training options in Utah: format, schedule, prerequisites, accreditation, cost, transferability, and what to verify.",
-      "path": "/blog/how-to-compare-education-and-training-programs-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:how-to-compare-technology-and-it-service-providers-in-utah",
-      "slug": "how-to-compare-technology-and-it-service-providers-in-utah",
-      "title": "How do I compare technology and IT service providers in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Technology & Digital"
-      ],
-      "preview": "How to compare technology and IT service providers in Utah: scope, support hours, ownership, recurring costs, data handling, security, and exit terms.",
-      "path": "/blog/how-to-compare-technology-and-it-service-providers-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:how-to-compare-career-and-employment-resources-in-utah",
-      "slug": "how-to-compare-career-and-employment-resources-in-utah",
-      "title": "How do I compare career and employment resources in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Careers & Employment"
-      ],
-      "preview": "How to compare career and employment resources in Utah: job-search help, training, apprenticeship options, and the questions to ask before you commit.",
-      "path": "/blog/how-to-compare-career-and-employment-resources-in-utah"
-    },
-    {
-      "sourceId": "cpsutah",
-      "key": "static:how-to-compare-workplace-support-vendors-in-utah",
-      "slug": "how-to-compare-workplace-support-vendors-in-utah",
-      "title": "How do employers compare workplace support vendors in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Employer Services"
-      ],
-      "preview": "How to compare workplace support vendors in Utah: verify credentials and scope, and settle privacy, reporting, and procurement questions in writing.",
-      "path": "/blog/how-to-compare-workplace-support-vendors-in-utah"
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "deptofcreatvs",
@@ -1868,6 +1758,21 @@
       ],
       "preview": "A streetwear-focused look at Maison Dayy’s sculptural clothing, with practical ways to assess shape, layering, and a commission conversation.",
       "path": "/news/maison-dayy-silhouette-streetwear"
+    },
+    {
+      "sourceId": "gmsekingsavage",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News",
+        "general-news"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "gmsekingsavage",
@@ -2039,6 +1944,20 @@
     },
     {
       "sourceId": "hiddencamerastudios",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "hiddencamerastudios",
       "key": "static:behind-the-frame-newsroom-launch",
       "slug": "behind-the-frame-newsroom-launch",
       "title": "Hidden Camera Studios launches Behind the Frame",
@@ -2078,6 +1997,20 @@
       ],
       "preview": "A studio perspective on Maison Dayy’s hand-finished fashion, with a practical approach to silhouette, detail, movement, and editorial image selection.",
       "path": "/news/maison-dayy-photographing-sculptural-fashion"
+    },
+    {
+      "sourceId": "lanretealone",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "lanretealone",
@@ -2123,6 +2056,20 @@
     },
     {
       "sourceId": "luxurybran",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "luxurybran",
       "key": "static:creator-desk-newsroom-launch",
       "slug": "creator-desk-newsroom-launch",
       "title": "Luxury Bran opens The Creator Desk",
@@ -2162,6 +2109,22 @@
       ],
       "preview": "Luxury Bran’s newsroom looks at Society Feen through framing, color, and outfit choices that make sense in streams and everyday creator video.",
       "path": "/news/society-feen-on-camera-streetwear"
+    },
+    {
+      "sourceId": "mafiempire",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News",
+        "Nvidia",
+        "Technology"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "mafiempire",
@@ -2464,6 +2427,20 @@
     },
     {
       "sourceId": "masondayy",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "masondayy",
       "key": "static:atelier-journal-newsroom-launch",
       "slug": "atelier-journal-newsroom-launch",
       "title": "Maison Dayy opens the Atelier Journal",
@@ -2503,6 +2480,21 @@
       ],
       "preview": "An Atelier Journal feature on Lanrete Alone, garment movement, and the questions that connect a fashion commission brief with an artist’s visual.",
       "path": "/news/lanrete-alone-wardrobe-artist-visual"
+    },
+    {
+      "sourceId": "omnios",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "news",
+        "general-news"
+      ],
+      "preview": "Nvidia opens an independent review after Jensen Huang admits infidelity. What the board confirmed, what remains alleged, and why Congress wants answers.",
+      "path": "/articles/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "omnios",
@@ -2576,171 +2568,33 @@
     },
     {
       "sourceId": "cps",
-      "key": "static:how-to-compare-counseling-options-in-utah",
-      "slug": "how-to-compare-counseling-options-in-utah",
-      "title": "How do I compare counseling options in Utah?",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
       "status": "published",
-      "publishedAt": "2026-10-20T00:00:00.000Z",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
       "createdAt": null,
       "tags": [
-        "Mental Health & Counseling"
+        "General News",
+        "news"
       ],
-      "preview": "A practical way to compare counseling providers in Utah: what to ask about credentials, approach, session format, cost, and availability before you book.",
-      "path": "/blog/how-to-compare-counseling-options-in-utah"
+      "preview": "Nvidia opens an independent review after Jensen Huang admits infidelity. What the board confirmed, what remains alleged, and why Congress wants answers.",
+      "path": "/blog/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
-      "sourceId": "cps",
-      "key": "static:understanding-health-and-wellness-options-in-utah",
-      "slug": "understanding-health-and-wellness-options-in-utah",
-      "title": "What should you look for in health and wellness options?",
+      "sourceId": "rene",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
       "status": "published",
-      "publishedAt": "2026-10-18T00:00:00.000Z",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
       "createdAt": null,
       "tags": [
-        "Health & Wellness"
+        "General News",
+        "general-news"
       ],
-      "preview": "How to compare health and wellness services in Utah: provider roles and credentials, format, accessibility, cost, and the questions that separate a good fit.",
-      "path": "/blog/understanding-health-and-wellness-options-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:choosing-a-home-service-provider-in-utah",
-      "slug": "choosing-a-home-service-provider-in-utah",
-      "title": "How do you choose a home service provider in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-15T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Home & Property"
-      ],
-      "preview": "How to compare home service providers in Utah: written estimates, licensing, insurance, permits, payment milestones, and key questions.",
-      "path": "/blog/choosing-a-home-service-provider-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:finding-community-resources-in-your-utah-county",
-      "slug": "finding-community-resources-in-your-utah-county",
-      "title": "How do you find community resources in your Utah county?",
-      "status": "published",
-      "publishedAt": "2026-10-12T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Local Community Resources"
-      ],
-      "preview": "A step-by-step way to find local community resources in Utah: where programs come from, how to check eligibility and service area, and how to stay organized.",
-      "path": "/blog/finding-community-resources-in-your-utah-county"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:how-to-compare-financial-and-insurance-options-in-utah",
-      "slug": "how-to-compare-financial-and-insurance-options-in-utah",
-      "title": "How do I compare financial and insurance options in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Financial & Insurance"
-      ],
-      "preview": "A practical way to compare Utah financial advisers, lenders, and insurance options: what to ask about credentials, fees, conflicts, coverage, and terms.",
-      "path": "/blog/how-to-compare-financial-and-insurance-options-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:how-to-compare-in-home-care-options-in-utah",
-      "slug": "how-to-compare-in-home-care-options-in-utah",
-      "title": "How do I compare in-home care options in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Senior & Caregiver Support"
-      ],
-      "preview": "How to compare in-home care and caregiver support options in Utah: questions on services, worker qualifications, safety, coverage, fees, and contracts.",
-      "path": "/blog/how-to-compare-in-home-care-options-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:choosing-a-legal-representative-in-utah",
-      "slug": "choosing-a-legal-representative-in-utah",
-      "title": "How do I choose a legal representative in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Legal Guidance"
-      ],
-      "preview": "How to compare legal resources in Utah: practice area, jurisdiction, scope of help, fees, deadlines, and the questions to ask before you hire anyone.",
-      "path": "/blog/choosing-a-legal-representative-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:evaluating-business-service-providers-in-utah",
-      "slug": "evaluating-business-service-providers-in-utah",
-      "title": "How do I evaluate a business service provider in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-21T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Business & Professional"
-      ],
-      "preview": "How to compare business service providers in Utah: scope, deliverables, timeline, pricing model, ownership of work, data handling, and exit terms.",
-      "path": "/blog/evaluating-business-service-providers-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:how-to-compare-education-and-training-programs-in-utah",
-      "slug": "how-to-compare-education-and-training-programs-in-utah",
-      "title": "How do I compare education and training programs in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Education & Training"
-      ],
-      "preview": "How to compare education and training options in Utah: format, schedule, prerequisites, accreditation, cost, transferability, and what to verify.",
-      "path": "/blog/how-to-compare-education-and-training-programs-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:how-to-compare-technology-and-it-service-providers-in-utah",
-      "slug": "how-to-compare-technology-and-it-service-providers-in-utah",
-      "title": "How do I compare technology and IT service providers in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Technology & Digital"
-      ],
-      "preview": "How to compare technology and IT service providers in Utah: scope, support hours, ownership, recurring costs, data handling, security, and exit terms.",
-      "path": "/blog/how-to-compare-technology-and-it-service-providers-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:how-to-compare-career-and-employment-resources-in-utah",
-      "slug": "how-to-compare-career-and-employment-resources-in-utah",
-      "title": "How do I compare career and employment resources in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Careers & Employment"
-      ],
-      "preview": "How to compare career and employment resources in Utah: job-search help, training, apprenticeship options, and the questions to ask before you commit.",
-      "path": "/blog/how-to-compare-career-and-employment-resources-in-utah"
-    },
-    {
-      "sourceId": "cps",
-      "key": "static:how-to-compare-workplace-support-vendors-in-utah",
-      "slug": "how-to-compare-workplace-support-vendors-in-utah",
-      "title": "How do employers compare workplace support vendors in Utah?",
-      "status": "published",
-      "publishedAt": "2026-10-22T00:00:00.000Z",
-      "createdAt": null,
-      "tags": [
-        "Employer Services"
-      ],
-      "preview": "How to compare workplace support vendors in Utah: verify credentials and scope, and settle privacy, reporting, and procurement questions in writing.",
-      "path": "/blog/how-to-compare-workplace-support-vendors-in-utah"
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "rene",
@@ -3205,6 +3059,34 @@
       "path": "/newsletter/we-are-not-hidden"
     },
     {
+      "sourceId": "imperium",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "sfdempire",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
       "sourceId": "sfdempire",
       "key": "static:culture-desk-newsroom-launch",
       "slug": "culture-desk-newsroom-launch",
@@ -3248,6 +3130,39 @@
     },
     {
       "sourceId": "sitanim",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News",
+        "Nvidia",
+        "Technology"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "sitanim",
+      "key": "static:the-war-on-attention",
+      "slug": "the-war-on-attention",
+      "title": "The War on Attention",
+      "status": "published",
+      "publishedAt": "2026-10-17T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "attention",
+        "belonging",
+        "knowledge",
+        "purpose"
+      ],
+      "preview": "Ambition gets expensive when you forget what you wanted it for. On status, human needs, and deciding who gets a seat at your table.",
+      "path": "/newsletter/the-war-on-attention"
+    },
+    {
+      "sourceId": "sitanim",
       "key": "static:paradoxum-emotionis",
       "slug": "paradoxum-emotionis",
       "title": "The Paradox of Emotions",
@@ -3266,7 +3181,7 @@
       "sourceId": "sitanim",
       "key": "static:notes-from-the-life-behind-the-work",
       "slug": "notes-from-the-life-behind-the-work",
-      "title": "The Silent War",
+      "title": "The Inner Battle",
       "status": "published",
       "publishedAt": "2026-06-16T00:00:00.000Z",
       "createdAt": null,
@@ -3344,6 +3259,20 @@
     },
     {
       "sourceId": "societyfeen",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "societyfeen",
       "key": "static:the-feen-edit-newsroom-launch",
       "slug": "the-feen-edit-newsroom-launch",
       "title": "Society Feen introduces The Feen Edit",
@@ -3386,6 +3315,20 @@
     },
     {
       "sourceId": "tanielafiefia",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "tanielafiefia",
       "key": "static:stop-pricing-per-square-foot",
       "slug": "stop-pricing-per-square-foot",
       "title": "Stop pricing per square foot",
@@ -3419,6 +3362,20 @@
       "tags": [],
       "preview": "Why the cheapest concrete bid almost always costs Salt Lake homeowners more by spring.",
       "path": "/newsletter/how-to-quote-utah-winters"
+    },
+    {
+      "sourceId": "theluxesocialist",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/news/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "theluxesocialist",
@@ -3925,6 +3882,21 @@
       "tags": [],
       "preview": "Mythos AIS installs the AI acquisition and operating layer for a business — AI ads, an AI CEO, agentic websites with local SEO/GEO, and custom CRMs — so demand starts flowing while the infrastructure builds itself.",
       "path": "/spotlight/mythos-ais"
+    },
+    {
+      "sourceId": "utahaddiction",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News",
+        "news"
+      ],
+      "preview": "Nvidia opens an independent review after Jensen Huang admits infidelity. What the board confirmed, what remains alleged, and why Congress wants answers.",
+      "path": "/blog/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "mainst",
@@ -4612,6 +4584,21 @@
     },
     {
       "sourceId": "ltb",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News",
+        "Nvidia independent review"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/blog/nvidia-jensen-huang-independent-review-november-2026"
+    },
+    {
+      "sourceId": "ltb",
       "key": "static:how-long-does-balayage-last",
       "slug": "how-long-does-balayage-last",
       "title": "How Long Does Balayage Last? (And How to Make It Last Longer)",
@@ -4897,6 +4884,20 @@
       ],
       "preview": "The honest answer your stylist will not say to your face — when to tip, how much, and what to do when service was not great.",
       "path": "/blog/should-i-tip-my-hair-stylist-utah"
+    },
+    {
+      "sourceId": "youngs",
+      "key": "static:nvidia-jensen-huang-independent-review-november-2026",
+      "slug": "nvidia-jensen-huang-independent-review-november-2026",
+      "title": "Nvidia Opens Independent Review as Huang Admits Infidelity",
+      "status": "published",
+      "publishedAt": "2026-11-09T00:00:00.000Z",
+      "createdAt": null,
+      "tags": [
+        "General News"
+      ],
+      "preview": "Nvidia has opened an independent review of reported foreign intelligence targeting. Huang admitted infidelity; the espionage allegations remain disputed.",
+      "path": "/newsletter/nvidia-jensen-huang-independent-review-november-2026"
     },
     {
       "sourceId": "youngs",

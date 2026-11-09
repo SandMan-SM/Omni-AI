@@ -105,6 +105,17 @@ test('paging and combined tag/source/niche/status/search filters preserve full-c
   const empty = await fixture(posts).read('page=999999');
   assert.equal(empty.items.length, 0); assert.equal(empty.pagination.total, 1507);
 });
+test('a deployed source with a confirmed public DNS failure stays discoverable without a broken article link', async () => {
+  const source = { id: 'liz', name: 'A Chat with Liz', siteUrl: 'https://achatwithliz.com', niche: 'relationships', available: false, state: 'unavailable', issue: 'Custom domain DNS has no address' };
+  const result = await fixture([post({ source_id: 'liz', post_key: 'static:news', slug: 'news', path: '/newsletter/news', editorial_niche: 'general-news', editorial_tags: ['General News'] })],
+    { ...manifest, sources: [...manifest.sources, source] }).read('tag=general-news');
+  assert.equal(result.items.length, 1);
+  assert.equal(result.items[0].status, 'published');
+  assert.equal(result.items[0].url, null);
+  assert.equal(result.options.sources.find(item => item.id === 'liz').count, 1);
+  assert.equal(result.coverage.complete, false);
+  assert.deepEqual(clone(result.coverage.issues), ['A Chat with Liz: Custom domain DNS has no address']);
+});
 test('catalog previews show readable citation labels and a visible ellipsis for truncated text', async () => {
   const result = await fixture([post({ preview: 'Confirmed. [Nvidia statement](https://example.com/' + 'long'.repeat(100) + ').' })]).read();
   assert.doesNotMatch(result.items[0].preview, /https:|\]\(/);

@@ -158,7 +158,7 @@ export async function readNewsletterReport(actor: Actor, filters: NewsletterFilt
       .map(id => ({ id, label: label(id), niche })).sort((a, b) => alphabetic(a.label, b.label));
     const status = row.status as NewsletterStatus, publishedAt = time(row.published_at), createdAt = time(row.created_at);
     let url: string | null = null;
-    if (status === 'published' && (publishedAt ? Date.parse(publishedAt) <= now.getTime() : key.startsWith('static:')) && row.path !== null) {
+    if (source.state !== 'unavailable' && status === 'published' && (publishedAt ? Date.parse(publishedAt) <= now.getTime() : key.startsWith('static:')) && row.path !== null) {
       const path = str(row.path, 600);
       if (!/^\/[a-z0-9/_-]+$/i.test(path) || path.startsWith('//') || path.includes('..')) return unavailable();
       url = new URL(path, source.siteUrl).toString();
