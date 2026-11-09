@@ -172,6 +172,16 @@ function main() {
       "Those are the trees that need their verifier migrated BEFORE the mint moves, not after.",
   );
 
+  // A count is not a work list. The trees that would REJECT a signed token
+  // are the migration list — print them, most-dangerous first.
+  if (signedRejected.length) {
+    console.error(
+      `\n[fleet-credential-verification] The ${signedRejected.length} tree(s) that would REJECT a signed token ` +
+        "(their verifier decodes a raw bearer) — migrate these FIRST:",
+    );
+    for (const root of signedRejected) console.error(`  ${root}`);
+  }
+
   if (results.length) {
     console.error(
       "[fleet-credential-verification] A bearer that is decoded is not a credential. " +
