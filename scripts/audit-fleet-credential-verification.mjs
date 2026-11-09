@@ -142,9 +142,34 @@ function main() {
   const treesWithFindings = results.length;
   const findings = results.reduce((sum, r) => sum + r.findings.length, 0);
 
+  // WHAT A FIX WOULD BREAK. The mint and the verifier are two halves of one
+  // contract, and the fix lands on the MINT side (the edge function is one
+  // shared endpoint; the verifiers are one file per tree). So the question
+  // that decides whether the mint can be flipped is: does this tree's
+  // server ACCEPT a signed token, or does it decode a raw bearer and
+  // reject anything it cannot decode?
+  //
+  // The `bearer-decoded-without-verification` finding IS that answer — a
+  // tree carrying it has a verifier that decodes a raw bearer, so a signed
+  // token would be rejected by it. A tree carrying only the mint finding
+  // has no such verifier, so a signed token is what its server expects.
+  const signedCompatible = [];
+  const signedRejected = [];
+  for (const result of results) {
+    const decodes = result.findings.some((f) => f.rule === "bearer-decoded-without-verification");
+    (decodes ? signedRejected : signedCompatible).push(result.tree.root);
+  }
+
   console.error(
     `\n[fleet-credential-verification] ${trees.size} tree(s) examined — ` +
       `${treesWithFindings} carry the class, ${findings} finding(s) in total.`,
+  );
+
+  console.error(
+    `[fleet-credential-verification] If the shared edge function's mint is flipped to signed: ` +
+      `${signedCompatible.length} tree(s) would ACCEPT the signed token (they carry no raw-bearer decoder); ` +
+      `${signedRejected.length} tree(s) would REJECT it (they decode a raw bearer). ` +
+      "Those are the trees that need their verifier migrated BEFORE the mint moves, not after.",
   );
 
   if (results.length) {
