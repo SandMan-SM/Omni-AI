@@ -120,7 +120,7 @@ function parseArgs(argv) {
  * whatever else it looks like — a canonical checkout, a worktree, or an
  * archive somebody kept for the artwork.
  */
-function vercelLink(dir) {
+export function vercelLink(dir) {
   try {
     const parsed = JSON.parse(
       readFileSync(join(dir, ".vercel", "project.json"), "utf8"),
@@ -147,7 +147,7 @@ function canonicalCheckout() {
 }
 
 /** The production project + domain, derived from the canonical checkout. */
-function productionProfile() {
+export function productionProfile() {
   const root = canonicalCheckout();
   const link = vercelLink(root);
   let domain = null;
