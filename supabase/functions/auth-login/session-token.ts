@@ -99,3 +99,27 @@ export async function signOmniToken(payload: Record<string, unknown>): Promise<s
     Deno.env.get("OMNI_AUTH_TOKEN_SECRET") ?? Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   return signOmniTokenWithSecret(payload, secret ?? "");
 }
+
+/**
+ * THE SECRET MUST BE THE SAME ON BOTH SIDES OF THE CONTRACT
+ *
+ * This function signs in the Supabase edge runtime; the server verifies
+ * in the Next.js runtime. Both derive their key from
+ * `OMNI_AUTH_TOKEN_SECRET ?? SUPABASE_SERVICE_ROLE_KEY`, so the two sides
+ * agree ONLY if they read the same value of that expression.
+ *
+ * Measured on 2026-11-09: the Supabase project carries TWO service-role
+ * secrets with DIFFERENT digests (`SUPABASE_SERVICE_ROLE_KEY` and
+ * `supabase_service_role_key`), and the flagship's Vercel project holds a
+ * THIRD candidate — its production value is marked sensitive and comes
+ * back blank from `vercel env pull`, so the equality cannot be asserted
+ * from the code that needs it. `OMNI_AUTH_TOKEN_SECRET` is set on NEITHER
+ * side, so both currently fall through to a service-role key whose
+ * equality is assumed, not known.
+ *
+ * That is why this file's signing path must not be deployed on its own:
+ * a token signed here and verified there is only accepted when the two
+ * sides derive the same key. Set `OMNI_AUTH_TOKEN_SECRET` to one explicit
+ * value on the edge AND on every project that consumes the token, and the
+ * assumption becomes a fact.
+ */
