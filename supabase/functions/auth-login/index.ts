@@ -1,10 +1,15 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+import { signOmniToken } from "./session-token.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// The token this function hands out carries `is_admin`, so it is SIGNED with
+// the same scheme the server verifies (`omni1.<payload>.<HMAC-SHA256>`). An
+// unsigned token is not a credential — see ./session-token.ts.
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -180,7 +185,7 @@ serve(async (req) => {
       exp: Date.now() + 7 * 24 * 60 * 60 * 1000
     }
     
-    const token = btoa(JSON.stringify(tokenData))
+    const token = await signOmniToken(tokenData)
 
     const userEmail = isFray ? 'fray1959@gmail.com' : (profile?.email || `${username.toLowerCase()}@example.com`);
 

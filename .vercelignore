@@ -34,6 +34,11 @@ tests/*
 # operator artifacts. Everything else under tests/ stays out of the bundle.
 !tests/content-lookup.test.ts
 !tests/internal-surface.test.ts
+# A third, for the same reason: the credential-verification gate's unit test
+# (`npm run test:credential-verification`) proves the edge function's token
+# signer and the server's verifier agree — the one proof that cannot be made
+# by reading either file.
+!tests/credential-verification.test.ts
 docs/private-email-previews/
 **/runtime.env
 
