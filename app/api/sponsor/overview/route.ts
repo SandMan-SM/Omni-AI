@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { createClient as createServerClient } from '@/lib/supabase/server';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -44,12 +45,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ authorized: false, sponsorships: [], totals: null });
   }
 
-  const { data: sponsorships } = await admin
+  const { data: storedSponsorships } = await admin
     .from('sponsorships')
     .select('*')
     .eq(sponsorFilter.column, sponsorFilter.value)
     .eq('status', 'active')
     .order('started_at', { ascending: false });
+  const sponsorships = (storedSponsorships ?? []).filter(isActiveFederationRecord);
 
   if (!sponsorships || sponsorships.length === 0) {
     return NextResponse.json({

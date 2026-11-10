@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin-auth';
 import { getFederationBrief } from '@/lib/federation-newsletter-briefs';
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 
 type Params = { params: { site: string; email: string } };
 
@@ -27,6 +28,7 @@ export async function PATCH(request: Request, { params }: Params) {
   if (typeof body.active !== 'boolean') {
     return NextResponse.json({ error: 'active must be a boolean' }, { status: 400 });
   }
+  if (body.active && isRetiredFederationContact(email)) return NextResponse.json({ error: 'Contact retired from the federation' }, { status: 410 });
 
   const { error } = await createAdminClient()
     .from('federation_newsletter_subscribers')

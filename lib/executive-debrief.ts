@@ -8,6 +8,7 @@
  */
 import { createAdminClient } from '@/lib/supabase/admin';
 import { publishedNewsletterOnly } from '@/lib/newsletter-posts';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import {
   wrapper,
   header,
@@ -53,7 +54,7 @@ export async function gatherExecDebrief(commits30d: number): Promise<ExecDebrief
     s.from('landing_pages').select('*', { count: 'exact', head: true }),
   ]);
 
-  const clients = portfolio || [];
+  const clients = (portfolio || []).filter(isActiveFederationRecord);
   const paying = clients.filter((c) => (c.current_mrr_usd || 0) > 0);
   const portfolio_mrr = clients.reduce((acc, c) => acc + (c.current_mrr_usd || 0), 0);
   const portfolio_arr = clients.reduce((acc, c) => acc + (c.current_arr_usd || 0), 0);

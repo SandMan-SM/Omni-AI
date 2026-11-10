@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -46,6 +47,8 @@ export async function PATCH(request: Request, { params }: Params) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
+
+  if (isRetiredFederationContact(email)) return NextResponse.json({ error: 'Contact retired from the federation' }, { status: 410 });
 
   const admin = createAdminClient();
   const errors: string[] = [];

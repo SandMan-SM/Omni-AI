@@ -3,6 +3,8 @@
 // Engine, returns the chosen creative with attribution params already
 // templated in. Used by /api/cross-ads.
 
+import { isRetiredFederationIdentity } from './federation-retirement';
+
 export type CrossAdSlot = "header" | "footer" | "content-end" | "sidebar-card";
 
 export type CrossAdCreative = {
@@ -34,6 +36,7 @@ export type ChosenCreative = {
 };
 
 export function isEligible(c: CrossAdCreative, originatingSlug: string, slot: CrossAdSlot): boolean {
+  if (isRetiredFederationIdentity(originatingSlug, c.source_slug, c.target_slug, c.cta_url_template)) return false;
   if (c.status !== "active") return false;
   if (c.slot !== slot) return false;
   if (c.target_slug === originatingSlug) return false; // never promote self to self

@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -52,6 +53,7 @@ export async function POST(req: Request) {
       // out. Read the existing row first so we only set subscribed=true
       // for new emails; existing rows keep their current subscribed state.
       const lower = email.toLowerCase();
+      if (isRetiredFederationContact(lower)) { skipped++; continue; }
       const { data: existing } = await sb
         .from("newsletter_subscriptions")
         .select("first_name, subscribed")

@@ -1,3 +1,5 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
+import { isActiveFederationRecord, isRetiredFederationIdentity } from '@/lib/federation-retirement';
 import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -52,16 +54,16 @@ export async function GET(req: Request) {
   const sb = createAdminClient();
   const [businessResult, leadResult, subscriberResult] = await Promise.all([
     sb.from('omni_businesses').select('id,slug,name,industry,website,display_order').limit(100),
-    sb.from('omni_leads_generated').select('id,business_id,first_name,last_name,email,phone,company,source,status,notes,created_at,deal_stage,pipeline_type,source_table').limit(1000),
+    sb.from('omni_leads_generated').select('id,business_id,first_name,last_name,email,phone,company,source,status,notes,created_at,deal_stage,pipeline_type,source_table,raw_data').limit(1000),
     sb.from('federation_newsletter_subscribers').select('site,email,first_name,source,created_at,unsubscribed').eq('unsubscribed', false).limit(5000),
   ]);
   const error = businessResult.error || leadResult.error || subscriberResult.error;
   if (error) return NextResponse.json({ error: 'AGD export unavailable', reason: error.message }, { status: 503 });
 
-  const businesses = [...(businessResult.data || [])] as Array<Record<string, unknown>>;
+  const businesses = (businessResult.data || []).filter(isActiveFederationRecord) as Array<Record<string, unknown>>;
   const byId = new Map(businesses.map((row) => [String(row.id || ''), String(row.slug || '')]));
   const known = new Set(businesses.map((row) => String(row.slug || '')));
-  const leads = (leadResult.data || []).map((row) => ({
+  const leads = (leadResult.data || []).filter(isActiveFederationContact).map((row) => ({
     lead_id: String(row.id), business_slug: byId.get(String(row.business_id)) || 'omnileads', lead_kind: leadKind(row),
     name: [row.first_name, row.last_name].filter(Boolean).join(' ') || String(row.company || 'Contact'),
     email: String(row.email || ''), phone: String(row.phone || ''), source: String(row.source || 'prospecting'),
@@ -71,7 +73,7 @@ export async function GET(req: Request) {
   for (const row of subscriberResult.data || []) {
     const site = String(row.site || '').trim().toLowerCase();
     const slug = SITE_ALIASES[site] || site;
-    if (!slug || !row.email) continue;
+    if (!slug || !row.email || isRetiredFederationIdentity(slug) || !isActiveFederationContact(row)) continue;
     if (!known.has(slug)) {
       businesses.push({ slug, name: LABELS[slug] || slug, industry: 'Newsletter', website: null, display_order: 900 });
       known.add(slug);

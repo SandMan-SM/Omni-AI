@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextResponse } from 'next/server';
 import { requireAdmin } from '@/lib/admin-auth';
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
       const email = cols[emailIdx]?.toLowerCase();
       if (!email) { skipped++; continue; }
 
+      if (isRetiredFederationContact(email)) { skipped++; continue; }
       const csvFirstName = nameIdx !== -1 ? (cols[nameIdx] || null) : null;
       const csvTier = tierIdx !== -1 ? (cols[tierIdx] || null) : null;
 

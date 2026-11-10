@@ -29,3 +29,6 @@ public/__email-previews/*
 scripts/.email-previews/
 .playwright-mcp/
 prompts/
+
+# All isolated Next build output stays local.
+.next*/

@@ -1,3 +1,4 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 // Onboard a new dashboard business (tenant). Used by the Business
 // Advancement panel's "Onboard new business" quick action and any future
 // admin onboarding flow.
@@ -16,6 +17,8 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const name = (body.name ?? "").trim();
   if (!name) return NextResponse.json({ error: "name required" }, { status: 400 });
+
+  if (!isActiveFederationContact({ ...body, email: body.contact_email ?? body.contactEmail })) return NextResponse.json({ error: 'Federation member retired' }, { status: 410 });
 
   const sb = createAdminClient();
 
@@ -79,6 +82,7 @@ export async function PATCH(req: NextRequest) {
     contact_email: "contact_email",
     website: "website",
   };
+  if (!isActiveFederationContact({ ...body, email: body.contact_email ?? body.contactEmail })) return NextResponse.json({ error: 'Federation member retired' }, { status: 410 });
   const update: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {
     if (k === "id" || v === undefined) continue;

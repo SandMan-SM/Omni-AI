@@ -1,3 +1,4 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -35,7 +36,7 @@ export async function GET() {
   };
 
   // CRM subscribers
-  for (const p of profilesRes.data || []) {
+  for (const p of (profilesRes.data || []).filter(isActiveFederationContact)) {
     if (p.newsletter_subscribed && p.email) {
       seen.add(p.email.toLowerCase());
       const name = p.business_name || p.name || p.first_name || "";
@@ -44,7 +45,7 @@ export async function GET() {
   }
 
   // Website subscribers
-  for (const s of subsRes.data || []) {
+  for (const s of (subsRes.data || []).filter(isActiveFederationContact)) {
     if (s.subscribed !== false && !seen.has(s.email.toLowerCase())) {
       seen.add(s.email.toLowerCase());
       const name = s.first_name || "";

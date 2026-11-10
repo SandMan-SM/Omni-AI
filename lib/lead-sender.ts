@@ -1,5 +1,6 @@
 import { INBOUND_SLUG_LABELS, isInboundSlug } from '@/lib/inbound-types';
 import { REGISTRY_BRAND_LABELS } from '@/lib/lead-recipients';
+import { requireActiveFederationIdentity } from '@/lib/federation-retirement';
 
 /**
  * The single sending identity for lead notifications.
@@ -35,6 +36,7 @@ export const LEAD_MAIL_DOMAIN = 'leadfranchise.org';
  * verified domain — no mailbox needs to exist.
  */
 export function leadSender(brand: string, mailbox: string): string {
+  requireActiveFederationIdentity(brand, mailbox);
   return `New Lead ${brand} <${normaliseMailbox(mailbox)}@${LEAD_MAIL_DOMAIN}>`;
 }
 

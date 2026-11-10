@@ -5,6 +5,7 @@ import { createServerClient } from "@supabase/ssr";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { hasPlatformDashboardAccess } from "@/lib/mafi-access";
 import { verifyOmniToken } from "@/lib/server/omni-session-token";
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -66,6 +67,7 @@ const LEAD_SELECT = [
   "source_table",
   "source_record_id",
   "updated_at",
+  "raw_data",
 ].join(",");
 
 type LeadRow = Record<string, unknown> & {
@@ -74,7 +76,7 @@ type LeadRow = Record<string, unknown> & {
 };
 
 function sortAndLimitLeads(rows: LeadRow[], orderColumn: "created_at" | "score", limit: number) {
-  const sorted = [...rows].sort((a, b) => {
+  const sorted = rows.filter(isActiveFederationContact).sort((a, b) => {
     if (orderColumn === "score") {
       return Number(b.score ?? 0) - Number(a.score ?? 0);
     }
@@ -82,7 +84,7 @@ function sortAndLimitLeads(rows: LeadRow[], orderColumn: "created_at" | "score",
     const at = a.created_at ? Date.parse(a.created_at) : 0;
     return bt - at;
   });
-  return sorted.slice(0, limit);
+  return sorted.slice(0, limit).map(row => { const visible = { ...row }; delete visible.raw_data; return visible; });
 }
 
 function dashboardDataUnavailable(reason: string, error: unknown) {

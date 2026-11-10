@@ -1,3 +1,4 @@
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
 import { createAdminClient } from '@/lib/supabase/admin';
 import {
   wrapper,
@@ -24,6 +25,7 @@ export interface ClientReviewData {
 }
 
 export async function gatherClientReview(slug: string): Promise<ClientReviewData | null> {
+  if (isRetiredFederationIdentity(slug)) return null;
   const supabase = createAdminClient();
   const [{ data: client }, { data: metrics }, { data: ships }, { data: risks }] = await Promise.all([
     supabase.from('client_portfolio').select('*').eq('slug', slug).maybeSingle(),

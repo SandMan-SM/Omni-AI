@@ -1,5 +1,6 @@
+const { retirementMocks } = require('./helpers/federation-retirement.cjs');
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),ts=require('typescript');
-function load(file,mocks={}){const module={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module,exports:module.exports,require:name=>mocks[name]??require(name),process,URL,Date,AbortSignal,fetch,Buffer,setTimeout,clearTimeout,console},{filename:file});return module.exports;}
+function load(file,mocks={}){const module={exports:{}};vm.runInNewContext(ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module,exports:module.exports,require:name=>mocks[name]??retirementMocks[name]??require(name),process,URL,Date,AbortSignal,fetch,Buffer,setTimeout,clearTimeout,console},{filename:file});return module.exports;}
 const portfolio=load('lib/reporting-portfolio.ts'),reporting=load('lib/reporting-seo.ts',{'./reporting-portfolio':portfolio});
 const crawler=load('lib/seo-crawler.ts',{'./reporting-portfolio':portfolio,'./reporting-seo':reporting}),search=load('lib/search-console-sync.ts',{'./reporting-portfolio':portfolio,'./reporting-seo':reporting});
 const owner={id:'owner',isPlatform:true,businessSlugs:[]},surface=portfolio.PORTFOLIO_SURFACES.find(s=>s.assetId==='youngs'),now=new Date('2026-10-15T04:00:00Z');

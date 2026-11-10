@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 // ─── Newsletter Audience — single source of truth ─────────────────────────
 //
 // Historically the site had TWO sources feeding the newsletter send job:
@@ -243,6 +244,7 @@ export async function getNewsletterAudience(
   // that exist in newsletter_subscriptions are always kept so an opt-out
   // is still visible (and can be re-enabled) in the panel.
   const filtered = materialized.filter((m) => {
+    if (isRetiredFederationContact(m.email)) return false;
     if (m.source !== "profile") return true;
     const p = profilesByEmail.get(m.email);
     return p?.newsletter_subscribed === true;

@@ -1475,25 +1475,6 @@
       ]
     },
     {
-      "domain": "achatwithliz.com",
-      "kind": "client_managed",
-      "assetId": "achatwithliz",
-      "tenantSlug": "achatwithliz",
-      "displayName": "A Chat with Liz",
-      "usage": "Business website",
-      "platform": "vercel",
-      "projects": [
-        {
-          "name": "a-chat-with-liz",
-          "url": "https://vercel.com/sandman-sms-projects/a-chat-with-liz",
-          "platform": "vercel"
-        }
-      ],
-      "destinationDomain": null,
-      "expiresAt": null,
-      "notes": []
-    },
-    {
       "domain": "flextides.org",
       "kind": "client_managed",
       "assetId": "flextides",

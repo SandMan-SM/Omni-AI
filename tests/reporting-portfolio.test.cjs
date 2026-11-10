@@ -1,3 +1,4 @@
+const { retirementMocks } = require('./helpers/federation-retirement.cjs');
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -6,17 +7,17 @@ const ts=require('typescript');
 function load(file,mocks={}){
  const code=ts.transpileModule(fs.readFileSync(file,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
  const module={exports:{}};
- vm.runInNewContext(code,{module,exports:module.exports,require:n=>mocks[n]??require(n),process,URL,Date,AbortSignal,fetch,Buffer},{filename:file});
+ vm.runInNewContext(code,{module,exports:module.exports,require:n=>mocks[n]??retirementMocks[n]??require(n),process,URL,Date,AbortSignal,fetch,Buffer},{filename:file});
  return module.exports;
 }
 const lib=load('lib/reporting-portfolio.ts');
 const owner={id:'verified-owner',isPlatform:true,businessSlugs:[]};
-test('scope is exactly the approved 47 websites',()=>{
- assert.equal(lib.PORTFOLIO_SURFACES.length,47);
+test('scope is exactly the 46 active approved websites',()=>{
+ assert.equal(lib.PORTFOLIO_SURFACES.length,46);
  const domains=lib.PORTFOLIO_SURFACES.map(s=>s.domain);
  assert(domains.includes('alirafoundation.com'));assert(domains.includes('mafiempire.com'));
  assert(!domains.includes('mafi.live'));assert(!domains.includes('livebetteronthedrip.com'));
- assert.equal(new Set(domains).size,47);
+ assert.equal(new Set(domains).size,46);
 });
 test('service auth rejects missing, short, and different secrets',()=>{
  assert(!lib.serviceAuthorized('x','x'));assert(!lib.serviceAuthorized(null,'a'.repeat(40)));

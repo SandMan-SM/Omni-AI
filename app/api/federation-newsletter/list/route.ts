@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin-auth';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -59,5 +60,5 @@ export async function GET(req: Request) {
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, posts: data ?? [] });
+  return NextResponse.json({ ok: true, posts: (data ?? []).filter(isActiveFederationRecord) });
 }

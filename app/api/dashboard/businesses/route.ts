@@ -1,3 +1,4 @@
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import { NextResponse } from "next/server";
 import { cookies, headers } from "next/headers";
 import { unstable_noStore as noStore } from "next/cache";
@@ -191,7 +192,7 @@ export async function GET() {
       return dashboardDataUnavailable("businesses_lookup_failed", error);
     }
     return NextResponse.json({
-      businesses: applyLiveBetterOverrides((data ?? []) as unknown as BusinessRow[]),
+      businesses: applyLiveBetterOverrides(((data ?? []) as unknown as BusinessRow[]).filter(isActiveFederationRecord)),
       isAdmin: true,
     });
   }
@@ -221,7 +222,7 @@ export async function GET() {
     return dashboardDataUnavailable("businesses_lookup_failed", error);
   }
   return NextResponse.json({
-    businesses: applyLiveBetterOverrides((data ?? []) as unknown as BusinessRow[]),
+    businesses: applyLiveBetterOverrides(((data ?? []) as unknown as BusinessRow[]).filter(isActiveFederationRecord)),
     isAdmin: false,
   });
 }

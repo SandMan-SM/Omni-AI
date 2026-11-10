@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
 
 // Neither /dashboard NOR /admin is in protectedRoutes any more.
 //
@@ -25,6 +26,12 @@ const publicRoutes = ['/', '/details', '/interlinked', '/campaigns', '/sponsor',
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+  const identityParams = ['site', 'business_slug', 'slug', 'host', 'tenant', 'tenant_slug', 'source', 'sourceId', 'client_slug', 'asset'];
+  if (pathname.split('/').some(segment => isRetiredFederationIdentity(segment))
+    || identityParams.some(key => isRetiredFederationIdentity(request.nextUrl.searchParams.get(key)))) {
+    return NextResponse.json({ error: 'This federation member has been retired', code: 'federation_tenant_retired' },
+      { status: 410, headers: { 'Cache-Control': 'no-store', 'X-Robots-Tag': 'noindex, nofollow' } });
+  }
 
   // Allow static files and API routes
   if (

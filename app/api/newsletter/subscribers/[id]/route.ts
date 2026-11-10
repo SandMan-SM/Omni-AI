@@ -1,3 +1,4 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin-auth';
@@ -36,6 +37,9 @@ export async function PATCH(
     }
 
     const supabase = createAdminClient();
+    const { data: existing, error: lookupError } = await supabase.from('newsletter_subscriptions').select('email').eq('id', params.id).maybeSingle();
+    if (lookupError) return NextResponse.json({ error: 'Subscriber lookup unavailable' }, { status: 503 });
+    if (existing && !isActiveFederationContact(existing)) return NextResponse.json({ error: 'Contact retired from the federation' }, { status: 410 });
     const { data, error } = await supabase
       .from('newsletter_subscriptions')
       .update(update)

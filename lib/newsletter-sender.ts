@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 /**
  * Interlinked Newsletter System
  *
@@ -1263,6 +1264,7 @@ export async function sendMorningDebrief(data: DebriefData): Promise<boolean> {
 // ── Email Sending ────────────────────────────────────────────────────────────
 
 export async function sendEmail(content: NewsletterContent, to: string): Promise<boolean> {
+  if (isRetiredFederationContact(to)) return false;
   if (!RESEND_API_KEY) return false;
 
   // Dev mode: only send to allowlisted emails ($Mafi)

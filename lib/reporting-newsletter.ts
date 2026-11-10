@@ -2,6 +2,7 @@ import { ReportingError, type Actor, type Query } from './reporting-portfolio';
 import { seoQuery } from './reporting-seo';
 import { SOCIAL_CALENDAR_OWNER } from './reporting-social-calendar';
 import catalog from './newsletter-source-catalog.generated.json';
+import { isActiveFederationRecord, isRetiredFederationIdentity, isRetiredFederationPublication } from './federation-retirement';
 import type { NewsletterFilters, NewsletterItem, NewsletterOption, NewsletterReport, NewsletterStatus } from './newsletter-report-types';
 
 type Source = { id: string; name: string; siteUrl: string; niche: string; available: boolean;
@@ -129,6 +130,7 @@ export async function readNewsletterReport(actor: Actor, filters: NewsletterFilt
   if (!Array.isArray(manifest.sources) || !manifest.sources.length || !Array.isArray(manifest.posts)) return unavailable();
   const sources = new Map<string, Source>();
   for (const source of manifest.sources) {
+    if (isRetiredFederationIdentity(source.id, source.name, source.siteUrl)) continue;
     if (!ID.test(source.id) || sources.has(source.id) || !source.name || source.name.length > 160
       || !ID.test(source.niche) || typeof source.available !== 'boolean'
       || !['archive', 'absent', 'restricted', 'unavailable'].includes(source.state)) return unavailable();
@@ -137,12 +139,15 @@ export async function readNewsletterReport(actor: Actor, filters: NewsletterFilt
     sources.set(source.id, source);
   }
   if (filters.source && !sources.has(filters.source)) return invalid();
-  const result = await run(NEWSLETTER_CATALOG_SQL, [JSON.stringify(manifest.posts)]).catch(() => unavailable());
+  const result = await run(NEWSLETTER_CATALOG_SQL, [JSON.stringify(manifest.posts.filter(post => isActiveFederationRecord(post) && !isRetiredFederationPublication(post.sourceId, post.slug)))]).catch(() => unavailable());
   if (result.rows.length !== 1) return unavailable();
   const snapshot = record(result.rows[0].snapshot);
   if (!Array.isArray(snapshot.posts) || !Number.isSafeInteger(snapshot.total) || snapshot.total !== snapshot.posts.length) return unavailable();
   const seen = new Set<string>();
-  const items: NewsletterItem[] = snapshot.posts.map(value => {
+  const items: NewsletterItem[] = snapshot.posts.filter(value => {
+    const row = record(value);
+    return !isRetiredFederationIdentity(row.source_id) && !isRetiredFederationPublication(row.source_id, row.slug);
+  }).map(value => {
     const row = record(value), sourceId = str(row.source_id, 120), source = sources.get(sourceId);
     const key = str(row.post_key, 340), title = str(row.title, 2000), issueSlug = str(row.slug, 300);
     if (!source || !KEY.test(key) || !title.trim() || !issueSlug || /[\s/?#]/.test(issueSlug)

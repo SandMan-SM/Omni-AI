@@ -1,3 +1,4 @@
+const { retirementMocks } = require('./helpers/federation-retirement.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -11,7 +12,7 @@ function load(path, mocks = {}, env = {}) {
   const module = { exports: {} };
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(path, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText, { module, exports: module.exports, require: name => mocks[name] ?? require(name),
+  }).outputText, { module, exports: module.exports, require: name => mocks[name] ?? retirementMocks[name] ?? require(name),
     process: { env: { AISEMPIRE_INBOUND_SECRET: SECRET, ...env } },
     URL, Request, Response, Date, Intl, AbortSignal, Buffer }, { filename: path });
   return module.exports;
@@ -46,6 +47,14 @@ function fixture(connections = [connection(), connection('facebook')], posts = [
   const run = async (sql, parameters) => { calls.push({ sql, parameters }); return { rows: [{ snapshot }] }; };
   return { snapshot, calls, run, read: () => calendar.readSocialCalendar(actor, '2026-11', run, now) };
 }
+test('retired social IDs and new brand references are excluded while unrelated scheduled posts remain visible', async () => {
+  const ids = JSON.parse(fs.readFileSync('lib/server/retired-federation-contacts.json', 'utf8')).social_post_ids;
+  const f = fixture(undefined, [post(), post('instagram', { id: `instagram:${ids[0]}`, caption: 'Historical promotion', status: 'failed' }),
+    post('instagram', { id: 'instagram:22222222-2222-4222-8222-222222222222', caption: 'A future A Chat with Liz promotion' })]);
+  const result = await f.read();
+  assert.equal(result.posts.length, 1); assert.equal(result.posts[0].caption, 'Useful original caption.');
+  assert.equal(f.snapshot.posts.length, 3);
+});
 
 test('calendar requires BOTH exact immutable owner and platform authorization before any query', async () => {
   let calls = 0;

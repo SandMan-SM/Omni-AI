@@ -1,3 +1,4 @@
+const { retirementMocks } = require('./helpers/federation-retirement.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -14,7 +15,7 @@ function load(path, mocks, env = {}) {
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(path, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 }
   }).outputText, {
-    module, exports: module.exports, require: name => mocks[name] ?? require(name),
+    module, exports: module.exports, require: name => mocks[name] ?? retirementMocks[name] ?? require(name),
     process: { env: {
       NEXT_PUBLIC_SUPABASE_URL: 'https://odvxtychuxxsudfpcqqs.supabase.co',
       NEXT_PUBLIC_SUPABASE_ANON_KEY: 'public-key',

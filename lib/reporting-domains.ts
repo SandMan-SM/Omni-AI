@@ -1,4 +1,5 @@
 import catalog from './domain-catalog.json';
+import { isActiveFederationRecord } from './federation-retirement';
 import analyticsScope from './domain-analytics-scope.json';
 import providerSnapshots from './domain-provider-snapshots.json';
 import { ReportingError, type Actor, type Query } from './reporting-portfolio';
@@ -6,7 +7,7 @@ import { detailLimit, seoQuery } from './reporting-seo';
 import type { DomainCatalogEntry, DomainDetail, DomainMetrics, DomainProviderSnapshot, DomainReport } from './domain-report-types';
 import type { SeoKeywordItem, SeoPageItem } from './seo-report-types';
 
-export const DOMAIN_CATALOG: readonly DomainCatalogEntry[] = catalog.domains as DomainCatalogEntry[];
+export const DOMAIN_CATALOG: readonly DomainCatalogEntry[] = (catalog.domains as DomainCatalogEntry[]).filter(isActiveFederationRecord);
 // A host must be a complete absolute HTTP(S) authority. Relative historical URLs
 // cannot establish domain ownership and are deliberately never reassigned.
 const host = (column: string) => `regexp_replace(lower(substring(${column} from '(?i)^https?://([^/:?#]+)(?::[0-9]+)?(?:[/?#]|$)')),'^www\\.','')`;

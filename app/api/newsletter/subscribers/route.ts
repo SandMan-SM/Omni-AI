@@ -1,3 +1,4 @@
+import { isActiveFederationContact, isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 import { NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -35,7 +36,8 @@ export async function GET() {
       .order('created_at', { ascending: false });
 
     if (error) throw error;
-    return NextResponse.json({ subscribers: data || [], total: (data || []).length });
+    const subscribers = (data || []).filter(isActiveFederationContact);
+    return NextResponse.json({ subscribers, total: subscribers.length });
   } catch (error) {
     console.error('[newsletter/subscribers] GET error:', error);
     return NextResponse.json({ error: 'Failed to fetch subscribers' }, { status: 500 });
@@ -56,6 +58,8 @@ export async function POST(request: Request) {
     if (!EMAIL_RE.test(emailRaw)) {
       return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
     }
+
+    if (isRetiredFederationContact(emailRaw)) return NextResponse.json({ error: 'Contact retired from the federation' }, { status: 410 });
 
     // New subscribers default to the free tier — never trust a client-
     // supplied tier. But preserve an existing 'premium' row (paid via

@@ -1,3 +1,4 @@
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
     .order('created_at', { ascending: false });
 
   // Aggregate metrics per business
-  const enriched = await Promise.all((businesses ?? []).map(async (b) => {
+  const enriched = await Promise.all((businesses ?? []).filter(isActiveFederationRecord).map(async (b) => {
     const [{ count: leads }, { count: replies }, { count: bookings }] = await Promise.all([
       supabase.from('omni_leads_generated').select('*', { count: 'exact', head: true }).eq('business_id', b.id),
       supabase.from('omni_outreach_assets').select('*', { count: 'exact', head: true }).eq('business_id', b.id).eq('status', 'replied'),

@@ -17,6 +17,8 @@
 // repo deploy story is simpler — one Edit per sibling, no version
 // drift, no registry plumbing.
 
+import { isRetiredFederationIdentity } from './federation-retirement';
+
 export type SponsorBadge = "Featured" | "Sponsor" | "Partner";
 
 export type SponsorSlot = {
@@ -70,8 +72,9 @@ export const FEDERATION_SPONSORS: SponsorSlot[] = [
 // excludes the slot whose own slug matches the host (no self-promo)
 // and re-numbers ranks so the remaining cards still read 1/2(/3).
 export function slotsForHost(host: string): SponsorSlot[] {
+  if (isRetiredFederationIdentity(host)) return [];
   return FEDERATION_SPONSORS
-    .filter((s) => s.slug !== host)
+    .filter((s) => s.slug !== host && !isRetiredFederationIdentity(s.slug, s.brand, s.hrefBase))
     .map((s, i) => ({ ...s, rank: (i + 1) as 1 | 2 | 3 }));
 }
 

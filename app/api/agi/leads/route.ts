@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from "next/cache";
 
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 export const fetchCache = "force-no-store";
@@ -30,7 +31,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ leads: data });
+  return NextResponse.json({ leads: (data ?? []).filter(isActiveFederationContact) });
 }
 
 // Columns the dashboard / API clients are allowed to mutate. Anything
@@ -59,6 +60,11 @@ export async function PATCH(req: NextRequest) {
   const body = await req.json();
   const { id } = body as { id?: string };
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 });
+  const { data: existing, error: existingError } = await supabase.from('omni_leads_generated').select('email,raw_data,company').eq('id', id).maybeSingle();
+  if (existingError) return NextResponse.json({ error: 'Lead lookup unavailable' }, { status: 503 });
+  if (!existing || !isActiveFederationContact(existing) || !isActiveFederationContact(body)) {
+    return NextResponse.json({ error: 'This contact is retired from the federation' }, { status: 410 });
+  }
 
   const updates: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(body)) {

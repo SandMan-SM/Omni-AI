@@ -1,5 +1,6 @@
 import { Pool } from 'pg';
 import { leadSenderFor } from '@/lib/lead-sender';
+import { requireActiveFederationIdentity } from '@/lib/federation-retirement';
 
 /**
  * Reads the federation's lead sending identity from the database.
@@ -89,10 +90,11 @@ async function load(): Promise<Map<string, string>> {
 /**
  * The From address for a tenant's lead alert.
  *
- * Registry first, derived value second. Never throws and never returns empty —
- * a caller on a fail-closed route can use the result unconditionally.
+ * Retired identities throw before either lookup or fallback. Active identities
+ * retain the registry-first, derived-value fallback during database failures.
  */
 export async function resolveLeadSender(slug: string): Promise<string> {
+  requireActiveFederationIdentity(slug);
   const rows = await load();
   return rows.get(slug) || leadSenderFor(slug);
 }

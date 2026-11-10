@@ -1,5 +1,6 @@
 import { ReportingError, type Actor, type Query } from './reporting-portfolio';
 import { seoQuery } from './reporting-seo';
+import { isRetiredFederationSocialPost } from './server/federation-contact-retirement';
 
 // This is a read-only projection of existing queues, not a destination grant.
 export const SOCIAL_CALENDAR_OWNER = '9de99ed9-e7ec-4a85-824e-c812944dff9c';
@@ -209,7 +210,10 @@ export async function readSocialCalendar(actor: Actor, month: string, run: Query
   });
   const seen = new Set<string>();
   let previousOrder = '';
-  const posts = snapshot.posts.map(value => {
+  const posts = snapshot.posts.filter(value => {
+    const row = object(value);
+    return !isRetiredFederationSocialPost(row.id, [row.caption, row.media_items, row.image_url, row.media_urls]);
+  }).map(value => {
     const row = object(value), account = SOCIAL_CALENDAR_ACCOUNTS.find(a => a.id === row.account_id);
     const story = row.source_family === 'review_story';
     if (!account || (story ? !['instagram:17841447083280836', 'instagram:17841455380168782', 'facebook:1369654166234751'].includes(account.id) : row.source_family !== sourceFamily(account)) || row.owner_user_id !== SOCIAL_CALENDAR_OWNER || typeof row.id !== 'string'

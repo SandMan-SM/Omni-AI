@@ -1,3 +1,4 @@
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -105,13 +106,13 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const clients = (clientsRes.data ?? []) as PortfolioClient[];
+  const clients = ((clientsRes.data ?? []) as PortfolioClient[]).filter(isActiveFederationRecord);
   const ships = (shipsRes.data ?? []) as BuildLogRow[];
   const risks = (risksRes.data ?? []) as RiskRow[];
   const defects = (defectsRes.data ?? []) as LedgerRow[];
   const clientBySlug = new Map(clients.map((client) => [client.slug, client]));
 
-  const assets = CLIENT_AGENT_REGISTRY.map((entry) => {
+  const assets = CLIENT_AGENT_REGISTRY.filter(isActiveFederationRecord).map((entry) => {
     const client = clientBySlug.get(entry.slug);
     const dataKeys = Object.keys(entry.dataConnections);
     const dataValues = Object.values(entry.dataConnections);

@@ -1,0 +1,26 @@
+[
+  {
+    "aliases": [
+      "achatwithliz",
+      "achat-with-liz",
+      "a-chat-with-liz",
+      "A Chat with Liz",
+      "Liz Knight",
+      "a_chat_with_liz",
+      "a chat with liz",
+      "liz-booking",
+      "achatwithliz-editor",
+      "achatwithliz_bot"
+    ],
+    "domains": [
+      "achatwithliz.com",
+      "a-chat-with-liz.vercel.app",
+      "www.achatwithliz.com"
+    ],
+    "reason": "Owner requested removal from the federation. Preserve audit and historical records.",
+    "tenant_slug": "achatwithliz",
+    "retired_at": "2026-11-09T00:00:00Z",
+    "retired_by": "owner",
+    "receipt_path": "docs/plans/liz-federation-removal-20261109/receipt.json"
+  }
+]

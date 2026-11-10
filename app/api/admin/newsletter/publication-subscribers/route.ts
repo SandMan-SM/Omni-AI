@@ -3,6 +3,7 @@ import { unstable_noStore as noStore } from 'next/cache';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { requireAdmin } from '@/lib/admin-auth';
 import { getFederationBrief } from '@/lib/federation-newsletter-briefs';
+import { isActiveFederationContact, isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Unable to load publication lists' }, { status: 500 });
   }
 
-  const members = data ?? [];
+  const members = (data ?? []).filter(isActiveFederationContact);
   const active = members.filter((member) => !member.unsubscribed).length;
   return NextResponse.json(
     { members, stats: { total: members.length, active, unsubscribed: members.length - active } },
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
   if (!EMAIL_RE.test(email) || email.length > 254) {
     return NextResponse.json({ error: 'Invalid email' }, { status: 400 });
   }
+  if (isRetiredFederationContact(email)) return NextResponse.json({ error: 'Contact retired from the federation' }, { status: 410 });
 
   const { data, error } = await createAdminClient()
     .from('federation_newsletter_subscribers')

@@ -1,3 +1,4 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 // Today's Focus — single read that returns everything an admin should
 // look at today: hot leads needing first contact, stuck leads needing
 // a nudge, today's meetings, businesses with cancelled meetings to
@@ -48,7 +49,7 @@ export async function GET(req: NextRequest) {
 
     // Stuck leads — open status, no update in 14+ days
     sb.from("omni_leads_generated")
-      .select("id, business_id, first_name, last_name, company, score, status, updated_at")
+      .select("id, business_id, first_name, last_name, company, email, score, status, updated_at")
       .not("status", "in", "(converted,lost)")
       .lte("updated_at", fourteenDaysAgo.toISOString())
       .order("score", { ascending: false })
@@ -72,7 +73,7 @@ export async function GET(req: NextRequest) {
 
     // Conversions in last 24 hours — wins to celebrate
     sb.from("omni_leads_generated")
-      .select("id, business_id, first_name, last_name, company, deal_value, updated_at")
+      .select("id, business_id, first_name, last_name, company, email, deal_value, updated_at")
       .eq("status", "converted")
       .gte("updated_at", dayAgo.toISOString())
       .order("updated_at", { ascending: false }),
@@ -92,10 +93,10 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json({
     today: now.toISOString(),
-    hot_new_leads: (hotLeadsNew ?? []).map(l => ({ ...l, business_name: bizName.get(l.business_id) ?? null })),
-    stuck_leads:   (stuckLeads ?? []).map(l => ({ ...l, business_name: bizName.get(l.business_id) ?? null })),
+    hot_new_leads: (hotLeadsNew ?? []).filter(isActiveFederationContact).map(l => ({ ...l, business_name: bizName.get(l.business_id) ?? null })),
+    stuck_leads:   (stuckLeads ?? []).filter(isActiveFederationContact).map(l => ({ ...l, business_name: bizName.get(l.business_id) ?? null })),
     today_meetings: (todayMeetings ?? []).map(m => ({ ...m, business_name: bizName.get(m.business_id) ?? null })),
     recent_cancelled: (cancelledMeetings ?? []).map(m => ({ ...m, business_name: bizName.get(m.business_id) ?? null })),
-    recent_conversions: (recentConversions ?? []).map(l => ({ ...l, business_name: bizName.get(l.business_id) ?? null })),
+    recent_conversions: (recentConversions ?? []).filter(isActiveFederationContact).map(l => ({ ...l, business_name: bizName.get(l.business_id) ?? null })),
   });
 }

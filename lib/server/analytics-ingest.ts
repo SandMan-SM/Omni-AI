@@ -1,4 +1,6 @@
 import { Pool } from "pg";
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 
 /**
  * analytics-ingest — the registry-driven write path for the consolidated
@@ -107,6 +109,7 @@ async function loadTenants(): Promise<Map<string, TenantRow>> {
 
 /** True if the slug is an active tenant (registry, with degraded-DB fallback). */
 export async function isActiveTenant(slug: string): Promise<boolean> {
+  if (isRetiredFederationIdentity(slug)) return false;
   const rows = await loadTenants();
   const t = rows.get(slug);
   if (t) return t.active;
@@ -115,6 +118,7 @@ export async function isActiveTenant(slug: string): Promise<boolean> {
 
 /** Allowed CORS origins for a tenant from the registry (empty = caller falls back to legacy map). */
 export async function tenantOrigins(slug: string): Promise<string[]> {
+  if (isRetiredFederationIdentity(slug)) return [];
   const rows = await loadTenants();
   return rows.get(slug)?.origins ?? [];
 }
@@ -127,6 +131,7 @@ export type EventIn = {
 };
 
 export async function recordEvent(e: EventIn): Promise<boolean> {
+  if (isRetiredFederationIdentity(e.slug)) return false;
   const p = pool();
   if (!p) return false;
   const r = await withTimeout(
@@ -165,6 +170,7 @@ export type LeadRecord = {
  * notification idempotency key stable.
  */
 export async function recordLeadAndReturn(l: LeadIn): Promise<LeadRecord | null> {
+  if (isRetiredFederationIdentity(l.slug) || isRetiredFederationContact(l.email)) return null;
   const p = pool();
   if (!p) return null;
   const r = await withTimeout(
@@ -262,6 +268,7 @@ export async function recordLeadCustomerNotificationState(
 }
 
 export async function recordLead(l: LeadIn): Promise<boolean> {
+  if (isRetiredFederationIdentity(l.slug) || isRetiredFederationContact(l.email)) return false;
   const p = pool();
   if (!p) return false;
   const r = await withTimeout(
@@ -280,6 +287,7 @@ export async function recordLead(l: LeadIn): Promise<boolean> {
 }
 
 export async function recordNewsletter(n: { slug: string; email?: string; action?: string; props?: Record<string, unknown> }): Promise<boolean> {
+  if (isRetiredFederationIdentity(n.slug) || isRetiredFederationContact(n.email)) return false;
   const p = pool();
   if (!p) return false;
   const r = await withTimeout(

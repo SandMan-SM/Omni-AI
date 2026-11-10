@@ -1,3 +1,4 @@
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { gatherClientReview, buildClientReviewHtml } from '@/lib/client-review';
@@ -24,7 +25,7 @@ export async function GET(req: Request) {
 
   const results: Array<{ slug: string; emailed: boolean; error?: string }> = [];
 
-  for (const c of clients || []) {
+  for (const c of (clients || []).filter(isActiveFederationRecord)) {
     try {
       const data = await gatherClientReview(c.slug);
       if (!data) {

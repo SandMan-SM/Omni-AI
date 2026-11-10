@@ -1,3 +1,5 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
 import { leadSenderFor } from '@/lib/lead-sender';
 import { resolveAnalyticsPageUrl } from '@/lib/server/analytics-page-url';
 
@@ -40,7 +42,7 @@ async function resolveTenantSlug(rawSlug: string): Promise<string> {
 }
 
 async function syncResendContact(email: string, firstName?: string | null): Promise<void> {
-  if (!process.env.RESEND_API_KEY) return;
+  if (isRetiredFederationContact(email) || !process.env.RESEND_API_KEY) return;
   try {
     const res = await fetch('https://api.resend.com/contacts', {
       method: 'POST',
@@ -68,6 +70,7 @@ async function persistFederationSubscriber(input: {
   firstName?: string | null;
   source?: string | null;
 }): Promise<boolean> {
+  if (isRetiredFederationIdentity(input.site) || isRetiredFederationContact(input.email)) return false;
   try {
     const sb = createAdminClient();
     const { error } = await sb

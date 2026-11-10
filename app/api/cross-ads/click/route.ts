@@ -4,6 +4,7 @@
 
 import { NextResponse, NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -24,6 +25,7 @@ export async function OPTIONS() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
+    if (isRetiredFederationIdentity(body.originating_slug, body.attribution_url)) return NextResponse.json({ ok: false, error: 'federation_tenant_retired' }, { status: 410, headers: cors() });
     const sb = createAdminClient();
     await sb.from("cross_ad_clicks").insert({
       creative_id: body.creative_id || null,

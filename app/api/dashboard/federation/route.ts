@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -66,6 +67,7 @@ async function loadFunnel(): Promise<FunnelRow[]> {
   for (const c of (creatives || []) as Array<{
     id: string; target_slug: string; eyebrow: string; headline_md: string; base_weight: number; pantheon_weight: number;
   }>) {
+    if (!isActiveFederationRecord(c)) continue;
     const [{ count: imp }, { count: clk }, { count: cvr }] = await Promise.all([
       sb.from("cross_ad_impressions").select("id", { count: "exact", head: true }).eq("creative_id", c.id).gte("ts", since),
       sb.from("cross_ad_clicks").select("id", { count: "exact", head: true }).eq("creative_id", c.id).gte("ts", since),
@@ -97,6 +99,7 @@ async function loadLeaderboard(): Promise<LeaderRow[]> {
 
   const counts = new Map<string, number>();
   for (const row of (data || []) as Array<{ originating_slug: string | null }>) {
+    if (!isActiveFederationRecord(row)) continue;
     const k = row.originating_slug || "(unknown)";
     counts.set(k, (counts.get(k) || 0) + 1);
   }

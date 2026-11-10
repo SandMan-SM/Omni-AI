@@ -1,3 +1,5 @@
+import { isActiveFederationContact, isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 // Quick-search endpoint for the Cmd-K palette. Searches across leads,
 // businesses, and meetings in one query, returns up to 20 results with
 // type + URL so the palette can route the user.
@@ -62,7 +64,7 @@ export async function GET(req: NextRequest) {
   const results: SearchResult[] = [];
 
   // Leads — exact name/email match scores higher
-  for (const l of leadsR.data ?? []) {
+  for (const l of (leadsR.data ?? []).filter(isActiveFederationContact)) {
     const fullName = [l.first_name, l.last_name].filter(Boolean).join(" ");
     const matchStrength =
       (l.email?.toLowerCase().includes(lower) ? 3 : 0) +
@@ -79,7 +81,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Businesses
-  for (const b of bizsR.data ?? []) {
+  for (const b of (bizsR.data ?? []).filter(isActiveFederationRecord)) {
     results.push({
       type: "business",
       id: b.id,
@@ -92,6 +94,7 @@ export async function GET(req: NextRequest) {
 
   // Meetings
   for (const m of mtgsR.data ?? []) {
+    if (isRetiredFederationContact(m.attendee_email)) continue;
     const start = new Date(m.start_at);
     results.push({
       type: "meeting",

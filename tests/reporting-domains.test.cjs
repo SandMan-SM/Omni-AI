@@ -1,3 +1,4 @@
+const { retirementMocks } = require('./helpers/federation-retirement.cjs');
 const test=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -8,7 +9,7 @@ const SECRET='s'.repeat(40);
 function load(path,mocks={}){
  const module={exports:{}};
  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText,
-  {module,exports:module.exports,require:n=>mocks[n]??require(n),process:{env:{AISEMPIRE_INBOUND_SECRET:SECRET}},Date,URL,Request,Response,Buffer,AbortSignal,fetch},{filename:path});
+  {module,exports:module.exports,require:n=>mocks[n]??retirementMocks[n]??require(n),process:{env:{AISEMPIRE_INBOUND_SECRET:SECRET}},Date,URL,Request,Response,Buffer,AbortSignal,fetch},{filename:path});
  return module.exports;
 }
 const portfolio=load('lib/reporting-portfolio.ts');
@@ -36,15 +37,15 @@ test('provider snapshot is scoped before attachment and never leaks into another
  const report=await api.readDomainReport(member,null,30,query);assert.equal(report.domains.length,1);assert.equal(report.domains[0].providerSnapshot,undefined);
  const all=await api.readDomainReport(owner,null,30,query);assert.equal(all.domains.filter(d=>d.providerSnapshot).length,1);assert.equal(all.domains.find(d=>d.providerSnapshot).domain,'ecocityjunkremoval.com');
 });
-test('catalog is82purchased roots plus7 approved client roots with no preview/www/shared Wix host rows',()=>{
- assert.equal(api.DOMAIN_CATALOG.length,89);assert.equal(catalog.registrarCount,82);
- assert.equal(new Set(api.DOMAIN_CATALOG.map(d=>d.domain)).size,89);
+test('catalog is82purchased roots plus6 active approved client roots with no preview/www/shared Wix host rows',()=>{
+ assert.equal(api.DOMAIN_CATALOG.length,88);assert.equal(catalog.registrarCount,82);
+ assert.equal(new Set(api.DOMAIN_CATALOG.map(d=>d.domain)).size,88);
  assert.equal(api.DOMAIN_CATALOG.filter(d=>d.kind==='namecheap').length,82);
  assert(!api.DOMAIN_CATALOG.some(d=>d.domain.startsWith('www.')||d.domain.endsWith('.vercel.app')||d.domain.includes('wixsite.com')));
  assert(api.DOMAIN_CATALOG.some(d=>d.domain==='ecocityjunkremoval.com'&&d.kind==='client_managed'));
 });
 test('accepted member scope cannot enumerate or query another tenant, aliases, uppercase or arbitrary SQL',async()=>{
- assert.equal(api.scopeDomains(member,null).length,1);assert.equal(api.scopeDomains(owner,null).length,89);
+ assert.equal(api.scopeDomains(member,null).length,1);assert.equal(api.scopeDomains(owner,null).length,88);
  let reads=0;const query=async()=>{reads++;return{rows:[]};};
  for(const requested of ['aisempire.org','ecocityjunkremoval.com'])await assert.rejects(api.readDomainReport(member,requested,30,query,now),e=>e.status===403);
  for(const requested of ['www.'+domain,'YOUNGSCABINETREFINISHING.COM',domain+"' OR 1=1 --"])

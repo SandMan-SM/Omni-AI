@@ -1,3 +1,5 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
 // Federation Marketing System — owner-network newsletters + brand-deal funnels.
 //
 // One library, three responsibilities:
@@ -190,6 +192,7 @@ export async function selectAudience(
   sb: SupabaseClient,
   campaign: Pick<MarketingCampaign, 'audience_kind' | 'business_slug'>,
 ): Promise<Recipient[]> {
+  if (isRetiredFederationIdentity(campaign.business_slug)) return [];
   if (campaign.audience_kind === 'owner_network') {
     const { data: owners, error: ownersError } = await sb
       .from('federation_owners')
@@ -210,7 +213,7 @@ export async function selectAudience(
     const suppressedSet = new Set((suppressed ?? []).map((s) => s.email.toLowerCase()));
 
     return owners
-      .filter((o) => !suppressedSet.has(o.email.toLowerCase()))
+      .filter((o) => !isRetiredFederationContact(o.email) && !suppressedSet.has(o.email.toLowerCase()))
       .map((o) => ({ email: o.email, first_name: o.first_name }));
   }
 
@@ -229,7 +232,7 @@ export async function selectAudience(
   if (suppressionError) throw new Error('suppression_lookup_failed');
   const suppressedSet = new Set((suppressed ?? []).map(s => s.email.toLowerCase()));
 
-  return (prospects ?? []).filter(p => !suppressedSet.has(p.prospect_email.toLowerCase())).map((p) => ({
+  return (prospects ?? []).filter(p => !isRetiredFederationContact(p.prospect_email) && !suppressedSet.has(p.prospect_email.toLowerCase())).map((p) => ({
     email: p.prospect_email,
     first_name: p.first_name,
   }));
@@ -487,6 +490,7 @@ export async function sendMarketingEmail(args: SendArgs): Promise<{
   resend_id?: string;
   error?: string;
 }> {
+  if (isRetiredFederationContact(args.to)) return { ok: false, error: 'federation_contact_retired' };
   const notReady = readinessError();
   if (notReady) return { ok: false, error: notReady };
   if (!/^marketing-send:[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(args.idempotency_key)) return { ok: false, error: 'invalid_send_idempotency_key' };

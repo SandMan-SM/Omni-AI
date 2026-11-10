@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendTelegram } from '@/lib/telegram';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import {
   wrapper,
   header,
@@ -64,14 +65,15 @@ export async function gatherDailyBrief(): Promise<DailyBriefPayload> {
   const tMap: Record<string, number> = {};
   for (const m of todayMetrics || []) tMap[m.client_slug] = m.mrr_usd || 0;
 
-  const ships24 = recentShips || [];
+  const ships24 = (recentShips || []).filter(isActiveFederationRecord);
   const shipCountBySlug: Record<string, number> = {};
   for (const s of ships24) if (s.client_slug) shipCountBySlug[s.client_slug] = (shipCountBySlug[s.client_slug] || 0) + 1;
 
   const severityMap: Record<string, string> = {};
   for (const r of reds || []) if (r.client_slug) severityMap[r.client_slug] = 'red';
 
-  const perClient = (clients || []).map((c: any) => ({
+  const activeClients = (clients || []).filter(isActiveFederationRecord);
+  const perClient = activeClients.map((c: any) => ({
     slug: c.slug,
     name: c.name,
     emoji: c.emoji || '📦',
@@ -88,7 +90,7 @@ export async function gatherDailyBrief(): Promise<DailyBriefPayload> {
   // story. The downstream UI already handles the +/- prefix to show
   // direction; what we want here is "the largest absolute change."
   let biggest: { slug: string; name: string; delta_mrr_usd: number } | undefined;
-  for (const c of clients || []) {
+  for (const c of activeClients) {
     const delta = (tMap[c.slug] || 0) - (yMap[c.slug] || 0);
     if (!biggest || Math.abs(delta) > Math.abs(biggest.delta_mrr_usd)) {
       biggest = { slug: c.slug, name: c.name, delta_mrr_usd: delta };
@@ -110,7 +112,7 @@ export async function gatherDailyBrief(): Promise<DailyBriefPayload> {
     portfolio_mrr_usd: portfolio_mrr,
     biggest_mover: biggest,
     ships_24h: ships24.length,
-    reds: (reds || []).length,
+    reds: (reds || []).filter(isActiveFederationRecord).length,
     per_client: perClient,
     recent_ships: ships24.slice(0, 12),
     focus,

@@ -1,3 +1,4 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 import { NextRequest, NextResponse } from 'next/server';
 
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest) {
     let duplicates = 0;
     const seenEmails = new Set<string>();
     const seenLinkedins = new Set<string>();
-    const leadsToInsert = validRows
+    const leadsToInsert = validRows.filter(isActiveFederationContact)
       .filter(r => {
         const emailKey = r.email?.toLowerCase();
         if (emailKey && existingEmails.has(emailKey)) { duplicates++; return false; }

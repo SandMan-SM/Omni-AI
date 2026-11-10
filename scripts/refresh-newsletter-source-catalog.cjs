@@ -1,5 +1,10 @@
 const fs=require('fs'),path=require('path'),vm=require('vm');
 const ts=require('typescript');
+const retired=require('../lib/retired-federation-tenants.json');
+const retiredPublications=require('../lib/retired-federation-publications.json');
+const identity=value=>String(value||'').normalize('NFKC').toLowerCase().replace(/[^a-z0-9]/g,'');
+const retiredIds=new Set(retired.flatMap(row=>[row.tenant_slug,...row.aliases,...row.domains]).map(identity));
+const isRetired=(...values)=>values.some(value=>retiredIds.has(identity(value)));
 // Host-side metadata extractor. Run only after resolving federation.surfaces.
 // Never deploy from folder names; --registry must be an explicit read-only registry export.
 const args=Object.fromEntries(process.argv.slice(2).map(arg=>{const at=arg.indexOf('=');return [arg.slice(2,at),arg.slice(at+1)];}));
@@ -9,9 +14,8 @@ const dbSlugs=args['database-slugs']?JSON.parse(fs.readFileSync(path.resolve(arg
 const coverageIssues=args['coverage-issues']?JSON.parse(fs.readFileSync(path.resolve(args['coverage-issues']),'utf8')):{};
 if(!coverageIssues||typeof coverageIssues!=='object'||Array.isArray(coverageIssues)||Object.entries(coverageIssues).some(([id,issue])=>!/^[a-z0-9][a-z0-9_-]{0,119}$/.test(id)||typeof issue!=='string'||!issue.trim()||issue.length>400||/[\r\n]/.test(issue)))throw Error('invalid_coverage_issues');
 const appliedCoverageIssues=new Set();
-const rows=JSON.parse(fs.readFileSync(path.resolve(args.registry),'utf8')).filter(x=>x.role==='primary');
+const rows=JSON.parse(fs.readFileSync(path.resolve(args.registry),'utf8')).filter(x=>x.role==='primary'&&!isRetired(x.tenant_slug,x.domain,x.vercel_project));
 const C={
- achatwithliz:{name:'A Chat with Liz',niche:'relationships',module:'lib/newsletter.ts',export:'ISSUES',route:'/newsletter/',family:'json-issues',archive:'/newsletter',date:'2026-09-17'},
  aisempire:{name:'AIS Empire',niche:'artificial-intelligence',module:'lib/articles.ts',export:'ARTICLES',route:'/newsletter/',family:'ts-articles',archive:'/newsletter'},
  beehive:{name:'Beehive Biz Pulse',niche:'utah-business',family:'newsroom-db-markdown',archive:'/archive',route:'/posts/',masthead:'beehive'},
  cpsutah:{name:'Clinical and Professional Solutions',niche:'health-and-community',module:'lib/posts.ts',export:'POSTS',route:'/blog/',family:'ts-posts',archive:'/blog'},
@@ -59,6 +63,7 @@ function iso(v){if(typeof v!=='string'||!v)return null;let t=new Date(v);return 
 function texts(v){if(typeof v==='string')return v;if(Array.isArray(v))return v.filter(x=>typeof x==='string').join(' ');return null;}
 const posts=[],sources=[],inventory=[];
 function add(sourceId,p,route,defaultDate){
+ if(retiredPublications.some(row=>row.source_id===sourceId&&row.slugs.includes(p.slug)))return;
  const title=texts(p.title)||texts(p.question)||texts(p.subject)||texts(p.seoTitle);
  if(typeof p.slug!=='string'||!title)throw Error('article_metadata_missing_slug_or_title');
  const tags=[...(Array.isArray(p.tags)?p.tags:[]),...(Array.isArray(p.keywords)?p.keywords:[]),p.category,p.kind,p.topic].filter(x=>typeof x==='string'&&x.trim());
@@ -83,11 +88,7 @@ for(const r of rows){
    const mod=moduleLoader(root)(path.join(root,c.module));const data=mod[c.export];
    if(!Array.isArray(data))throw Error('export_not_array');
    data.forEach(p=>add(s.id,p,c.route,c.date||mod.EDITORIAL_DATE));inv.staticCount=data.length;
-   if(s.id==='achatwithliz'&&fs.existsSync(path.join(root,'lib/general-news.ts'))){
-    const news=moduleLoader(root)(path.join(root,'lib/general-news.ts')).GENERAL_NEWS;
-    if(!Array.isArray(news))throw Error('general_news_export_not_array');
-    news.forEach(p=>add(s.id,p,c.route));inv.staticCount+=news.length;
-   }
+
   }catch(e){s.available=false;s.issue='Static archive metadata could not be extracted';inv.error='static_archive_extraction_failed';}
  }
  if(c.family==='newsroom-db-markdown'){
@@ -120,7 +121,7 @@ for(const r of rows){
  if(coverageIssues[s.id]){s.available=false;s.state='unavailable';s.issue=coverageIssues[s.id];appliedCoverageIssues.add(s.id);}
  sources.push(s);inventory.push(inv);
 }
-if(Object.keys(coverageIssues).some(id=>!appliedCoverageIssues.has(id)))throw Error('unrecognized_coverage_issue_source');
+if(Object.keys(coverageIssues).some(id=>!isRetired(id)&&!appliedCoverageIssues.has(id)))throw Error('unrecognized_coverage_issue_source');
 // Same tenant can appear under two primary domains in federation; retain one source per tenant.
 const uniqueSources=Array.from(new Map(sources.map(x=>[x.id,x])).values());
 const uniquePosts=Array.from(new Map(posts.map(x=>[x.sourceId+':'+x.path,x])).values());

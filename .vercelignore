@@ -56,3 +56,6 @@ scripts/check-ais-production-replay.cjs
 # Host-only newsletter inventory and read-only operator verification.
 scripts/refresh-newsletter-source-catalog.cjs
 scripts/check-newsletter-report.ts
+
+# All isolated Next build output stays local.
+.next*/

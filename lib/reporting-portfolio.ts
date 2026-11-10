@@ -2,14 +2,9 @@ import { Pool } from 'pg';
 import { createClient } from '@supabase/supabase-js';
 import { createHash, timingSafeEqual } from 'node:crypto';
 
+import { isActiveFederationRecord } from './federation-retirement';
 // Owner-approved portfolio scope. Deployment routing still comes from federation.surfaces.
 export const PORTFOLIO_SURFACES = [
-  {
-    "assetId": "achatwithliz",
-    "tenantSlug": "achatwithliz",
-    "displayName": "A Chat with Liz",
-    "domain": "achatwithliz.com"
-  },
   {
     "assetId": "agiarena",
     "tenantSlug": "agiarena",
@@ -304,7 +299,7 @@ export function daysFrom(value: string | null): 7 | 30 | 90 {
   throw new ReportingError(400, 'invalid_range');
 }
 export function scopeSurfaces(actor: Actor, requested: string | null): readonly Surface[] {
-  const allowed = actor.isPlatform ? PORTFOLIO_SURFACES : PORTFOLIO_SURFACES.filter(s => actor.businessSlugs.includes(s.tenantSlug));
+  const allowed = PORTFOLIO_SURFACES.filter(s => isActiveFederationRecord(s) && (actor.isPlatform || actor.businessSlugs.includes(s.tenantSlug)));
   if (!allowed.length) throw new ReportingError(403, 'portfolio_access_required');
   if (!requested || requested === 'all') return allowed;
   const matched = allowed.filter(s => s.assetId === requested);

@@ -31,6 +31,8 @@
  * owns its domain can send from it. `omnileadsagi.com` is NOT in the account
  * and must never be added here.
  */
+import { requireActiveFederationIdentity } from './federation-retirement';
+
 export const VERIFIED_SENDING_DOMAINS = new Set([
   'leadfranchise.org',
   'sitanimafi.com',
@@ -112,6 +114,7 @@ export function resolveSender(
   brandDomain: string,
   localPart = 'newsletter',
 ): ResolvedSender {
+  requireActiveFederationIdentity(brandName, brandDomain);
   const preferred =
     BRAND_SENDING_DOMAIN[brandDomain.toLowerCase()] ?? brandDomain.toLowerCase();
 

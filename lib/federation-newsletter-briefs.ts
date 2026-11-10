@@ -12,6 +12,8 @@
 //   3. Add a Vercel cron entry on the site repo's vercel.json that POSTs
 //      `https://omnileadsagi.com/api/federation-newsletter/generate-daily?site=<slug>&secret=$OMNI_FEDERATION_CRON_SECRET`
 
+import { isRetiredFederationIdentity } from './federation-retirement';
+
 export type FederationNewsletterBrief = {
   /** Slug matches lib/case-studies.ts and the federation_newsletter_posts.site column. */
   site: string;
@@ -220,6 +222,7 @@ export const FEDERATION_NEWSLETTER_BRIEFS: FederationNewsletterBrief[] = [
 export function getFederationBrief(
   site: string,
 ): FederationNewsletterBrief | null {
+  if (isRetiredFederationIdentity(site)) return null;
   return FEDERATION_NEWSLETTER_BRIEFS.find((b) => b.site === site) ?? null;
 }
 

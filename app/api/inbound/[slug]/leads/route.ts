@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 import { timingSafeEqual } from 'node:crypto';
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -630,6 +631,7 @@ export async function POST(
 
     const name = sanitizeText(body.name, 200);
     const email = sanitizeText(body.email, 254).toLowerCase();
+    if (isRetiredFederationContact(email)) return NextResponse.json({ error: 'Contact retired from the federation' }, { status: 410 });
     const phone = sanitizeText(body.phone, 50);
     const message = sanitizeText(body.message, 4000);
     const source = sanitizeText(body.source, 50) || 'contact_form';

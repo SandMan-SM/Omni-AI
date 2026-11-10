@@ -9,6 +9,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { pickCreative, type CrossAdSlot, type CrossAdCreative } from "@/lib/cross-ads";
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -34,6 +35,7 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
   const slug = (url.searchParams.get("slug") || "").trim().toLowerCase() || "unknown";
+  if (isRetiredFederationIdentity(slug)) return NextResponse.json({ ok: false, error: 'federation_tenant_retired' }, { status: 410, headers: corsHeaders() });
   const slotRaw = (url.searchParams.get("slot") || "footer") as CrossAdSlot;
   const slot: CrossAdSlot = ALLOWED_SLOTS.includes(slotRaw) ? slotRaw : "footer";
   const visitor = (url.searchParams.get("visitor") || "").slice(0, 120) || null;

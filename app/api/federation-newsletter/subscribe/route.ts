@@ -8,6 +8,7 @@ import {
 import { buildUnsubscribeUrl } from '@/lib/unsubscribe-token';
 import { ixLegacySignupPost } from '@/lib/server/ix-network-legacy';
 import { handleCpsSubscription } from '@/lib/server/cps-newsletter-intake';
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -199,6 +200,7 @@ export async function POST(req: Request) {
 
   const site =
     typeof body.site === 'string' ? body.site.trim().toLowerCase() : '';
+  if (isRetiredFederationContact(body.email)) return withCors(NextResponse.json({ ok: false, error: 'Contact retired from the federation' }, { status: 410 }));
   if (!site) {
     return withCors(
       NextResponse.json(

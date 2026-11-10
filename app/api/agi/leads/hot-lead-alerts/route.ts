@@ -1,3 +1,4 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 // Hot-lead scanner — finds every omni_leads_generated row with score >= 80
 // that hasn't been alerted yet, fires a Telegram alert per lead, and logs
 // the alert so we don't double-fire.
@@ -63,7 +64,7 @@ async function run(req: NextRequest): Promise<NextResponse> {
     .in("lead_id", candidates.map(c => c.id));
   const alreadyAlerted = new Set((existing ?? []).map(r => r.lead_id));
 
-  const fresh = candidates.filter(c => !alreadyAlerted.has(c.id));
+  const fresh = candidates.filter(c => isActiveFederationContact(c) && !alreadyAlerted.has(c.id));
   if (fresh.length === 0) {
     return NextResponse.json({ ok: true, scanned: candidates.length, alerted: 0 });
   }

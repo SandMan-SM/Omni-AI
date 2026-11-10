@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 // Resend send + tracking helper.
 // Wraps the Resend SDK and updates outreach asset status in Supabase after send.
 
@@ -28,6 +29,7 @@ export async function sendOutreachEmail(input: SendInput): Promise<{
   message_id?: string;
   error?: string;
 }> {
+  if (isRetiredFederationContact(input.to)) return { ok: false, error: 'federation_contact_retired' };
   const from = input.from ?? process.env.RESEND_FROM ?? 'OmniLeads AGI <agent@omnios.news>';
 
   // Check suppression list first (unsubscribes are legally must-respect)

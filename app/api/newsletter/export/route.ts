@@ -1,3 +1,4 @@
+import { isActiveFederationContact } from '@/lib/server/federation-contact-retirement';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
 
     if (error) throw error;
 
-    const rows = data || [];
+    const rows = (data || []).filter(isActiveFederationContact);
     const header = 'id,email,first_name,subscription_tier,subscribed,created_at\n';
     // Defuse formula injection — Excel/Sheets execute cells starting with
     // =, +, -, @ or tab on open. Prefix offending values with an apostrophe.

@@ -1,3 +1,4 @@
+const { retirementMocks } = require('./helpers/federation-retirement.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -11,7 +12,7 @@ function load(path, mocks = {}) {
   const module = { exports: {} };
   vm.runInNewContext(ts.transpileModule(fs.readFileSync(path, 'utf8'), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-  }).outputText, { module, exports: module.exports, require: name => mocks[name] ?? require(name),
+  }).outputText, { module, exports: module.exports, require: name => mocks[name] ?? retirementMocks[name] ?? require(name),
     process: { env: { AISEMPIRE_INBOUND_SECRET: SECRET } }, URL, URLSearchParams, Request, Response, Date, Intl, AbortSignal, Buffer }, { filename: path });
   return module.exports;
 }
@@ -106,15 +107,34 @@ test('paging and combined tag/source/niche/status/search filters preserve full-c
   assert.equal(empty.items.length, 0); assert.equal(empty.pagination.total, 1507);
 });
 test('a deployed source with a confirmed public DNS failure stays discoverable without a broken article link', async () => {
-  const source = { id: 'liz', name: 'A Chat with Liz', siteUrl: 'https://achatwithliz.com', niche: 'relationships', available: false, state: 'unavailable', issue: 'Custom domain DNS has no address' };
-  const result = await fixture([post({ source_id: 'liz', post_key: 'static:news', slug: 'news', path: '/newsletter/news', editorial_niche: 'general-news', editorial_tags: ['General News'] })],
+  const source = { id: 'unavailable', name: 'Unavailable Site', siteUrl: 'https://unavailable.example.com', niche: 'relationships', available: false, state: 'unavailable', issue: 'Custom domain DNS has no address' };
+  const result = await fixture([post({ source_id: 'unavailable', post_key: 'static:news', slug: 'news', path: '/newsletter/news', editorial_niche: 'general-news', editorial_tags: ['General News'] })],
     { ...manifest, sources: [...manifest.sources, source] }).read('tag=general-news');
   assert.equal(result.items.length, 1);
   assert.equal(result.items[0].status, 'published');
   assert.equal(result.items[0].url, null);
-  assert.equal(result.options.sources.find(item => item.id === 'liz').count, 1);
+  assert.equal(result.options.sources.find(item => item.id === 'unavailable').count, 1);
   assert.equal(result.coverage.complete, false);
-  assert.deepEqual(clone(result.coverage.issues), ['A Chat with Liz: Custom domain DNS has no address']);
+  assert.deepEqual(clone(result.coverage.issues), ['Unavailable Site: Custom domain DNS has no address']);
+});
+test('retirement overrides a stale source manifest and retained database post without breaking the active portfolio', async () => {
+  const retired = { id: 'achatwithliz', name: 'A Chat with Liz', siteUrl: 'https://achatwithliz.com', niche: 'relationships', available: true, state: 'archive' };
+  const f = fixture([post(), post({ source_id: 'achatwithliz', post_key: 'static:historical', slug: 'historical' })],
+    { ...manifest, sources: [...manifest.sources, retired] });
+  const result = await f.read();
+  assert.equal(result.summary.total, 1);
+  assert.equal(result.items.some(row => row.sourceId === 'achatwithliz'), false);
+  assert.equal(result.options.sources.some(row => row.id === 'achatwithliz'), false);
+  assert.equal(result.coverage.issues.some(issue => issue.includes('Liz')), false);
+  await assert.rejects(f.read('source=achatwithliz'), error => error.status === 400);
+});
+test('a retired promotional slug is excluded from an otherwise active tenant without hiding unrelated issues', async () => {
+  const source = { id: 'mafiempire', name: 'Mafi Empire', siteUrl: 'https://mafiempire.com', niche: 'business', available: true, state: 'archive' };
+  const f = fixture([post({ source_id: 'mafiempire', slug: 'a-chat-with-liz-make-room-for-a-real-conversation', title: 'Personal Branding for Coaches' }),
+    post({ source_id: 'mafiempire', slug: 'an-unrelated-guide', title: 'An unrelated guide' })], { ...manifest, sources: [...manifest.sources, source] });
+  const result = await f.read('source=mafiempire');
+  assert.equal(result.items.length, 1); assert.equal(result.items[0].slug, 'an-unrelated-guide');
+  assert.equal(result.options.sources.find(row => row.id === 'mafiempire').count, 1);
 });
 test('catalog previews show readable citation labels and a visible ellipsis for truncated text', async () => {
   const result = await fixture([post({ preview: 'Confirmed. [Nvidia statement](https://example.com/' + 'long'.repeat(100) + ').' })]).read();

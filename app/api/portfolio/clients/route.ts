@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from "next/cache";
 import { createAdminClient } from '@/lib/supabase/admin';
 import { authorizeCronOrAdmin } from '@/lib/api-auth';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
     if (r.severity === 'yellow') riskCountByClient[r.client_slug].yellow++;
   }
 
-  const enriched = (clients || []).map((c: any) => {
+  const enriched = (clients || []).filter(isActiveFederationRecord).map((c: any) => {
     const risk = riskCountByClient[c.slug] || { red: 0, yellow: 0 };
     const severity: 'red' | 'yellow' | 'green' = risk.red > 0 ? 'red' : risk.yellow > 0 ? 'yellow' : 'green';
     const target = c.arr_target_usd || 1_000_000;

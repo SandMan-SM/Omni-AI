@@ -1,3 +1,4 @@
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { requireAdmin } from "@/lib/admin-auth";
@@ -33,6 +34,8 @@ export async function POST(request: Request) {
   if (!EMAIL_RE.test(email)) {
     return NextResponse.json({ error: "invalid email" }, { status: 400 });
   }
+
+  if (isRetiredFederationContact(email)) return NextResponse.json({ error: 'Contact retired from the federation' }, { status: 410 });
 
   const subscription_tier = (body.subscription_tier || "subscribed").toString();
   const first_name = body.first_name ? String(body.first_name).trim() : null;

@@ -32,6 +32,8 @@ import {
 import { sendTelegram } from '@/lib/telegram';
 import { resolveSender } from '@/lib/sender-registry';
 import { buildUnsubscribeUrl } from '@/lib/unsubscribe-token';
+import { isRetiredFederationIdentity } from '@/lib/federation-retirement';
+import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY || '';
 const RESEND_API_KEY = process.env.RESEND_API_KEY || '';
@@ -165,6 +167,7 @@ export async function approvePost(
   postId: string,
   site: string,
 ): Promise<{ ok: boolean; published?: boolean; error?: string }> {
+  if (isRetiredFederationIdentity(site)) return { ok: false, published: false, error: 'federation_tenant_retired' };
   if (site === 'cps') {
     return { ok: false, published: false, error: 'CPS automated publication is disabled until per-recipient, fail-closed delivery is implemented' };
   }
@@ -212,6 +215,7 @@ export async function rejectPost(
   site: string,
   reason?: string,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (isRetiredFederationIdentity(site)) return { ok: false, error: 'federation_tenant_retired' };
   const sb = createAdminClient();
   const { data: row } = await sb
     .from('federation_newsletter_posts')
@@ -237,6 +241,7 @@ export async function getPublishedPost(
   site: string,
   slug: string,
 ): Promise<FederationPostRow | null> {
+  if (isRetiredFederationIdentity(site)) return null;
   const sb = createAdminClient();
   const { data } = await sb
     .from('federation_newsletter_posts')
@@ -252,6 +257,7 @@ export async function getPublishedPostsForSite(
   site: string,
   limit = 30,
 ): Promise<FederationPostRow[]> {
+  if (isRetiredFederationIdentity(site)) return [];
   const sb = createAdminClient();
   const { data } = await sb
     .from('federation_newsletter_posts')
@@ -480,6 +486,7 @@ async function resolveOwnerEmail(
 
 // Load active (unsubscribed=false) subscriber emails for a site.
 async function loadSubscriberEmails(federationSlug: string): Promise<string[]> {
+  if (isRetiredFederationIdentity(federationSlug)) return [];
   const sb = createAdminClient();
   const { data } = await sb
     .from('federation_newsletter_subscribers')
@@ -488,13 +495,14 @@ async function loadSubscriberEmails(federationSlug: string): Promise<string[]> {
     .eq('unsubscribed', false);
   return (data ?? [])
     .map((r: { email?: string }) => (r.email || '').trim().toLowerCase())
-    .filter(Boolean);
+    .filter(email => Boolean(email) && !isRetiredFederationContact(email));
 }
 
 async function dispatchPublishedToOwner(
   row: FederationPostRow,
   brief: FederationNewsletterBrief,
 ): Promise<{ ok: boolean; error?: string }> {
+  if (isRetiredFederationIdentity(row.site, brief.site, brief.domain, brief.brandName)) return { ok: false, error: 'federation_tenant_retired' };
   if (row.site === 'cps') {
     return { ok: false, error: 'CPS automated publication is disabled until per-recipient, fail-closed delivery is implemented' };
   }

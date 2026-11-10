@@ -1,3 +1,4 @@
+const { retirementMocks } = require('./helpers/federation-retirement.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -9,7 +10,7 @@ function load(path, mocks = {}) {
  const module = { exports: {} };
  vm.runInNewContext(ts.transpileModule(fs.readFileSync(path, 'utf8'), {
   compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
- }).outputText, { module, exports: module.exports, require: name => mocks[name] ?? require(name),
+ }).outputText, { module, exports: module.exports, require: name => mocks[name] ?? retirementMocks[name] ?? require(name),
   process: { env: { AISEMPIRE_INBOUND_SECRET: SECRET } }, URL, Request, Response, Date, AbortSignal, fetch, Buffer }, { filename: path });
  return module.exports;
 }
