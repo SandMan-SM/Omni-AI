@@ -214,6 +214,11 @@ test('service consultations preserve the selected Mafi service and consultation 
   assert.equal(state.pageUrl,MAFI_CONSULTATION_PAGE);
   assert.equal(state.consultation?.service,'content-studio');
   assert.match(state.owner.payload.text,/Content Studio consultation/);
+  assert.match(state.customer.payload.text,/2:30 PM Mountain Time/);
+  assert.throws(()=>parsePartnerInput(consultation({service:'content-studio',page_url:MAFI_CONSULTATION_PAGE,preferred_time:'08:30'})),code('invalid_preferred_time'));
+  assert.throws(()=>parsePartnerInput(consultation({service:'content-studio',page_url:MAFI_CONSULTATION_PAGE,preferred_time:'09:15'})),code('invalid_preferred_time'));
+  assert.throws(()=>parsePartnerInput(consultation({service:'content-studio',page_url:MAFI_CONSULTATION_PAGE,preferred_time:'17:30'})),code('invalid_preferred_time'));
+  assert.throws(()=>parsePartnerInput(consultation({service:'content-studio',page_url:MAFI_CONSULTATION_PAGE,time_zone:'UTC'})),code('invalid_time_zone'));
   assert.throws(()=>parsePartnerInput(consultation({service:'content-studio'})),code('invalid_source_context'));
 });
 
@@ -274,7 +279,7 @@ test('new and existing-contact consultations preserve signed structured intent a
     assert.equal(store.analytics.get(state.submissionId)?.signature,state.signature);
     assert.equal(store.crmStates.get(state.crmId)?.[state.submissionId].signature,state.signature);
   }
-  for(const text of messages){assert.match(text,/2030-01-02/);assert.match(text,/14:30/);assert.match(text,/America\/Denver/);assert.match(text,/Pending confirmation/);assert.match(text,/not a confirmed booking/);}
+  for(const text of messages){assert.match(text,/2030-01-02/);assert.match(text,/2:30 PM Mountain Time/);assert.match(text,/Pending confirmation/);assert.match(text,/not a confirmed booking/);}
 });
 
 test('consultation exact completed replay remains valid after the preferred time, without more messages',async()=>{
@@ -324,7 +329,7 @@ test('real CRM SQL payload preserves consultation metadata and readable preferre
   const meta=JSON.parse(update.values[6] as string);
   assert.equal(meta.consultation.service,MAFI_CONSULTATION_SERVICE);assert.equal(meta.consultation.durationMinutes,30);
   assert.equal(meta.consultation.status,'pending_confirmation');assert.equal(meta.consultation.requestedStartAt,'2030-01-02T21:30:00.000Z');
-  assert.match(update.values[8] as string,/Preferred date: 2030-01-02/);assert.match(update.values[8] as string,/Time zone: America\/Denver/);
+  assert.match(update.values[8] as string,/Preferred date: 2030-01-02/);assert.match(update.values[8] as string,/2:30 PM Mountain Time/);
 });
 
 

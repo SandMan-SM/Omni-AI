@@ -130,6 +130,10 @@ export function parsePartnerConsultation(b: Record<string, unknown>): PartnerCon
   if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(preferredTime)) throw new MafiPartnerError('invalid_preferred_time', 422, false);
   // Intl also accepts numeric offset zones in newer runtimes; require a named identifier.
   if (!/^[A-Za-z][A-Za-z0-9_+\-/]*$/.test(requestedZone)) throw new MafiPartnerError('invalid_time_zone', 422, false);
+  if (b.service !== MAFI_CONSULTATION_SERVICE) {
+    if (requestedZone !== 'America/Denver') throw new MafiPartnerError('invalid_time_zone', 422, false);
+    if (!/^(?:(?:09|1[0-6]):(?:00|30)|17:00)$/.test(preferredTime)) throw new MafiPartnerError('invalid_preferred_time', 422, false);
+  }
   const [year, month, day] = preferredDate.split('-').map(Number);
   const [hour, minute] = preferredTime.split(':').map(Number);
   const wall = Date.UTC(year, month - 1, day, hour, minute);
@@ -172,7 +176,10 @@ export function validateNewPartnerConsultation(input: PartnerInput, now = new Da
 }
 
 export function partnerConsultationSummary(consultation: PartnerConsultationRequest): string {
-  return `${mafiConsultationLabel(consultation.service)} consultation\nPreferred date: ${consultation.preferredDate}\nPreferred time: ${consultation.preferredTime}\nTime zone: ${consultation.timeZone}\nDuration: 30 minutes\nStatus: Pending confirmation. This is a preferred time request, not a confirmed booking.`;
+  const [hour, minute] = consultation.preferredTime.split(':').map(Number);
+  const displayTime = `${hour > 12 ? hour - 12 : hour || 12}:${String(minute).padStart(2, '0')} ${hour >= 12 ? 'PM' : 'AM'}`;
+  const timeZone = consultation.timeZone === 'America/Denver' ? 'Mountain Time' : consultation.timeZone;
+  return `${mafiConsultationLabel(consultation.service)} consultation\nPreferred date: ${consultation.preferredDate}\nPreferred time: ${displayTime} ${timeZone}\nDuration: 30 minutes\nStatus: Pending confirmation. This is a preferred time request, not a confirmed booking.`;
 }
 export function parsePartnerInput(body: unknown): PartnerInput {
   if (!body || typeof body !== 'object' || Array.isArray(body)) throw new MafiPartnerError('invalid_body', 422, false);
@@ -217,7 +224,7 @@ export function buildPartnerState(input: PartnerInput, crmId: string, analyticsI
   const consultation = input.consultation ? resolvePartnerConsultation(input.consultation) : undefined;
   const summary = consultation ? partnerConsultationSummary(consultation) : '';
   const customerText = consultation
-    ? `Hi ${input.name},\n\nWe received your request for a free 30-minute Mafi Empire consultation. Sitani will follow up to confirm the time and meeting details. Your preferred time is not booked yet.\n\n${summary}\n\nYour notes:\n${input.message || 'No additional notes.'}\n\nReference: ${input.submissionId}\nMafi Empire · Building foundations for generations\nhttps://mafiempire.com`
+    ? `Hi ${input.name},\n\nWe received your request for a ${mafiConsultationLabel(consultation.service)} consultation with Mafi Empire. Sitani will follow up to confirm the time and meeting details. Your preferred time is not booked yet.\n\n${summary}\n\nYour notes:\n${input.message || 'No additional notes.'}\n\nReference: ${input.submissionId}\nMafi Empire · Building foundations for generations\nhttps://mafiempire.com`
     : `Hi ${input.name},\n\nWe received your Mafi Empire partner application. Sitani will review what you would like to build for your family and follow up with you.\n\nYour application:\n${input.message}\n\nReference: ${input.submissionId}\nMafi Empire · Building foundations for generations\nhttps://mafiempire.com`;
   const ownerText = consultation
     ? `New Mafi Empire consultation request\nName: ${input.name}\nEmail: ${input.email}\nPhone: ${input.phone}\n\n${summary}\n\nNotes: ${input.message || 'No additional notes.'}\nPage: ${input.pageUrl}\nReference: ${input.submissionId}\nDashboard: https://mythosais.com/dashboard`
