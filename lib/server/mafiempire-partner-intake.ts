@@ -4,9 +4,10 @@ import { NextResponse } from 'next/server';
 import { ixPostgresConfig } from '@/lib/server/ix-postgres-config';
 import { rateLimit } from '@/lib/rate-limit';
 import {
-  MAFI_BUSINESS, MAFI_CUSTOMER_FROM, MAFI_META, MAFI_OWNER_FROM, MAFI_PAGE, MAFI_SOURCE,
+  MAFI_BUSINESS, MAFI_CUSTOMER_FROM, MAFI_META, MAFI_OWNER_FROM, MAFI_SOURCE,
   MafiPartnerError, authenticateMafiPartner, buildPartnerState, deliverPartnerMessages,
   parsePartnerInput, partnerFingerprint, signPartnerState, trustedPartnerState,
+  validateNewPartnerConsultation, resolvePartnerConsultation, partnerConsultationSummary,
   type PartnerInput, type PartnerMessage, type PartnerState,
 } from '@/lib/server/mafiempire-partner-policy';
 
@@ -50,9 +51,13 @@ export async function resolveMafiPartnerContact(client: PoolClient, input: Partn
        order by (source_table='inbound_sitanim_leads' and source_record_id=$2) desc nulls last
        limit 1 for update`, values)).rows[0];
   const [firstName = 'Partner', ...last] = input.name.split(/\s+/);
-  const applicationNote = `Mafi Empire partner application (${input.submissionId}):\n${input.message}`;
-  const metadata = { brand: 'Mafi Empire', source: MAFI_SOURCE, page_url: MAFI_PAGE,
-    submission_id: input.submissionId, name: input.name, email: input.email, phone: input.phone, message: input.message };
+  const consultation = input.consultation ? resolvePartnerConsultation(input.consultation) : undefined;
+  const applicationNote = consultation
+    ? `Mafi Empire consultation request (${input.submissionId}):\n${partnerConsultationSummary(consultation)}\nNotes: ${input.message || 'No additional notes.'}`
+    : `Mafi Empire partner application (${input.submissionId}):\n${input.message}`;
+  const metadata = { brand: 'Mafi Empire', source: MAFI_SOURCE, page_url: input.pageUrl,
+    submission_id: input.submissionId, name: input.name, email: input.email, phone: input.phone, message: input.message,
+    ...(consultation ? { consultation } : {}) };
   if (!contact) {
     contact = (await client.query(
       `insert into public.omni_leads_generated(business_id,first_name,last_name,email,phone,source,status,
@@ -134,11 +139,13 @@ export class PgMafiPartnerStore implements PartnerStore {
         await this.persist(client, input, state);
         return { state, deduplicated: false, busy: false };
       }
+      validateNewPartnerConsultation(input);
       // The submission UUID is the durable source ID, unique across all Sitani sources.
       const inserted = await client.query(
         `insert into public.inbound_sitanim_leads(id,business_id,full_name,email,phone,message,source,status,page_url,page_path,raw_data)
-         values($1,$2,$3,$4,$5,$6,$7,'new',$8,'/partner','{}'::jsonb) returning id`,
-        [input.submissionId, MAFI_BUSINESS, input.name, input.email, input.phone, input.message, MAFI_SOURCE, MAFI_PAGE]);
+         values($1,$2,$3,$4,$5,$6,$7,'new',$8,$9,'{}'::jsonb) returning id`,
+        [input.submissionId, MAFI_BUSINESS, input.name, input.email, input.phone, input.message, MAFI_SOURCE, input.pageUrl,
+          new URL(input.pageUrl).pathname]);
       if (inserted.rowCount !== 1) throw new MafiPartnerError('source_persist_failed');
       const crmId = await resolveMafiPartnerContact(client, input);
       const analytics = await client.query(
@@ -146,7 +153,7 @@ export class PgMafiPartnerStore implements PartnerStore {
          values('mafiempire',$1,$2,$3,$4,$5,$6,$7,'{}'::jsonb)
          on conflict(tenant_slug,dedup_key) where dedup_key is not null
          do update set dedup_key=excluded.dedup_key returning id::text`,
-        [input.name, input.email, input.phone, input.message, MAFI_SOURCE, MAFI_PAGE, `mafiempire-partner:${input.submissionId}`]);
+        [input.name, input.email, input.phone, input.message, MAFI_SOURCE, input.pageUrl, `mafiempire-partner:${input.submissionId}`]);
       const analyticsId = String(analytics.rows[0]?.id || '');
       if (!analyticsId) throw new MafiPartnerError('analytics_sync_failed');
       const state = buildPartnerState(input, crmId, analyticsId, randomUUID());
@@ -287,6 +294,7 @@ export async function handleMafiPartner(request: Request, health: boolean, suppl
     }
     return response({ ok: true, workflow_complete: true, deduplicated: claimed.deduplicated,
       submission_id: input.submissionId, lead_id: state.leadId, crm_contact_id: state.crmId, analytics_id: state.analyticsId,
+      ...(state.consultation ? { consultation: state.consultation } : {}),
       receipts: { customer_message_id: state.customer.providerId, owner_message_id: state.owner.providerId } });
   } catch (error) {
     if (deps && input && state && state.status !== 'complete') {
