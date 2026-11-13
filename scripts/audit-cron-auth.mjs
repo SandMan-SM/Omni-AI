@@ -341,13 +341,13 @@ function main() {
 
   if (!findings.length) {
     console.log(
-      `[cron-auth] ${files} source files checked, no findings — ` +
+      `[cron-auth] ${RULES.length} rule(s) ran over ${files} source files, no findings — ` +
         `no route authenticates with a client-set header, and no secret comparison is unguarded.`,
     );
     return 0;
   }
 
-  console.error(`[cron-auth] ${findings.length} finding(s) in ${files} source files:`);
+  console.error(`[cron-auth] ${findings.length} finding(s) — ${RULES.length} rule(s) ran over ${files} source files:`);
   for (const finding of findings) {
     console.error(
       `  ${finding.rule}  ${finding.file}${finding.line ? `:${finding.line}` : ""} — ${finding.detail}`,

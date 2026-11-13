@@ -54,6 +54,17 @@ const LIVE_AUDIT = path.join(ROOT, "scripts", "audit-live-mobile.mjs");
 
 const SKIP_DIRS = new Set(["node_modules", ".next", ".next-prod", ".turbo", ".git", "dist", "coverage"]);
 
+/**
+ * The rules this gate runs.
+ *
+ * A gate that reports only what it FOUND cannot be told apart from a gate
+ * that found nothing because it did not look. Naming the rules, and
+ * reporting how many ran, makes the difference visible in the build log:
+ * "1 rule ran over 21 routes" says the instrument was pointed at
+ * something; silence says nothing at all.
+ */
+const RULE_NAMES = ["404-capable-route-without-live-probe"];
+
 type Route = {
   /** The route as it appears in the URL: /newsletter/[slug] */
   routePath: string;
@@ -166,7 +177,7 @@ function main(): number {
     if (!probes.some((probe) => probeMatches(probe, route))) findings.push({ route });
   }
 
-  console.log(`[route-probes] ${routes.length} public route(s) can answer a 404; ${probes.length} live probe(s) in the list.`);
+  console.log(`[route-probes] ${RULE_NAMES.length} rule(s) ran over ${routes.length} public route(s) that can answer a 404; ${probes.length} live probe(s) in the list.`);
   for (const route of routes) {
     const covered = probes.some((probe) => probeMatches(probe, route));
     console.log(`  ${covered ? "ok  " : "MISS"} ${route.routePath} — ${route.reason}`);
@@ -182,7 +193,7 @@ function main(): number {
     console.log(`[route-probes] ${findings.length} finding(s): a 404-capable route with no probe is invisible to the live audit.`);
     return 1;
   }
-  console.log("[route-probes] no findings — every public route that can 404 has a live probe.");
+  console.log(`[route-probes] ${RULE_NAMES.length} rule(s) ran — no findings: every public route that can 404 has a live probe.`);
   return 0;
 }
 

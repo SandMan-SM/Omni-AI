@@ -83,6 +83,19 @@ import { pathToFileURL } from "node:url";
 
 const IGNORE_MARKER = "audit:content-lookup-ignore";
 
+/**
+ * The rules this gate runs.
+ *
+ * A gate that reports only what it FOUND cannot be told apart from a gate
+ * that found nothing because it did not look. Naming the rules, and
+ * reporting how many ran, makes the difference visible in the build log.
+ */
+const RULE_NAMES = [
+  "lookup-error-becomes-notfound",
+  "missing-lookup-not-distinguished",
+  "failed-read-answered-as-absent",
+];
+
 function parseArgs(argv) {
   const opts = { reportOnly: false, root: process.cwd(), files: [] };
   for (let i = 0; i < argv.length; i++) {
@@ -560,13 +573,13 @@ function main() {
 
   if (!findings.length) {
     console.log(
-      `[content-lookup] ${targets.length} page(s) checked, no findings — ` +
+      `[content-lookup] ${RULE_NAMES.length} rule(s) ran over ${targets.length} page(s), no findings — ` +
         `no page answers HTTP 404 because a database read failed.`,
     );
     return 0;
   }
 
-  console.error(`[content-lookup] ${findings.length} finding(s) in ${targets.length} page(s):`);
+  console.error(`[content-lookup] ${findings.length} finding(s) — ${RULE_NAMES.length} rule(s) ran over ${targets.length} page(s):`);
   for (const f of findings) {
     console.error(`  ${f.rule}  ${f.file}:${f.line} — ${f.detail}`);
   }
