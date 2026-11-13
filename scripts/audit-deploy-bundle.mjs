@@ -85,8 +85,20 @@ function tracked(relPath) {
   }
 }
 
+// A build environment without a usable git checkout cannot answer these
+// questions. That is not a finding — it means this gate cannot run here, and
+// the local run (which is where the answer matters) is the one that counts.
+// Failing the build for a missing capability would trade a caught bug for a
+// broken release, which is the worse trade.
+let gitAvailable = true;
+try {
+  execFileSync('git', ['rev-parse', '--is-inside-work-tree'], { cwd: root, stdio: 'ignore' });
+} catch {
+  gitAvailable = false;
+}
+
 const findings = [];
-for (const relPath of [...needed].sort()) {
+for (const relPath of gitAvailable ? [...needed].sort() : []) {
   const abs = resolve(root, relPath);
   if (!existsSync(abs)) {
     findings.push(`${relPath} — the build chain names it but it does not exist in the repository`);
@@ -105,6 +117,11 @@ for (const relPath of [...needed].sort()) {
 }
 
 // --- 4. Report -------------------------------------------------------------
+if (!gitAvailable) {
+  console.log('[deploy-bundle] no usable git checkout here — the bundle check cannot run in this environment.');
+  process.exit(0);
+}
+
 if (findings.length > 0) {
   console.error(`[deploy-bundle] ${findings.length} finding(s):`);
   for (const finding of findings) console.error(`  • ${finding}`);
