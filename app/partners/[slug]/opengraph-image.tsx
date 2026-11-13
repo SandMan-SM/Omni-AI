@@ -1,5 +1,6 @@
 import { ImageResponse } from "next/og";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isActiveFederationRecord } from "@/lib/federation-retirement";
 
 export const runtime = "nodejs"; // needs the admin client (uses Node crypto)
 export const alt = "Omni AI × Partner — Agentic Growth Partnership";
@@ -20,15 +21,21 @@ export default async function Image({ params }: { params: { slug: string } }) {
 
   let partnerName = "Omni AI Partners";
   let partnerLine = "Agentic Growth Partnership";
+  // The card prints the slug it was generated for. A retired tenant's
+  // slug must not ride out on a share image, so the label falls back to
+  // the bare section name when the tenant is retired.
+  let slugLabel = `partners / ${slug}`;
   try {
     const sb = createAdminClient();
     const { data } = await sb
       .from("omni_businesses")
-      .select("name, industry")
+      .select("name, industry, slug, website")
       .or(`slug.ilike.${slug},name.ilike.${slug}`)
       .limit(1)
       .maybeSingle();
-    if (data?.name) {
+    if (data && !isActiveFederationRecord(data)) {
+      slugLabel = "partners";
+    } else if (data?.name) {
       partnerName = data.name;
       partnerLine = data.industry
         ? `Agentic Growth Partnership · ${data.industry}`
@@ -245,7 +252,7 @@ export default async function Image({ params }: { params: { slug: string } }) {
             omnileadsagi.com
           </div>
           <div style={{ display: "flex", margin: "0 14px", color: "rgba(100,116,139,0.6)" }}>·</div>
-          <div style={{ display: "flex" }}>partners / {slug}</div>
+          <div style={{ display: "flex" }}>{slugLabel}</div>
         </div>
 
         {/* Bottom soft bar */}

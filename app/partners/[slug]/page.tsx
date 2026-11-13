@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import { ArrowRight, Sparkles, Target, Activity, Mail, Trophy, Rocket, Gift } from "lucide-react";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { lookupContent, requireLookup } from "@/lib/server/content-lookup";
+import { isActiveFederationRecord } from "@/lib/federation-retirement";
 import PageLoading from "@/components/page-loading";
 import PartnerShareButtons from "./PartnerShareButtons";
 import { GreenSparksBackdrop } from "@/components/green-sparks-backdrop";
@@ -30,7 +31,7 @@ async function getPartner(slug: string) {
   // A failed read is not an unknown partner. `requireLookup` throws on a
   // failed lookup, so the page renders a 500 ("try again") instead of a
   // 404 that would tell a crawler the partner page never existed.
-  return requireLookup(
+  const row = requireLookup(
     await lookupContent(() =>
       sb
         .from("omni_businesses")
@@ -40,6 +41,13 @@ async function getPartner(slug: string) {
         .maybeSingle(),
     ),
   );
+  // A retired federation tenant keeps its history but loses its active
+  // projections — and a public partner page IS an active projection.
+  // The lookup matches on slug OR name, so an ALIAS ("/partners/A Chat
+  // with Liz") would have resolved it too. Filter the row here, once, so
+  // the page AND its metadata agree that the partner does not exist.
+  if (!row || !isActiveFederationRecord(row)) return null;
+  return row;
 }
 
 async function getOmniAiBookingUrl(): Promise<string> {

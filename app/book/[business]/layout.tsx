@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 
 export async function generateMetadata({
   params,
@@ -13,13 +14,18 @@ export async function generateMetadata({
   // Omni AI" no matter which business the link pointed at.
   const { data: business } = await createAdminClient()
     .from('omni_businesses')
-    .select('name, industry')
+    .select('name, slug, website, industry')
     .eq('id', bizSlug)
     .maybeSingle();
 
   // An unknown id 404s. The layout's metadata still runs, so title it as
   // the not-found page it is rather than as a booking page for "Omni AI".
-  if (!business) {
+  //
+  // A RETIRED federation tenant 404s the same way. The layout's metadata
+  // still runs for it, so naming the retired business in the title would
+  // publish the identity the operator removed — on the very page whose
+  // body answers 404.
+  if (!business || !isActiveFederationRecord(business)) {
     return {
       title: 'Page not found',
       description: 'This booking link does not exist.',

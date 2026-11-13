@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import { todayPt } from '@/lib/tz';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { lookupContent, requireLookup } from '@/lib/server/content-lookup';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import PageLoading from '@/components/page-loading';
 
 const supabase = createAdminClient();
@@ -27,9 +28,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
   const page = pageLookup.value as { headline: string; subhead: string; business_id: string };
   const businessLookup = await lookupContent(() =>
-    supabase.from('omni_businesses').select('name').eq('id', page.business_id).single(),
+    supabase.from('omni_businesses').select('name, slug, website').eq('id', page.business_id).single(),
   );
-  const business = businessLookup.kind === 'found' ? (businessLookup.value as { name: string }) : null;
+  // A retired federation tenant keeps its history but loses its active
+  // projections — a personalized landing page IS one, so the retired
+  // business's name must not reach the title, the description, or the
+  // link preview.
+  const business =
+    businessLookup.kind === 'found' && isActiveFederationRecord(businessLookup.value as object)
+      ? (businessLookup.value as { name: string })
+      : null;
   const title = business?.name ? `${page.headline} — ${business.name}` : page.headline;
   const description = page.subhead || 'AI-powered solutions tailored to your business.';
   const url = `https://omnileadsagi.com/lp/${slug}`;
@@ -64,10 +72,13 @@ type LandingPage = {
   hero_cta: string;
   body_sections: { title: string; body: string }[];
   business_id: string;
+  views: number | null;
 };
 
 type Business = {
   name: string;
+  slug?: string | null;
+  website?: string | null;
   industry: string | null;
   contact_email: string | null;
 };
@@ -88,27 +99,29 @@ async function loadPageRow(slug: string): Promise<LandingPage | null> {
 
   if (!page) return null;
 
-  // Increment view count (fire and forget)
-  await supabase
-    .from('omni_landing_pages')
-    .update({ views: (page.views ?? 0) + 1 })
-    .eq('id', page.id);
-
   return page as LandingPage;
 }
 
-async function loadBusiness(businessId: string): Promise<Business> {
+/** Count the view. Called only once the page is known to be live. */
+async function incrementViews(pageId: string, currentViews: number | null) {
+  await supabase
+    .from('omni_landing_pages')
+    .update({ views: (currentViews ?? 0) + 1 })
+    .eq('id', pageId);
+}
+
+async function loadBusiness(businessId: string): Promise<Business | null> {
   const business = requireLookup(
     await lookupContent(() =>
       supabase
         .from('omni_businesses')
-        .select('name, industry, contact_email')
+        .select('name, slug, website, industry, contact_email')
         .eq('id', businessId)
         .single(),
     ),
   );
 
-  return business as Business;
+  return (business as Business | null) ?? null;
 }
 
 export default async function LandingPageRoute({ params }: { params: { slug: string } }) {
@@ -120,18 +133,27 @@ export default async function LandingPageRoute({ params }: { params: { slug: str
   const page = await loadPageRow(slug);
   if (!page) notFound();
 
+  // The landing page belongs to a business, and a retired federation
+  // tenant keeps its history but loses its active projections. A
+  // personalized landing page for a tenant the operator removed is one —
+  // it carries that tenant's name in the nav, its copy in the body, and
+  // its contact address on the CTA. So the business is resolved here, at
+  // the same point as the page row, and a retired tenant 404s like any
+  // other dead slug.
+  const business = await loadBusiness(page.business_id);
+  if (!business || !isActiveFederationRecord(business)) notFound();
+
+  // Counted only now: a page that 404s is not a view.
+  await incrementViews(page.id, page.views ?? null);
+
   return (
     <Suspense fallback={<PageLoading label="Loading…" />}>
-      <LandingBody page={page} />
+      <LandingBody page={page} business={business} />
     </Suspense>
   );
 }
 
-async function LandingBody({ page }: { page: LandingPage }) {
-  // The business read is not an existence check — the page already exists
-  // — so it streams behind the boundary above.
-  const business = await loadBusiness(page.business_id);
-
+async function LandingBody({ page, business }: { page: LandingPage; business: Business }) {
   return (
     <div style={{
       minHeight: '100vh',

@@ -2,6 +2,7 @@ import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { lookupContent, requireLookup } from '@/lib/server/content-lookup';
+import { isActiveFederationRecord } from '@/lib/federation-retirement';
 import PageLoading from '@/components/page-loading';
 import BookingSlots from './BookingSlots';
 
@@ -37,13 +38,21 @@ export default async function BookingPage({
     await lookupContent(() =>
       createAdminClient()
         .from('omni_businesses')
-        .select('id, name, industry, sender_name')
+        .select('id, name, slug, website, industry, sender_name')
         .eq('id', bizId)
         .maybeSingle(),
     ),
   );
 
   if (!business) {
+    notFound();
+  }
+
+  // A retired federation tenant keeps its history but loses its active
+  // projections — and a booking page is an active projection. A booking
+  // link for a tenant the operator removed must 404 like any other dead
+  // link, not collect bookings for a business that no longer runs here.
+  if (!isActiveFederationRecord(business)) {
     notFound();
   }
 

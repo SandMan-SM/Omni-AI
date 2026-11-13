@@ -93,3 +93,43 @@ test('outreach refuses a retired recipient before database, stub delivery or pro
   const result = await senders.sendOutreachEmail({ asset_id: 'historical-asset', to: syntheticEmail, subject: 'Do not send', body: 'No delivery' });
   assert.equal(result.ok, false); assert.equal(result.error, 'federation_contact_retired'); assert.equal(calls, 0);
 });
+
+test('the public-surface gate reports an unguarded registry read and ignores a guarded one', async () => {
+  const gate = await import('../scripts/audit-federation-retirement.mjs');
+  const unguarded = `import { createAdminClient } from "@/lib/supabase/admin";
+export default async function Page() {
+  const sb = createAdminClient();
+  const { data } = await sb.from("omni_businesses").select("name").eq("id", "x").maybeSingle();
+  return <span>{data?.name}</span>;
+}`;
+  const guarded = `import { createAdminClient } from "@/lib/supabase/admin";
+import { isActiveFederationRecord } from "@/lib/federation-retirement";
+export default async function Page() {
+  const sb = createAdminClient();
+  const { data } = await sb.from("omni_businesses").select("name").eq("id", "x").maybeSingle();
+  if (data && !isActiveFederationRecord(data)) notFound();
+  return <span>{data?.name}</span>;
+}`;
+  // A doc comment that names the table is a description, not a read.
+  const commented = `// this page reads omni_businesses to resolve the partner\nexport default function Page() { return null; }`;
+
+  assert.equal(gate.registryRead(gate.stripComments(unguarded)).table, 'omni_businesses');
+  assert.equal(gate.appliesRetirementGuard(gate.stripComments(unguarded)), false);
+  assert.equal(gate.appliesRetirementGuard(gate.stripComments(guarded)), true);
+  assert.equal(gate.registryRead(gate.stripComments(commented)), null);
+  assert.equal(gate.appliesRetirementGuard(gate.stripComments('import { isActiveFederationRecord } from "@/lib/federation-retirement";')), false);
+});
+
+test('every public surface in this repo that reads the tenant registry applies the retirement guard', async () => {
+  const gate = await import('../scripts/audit-federation-retirement.mjs');
+  const path = require('node:path');
+  const root = process.cwd();
+  const prefixes = gate.internalPrefixes(root);
+  assert.ok(prefixes && prefixes.length > 0, 'app/robots.ts must declare the internal prefixes');
+  const files = gate.collectPublicFiles(root);
+  assert.ok(files.length > 0);
+  for (const file of files) {
+    const findings = gate.scanFile(file, root, prefixes);
+    assert.deepEqual(findings, [], path.relative(root, file));
+  }
+});
