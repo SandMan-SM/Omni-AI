@@ -192,6 +192,101 @@
 
 ## 🎯 This Session: Do These In Order
 
+> **Session 69 (2026-11-12) — the retirement was applied BY HAND across thirty files, and
+> five PUBLIC surfaces were never touched.**
+>
+> **1. The defect is a MECHANISM, not a bug.** On 2026-11-09 the operator retired one
+> federation tenant ("A Chat with Liz" / `achatwithliz`). The deny list is checked in
+> (`lib/retired-federation-tenants.json`) and it was applied to the mail fan-out, the
+> newsletter audience, the social-post filter, the contact-hash list, the sender registry,
+> the analytics cache — **roughly thirty files, edited by hand on one day.** A hand
+> application is a hand application: the next retirement has to be applied by hand again, and
+> **nobody counts the places a deny list is supposed to be consulted**, because there is no
+> list of places. Measured on 2026-11-12, five PUBLIC surfaces still resolved a business
+> straight out of `omni_businesses` with **no retirement filter at all**:
+>
+>   app/partners/[slug]/page.tsx            → the partner page renders the tenant
+>   app/partners/[slug]/opengraph-image.tsx → the retired NAME on the share card
+>   app/book/[business]/page.tsx            → the booking page renders the tenant
+>   app/book/[business]/layout.tsx          → the retired NAME in the page title
+>   app/lp/[slug]/page.tsx                  → the retired NAME, its copy, its contact
+>
+> **2. The leak was LATENT, and that is exactly why it was worth closing.** The live registry
+> held **0** retired rows (the tenant's row was deleted on retirement), so nothing was
+> serving a retired tenant today — the class was one re-import, one re-added row, or one
+> new alias away from doing it. The `/partners/[slug]` lookup matches on slug **OR name**
+> (`.or(\`slug.ilike.${slug},name.ilike.${slug}\`)`), so even the ALIAS
+> `/partners/A%20Chat%20with%20Liz` would have resolved it. **A control that only holds on
+> the day it was written is not a control.**
+>
+> **3. The INTERNAL readers are exempt ON PURPOSE, and the gate says so.** About thirty
+> routes read `omni_businesses` unfiltered — the AGI layer, the council routes, the crons,
+> the dashboard. That is correct: **history stays in storage, and the dashboard is where the
+> operator sees what happened.** Only the PUBLIC projections are the problem, because only
+> those a stranger can reach. So the gate is scoped to public surfaces and **derives that
+> split from `app/robots.ts`** — the same list the site already declares — rather than
+> hardcoding it. A prefix the operator marks internal is automatically exempt; one they
+> unmark stops being exempt without anyone editing the gate. The derivation is deliberately
+> the INVERSE of `audit:internal-surface`, which protects the prefixes: **two gates, one
+> source of truth, opposite questions.**
+>
+> **4. The class is now a GATE, and it was proven on the pre-fix files.**
+> `scripts/audit-federation-retirement.mjs` (`npm run audit:federation-retirement`, in the
+> build chain) carries `public-registry-read-without-retirement-filter`: a public page,
+> layout or OG/Twitter image that reads a tenant registry table and does not CALL a
+> retirement guard. The guard is matched as a **call site**, so a bare import does not
+> satisfy it — *naming* the deny list is not *applying* it. Run against the pre-fix files it
+> reported **5 findings, one per measured surface**, and 0 after the fix. Two tests in
+> `tests/federation-retirement.test.cjs` pin it, including one that walks every public file
+> in the repo. The gate does **not** follow imports: the public files that reach the
+> registry indirectly do so through `/api/dashboard/businesses`, which ALREADY applies the
+> filter, and following the graph would have reported them for a filter they have — **a
+> gate that cries wolf gets ignored.**
+>
+> **5. The fixes are semantic, not cosmetic.** `/partners/[slug]` filters the row inside
+> the lookup, so the page AND its metadata agree the partner does not exist. The OG card
+> prints the slug it was generated for, so a retired tenant's slug no longer rides out on a
+> share image. The booking layout titles a retired tenant as the not-found page it is,
+> rather than publishing the removed identity on the very page whose body answers 404. The
+> landing page 404s for a retired tenant and **no longer counts the view** — a page that
+> 404s is not a view.
+>
+> **6. The rule sets were STALE, and the drift gate is what said so.** The live schema had
+> grown three tables (`ltb_booking_lifecycle_notifications`,
+> `ltb_booking_reschedule_requests`, `portfolio_newsletter_classifications`), so both
+> generated rule sets were measured against a schema that no longer existed: **313 live
+> tables against 310 in the set**. `npm run refresh:rls-ruleset` and
+> `npm run refresh:pii-ruleset` re-measured them (**313 tables; 279 locked / 13
+> indeterminate / 21 anon-readable; 117 personal** — `ltb_booking_lifecycle_notifications`
+> holds a `recipient_email`), and `npm run patch:fleet-rls-ruleset` carried both to the
+> **38 fleet trees**. A `--deep` re-probe confirmed every existing classification still
+> holds: **the drift was additive, not a misclassification.**
+>
+> **7. Three gates could not be told apart from gates that found nothing.** `audit:content-
+> lookup`, `audit:cron-auth` and `audit:route-probes` printed "no findings" **without saying
+> how many rules ran over how many files** — so a gate whose population had silently
+> collapsed to zero would read exactly like a clean run. They now report what they ran
+> (**3 rules over 124 pages**, **6 rules over 417 source files**, **1 rule over the public
+> routes**), and every gate in the build chain reports its rule count.
+>
+> **8. What was verified.** `tsc --noEmit` clean; **all 18 build-chain gates green**
+> (including the new `audit:federation-retirement` and `test:federation-retirement`);
+> **35/35 tests pass** across the four suites; the **full `npm run build` chain green**
+> (against a scratch `.next-prod/` dist dir — the dev server is up, so `npm run build` is
+> forbidden in this checkout); the static mobile gate reports **0 findings across 13 rules
+> over 887 files**; the first-paint flash gate **0 across 2 rules**; and the visual sweep
+> found no `href="#"` placeholder, no `<img>` without an alt attribute, and no missing local
+> asset.
+>
+> **9. STILL OPERATOR-BLOCKED, and deliberately NOT attempted.** `omnileads.shop` has **no
+> `federation.surfaces` row**, so the protocol makes it a stop and this agent has no write
+> path (the fix stays committed-not-deployed under lease 1198); the Telegram production bot
+> token is **REVOKED** and only the owner can issue a new one via @BotFather; the
+> `psychcustody_*` renames need a migration session, which the agent may not run; the **30
+> linked fleet copies** are the operator's patch-or-delete call; the ~80-day newsletter draft
+> backlog is a queue, not a defect; and the homepage still titles as "Interlinked" pending
+> the owner's choice.
+
 > **Session 68 (2026-11-09) — the canonical repo had already fixed HALF of the credential
 > contract, and the other half was minting an admin token in a runtime no gate read.**
 >
@@ -1102,14 +1197,14 @@
 - **`omnileads.shop` has no row in `federation.surfaces`, so its fix cannot be deployed.** The Omni Leads checkout (`/Users/janahasson/Desktop/Clients/Omni Leads/Website`) was fixed and committed locally (`6be51ec`): `app/lp/[slug]/page.tsx` read `omni_landing_pages` and `omni_businesses` with the **anon client** — both are `service_role_all`, so the read answered 200 with nothing and the route could never render — and both reads are now classified through `requireLookup(await lookupContent(...))`. The federation protocol's RESOLVE step says a missing row means **stop**, and there is **no write path to `federation.surfaces`** from this agent's Supabase wrappers, so the deploy was not attempted. The row to add: domain `omnileads.shop`, its Vercel project, codebase `/Users/janahasson/Desktop/Clients/Omni Leads/Website`, deploy method CLI (`vercel --prod`). Until it exists, that surface ships the defect.
 
 ## 📚 Stats
-- Sessions: 68
+- Sessions: 69
 - Lines written: 4900
 - Trees calling the shared `auth-login` edge function (fallback path): **44** — **32 would ACCEPT a signed token, 23 would REJECT it** (the sweep derives the split from the `bearer-decoded-without-verification` finding); the flagship's own client stopped calling it on 2026-10-28 (`1c852963`)
 - Supabase project service-role secrets: **TWO, different digests** (`SUPABASE_SERVICE_ROLE_KEY` d6b8868e…, `supabase_service_role_key` 9100199e…); `OMNI_AUTH_TOKEN_SECRET` set on **neither** side; Vercel **production** value sensitive (blank on pull), development = 9100199e…
 - Fleet surfaces swept by `audit:fleet-content-lookup`: **65 checkouts / 1063 pages, 0 findings**
 - Trees carrying the content-lookup gate with the build chain armed: **4**
-- Gates in the build chain: **16** (added `audit:internal-surface` — now 4 rules over 124 pages + 264 routes, with `test:internal-surface` pinning all 7 shapes — and `audit:metadata-parity` — 3 rules over 83 files — and, in session 68, `audit:credential-verification` — 2 rules over 863 functions and 22 derived verifiers — with `test:credential-verification` pinning both defect shapes and the round trip)
-- Public-PII rule set: **310 live tables, 116 of them personal** (was a 6-name hand list); credential verifiers **derived from `lib/`**: 22 (was a literal list missing 4 of this repo's own)
+- Gates in the build chain: **18** (added `audit:internal-surface` — now 4 rules over 124 pages + 264 routes, with `test:internal-surface` pinning all 7 shapes — and `audit:metadata-parity` — 3 rules over 83 files — and, in session 68, `audit:credential-verification` — 2 rules over 863 functions and 22 derived verifiers — with `test:credential-verification` pinning both defect shapes and the round trip — and, in session 69, `audit:federation-retirement` — 1 rule over 145 public files — with `test:federation-retirement` pinning the rule and walking every public file)
+- Public-PII rule set: **313 live tables, 117 of them personal** (was a 6-name hand list); credential verifiers **derived from `lib/`**: 23 (was a literal list missing 4 of this repo's own)
 - Public-PII instrument in the fleet: **37 rule-set trees** carry the gate + the rule set + the generator + the drift gate; **26 measure themselves** (0 findings), 11 have no `node_modules` and fail closed
 - Fleet sweep for it: `npm run audit:fleet-public-pii` — **37 trees, 26 measured clean, 11 noted (cannot build either), 0 findings**; proven to fire on a removed rule set and on a rule set from another project
 - Fleet sweep for the internal-surface class: `npm run audit:fleet-internal-surface` — **364 trees, 10,658 pages, 14,798 routes, 105 findings** (was 286), graded by what each tree can DEPLOY (production-linked copy / linked copy / unlinked); **1 real live defect found and fixed** (the fail-open `ADMIN_API_KEY` in the `omnileads.shop` surface)
@@ -1119,6 +1214,9 @@
 ## 🔄 Edit History (last 30 — DO NOT REPEAT)
 | Date | Category | What Was Done | Lines |
 |---|---|---|---|
+| 2026-11-12 | security | **The retirement was applied BY HAND across thirty files, and five PUBLIC surfaces were never touched.** The 2026-11-09 retirement of one federation tenant ("A Chat with Liz" / `achatwithliz`) is enforced by a checked-in deny list that was wired into the mail fan-out, the newsletter audience, the social-post filter, the contact-hash list, the sender registry and the analytics cache — **by hand, on one day, in about thirty files.** A hand application is a hand application: the next retirement has to be applied by hand again, and **nobody counts the places a deny list is supposed to be consulted, because there is no list of places.** Measured 2026-11-12, five PUBLIC surfaces still resolved a business straight out of `omni_businesses` with no retirement filter: `app/partners/[slug]/page.tsx` (the partner page), `app/partners/[slug]/opengraph-image.tsx` (the retired NAME on the share card), `app/book/[business]/page.tsx` (the booking page), `app/book/[business]/layout.tsx` (the retired NAME in the title), `app/lp/[slug]/page.tsx` (the retired NAME, its copy and its contact address). **The leak was LATENT — the live registry held 0 retired rows, so nothing was leaking today — and that is exactly why it was worth closing: the class is one re-import, one re-added row, or one new alias away from doing it, and `/partners/[slug]` matched on slug OR NAME, so even the alias URL would have resolved it.** All five are closed: the partner row is filtered inside the lookup so the page AND its metadata agree the partner does not exist; the OG card no longer prints a retired name or slug; the booking page 404s and its layout titles the tenant as the not-found page it is rather than publishing the removed identity on the very page whose body answers 404; the landing page 404s and **no longer counts the view**, because a page that 404s is not a view. **The class is now a GATE**: `scripts/audit-federation-retirement.mjs` (`npm run audit:federation-retirement`, in the build chain) carries `public-registry-read-without-retirement-filter` — a public page/layout/OG image that reads a tenant registry table without CALLING a retirement guard (the guard is matched as a call site, because naming the deny list is not applying it). The public/internal split is DERIVED from `app/robots.ts`, the same list the site already declares, so a prefix the operator marks internal is automatically exempt and one they unmark stops being exempt without anyone editing the gate — the deliberate INVERSE of `audit:internal-surface`, which protects the prefixes. **The ~30 internal readers of `omni_businesses` are unfiltered ON PURPOSE: history stays in storage and the dashboard is where the operator sees what happened; only the public projections are the problem.** Proven by running the gate against the pre-fix files: **5 findings, one per measured surface**, 0 after the fix, pinned by two tests in `tests/federation-retirement.test.cjs` (one of which walks every public file in the repo). The gate does NOT follow imports, because the public files that reach the registry indirectly do so through `/api/dashboard/businesses`, which already applies the filter — **a gate that cries wolf gets ignored** | 190 |
+| 2026-11-12 | correctness | **Both generated rule sets were measured against a schema that no longer existed.** The live schema had grown three tables (`ltb_booking_lifecycle_notifications`, `ltb_booking_reschedule_requests`, `portfolio_newsletter_classifications`), so `scripts/anon-locked-tables.json` and `scripts/pii-tables.json` still described **310 tables** against **313** live — the drift gate reported 3 RLS findings and 4 PII findings. `npm run refresh:rls-ruleset` re-measured the permission model (**313 tables: 279 locked, 13 indeterminate, 21 anon-readable**) and `npm run refresh:pii-ruleset` re-measured the personal-data columns (**313 tables, 117 personal** — `ltb_booking_lifecycle_notifications` holds a `recipient_email`); both were carried to the **38 fleet trees** by `npm run patch:fleet-rls-ruleset`, which touches rule sets and gates only, never application code. A `--deep` re-probe confirmed **every existing classification still holds: the drift was additive, not a misclassification** — the discipline that makes a regenerated rule set safe to trust | 12 |
+| 2026-11-12 | gotcha | **Three gates could not be told apart from gates that found nothing.** `audit:content-lookup`, `audit:cron-auth` and `audit:route-probes` printed "no findings" **without saying how many rules ran over how many files** — so a gate whose population had silently collapsed to zero would read exactly like a clean run, and "0 findings" carries no information about what was looked at. They now report what they RAN: **3 rule(s) over 124 page(s)**, **6 rule(s) over 417 source files**, **1 rule(s) over the public routes**, and every gate in the build chain now reports its rule count | 6 |
 | 2026-11-09 | deploy | **A MISSING BUILD FOR ONE TIP WAS A TRANSIENT, and the gate's ten-minute grace is what told the difference.** After `3ef48e66` was pushed, `npm run audit:deploy` reported `no-deployment-for-tip` — no deployment object for that SHA, and the GitHub commit status showed **ZERO** statuses where an earlier commit carried `Vercel | success`. The obvious next move was to declare the Git integration broken and deploy explicitly from the working tree. Instead every candidate cause was ruled out first (no `ignoredBuildStep`; `productionBranch: main`; commits whose message carries `[skip ci]` legitimately skip) — and none of them explained it. The next push (`4fbec185`) **was** picked up, built in 3m, and went READY holding `omnileadsagi.com`; `audit:deploy` now reports *"the branch tip 4fbec185 built and is serving production"*. **A missing build for ONE tip is a queue skip, not a broken integration.** The remedy that would have been wrong is the one the gate nearly triggered: a `vercel --prod` from this checkout manufactures a release from a working tree instead of from git — the exact failure mode the deploy rules exist to prevent. **When the gate says the tip did not build, re-check before you deploy: a second push is a cheaper experiment than a manufactured release, and it distinguishes "the integration is down" from "this one build was dropped".** | 20 |
 | 2026-11-09 | security | **The repo's edge copy was OLDER than what production ran, and the deployed copy was the HARDENED one — so deploying the repo would have REGRESSED production.** Reading the deployed function (`supabase functions download auth-login --project-ref odvxtychuxxsudfpcqqs`) showed it carried a generic `Invalid username or password` on BOTH auth branches, `.maybeSingle()` for the user and profile reads, `.ilike()` for the case-insensitive lookup, input trimming, the canonical DB casing for the token, and a generic 500 that does not leak `error.message`. **The repo's copy had none of it and answered "User not found: <username>" — a username-enumeration oracle.** That hardening was never in this repo's history, so the deployed artifact and the checkout had drifted apart. The repo now carries the deployed hardening PLUS the signed mint; `deno check` is green. **THE SHARED MINT WAS NOT FLIPPED, and the reason is a fact rather than caution.** The edge function is one shared endpoint serving **44 trees** that call it as a FALLBACK (their own `/api/auth/login` is tried first; the flagship's own client stopped calling it on 2026-10-28, commit `1c852963`), and flipping the mint to signed would **break the 23 trees whose servers decode a raw bearer** while fixing the 32 that already expect a signature — so the sweep was extended to derive that split from the `bearer-decoded-without-verification` finding (**32 accept, 23 reject**), because a remediation report must answer what the change BREAKS, not only what it repairs. Worse, **the two sides' signing keys are not proven equal**: both derive from `OMNI_AUTH_TOKEN_SECRET ?? SUPABASE_SERVICE_ROLE_KEY`, but the Supabase project carries **TWO** service-role secrets with **different digests** (`SUPABASE_SERVICE_ROLE_KEY` d6b8868e…, `supabase_service_role_key` 9100199e…), `OMNI_AUTH_TOKEN_SECRET` is set on **neither** side, and the flagship's Vercel **production** value is sensitive and comes back **blank** from `vercel env pull` (development = 9100199e…, matching Supabase's lowercase secret). A token signed at the edge could be rejected by every server that derives a different key. The unsigned mint is also **not independently exploitable** — it hands an admin token only to a caller who already holds operator credentials, and the exploitable hole is the raw-bearer DECODER on the consumer side, which no mint-side change can fix. The repo's copy is READY and deliberately not deployed; the remedy (align the secret on both sides → migrate the 23 verifiers → then flip) is written up in omni-memory as `runbook.security/omni-token-mint-requires-aligned-signing-secret` and in Owner Decisions Pending | 260 |
 | 2026-11-09 | security | **The canonical repo had fixed HALF of the credential contract, and the other half was minting an admin token in a runtime no gate read.** Session 67's fleet sweep found the class BY ACCIDENT — its author noticed a copy's `lib/admin-auth.ts` decoding a bearer while reading it. Chasing it home: this repo fixed the SERVER half on 2026-10-28 (the `omni_token` is signed and verified, failing closed), but the **MINT** half lives in `supabase/functions/auth-login/index.ts`, and that Deno edge function did `const token = btoa(JSON.stringify(tokenData))` — an **unsigned, admin-bearing** token (`tokenData.is_admin` was in the payload). **A bearer that is only base64-encoded is not a credential**: anybody can write `btoa(JSON.stringify({is_admin:true}))` and be admitted as an admin by any server that merely decodes it. Nothing caught it because `supabase/functions/` sits outside `app/` and `lib/` — the scope every existing gate reads — and **no gate in this repo had ever opened a Deno file. The half that was fixed was the half somebody was looking at.** The signer was **EXTRACTED** to `supabase/functions/auth-login/session-token.ts` so a Node test can import it (a file the edge function bundles but a test cannot import is a file nobody can check — and the first version of this defect was exactly that: the mint lived inside a 200-line edge function no gate could read). It uses the **same scheme the server verifies**: key = `HMAC-SHA256(secret, "omni-ai/session-signing/v1")`, token = `omni1.<base64url(payload)>.<base64url(HMAC(key, message))>`, secret from `OMNI_AUTH_TOKEN_SECRET ?? SUPABASE_SERVICE_ROLE_KEY` (never the public anon key), **refusing to issue a session rather than issuing one nobody can use** when no key is present; the secret is a **parameter** (`signOmniTokenWithSecret(payload, secret)`) so the function is pure — the edge function reads the environment, the test passes a fixture, and neither can drift into the other. The proof is a **ROUND TRIP, not a resemblance**: "they look the same" is not evidence, so `tests/credential-verification.test.ts` (in the build chain) signs with the **edge function's** code and asserts the **canonical server verifier ACCEPTS** it, and that a forged base64 token is **rejected**. The class is now a **GATE**: `scripts/audit-credential-verification.mjs` (`npm run audit:credential-verification`, in the build chain) carries `bearer-decoded-without-verification` and `session-token-minted-without-signature`, reuses the **shared** verifier derivation from the public-PII gate (22 verifiers over 863 functions) so the canonical answer and the fleet answer cannot disagree about what the rule IS, and **fails closed** (exit 2, "the result is UNKNOWN") without the TypeScript compiler. The gate is proven to fire on both shapes and to stay quiet on the fixed ones — **a rule that has never fired has never been tested.** The class was then **MEASURED across the fleet**: `npm run audit:fleet-credential-verification` walks the **364** trees (population from `scripts/fleet-trees.mjs` + `scripts/audit-fleet-auth.mjs`, the SAME two modules every other fleet tool uses) and **imports `scanTree` from the canonical gate**, with production **DERIVED** from this checkout's own `.vercel` link and `lib/seo.ts` (re-exported from the internal-surface sweep, so two tools cannot judge production by two different constants) — **55 of 364 trees carry the class, 109 findings**, production-linked trees reported FIRST (a finding there is a leak in waiting; a finding in an unlinked scratch tree is a curiosity). **Three of the five trees the session-67 patcher REFUSED carry BOTH halves.** A real TypeScript error surfaced too: `supabase/` is excluded from `tsconfig.json`, so the new signer was outside `tsc`'s sight until the test imported it — and the repo's target predates downlevel iteration, so `for…of` over a `Uint8Array` did not compile (now an indexed loop). **A file excluded from the compiler is a file no compiler has checked, and the first thing that imports it becomes the instrument that checks it.** Verified: `tsc` clean, **all 16 build-chain gates green**, the **full `npm run build` chain green** (scratch `.next-prod/` dist dir — the dev server is up, so `npm run build` is forbidden here), **6/6 new tests pass**, static mobile gate **0 across 13 rules over 880 files**, first-paint flash gate **0 across 2 rules** | 300 |
