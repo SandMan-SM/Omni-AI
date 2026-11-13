@@ -39,6 +39,15 @@ tests/*
 # signer and the server's verifier agree — the one proof that cannot be made
 # by reading either file.
 !tests/credential-verification.test.ts
+# A fourth, same reason: the federation-retirement gate's unit test
+# (`npm run test:federation-retirement`) walks every public file in the repo
+# and asserts the retirement guard is applied. A build that cannot run it
+# cannot say whether the guard still holds.
+!tests/federation-retirement.test.cjs
+# Its helper is the module loader the test needs (it transpiles TS sources in
+# a VM), so the directory and the file both have to come through.
+!tests/helpers/
+!tests/helpers/federation-retirement.cjs
 docs/private-email-previews/
 **/runtime.env
 
