@@ -1,7 +1,7 @@
 {
   "slug": "what-is-a-legacy-brand",
   "title": "What Is a Legacy Brand?",
-  "description": "Your family should inherit your thinking, not a distorted retelling. Explore a legacy brand that carries your memories and teachings into the next generation.",
+  "description": "Don’t leave your family a name and a guessing game. Preserve the memories, thinking and hard-won lessons that give the next generation a head start.",
   "date": "2026-11-13",
   "primaryKeyword": "legacy brand",
   "keywords": [
@@ -19,10 +19,10 @@
   "sections": [
     {
       "id": "paying-twice",
-      "heading": "Which version would your family inherit?",
+      "heading": "One missing detail can cost another generation",
       "paragraphs": [
         "Imagine a grandfather turning down a business partnership. The money looks good. The contract puts his family's home on the line. He walks away.",
-        "Years later, his grandson considers a deal of his own. What survives of that conversation could change his decision. Try the two retellings below.",
+        "Years later, his grandson considers a deal of his own. If all he hears is that Grandad never trusted partners, he inherits a fear of people. If he hears why the contract was dangerous, he inherits a way to judge the risk. Same grandfather. Very different inheritance.",
         "This is how a lesson becomes a superstition: the conclusion survives, the conditions disappear. Your descendants inherit the fear without the reasoning. Then somebody pays for the lesson again, with interest."
       ]
     },
@@ -41,7 +41,7 @@
       "paragraphs": [
         "Even the Bible reaches us through human hands: copying, translation, interpretation. Ancient manuscripts such as Codex Sinaiticus carry corrections. That does not prove a lesson was ruined; it reminds me of the responsibility between a message and its next reader.",
         "Your family has its own interpreters. Someone remembers the warning and forgets the tenderness. Someone celebrates the victory and quietly removes the mistake that made it possible.",
-        "These five ideas are my own philosophical lens, not a claim that every religion teaches the same thing. Tap each one. The explanation matters more than the impressive sentence."
+        "I call these The Five Truths: the principles I return to when deciding what deserves to survive. A sentence can travel for centuries and still arrive empty. Keep the explanation with it."
       ],
       "items": [
         "Ego is the enemy: protect the truth before protecting your image. Being wrong for five minutes beats defending a mistake for five years.",
@@ -71,30 +71,10 @@
     }
   ],
   "interactions": {
-    "retelling": {
-      "afterSectionId": "paying-twice",
-      "title": "Choose the version that survives",
-      "scenario": "Which account reaches the grandson?",
-      "note": "Fictional example, not real family records.",
-      "options": [
-        {
-          "id": "telephone",
-          "label": "The family retelling",
-          "retelling": "Grandad never trusted business partners.",
-          "reveal": "He inherits a rule against people. The actual problem was the contract."
-        },
-        {
-          "id": "original",
-          "label": "The original reasoning",
-          "retelling": "I would not risk our home on those terms.",
-          "reveal": "He can examine the risk, negotiate, or walk away for his own reasons."
-        }
-      ]
-    },
     "principles": {
       "afterSectionId": "meaning-in-transmission",
-      "title": "Five ideas. Keep the context.",
-      "intro": "Open an idea. Keep its explanation.",
+      "title": "The Five Truths",
+      "intro": "Open each truth. Take the meaning with you.",
       "items": [
         {
           "id": "ego",
@@ -127,26 +107,6 @@
           "explanation": "Memory teaches and planning prepares. Neither does today's work. This hour becomes part of somebody else's tomorrow."
         }
       ]
-    },
-    "reflection": {
-      "afterSectionId": "leave-room-to-grow",
-      "title": "Before you leave this page",
-      "intro": "Answer privately. Open a prompt for a starting point.",
-      "questions": [
-        {
-          "question": "Which lesson cost you more than it should?",
-          "reveal": "Choose a decision, not a slogan. What did you miss?"
-        },
-        {
-          "question": "Who should not have to pay that price again?",
-          "reveal": "Picture someone who needs the explanation. Start there."
-        },
-        {
-          "question": "Where can they hear your original version?",
-          "reveal": "If the answer is nowhere, record it. Five honest minutes can be a beginning."
-        }
-      ],
-      "privacyNote": "Private reflection. No answers are entered, recorded, or sent."
     }
   },
   "faq": [
@@ -167,7 +127,7 @@
     {
       "label": "Harry Y. Gamble, Smithsonian: Codex Sinaiticus",
       "url": "https://asia.si.edu/research/essays/codex-sinaiticus/",
-      "note": "Historical context for corrections in a surviving biblical manuscript. It does not establish the author's five ideas or prove that revisions destroy meaning."
+      "note": "Historical context for corrections in a surviving biblical manuscript. It does not establish the author's Five Truths or prove that revisions destroy meaning."
     },
     {
       "label": "AIS Empire — originating publication and implementation perspective",
@@ -177,7 +137,7 @@
     {
       "label": "Sitani Mafi — author and personal perspective",
       "url": "https://sitanimafi.com/newsletter/what-is-a-legacy-brand",
-      "note": "The author's own interpretation of legacy, knowledge, and five philosophical ideas, not a universal account of religious doctrine."
+      "note": "The author's own interpretation of legacy, knowledge, and Five Truths, not a universal account of religious doctrine."
     }
   ],
   "author": {
