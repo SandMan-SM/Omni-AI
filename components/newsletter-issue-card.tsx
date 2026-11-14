@@ -24,7 +24,7 @@ export function normalizeNewsletterKeywords(keywords: unknown): string[] {
 }
 
 export function newsletterIssueImageUrl(slug: string): string {
-  if (slug === 'what-is-a-legacy-brand') return '/newsletter/generated/what-is-a-legacy-brand.webp';
+  if (slug === 'what-is-a-legacy-brand') return '/newsletter/generated/what-is-a-legacy-brand-v2.webp';
   // A stable resolver serves the issue's real generated artwork (webp/png/jpg)
   // and only generates a deterministic issue-specific fallback when no raster
   // exists. Every visual surface uses this route, including share metadata.
