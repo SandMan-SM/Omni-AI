@@ -8,7 +8,7 @@ export default function FamilyLegacyHero({
   src = '/images/editorial/legacy-family-tree-v2.webp',
   alt = 'A dimensional family legacy tree with seven blank digital profiles integrated into its branches and roots. Conceptual illustration, not real family records.',
 }: { src?: string; alt?: string }) {
-  const scene = useRef<HTMLElement>(null);
+  const scene = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const element = scene.current;
@@ -16,21 +16,27 @@ export default function FamilyLegacyHero({
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
     let pending = 0;
     let visible = false;
+    const reset = () => {
+      delete element.dataset.motion;
+      element.removeAttribute('style');
+    };
     const update = () => {
       pending = 0;
       if (preference.matches) {
-        delete element.dataset.motion;
-        element.style.removeProperty('--tree-pan');
-        element.style.removeProperty('--tree-tilt');
-        element.style.removeProperty('--tree-depth');
+        reset();
         return;
       }
       const bounds = element.getBoundingClientRect();
-      const progress = Math.max(0, Math.min(1, (window.innerHeight * .88 - bounds.top) / (window.innerHeight * .65 + bounds.height * .35)));
+      const progress = Math.max(0, Math.min(1, (window.innerHeight * .62 - bounds.top) / (window.innerHeight * .58 + bounds.height * .15)));
+      const ease = (value: number) => value * value * (3 - 2 * value);
+      const approach = ease(Math.min(1, progress / .28));
+      const descent = ease(Math.max(0, (progress - .28) / .72));
       element.dataset.motion = 'on';
-      element.style.setProperty('--tree-pan', `${(3.8 - progress * 7.6).toFixed(3)}%`);
-      element.style.setProperty('--tree-tilt', `${(4 - progress * 8).toFixed(3)}deg`);
-      element.style.setProperty('--tree-depth', (1.18 + Math.sin(progress * Math.PI) * .045).toFixed(4));
+      element.style.setProperty('--tree-progress', progress.toFixed(4));
+      element.style.setProperty('--tree-pan', `${(11 * approach - 29 * descent).toFixed(3)}%`);
+      element.style.setProperty('--tree-tilt', `${((2 - progress * 6) * approach).toFixed(3)}deg`);
+      element.style.setProperty('--tree-yaw', `${((-4 + progress * 8) * approach).toFixed(3)}deg`);
+      element.style.setProperty('--tree-depth', (1.04 + approach * .7).toFixed(4));
     };
     const schedule = () => { if (!pending && (visible || preference.matches)) pending = requestAnimationFrame(update); };
     const observer = new IntersectionObserver(entries => {
@@ -51,10 +57,12 @@ export default function FamilyLegacyHero({
     };
   }, []);
 
-  return <figure ref={scene} className="family-legacy-hero" aria-label="Family legacy tree, revealed with the page scroll">
-    <div className="family-legacy-artwork">
-      <Image src={src} alt={alt} width={1664} height={936} priority loading="eager" sizes="(max-width: 1100px) 90vw, 1100px" className="family-legacy-image"/>
-    </div>
-    <figcaption className="family-legacy-caption">One tree. Generations of knowledge. Scroll to follow the roots.</figcaption>
-  </figure>;
+  return <div ref={scene} className="family-legacy-sequence">
+    <figure className="family-legacy-hero" aria-label="Family legacy tree, from canopy to roots as you scroll">
+      <div className="family-legacy-artwork">
+        <Image src={src} alt={alt} width={1664} height={936} priority loading="eager" sizes="(max-width: 1100px) 90vw, 1100px" className="family-legacy-image"/>
+      </div>
+      <figcaption className="family-legacy-caption">Scroll to follow your bloodline.<span className="family-legacy-progress" aria-hidden="true"><span/></span></figcaption>
+    </figure>
+  </div>;
 }

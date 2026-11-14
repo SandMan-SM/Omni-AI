@@ -1,6 +1,9 @@
+.family-legacy-sequence{position:relative;width:100%;isolation:isolate}
 .family-legacy-hero{width:100%;margin:0}
-.family-legacy-artwork{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;background:#171812;perspective:850px;isolation:isolate}
-.family-legacy-image{display:block;width:100%;height:100%;object-fit:cover;transform-origin:50% 48%;pointer-events:none}
-.family-legacy-hero[data-motion="on"] .family-legacy-image{transform:translate3d(0,var(--tree-pan,0%),0) rotateX(var(--tree-tilt,0deg)) scale(var(--tree-depth,1.18));will-change:transform;backface-visibility:hidden}
-.family-legacy-caption{margin:0;padding:10px 0 0;font-size:12px;line-height:1.6;color:inherit;opacity:.75}
-@media(prefers-reduced-motion:reduce){.family-legacy-hero[data-motion="on"] .family-legacy-image{transform:none;will-change:auto}}
+.family-legacy-artwork{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:12px;background:#171812;perspective:1000px;isolation:isolate;box-shadow:0 16px 40px #0003}
+.family-legacy-artwork>.family-legacy-image{display:block;width:100%;height:100%;object-fit:cover;max-width:none;margin:0;transform-origin:50% 50%;pointer-events:none}
+.family-legacy-sequence[data-motion="on"] .family-legacy-image{transform:translate3d(0,var(--tree-pan,0%),0) rotateX(var(--tree-tilt,0deg)) rotateY(var(--tree-yaw,0deg)) scale(var(--tree-depth,1.04));will-change:transform;backface-visibility:hidden}
+.family-legacy-hero>.family-legacy-caption{margin:0;padding:10px 0 0;font-size:12px;line-height:1.6;color:inherit;opacity:.8}
+.family-legacy-progress{display:block;height:2px;margin-top:10px;overflow:hidden;border-radius:2px;background:color-mix(in srgb,currentColor 18%,transparent)}
+.family-legacy-progress>span{display:block;width:100%;height:100%;background:var(--legacy-accent,#c7a469);transform:scaleX(var(--tree-progress,0));transform-origin:left center}
+@media(prefers-reduced-motion:reduce){.family-legacy-sequence[data-motion="on"] .family-legacy-image{transform:none;will-change:auto}.family-legacy-progress{display:none}}
