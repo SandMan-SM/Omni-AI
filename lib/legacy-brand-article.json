@@ -1,8 +1,9 @@
 {
   "slug": "what-is-a-legacy-brand",
   "title": "What Is a Legacy Brand?",
-  "description": "Let your memories run through your bloodline—your voice, your lessons, the fire behind your name—so generations you’ll never meet can still hear you.",
+  "description": "Let your memories run through your bloodline: your voice, your lessons, the fire behind your name, so generations you’ll never meet can still hear you.",
   "date": "2026-11-13",
+  "readTime": "4 min read",
   "primaryKeyword": "legacy brand",
   "keywords": [
     "what is a legacy brand",
@@ -40,16 +41,9 @@
       "heading": "The words survived. Did the meaning?",
       "paragraphs": [
         "Even the Bible reaches us through human hands: copying, translation, interpretation. Ancient manuscripts such as Codex Sinaiticus carry corrections. That does not prove a lesson was ruined; it reminds me of the responsibility between a message and its next reader.",
-        "Your family has its own interpreters. Someone remembers the warning and forgets the tenderness. Someone celebrates the victory and quietly removes the mistake that made it possible.",
-        "I call these The Five Truths: the principles I return to when deciding what deserves to survive. A sentence can travel for centuries and still arrive empty. Keep the explanation with it."
+        "Your family has its own interpreters. Someone remembers the warning and forgets the tenderness. Someone celebrates the victory and quietly removes the mistake that made it possible."
       ],
-      "items": [
-        "Ego is the enemy: protect the truth before protecting your image. Being wrong for five minutes beats defending a mistake for five years.",
-        "Love is the answer: make care visible in what you carry for another person. Sometimes care helps; sometimes it says no.",
-        "Fear is not real: that is how I challenge an imagined catastrophe. The feeling and actual danger can be real; separate evidence from rehearsal.",
-        "We are all connected: a broken promise rarely stops at the person you made it to. Follow the consequences beyond yourself.",
-        "The present moment is all that matters: memory teaches and planning prepares. Neither does today's work. This hour becomes part of somebody else's tomorrow."
-      ]
+      "items": []
     },
     {
       "id": "preserve-the-original",
@@ -70,45 +64,6 @@
       ]
     }
   ],
-  "interactions": {
-    "principles": {
-      "afterSectionId": "meaning-in-transmission",
-      "title": "The Five Truths",
-      "intro": "Open each truth. Take the meaning with you.",
-      "items": [
-        {
-          "id": "ego",
-          "title": "Ego is the enemy",
-          "teaser": "What are you protecting?",
-          "explanation": "Protect the truth before protecting your image. Being wrong for five minutes beats defending a mistake for five years."
-        },
-        {
-          "id": "love",
-          "title": "Love is the answer",
-          "teaser": "What does care actually do?",
-          "explanation": "Make care visible in what you carry for another person. Sometimes care helps; sometimes it says no."
-        },
-        {
-          "id": "fear",
-          "title": "Fear is not real",
-          "teaser": "Evidence or rehearsal?",
-          "explanation": "That is how I challenge an imagined catastrophe. The feeling and actual danger can be real; separate evidence from rehearsal."
-        },
-        {
-          "id": "connection",
-          "title": "We are all connected",
-          "teaser": "Where does your decision land?",
-          "explanation": "A broken promise rarely stops at the person you made it to. Follow the consequences beyond yourself."
-        },
-        {
-          "id": "present",
-          "title": "The present moment is all that matters",
-          "teaser": "What can you do with this hour?",
-          "explanation": "Memory teaches and planning prepares. Neither does today's work. This hour becomes part of somebody else's tomorrow."
-        }
-      ]
-    }
-  },
   "faq": [
     {
       "question": "How is a legacy brand different from a personal brand?",
@@ -127,7 +82,7 @@
     {
       "label": "Harry Y. Gamble, Smithsonian: Codex Sinaiticus",
       "url": "https://asia.si.edu/research/essays/codex-sinaiticus/",
-      "note": "Historical context for corrections in a surviving biblical manuscript. It does not establish the author's Five Truths or prove that revisions destroy meaning."
+      "note": "Historical context for corrections in a surviving biblical manuscript. It does not prove that revisions destroy meaning."
     },
     {
       "label": "AIS Empire — originating publication and implementation perspective",
@@ -137,7 +92,7 @@
     {
       "label": "Sitani Mafi — author and personal perspective",
       "url": "https://sitanimafi.com/newsletter/what-is-a-legacy-brand",
-      "note": "The author's own interpretation of legacy, knowledge, and Five Truths, not a universal account of religious doctrine."
+      "note": "The author's own interpretation of legacy and generational knowledge, not a universal account of religious doctrine."
     }
   ],
   "author": {

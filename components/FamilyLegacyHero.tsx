@@ -32,7 +32,6 @@ export default function FamilyLegacyHero({
       const approach = ease(Math.min(1, progress / .28));
       const descent = ease(Math.max(0, (progress - .28) / .72));
       element.dataset.motion = 'on';
-      element.style.setProperty('--tree-progress', progress.toFixed(4));
       element.style.setProperty('--tree-pan', `${(11 * approach - 29 * descent).toFixed(3)}%`);
       element.style.setProperty('--tree-tilt', `${((2 - progress * 6) * approach).toFixed(3)}deg`);
       element.style.setProperty('--tree-yaw', `${((-4 + progress * 8) * approach).toFixed(3)}deg`);
@@ -62,7 +61,6 @@ export default function FamilyLegacyHero({
       <div className="family-legacy-artwork">
         <Image src={src} alt={alt} width={1664} height={936} priority loading="eager" sizes="(max-width: 1100px) 90vw, 1100px" className="family-legacy-image"/>
       </div>
-      <figcaption className="family-legacy-caption">Scroll to follow your bloodline.<span className="family-legacy-progress" aria-hidden="true"><span/></span></figcaption>
     </figure>
   </div>;
 }
