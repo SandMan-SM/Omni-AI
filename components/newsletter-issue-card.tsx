@@ -24,6 +24,7 @@ export function normalizeNewsletterKeywords(keywords: unknown): string[] {
 }
 
 export function newsletterIssueImageUrl(slug: string): string {
+  if (slug === 'what-is-a-legacy-brand') return '/newsletter/generated/what-is-a-legacy-brand.webp';
   // A stable resolver serves the issue's real generated artwork (webp/png/jpg)
   // and only generates a deterministic issue-specific fallback when no raster
   // exists. Every visual surface uses this route, including share metadata.
@@ -54,7 +55,7 @@ export function NewsletterIssueCard({
   const isPremium = post.tier === "premium";
   const isGeneralNews = normalizeNewsletterKeywords(post.keywords).some(keyword => keyword.toLowerCase().replace(/[-_]/g, " ") === "general news");
   const targetHref = href || `/newsletter/${post.slug}`;
-  const tierLabel = isGeneralNews ? "General News" : isPremium ? "Interlinked Premium" : "Interlinked Free";
+  const tierLabel = post.slug === 'what-is-a-legacy-brand' ? 'Perspective' : isGeneralNews ? "General News" : isPremium ? "Interlinked Premium" : "Interlinked Free";
   const preview = isGeneralNews ? newsletterSourceLinks(post.intro).map(part => part.text).join("") : post.intro;
 
   return (

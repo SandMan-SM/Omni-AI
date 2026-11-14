@@ -1,0 +1,14 @@
+.legacy-tree-scroll{position:relative;width:100%;margin:40px 0 48px;--tree-progress:0}
+.legacy-tree-window{position:relative;width:100%;aspect-ratio:16/9;overflow:hidden;border-radius:16px;background:#181714;isolation:isolate}
+.legacy-tree-window>img{display:block;width:100%;height:100%;object-fit:contain;max-width:none;margin:0}
+.legacy-tree-caption{position:absolute;z-index:1;left:0;right:0;bottom:0;display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px;padding:28px 22px 18px;color:#fff7e6;background:linear-gradient(transparent,rgba(5,5,5,.86));font:500 13px/1.5 system-ui,sans-serif}
+.legacy-tree-scroll-hint{display:none;font-weight:400;color:#e3dac7}
+.legacy-tree-scroll[data-motion=on]{height:120svh}
+.legacy-tree-scroll[data-motion=on] .legacy-tree-window{position:sticky;top:100px}
+.legacy-tree-scroll[data-motion=on] .legacy-tree-window>img{position:absolute;inset:0;width:100%;height:180%;object-fit:cover;object-position:center;will-change:transform}
+.legacy-tree-scroll[data-motion=on] .legacy-tree-scroll-hint{display:inline}
+.legacy-tree-progress{position:absolute;bottom:0;left:0;height:3px;width:calc(var(--tree-progress)*100%);background:#d9c18c;z-index:2}
+@media(max-width:600px){.legacy-tree-scroll{margin:28px 0 36px}.legacy-tree-scroll[data-motion=on]{height:calc(56.25vw + 35svh)}.legacy-tree-scroll[data-motion=on] .legacy-tree-window{top:90px}.legacy-tree-caption{padding:25px 14px 12px;font-size:11px;gap:2px}.legacy-tree-window{border-radius:12px}}
+@media(prefers-reduced-motion:reduce){.legacy-tree-scroll[data-motion=on]{height:auto}.legacy-tree-scroll[data-motion=on] .legacy-tree-window{position:relative;top:auto}.legacy-tree-scroll[data-motion=on] .legacy-tree-window>img{position:static;height:100%;object-fit:contain;transform:none!important;will-change:auto}.legacy-tree-scroll-hint{display:none!important}.legacy-tree-progress{display:none}}
+/* Clip horizontal paint without creating a non-scrolling sticky ancestor. */
+html:has(.legacy-tree-scroll),body:has(.legacy-tree-scroll){overflow-x:clip}

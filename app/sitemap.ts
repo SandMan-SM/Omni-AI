@@ -245,6 +245,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
   return [
+    { url: `${baseUrl}/newsletter/what-is-a-legacy-brand`, lastModified: '2026-11-13T00:00:00.000Z', changeFrequency: 'monthly', priority: 0.8 },
     ...staticPages,
     ...comparisonPages,
     ...landingPages,

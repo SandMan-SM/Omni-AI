@@ -54,7 +54,7 @@ type RawNewsletterSummary = {
 };
 
 export function generateStaticParams() {
-  return newsletterFallbackPosts.map((post) => ({ slug: post.slug }));
+  return newsletterFallbackPosts.filter((post) => post.slug !== 'what-is-a-legacy-brand').map((post) => ({ slug: post.slug }));
 }
 
 function normalizeKeywords(keywords: unknown): string[] {

@@ -92,12 +92,20 @@ export async function GET() {
   }
 
   const supabasePosts = queryResult?.data || [];
-  const posts = (supabasePosts.length > 0 ? supabasePosts : getNewsletterFallbackSummaries())
+  const fallbackPosts = getNewsletterFallbackSummaries();
+  const basePosts = supabasePosts.length > 0 ? supabasePosts : fallbackPosts;
+  // This source-controlled public essay has no database row and is never
+  // queued for subscriber delivery. Include it even when the live lookup
+  // succeeds, without replacing any other live issue or email feed.
+  const staticEssay = fallbackPosts.filter((post) => post.slug === "what-is-a-legacy-brand");
+  const mergedPosts = Array.from(new Map([...basePosts, ...staticEssay].map((post) => [post.slug, post])).values());
+  const posts = mergedPosts
     .filter(isOmniAiNewsletterPost)
     .map((p, index) => ({
       ...p,
       published_at: p.published_at || archiveDateForIndex(index),
-    }));
+    }))
+    .sort((a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime());
   const latestPub = posts[0]?.published_at
     ? new Date(posts[0].published_at).toUTCString()
     : new Date().toUTCString();
@@ -106,7 +114,11 @@ export async function GET() {
     .filter((p) => p.slug && p.published_at)
     .map((p) => {
       const pubDate = new Date(p.published_at as string).toUTCString();
-      const tierCategory = p.tier === "premium" ? "Premium" : "Free";
+      const isLegacyEssay = p.slug === "what-is-a-legacy-brand";
+      const tierCategory = isLegacyEssay ? "Perspective" : p.tier === "premium" ? "Premium" : "Free";
+      const authorMarkup = isLegacyEssay
+        ? "<dc:creator>Sitani Mafi</dc:creator>"
+        : "<author>alfred@omnileadsagi.com (Alfred Belvedere)</author>\n      <dc:creator>Alfred Belvedere</dc:creator>";
       // <author> uses the RSS 2.0 canonical format: "email (Name)".
       // <dc:creator> duplicates the author name without the email for
       // feed readers (Inoreader, Feedly, Reeder) that display author
@@ -120,8 +132,7 @@ export async function GET() {
       <guid isPermaLink="true">${siteUrl}/newsletter/${p.slug}</guid>
       <pubDate>${pubDate}</pubDate>
       <description>${escapeXml(p.intro || "")}</description>
-      <author>alfred@omnileadsagi.com (Alfred Belvedere)</author>
-      <dc:creator>Alfred Belvedere</dc:creator>
+      ${authorMarkup}
       <category>${tierCategory}</category>
     </item>`;
     })

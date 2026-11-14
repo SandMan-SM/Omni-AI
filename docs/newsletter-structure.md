@@ -1,5 +1,9 @@
 # Interlinked Newsletter — Structure & Pipeline
 
+## Source-controlled web-only perspective
+
+`what-is-a-legacy-brand` is a reviewed, source-controlled essay, not a daily free or premium issue. Its static public reader record has the separate `general-news` tier/day type, and its dedicated article layout preserves full prose, author/source credits, tree artwork, FAQ, sharing, and reference notes. Index and archive readers merge this public record; free/premium senders and their legacy channel feed must continue to exclude it. Publishing this page never authorizes subscriber delivery, database writes, or changes to the email template below.
+
 ## Three sources of truth (keep in sync)
 
 | Layer | File |

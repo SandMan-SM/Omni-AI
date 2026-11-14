@@ -1,4 +1,5 @@
 import snapshotPosts from './newsletter-fallback.generated.json';
+import legacyBrandArticle from './legacy-brand-article.json';
 
 export type NewsletterFallbackPost = {
   id: string;
@@ -10,7 +11,9 @@ export type NewsletterFallbackPost = {
   quote: string;
   offer: string;
   keywords: string[];
-  tier: 'free' | 'premium';
+  tier: 'free' | 'premium' | 'general-news';
+  day_type?: 'general-news';
+  status?: 'published';
   published_at: string;
   created_at: string;
 };
@@ -143,7 +146,20 @@ export function isOmniAiNewsletterPost(post: {
 }
 
 export const newsletterFallbackPosts: NewsletterFallbackPost[] =
-  (generatedFallbackPosts.length > 0 ? generatedFallbackPosts : emergencyFallbackPosts)
+  // This reviewed, web-only essay is source-controlled rather than queued in
+  // the database. Its separate tier keeps it outside free/premium dispatch.
+  [{
+    id: 'static-web-only-legacy-brand-20261113',
+    slug: legacyBrandArticle.slug,
+    subject: legacyBrandArticle.title,
+    intro: legacyBrandArticle.description,
+    insights: [...legacyBrandArticle.intro, ...legacyBrandArticle.sections.flatMap(section => [section.heading, ...section.paragraphs, ...('items' in section ? section.items ?? [] : [])]), ...legacyBrandArticle.faq.flatMap(item => [item.question, item.answer])],
+    power_move: '', quote: '', offer: '',
+    keywords: ['Perspective', 'Legacy branding', 'Interlinked', 'Omni AI', ...legacyBrandArticle.keywords],
+    tier: 'general-news', day_type: 'general-news', status: 'published',
+    published_at: `${legacyBrandArticle.date}T00:00:00.000Z`,
+    created_at: `${legacyBrandArticle.date}T00:00:00.000Z`,
+  } as NewsletterFallbackPost, ...(generatedFallbackPosts.length > 0 ? generatedFallbackPosts : emergencyFallbackPosts)]
     .filter(isOmniAiNewsletterPost);
 
 export function getNewsletterFallbackPost(slug: string) {
