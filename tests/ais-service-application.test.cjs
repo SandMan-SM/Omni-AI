@@ -90,6 +90,7 @@ function fixture(configuration = {}) {
     return { rows: [{ id: contact.id }], rowCount: 1 };
   };
   const stubs = {
+    'server-only': {},
     pg: { Pool: class { query(query, values) { return sql(query, values); } } },
     'next/server': { NextResponse: Response },
     '@/lib/supabase/admin': { createAdminClient: () => ({ from: crm }) },
@@ -125,14 +126,23 @@ function fixture(configuration = {}) {
   const modules = new Map(), sharedGlobal = {};
   function load(relative) {
     if (modules.has(relative)) return modules.get(relative);
+    if (relative.endsWith('.json')) {
+      const value = JSON.parse(fs.readFileSync(path.join(repo, relative), 'utf8'));
+      modules.set(relative, value);
+      return value;
+    }
     const module = { exports: {} };
-    const code = ts.transpileModule(fs.readFileSync(path.join(repo, relative), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
+    const code = ts.transpileModule(fs.readFileSync(path.join(repo, relative), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText;
     const context = {
       module, exports: module.exports, global: sharedGlobal,
       require(name) {
         if (Object.hasOwn(stubs, name)) return stubs[name];
         if (name.startsWith('node:')) return require(name);
         if (name.startsWith('@/')) return load(name.slice(2) + '.ts');
+        if (name.startsWith('.')) {
+          const resolved = path.join(path.dirname(relative), name);
+          return load(resolved.endsWith('.json') ? resolved : `${resolved}.ts`);
+        }
         throw Error('Unmocked import ' + name);
       },
       process: { env: { AISEMPIRE_INBOUND_SECRET: secret, POSTGRES_URL: 'postgres://isolated:isolated@127.0.0.1/isolated', NODE_ENV: 'test' } },
@@ -161,6 +171,73 @@ function payload() { return {
   service: 'website-development', question: 'Build a service website with a clear application flow.',
   page_url: 'https://aisempire.org/service/website-development', source_path: '/newsletter/website-questions',
 }; }
+
+test('the canonical catalog accepts all existing and newly added services without storage or notifications', () => {
+  const f = fixture();
+  const helper = f.load('lib/server/ais-service-application.ts');
+  const expected = {
+    traditional: 'Traditional Marketing',
+    'website-development': 'Website Development',
+    'ai-employees': 'AI Employees',
+    'agentic-marketing': 'Agentic Marketing',
+    'legacy-branding': 'Legacy Branding',
+    'lead-generation': 'Lead Generation',
+    'content-studio': 'Content Studio',
+    'personal-branding': 'Personal Branding',
+    'business-branding': 'Business Branding',
+    'free-consultation': 'Free consultation',
+  };
+  assert.deepEqual(Object.keys(helper.AIS_APPLICATION_SERVICES).sort(), Object.keys(expected).sort());
+  for (const [service, serviceName] of Object.entries(expected)) {
+    const parsed = helper.parseAisServiceApplication({ ...payload(), service, service_name: 'Untrusted caller label' });
+    assert.equal(parsed.ok, true, service);
+    assert.equal(parsed.application.service, service);
+    assert.equal(parsed.application.serviceName, serviceName);
+    assert.equal(parsed.application.body.service_name, serviceName);
+  }
+  for (const service of ['', 'unsupported-service', 'Content Studio', 'personal-brand', '__proto__', 'constructor']) {
+    const parsed = helper.parseAisServiceApplication({ ...payload(), service });
+    assert.equal(parsed.ok, false, service);
+    assert.equal(parsed.code, 'service_required', service);
+  }
+  assert.equal(f.sqlCalls.length, 0);
+  assert.equal(f.leads.size, 0);
+  assert.equal(f.contacts.length, 0);
+  assert.equal(f.ownerAttempts.length, 0);
+  assert.equal(f.customerAttempts.length, 0);
+});
+
+test('each added service preserves canonical CRM intent and complete idempotent receipts for new and existing contacts', async () => {
+  for (const [service, serviceName] of Object.entries({
+    'content-studio': 'Content Studio',
+    'personal-branding': 'Personal Branding',
+    'business-branding': 'Business Branding',
+  })) {
+    for (const existing of [false, true]) {
+      const f = fixture(existing ? {
+        contact: { id: 'existing', business_id: 'ais-business', email: 'Fixture@Example.Invalid', raw_data: { prior_value: 'preserved' } },
+      } : {});
+      const body = { ...payload(), service, service_name: 'Untrusted caller label', page_url: `https://aisempire.org/service/${service}` };
+      const first = await f.submit(body);
+      const replay = await f.submit(body);
+      assert.equal(first.status, 200, `${service}: ${existing ? 'existing' : 'new'} contact`);
+      assert.equal(replay.status, 200);
+      assert.deepEqual(replay.body, first.body);
+      assert.equal(first.body.crm_contact_id, f.contacts[0].id);
+      assert.equal(first.body.owner_message_id, `owner-${first.body.lead_id}`);
+      assert.equal(first.body.customer_message_id, `customer-${first.body.lead_id}`);
+      assert.equal(f.leads.size, 1);
+      assert.equal(f.contacts.length, 1);
+      assert.equal(f.contacts[0].raw_data.service, service);
+      assert.equal(f.contacts[0].raw_data.service_name, serviceName);
+      assert.equal(f.contacts[0].raw_data.ais_service_applications[first.body.lead_id].service_name, serviceName);
+      if (existing) assert.equal(f.contacts[0].raw_data.prior_value, 'preserved');
+      assert.equal(f.ownerAttempts.length, 1);
+      assert.equal(f.customerAttempts.length, 1);
+      assert.equal(f.legacyWrites(), 0);
+    }
+  }
+});
 
 test('new application, unchanged replay and new intent link one CRM contact with distinct complete receipts', async () => {
   const f = fixture();

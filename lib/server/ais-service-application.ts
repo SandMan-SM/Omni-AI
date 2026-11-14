@@ -14,6 +14,9 @@ export const AIS_APPLICATION_SERVICES: Readonly<Record<string, string>> = {
   'agentic-marketing': 'Agentic Marketing',
   'legacy-branding': 'Legacy Branding',
   'lead-generation': 'Lead Generation',
+  'content-studio': 'Content Studio',
+  'personal-branding': 'Personal Branding',
+  'business-branding': 'Business Branding',
   'free-consultation': 'Free consultation',
 };
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
