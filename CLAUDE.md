@@ -44,6 +44,11 @@ npm run audit:content-lookup  # failed-lookup gate — a page that answers 404 b
 npm run test:content-lookup  # classifier unit tests — a `.single()` read with no rows is an ABSENCE, not a failure
 npm run audit:deploy   # deploy source-of-truth gate — is the running production deployment described by git, AND did the pushed tip reach production?
 npm run audit:env-drift  # local vs production secret drift (needs the Vercel CLI; NOT part of build)
+npm run audit:lint    # lint-warning gate — the build must not carry a warning, and no suppression may be stale
+npm run test:lint     # lint-gate unit tests — proves the gate FIRES on a warning and on a stale suppression
+npm run audit:page-metadata  # every page must ship a title and a description (own metadata or inherited from a layout)
+npm run test:page-metadata   # page-metadata gate unit tests — pins both shapes the gate reports
+npm run audit:flash   # first-paint white-flash probe against production (needs a local Chromium; NOT part of build)
 npm run preview      # git push origin HEAD:dev --force → builds preview at omni-ai-git-dev-…vercel.app
 npm run preview:open # open that preview URL
 ```
@@ -114,6 +119,8 @@ single registered preview server instead.
   `requireLookup` throws on a failed lookup, so the route's `error.tsx` renders a retryable 500. `npm run audit:content-lookup` fails the build when a page reaches `notFound()` from an unclassified read.
   - **`.single()` reports "no row" as an ERROR.** PostgREST cannot represent zero rows as `application/vnd.pgrst.object+json`, so `.single()` answers 406 / PGRST116 while `.maybeSingle()` answers `{ data: null, error: null }`. A classifier that only looks at `error` therefore calls an absent row a FAILURE, and the route serves **500 for a page that does not exist** — which is what the first version of this classifier did, caught by the live probe suite on the three routes that use `.single()`. `lookupContent` maps PGRST116 to "missing", except when the details string says the query returned *more than one* row (a data-integrity failure, never a 404). `npm run test:content-lookup` pins every response shape.
 - **JSX text:** escape raw quotes/apostrophes (`&apos;` `&ldquo;` `&rdquo;`) — raw `'`/`"` in JSX trips ESLint `react/no-unescaped-entities` and **fails the Vercel build**.
+- **A lint WARNING is not a build failure — so it is now a gate.** Next.js prints warnings without failing on them, which is why a raw `<img>` warning sat in the build output on every deployment for four days (2026-11-13 → 2026-11-18) while CLAUDE.md said "fix every warning the build reports". `npm run audit:lint` runs ESLint over the same directories `next lint` covers and fails the build on any warning, and it also reports a disable comment that no longer suppresses anything (`lint-unused-disable-directive`) — the repo carried 31 of those until the gate found them. A raw `<img>` is allowed only with an explicit `eslint-disable-next-line` and a comment saying why; the two that remain are a one-off shoutout image and a watermark.
+- **Every page must ship a title and a description.** CLAUDE.md said so, but nothing checked it, so it was prose. `npm run audit:page-metadata` now walks every `page.tsx` under `app/`, resolves the metadata down the layout chain (Next.js merges metadata down the chain), and reports a page that declares none, or one whose own metadata is an object literal without both a `title` and a `description`. A metadata value built by a factory call (`buildMetadata({...})`) is exempt — the factory owns the shape.
 - **Time:** anchor "today"/daily logic to **Pacific Time**. Vercel runs UTC, so naive `new Date()` makes briefings/digests/crons off by a day.
 - Forms POST to `app/api/*` handlers that insert into Supabase + notify via Resend.
 
