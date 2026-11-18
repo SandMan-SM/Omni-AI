@@ -11,6 +11,11 @@ import {
 
 export const dynamic = "force-dynamic";
 const cookie = "interlinked_reader";
+const readerHosts = new Set([
+  "omnileadsagi.com",
+  "www.omnileadsagi.com",
+  "interlinked.news",
+]);
 const json = (value: object, status = 200) =>
   NextResponse.json(value, {
     status,
@@ -41,19 +46,17 @@ export async function GET(req: NextRequest) {
 }
 function validOrigin(req: NextRequest) {
   const origin = req.headers.get("origin");
-  if (!origin) return false;
-  if (
-    origin === "https://omnileadsagi.com" ||
-    origin === "https://www.omnileadsagi.com"
-  )
-    return true;
+  const host = req.headers.get("host");
+  if (!origin || !host) return false;
+  if (readerHosts.has(host)) return origin === `https://${host}`;
   if (process.env.NODE_ENV !== "development") return false;
   try {
     const url = new URL(origin);
     return (
       url.protocol === "http:" &&
       ["localhost", "127.0.0.1"].includes(url.hostname) &&
-      url.host === req.headers.get("host")
+      origin === url.origin &&
+      url.host === host
     );
   } catch {
     return false;
