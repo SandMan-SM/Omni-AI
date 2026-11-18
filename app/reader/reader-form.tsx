@@ -16,6 +16,7 @@ export function ReaderForm({ source }: { source: string }) {
     [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false),
     [error, setError] = useState("");
+  const [initialized, setInitialized] = useState(false);
   useEffect(() => {
     const ctrl = new AbortController();
     fetch("/api/reader", { signal: ctrl.signal, cache: "no-store" })
@@ -24,12 +25,15 @@ export function ReaderForm({ source }: { source: string }) {
         if (r.step) setStep(r.step);
         else if (r.error) setError(r.error);
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        if (!ctrl.signal.aborted) setInitialized(true);
+      });
     return () => ctrl.abort();
   }, []);
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
+    if (busy || !initialized) return;
     const data = Object.fromEntries(new FormData(event.currentTarget));
     const action = {
       email: "request",
@@ -77,7 +81,7 @@ export function ReaderForm({ source }: { source: string }) {
               ? "Two details for your reader profile. We deliver the briefing by email."
               : "Your next issue will arrive by email if your subscription is active."}
       </p>
-      <form onSubmit={submit} key={step}>
+      <form method="post" onSubmit={submit} key={step}>
         {step === "email" && (
           <div hidden aria-hidden="true">
             <label>
@@ -93,6 +97,7 @@ export function ReaderForm({ source }: { source: string }) {
               type="email"
               autoComplete="email"
               name="email"
+              disabled={!initialized}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -152,7 +157,7 @@ export function ReaderForm({ source }: { source: string }) {
         )}
         <button
           className={step === "ready" ? styles.secondary : styles.primary}
-          disabled={busy}
+          disabled={busy || !initialized}
         >
           {busy
             ? "One moment…"
