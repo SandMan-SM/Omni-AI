@@ -221,13 +221,9 @@ type CacheEntry<T> = {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __operatorDashboardScopeCache: Map<string, CacheEntry<OperatorIntelligenceScope>> | undefined;
-  // eslint-disable-next-line no-var
   var __operatorDashboardScopeInflight: Map<string, Promise<OperatorIntelligenceScope | null>> | undefined;
-  // eslint-disable-next-line no-var
   var __operatorDashboardSnapshotCache: Map<string, CacheEntry<OperatorIntelligenceSnapshot>> | undefined;
-  // eslint-disable-next-line no-var
   var __operatorDashboardSnapshotInflight: Map<string, Promise<OperatorIntelligenceSnapshot>> | undefined;
 }
 

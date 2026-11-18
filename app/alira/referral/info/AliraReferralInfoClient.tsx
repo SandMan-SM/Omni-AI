@@ -194,7 +194,6 @@ export function AliraReferralInfoClient({
     if (hash === "#activate" || hash === "#pricing") {
       revealPricing("deeplink");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onPay(option: PricingOption) {

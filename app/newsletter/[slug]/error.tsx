@@ -21,7 +21,6 @@ export default function NewsletterPostError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console
     console.error("[/newsletter/[slug]] segment error:", error);
   }, [error]);
 

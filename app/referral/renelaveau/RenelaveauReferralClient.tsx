@@ -184,7 +184,6 @@ export function RenelaveauReferralClient({
     if (window.location.hash.toLowerCase() === "#activate") {
       setModalOpen(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function onPay(url: string) {

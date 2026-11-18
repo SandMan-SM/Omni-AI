@@ -30,7 +30,6 @@ const OWNER_EMAIL =
 const FROM_EMAIL = process.env.IX_RESEND_FROM || leadSenderFor("theixnetwork");
 
 declare global {
-  // eslint-disable-next-line no-var
   var __ixFormsPgPool: Pool | undefined;
 }
 

@@ -39,7 +39,6 @@ const FROM_EMAIL =
   leadSenderFor("sfdempire");
 
 declare global {
-  // eslint-disable-next-line no-var
   var __sfdFormsPgPool: Pool | undefined;
 }
 

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useEffect, useRef } from 'react';
 import './legacy-tree.css';
 
@@ -40,10 +41,14 @@ export default function LegacyTree({ src = '/images/editorial/legacy-family-tree
     };
   }, []);
 
+  // A remote artwork URL cannot go through the optimizer (it is not in the
+  // remote allowlist), so it is rendered as-is; a local path is optimized.
+  const remote = /^https?:\/\//i.test(src);
+
   return <section ref={section} className="legacy-tree-scroll" aria-label="Explore the family tree from canopy to roots">
     <div ref={frame} className="legacy-tree-window">
       {/* The complete image remains visible without JavaScript or with reduced motion. */}
-      <img ref={image} src={src} width="1664" height="936" alt={alt} loading="lazy" decoding="async"/>
+      <Image ref={image} src={src} alt={alt} width={1664} height={936} sizes="100vw" loading="lazy" decoding="async" unoptimized={remote}/>
       <div className="legacy-tree-caption"><span>One tree. Many generations.</span><span className="legacy-tree-scroll-hint">Scroll to follow the branches to their roots</span></div>
       <div className="legacy-tree-progress" aria-hidden="true"/>
     </div>

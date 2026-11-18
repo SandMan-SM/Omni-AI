@@ -54,7 +54,6 @@ export type DocumentSignerProfile = {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __documentSignaturePgPool: Pool | undefined;
 }
 

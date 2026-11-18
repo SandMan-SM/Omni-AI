@@ -26,7 +26,6 @@ import { requireActiveFederationIdentity } from '@/lib/federation-retirement';
  */
 
 declare global {
-  // eslint-disable-next-line no-var
   var __omniLeadSenderPool: Pool | undefined;
 }
 

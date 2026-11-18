@@ -338,7 +338,6 @@ function EditUserDialog({ user: u, open, onClose, onSaved, currentUserId, onRefr
   const [form, setForm] = useState(buildForm(u));
 
   // Re-initialize form when a different user is selected or dialog opens
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (open) {
       setForm(buildForm(u));

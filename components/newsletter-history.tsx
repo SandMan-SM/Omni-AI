@@ -217,7 +217,6 @@ export function NewsletterHistory({ refreshKey = 0 }: { refreshKey?: number }) {
     return token ? { Authorization: `Bearer ${token}` } : {};
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const load = useCallback(async () => {
     setLoading(true);
     try {

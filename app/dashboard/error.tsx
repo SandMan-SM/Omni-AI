@@ -19,7 +19,6 @@ export default function DashboardError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // eslint-disable-next-line no-console
     console.error("[/dashboard] segment error:", error);
     // Best-effort log to hades_root_audit so silent client errors land
     // in Hades alongside privileged-action audits. Same endpoint admin

@@ -24,7 +24,6 @@ export default function RootError({
 }) {
   useEffect(() => {
     // Log the raw error server-side so it surfaces in Vercel logs.
-    // eslint-disable-next-line no-console
     console.error("[root] segment error:", error);
     reportBrowserError({
       source: "next-root-error-boundary",

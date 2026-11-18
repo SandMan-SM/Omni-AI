@@ -43,7 +43,6 @@ type TrustedVercelProject = {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __vercelOidcJwksCache:
     | Map<string, JwksCacheEntry>
     | undefined;

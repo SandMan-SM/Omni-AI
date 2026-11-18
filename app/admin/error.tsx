@@ -31,7 +31,6 @@ export default function AdminError({
 
   useEffect(() => {
     // Log the raw error server-side so it shows up in Vercel logs.
-    // eslint-disable-next-line no-console
     console.error("[/admin] segment error:", error);
 
     // Best-effort POST to the audit log so silent client errors get

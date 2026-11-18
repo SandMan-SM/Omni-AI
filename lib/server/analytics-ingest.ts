@@ -19,7 +19,6 @@ import { isRetiredFederationContact } from '@/lib/server/federation-contact-reti
  */
 
 declare global {
-  // eslint-disable-next-line no-var
   var __omniAnalyticsPool: Pool | undefined;
 }
 

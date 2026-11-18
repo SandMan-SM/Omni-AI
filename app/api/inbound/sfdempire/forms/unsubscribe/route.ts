@@ -8,7 +8,6 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __sfdUnsubscribePgPool: Pool | undefined;
 }
 

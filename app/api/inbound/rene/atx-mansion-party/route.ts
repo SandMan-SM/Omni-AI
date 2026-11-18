@@ -34,7 +34,6 @@ const LOCAL_SOURCE_VALUE = "rene-laveau-dev";
 const PHONE_RE = /^[+()\-\s.\d]{7,24}$/;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __reneTicketPgPool: Pool | undefined;
 }
 

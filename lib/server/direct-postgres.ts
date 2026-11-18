@@ -201,9 +201,7 @@ type OperatorBusinessRow = {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __omniPgPool: Pool | undefined;
-  // eslint-disable-next-line no-var
   var __omniAuthPgPool: Pool | undefined;
 }
 

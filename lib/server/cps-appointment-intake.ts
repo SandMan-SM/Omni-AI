@@ -27,7 +27,6 @@ const TRUSTED_CPS_PROJECT = {
 };
 
 declare global {
-  // eslint-disable-next-line no-var
   var __cpsAppointmentPool: Pool | undefined;
 }
 
