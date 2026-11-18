@@ -79,3 +79,6 @@ scripts/check-newsletter-report.ts
 
 # All isolated Next build output stays local.
 .next*/
+
+# Telegram jobs run on the owner’s Hermes host.
+ops/omni-telegram/

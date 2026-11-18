@@ -1,0 +1,258 @@
+{
+  "channels": {
+    "success-empire": {
+      "label": "Success Empire",
+      "hour": 8,
+      "minute": 0,
+      "chat_id": null,
+      "posts": [
+        {
+          "category": "daily-challenge",
+          "text": "Pick the task you keep moving to tomorrow. Give it twenty focused minutes before you open another tab. Share what moved if it helps someone else start."
+        },
+        {
+          "category": "member-recognition",
+          "text": "Who made your week easier without asking for credit? Give them their flowers in the chat. Tell them exactly what they did."
+        },
+        {
+          "category": "check-in",
+          "text": "What did you finish this week that nobody saw? Drop the smallest honest win. Someone here might be fighting the same battle."
+        },
+        {
+          "category": "review",
+          "text": "From Mafi Empire’s published reviews: “helped us turn a complicated business idea into something customers could understand.” Try explaining what you do to someone outside your industry in one sentence.",
+          "url": "https://mafiempire.com/reviews"
+        },
+        {
+          "category": "daily-challenge",
+          "text": "Before lunch, close one loop someone else is waiting on. Send the answer, hand over the file, or tell them exactly when it lands."
+        },
+        {
+          "category": "reading",
+          "text": "Sitani’s essay “Too Smart to Hold a Flashlight” asks who actually does the work a family will inherit. Tonight, give credit to the person holding the flashlight.",
+          "url": "https://sitanimafi.com/newsletter/too-smart-to-hold-a-flashlight"
+        },
+        {
+          "category": "check-in",
+          "text": "Take two minutes and name what’s making this week heavy. If you want the group’s help, ask for one specific thing."
+        },
+        {
+          "category": "daily-challenge",
+          "text": "Send the message you’ve rewritten three times. Say what you need in two lines. Give the other person room to answer."
+        },
+        {
+          "category": "member-recognition",
+          "text": "Shoutout to everyone who kept a promise this week when it would’ve been easier to let it slide. If somebody here came through for you, name the promise they kept."
+        },
+        {
+          "category": "check-in",
+          "text": "What did you learn the hard way this week? Give us one sentence somebody else can use."
+        },
+        {
+          "category": "review",
+          "text": "From Mafi Empire’s published reviews: “We had the vision but struggled with execution.” If that sounds familiar, choose the next action you can finish today.",
+          "url": "https://mafiempire.com/reviews"
+        },
+        {
+          "category": "daily-challenge",
+          "text": "Cancel one commitment you already know you can’t honor. Tell the person early. Use the time you got back to keep a promise that matters."
+        },
+        {
+          "category": "reading",
+          "text": "Mafi Empire’s piece on legacy branding starts with a question worth taking personally. What will your family still be able to hear in your own words? Record one answer.",
+          "url": "https://mafiempire.com/newsletter/what-is-a-legacy-brand"
+        },
+        {
+          "category": "member-recognition",
+          "text": "Somebody here landed a first sale, kept a streak alive, or finally asked for help. If that was you, say it. Let the group celebrate the real thing."
+        },
+        {
+          "category": "check-in",
+          "text": "Open your calendar for the next seven days. Where is the hour for the thing you say you care about? Put it in while you’re looking."
+        },
+        {
+          "category": "daily-challenge",
+          "text": "Give one person twenty minutes of your full attention today. Put the phone down. Ask the follow-up question you usually skip."
+        },
+        {
+          "category": "member-recognition",
+          "text": "Who helped you make a better decision lately? Tell the group what changed in your thinking. Send that person the same thank-you directly."
+        },
+        {
+          "category": "check-in",
+          "text": "Name your next move before you close this chat. Something you can actually do today. If you want accountability, bring the result back here."
+        }
+      ]
+    },
+    "imperium": {
+      "label": "Imperium",
+      "hour": 12,
+      "minute": 0,
+      "chat_id": null,
+      "posts": [
+        {
+          "category": "archive-lesson",
+          "text": "Give the work nobody sees twenty minutes today. Fix one thing that would trip up the next person. Record what the repair made easier.",
+          "url": "https://secretimperium.com/archive/do-the-unseen-work/"
+        },
+        {
+          "category": "commitment",
+          "text": "Pick one commitment you can keep this week. Give it a deadline and a clear definition of done. Say it plainly enough that someone else can check."
+        },
+        {
+          "category": "inner-circle",
+          "text": "When somebody in the circle brings a hard question, ask what they’ve already tried. Listen long enough to give an answer they can use."
+        },
+        {
+          "category": "practice",
+          "text": "Do a quick audit of a promise you missed. Find the first point where you could have spoken up. Put that check into your next commitment."
+        },
+        {
+          "category": "archive-lesson",
+          "text": "Set tomorrow’s minimum standard while your head is clear. Make it concrete enough to follow on a rough morning.",
+          "url": "https://secretimperium.com/archive/standards-before-mood/"
+        },
+        {
+          "category": "recruitment",
+          "text": "If you’re ready to work through the Imperium Elite curriculum, start with the 28 Principles. Read the outline. Name the habit you’d actually practice every week.",
+          "url": "https://secretimperium.com/principles/"
+        },
+        {
+          "category": "commitment",
+          "text": "Tell someone what will be finished by Friday. If it starts slipping, reach them before the deadline with the next honest date."
+        },
+        {
+          "category": "inner-circle",
+          "text": "Bring one lesson from your week that cost you something to learn. Tell the circle what happened and what you’d change. Leave room for another person’s read."
+        },
+        {
+          "category": "archive-lesson",
+          "text": "Find a decision you’re defending out of habit. Write down the evidence that would change it. Go look for that evidence.",
+          "url": "https://secretimperium.com/archive/the-courage-to-revise/"
+        },
+        {
+          "category": "practice",
+          "text": "Improve one handoff today. Write down what the next person needs, where to find it, and who to ask when it breaks."
+        },
+        {
+          "category": "commitment",
+          "text": "When you say yes, put the date on your calendar while the other person can hear you. Give the promise a place to live."
+        },
+        {
+          "category": "recruitment",
+          "text": "Know someone who follows through and makes the room better? Share the application privately if they’re interested. It asks what they want to build or change.",
+          "url": "https://secretimperium.com/apply/"
+        },
+        {
+          "category": "inner-circle",
+          "text": "Bring a problem early enough for somebody to help. Say where you’re stuck and what you need from the circle."
+        },
+        {
+          "category": "archive-lesson",
+          "text": "Before you ship, give the last ten percent the same attention you gave the start. Follow the link someone will click. Read the first line they’ll see.",
+          "url": "https://secretimperium.com/archive/finish-with-care/"
+        },
+        {
+          "category": "practice",
+          "text": "Pick a decision you can reverse. Run a small test this week and write down what result would change your mind.",
+          "url": "https://secretimperium.com/archive/small-bets-clear-learning/"
+        },
+        {
+          "category": "commitment",
+          "text": "Review the last seven days. List the commitments you kept and the ones that slipped. Pick the change that would help you keep the next one."
+        },
+        {
+          "category": "recruitment",
+          "text": "Start with one free Imperium essay and try its exercise. If you want to work through the curriculum alongside other members, see what Imperium Elite includes.",
+          "url": "https://secretimperium.com/principles/"
+        },
+        {
+          "category": "inner-circle",
+          "text": "Make one introduction this week between two people who could help each other. Ask them both first and say why you thought of them."
+        }
+      ]
+    },
+    "interlinked": {
+      "label": "AIS Interlinked",
+      "hour": 10,
+      "minute": 0,
+      "chat_id": "-1004424177581",
+      "posts": [
+        {
+          "category": "program-basics",
+          "text": "Interlinked grew out of Omni AI’s work on connected business operations. AIS Empire carries it forward. Start with one handoff your team repeats every week and map who owns each step.",
+          "url": "https://omnileadsagi.com/interlinked"
+        },
+        {
+          "category": "build-lab",
+          "text": "Pick one recurring decision and name the signal that triggers it. Let Omni AI draft the next step. Keep the first five decisions human-reviewed."
+        },
+        {
+          "category": "safeguards",
+          "text": "Give an agent the smallest set of data it needs to do the job. If it drafts follow-ups, start with one approved inbox, one template and one reviewer."
+        },
+        {
+          "category": "field-notes",
+          "text": "AIS Dispatch breaks down where AI can help with everyday work. Pick a task you already understand well enough to grade and try the guide’s pilot with one teammate.",
+          "url": "https://aisempire.org/newsletter/which-jobs-can-ai-help-with-business-owner-guide"
+        },
+        {
+          "category": "experiment",
+          "text": "Take five recent customer questions and write down what a good answer must contain. Test one workflow against all five before you connect it to anything live."
+        },
+        {
+          "category": "program-basics",
+          "text": "Map a workflow in four lines. What starts it, where the data lives, who decides, and what gets recorded. Bring one blurry step to the group."
+        },
+        {
+          "category": "build-lab",
+          "text": "Ask your agent to summarize one decision at the end of a workflow. Save the source, its suggested action, who approved it, and what actually happened."
+        },
+        {
+          "category": "safeguards",
+          "text": "Test the handoff with a missing field, a duplicate request, and an unavailable service. Make each failure visible to the person who can fix it."
+        },
+        {
+          "category": "field-notes",
+          "text": "What did you learn this week that changed how you use an agent? Share the original plan, the result, and what you’re trying next."
+        },
+        {
+          "category": "experiment",
+          "text": "Choose one metric for a seven-day pilot. Track time to first draft, edits per draft, or missed follow-ups. Keep the measure you can explain to your teammate."
+        },
+        {
+          "category": "build-lab",
+          "text": "Start with the question your team answers from three different tools. Put the sources in one place and ask Omni AI to show where each answer came from."
+        },
+        {
+          "category": "program-basics",
+          "text": "Study a real handoff before you design the agent. Ask the person who does it where exceptions turn up and who they call when the normal path fails."
+        },
+        {
+          "category": "safeguards",
+          "text": "There should be one person who can pause an agent workflow. Name them and write the two conditions that would make them use it."
+        },
+        {
+          "category": "experiment",
+          "text": "Give the same job to a teammate and your agent using the same source material. Compare beyond speed. Which answer was easier to check and use?"
+        },
+        {
+          "category": "field-notes",
+          "text": "If an automation went quiet, find the last confirmed step first. Put the timestamp, source and outcome in the workflow log so the next person can pick it up."
+        },
+        {
+          "category": "build-lab",
+          "text": "Sort your next five automation ideas by the cost of a bad result. Start with a job that can be reversed easily and still saves real time."
+        },
+        {
+          "category": "program-basics",
+          "text": "Omni AI has a specific role here. Help people learn and make things that work. Bring one task that’s eating your time and describe how you’d know the handoff improved."
+        },
+        {
+          "category": "experiment",
+          "text": "At the end of a pilot, ask the people who used it where they still had to step in. Write down the change you’ll test next week."
+        }
+      ]
+    }
+  }
+}
