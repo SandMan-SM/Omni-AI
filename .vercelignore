@@ -48,6 +48,13 @@ tests/*
 # a VM), so the directory and the file both have to come through.
 !tests/helpers/
 !tests/helpers/federation-retirement.cjs
+# A fifth, same reason: the lint gate's unit test (`npm run test:lint`) proves
+# the gate still FIRES — on a deliberate warning and on a stale suppression.
+# A gate in the build chain that has never fired is an untested control that
+# everybody trusts. Its fixtures have to come through with it, or the test
+# would pass on an empty tree.
+!tests/lint-gate.test.cjs
+!tests/fixtures/
 docs/private-email-previews/
 **/runtime.env
 
