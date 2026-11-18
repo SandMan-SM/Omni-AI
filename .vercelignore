@@ -54,6 +54,10 @@ tests/*
 # everybody trusts. Its fixtures have to come through with it, or the test
 # would pass on an empty tree.
 !tests/lint-gate.test.cjs
+# A sixth, same reason: the page-metadata gate's unit test
+# (`npm run test:page-metadata`) proves the gate still FIRES — on a page with
+# no metadata in its chain and on a metadata literal with no description.
+!tests/page-metadata.test.cjs
 !tests/fixtures/
 docs/private-email-previews/
 **/runtime.env
