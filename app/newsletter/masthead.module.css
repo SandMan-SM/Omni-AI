@@ -1,0 +1,110 @@
+.masthead {
+  margin: 0 0 clamp(32px, 5vw, 76px);
+  background: #eeece3;
+  color: #13241f;
+  border-radius: 5px;
+  padding: clamp(22px, 4.5vw, 66px);
+}
+.rule {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 3px solid #18372b;
+  border-bottom: 1px solid #9da99d;
+  padding: 10px 0;
+  color: #344e40;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+}
+.grid {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: clamp(28px, 5vw, 76px);
+  align-items: center;
+  margin-top: clamp(26px, 4vw, 54px);
+}
+.grid h1 {
+  font:
+    normal clamp(60px, 7vw, 108px) / 0.96 Georgia,
+    serif;
+  letter-spacing: -0.065em;
+  margin: 0 0 20px;
+}
+.grid p {
+  max-width: 42ch;
+  font-size: clamp(17px, 1.55vw, 22px);
+  line-height: 1.48;
+  color: #324439;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: center;
+  margin-top: 26px;
+}
+.primary,
+.archive {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  font-weight: 650;
+  font-size: 15px;
+}
+.primary {
+  background: #18392e;
+  color: #f9f7e8;
+  border-radius: 5px;
+  padding: 0 18px;
+}
+.archive {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.feature {
+  display: block;
+  border-left: 1px solid #a0aa9b;
+  padding-left: clamp(16px, 3vw, 36px);
+}
+.feature img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  border-radius: 3px;
+  background: #293d32;
+}
+.feature span {
+  display: block;
+  font-size: 12px;
+  margin: 12px 0 5px;
+  color: #486252;
+}
+.feature strong {
+  font:
+    normal clamp(22px, 2.4vw, 34px) / 1.12 Georgia,
+    serif;
+}
+@media (max-width: 740px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  .feature {
+    border-left: 0;
+    border-top: 1px solid #9da99d;
+    padding: 20px 0 0;
+  }
+  .grid h1 {
+    font-size: clamp(48px, 12.8vw, 74px);
+  }
+  .masthead {
+    padding: 20px;
+  }
+  .actions {
+    gap: 12px;
+  }
+  .rule {
+    font-size: 11px;
+  }
+}

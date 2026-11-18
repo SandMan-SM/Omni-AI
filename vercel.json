@@ -5,7 +5,11 @@
   "crons": [
     {
       "path": "/api/cron/newsletter?action=publish-public",
-      "schedule": "5 14 * * *"
+      "schedule": "5,25,45 14 * * *"
+    },
+    {
+      "path": "/api/cron/newsletter?action=editorial-delivery",
+      "schedule": "0,10,20,30,40,50 * * * *"
     },
     {
       "path": "/api/internal/sitanim/payments/worker",

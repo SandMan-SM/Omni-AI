@@ -473,6 +473,11 @@ async function NewsletterIssue({
 
   const isPremium = post.tier === "premium";
   const isGeneralNews = post.day_type === "general-news";
+  const tags = normalizeKeywords(post.keywords);
+  const isDailyInterlinked =
+    /^interlinked-(?:free|premium)-\d{4}-\d{2}-\d{2}$/.test(slug) &&
+    tags.some((tag) => tag.toLowerCase() === "ais interlinked");
+  const hasSourceCitations = isGeneralNews || isDailyInterlinked;
   // Featured-business shoutout — only fires for free posts whose slug
   // prefix matches a registered partner (prime_iv-, ltb-, leifson-, …).
   // Premium posts always return null. When a shoutout exists, the
@@ -481,7 +486,7 @@ async function NewsletterIssue({
   // convert against the post's actual subject.
   const shoutout = getShoutoutForSlug(slug, post.tier, post.published_at);
   // Ensure the counter reflects what actually renders in the list below.
-  const tagsToShow = normalizeKeywords(post.keywords).slice(0, 11);
+  const tagsToShow = tags.slice(0, 11);
 
   // Share metadata for the Web Share API (native share sheet on mobile +
   // modern desktop). Clipboard-copy fallback lives in the ShareButton.
@@ -492,6 +497,19 @@ async function NewsletterIssue({
   const powerMoveText = renderText(post.power_move);
   const insightBodies = normalizeInsights(post.insights);
   const newsSections = isGeneralNews ? generalNewsSections(post.insights) : [];
+  const subscribePrompt = (
+    <section aria-labelledby="issue-subscribe-title" className="my-12 border-y border-white/20 py-10">
+      <h2 id="issue-subscribe-title" className="font-serif text-3xl text-white">
+        You made it to the last line.
+      </h2>
+      <p className="mb-5 mt-3 text-gray-300">
+        The next issue may never cross your feed. Get it in your inbox.
+      </p>
+      <Link href="/reader" className="inline-flex min-h-11 items-center rounded-lg bg-stone-100 px-5 font-semibold text-stone-950">
+        Subscribe to Interlinked
+      </Link>
+    </section>
+  );
 
   return (
     // No opaque bg — FireSparksBackdrop (and its dark radial wash) paints
@@ -655,7 +673,7 @@ async function NewsletterIssue({
             data-speakable="intro"
             className="text-lg text-gray-200 leading-relaxed"
           >
-            {isGeneralNews ? <NewsletterSourceText text={post.intro || ""} /> : post.intro}
+            {hasSourceCitations ? <NewsletterSourceText text={post.intro || ""} /> : post.intro}
           </p>
         </div>
 
@@ -680,38 +698,49 @@ async function NewsletterIssue({
             visual output: an evenly-spaced stack of paragraphs. The
             `heading` field stays in the DB for schema/metadata use (e.g.
             future RSS titles) but stays invisible on the page. */}
-        {isGeneralNews ? <div className="mb-10 space-y-8">
-          {newsSections.map((section, index) => <section key={index} className="space-y-4">
-            {section.heading && <h2 className="text-xl font-semibold text-amber-200">{section.heading}</h2>}
-            {section.paragraphs.map((paragraph, paragraphIndex) => <p key={paragraphIndex} className="text-gray-300 leading-relaxed"><NewsletterSourceText text={paragraph} /></p>)}
-          </section>)}
-        </div> : <div className="mb-10">
-          <h2 className={`text-xl font-semibold mb-6 ${isPremium ? "text-amber-400" : "text-gradient"}`}>
-            {isPremium ? "Premium Insights" : "Today\u2019s Key Insights"}
-          </h2>
-          <div className="space-y-4">
-            {insightBodies.map((body: string, i: number) => {
+        {isGeneralNews ? (
+          <div className="mb-10 space-y-8">
+            {newsSections.map((section, index) => (
+              <section key={index} className="space-y-4">
+                {section.heading && <h2 className="text-xl font-semibold text-amber-200">{section.heading}</h2>}
+                {section.paragraphs.map((paragraph, paragraphIndex) => (
+                  <p key={paragraphIndex} className="text-gray-300 leading-relaxed">
+                    <NewsletterSourceText text={paragraph} />
+                  </p>
+                ))}
+              </section>
+            ))}
+          </div>
+        ) : (
+          <div className="mb-10">
+            <h2 className={`text-xl font-semibold mb-6 ${isPremium ? "text-amber-400" : "text-gradient"}`}>
+              {isPremium ? "Premium Insights" : "Today’s Key Insights"}
+            </h2>
+            <div className="space-y-4">
+              {insightBodies.map((body, index) => {
                 if (!body) return null;
                 return (
-                  <div key={i} className="py-4">
-                    <p className="text-gray-300 leading-relaxed">{body}</p>
+                  <div key={index} className="py-4">
+                    <p className="text-gray-300 leading-relaxed">
+                      {isDailyInterlinked ? <NewsletterSourceText text={body} /> : body}
+                    </p>
                   </div>
                 );
-              },
-            )}
+              })}
+            </div>
           </div>
-        </div>}
+        )}
 
         {/* Power Move */}
         {powerMoveText && (
-        <div className="mb-10">
-          <p className={`text-xs font-bold uppercase tracking-widest mb-4 ${isPremium ? "text-amber-400" : "text-purple-400"}`}>
-            Power Move
-          </p>
-          <p className="text-lg text-gray-200 leading-relaxed">
-            {powerMoveText}
-          </p>
-        </div>
+          <div className="mb-10">
+            <p className={`text-xs font-bold uppercase tracking-widest mb-4 ${isPremium ? "text-amber-400" : "text-purple-400"}`}>
+              Power Move
+            </p>
+            <p className="text-lg text-gray-200 leading-relaxed">
+              {isDailyInterlinked ? <NewsletterSourceText text={powerMoveText} /> : powerMoveText}
+            </p>
+          </div>
         )}
 
         {/* Shoutout posts (free + slug matches a registered partner) swap
@@ -720,9 +749,10 @@ async function NewsletterIssue({
             the actual subject and pushes conversion to the partner. */}
         {shoutout && <FeaturedBusinessCard shoutout={shoutout} />}
 
-        {/* CTA — reward completion, then guide readers into the Meta AI
-            Advertising service funnel. */}
-        {!shoutout && (
+        {isDailyInterlinked && subscribePrompt}
+
+        {/* Archived issues retain their original rewards and services CTA. */}
+        {!isDailyInterlinked && !shoutout && (
           <div className="relative mb-10 overflow-hidden rounded-[1.75rem] border border-amber-300/25 bg-[#09090d] shadow-[0_24px_90px_rgba(0,0,0,0.45),0_0_45px_rgba(245,158,11,0.07)]">
             <div
               aria-hidden
@@ -810,6 +840,7 @@ async function NewsletterIssue({
             so the dashboard at /dashboard shows attribution. */}
         <SponsorBanner slug="omnileads" seed={post.slug || post.id || ""} />
 
+        {!isDailyInterlinked && subscribePrompt}
         {/* Closing */}
         <p className="text-center text-gray-400 italic text-lg my-10">
           Powered by Omni AI

@@ -1,10 +1,11 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import Link from "next/link";
 import { Metadata } from "next";
-import { Archive, ArrowRight, Rss } from "lucide-react";
+import { Archive, ArrowRight } from "lucide-react";
 import { NewsletterHeader, PremiumSection } from "@/components/newsletter-premium-gate";
 import { JsonLd, breadcrumbSchema, itemListSchema } from "@/components/json-ld";
-import { Breadcrumb } from "@/components/breadcrumb";
+import styles from "./masthead.module.css";
+import Image from "next/image";
 // The newsletter archive was rendering with no footer at all — readers who
 // scrolled past the post list had nowhere to go. Add the shared Footer so
 // /about, /faq, /campaigns, /interlinked are one hop away from the content
@@ -12,15 +13,14 @@ import { Breadcrumb } from "@/components/breadcrumb";
 import { Footer } from "@/components/footer";
 import { getNewsletterFallbackSummaries, isOmniAiNewsletterPost } from "@/lib/newsletter-fallback";
 import { publishedNewsletterOnly } from "@/lib/newsletter-posts";
-import { NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsletter-issue-card";
-import NewsletterOptin from "@/components/NewsletterOptin";
+import { newsletterIssueImageUrl, NewsletterIssueCard, type NewsletterCardPost } from "@/components/newsletter-issue-card";
 import { Suspense } from "react";
 import PageLoading from "@/components/page-loading";
 
 export const metadata: Metadata = {
   title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
   description:
-    "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium AI intelligence from Interlinked.",
+    "Stories, strategies, and signals that matter — delivered daily. Free and premium AI intelligence from Interlinked.",
   keywords:
     "AI newsletter, business intelligence, AI automation, Omni AI, Interlinked, daily AI briefs, AI strategy",
   // Canonical URL so UTM / ref / share-parameter variants resolve to a
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
     description:
-      "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium tiers available.",
+      "Stories, strategies, and signals that matter — delivered daily. Free and premium tiers available.",
     url: "https://omnileadsagi.com/newsletter",
     siteName: "Omni AI",
   },
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Interlinked Newsletter — Daily AI Strategy & Intelligence",
     description:
-      "Stories, strategies, and signals that matter — delivered daily at 8 AM. Free and premium tiers available.",
+      "Stories, strategies, and signals that matter — delivered daily. Free and premium tiers available.",
   },
 };
 
@@ -145,6 +145,7 @@ function normalizeFilteredPosts(rows: RawNewsletterSummary[], indexOffset = 0): 
  */
 async function NewsletterIndexContent() {
   const supabase = createAdminClient();
+  const publishedBy = new Date().toISOString();
 
   const [premiumRes, freeRes] = await Promise.all([
     withTimeout(
@@ -154,7 +155,8 @@ async function NewsletterIndexContent() {
           .select("slug, subject, intro, keywords, tier, published_at, created_at")
           .eq("tier", "premium"),
       )
-        .order("published_at", { ascending: false })
+        .lte("published_at", publishedBy)
+        .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5),
       2500
     ),
@@ -166,7 +168,7 @@ async function NewsletterIndexContent() {
           .in("tier", ["free", "general-news"])
           .or("slug.ilike.%interlinked%,day_type.eq.general-news"),
       )
-        .lte("published_at", new Date().toISOString())
+        .lte("published_at", publishedBy)
         .order("published_at", { ascending: false, nullsFirst: false })
         .limit(5),
       2500
@@ -190,9 +192,18 @@ async function NewsletterIndexContent() {
     (!premiumRes || Boolean((premiumRes as { error?: unknown }).error)) &&
     (!freeRes || Boolean((freeRes as { error?: unknown }).error));
   const frontShelfPosts = [...premiumPosts, ...freePosts];
-  const latestPremiumHref = premiumPosts[0]?.slug
-    ? `/newsletter/${premiumPosts[0].slug}`
-    : "#latest";
+  // Sort is stable. A public issue takes the lead when both tiers share a timestamp.
+  const liveFeature = sortNewsletterPosts([...liveFree, ...livePremium])[0];
+  const feature = liveFeature ?? sortNewsletterPosts([...freePosts, ...premiumPosts])[0];
+  const featureDate = feature ? new Date(feature.published_at) : null;
+  const featureDateLabel = featureDate && Number.isFinite(featureDate.getTime())
+    ? featureDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        timeZone: "America/Denver",
+      })
+    : null;
 
   return (
     // No opaque bg here — root layout's <SpaceBackdrop /> drifts behind.
@@ -235,7 +246,7 @@ async function NewsletterIndexContent() {
           name: "Interlinked — Daily AI Intelligence by Omni AI",
           alternateName: ["Interlinked", "Omni AI Newsletter", "Interlinked by Omni AI"],
           description:
-            "Daily AI intelligence newsletter published every morning at 8 AM ET by Omni AI. Covers AI, automation, business strategy signals, and the operators-playbook stories that matter. Free daily tier plus an Interlinked Premium paid tier.",
+            "Daily AI intelligence newsletter published daily by Omni AI. Covers AI, automation, business strategy signals, and the operators-playbook stories that matter. Free daily tier plus an Interlinked Premium paid tier.",
           url: "https://omnileadsagi.com/newsletter",
           inLanguage: "en-US",
           genre: ["AI", "Business Intelligence", "Marketing Automation", "Business Strategy"],
@@ -325,7 +336,7 @@ async function NewsletterIndexContent() {
           data={itemListSchema({
             name: "Interlinked — Daily AI Intelligence by Omni AI",
             description:
-              "Daily newsletter issues published every morning at 8 AM ET covering AI, automation, and business strategy signals.",
+              "Daily newsletter issues published daily covering AI, automation, and business strategy signals.",
             url: "https://omnileadsagi.com/newsletter",
             items: frontShelfPosts.map((p) => ({
               name: p.subject,
@@ -338,69 +349,34 @@ async function NewsletterIndexContent() {
       <NewsletterHeader />
 
       <main className="relative z-10 max-w-6xl mx-auto px-5 py-8 md:py-12">
-        {/* Visible breadcrumb — pairs with breadcrumbSchema above so the
-            SERP breadcrumb chip renders reliably on the archive (which
-            receives heavy LLM-citation-driven deep landings), and gives
-            feed-discovery visitors a one-click path back to the home
-            page without having to scroll to the footer. */}
-        <section className="mb-8 border-y border-white/[0.07] py-6 md:mb-12 md:py-10">
-          <Breadcrumb
-            items={[
-              { name: "Home", href: "/" },
-              { name: "Newsletter", href: "/newsletter" },
-            ]}
-            className="mb-5 md:mb-8"
-          />
-
-          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-end">
+        <section className={styles.masthead}>
+          <div className={styles.rule}>
+            <span>AIS Empire · Omni AI</span>
+            <a href="/newsletter/rss.xml">RSS <span aria-hidden="true">↗</span></a>
+          </div>
+          <div className={styles.grid}>
             <div>
-              <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-normal text-white sm:text-4xl md:text-6xl md:leading-[0.98]">
-                Interlinked Newsletter
-              </h1>
-              {/* data-speakable="intro" activates the SpeakableSpecification
-                  declared on the Blog + Periodical JSON-LD above. Voice
-                  assistants (Google Assistant, Siri read-aloud, Alexa)
-                  concatenate h1 + this paragraph as the natural reply to
-                  "what is the Omni AI newsletter?" / "what does Interlinked
-                  cover?" voice queries. */}
-              <p
-                className="mt-4 max-w-3xl text-base leading-relaxed text-gray-300 md:mt-5 md:text-xl"
-                data-speakable="intro"
-              >
-                The businesses that move with AI don&apos;t just survive. They
-                compound. Interlinked tracks the stories, strategies, and
-                operator signals that matter before the market catches up.
+              <h1>Interlinked</h1>
+              <p data-speakable="intro">
+                The daily AI briefing. Read what changed, see the evidence, and try one practical use in your own work.
               </p>
-
-              <div className="mt-5 flex flex-wrap gap-2.5 md:mt-7 md:gap-3">
-                <Link
-                  href={latestPremiumHref}
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-amber-400/30 bg-amber-400/10 px-3 text-sm font-semibold text-amber-200 transition-colors hover:border-amber-300/60 hover:bg-amber-400/15 md:h-11 md:px-4"
-                >
-                  Latest issue
-                  <ArrowRight aria-hidden="true" className="h-4 w-4" />
+              <div className={styles.actions}>
+                <Link href="/reader" className={styles.primary}>
+                  Get the newsletter <span aria-hidden="true">→</span>
                 </Link>
-                <Link
-                  href="/newsletter/archive"
-                  className="inline-flex h-11 md:h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.04] px-3 text-sm font-semibold text-gray-200 transition-colors hover:border-amber-400/30 hover:text-amber-200 md:px-4"
-                >
-                  <Archive className="h-4 w-4" />
-                  Full archive
-                </Link>
-                <a
-                  href="/newsletter/rss.xml"
-                  className="inline-flex h-11 md:h-10 items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 text-sm font-semibold text-gray-400 transition-colors hover:border-sky-400/30 hover:text-sky-200 md:px-4"
-                  aria-label="Subscribe to the Omni AI newsletter via RSS"
-                >
-                  <Rss className="h-4 w-4" />
-                  RSS
-                </a>
+                <Link href="/newsletter/archive" className={styles.archive}>Browse issues</Link>
               </div>
             </div>
-
-            {/* Above-the-fold conversion column: free-signup capture feeds the
-                federation subscriber pipeline. */}
-            <NewsletterOptin />
+            {feature && (
+              <Link href={`/newsletter/${feature.slug}`} className={styles.feature}>
+                <Image src={newsletterIssueImageUrl(feature.slug)} unoptimized width={800} height={450} alt="" priority />
+                <span>
+                  {liveFeature ? "Latest issue" : "From the archive"}
+                  {featureDateLabel && <> · <time dateTime={feature.published_at}>{featureDateLabel}</time></>}
+                </span>
+                <strong>{feature.subject}</strong>
+              </Link>
+            )}
           </div>
         </section>
 
@@ -444,7 +420,7 @@ async function NewsletterIndexContent() {
                 <p className="text-sm">
                   {postsUnavailable
                     ? "The archive is live, but the newsletter database did not return posts on this request. Please refresh shortly."
-                    : "The first newsletter will be published tomorrow at 8:00 AM ET."}
+                    : "New issues appear here when they’re published."}
                 </p>
               </div>
             )}

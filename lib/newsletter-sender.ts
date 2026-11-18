@@ -1,4 +1,5 @@
 import { isRetiredFederationContact } from '@/lib/server/federation-contact-retirement';
+import { recipientsForLegacyNewsletter } from '@/lib/server/interlinked-audience';
 /**
  * Interlinked Newsletter System
  *
@@ -1538,7 +1539,7 @@ export async function runDailyNewsletter(supabase: any = null, options: Newslett
         const admin = createAdminClient();
         const audience = await getNewsletterAudience(admin);
         const { freeRecipients } = audienceSendList(audience);
-        const allEmails = new Set<string>(freeRecipients);
+        const allEmails = new Set(await recipientsForLegacyNewsletter(freeRecipients));
 
         if (allEmails.size > 0) {
           const results = await Promise.allSettled(
@@ -1723,7 +1724,7 @@ export async function runPremiumNewsletter(supabase: any = null, options: Newsle
         const admin = createAdminClient();
         const audience = await getNewsletterAudience(admin);
         const { premiumRecipients } = audienceSendList(audience);
-        const premiumEmails = new Set<string>(premiumRecipients);
+        const premiumEmails = new Set(await recipientsForLegacyNewsletter(premiumRecipients));
 
         if (premiumEmails.size > 0) {
           const results = await Promise.allSettled(

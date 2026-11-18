@@ -7,9 +7,9 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export const metadata: Metadata = {
-  title: "Interlinked by Omni AI — Free Premium AI Intelligence",
+  title: "Interlinked | The daily AI briefing from AIS Empire",
   description:
-    "Interlinked tracks the AI stories, strategies, and operator signals that matter before the market catches up. Free premium membership for a limited time.",
+    "Source-backed AI reporting and practical ways to use it. Read the daily Interlinked newsletter from AIS Empire and Omni AI.",
   keywords:
     "Interlinked, AI newsletter, AI intelligence, business automation, AI strategy, premium AI membership",
   alternates: {
@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Interlinked by Omni AI — Free Premium AI Intelligence",
+    title: "Interlinked | The daily AI briefing from AIS Empire",
     description:
       "AI stories, strategies, and operator signals delivered for builders and operators.",
     url: "https://omnileadsagi.com/",
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     site: "@SitaniMafi",
     creator: "@SitaniMafi",
     card: "summary_large_image",
-    title: "Interlinked by Omni AI — Free Premium AI Intelligence",
+    title: "Interlinked | The daily AI briefing from AIS Empire",
     description:
       "AI stories, strategies, and operator signals delivered for builders and operators.",
   },
